@@ -301,7 +301,7 @@ export default class extends Controller {
         formatter: function() {
           return this.y ? `${this.y}%` : ""
         },
-        style: { fontWeight: "bold", color: "#EF4444" }
+        style: { fontWeight: "bold", color: "#EF4444", textOutline: "none" }
       },
       zIndex: 10
     }
