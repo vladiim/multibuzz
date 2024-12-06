@@ -1,0 +1,85 @@
+<% data = result[:data] %>
+<% totals = data[:totals] %>
+<% prior = totals[:prior_period] %>
+<% model = local_assigns[:model] %>
+<% panel_id = model&.prefix_id || "default" %>
+
+<div class="dashboard-panel">
+  <% if model %>
+    <h3 class="text-lg font-semibold text-gray-900 mb-4"><%= model.name.titleize %></h3>
+  <% end %>
+
+  <!-- KPI Cards -->
+  <% selected_metric = @filter_params[:metric] %>
+  <div class="grid grid-cols-2 gap-3 mb-4">
+    <%= link_to dashboard_path(request.query_parameters.merge(metric: "conversions")),
+        data: { turbo_frame: "_top" },
+        class: "bg-white p-4 rounded-lg shadow transition-all hover:shadow-md #{selected_metric == 'conversions' ? 'ring-2 ring-indigo-500' : 'cursor-pointer'}" do %>
+      <dt class="text-xs font-medium text-gray-500">Conversions</dt>
+      <dd class="mt-1">
+        <span class="text-xl font-semibold text-gray-900"><%= format_metric(totals[:conversions]) %></span>
+        <%= format_change(percentage_change(totals[:conversions], prior[:conversions])) %>
+      </dd>
+    <% end %>
+
+    <%= link_to dashboard_path(request.query_parameters.merge(metric: "revenue")),
+        data: { turbo_frame: "_top" },
+        class: "bg-white p-4 rounded-lg shadow transition-all hover:shadow-md #{selected_metric == 'revenue' ? 'ring-2 ring-indigo-500' : 'cursor-pointer'}" do %>
+      <dt class="text-xs font-medium text-gray-500">Revenue</dt>
+      <dd class="mt-1">
+        <span class="text-xl font-semibold text-gray-900"><%= format_metric(totals[:revenue], type: :currency) %></span>
+        <%= format_change(percentage_change(totals[:revenue], prior[:revenue])) %>
+      </dd>
+    <% end %>
+
+    <%= link_to dashboard_path(request.query_parameters.merge(metric: "conversion_rate")),
+        data: { turbo_frame: "_top" },
+        class: "bg-white p-4 rounded-lg shadow transition-all hover:shadow-md #{selected_metric == 'conversion_rate' ? 'ring-2 ring-indigo-500' : 'cursor-pointer'}" do %>
+      <dt class="text-xs font-medium text-gray-500">Conversion Rate</dt>
+      <dd class="mt-1">
+        <span class="text-xl font-semibold text-gray-900"><%= format_metric(totals[:conversion_rate], type: :percentage) %></span>
+        <%= format_change(percentage_change(totals[:conversion_rate], prior[:conversion_rate])) %>
+      </dd>
+    <% end %>
+
+    <%= link_to dashboard_path(request.query_parameters.merge(metric: "aov")),
+        data: { turbo_frame: "_top" },
+        class: "bg-white p-4 rounded-lg shadow transition-all hover:shadow-md #{selected_metric == 'aov' ? 'ring-2 ring-indigo-500' : 'cursor-pointer'}" do %>
+      <dt class="text-xs font-medium text-gray-500">Avg Order Value</dt>
+      <dd class="mt-1">
+        <span class="text-xl font-semibold text-gray-900"><%= format_metric(totals[:aov], type: :currency) %></span>
+        <%= format_change(percentage_change(totals[:aov], prior[:aov])) %>
+      </dd>
+    <% end %>
+  </div>
+
+  <!-- Time Series Chart -->
+  <div class="bg-white p-4 rounded-lg shadow mb-4">
+    <div class="flex items-center justify-between mb-3">
+      <h4 class="text-sm font-medium text-gray-900">Channel Performance</h4>
+    </div>
+    <div id="time-series-chart-<%= panel_id %>"
+      data-controller="chart"
+      data-chart-type-value="line"
+      data-chart-data-value="<%= data[:time_series].to_json %>"
+      class="h-48">
+    </div>
+  </div>
+
+  <!-- Attribution Chart -->
+  <% chart_metric = %w[revenue aov].include?(selected_metric) ? "revenue" : "credits" %>
+  <div class="bg-white p-4 rounded-lg shadow">
+    <div class="flex items-center justify-between mb-3">
+      <h4 class="text-sm font-medium text-gray-900">By Channel</h4>
+    </div>
+    <div id="channel-chart-<%= panel_id %>"
+      data-controller="chart"
+      data-chart-type-value="bar"
+      data-chart-metric-value="<%= chart_metric %>"
+      data-chart-drilldown-value="true"
+      data-chart-campaigns-value="<%= data[:top_campaigns].to_json %>"
+      data-chart-data-value="<%= data[:by_channel].to_json %>"
+      class="h-56">
+    </div>
+  </div>
+</div>
