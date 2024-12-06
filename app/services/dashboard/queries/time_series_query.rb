@@ -33,20 +33,25 @@ module Dashboard
       end
 
       def build_series(channel)
-        daily_data = daily_credits_for(channel)
-
         {
           channel: channel,
-          data: dates.map { |date| daily_data[date.to_s] || 0 }
+          data: dates.map { |date| daily_data_for_channel(channel)[date.to_s] || 0 }
         }
       end
 
-      def daily_credits_for(channel)
+      def daily_data_for_channel(channel)
+        @daily_data_by_channel ||= {}
+        @daily_data_by_channel[channel] ||= fetch_daily_credits(channel)
+      end
+
+      def fetch_daily_credits(channel)
+        # Use date_trunc for consistent timezone handling
+        # Cast to date to ensure consistent key format
         scope
           .where(channel: channel)
-          .group("DATE(conversions.converted_at)")
+          .group(Arel.sql("(conversions.converted_at AT TIME ZONE 'UTC')::date"))
           .sum(:credit)
-          .transform_keys(&:to_s)
+          .transform_keys { |k| k.is_a?(Date) ? k.to_s : k.to_s }
       end
     end
   end
