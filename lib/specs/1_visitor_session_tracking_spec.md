@@ -8,8 +8,8 @@ This specification defines the visitor/session identification architecture for m
 - Cross-device identity resolution
 - SDK simplification
 
-**Last Updated**: 2026-01-08
-**Status**: Requirements finalized, implementation pending
+**Last Updated**: 2026-01-09
+**Status**: Critical bugs found in validation review - fixes required
 
 ---
 
@@ -245,12 +245,32 @@ Sources:
 
 ## Implementation Checklist
 
+### Phase 0: Critical Fixes (BLOCKING)
+
+**These bugs were found during validation review and MUST be fixed before production.**
+
+- [ ] **BUG-001**: Wire `device_fingerprint` from `ProcessingService` to `LookupService`
+  - File: `app/services/events/processing_service.rb:21-22`
+  - Issue: Fingerprint calculated but not passed to visitor lookup
+  - Impact: Visitor deduplication for Turbo requests NOT WORKING
+
+- [ ] **BUG-002**: Standardize fingerprint calculation (use raw IP everywhere)
+  - File: `app/services/conversions/tracking_service.rb:100-108`
+  - Issue: Uses anonymized IP, but sessions store fingerprint with raw IP
+  - Impact: Conversion fingerprint fallback will NEVER find a match
+
+- [ ] **TEST-001**: Add integration test for concurrent event requests
+  - Current tests use `/sessions` endpoint, not `/events`
+  - Need to prove visitor deduplication works via events endpoint
+
+- [ ] **TEST-002**: Add unit test verifying fingerprint passed to LookupService
+
 ### Phase 1: Visitor Deduplication (API)
 
 - [x] Update `Visitors::LookupService` with fingerprint-based canonical lookup
 - [x] Add `session_id` and `device_fingerprint` optional params
 - [x] Write tests for concurrent request scenarios
-- [ ] Deploy and monitor visitor/session ratio
+- [ ] **BLOCKED**: Deploy and monitor visitor/session ratio (requires BUG-001 fix)
 
 ### Phase 2: Identity Cross-Device (API)
 
@@ -264,6 +284,7 @@ Sources:
 - [x] Update `Conversions::TrackingService` with fingerprint fallback
 - [x] Add `ip` and `user_agent` params
 - [x] Write tests for visitor resolution chain
+- [ ] **BLOCKED**: Verify fingerprint fallback works (requires BUG-002 fix)
 
 ### Phase 4: SDK Simplification
 
@@ -272,6 +293,99 @@ Sources:
 - [ ] mbuzz-node: Same changes
 - [ ] mbuzz-python: Same changes
 - [ ] Update SDK documentation
+
+---
+
+## Implementation Validation Review (2026-01-09)
+
+### Summary
+
+A deep-dive validation review was conducted comparing the spec requirements against actual implementation. **Two critical bugs were found that prevent core features from working.**
+
+### Bug Analysis
+
+#### BUG-001: Visitor Deduplication Not Wired Up (CRITICAL)
+
+**Code Location:** `app/services/events/processing_service.rb` lines 21-22
+
+**Current Code:**
+```ruby
+def visitor_result
+  @visitor_result ||= Visitors::LookupService.new(account, event_data["visitor_id"], is_test: is_test).call
+end
+```
+
+**Problem:** The `device_fingerprint` is calculated at line 74-78 but **never passed** to `LookupService`. The `LookupService` has the canonical visitor lookup logic (lines 33-36) but it receives `nil` for fingerprint, so deduplication never triggers.
+
+**Result:** The primary feature (R1: Visitor Deduplication) is **not working**. Concurrent Turbo requests will continue creating duplicate visitors.
+
+**Fix Required:**
+```ruby
+def visitor_result
+  @visitor_result ||= Visitors::LookupService.new(
+    account,
+    event_data["visitor_id"],
+    is_test: is_test,
+    device_fingerprint: device_fingerprint  # ADD THIS
+  ).call
+end
+```
+
+#### BUG-002: Fingerprint Calculation Mismatch (CRITICAL)
+
+**Code Locations:**
+- `app/services/sessions/resolution_service.rb` line 88-89: Uses **raw IP**
+- `app/services/events/processing_service.rb` line 74-78: Uses **raw IP**
+- `app/services/conversions/tracking_service.rb` lines 100-108: Uses **anonymized IP**
+
+**Problem:** When conversion fingerprint fallback tries to find a visitor:
+1. It calculates fingerprint using anonymized IP: `192.168.1.0`
+2. It searches sessions which store fingerprint with raw IP: `192.168.1.42`
+3. **They will never match**
+
+**Result:** Conversion fingerprint fallback (R3) is **broken**. Will silently fail.
+
+**Fix Required:** Change `Conversions::TrackingService` to use raw IP:
+```ruby
+def device_fingerprint
+  @device_fingerprint ||= Digest::SHA256.hexdigest("#{ip}|#{user_agent}")[0, FINGERPRINT_LENGTH]
+end
+
+# Remove anonymized_ip method - not needed for fingerprint
+```
+
+### What's Working
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Server-side session resolution | ✅ WORKING | 30-min sliding window |
+| Session continuation | ✅ WORKING | `last_activity_at` updated |
+| Identity cross-device lookup | ✅ WORKING | Finds sessions across visitors |
+| Visitor-to-identity linking | ✅ WORKING | First match links |
+| SDK simplification (Ruby) | ✅ WORKING | Session cookie removed |
+| Backwards compatibility | ✅ WORKING | Works without ip/user_agent |
+
+### What's NOT Working
+
+| Feature | Status | Root Cause |
+|---------|--------|------------|
+| Visitor deduplication | ❌ BROKEN | BUG-001: Fingerprint not passed |
+| Conversion fingerprint fallback | ❌ BROKEN | BUG-002: IP format mismatch |
+
+### Test Coverage Gaps
+
+| Missing Test | Priority |
+|--------------|----------|
+| Concurrent event requests deduplicate visitors | HIGH |
+| Fingerprint passed from ProcessingService to LookupService | HIGH |
+| Fingerprint consistency between event and conversion | MEDIUM |
+| IPv6 handling | LOW |
+
+### Production Readiness
+
+**Status: ❌ NOT READY**
+
+Both critical bugs cause silent failures - no errors, just incorrect behavior. The duplicate visitor problem (the primary issue we're trying to solve) will persist until BUG-001 is fixed.
 
 ---
 
@@ -441,9 +555,11 @@ ORDER BY 1;
 | Date | Item | Status |
 |------|------|--------|
 | 2026-01-08 | Spec v3 - validated against codebases | Complete |
-| 2026-01-09 | Phase 1: Visitor Deduplication | Complete |
+| 2026-01-09 | Phase 1: Visitor Deduplication | Complete (code written) |
 | 2026-01-09 | Phase 2: Identity Cross-Device | Complete |
-| 2026-01-09 | Phase 3: Conversions Fallback | Complete |
+| 2026-01-09 | Phase 3: Conversions Fallback | Complete (code written) |
 | 2026-01-09 | Phase 4: SDK Simplification (mbuzz-ruby) | Complete |
+| 2026-01-09 | **Validation Review - CRITICAL BUGS FOUND** | BUG-001, BUG-002 |
+| | Phase 0: Critical Fixes | **IN PROGRESS** |
 | | Phase 4: SDK Simplification (other SDKs) | Pending |
 | | Phase 5: Documentation | Pending |
