@@ -267,8 +267,8 @@ Sources:
 
 ### Phase 4: SDK Simplification
 
-- [ ] mbuzz-ruby: Remove session cookie and ID generation
-- [ ] mbuzz-ruby: Add ip/user_agent/identifier to all calls
+- [x] mbuzz-ruby: Remove session cookie and ID generation
+- [x] mbuzz-ruby: Add ip/user_agent/identifier to all calls
 - [ ] mbuzz-node: Same changes
 - [ ] mbuzz-python: Same changes
 - [ ] Update SDK documentation
@@ -444,5 +444,6 @@ ORDER BY 1;
 | 2026-01-09 | Phase 1: Visitor Deduplication | Complete |
 | 2026-01-09 | Phase 2: Identity Cross-Device | Complete |
 | 2026-01-09 | Phase 3: Conversions Fallback | Complete |
-| | Phase 4: SDK Simplification | Pending |
+| 2026-01-09 | Phase 4: SDK Simplification (mbuzz-ruby) | Complete |
+| | Phase 4: SDK Simplification (other SDKs) | Pending |
 | | Phase 5: Documentation | Pending |
