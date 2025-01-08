@@ -261,9 +261,9 @@ Sources:
 
 ### Phase 3: Conversions Fallback (API)
 
-- [ ] Update `Conversions::TrackingService` with fingerprint fallback
-- [ ] Add `ip` and `user_agent` params
-- [ ] Write tests for visitor resolution chain
+- [x] Update `Conversions::TrackingService` with fingerprint fallback
+- [x] Add `ip` and `user_agent` params
+- [x] Write tests for visitor resolution chain
 
 ### Phase 4: SDK Simplification
 
@@ -443,6 +443,6 @@ ORDER BY 1;
 | 2026-01-08 | Spec v3 - validated against codebases | Complete |
 | 2026-01-09 | Phase 1: Visitor Deduplication | Complete |
 | 2026-01-09 | Phase 2: Identity Cross-Device | Complete |
-| | Phase 3: Conversions Fallback | Pending |
+| 2026-01-09 | Phase 3: Conversions Fallback | Complete |
 | | Phase 4: SDK Simplification | Pending |
 | | Phase 5: Documentation | Pending |

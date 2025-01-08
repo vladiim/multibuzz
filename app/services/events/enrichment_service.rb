@@ -134,13 +134,17 @@ module Events
     end
 
     def anonymized_ip
-      @anonymized_ip ||= IPAddr.new(request.ip).mask(24).to_s
+      @anonymized_ip ||= IPAddr.new(source_ip).mask(24).to_s
     rescue IPAddr::Error
       nil
     end
 
+    def source_ip
+      event_data["ip"] || event_data[:ip] || request.ip
+    end
+
     def user_agent
-      request.user_agent
+      event_data["user_agent"] || event_data[:user_agent] || request.user_agent
     end
 
     def accept_language

@@ -22,7 +22,7 @@ module Api
       def conversion_params
         params.require(:conversion).permit(
           :event_id, :visitor_id, :conversion_type, :revenue, :currency,
-          :user_id, :is_acquisition, :inherit_acquisition,
+          :user_id, :is_acquisition, :inherit_acquisition, :ip, :user_agent,
           properties: {}
         )
       end

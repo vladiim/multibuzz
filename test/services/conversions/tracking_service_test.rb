@@ -357,6 +357,177 @@ module Conversions
     end
 
     # ==========================================
+    # Fingerprint fallback tests
+    # ==========================================
+
+    test "finds visitor via fingerprint when visitor_id not found" do
+      # Create a session with known fingerprint (using anonymized IP: 192.168.1.0)
+      fingerprint = Digest::SHA256.hexdigest("192.168.1.0|Mozilla/5.0")[0, 32]
+      session_with_fingerprint = account.sessions.create!(
+        session_id: "sess_fp_test_#{SecureRandom.hex(8)}",
+        visitor: visitor,
+        device_fingerprint: fingerprint,
+        started_at: 10.seconds.ago,
+        last_activity_at: 10.seconds.ago
+      )
+
+      result = build_service(
+        visitor_id: "nonexistent_visitor_id",
+        ip: "192.168.1.100", # Will be anonymized to 192.168.1.0
+        user_agent: "Mozilla/5.0"
+      ).call
+
+      assert result[:success], "Should find visitor via fingerprint fallback"
+      assert_equal visitor.id, result[:conversion].visitor_id
+    end
+
+    test "fingerprint fallback only considers recent sessions" do
+      # Create an old session with fingerprint (older than 30 seconds)
+      # Using anonymized IP: 10.0.0.0
+      fingerprint = Digest::SHA256.hexdigest("10.0.0.0|OldAgent")[0, 32]
+      account.sessions.create!(
+        session_id: "sess_old_fp_#{SecureRandom.hex(8)}",
+        visitor: visitor,
+        device_fingerprint: fingerprint,
+        started_at: 1.minute.ago,
+        last_activity_at: 1.minute.ago,
+        created_at: 1.minute.ago
+      )
+
+      result = build_service(
+        visitor_id: "nonexistent_visitor_id",
+        ip: "10.0.0.1",
+        user_agent: "OldAgent"
+      ).call
+
+      assert_not result[:success], "Should not find visitor from old session"
+      assert_includes result[:errors], "Visitor not found"
+    end
+
+    test "fingerprint fallback respects account isolation" do
+      # Create session in different account with matching fingerprint
+      other_account = accounts(:two)
+      other_visitor = visitors(:three)
+      # Using anonymized IP: 10.0.0.0
+      fingerprint = Digest::SHA256.hexdigest("10.0.0.0|CrossAccountAgent")[0, 32]
+
+      other_account.sessions.create!(
+        session_id: "sess_other_acc_#{SecureRandom.hex(8)}",
+        visitor: other_visitor,
+        device_fingerprint: fingerprint,
+        started_at: 5.seconds.ago,
+        last_activity_at: 5.seconds.ago
+      )
+
+      result = build_service(
+        visitor_id: "nonexistent_visitor_id",
+        ip: "10.0.0.2",
+        user_agent: "CrossAccountAgent"
+      ).call
+
+      assert_not result[:success], "Should not find visitor from other account"
+      assert_includes result[:errors], "Visitor not found"
+    end
+
+    test "does not use fingerprint fallback when ip missing" do
+      # Using anonymized IP: 192.168.1.0
+      fingerprint = Digest::SHA256.hexdigest("192.168.1.0|SomeAgent")[0, 32]
+      account.sessions.create!(
+        session_id: "sess_no_ip_#{SecureRandom.hex(8)}",
+        visitor: visitor,
+        device_fingerprint: fingerprint,
+        started_at: 5.seconds.ago,
+        last_activity_at: 5.seconds.ago
+      )
+
+      result = build_service(
+        visitor_id: "nonexistent_visitor_id",
+        user_agent: "SomeAgent"
+        # No ip provided
+      ).call
+
+      assert_not result[:success]
+      assert_includes result[:errors], "Visitor not found"
+    end
+
+    test "does not use fingerprint fallback when user_agent missing" do
+      # Using anonymized IP: 192.168.1.0
+      fingerprint = Digest::SHA256.hexdigest("192.168.1.0|")[0, 32]
+      account.sessions.create!(
+        session_id: "sess_no_ua_#{SecureRandom.hex(8)}",
+        visitor: visitor,
+        device_fingerprint: fingerprint,
+        started_at: 5.seconds.ago,
+        last_activity_at: 5.seconds.ago
+      )
+
+      result = build_service(
+        visitor_id: "nonexistent_visitor_id",
+        ip: "192.168.1.201"
+        # No user_agent provided
+      ).call
+
+      assert_not result[:success]
+      assert_includes result[:errors], "Visitor not found"
+    end
+
+    test "event visitor takes precedence over fingerprint fallback" do
+      # Set up fingerprint that would match a different visitor
+      other_visitor = account.visitors.create!(
+        visitor_id: "vis_other_fp_#{SecureRandom.hex(8)}",
+        first_seen_at: Time.current,
+        last_seen_at: Time.current
+      )
+      # Using anonymized IP: 192.168.1.0
+      fingerprint = Digest::SHA256.hexdigest("192.168.1.0|PrecedenceAgent")[0, 32]
+      account.sessions.create!(
+        session_id: "sess_precedence_#{SecureRandom.hex(8)}",
+        visitor: other_visitor,
+        device_fingerprint: fingerprint,
+        started_at: 5.seconds.ago,
+        last_activity_at: 5.seconds.ago
+      )
+
+      result = build_service(
+        event_id: event.prefix_id,
+        ip: "192.168.1.202",
+        user_agent: "PrecedenceAgent"
+      ).call
+
+      assert result[:success]
+      # Should use event's visitor, not fingerprint match
+      assert_equal event.visitor_id, result[:conversion].visitor_id
+    end
+
+    test "visitor_id lookup takes precedence over fingerprint fallback" do
+      # Set up fingerprint that would match a different visitor
+      other_visitor = account.visitors.create!(
+        visitor_id: "vis_fp_other_#{SecureRandom.hex(8)}",
+        first_seen_at: Time.current,
+        last_seen_at: Time.current
+      )
+      # Using anonymized IP: 192.168.1.0
+      fingerprint = Digest::SHA256.hexdigest("192.168.1.0|LookupAgent")[0, 32]
+      account.sessions.create!(
+        session_id: "sess_lookup_#{SecureRandom.hex(8)}",
+        visitor: other_visitor,
+        device_fingerprint: fingerprint,
+        started_at: 5.seconds.ago,
+        last_activity_at: 5.seconds.ago
+      )
+
+      result = build_service(
+        visitor_id: visitor.visitor_id, # Valid visitor_id
+        ip: "192.168.1.203",
+        user_agent: "LookupAgent"
+      ).call
+
+      assert result[:success]
+      # Should use visitor_id lookup, not fingerprint match
+      assert_equal visitor.id, result[:conversion].visitor_id
+    end
+
+    # ==========================================
     # Session Activity Tracking tests
     # ==========================================
 
@@ -421,7 +592,9 @@ module Conversions
       properties: {},
       user_id: nil,
       is_acquisition: nil,
-      inherit_acquisition: nil
+      inherit_acquisition: nil,
+      ip: nil,
+      user_agent: nil
     )
       Conversions::TrackingService.new(
         account,
@@ -434,7 +607,9 @@ module Conversions
           properties: properties,
           user_id: user_id,
           is_acquisition: is_acquisition,
-          inherit_acquisition: inherit_acquisition
+          inherit_acquisition: inherit_acquisition,
+          ip: ip,
+          user_agent: user_agent
         }.compact
       )
     end

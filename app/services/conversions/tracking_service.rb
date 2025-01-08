@@ -2,6 +2,9 @@
 
 module Conversions
   class TrackingService < ApplicationService
+    FINGERPRINT_WINDOW = 30.seconds
+    FINGERPRINT_LENGTH = 32
+
     def initialize(account, params, is_test: false)
       @account = account
       @event_id = params[:event_id]
@@ -15,12 +18,14 @@ module Conversions
       @user_id = params[:user_id]
       @is_acquisition = params[:is_acquisition] || false
       @inherit_acquisition = params[:inherit_acquisition] || false
+      @ip = params[:ip]
+      @user_agent = params[:user_agent]
     end
 
     private
 
     attr_reader :account, :event_id, :visitor_id_param, :conversion_type, :revenue, :currency,
-      :funnel, :properties, :is_test, :user_id, :is_acquisition, :inherit_acquisition
+      :funnel, :properties, :is_test, :user_id, :is_acquisition, :inherit_acquisition, :ip, :user_agent
 
     def run
       return validation_error if validation_error
@@ -63,15 +68,43 @@ module Conversions
       event&.account_id == account.id
     end
 
-    # Resolution: event takes precedence, then visitor_id lookup
+    # Resolution: event takes precedence, then visitor_id lookup, then fingerprint fallback
     def resolved_visitor
-      @resolved_visitor ||= event&.visitor || find_visitor_by_id
+      @resolved_visitor ||= event&.visitor || find_visitor_by_id || find_visitor_by_fingerprint
     end
 
     def find_visitor_by_id
       return nil unless visitor_id_param.present?
 
       account.visitors.find_by(visitor_id: visitor_id_param)
+    end
+
+    def find_visitor_by_fingerprint
+      return nil unless can_fingerprint?
+
+      recent_fingerprint_session&.visitor
+    end
+
+    def can_fingerprint?
+      ip.present? && user_agent.present?
+    end
+
+    def recent_fingerprint_session
+      account.sessions
+        .where(device_fingerprint: device_fingerprint)
+        .where("sessions.created_at > ?", FINGERPRINT_WINDOW.ago)
+        .order(:created_at)
+        .first
+    end
+
+    def device_fingerprint
+      @device_fingerprint ||= Digest::SHA256.hexdigest("#{anonymized_ip}|#{user_agent}")[0, FINGERPRINT_LENGTH]
+    end
+
+    def anonymized_ip
+      @anonymized_ip ||= IPAddr.new(ip).mask(24).to_s
+    rescue IPAddr::Error
+      nil
     end
 
     def resolved_session
