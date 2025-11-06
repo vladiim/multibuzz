@@ -1,0 +1,486 @@
+openapi: 3.0.3
+info:
+  title: Multibuzz API
+  version: 1.0.0
+  description: |
+    Multibuzz is a no-frills backend attribution SaaS for tracking marketing campaigns,
+    visitors, and conversions through a simple REST API.
+
+    ## Key Features
+    - Server-side event tracking
+    - Anonymous visitor identification
+    - UTM parameter capture
+    - Multi-tenant architecture
+    - Async event processing
+
+    ## Authentication
+    All API requests require a Bearer token (API key). Get your API key from the dashboard.
+
+    ## Rate Limits
+    - Test environment: 1000 requests/hour
+    - Live environment: 10000 requests/hour
+
+  contact:
+    name: Multibuzz Support
+    url: https://multibuzz.io/support
+  license:
+    name: Proprietary
+
+servers:
+  - url: https://api.multibuzz.io/v1
+    description: Production
+  - url: https://staging-api.multibuzz.io/v1
+    description: Staging
+  - url: http://localhost:3000/api/v1
+    description: Local Development
+
+tags:
+  - name: Events
+    description: Event ingestion endpoints
+  - name: Health
+    description: Service health and status
+  - name: Validation
+    description: API key validation
+
+paths:
+  /events:
+    post:
+      tags:
+        - Events
+      summary: Ingest batch of tracking events
+      description: |
+        Submit a batch of tracking events for asynchronous processing.
+
+        Events are validated, queued, and processed in the background.
+        You will receive an immediate response with counts of accepted/rejected events.
+
+        **Rate Limits**: See documentation for current limits per environment.
+
+        **Batch Size**: Maximum 100 events per request.
+
+        **Idempotency**: Include a unique `event_id` in properties to prevent duplicates.
+
+      operationId: createEvents
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - events
+              properties:
+                events:
+                  type: array
+                  minItems: 1
+                  maxItems: 100
+                  items:
+                    $ref: '#/components/schemas/Event'
+            examples:
+              singlePageView:
+                summary: Single page view event
+                value:
+                  events:
+                    - event_type: page_view
+                      visitor_id: a1b2c3d4e5f6
+                      session_id: xyz789
+                      timestamp: "2025-11-07T10:30:45Z"
+                      properties:
+                        url: https://example.com/products
+                        path: /products
+                        referrer: https://google.com
+                        utm_source: google
+                        utm_medium: cpc
+                        utm_campaign: spring_sale
+                        utm_content: ad_variant_a
+                        utm_term: running shoes
+
+              batchWithMultipleEvents:
+                summary: Batch with multiple event types
+                value:
+                  events:
+                    - event_type: page_view
+                      visitor_id: a1b2c3d4e5f6
+                      session_id: xyz789
+                      timestamp: "2025-11-07T10:30:45Z"
+                      properties:
+                        url: https://example.com/products
+                        utm_source: google
+                        utm_medium: cpc
+                    - event_type: page_view
+                      visitor_id: a1b2c3d4e5f6
+                      session_id: xyz789
+                      timestamp: "2025-11-07T10:31:12Z"
+                      properties:
+                        url: https://example.com/products/123
+                        utm_source: google
+                        utm_medium: cpc
+
+      responses:
+        '202':
+          description: Events accepted for processing
+          headers:
+            X-RateLimit-Limit:
+              description: Maximum requests per hour
+              schema:
+                type: integer
+              example: 10000
+            X-RateLimit-Remaining:
+              description: Remaining requests in current window
+              schema:
+                type: integer
+              example: 9847
+            X-RateLimit-Reset:
+              description: Unix timestamp when rate limit resets
+              schema:
+                type: integer
+              example: 1699358400
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accepted:
+                    type: integer
+                    description: Number of events accepted for processing
+                    example: 2
+                  rejected:
+                    type: array
+                    description: Events that failed validation
+                    items:
+                      type: object
+                      properties:
+                        event:
+                          type: object
+                          description: The rejected event data
+                        errors:
+                          type: array
+                          items:
+                            type: string
+                          description: Validation error messages
+                      example:
+                        event:
+                          event_type: page_view
+                        errors:
+                          - "visitor_id is required"
+                          - "timestamp must be a valid ISO 8601 datetime"
+              examples:
+                allAccepted:
+                  summary: All events accepted
+                  value:
+                    accepted: 2
+                    rejected: []
+
+                partialFailure:
+                  summary: Some events rejected
+                  value:
+                    accepted: 1
+                    rejected:
+                      - event:
+                          event_type: page_view
+                        errors:
+                          - "visitor_id is required"
+
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check endpoint
+      description: |
+        Check if the API service is operational.
+
+        This endpoint does not require authentication and can be used
+        for monitoring and load balancer health checks.
+      operationId: getHealth
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [ok]
+                    example: ok
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2025-11-07T10:30:45Z"
+                  version:
+                    type: string
+                    example: "1.0.0"
+
+        '503':
+          description: Service unavailable
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                    example: "Database connection failed"
+
+  /validate:
+    get:
+      tags:
+        - Validation
+      summary: Validate API key
+      description: |
+        Validate your API key and retrieve associated account information.
+
+        Use this endpoint to verify your API key is valid and check
+        your account status before making tracking requests.
+      operationId: validateApiKey
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: API key is valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+                    example: true
+                  account:
+                    $ref: '#/components/schemas/Account'
+                  environment:
+                    type: string
+                    enum: [test, live]
+                    example: live
+              example:
+                valid: true
+                account:
+                  id: acc_abc123
+                  name: "Acme Inc"
+                  status: active
+                environment: live
+
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: |
+        API key in the format: `sk_{environment}_{random32}`
+
+        Example: `sk_live_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6`
+
+        Include in the Authorization header:
+        ```
+        Authorization: Bearer sk_live_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
+        ```
+
+  schemas:
+    Event:
+      type: object
+      required:
+        - event_type
+        - visitor_id
+        - session_id
+        - timestamp
+      properties:
+        event_type:
+          type: string
+          description: Type of event being tracked
+          enum:
+            - page_view
+          example: page_view
+        visitor_id:
+          type: string
+          description: Unique visitor identifier (generated client-side)
+          pattern: '^[a-zA-Z0-9_-]+$'
+          minLength: 8
+          maxLength: 64
+          example: a1b2c3d4e5f6
+        session_id:
+          type: string
+          description: Session identifier (generated client-side)
+          pattern: '^[a-zA-Z0-9_-]+$'
+          minLength: 8
+          maxLength: 64
+          example: xyz789
+        timestamp:
+          type: string
+          format: date-time
+          description: When the event occurred (ISO 8601 format)
+          example: "2025-11-07T10:30:45Z"
+        properties:
+          type: object
+          description: |
+            Event-specific properties. Structure varies by event type.
+
+            Common properties for page_view:
+            - url: Full URL of the page
+            - path: URL path
+            - referrer: Referrer URL
+            - utm_source: UTM source parameter
+            - utm_medium: UTM medium parameter
+            - utm_campaign: UTM campaign parameter
+            - utm_content: UTM content parameter
+            - utm_term: UTM term parameter
+
+            Custom properties are allowed and will be stored as-is.
+          additionalProperties: true
+          example:
+            url: https://example.com/products
+            path: /products
+            referrer: https://google.com
+            utm_source: google
+            utm_medium: cpc
+            utm_campaign: spring_sale
+
+    Account:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique account identifier
+          example: acc_abc123
+        name:
+          type: string
+          description: Account name
+          example: "Acme Inc"
+        status:
+          type: string
+          description: Account status
+          enum:
+            - active
+            - suspended
+            - cancelled
+          example: active
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: "Unauthorized"
+        details:
+          type: string
+          description: Additional error details
+          example: "Invalid or expired API key"
+        code:
+          type: string
+          description: Machine-readable error code
+          example: "invalid_api_key"
+
+  responses:
+    BadRequest:
+      description: Bad request - invalid JSON or malformed request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Bad Request"
+            details: "Invalid JSON in request body"
+            code: "invalid_json"
+
+    Unauthorized:
+      description: Unauthorized - invalid or missing API key
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            missingKey:
+              summary: Missing API key
+              value:
+                error: "Unauthorized"
+                details: "Missing Authorization header"
+                code: "missing_api_key"
+
+            invalidKey:
+              summary: Invalid API key
+              value:
+                error: "Unauthorized"
+                details: "Invalid or expired API key"
+                code: "invalid_api_key"
+
+    UnprocessableEntity:
+      description: Unprocessable entity - validation errors
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Validation failed"
+              errors:
+                type: array
+                items:
+                  type: string
+                example:
+                  - "events is required"
+                  - "events must be an array"
+
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        X-RateLimit-Limit:
+          description: Maximum requests per hour
+          schema:
+            type: integer
+        X-RateLimit-Remaining:
+          description: Remaining requests in current window
+          schema:
+            type: integer
+        X-RateLimit-Reset:
+          description: Unix timestamp when rate limit resets
+          schema:
+            type: integer
+        Retry-After:
+          description: Seconds until rate limit resets
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Too Many Requests"
+            details: "Rate limit exceeded. Limit: 10000 requests/hour"
+            code: "rate_limit_exceeded"
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Internal Server Error"
+            details: "An unexpected error occurred"
+            code: "internal_error"
