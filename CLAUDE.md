@@ -1224,6 +1224,67 @@ Closes #5
 
 ---
 
+## Security Patterns
+
+### Use Prefixed IDs for Customer-Facing IDs
+
+**CRITICAL: Never expose raw database IDs to customers. Always use prefixed IDs.**
+
+Use the [prefixed_ids gem](https://github.com/excid3/prefixed_ids) for any IDs exposed externally:
+
+```ruby
+# Gemfile
+gem 'prefixed_ids'
+
+# app/models/account.rb
+class Account < ApplicationRecord
+  has_prefix_id :acct
+end
+
+# app/models/user.rb
+class User < ApplicationRecord
+  has_prefix_id :user
+end
+
+# app/models/visitor.rb
+class Visitor < ApplicationRecord
+  has_prefix_id :vis
+end
+
+# Usage
+account = Account.first
+account.prefix_id  # => "acct_1a2b3c4d"
+Account.find_by_prefix_id("acct_1a2b3c4d")
+
+# In API responses
+{
+  "account": {
+    "id": "acct_1a2b3c4d",  # NOT the database ID!
+    "name": "Acme Inc"
+  }
+}
+```
+
+**Benefits:**
+- Security: Hides sequential database IDs
+- Readability: Easy to identify resource type
+- Compatibility: Works with route params, JSON API responses
+- Professional: Follows Stripe-style API design
+
+**When to use:**
+- ✅ Account IDs: `acct_*`
+- ✅ User IDs: `user_*`
+- ✅ Visitor IDs: `vis_*`
+- ✅ Session IDs: `sess_*`
+- ✅ Event IDs: `evt_*`
+
+**When NOT to use:**
+- ❌ API Keys (use custom format: `sk_{env}_{random32}`)
+- ❌ Internal background job IDs
+- ❌ Database foreign keys (use regular IDs internally)
+
+---
+
 ## Multi-Tenancy - CRITICAL
 
 **Every query MUST be scoped to account.**
