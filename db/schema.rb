@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_07_011936) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_07_031112) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -45,5 +45,42 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_07_011936) do
     t.index ["revoked_at"], name: "index_api_keys_on_revoked_at"
   end
 
+  create_table "sessions", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "visitor_id", null: false
+    t.string "session_id", null: false
+    t.datetime "started_at", null: false
+    t.datetime "ended_at"
+    t.integer "page_view_count", default: 0, null: false
+    t.jsonb "initial_utm", default: {}
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "session_id"], name: "index_sessions_on_account_id_and_session_id", unique: true
+    t.index ["account_id"], name: "index_sessions_on_account_id"
+    t.index ["ended_at"], name: "index_sessions_on_ended_at"
+    t.index ["initial_utm"], name: "index_sessions_on_initial_utm", using: :gin
+    t.index ["session_id"], name: "index_sessions_on_session_id"
+    t.index ["started_at"], name: "index_sessions_on_started_at"
+    t.index ["visitor_id"], name: "index_sessions_on_visitor_id"
+  end
+
+  create_table "visitors", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "visitor_id", null: false
+    t.datetime "first_seen_at", null: false
+    t.datetime "last_seen_at", null: false
+    t.jsonb "traits", default: {}
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "visitor_id"], name: "index_visitors_on_account_id_and_visitor_id", unique: true
+    t.index ["account_id"], name: "index_visitors_on_account_id"
+    t.index ["last_seen_at"], name: "index_visitors_on_last_seen_at"
+    t.index ["traits"], name: "index_visitors_on_traits", using: :gin
+    t.index ["visitor_id"], name: "index_visitors_on_visitor_id"
+  end
+
   add_foreign_key "api_keys", "accounts"
+  add_foreign_key "sessions", "accounts"
+  add_foreign_key "sessions", "visitors"
+  add_foreign_key "visitors", "accounts"
 end
