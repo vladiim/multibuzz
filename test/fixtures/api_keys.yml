@@ -1,0 +1,32 @@
+one:
+  account: one
+  key_digest: "<%= Digest::SHA256.hexdigest('sk_test_abc123xyz789') %>"
+  key_prefix: "sk_test_abc1"
+  environment: 0  # test
+  description: "Test API Key"
+  last_used_at: <%= 1.hour.ago %>
+  revoked_at: null
+
+live:
+  account: one
+  key_digest: "<%= Digest::SHA256.hexdigest('sk_live_xyz789abc123') %>"
+  key_prefix: "sk_live_xyz7"
+  environment: 1  # live
+  description: "Live API Key"
+  last_used_at: <%= 1.day.ago %>
+  revoked_at: null
+
+revoked:
+  account: one
+  key_digest: "<%= Digest::SHA256.hexdigest('sk_test_revoked123') %>"
+  key_prefix: "sk_test_revo"
+  environment: 0  # test
+  description: "Revoked API Key"
+  revoked_at: <%= 1.week.ago %>
+
+other_account:
+  account: two
+  key_digest: "<%= Digest::SHA256.hexdigest('sk_test_other456') %>"
+  key_prefix: "sk_test_othe"
+  environment: 0  # test
+  description: "Other Account Key"
