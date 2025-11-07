@@ -1,7 +1,8 @@
 module Events
   class IngestionService
-    def initialize(account)
+    def initialize(account, async: false)
       @account = account
+      @async = async
     end
 
     def call(events_data)
@@ -17,6 +18,10 @@ module Events
 
     attr_reader :account, :events_data, :accepted_count, :rejected
 
+    def async?
+      @async
+    end
+
     def process_events
       events_data.each_with_index do |event_data, index|
         process_single_event(event_data, index)
@@ -27,14 +32,23 @@ module Events
       validation_result = validation_result_for(event_data)
       return reject_event(index, validation_result[:errors]) unless validation_result[:valid]
 
-      processing_result = processing_result_for(event_data)
-      return reject_event(index, processing_result[:errors]) unless processing_result[:success]
-
-      @accepted_count += 1
+      async? ? enqueue_event(event_data) : process_event_sync(event_data, index)
     end
 
     def validation_result_for(event_data)
       Events::ValidationService.new.call(event_data)
+    end
+
+    def enqueue_event(event_data)
+      Events::ProcessingJob.perform_later(account.id, event_data)
+      @accepted_count += 1
+    end
+
+    def process_event_sync(event_data, index)
+      processing_result = processing_result_for(event_data)
+      return reject_event(index, processing_result[:errors]) unless processing_result[:success]
+
+      @accepted_count += 1
     end
 
     def processing_result_for(event_data)

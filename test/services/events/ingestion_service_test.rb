@@ -1,6 +1,7 @@
 require "test_helper"
 
 class Events::IngestionServiceTest < ActiveSupport::TestCase
+  include ActiveJob::TestHelper
   test "should accept all valid events" do
     assert_difference -> { Event.count }, 2 do
       assert_equal 2, result[:accepted]
@@ -58,6 +59,33 @@ class Events::IngestionServiceTest < ActiveSupport::TestCase
     end
   end
 
+  test "should enqueue jobs when async is true" do
+    @async = true
+
+    assert_enqueued_with(job: Events::ProcessingJob) do
+      result
+    end
+
+    assert_equal 2, result[:accepted]
+    assert_empty result[:rejected]
+  end
+
+  test "should not enqueue jobs when async is false" do
+    @async = false
+
+    assert_no_enqueued_jobs do
+      result
+    end
+  end
+
+  test "should process synchronously by default" do
+    assert_difference -> { Event.count }, 2 do
+      assert_no_enqueued_jobs do
+        result
+      end
+    end
+  end
+
   private
 
   def result
@@ -65,7 +93,11 @@ class Events::IngestionServiceTest < ActiveSupport::TestCase
   end
 
   def service
-    @service ||= Events::IngestionService.new(account)
+    @service ||= Events::IngestionService.new(account, async: async?)
+  end
+
+  def async?
+    @async ||= false
   end
 
   def events_data
