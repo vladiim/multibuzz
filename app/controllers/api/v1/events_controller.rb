@@ -25,7 +25,7 @@ module Api
       end
 
       def ingestion_result
-        @ingestion_result ||= Events::IngestionService.new(current_account).call(events_data)
+        @ingestion_result ||= Events::IngestionService.new(current_account, async: true).call(events_data)
       end
 
       def events_data
