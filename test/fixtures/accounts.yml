@@ -1,0 +1,22 @@
+one:
+  name: "Acme Inc"
+  slug: "acme-inc"
+  status: 0  # active
+  settings: { "timezone": "UTC" }
+
+two:
+  name: "Beta Corp"
+  slug: "beta-corp"
+  status: 0  # active
+
+suspended:
+  name: "Suspended Account"
+  slug: "suspended-account"
+  status: 1  # suspended
+  suspended_at: <%= 1.day.ago %>
+
+cancelled:
+  name: "Cancelled Account"
+  slug: "cancelled-account"
+  status: 2  # cancelled
+  cancelled_at: <%= 1.week.ago %>
