@@ -1,0 +1,35 @@
+one:
+  account: one
+  visitor: one
+  session_id: "sess_abc123xyz789"
+  started_at: <%= 2.hours.ago %>
+  ended_at: null
+  page_view_count: 5
+  initial_utm:
+    utm_source: "google"
+    utm_medium: "cpc"
+    utm_campaign: "spring_sale"
+
+two:
+  account: one
+  visitor: two
+  session_id: "sess_xyz789abc123"
+  started_at: <%= 1.day.ago %>
+  ended_at: null
+  page_view_count: 3
+
+ended:
+  account: one
+  visitor: one
+  session_id: "sess_ended123"
+  started_at: <%= 3.days.ago %>
+  ended_at: <%= 3.days.ago + 30.minutes %>
+  page_view_count: 10
+
+other_account_session:
+  account: two
+  visitor: other_account_visitor
+  session_id: "sess_other456"
+  started_at: <%= 1.hour.ago %>
+  ended_at: null
+  page_view_count: 2
