@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_07_031112) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_07_033559) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -43,6 +43,26 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_07_031112) do
     t.index ["key_digest"], name: "index_api_keys_on_key_digest", unique: true
     t.index ["key_prefix"], name: "index_api_keys_on_key_prefix"
     t.index ["revoked_at"], name: "index_api_keys_on_revoked_at"
+  end
+
+  create_table "events", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "visitor_id", null: false
+    t.bigint "session_id", null: false
+    t.string "event_type", null: false
+    t.datetime "occurred_at", null: false
+    t.jsonb "properties", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index "((properties -> 'utm_campaign'::text))", name: "index_events_on_utm_campaign", using: :gin
+    t.index "((properties -> 'utm_medium'::text))", name: "index_events_on_utm_medium", using: :gin
+    t.index "((properties -> 'utm_source'::text))", name: "index_events_on_utm_source", using: :gin
+    t.index ["account_id", "event_type"], name: "index_events_on_account_id_and_event_type"
+    t.index ["account_id", "occurred_at"], name: "index_events_on_account_id_and_occurred_at"
+    t.index ["account_id"], name: "index_events_on_account_id"
+    t.index ["properties"], name: "index_events_on_properties", using: :gin
+    t.index ["session_id"], name: "index_events_on_session_id"
+    t.index ["visitor_id"], name: "index_events_on_visitor_id"
   end
 
   create_table "sessions", force: :cascade do |t|
@@ -80,6 +100,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_07_031112) do
   end
 
   add_foreign_key "api_keys", "accounts"
+  add_foreign_key "events", "accounts"
+  add_foreign_key "events", "sessions"
+  add_foreign_key "events", "visitors"
   add_foreign_key "sessions", "accounts"
   add_foreign_key "sessions", "visitors"
   add_foreign_key "visitors", "accounts"

@@ -1,0 +1,33 @@
+one:
+  account: one
+  visitor: one
+  session: one
+  event_type: page_view
+  occurred_at: <%= 1.hour.ago %>
+  properties:
+    url: https://example.com/page
+    utm_source: google
+    utm_medium: cpc
+    utm_campaign: spring_sale
+    utm_content: ad_variant_a
+    utm_term: running shoes
+
+two:
+  account: one
+  visitor: one
+  session: one
+  event_type: page_view
+  occurred_at: <%= 30.minutes.ago %>
+  properties:
+    url: https://example.com/checkout
+    utm_source: facebook
+    utm_medium: social
+
+three:
+  account: two
+  visitor: two
+  session: two
+  event_type: page_view
+  occurred_at: <%= 2.hours.ago %>
+  properties:
+    url: https://other.com/landing
