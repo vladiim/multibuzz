@@ -154,6 +154,35 @@ end
 
 **ALWAYS keep models thin. Extract to concerns.**
 
+### Use Enums for Status Fields
+
+**ALWAYS use Rails enum for status/state fields instead of strings.**
+
+```ruby
+# ✅ GOOD - Enum with integer storage
+class Account < ApplicationRecord
+  enum :status, { active: 0, suspended: 1, cancelled: 2 }
+end
+
+# Migration
+t.integer :status, null: false, default: 0
+
+# Benefits:
+# - Type safety (prevents invalid values)
+# - Better performance (integer vs string)
+# - Auto-generated scopes: Account.active, Account.suspended
+# - Auto-generated predicates: account.active?
+# - Auto-generated setters: account.active!
+
+# ❌ BAD - String status
+class Account < ApplicationRecord
+  validates :status, inclusion: { in: %w[active suspended cancelled] }
+end
+
+# Migration
+t.string :status, null: false, default: "active"
+```
+
 ### ✅ GOOD - Thin Model with Concerns
 
 ```ruby
@@ -1059,6 +1088,47 @@ end
 9. **Guard clauses** - early returns
 10. **Single responsibility** - one reason to change
 11. **Make methods private** - hide implementation details
+
+---
+
+## Code Formatting
+
+### Line Continuation Indentation
+
+**When breaking a line, indent the continuation by 2 spaces from the previous line.**
+
+```ruby
+# ✅ GOOD - 2 space indent
+validates :slug,
+  presence: true,
+  uniqueness: true,
+  format: {
+    with: /\A[a-z0-9-]+\z/,
+    message: "must be lowercase letters, numbers, and hyphens only"
+  }
+
+result = SomeService
+  .new(account)
+  .call(params)
+
+event_data = {
+  event_type: "page_view",
+  visitor_id: "abc123",
+  properties: {
+    url: "https://example.com"
+  }
+}
+
+# ❌ BAD - Aligning to match
+validates :slug,
+          presence: true,
+          uniqueness: true
+
+# ❌ BAD - No indentation
+validates :slug,
+presence: true,
+uniqueness: true
+```
 
 ---
 
