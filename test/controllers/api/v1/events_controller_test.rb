@@ -1,6 +1,10 @@
 require "test_helper"
 
 class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
+  setup do
+    Rails.cache.clear
+  end
+
   test "should accept valid events batch" do
     post api_v1_events_path, params: events_payload, headers: auth_headers, as: :json
 
@@ -91,6 +95,29 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
     assert_response :accepted
     created_event = account.events.last
     assert_equal account, created_event.account
+  end
+
+  test "should set rate limit headers" do
+    post api_v1_events_path, params: events_payload, headers: auth_headers, as: :json
+
+    assert_response :accepted
+    assert_equal "1000", response.headers["X-RateLimit-Limit"]
+    assert_equal "999", response.headers["X-RateLimit-Remaining"]
+    assert response.headers["X-RateLimit-Reset"].present?
+  end
+
+  test "should return 429 when rate limit exceeded" do
+    1000.times do |i|
+      post api_v1_events_path, params: events_payload, headers: auth_headers, as: :json
+      assert_response :accepted if i < 999
+    end
+
+    # This is the 1001st request
+    post api_v1_events_path, params: events_payload, headers: auth_headers, as: :json
+
+    assert_response :too_many_requests
+    assert_equal "Rate limit exceeded", json_response["error"]
+    assert json_response["retry_after"].present?
   end
 
   private
