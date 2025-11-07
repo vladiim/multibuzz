@@ -1,6 +1,10 @@
 require "test_helper"
 
 class Api::V1::ValidateControllerTest < ActionDispatch::IntegrationTest
+  setup do
+    Rails.cache.clear
+  end
+
   test "should return valid with correct api key" do
     get api_v1_validate_path, headers: auth_headers
 
