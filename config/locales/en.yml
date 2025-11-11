@@ -29,3 +29,46 @@
 
 en:
   hello: "Hello world"
+
+  dashboard:
+    api_keys:
+      index:
+        title: "API Keys"
+        subtitle: "Manage your API keys for accessing the Multibuzz API"
+        generate_button: "Generate New Key"
+        no_keys: "No API keys yet. Generate one to get started."
+        table:
+          prefix: "Key Prefix"
+          environment: "Environment"
+          description: "Description"
+          created: "Created"
+          last_used: "Last Used"
+          status: "Status"
+          actions: "Actions"
+        status:
+          active: "Active"
+          revoked: "Revoked"
+        actions:
+          revoke: "Revoke"
+          revoke_confirm: "Are you sure? This cannot be undone."
+      show_key:
+        title: "API Key Created"
+        subtitle: "Copy this key now - you won't see it again!"
+        warning: "Store this key securely. Anyone with this key can access your account."
+        key_label: "Your API Key"
+        done_button: "Done"
+      create:
+        success: "API key created successfully. Copy it now - you won't see it again!"
+        failure: "Failed to create API key"
+        missing_environment: "Environment is required"
+      destroy:
+        success: "API key revoked successfully"
+      form:
+        title: "Generate New API Key"
+        environment_label: "Environment"
+        environment_test: "Test"
+        environment_live: "Live"
+        name_label: "Description (optional)"
+        name_placeholder: "e.g., Production server"
+        submit: "Generate Key"
+        cancel: "Cancel"
