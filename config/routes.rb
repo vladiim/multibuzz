@@ -18,11 +18,14 @@ Rails.application.routes.draw do
     end
   end
 
+  # Public pages
+  get "home", to: "pages#home"
+
   # Dashboard routes
   get "login", to: "sessions#new"
   post "login", to: "sessions#create"
   delete "logout", to: "sessions#destroy"
   get "dashboard", to: "dashboard#show"
 
-  root "dashboard#show"
+  root "pages#home"
 end
