@@ -1,0 +1,12 @@
+<div class="min-h-screen bg-slate-50">
+  <h1><%= t(".title") %></h1>
+  <table>
+    <tbody>
+      <% @api_keys.each do |api_key| %>
+        <tr>
+          <td><%= api_key.key_prefix %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

@@ -27,5 +27,9 @@ Rails.application.routes.draw do
   delete "logout", to: "sessions#destroy"
   get "dashboard", to: "dashboard#show"
 
+  namespace :dashboard do
+    resources :api_keys, only: [ :index, :create, :destroy ]
+  end
+
   root "pages#home"
 end
