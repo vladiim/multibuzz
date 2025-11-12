@@ -21,6 +21,9 @@ Rails.application.routes.draw do
   # Public pages
   get "home", to: "pages#home"
 
+  # Documentation routes
+  get "docs/:page", to: "docs#show", constraints: { page: /[\w-]+/ }
+
   # Dashboard routes
   get "login", to: "sessions#new"
   post "login", to: "sessions#create"

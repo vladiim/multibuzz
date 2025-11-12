@@ -12,7 +12,8 @@ module Sessions
 
       return error_result(session) unless session.persisted?
 
-      session.increment_page_views! unless created
+      # Increment page views for every page view event
+      session.increment_page_views!
       success_result(session, created)
     end
 

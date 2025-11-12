@@ -19,9 +19,9 @@ module Api
       end
 
       def process_events
-        return render_accepted(ingestion_result) if ingestion_result[:rejected].empty?
-
-        render_unprocessable(ingestion_result)
+        # Always return 202 Accepted, even with partial failures
+        # Clients should check the rejected array
+        render_accepted(ingestion_result)
       end
 
       def ingestion_result
