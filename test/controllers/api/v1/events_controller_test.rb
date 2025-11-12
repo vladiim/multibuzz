@@ -50,7 +50,7 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Events must be an array", json_response["error"]
   end
 
-  test "should return 422 with partial failures" do
+  test "should return 202 with partial failures" do
     payload = {
       events: [
         valid_event_data,
@@ -60,12 +60,12 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
 
     post api_v1_events_path, params: payload, headers: auth_headers, as: :json
 
-    assert_response :unprocessable_entity
+    assert_response :accepted
     assert_equal 1, json_response["accepted"]
     assert_equal 1, json_response["rejected"].size
   end
 
-  test "should return 422 with all failures" do
+  test "should return 202 with all failures" do
     payload = {
       events: [
         invalid_event_data,
@@ -75,7 +75,7 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
 
     post api_v1_events_path, params: payload, headers: auth_headers, as: :json
 
-    assert_response :unprocessable_entity
+    assert_response :accepted
     assert_equal 0, json_response["accepted"]
     assert_equal 2, json_response["rejected"].size
   end
