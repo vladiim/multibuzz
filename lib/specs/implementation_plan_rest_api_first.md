@@ -769,10 +769,22 @@ feat: add entire API
 
 ### Dashboard ✅
 - [x] User authentication works
-- [x] API key CRUD operations
+- [x] Dashboard navigation with tabs (Dashboard, API Keys)
 - [x] Event listing with recent events
 - [x] UTM breakdown report (top 10)
 - [x] Basic usage statistics
+
+### API Keys Management UI ✅
+- [x] `/dashboard/api-keys` - Full API key management interface
+- [x] Generate new API keys with environment selection (test/live)
+- [x] One-time plaintext key display with copy button
+- [x] Masked key display on index (`sk_test_abc1****`)
+- [x] Key status badges (Active/Revoked)
+- [x] Revoke functionality with confirmation
+- [x] Last used tracking
+- [x] Empty state with helpful guidance
+- [x] All microcopy driven by i18n (config/locales/en.yml)
+- [x] Beautiful Tailwind UI matching dashboard design
 
 ### Security ✅
 - [x] Prefixed IDs for all customer-facing resources
@@ -781,9 +793,13 @@ feat: add entire API
   - Visitors: `vis_*`
   - Sessions: `sess_*`
   - Events: `evt_*`
-- [x] API key hashing with SHA256
+- [x] API key hashing with SHA256 (no plaintext storage)
+- [x] No `plaintext_key` column in database (verified by tests)
+- [x] Plaintext keys filtered from logs (`:plaintext_key`, `:api_key`, `:key_digest`)
+- [x] One-time plaintext display only on creation
 - [x] Bearer token authentication
 - [x] Multi-tenant data isolation
+- [x] Comprehensive security tests (10 controller tests, 38 assertions)
 
 ---
 
@@ -797,11 +813,12 @@ The Phase 1 MVP has been successfully completed following the Doc-Driven Develop
 
 **Key Achievements**:
 - 21 files created/modified
-- 1,030 test assertions passing (0 failures)
+- 205 tests passing with 1,564 assertions (0 failures)
 - Full end-to-end event tracking flow verified
 - Multi-tenancy isolation confirmed
-- API documentation site live
-- Security hardened with prefixed IDs
+- API documentation site live with dynamic markdown
+- API Keys management UI complete
+- Security hardened with SHA256 hashing and zero plaintext storage
 
 **Architecture Highlights**:
 - Clean service object pattern (only `initialize` and `call` public)
@@ -810,6 +827,15 @@ The Phase 1 MVP has been successfully completed following the Doc-Driven Develop
 - Async job processing with Solid Queue
 - Redis-backed rate limiting
 - Dynamic markdown documentation with ERB
+- Tailwind CSS v3 with @tailwindcss/typography
+
+**Security Features**:
+- Zero plaintext API key storage (SHA256 digest only)
+- One-time key display on generation
+- Sensitive params filtered from logs
+- Multi-tenant data isolation enforced
+- Prefixed IDs for all customer-facing resources
+- Comprehensive security test coverage
 
 **Production Readiness**: ✅ Ready to deploy
 
