@@ -1,12 +1,95 @@
-<div class="min-h-screen bg-slate-50">
-  <h1><%= t(".title") %></h1>
-  <table>
-    <tbody>
-      <% @api_keys.each do |api_key| %>
-        <tr>
-          <td><%= api_key.key_prefix %></td>
-        </tr>
-      <% end %>
-    </tbody>
-  </table>
+<div class="min-h-screen bg-gray-100">
+  <nav class="bg-white shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex">
+          <div class="flex-shrink-0 flex items-center">
+            <h1 class="text-xl font-bold text-gray-900">Multibuzz</h1>
+          </div>
+          <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+            <%= link_to "Dashboard", dashboard_path, class: "text-gray-500 hover:text-gray-900 inline-flex items-center px-1 pt-1 text-sm font-medium" %>
+            <%= link_to t("dashboard.api_keys.index.title"), dashboard_api_keys_path, class: "border-b-2 border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 text-sm font-medium" %>
+          </div>
+        </div>
+        <div class="flex items-center">
+          <span class="text-gray-700 mr-4"><%= current_user.email %></span>
+          <%= button_to "Logout", logout_path, method: :delete, class: "text-gray-700 hover:text-gray-900" %>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="py-10">
+    <header>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="sm:flex sm:items-center sm:justify-between">
+          <div>
+            <h1 class="text-3xl font-bold leading-tight text-gray-900"><%= t(".title") %></h1>
+            <p class="mt-2 text-sm text-gray-600"><%= t(".subtitle") %></p>
+          </div>
+          <div class="mt-4 sm:mt-0">
+            <%= button_to t(".generate_button"), dashboard_api_keys_path, method: :post, class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500", form: { data: { turbo_frame: "api_key_form" } }, params: { api_key: { environment: "test" } } %>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="mt-8">
+          <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <% if @api_keys.any? %>
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><%= t(".table.prefix") %></th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><%= t(".table.environment") %></th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><%= t(".table.created") %></th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><%= t(".table.last_used") %></th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><%= t(".table.status") %></th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><%= t(".table.actions") %></th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  <% @api_keys.each do |api_key| %>
+                    <tr>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900"><%= api_key.key_prefix %>****</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= api_key.environment %></td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= api_key.created_at.strftime("%b %d, %Y") %></td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <%= api_key.last_used_at ? time_ago_in_words(api_key.last_used_at) + " ago" : "Never" %>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <% if api_key.active? %>
+                          <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800"><%= t(".status.active") %></span>
+                        <% else %>
+                          <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800"><%= t(".status.revoked") %></span>
+                        <% end %>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <% if api_key.active? %>
+                          <%= button_to t(".actions.revoke"), dashboard_api_key_path(api_key), method: :delete, class: "text-red-600 hover:text-red-900", form: { data: { turbo_confirm: t(".actions.revoke_confirm") } } %>
+                        <% end %>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            <% else %>
+              <div class="px-6 py-12 text-center">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-900"><%= t(".no_keys") %></h3>
+                <p class="mt-1 text-sm text-gray-500">Get started by generating your first API key.</p>
+                <div class="mt-6">
+                  <%= button_to t(".generate_button"), dashboard_api_keys_path, method: :post, class: "inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500", params: { api_key: { environment: "test" } } %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
 </div>

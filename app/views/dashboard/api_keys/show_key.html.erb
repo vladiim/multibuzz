@@ -1,4 +1,67 @@
-<div class="min-h-screen bg-slate-50">
-  <h1><%= t(".title") %></h1>
-  <p><%= @plaintext_key %></p>
+<div class="min-h-screen bg-gray-100">
+  <nav class="bg-white shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex">
+          <div class="flex-shrink-0 flex items-center">
+            <h1 class="text-xl font-bold text-gray-900">Multibuzz</h1>
+          </div>
+          <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+            <%= link_to "Dashboard", dashboard_path, class: "text-gray-500 hover:text-gray-900 inline-flex items-center px-1 pt-1 text-sm font-medium" %>
+            <%= link_to t("dashboard.api_keys.index.title"), dashboard_api_keys_path, class: "border-b-2 border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 text-sm font-medium" %>
+          </div>
+        </div>
+        <div class="flex items-center">
+          <span class="text-gray-700 mr-4"><%= current_user.email %></span>
+          <%= button_to "Logout", logout_path, method: :delete, class: "text-gray-700 hover:text-gray-900" %>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="py-10">
+    <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
+      <div class="bg-white shadow sm:rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+          <div class="sm:flex sm:items-start sm:justify-between">
+            <div>
+              <h3 class="text-lg leading-6 font-medium text-gray-900"><%= t(".title") %></h3>
+              <div class="mt-2 max-w-xl text-sm text-gray-500">
+                <p><%= t(".subtitle") %></p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6">
+            <div class="rounded-md bg-yellow-50 p-4">
+              <div class="flex">
+                <div class="flex-shrink-0">
+                  <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+                <div class="ml-3">
+                  <h3 class="text-sm font-medium text-yellow-800"><%= t(".warning") %></h3>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6">
+            <label for="api-key" class="block text-sm font-medium text-gray-700"><%= t(".key_label") %></label>
+            <div class="mt-2 flex rounded-md shadow-sm">
+              <input type="text" readonly name="api-key" id="api-key" class="flex-1 min-w-0 block w-full px-3 py-2 rounded-md border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm font-mono bg-gray-50" value="<%= @plaintext_key %>">
+              <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('api-key').value); this.textContent = 'Copied!'; setTimeout(() => this.textContent = 'Copy', 2000)" class="ml-3 inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Copy
+              </button>
+            </div>
+          </div>
+
+          <div class="mt-8">
+            <%= link_to t(".done_button"), dashboard_api_keys_path, class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

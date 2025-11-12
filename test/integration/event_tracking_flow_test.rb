@@ -2,6 +2,12 @@ require "test_helper"
 
 class EventTrackingFlowTest < ActionDispatch::IntegrationTest
   include ActiveJob::TestHelper
+
+  def setup
+    # Clear rate limit cache before each test
+    Rails.cache.delete("rate_limit:account:#{account.id}")
+  end
+
   test "complete event tracking flow from API to database" do
     # Given: An account with a valid API key
     result = ApiKeys::GenerationService
