@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Multibuzz API Documentation</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="bg-gray-50">
+    <div class="min-h-screen">
+      <!-- Header -->
+      <header class="bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-8">
+              <%= link_to root_path, class: "text-2xl font-bold text-gray-900" do %>
+                Multibuzz
+              <% end %>
+              <nav class="hidden md:flex gap-6">
+                <%= link_to "Getting Started", docs_path(page: "getting-started"), class: "text-gray-600 hover:text-gray-900" %>
+                <%= link_to "Authentication", docs_path(page: "authentication"), class: "text-gray-600 hover:text-gray-900" %>
+                <%= link_to "API Reference", docs_path(page: "api-reference"), class: "text-gray-600 hover:text-gray-900" %>
+                <%= link_to "Examples", docs_path(page: "examples"), class: "text-gray-600 hover:text-gray-900" %>
+              </nav>
+            </div>
+            <div class="flex items-center gap-4">
+              <% if current_user %>
+                <%= link_to "Dashboard", dashboard_path, class: "text-gray-600 hover:text-gray-900" %>
+              <% else %>
+                <%= link_to "Login", login_path, class: "text-gray-600 hover:text-gray-900" %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Content -->
+      <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <article class="prose prose-slate prose-lg max-w-none
+                       prose-headings:font-bold prose-headings:text-gray-900
+                       prose-h1:text-4xl prose-h1:mb-8
+                       prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-4
+                       prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-3
+                       prose-p:text-gray-600 prose-p:leading-relaxed
+                       prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
+                       prose-code:text-sm prose-code:bg-gray-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none
+                       prose-pre:bg-gray-900 prose-pre:text-gray-100
+                       prose-ul:list-disc prose-ol:list-decimal
+                       prose-li:text-gray-600
+                       prose-strong:text-gray-900 prose-strong:font-semibold
+                       prose-table:border-collapse prose-th:border prose-th:border-gray-300 prose-th:bg-gray-50 prose-th:p-2
+                       prose-td:border prose-td:border-gray-300 prose-td:p-2">
+          <%= render_markdown(yield) %>
+        </article>
+      </main>
+
+      <!-- Footer -->
+      <footer class="border-t border-gray-200 mt-24">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <p class="text-center text-gray-500 text-sm">
+            &copy; <%= Time.current.year %> Multibuzz. Built with Rails.
+          </p>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

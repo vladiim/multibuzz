@@ -1,0 +1,408 @@
+# Getting Started with Multibuzz
+
+Welcome to Multibuzz! This guide will help you start tracking events and capturing UTM attribution data in just a few minutes.
+
+## 1. Get Your API Key
+
+1. Log in to [your dashboard](<%= dashboard_path %>)
+2. Navigate to **API Keys** in the sidebar
+3. Click **Generate API Key**
+4. Choose your environment:
+   - **Test**: For development and testing (1,000 requests/hour)
+   - **Live**: For production traffic (10,000 requests/hour)
+5. Copy your API key - it will only be shown once!
+
+<% if current_user && current_user.account.api_keys.active.any? %>
+Your current API key: `<%= current_user.account.api_keys.active.first.masked_key %>`
+<% else %>
+Your API key will look like this: `sk_test_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6`
+<% end %>
+
+  **Important**: Keep your API key secret. Never commit it to version control or expose it in client-side code.
+
+---
+
+## 2. Make Your First API Request
+
+### Using cURL
+
+```bash
+curl -X POST <%= api_v1_events_url %> \
+  -H "Authorization: Bearer YOUR_API_KEY_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "events": [
+      {
+        "event_type": "page_view",
+        "visitor_id": "user_abc123xyz",
+        "session_id": "sess_xyz789abc",
+        "timestamp": "<%= Time.current.utc.iso8601 %>",
+        "properties": {
+          "url": "https://example.com/products",
+          "referrer": "https://google.com/search?q=running+shoes",
+          "utm_source": "google",
+          "utm_medium": "cpc",
+          "utm_campaign": "spring_sale_2025",
+          "utm_content": "ad_variant_a",
+          "utm_term": "running shoes"
+        }
+      }
+    ]
+  }'
+```
+
+### Expected Response
+
+```json
+{
+  "accepted": 1,
+  "rejected": []
+}
+```
+
+ **Success!** Your event has been queued for processing.
+
+---
+
+## 3. Understanding the API
+
+### Core Concepts
+
+#### **Visitors**
+
+Anonymous users identified by a unique `visitor_id`. This should be:
+
+- **Persistent**: Same across sessions for the same user
+- **Anonymous**: Don't use personally identifiable information
+- **Unique**: Generated client-side (e.g., hash of IP + User-Agent)
+
+Example: `user_abc123xyz789`
+
+#### **Sessions**
+
+A visit to your site. Generate a new `session_id` when:
+
+- User first arrives
+- 30+ minutes of inactivity
+- New day starts
+
+Example: `sess_xyz789abc123`
+
+#### **Events**
+
+Actions users take. Currently supported:
+
+- `page_view`: Page loads/views
+
+Coming soon: `signup`, `purchase`, `click`, etc.
+
+#### **Properties**
+
+Custom data attached to events. Stored as JSON, indexed for UTM parameters.
+
+**Reserved UTM fields** (automatically extracted for attribution):
+
+- `utm_source`: Campaign source (e.g., `google`, `facebook`)
+- `utm_medium`: Campaign medium (e.g., `cpc`, `email`, `social`)
+- `utm_campaign`: Campaign name (e.g., `spring_sale_2025`)
+- `utm_content`: Ad content/variant (e.g., `ad_variant_a`)
+- `utm_term`: Search keywords (e.g., `running shoes`)
+
+**Custom fields**: Add any additional data you need!
+
+---
+
+## 4. Code Examples
+
+### Ruby
+
+```ruby
+require 'net/http'
+require 'json'
+
+class MultibuzzClient
+  API_URL = '<%= api_v1_events_url.gsub('/events', '') %>'
+
+  def initialize(api_key)
+    @api_key = api_key
+  end
+
+  def track_page_view(visitor_id:, session_id:, url:, utm_params: {})
+    event = {
+      event_type: 'page_view',
+      visitor_id: visitor_id,
+      session_id: session_id,
+      timestamp: Time.now.utc.iso8601,
+      properties: { url: url }.merge(utm_params)
+    }
+
+    send_events([event])
+  end
+
+  def send_events(events)
+    uri = URI("#{API_URL}/events")
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+
+    request = Net::HTTP::Post.new(uri.path)
+    request['Authorization'] = "Bearer #{@api_key}"
+    request['Content-Type'] = 'application/json'
+    request.body = { events: events }.to_json
+
+    response = http.request(request)
+    JSON.parse(response.body)
+  end
+end
+
+# Usage
+client = MultibuzzClient.new(ENV['MULTIBUZZ_API_KEY'])
+
+result = client.track_page_view(
+  visitor_id: 'user_abc123xyz',
+  session_id: 'sess_xyz789abc',
+  url: 'https://example.com/products',
+  utm_params: {
+    utm_source: 'google',
+    utm_medium: 'cpc',
+    utm_campaign: 'spring_sale'
+  }
+)
+
+puts "Accepted: #{result['accepted']}, Rejected: #{result['rejected'].size}"
+```
+
+### JavaScript (Node.js)
+
+```javascript
+const axios = require('axios');
+
+class MultibuzzClient {
+  constructor(apiKey) {
+    this.apiKey = apiKey;
+    this.apiUrl = '<%= api_v1_events_url.gsub('/events', '') %>';
+  }
+
+  async trackPageView({ visitorId, sessionId, url, utmParams = {} }) {
+    const event = {
+      event_type: 'page_view',
+      visitor_id: visitorId,
+      session_id: sessionId,
+      timestamp: new Date().toISOString(),
+      properties: { url, ...utmParams }
+    };
+
+    return this.sendEvents([event]);
+  }
+
+  async sendEvents(events) {
+    try {
+      const response = await axios.post(
+        `${this.apiUrl}/events`,
+        { events },
+        {
+          headers: {
+            'Authorization': `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        throw new Error(`API Error: ${error.response.data.error}`);
+      }
+      throw error;
+    }
+  }
+}
+
+// Usage
+const client = new MultibuzzClient(process.env.MULTIBUZZ_API_KEY);
+
+client.trackPageView({
+  visitorId: 'user_abc123xyz',
+  sessionId: 'sess_xyz789abc',
+  url: 'https://example.com/products',
+  utmParams: {
+    utm_source: 'google',
+    utm_medium: 'cpc',
+    utm_campaign: 'spring_sale'
+  }
+}).then(result => {
+  console.log(`Accepted: ${result.accepted}, Rejected: ${result.rejected.length}`);
+}).catch(error => {
+  console.error('Error:', error.message);
+});
+```
+
+### Python
+
+```python
+import requests
+from datetime import datetime, timezone
+from typing import Dict, List, Optional
+
+class MultibuzzClient:
+    API_URL = '<%= api_v1_events_url.gsub('/events', '') %>'
+
+    def __init__(self, api_key: str):
+        self.api_key = api_key
+
+    def track_page_view(
+        self,
+        visitor_id: str,
+        session_id: str,
+        url: str,
+        utm_params: Optional[Dict] = None
+    ) -> Dict:
+        """Track a page view event."""
+        event = {
+            'event_type': 'page_view',
+            'visitor_id': visitor_id,
+            'session_id': session_id,
+            'timestamp': datetime.now(timezone.utc).isoformat(),
+            'properties': {'url': url, **(utm_params or {})}
+        }
+
+        return self.send_events([event])
+
+    def send_events(self, events: List[Dict]) -> Dict:
+        """Send one or more events to Multibuzz."""
+        response = requests.post(
+            f'{self.API_URL}/events',
+            json={'events': events},
+            headers={
+                'Authorization': f'Bearer {self.api_key}',
+                'Content-Type': 'application/json'
+            }
+        )
+
+        response.raise_for_status()
+        return response.json()
+
+# Usage
+import os
+
+client = MultibuzzClient(os.getenv('MULTIBUZZ_API_KEY'))
+
+result = client.track_page_view(
+    visitor_id='user_abc123xyz',
+    session_id='sess_xyz789abc',
+    url='https://example.com/products',
+    utm_params={
+        'utm_source': 'google',
+        'utm_medium': 'cpc',
+        'utm_campaign': 'spring_sale'
+    }
+)
+
+print(f"Accepted: {result['accepted']}, Rejected: {len(result['rejected'])}")
+```
+
+---
+
+## 5. Check Your Data
+
+After sending events:
+
+1. Go to [your dashboard](<%= dashboard_path %>)
+2. View recent events in the **Events** table
+3. Check **UTM Breakdown** to see attribution data
+4. Monitor **Stats** for total visitors, sessions, and events
+
+---
+
+## 6. Advanced Usage
+
+### Batch Processing
+
+Send up to 100 events per request to improve performance:
+
+```bash
+curl -X POST <%= api_v1_events_url %> \
+  -H "Authorization: Bearer YOUR_API_KEY_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "events": [
+      {
+        "event_type": "page_view",
+        "visitor_id": "user_abc123",
+        "session_id": "sess_xyz789",
+        "timestamp": "<%= 1.minute.ago.utc.iso8601 %>",
+        "properties": { "url": "https://example.com/" }
+      },
+      {
+        "event_type": "page_view",
+        "visitor_id": "user_abc123",
+        "session_id": "sess_xyz789",
+        "timestamp": "<%= Time.current.utc.iso8601 %>",
+        "properties": { "url": "https://example.com/products" }
+      }
+    ]
+  }'
+```
+
+### Error Handling
+
+The API returns partial successes. Always check the `rejected` array:
+
+```json
+{
+  "accepted": 1,
+  "rejected": [
+    {
+      "index": 1,
+      "errors": [
+        "visitor_id is required",
+        "timestamp must be a valid ISO8601 datetime"
+      ]
+    }
+  ]
+}
+```
+
+### Rate Limiting
+
+Monitor rate limit headers in responses:
+
+```
+X-RateLimit-Limit: 10000
+X-RateLimit-Remaining: 9847
+X-RateLimit-Reset: 1699876800
+```
+
+If you exceed your rate limit (HTTP 429), wait until the reset time or upgrade your plan.
+
+---
+
+## 7. Best Practices
+
+###  Do
+
+- **Generate visitor_id client-side**: Use a hash of IP + User-Agent or similar
+- **Regenerate session_id**: After 30+ minutes of inactivity
+- **Send UTM params**: Capture all 5 UTM parameters when present
+- **Use batch requests**: Send multiple events at once for better performance
+- **Handle errors gracefully**: Check `rejected` array and retry if needed
+- **Use test keys in development**: Keep test and live data separate
+
+### L Don't
+
+- **Don't use PII**: Never send emails, names, or other personal data as visitor_id
+- **Don't send client secrets**: Never expose API keys in browser JavaScript
+- **Don't retry 4xx errors**: These are permanent failures (fix the data instead)
+- **Don't ignore rate limits**: Respect the limits or you'll be temporarily blocked
+
+---
+
+## Next Steps
+
+Now that you're tracking events:
+
+1. **Set up UTM campaigns**: Add UTM parameters to all your marketing links
+2. **Monitor attribution**: Watch which channels drive the most traffic
+3. **Export data**: (Coming soon) Export to your data warehouse
+4. **Custom events**: (Coming soon) Track signups, purchases, and more
+
+Happy tracking! =€
