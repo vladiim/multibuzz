@@ -1,10 +1,21 @@
 /*
- * This is a manifest file that'll be compiled into application.css.
+ * Application Stylesheet Manifest
  *
- * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
- * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
- * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
- * depending on specificity.
+ * With Propshaft, @import is not supported.
+ * Include individual CSS files in app/views/layouts/application.html.erb instead.
  *
- * Consider organizing styles into separate files for maintainability.
+ * Structure follows ITCSS (Inverted Triangle CSS):
+ * 1. Configuration & Variables
+ * 2. Base Styles
+ * 3. Components
+ * 4. Pages
+ * 5. Utilities
+ *
+ * Load order in layout:
+ * - utilities/animations
+ * - utilities/backgrounds
+ * - components/cards
+ * - components/features
+ * - components/icons
+ * - pages/home
  */

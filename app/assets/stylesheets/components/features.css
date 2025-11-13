@@ -1,0 +1,36 @@
+/* Feature Components */
+
+/* Feature card - used for showcasing product features */
+.feature {
+  text-align: center;
+}
+
+.feature__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  background: rgb(239, 246, 255);
+  margin-bottom: 1rem;
+}
+
+.feature__icon svg {
+  width: 24px;
+  height: 24px;
+  color: rgb(37, 99, 235);
+}
+
+.feature__title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: rgb(17, 24, 39);
+  margin-bottom: 0.5rem;
+}
+
+.feature__description {
+  font-size: 0.875rem;
+  color: rgb(107, 114, 128);
+  line-height: 1.6;
+}

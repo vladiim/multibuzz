@@ -22,7 +22,7 @@ Rails.application.routes.draw do
   get "home", to: "pages#home"
 
   # Documentation routes
-  get "docs/:page", to: "docs#show", constraints: { page: /[\w-]+/ }
+  get "docs/:page", to: "docs#show", as: :docs, constraints: { page: /[\w-]+/ }
 
   # Dashboard routes
   get "login", to: "sessions#new"
