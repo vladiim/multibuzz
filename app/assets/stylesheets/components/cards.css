@@ -1,0 +1,65 @@
+/* Card Components */
+
+/* Base card */
+.card {
+  background: white;
+  border: 1px solid rgb(229, 231, 235);
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+/* Interactive card with hover effect */
+.card--interactive {
+  transition: all 150ms ease;
+  cursor: pointer;
+}
+
+.card--interactive:hover {
+  border-color: rgb(209, 213, 219);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+/* Elevated card with shadow */
+.card--elevated {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Card with lift effect on hover */
+.card--lift {
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.card--lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Channel card for flow diagrams */
+.card--channel {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.card--channel:hover {
+  border-color: rgb(209, 213, 219);
+}
+
+/* Metric card */
+.card--metric {
+  text-align: center;
+}
+
+.card__metric-value {
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1;
+  color: rgb(37, 99, 235);
+}
+
+.card__metric-label {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: rgb(107, 114, 128);
+}

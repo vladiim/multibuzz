@@ -1,0 +1,107 @@
+/* Animation Utilities */
+
+/* Flow animation for attribution diagram */
+@keyframes flow {
+  0% {
+    background-position: -100% 0;
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    background-position: 100% 0;
+    opacity: 0.3;
+  }
+}
+
+.flow-line {
+  width: 40px;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(37, 99, 235) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: flow 2s ease-in-out infinite;
+  opacity: 0.6;
+}
+
+.flow-line[data-delay="0"] { animation-delay: 0ms; }
+.flow-line[data-delay="200"] { animation-delay: 200ms; }
+.flow-line[data-delay="400"] { animation-delay: 400ms; }
+.flow-line[data-delay="600"] { animation-delay: 600ms; }
+.flow-line[data-delay="800"] { animation-delay: 800ms; }
+
+/* Slow pulse for hub elements */
+@keyframes pulse-slow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 0.95;
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
+}
+
+/* Fade in on scroll */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out;
+}
+
+/* Scroll-triggered animations via Intersection Observer */
+.scroll-animate {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.scroll-animate.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger delay for multiple items */
+.scroll-animate:nth-child(1) { transition-delay: 0ms; }
+.scroll-animate:nth-child(2) { transition-delay: 100ms; }
+.scroll-animate:nth-child(3) { transition-delay: 200ms; }
+.scroll-animate:nth-child(4) { transition-delay: 300ms; }
+.scroll-animate:nth-child(5) { transition-delay: 400ms; }
+.scroll-animate:nth-child(6) { transition-delay: 500ms; }
+
+/* Parallax effect (subtle movement on scroll) */
+.parallax-slow {
+  will-change: transform;
+}
+
+/* Floating animation for decorative elements */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}

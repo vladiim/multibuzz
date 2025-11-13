@@ -30,6 +30,98 @@
 en:
   hello: "Hello world"
 
+  pages:
+    home:
+      nav:
+        brand: "Multibuzz"
+        features: "Features"
+        docs: "Docs"
+        login: "Login"
+      hero:
+        title: "Multi-channel marketing attribution"
+        subtitle: "Track every touchpoint across Google, Facebook, LinkedIn, email, and more. See which channels drive conversions, not just clicks."
+        cta_primary: "Get Started Free"
+        cta_secondary: "View Documentation"
+      attribution_flow:
+        title: "All your channels, one source of truth"
+        channels:
+          google: "Google Ads"
+          facebook: "Facebook"
+          linkedin: "LinkedIn"
+          email: "Email"
+          direct: "Direct"
+          organic: "Organic"
+        hub: "Multibuzz"
+        output: "Unified Attribution"
+      features:
+        title: "Everything you need for attribution"
+        subtitle: "Simple, powerful, developer-friendly"
+        privacy_tracking:
+          title: "Server-Side Privacy Tracking"
+          description: "Backend-only event capture via API/webhooks, bypassing third-party cookies and ensuring GDPR/CCPA compliance. Unifies fragmented data without client-side scripts, reducing mismatches by up to 30%."
+        dark_funnel:
+          title: "Dark Funnel Attribution"
+          description: "Integrate manual uploads or API feeds for offline events (calls, referrals) into multi-touch models, automating credit assignment to hidden touchpoints and aligning marketing-sales efforts for 15-30% efficiency gains."
+        quick_setup:
+          title: "Quick Setup"
+          description: "REST API-first design works with any stack—Rails gem, Django package, Laravel, Node.js. Install in under 15 minutes with automatic visitor/event tracking—no dev-heavy configs needed."
+        user_mapping:
+          title: "Hash-Based User ID Mapping"
+          description: "Generate anonymized, persistent IDs via email hashing or session traits, enabling accurate cross-device/session linking without privacy risks, solving incomplete profile challenges."
+        custom_models:
+          title: "Multiple Attribution Models"
+          description: "Switch between pre-built models (linear, U-shaped) via simple admin dashboards that slice your data by model, with built-in revenue metrics like ROAS, LTV, and ARR—computed server-side and inspectable via SQL."
+        etl_exports:
+          title: "Seamless ETL Exports"
+          description: "One-click API exports to Snowflake, BigQuery, or CSVs, breaking silos and enabling actionable insights—use your data effectively without add-ons or manual work."
+      cta:
+        title: "Ready to unify your attribution?"
+        subtitle: "Start tracking in 5 minutes. No credit card required."
+        button: "Get Started Free"
+      footer:
+        brand: "Multibuzz"
+        tagline: "Multi-channel marketing attribution for developers"
+        product: "Product"
+        product_features: "Features"
+        product_pricing: "Pricing"
+        product_docs: "API Docs"
+        company: "Company"
+        company_about: "About"
+        company_blog: "Blog"
+        company_contact: "Contact"
+        legal: "Legal"
+        legal_privacy: "Privacy"
+        legal_terms: "Terms"
+        copyright: "© %{year} Multibuzz. All rights reserved."
+
+  auth:
+    login:
+      title: "Welcome back"
+      subtitle: "Sign in to your account"
+      email_label: "Email"
+      email_placeholder: "you@company.com"
+      password_label: "Password"
+      password_placeholder: "Enter your password"
+      remember_me: "Remember me"
+      forgot_password: "Forgot password?"
+      submit: "Sign in"
+      no_account: "Don't have an account?"
+      signup_link: "Sign up"
+    signup:
+      title: "Create your account"
+      subtitle: "Start tracking attribution in 5 minutes"
+      name_label: "Full name"
+      name_placeholder: "Jane Doe"
+      email_label: "Email"
+      email_placeholder: "you@company.com"
+      password_label: "Password"
+      password_placeholder: "At least 8 characters"
+      company_label: "Company name"
+      company_placeholder: "Acme Inc"
+      submit: "Create account"
+      have_account: "Already have an account?"
+      login_link: "Sign in"
+
   dashboard:
     api_keys:
       index:

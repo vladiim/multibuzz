@@ -2,12 +2,151 @@
 @tailwind components;
 @tailwind utilities;
 
-/*
-
+/* Custom Components */
 @layer components {
-  .btn-primary {
-    @apply py-2 px-4 bg-blue-200;
+  /* Card Components */
+  .card {
+    @apply bg-white border border-gray-200 rounded-lg p-6;
+  }
+
+  .card--interactive {
+    @apply transition-all duration-150 cursor-pointer;
+  }
+
+  .card--interactive:hover {
+    @apply border-gray-300 shadow-sm;
+  }
+
+  .card--channel {
+    @apply flex items-center gap-3 p-4;
+  }
+
+  .card--metric {
+    @apply text-center;
+  }
+
+  .card__metric-value {
+    @apply text-4xl font-bold text-blue-600 mb-2;
+  }
+
+  .card__metric-label {
+    @apply text-sm font-medium text-gray-600;
+  }
+
+  /* Feature Components */
+  .feature {
+    @apply text-center;
+  }
+
+  .feature__icon {
+    @apply inline-flex w-12 h-12 items-center justify-center rounded-lg bg-blue-50 text-blue-600 mb-4;
+  }
+
+  .feature__icon svg {
+    @apply w-6 h-6;
+  }
+
+  .feature__title {
+    @apply text-xl font-semibold text-gray-900 mb-2;
+  }
+
+  .feature__description {
+    @apply text-gray-600;
+  }
+
+  /* Icon Components */
+  .icon-circle {
+    @apply w-10 h-10 rounded-lg flex items-center justify-center font-bold flex-shrink-0;
+  }
+
+  .icon-hub {
+    @apply w-32 h-32 rounded-2xl flex items-center justify-center font-bold text-xl;
+    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.15);
   }
 }
 
-*/
+/* Custom Utilities */
+@layer utilities {
+  /* Background Patterns */
+  .bg-pattern-dots {
+    background-image: radial-gradient(circle, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .bg-pattern-grid {
+    background-image:
+      linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  /* Scroll Animations */
+  .scroll-animate {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  }
+
+  .scroll-animate.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Pulse Animation */
+  @keyframes pulse-slow {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.8;
+    }
+  }
+
+  .animate-pulse-slow {
+    animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Flow Animation for Attribution Diagram */
+  @keyframes flow {
+    0% {
+      background-position: -100% 0;
+      opacity: 0.3;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      background-position: 100% 0;
+      opacity: 0.3;
+    }
+  }
+
+  .flow-line {
+    width: 40px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, rgb(37, 99, 235) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: flow 2s ease-in-out infinite;
+    opacity: 0.6;
+  }
+
+  .flow-line[data-delay="0"] {
+    animation-delay: 0ms;
+  }
+
+  .flow-line[data-delay="200"] {
+    animation-delay: 200ms;
+  }
+
+  .flow-line[data-delay="400"] {
+    animation-delay: 400ms;
+  }
+
+  .flow-line[data-delay="600"] {
+    animation-delay: 600ms;
+  }
+
+  .flow-line[data-delay="800"] {
+    animation-delay: 800ms;
+  }
+}
