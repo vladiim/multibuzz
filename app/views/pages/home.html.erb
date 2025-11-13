@@ -1,160 +1,292 @@
-<div class="min-h-screen bg-slate-50">
+<div class="min-h-screen bg-white">
   <!-- Navigation -->
-  <nav class="bg-white shadow-sm border-b border-slate-200">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between h-16">
+  <nav class="bg-white border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
         <div class="flex items-center">
-          <h1 class="text-xl font-bold text-slate-900">
-            Multi<span class="text-blue-500">buzz</span>
+          <h1 class="text-xl font-semibold text-gray-900">
+            <%= t('pages.home.nav.brand') %>
           </h1>
         </div>
-        <div class="flex items-center space-x-6">
-          <a href="#features" class="text-slate-600 hover:text-slate-900 font-medium transition-colors duration-150">
-            Features
+        <div class="flex items-center gap-8">
+          <a href="#features" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">
+            <%= t('pages.home.nav.features') %>
           </a>
-          <a href="#pricing" class="text-slate-600 hover:text-slate-900 font-medium transition-colors duration-150">
-            Pricing
-          </a>
-          <a href="https://github.com/yourusername/multibuzz" class="text-slate-600 hover:text-slate-900 font-medium transition-colors duration-150">
-            Docs
-          </a>
-          <%= link_to "Login", login_path, class: "inline-flex items-center px-4 py-2 border border-transparent text-base font-semibold rounded-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-150" %>
+          <%= link_to t('pages.home.nav.docs'), docs_path('getting-started'), class: "text-sm text-gray-600 hover:text-gray-900 transition-colors" %>
+          <%= link_to t('pages.home.nav.login'), login_path, class: "text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-md transition-all" %>
         </div>
       </div>
     </div>
   </nav>
 
   <!-- Hero Section -->
-  <div class="relative overflow-hidden">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
-      <div class="text-center">
-        <h1 class="text-4xl font-extrabold text-slate-900 sm:text-5xl md:text-6xl">
-          Multi-Channel Marketing
-          <span class="block text-blue-500">Attribution Made Simple</span>
-        </h1>
-        <p class="mt-6 max-w-2xl mx-auto text-xl text-slate-600">
-          Track visitors, sessions, and events across all your marketing channels.
-          No-frills backend attribution that empowers your team to make smarter marketing decisions with 5 minutes of setup.
-        </p>
-        <div class="mt-10 flex justify-center gap-4">
-          <%= link_to "Get Started", login_path, class: "inline-flex items-center px-6 py-3 border border-transparent text-base font-semibold rounded-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-150" %>
-          <a href="#features" class="inline-flex items-center px-6 py-3 border border-slate-300 text-base font-semibold rounded-md text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-150">
-            Learn More
-          </a>
+  <section class="py-24 px-6 bg-pattern-dots">
+    <div class="max-w-7xl mx-auto text-center">
+      <h1 class="text-6xl font-bold text-gray-900 tracking-tight scroll-animate" data-controller="scroll-reveal">
+        <%= t('pages.home.hero.title') %>
+      </h1>
+      <p class="mt-6 text-xl text-gray-600 max-w-3xl mx-auto scroll-animate" data-controller="scroll-reveal">
+        <%= t('pages.home.hero.subtitle') %>
+      </p>
+      <div class="mt-10 flex justify-center gap-4 scroll-animate" data-controller="scroll-reveal">
+        <%= link_to t('pages.home.hero.cta_primary'), login_path, class: "px-6 py-3 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-all" %>
+        <%= link_to t('pages.home.hero.cta_secondary'), docs_path('getting-started'), class: "px-6 py-3 text-sm font-semibold text-gray-900 bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 rounded-md transition-all" %>
+      </div>
+    </div>
+  </section>
+
+  <!-- Attribution Flow Visualization -->
+  <section class="py-24 px-6 bg-gray-50 bg-pattern-grid">
+    <div class="max-w-7xl mx-auto">
+      <h2 class="text-3xl font-bold text-gray-900 text-center mb-16">
+        <%= t('pages.home.attribution_flow.title') %>
+      </h2>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 items-center">
+        <!-- Channel Sources -->
+        <div class="space-y-4">
+          <div class="card card--channel card--interactive scroll-animate" data-controller="scroll-reveal">
+            <div class="icon-circle bg-red-500 text-white">G</div>
+            <span class="text-sm font-medium text-gray-900"><%= t('pages.home.attribution_flow.channels.google') %></span>
+            <div class="ml-auto">
+              <div class="flow-line" data-delay="0"></div>
+            </div>
+          </div>
+
+          <div class="card card--channel card--interactive scroll-animate" data-controller="scroll-reveal">
+            <div class="icon-circle bg-blue-600 text-white">f</div>
+            <span class="text-sm font-medium text-gray-900"><%= t('pages.home.attribution_flow.channels.facebook') %></span>
+            <div class="ml-auto">
+              <div class="flow-line" data-delay="200"></div>
+            </div>
+          </div>
+
+          <div class="card card--channel card--interactive scroll-animate" data-controller="scroll-reveal">
+            <div class="icon-circle bg-blue-700 text-white text-xs">in</div>
+            <span class="text-sm font-medium text-gray-900"><%= t('pages.home.attribution_flow.channels.linkedin') %></span>
+            <div class="ml-auto">
+              <div class="flow-line" data-delay="400"></div>
+            </div>
+          </div>
+
+          <div class="card card--channel card--interactive scroll-animate" data-controller="scroll-reveal">
+            <div class="icon-circle bg-green-600 text-white">@</div>
+            <span class="text-sm font-medium text-gray-900"><%= t('pages.home.attribution_flow.channels.email') %></span>
+            <div class="ml-auto">
+              <div class="flow-line" data-delay="600"></div>
+            </div>
+          </div>
+
+          <div class="card card--channel card--interactive scroll-animate" data-controller="scroll-reveal">
+            <div class="icon-circle bg-purple-600 text-white">↗</div>
+            <span class="text-sm font-medium text-gray-900"><%= t('pages.home.attribution_flow.channels.direct') %></span>
+            <div class="ml-auto">
+              <div class="flow-line" data-delay="800"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Center Hub -->
+        <div class="flex justify-center">
+          <div class="text-center scroll-animate" data-controller="scroll-reveal">
+            <div class="icon-hub bg-blue-600 text-white animate-pulse-slow mx-auto">
+              <span><%= t('pages.home.attribution_flow.hub') %></span>
+            </div>
+            <p class="mt-4 text-sm font-medium text-gray-600"><%= t('pages.home.attribution_flow.output') %></p>
+          </div>
+        </div>
+
+        <!-- Output Metrics -->
+        <div class="space-y-4">
+          <div class="card card--metric scroll-animate" data-controller="scroll-reveal">
+            <div class="card__metric-value">87%</div>
+            <div class="card__metric-label">Attribution Accuracy</div>
+          </div>
+
+          <div class="card card--metric scroll-animate" data-controller="scroll-reveal">
+            <div class="card__metric-value">5.2x</div>
+            <div class="card__metric-label">ROI Improvement</div>
+          </div>
+
+          <div class="card card--metric scroll-animate" data-controller="scroll-reveal">
+            <div class="card__metric-value">12</div>
+            <div class="card__metric-label">Avg Touchpoints</div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 
   <!-- Features Section -->
-  <div id="features" class="py-24 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center">
-        <h2 class="text-3xl font-bold text-slate-900 sm:text-4xl">
-          Everything you need for attribution
+  <section id="features" class="py-24 px-6">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-16">
+        <h2 class="text-4xl font-bold text-gray-900">
+          <%= t('pages.home.features.title') %>
         </h2>
-        <p class="mt-4 text-xl text-slate-600">
-          Simple, powerful, developer-friendly
+        <p class="mt-4 text-xl text-gray-600">
+          <%= t('pages.home.features.subtitle') %>
         </p>
       </div>
 
-      <div class="mt-20 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        <!-- Feature 1: UTM Tracking -->
-        <div class="relative p-6 bg-slate-50 rounded-lg border border-slate-200">
-          <div class="flex items-center justify-center w-12 h-12 rounded-md bg-blue-500 text-white mb-4">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-          </div>
-          <h3 class="text-lg font-semibold text-slate-900">Lorem ipsum</h3>
-          <p class="mt-2 text-slate-600">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-          </p>
-        </div>
-
-        <!-- Feature 2: REST API -->
-        <div class="relative p-6 bg-slate-50 rounded-lg border border-slate-200">
-          <div class="flex items-center justify-center w-12 h-12 rounded-md bg-purple-500 text-white mb-4">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-          </div>
-          <h3 class="text-lg font-semibold text-slate-900">Lorem ipsum</h3>
-          <p class="mt-2 text-slate-600">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-          </p>
-        </div>
-
-        <!-- Feature 3: Multi-Tenant -->
-        <div class="relative p-6 bg-slate-50 rounded-lg border border-slate-200">
-          <div class="flex items-center justify-center w-12 h-12 rounded-md bg-emerald-500 text-white mb-4">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Feature 1: Server-Side Privacy Tracking -->
+        <div class="feature scroll-animate" data-controller="scroll-reveal">
+          <div class="feature__icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
-          <h3 class="text-lg font-semibold text-slate-900">Lorem ipsum</h3>
-          <p class="mt-2 text-slate-600">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+          <h3 class="feature__title">
+            <%= t('pages.home.features.privacy_tracking.title') %>
+          </h3>
+          <p class="feature__description">
+            <%= t('pages.home.features.privacy_tracking.description') %>
+          </p>
+        </div>
+
+        <!-- Feature 2: Dark Funnel Attribution -->
+        <div class="feature scroll-animate" data-controller="scroll-reveal">
+          <div class="feature__icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+          </div>
+          <h3 class="feature__title">
+            <%= t('pages.home.features.dark_funnel.title') %>
+          </h3>
+          <p class="feature__description">
+            <%= t('pages.home.features.dark_funnel.description') %>
+          </p>
+        </div>
+
+        <!-- Feature 3: Quick Setup -->
+        <div class="feature scroll-animate" data-controller="scroll-reveal">
+          <div class="feature__icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </div>
+          <h3 class="feature__title">
+            <%= t('pages.home.features.quick_setup.title') %>
+          </h3>
+          <p class="feature__description">
+            <%= t('pages.home.features.quick_setup.description') %>
+          </p>
+        </div>
+
+        <!-- Feature 4: Hash-Based User ID Mapping -->
+        <div class="feature scroll-animate" data-controller="scroll-reveal">
+          <div class="feature__icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <h3 class="feature__title">
+            <%= t('pages.home.features.user_mapping.title') %>
+          </h3>
+          <p class="feature__description">
+            <%= t('pages.home.features.user_mapping.description') %>
+          </p>
+        </div>
+
+        <!-- Feature 5: Multiple Attribution Models -->
+        <div class="feature scroll-animate" data-controller="scroll-reveal">
+          <div class="feature__icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          </div>
+          <h3 class="feature__title">
+            <%= t('pages.home.features.custom_models.title') %>
+          </h3>
+          <p class="feature__description">
+            <%= t('pages.home.features.custom_models.description') %>
+          </p>
+        </div>
+
+        <!-- Feature 6: Seamless ETL Exports -->
+        <div class="feature scroll-animate" data-controller="scroll-reveal">
+          <div class="feature__icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+          </div>
+          <h3 class="feature__title">
+            <%= t('pages.home.features.etl_exports.title') %>
+          </h3>
+          <p class="feature__description">
+            <%= t('pages.home.features.etl_exports.description') %>
           </p>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 
   <!-- CTA Section -->
-  <div class="bg-blue-500">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-      <h2 class="text-3xl font-bold text-white sm:text-4xl">
-        Ready to track your marketing attribution?
+  <section class="py-24 px-6 bg-gray-900">
+    <div class="max-w-4xl mx-auto text-center">
+      <h2 class="text-4xl font-bold text-white">
+        <%= t('pages.home.cta.title') %>
       </h2>
-      <p class="mt-4 text-xl text-blue-100">
-        Get started with Multibuzz today. No credit card required.
+      <p class="mt-4 text-xl text-gray-400">
+        <%= t('pages.home.cta.subtitle') %>
       </p>
-      <div class="mt-8">
-        <%= link_to "Get Started Free", login_path, class: "inline-flex items-center px-8 py-3 border border-transparent text-lg font-semibold rounded-md text-blue-600 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-blue-500 focus:ring-white transition-colors duration-150" %>
+      <div class="mt-10">
+        <%= link_to t('pages.home.cta.button'), login_path, class: "px-8 py-3 text-base font-semibold text-gray-900 bg-white hover:bg-gray-100 rounded-md transition-all inline-block" %>
       </div>
     </div>
-  </div>
+  </section>
 
   <!-- Footer -->
-  <footer class="bg-white border-t border-slate-200">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+  <footer class="bg-white border-t border-gray-200">
+    <div class="max-w-7xl mx-auto px-6 py-12">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-        <div class="col-span-1">
-          <h3 class="text-lg font-bold text-slate-900">
-            Multi<span class="text-blue-500">buzz</span>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">
+            <%= t('pages.home.footer.brand') %>
           </h3>
-          <p class="mt-2 text-sm text-slate-600">
-            Multi-channel marketing attribution for developers.
+          <p class="text-sm text-gray-600">
+            <%= t('pages.home.footer.tagline') %>
           </p>
         </div>
+
         <div>
-          <h4 class="text-sm font-semibold text-slate-900 uppercase tracking-wider">Product</h4>
-          <ul class="mt-4 space-y-2">
-            <li><a href="#features" class="text-slate-600 hover:text-slate-900 text-sm">Features</a></li>
-            <li><a href="#pricing" class="text-slate-600 hover:text-slate-900 text-sm">Pricing</a></li>
-            <li><a href="#" class="text-slate-600 hover:text-slate-900 text-sm">API Docs</a></li>
+          <h4 class="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-4">
+            <%= t('pages.home.footer.product') %>
+          </h4>
+          <ul class="space-y-2">
+            <li><a href="#features" class="text-sm text-gray-600 hover:text-gray-900"><%= t('pages.home.footer.product_features') %></a></li>
+            <li><%= link_to t('pages.home.footer.product_docs'), docs_path('getting-started'), class: "text-sm text-gray-600 hover:text-gray-900" %></li>
           </ul>
         </div>
+
         <div>
-          <h4 class="text-sm font-semibold text-slate-900 uppercase tracking-wider">Company</h4>
-          <ul class="mt-4 space-y-2">
-            <li><a href="#" class="text-slate-600 hover:text-slate-900 text-sm">About</a></li>
-            <li><a href="#" class="text-slate-600 hover:text-slate-900 text-sm">Blog</a></li>
-            <li><a href="#" class="text-slate-600 hover:text-slate-900 text-sm">Contact</a></li>
+          <h4 class="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-4">
+            <%= t('pages.home.footer.company') %>
+          </h4>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-sm text-gray-600 hover:text-gray-900"><%= t('pages.home.footer.company_about') %></a></li>
+            <li><a href="#" class="text-sm text-gray-600 hover:text-gray-900"><%= t('pages.home.footer.company_blog') %></a></li>
+            <li><a href="#" class="text-sm text-gray-600 hover:text-gray-900"><%= t('pages.home.footer.company_contact') %></a></li>
           </ul>
         </div>
+
         <div>
-          <h4 class="text-sm font-semibold text-slate-900 uppercase tracking-wider">Legal</h4>
-          <ul class="mt-4 space-y-2">
-            <li><a href="#" class="text-slate-600 hover:text-slate-900 text-sm">Privacy</a></li>
-            <li><a href="#" class="text-slate-600 hover:text-slate-900 text-sm">Terms</a></li>
+          <h4 class="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-4">
+            <%= t('pages.home.footer.legal') %>
+          </h4>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-sm text-gray-600 hover:text-gray-900"><%= t('pages.home.footer.legal_privacy') %></a></li>
+            <li><a href="#" class="text-sm text-gray-600 hover:text-gray-900"><%= t('pages.home.footer.legal_terms') %></a></li>
           </ul>
         </div>
       </div>
-      <div class="mt-8 pt-8 border-t border-slate-200">
-        <p class="text-sm text-slate-500 text-center">
-          &copy; <%= Time.current.year %> Multibuzz. All rights reserved.
+
+      <div class="mt-8 pt-8 border-t border-gray-200">
+        <p class="text-sm text-gray-500 text-center">
+          <%= t('pages.home.footer.copyright', year: Time.current.year) %>
         </p>
       </div>
     </div>
