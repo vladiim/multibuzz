@@ -1,6 +1,19 @@
 # Getting Started with Multibuzz
 
-Welcome to Multibuzz! This guide will help you start tracking events and capturing UTM attribution data in just a few minutes.
+Welcome to Multibuzz! This guide will help you start tracking events and capturing attribution data with automatic UTM extraction, channel attribution, and funnel tracking.
+
+## Overview: How Multibuzz Works
+
+Multibuzz uses **server-side tracking** for maximum accuracy and simplicity:
+
+1. **You send**: Full page URL + referrer (no manual UTM extraction needed!)
+2. **Multibuzz extracts**: Visitor IDs, session IDs, UTM parameters, channel attribution
+3. **Multibuzz manages**: Cookies, attribution logic, session timeouts
+4. **You get**: Clean attribution data without complex client-side code
+
+**Key benefit**: Your integration code is ~50 lines instead of ~500 lines compared to client-side tracking.
+
+---
 
 ## 1. Get Your API Key
 
@@ -18,13 +31,15 @@ Your current API key: `<%= current_user.account.api_keys.active.first.masked_key
 Your API key will look like this: `sk_test_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6`
 <% end %>
 
-� **Important**: Keep your API key secret. Never commit it to version control or expose it in client-side code.
+⚠️ **Important**: Keep your API key secret. Never commit it to version control or expose it in client-side code.
 
 ---
 
 ## 2. Make Your First API Request
 
-### Using cURL
+### Simplified API: Just Send URL + Referrer
+
+**No manual visitor/session ID generation needed!** Multibuzz manages these via cookies.
 
 ```bash
 curl -X POST <%= api_v1_events_url %> \
@@ -34,22 +49,42 @@ curl -X POST <%= api_v1_events_url %> \
     "events": [
       {
         "event_type": "page_view",
-        "visitor_id": "user_abc123xyz",
-        "session_id": "sess_xyz789abc",
         "timestamp": "<%= Time.current.utc.iso8601 %>",
-        "properties": {
-          "url": "https://example.com/products",
-          "referrer": "https://google.com/search?q=running+shoes",
-          "utm_source": "google",
-          "utm_medium": "cpc",
-          "utm_campaign": "spring_sale_2025",
-          "utm_content": "ad_variant_a",
-          "utm_term": "running shoes"
-        }
+        "url": "https://example.com/pricing?utm_source=google&utm_medium=cpc&utm_campaign=spring_sale",
+        "referrer": "https://google.com/search?q=analytics+tool"
       }
     ]
   }'
 ```
+
+### What Multibuzz Extracts Automatically
+
+From this simple payload, Multibuzz automatically:
+
+✅ **Extracts UTM parameters** from URL:
+- `utm_source: "google"`
+- `utm_medium: "cpc"`
+- `utm_campaign: "spring_sale"`
+
+✅ **Derives channel attribution**:
+- `channel: "paid_search"` (from `utm_medium=cpc`)
+
+✅ **Analyzes referrer**:
+- `referrer_domain: "google.com"`
+- Fallback channel if no UTM: `"organic_search"`
+
+✅ **Captures HTTP request metadata** (server-side):
+- **IP address** (anonymized for GDPR compliance)
+- **User-Agent** → parses device type, browser, OS, version
+- **Accept-Language** → user's preferred language
+- **DNT header** → Do Not Track preference
+- **Client Hints** (modern browsers) → platform, mobile indicator
+
+✅ **Derived device information**:
+- Device type: `desktop`, `smartphone`, `tablet`, `bot`
+- Browser: `Chrome`, `Safari`, `Firefox`, etc.
+- OS: `macOS`, `Windows`, `iOS`, `Android`
+- Bot detection (filters out crawlers)
 
 ### Expected Response
 
@@ -60,7 +95,13 @@ curl -X POST <%= api_v1_events_url %> \
 }
 ```
 
- **Success!** Your event has been queued for processing.
+🎉 **Success!** Your event has been queued for processing.
+
+**Response includes Set-Cookie headers** (transparent to most HTTP clients):
+```
+Set-Cookie: _multibuzz_vid=vis_abc123...; Expires=...; HttpOnly; Secure
+Set-Cookie: _multibuzz_sid=sess_xyz789...; Max-Age=1800; HttpOnly; Secure
+```
 
 ---
 
@@ -70,49 +111,346 @@ curl -X POST <%= api_v1_events_url %> \
 
 #### **Visitors**
 
-Anonymous users identified by a unique `visitor_id`. This should be:
+Anonymous users automatically tracked via `_multibuzz_vid` cookie (set by Multibuzz API).
 
-- **Persistent**: Same across sessions for the same user
-- **Anonymous**: Don't use personally identifiable information
-- **Unique**: Generated client-side (e.g., hash of IP + User-Agent)
-
-Example: `user_abc123xyz789`
+- **Lifetime**: 1 year
+- **Purpose**: Track returning visitors across sessions
+- **Privacy**: No PII required - server-generated unique ID
 
 #### **Sessions**
 
-A visit to your site. Generate a new `session_id` when:
+A visit to your site, automatically managed via `_multibuzz_sid` cookie.
 
-- User first arrives
-- 30+ minutes of inactivity
-- New day starts
+- **Lifetime**: 30 minutes of inactivity
+- **Purpose**: Group page views and events
+- **Attribution**: Captures UTM/referrer on first page view only (first-touch)
 
-Example: `sess_xyz789abc123`
+New session created when:
+- First-time visitor
+- Returning visitor after 30+ minutes
+- Session cookie expired
 
 #### **Events**
 
-Actions users take. Currently supported:
+Actions users take. Event types:
 
-- `page_view`: Page loads/views
-
-Coming soon: `signup`, `purchase`, `click`, etc.
+- `page_view`: Page loads/views (automatic via middleware)
+- `signup`: User registration (Phase 2)
+- `purchase`: Completed purchase (Phase 2)
+- `trial_started`: Trial sign-up (Phase 2)
 
 #### **Properties**
 
-Custom data attached to events. Stored as JSON, indexed for UTM parameters.
+Custom data attached to events (stored as JSONB).
 
-**Reserved UTM fields** (automatically extracted for attribution):
+**You send**:
+```json
+{
+  "url": "https://example.com/pricing?utm_source=google&foo=bar",
+  "referrer": "https://google.com",
+  "properties": {
+    "custom_field": "custom_value"
+  }
+}
+```
 
-- `utm_source`: Campaign source (e.g., `google`, `facebook`)
-- `utm_medium`: Campaign medium (e.g., `cpc`, `email`, `social`)
-- `utm_campaign`: Campaign name (e.g., `spring_sale_2025`)
-- `utm_content`: Ad content/variant (e.g., `ad_variant_a`)
-- `utm_term`: Search keywords (e.g., `running shoes`)
-
-**Custom fields**: Add any additional data you need!
+**Multibuzz stores**:
+```json
+{
+  "url": "https://example.com/pricing?utm_source=google&foo=bar",
+  "utm_source": "google",        // ✅ Extracted from URL
+  "utm_medium": null,
+  "channel": "organic_search",   // ✅ Derived from referrer
+  "custom_field": "custom_value" // Your custom data preserved
+}
+```
 
 ---
 
-## 4. Code Examples
+## 4. Channel Attribution (No UTM Required!)
+
+Multibuzz automatically derives marketing channels from UTM parameters **or** referrer URLs.
+
+### With UTM Parameters
+
+```json
+{
+  "url": "https://example.com/?utm_source=facebook&utm_medium=social"
+}
+```
+
+**Result**: `channel: "organic_social"`
+
+### Without UTM Parameters (Referrer-Based)
+
+```json
+{
+  "url": "https://example.com/",
+  "referrer": "https://google.com/search?q=analytics"
+}
+```
+
+**Result**: `channel: "organic_search"` (detected from referrer domain)
+
+### Direct Traffic
+
+```json
+{
+  "url": "https://example.com/",
+  "referrer": ""
+}
+```
+
+**Result**: `channel: "direct"`
+
+### Supported Channels
+
+| Channel | Detection Method |
+|---------|------------------|
+| `paid_search` | `utm_medium=cpc\|ppc\|paid` |
+| `organic_search` | Referrer from Google, Bing, Yahoo, DuckDuckGo |
+| `paid_social` | `utm_medium=social` + paid indicators |
+| `organic_social` | Referrer from Facebook, LinkedIn, Twitter, etc. |
+| `email` | `utm_medium=email` |
+| `display` | `utm_medium=display\|banner` |
+| `affiliate` | `utm_medium=affiliate` |
+| `referral` | External website referrer |
+| `video` | Referrer from YouTube, Vimeo |
+| `direct` | No referrer, no UTM |
+
+---
+
+## 5. Funnel Tracking
+
+Track users through different conversion funnels (lead gen, subscription, trial, etc.).
+
+### Basic Funnel Tracking
+
+```bash
+curl -X POST <%= api_v1_events_url %> \
+  -H "Authorization: Bearer YOUR_API_KEY_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "events": [
+      {
+        "event_type": "page_view",
+        "timestamp": "<%= Time.current.utc.iso8601 %>",
+        "url": "https://example.com/pricing",
+        "referrer": "https://example.com/",
+        "properties": {
+          "funnel": "subscription",
+          "funnel_step": "pricing_view",
+          "funnel_position": 1
+        }
+      }
+    ]
+  }'
+```
+
+### Funnel Examples
+
+#### Lead Generation Funnel
+
+```json
+// Step 1: Landing page
+{
+  "event_type": "page_view",
+  "url": "https://example.com/download-guide",
+  "properties": {
+    "funnel": "lead",
+    "funnel_step": "landing",
+    "funnel_position": 1
+  }
+}
+
+// Step 2: Form view
+{
+  "event_type": "page_view",
+  "url": "https://example.com/download-guide#form",
+  "properties": {
+    "funnel": "lead",
+    "funnel_step": "form_view",
+    "funnel_position": 2
+  }
+}
+
+// Step 3: Conversion
+{
+  "event_type": "lead_submitted",
+  "properties": {
+    "funnel": "lead",
+    "funnel_step": "conversion",
+    "funnel_position": 3,
+    "guide_title": "SEO Best Practices 2025"
+  }
+}
+```
+
+#### Subscription Funnel
+
+```json
+// Step 1: Pricing page
+{
+  "event_type": "page_view",
+  "url": "https://example.com/pricing",
+  "properties": {
+    "funnel": "subscription",
+    "funnel_step": "pricing_view",
+    "funnel_position": 1
+  }
+}
+
+// Step 2: Checkout started
+{
+  "event_type": "checkout_started",
+  "properties": {
+    "funnel": "subscription",
+    "funnel_step": "checkout",
+    "funnel_position": 2,
+    "plan": "pro"
+  }
+}
+
+// Step 3: Payment completed
+{
+  "event_type": "subscription_created",
+  "properties": {
+    "funnel": "subscription",
+    "funnel_step": "conversion",
+    "funnel_position": 3,
+    "plan": "pro",
+    "mrr": 9900
+  }
+}
+```
+
+### Multiple Funnels Per Session
+
+Users can progress through different funnels in the same session:
+
+```json
+// Morning: Download ebook (lead funnel)
+{
+  "event_type": "lead_submitted",
+  "properties": {
+    "funnel": "lead",
+    "funnel_step": "conversion"
+  }
+}
+
+// Afternoon: Start trial (subscription funnel)
+{
+  "event_type": "trial_started",
+  "properties": {
+    "funnel": "subscription",
+    "funnel_step": "trial_signup"
+  }
+}
+```
+
+### Funnel Field Reference
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `funnel` | String | No | Funnel identifier (e.g., `"subscription"`, `"lead"`) |
+| `funnel_step` | String | No | Step name (e.g., `"pricing_view"`, `"conversion"`) |
+| `funnel_position` | Integer | No | Numeric position for ordering (1, 2, 3, ...) |
+
+**Naming convention**: Use `snake_case` for funnel and step names.
+
+---
+
+## 6. Enhanced Tracking with Client-Side Data (Optional)
+
+While Multibuzz captures most data server-side, you can optionally enhance tracking with client-side information that isn't available in HTTP headers.
+
+### Screen & Viewport Data
+
+```json
+{
+  "event_type": "page_view",
+  "url": "https://example.com/pricing",
+  "referrer": "https://example.com/",
+  "properties": {
+    "screen_width": 1920,
+    "screen_height": 1080,
+    "viewport_width": 1440,
+    "viewport_height": 900,
+    "device_pixel_ratio": 2.0,
+    "color_depth": 24
+  }
+}
+```
+
+### Page Metadata
+
+```json
+{
+  "event_type": "page_view",
+  "url": "https://example.com/pricing",
+  "properties": {
+    "page_title": "Pricing - Acme Inc",
+    "page_path": "/pricing",
+    "page_referrer": "https://example.com/features"
+  }
+}
+```
+
+### JavaScript Example (Browser)
+
+```javascript
+// Capture client-side data
+function getClientMetadata() {
+  return {
+    screen_width: window.screen.width,
+    screen_height: window.screen.height,
+    viewport_width: window.innerWidth,
+    viewport_height: window.innerHeight,
+    device_pixel_ratio: window.devicePixelRatio || 1,
+    color_depth: window.screen.colorDepth,
+    page_title: document.title,
+    timezone_offset: new Date().getTimezoneOffset()
+  };
+}
+
+// Send to Multibuzz API
+fetch('https://api.multibuzz.io/api/v1/events', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    events: [{
+      event_type: 'page_view',
+      timestamp: new Date().toISOString(),
+      url: window.location.href,
+      referrer: document.referrer,
+      properties: getClientMetadata()
+    }]
+  })
+});
+```
+
+### What's Captured Automatically vs. Optionally
+
+| Data | Server-Side (Auto) | Client-Side (Optional) |
+|------|-------------------|------------------------|
+| IP address | ✅ From request | ❌ |
+| User-Agent | ✅ From headers | ❌ |
+| Browser/OS | ✅ Parsed from UA | ✅ Can override |
+| Language | ✅ Accept-Language header | ✅ Can override |
+| Referrer | ✅ From headers | ✅ Can override |
+| Screen size | ❌ | ✅ Must send |
+| Viewport size | ❌ | ✅ Must send |
+| Page title | ❌ | ✅ Must send |
+| Timezone | ❌ | ✅ Must send |
+
+**Recommendation**: Start with server-side only (simpler). Add client-side metadata later if you need screen/viewport analytics.
+
+---
+
+## 7. Code Examples
 
 ### Ruby
 
@@ -127,13 +465,26 @@ class MultibuzzClient
     @api_key = api_key
   end
 
-  def track_page_view(visitor_id:, session_id:, url:, utm_params: {})
+  def track_page_view(url:, referrer: nil, funnel: nil, funnel_step: nil)
     event = {
       event_type: 'page_view',
-      visitor_id: visitor_id,
-      session_id: session_id,
       timestamp: Time.now.utc.iso8601,
-      properties: { url: url }.merge(utm_params)
+      url: url,
+      referrer: referrer,
+      properties: {
+        funnel: funnel,
+        funnel_step: funnel_step
+      }.compact
+    }
+
+    send_events([event])
+  end
+
+  def track_event(event_type, properties: {})
+    event = {
+      event_type: event_type,
+      timestamp: Time.now.utc.iso8601,
+      properties: properties
     }
 
     send_events([event])
@@ -157,14 +508,27 @@ end
 # Usage
 client = MultibuzzClient.new(ENV['MULTIBUZZ_API_KEY'])
 
+# Simple page view
 result = client.track_page_view(
-  visitor_id: 'user_abc123xyz',
-  session_id: 'sess_xyz789abc',
-  url: 'https://example.com/products',
-  utm_params: {
-    utm_source: 'google',
-    utm_medium: 'cpc',
-    utm_campaign: 'spring_sale'
+  url: 'https://example.com/pricing?utm_source=google&utm_medium=cpc',
+  referrer: 'https://google.com/search'
+)
+
+# Page view with funnel tracking
+result = client.track_page_view(
+  url: 'https://example.com/pricing',
+  referrer: 'https://example.com/',
+  funnel: 'subscription',
+  funnel_step: 'pricing_view'
+)
+
+# Custom event with funnel
+result = client.track_event('subscription_created',
+  properties: {
+    funnel: 'subscription',
+    funnel_step: 'conversion',
+    plan: 'pro',
+    mrr: 9900
   }
 )
 
@@ -182,13 +546,26 @@ class MultibuzzClient {
     this.apiUrl = '<%= api_v1_events_url.gsub('/events', '') %>';
   }
 
-  async trackPageView({ visitorId, sessionId, url, utmParams = {} }) {
+  async trackPageView({ url, referrer = null, funnel = null, funnelStep = null }) {
     const event = {
       event_type: 'page_view',
-      visitor_id: visitorId,
-      session_id: sessionId,
       timestamp: new Date().toISOString(),
-      properties: { url, ...utmParams }
+      url,
+      referrer,
+      properties: {
+        ...(funnel && { funnel }),
+        ...(funnelStep && { funnel_step: funnelStep })
+      }
+    };
+
+    return this.sendEvents([event]);
+  }
+
+  async trackEvent(eventType, properties = {}) {
+    const event = {
+      event_type: eventType,
+      timestamp: new Date().toISOString(),
+      properties
     };
 
     return this.sendEvents([event]);
@@ -220,19 +597,28 @@ class MultibuzzClient {
 // Usage
 const client = new MultibuzzClient(process.env.MULTIBUZZ_API_KEY);
 
+// Simple page view
 client.trackPageView({
-  visitorId: 'user_abc123xyz',
-  sessionId: 'sess_xyz789abc',
-  url: 'https://example.com/products',
-  utmParams: {
-    utm_source: 'google',
-    utm_medium: 'cpc',
-    utm_campaign: 'spring_sale'
-  }
+  url: 'https://example.com/pricing?utm_source=google',
+  referrer: 'https://google.com/search'
 }).then(result => {
-  console.log(`Accepted: ${result.accepted}, Rejected: ${result.rejected.length}`);
-}).catch(error => {
-  console.error('Error:', error.message);
+  console.log(`Accepted: ${result.accepted}`);
+});
+
+// Page view with funnel
+client.trackPageView({
+  url: 'https://example.com/pricing',
+  referrer: 'https://example.com/',
+  funnel: 'subscription',
+  funnelStep: 'pricing_view'
+});
+
+// Custom event
+client.trackEvent('subscription_created', {
+  funnel: 'subscription',
+  funnel_step: 'conversion',
+  plan: 'pro',
+  mrr: 9900
 });
 ```
 
@@ -251,18 +637,34 @@ class MultibuzzClient:
 
     def track_page_view(
         self,
-        visitor_id: str,
-        session_id: str,
         url: str,
-        utm_params: Optional[Dict] = None
+        referrer: Optional[str] = None,
+        funnel: Optional[str] = None,
+        funnel_step: Optional[str] = None
     ) -> Dict:
         """Track a page view event."""
+        properties = {}
+        if funnel:
+            properties['funnel'] = funnel
+        if funnel_step:
+            properties['funnel_step'] = funnel_step
+
         event = {
             'event_type': 'page_view',
-            'visitor_id': visitor_id,
-            'session_id': session_id,
             'timestamp': datetime.now(timezone.utc).isoformat(),
-            'properties': {'url': url, **(utm_params or {})}
+            'url': url,
+            'referrer': referrer,
+            'properties': properties
+        }
+
+        return self.send_events([event])
+
+    def track_event(self, event_type: str, properties: Optional[Dict] = None) -> Dict:
+        """Track a custom event."""
+        event = {
+            'event_type': event_type,
+            'timestamp': datetime.now(timezone.utc).isoformat(),
+            'properties': properties or {}
         }
 
         return self.send_events([event])
@@ -286,38 +688,49 @@ import os
 
 client = MultibuzzClient(os.getenv('MULTIBUZZ_API_KEY'))
 
+# Simple page view
 result = client.track_page_view(
-    visitor_id='user_abc123xyz',
-    session_id='sess_xyz789abc',
-    url='https://example.com/products',
-    utm_params={
-        'utm_source': 'google',
-        'utm_medium': 'cpc',
-        'utm_campaign': 'spring_sale'
-    }
+    url='https://example.com/pricing?utm_source=google',
+    referrer='https://google.com/search'
 )
+
+# Page view with funnel
+result = client.track_page_view(
+    url='https://example.com/pricing',
+    referrer='https://example.com/',
+    funnel='subscription',
+    funnel_step='pricing_view'
+)
+
+# Custom event
+result = client.track_event('subscription_created', {
+    'funnel': 'subscription',
+    'funnel_step': 'conversion',
+    'plan': 'pro',
+    'mrr': 9900
+})
 
 print(f"Accepted: {result['accepted']}, Rejected: {len(result['rejected'])}")
 ```
 
 ---
 
-## 5. Check Your Data
+## 7. Check Your Data
 
 After sending events:
 
 1. Go to [your dashboard](<%= dashboard_path %>)
 2. View recent events in the **Events** table
-3. Check **UTM Breakdown** to see attribution data
+3. Check **UTM Breakdown** to see channel attribution
 4. Monitor **Stats** for total visitors, sessions, and events
 
 ---
 
-## 6. Advanced Usage
+## 8. Advanced Usage
 
 ### Batch Processing
 
-Send up to 100 events per request to improve performance:
+Send up to 100 events per request for better performance:
 
 ```bash
 curl -X POST <%= api_v1_events_url %> \
@@ -327,17 +740,21 @@ curl -X POST <%= api_v1_events_url %> \
     "events": [
       {
         "event_type": "page_view",
-        "visitor_id": "user_abc123",
-        "session_id": "sess_xyz789",
-        "timestamp": "<%= 1.minute.ago.utc.iso8601 %>",
-        "properties": { "url": "https://example.com/" }
+        "timestamp": "<%= 2.minutes.ago.utc.iso8601 %>",
+        "url": "https://example.com/",
+        "referrer": "https://google.com/search"
       },
       {
         "event_type": "page_view",
-        "visitor_id": "user_abc123",
-        "session_id": "sess_xyz789",
+        "timestamp": "<%= 1.minute.ago.utc.iso8601 %>",
+        "url": "https://example.com/pricing",
+        "referrer": "https://example.com/"
+      },
+      {
+        "event_type": "page_view",
         "timestamp": "<%= Time.current.utc.iso8601 %>",
-        "properties": { "url": "https://example.com/products" }
+        "url": "https://example.com/signup",
+        "referrer": "https://example.com/pricing"
       }
     ]
   }'
@@ -349,12 +766,12 @@ The API returns partial successes. Always check the `rejected` array:
 
 ```json
 {
-  "accepted": 1,
+  "accepted": 2,
   "rejected": [
     {
       "index": 1,
       "errors": [
-        "visitor_id is required",
+        "url is required",
         "timestamp must be a valid ISO8601 datetime"
       ]
     }
@@ -376,23 +793,58 @@ If you exceed your rate limit (HTTP 429), wait until the reset time or upgrade y
 
 ---
 
-## 7. Best Practices
+## 9. Best Practices
 
-###  Do
+### ✅ Do
 
-- **Generate visitor_id client-side**: Use a hash of IP + User-Agent or similar
-- **Regenerate session_id**: After 30+ minutes of inactivity
-- **Send UTM params**: Capture all 5 UTM parameters when present
+- **Send full URLs**: Include query parameters (Multibuzz extracts UTMs automatically)
+- **Include referrer**: Enables fallback attribution when no UTM present
+- **Use funnel tracking**: Tag events with funnel context for conversion analysis
+- **Send complete URLs**: `https://example.com/page?utm_source=google&foo=bar` (not just `/page`)
 - **Use batch requests**: Send multiple events at once for better performance
 - **Handle errors gracefully**: Check `rejected` array and retry if needed
 - **Use test keys in development**: Keep test and live data separate
 
-### L Don't
+### ❌ Don't
 
-- **Don't use PII**: Never send emails, names, or other personal data as visitor_id
-- **Don't send client secrets**: Never expose API keys in browser JavaScript
+- **Don't manually extract UTMs**: Send the full URL, let Multibuzz parse it
+- **Don't generate visitor/session IDs**: Multibuzz manages these via cookies
+- **Don't send PII in URLs**: Filter passwords, emails before sending
+- **Don't expose API keys in browser**: Use server-side integration only
 - **Don't retry 4xx errors**: These are permanent failures (fix the data instead)
 - **Don't ignore rate limits**: Respect the limits or you'll be temporarily blocked
+
+---
+
+## 10. Attribution Models Supported
+
+Multibuzz captures data for multiple attribution models:
+
+### First-Touch Attribution
+
+Credit goes to the first marketing touchpoint.
+
+**Query**: Which channel brought this visitor initially?
+**Answer**: `visitor.sessions.order(:started_at).first.channel`
+
+### Last-Touch Attribution
+
+Credit goes to the last touchpoint before conversion.
+
+**Query**: Which channel drove this conversion?
+**Answer**: `conversion_event.session.channel`
+
+### Multi-Touch Attribution
+
+Credit distributed across all touchpoints.
+
+**Query**: What was the visitor's journey?
+**Answer**: `visitor.sessions.order(:started_at).pluck(:channel, :initial_utm)`
+
+**Example journey**:
+1. Session 1: Google Ads (`paid_search`)
+2. Session 2: Facebook post (`organic_social`)
+3. Session 3: Direct visit → **converts** (`direct`)
 
 ---
 
@@ -400,9 +852,10 @@ If you exceed your rate limit (HTTP 429), wait until the reset time or upgrade y
 
 Now that you're tracking events:
 
-1. **Set up UTM campaigns**: Add UTM parameters to all your marketing links
-2. **Monitor attribution**: Watch which channels drive the most traffic
-3. **Export data**: (Coming soon) Export to your data warehouse
-4. **Custom events**: (Coming soon) Track signups, purchases, and more
+1. **Set up UTM campaigns**: Add UTM parameters to your marketing links (or rely on referrer detection!)
+2. **Configure funnels**: Tag events with funnel context to track conversions
+3. **Monitor attribution**: See which channels drive the most valuable traffic
+4. **Analyze drop-offs**: Identify where users leave your funnels
+5. **Export data**: (Coming soon) Export to your data warehouse
 
-Happy tracking! =�
+Happy tracking! 🎉
