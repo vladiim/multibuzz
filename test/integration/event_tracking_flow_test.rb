@@ -127,7 +127,7 @@ class EventTrackingFlowTest < ActionDispatch::IntegrationTest
 
     # Account B should not have any events for Account A's visitor
     assert_equal 0, account_b.events.where(
-      properties: { url: "https://example.com/account-a-page" }
+      "properties->>'url' = ?", "https://example.com/account-a-page"
     ).count, "Account B should not have Account A's events"
 
     # And: Account A can see its own data
@@ -136,7 +136,7 @@ class EventTrackingFlowTest < ActionDispatch::IntegrationTest
     assert account_a.sessions.find_by(session_id: "account_a_unique_session").present?,
       "Account A should see its own session"
     assert account_a.events.where(
-      properties: { url: "https://example.com/account-a-page" }
+      "properties->>'url' = ?", "https://example.com/account-a-page"
     ).exists?, "Account A should have its own events"
   end
 

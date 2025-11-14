@@ -19,13 +19,39 @@ module Api
       end
 
       def process_events
-        # Always return 202 Accepted, even with partial failures
-        # Clients should check the rejected array
+        set_cookies
         render_accepted(ingestion_result)
       end
 
+      def set_cookies
+        response.headers["Set-Cookie"] = [
+          visitor_identification[:set_cookie],
+          session_identification[:set_cookie]
+        ].compact.join(", ")
+      end
+
+      def visitor_identification
+        @visitor_identification ||= Visitors::IdentificationService.new(request, current_account).call
+      end
+
+      def session_identification
+        @session_identification ||= Sessions::IdentificationService.new(
+          request,
+          current_account,
+          visitor_identification[:visitor_id]
+        ).call
+      end
+
       def ingestion_result
-        @ingestion_result ||= Events::IngestionService.new(current_account, async: true).call(events_data)
+        @ingestion_result ||= Events::IngestionService.new(current_account, async: true).call(enriched_events_data)
+      end
+
+      def enriched_events_data
+        events_data.map { |event_data| enrich_event(event_data) }
+      end
+
+      def enrich_event(event_data)
+        Events::EnrichmentService.new(request, event_data).call
       end
 
       def events_data
