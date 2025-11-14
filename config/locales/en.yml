@@ -95,6 +95,10 @@ en:
         copyright: "© %{year} Multibuzz. All rights reserved."
 
   auth:
+    brand: "Multibuzz"
+    tagline: "Multi-channel marketing attribution"
+    privacy: "Privacy Policy"
+    terms: "Terms of Service"
     login:
       title: "Welcome back"
       subtitle: "Sign in to your account"
@@ -106,7 +110,7 @@ en:
       forgot_password: "Forgot password?"
       submit: "Sign in"
       no_account: "Don't have an account?"
-      signup_link: "Sign up"
+      signup_link: "Create account"
     signup:
       title: "Create your account"
       subtitle: "Start tracking attribution in 5 minutes"
