@@ -1,26 +1,66 @@
-<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-  <div class="max-w-md w-full space-y-8">
-    <div>
-      <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-        Sign in to Multibuzz
-      </h2>
+<div class="min-h-screen flex items-center justify-center bg-white bg-pattern-dots px-6">
+  <div class="w-full max-w-md scroll-animate" data-controller="scroll-reveal">
+    <!-- Logo/Brand -->
+    <div class="text-center mb-8">
+      <h1 class="text-2xl font-bold text-gray-900"><%= t('auth.brand') %></h1>
+      <p class="mt-2 text-sm text-gray-600"><%= t('auth.tagline') %></p>
     </div>
 
-    <%= form_with url: login_path, method: :post, class: "mt-8 space-y-6" do |form| %>
-      <div class="rounded-md shadow-sm -space-y-px">
+    <!-- Login Card -->
+    <div class="card">
+      <div class="mb-6">
+        <h2 class="text-xl font-semibold text-gray-900"><%= t('auth.login.title') %></h2>
+        <p class="mt-1 text-sm text-gray-600"><%= t('auth.login.subtitle') %></p>
+      </div>
+
+      <%= form_with url: login_path, method: :post, class: "space-y-5" do |form| %>
+        <!-- Email Field -->
         <div>
-          <%= form.label :email, "Email address", class: "sr-only" %>
-          <%= form.email_field :email, required: true, autofocus: true, class: "appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm", placeholder: "Email address" %>
+          <%= form.label :email, t('auth.login.email_label'), class: "block text-sm font-medium text-gray-900 mb-2" %>
+          <%= form.email_field :email,
+            required: true,
+            autofocus: true,
+            class: "w-full px-3 py-2 border border-gray-200 rounded-md text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all",
+            placeholder: t('auth.login.email_placeholder') %>
         </div>
+
+        <!-- Password Field -->
         <div>
-          <%= form.label :password, "Password", class: "sr-only" %>
-          <%= form.password_field :password, required: true, class: "appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm", placeholder: "Password" %>
+          <%= form.label :password, t('auth.login.password_label'), class: "block text-sm font-medium text-gray-900 mb-2" %>
+          <%= form.password_field :password,
+            required: true,
+            class: "w-full px-3 py-2 border border-gray-200 rounded-md text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all",
+            placeholder: t('auth.login.password_placeholder') %>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="pt-2">
+          <%= form.submit t('auth.login.submit'),
+            class: "w-full px-4 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-all focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2" %>
+        </div>
+      <% end %>
+
+      <!-- Divider -->
+      <div class="relative my-6">
+        <div class="absolute inset-0 flex items-center">
+          <div class="w-full border-t border-gray-200"></div>
+        </div>
+        <div class="relative flex justify-center text-xs">
+          <span class="px-2 bg-white text-gray-500"><%= t('auth.login.no_account') %></span>
         </div>
       </div>
 
-      <div>
-        <%= form.submit "Sign in", class: "group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
+      <!-- Sign Up Link -->
+      <div class="text-center">
+        <%= link_to t('auth.login.signup_link'), signup_path, class: "text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors" %>
       </div>
-    <% end %>
+    </div>
+
+    <!-- Footer Links -->
+    <div class="mt-6 text-center text-xs text-gray-500">
+      <a href="#" class="hover:text-gray-900 transition-colors"><%= t('auth.privacy') %></a>
+      <span class="mx-2">·</span>
+      <a href="#" class="hover:text-gray-900 transition-colors"><%= t('auth.terms') %></a>
+    </div>
   </div>
 </div>
