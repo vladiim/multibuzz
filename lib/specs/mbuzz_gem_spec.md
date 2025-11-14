@@ -1,4 +1,4 @@
-# Multibuzz Ruby Gem Specification
+# mbuzz Ruby Gem Specification
 
 **Version**: 1.0.0
 **Created**: 2025-11-14
@@ -26,7 +26,7 @@ gem 'multibuzz'
 
 ```ruby
 # config/initializers/multibuzz.rb
-Multibuzz.configure do |config|
+mbuzz.configure do |config|
   config.api_key = ENV['MULTIBUZZ_API_KEY']
 end
 ```
@@ -38,7 +38,7 @@ end
 ### Track Events
 
 ```ruby
-Multibuzz.track(
+mbuzz.track(
   user_id: current_user.id,           # Required (or anonymous_id)
   event: 'Signup',                    # Required
   properties: {                       # Optional
@@ -50,7 +50,7 @@ Multibuzz.track(
 ### Identify Users
 
 ```ruby
-Multibuzz.identify(
+mbuzz.identify(
   user_id: current_user.id,           # Required
   traits: {                           # Optional
     email: current_user.email,
@@ -72,7 +72,7 @@ class SignupsController < ApplicationController
     @user = User.create!(signup_params)
 
     # Identify the user
-    Multibuzz.identify(
+    mbuzz.identify(
       user_id: @user.id,
       traits: {
         email: @user.email,
@@ -82,7 +82,7 @@ class SignupsController < ApplicationController
     )
 
     # Track the signup event
-    Multibuzz.track(
+    mbuzz.track(
       user_id: @user.id,
       event: 'Signup',
       properties: {
@@ -103,8 +103,8 @@ For tracking before user signs up:
 ```ruby
 class LandingController < ApplicationController
   def show
-    # Track anonymous visitor (Multibuzz creates visitor from cookies)
-    Multibuzz.track(
+    # Track anonymous visitor (mbuzz creates visitor from cookies)
+    mbuzz.track(
       anonymous_id: multibuzz_visitor_id,  # Helper method
       event: 'Landing Page View'
     )
@@ -116,12 +116,12 @@ class SignupsController < ApplicationController
     @user = User.create!(params)
 
     # Alias anonymous visitor to user
-    Multibuzz.alias(
+    mbuzz.alias(
       user_id: @user.id,
       previous_id: multibuzz_visitor_id
     )
 
-    Multibuzz.identify(
+    mbuzz.identify(
       user_id: @user.id,
       traits: { email: @user.email }
     )
@@ -136,7 +136,7 @@ end
 ```ruby
 class SubscriptionsController < ApplicationController
   def pricing
-    Multibuzz.track(
+    mbuzz.track(
       user_id: current_user.id,
       event: 'Pricing Page Viewed',
       properties: { funnel: 'subscription' }
@@ -144,7 +144,7 @@ class SubscriptionsController < ApplicationController
   end
 
   def checkout
-    Multibuzz.track(
+    mbuzz.track(
       user_id: current_user.id,
       event: 'Checkout Started',
       properties: { funnel: 'subscription' }
@@ -154,7 +154,7 @@ class SubscriptionsController < ApplicationController
   def create
     @subscription = Subscription.create!(params)
 
-    Multibuzz.track(
+    mbuzz.track(
       user_id: current_user.id,
       event: 'Subscription Created',
       properties: {
@@ -180,7 +180,7 @@ class Subscription < ApplicationRecord
   private
 
   def track_conversion
-    Multibuzz.track(
+    mbuzz.track(
       user_id: user_id,
       event: 'Subscription Created',
       properties: {
@@ -195,7 +195,7 @@ class InvoiceGenerationJob < ApplicationJob
   def perform(user_id)
     # ... generate invoice
 
-    Multibuzz.track(
+    mbuzz.track(
       user_id: user_id,
       event: 'Invoice Generated'
     )
@@ -206,19 +206,19 @@ end
 **How attribution works without request context:**
 - User signs up → identified with `user_id: 123`
 - Later: background job tracks event with `user_id: 123`
-- Multibuzz backend looks up visitor/session by user_id
+- mbuzz backend looks up visitor/session by user_id
 - Attribution maintained across request boundaries
 
 ---
 
 ## API Reference
 
-### `Multibuzz.track`
+### `mbuzz.track`
 
 Tracks an event.
 
 ```ruby
-Multibuzz.track(
+mbuzz.track(
   user_id: String|Integer,        # Required (or anonymous_id)
   anonymous_id: String,           # Required (or user_id)
   event: String,                  # Required
@@ -236,12 +236,12 @@ Multibuzz.track(
 
 **Returns:** `true` on success, `false` on failure (never raises)
 
-### `Multibuzz.identify`
+### `mbuzz.identify`
 
 Identifies a user and their traits.
 
 ```ruby
-Multibuzz.identify(
+mbuzz.identify(
   user_id: String|Integer,        # Required
   traits: Hash,                   # Optional
   timestamp: Time                 # Optional
@@ -260,12 +260,12 @@ Multibuzz.identify(
 
 **Returns:** `true` on success, `false` on failure
 
-### `Multibuzz.alias`
+### `mbuzz.alias`
 
 Links anonymous visitor to user_id on signup.
 
 ```ruby
-Multibuzz.alias(
+mbuzz.alias(
   user_id: String|Integer,        # Required (new ID)
   previous_id: String             # Required (old anonymous_id)
 )
@@ -282,7 +282,7 @@ Available in controllers. Returns visitor ID from cookies (or creates one).
 def show
   visitor_id = multibuzz_visitor_id  # Reads from cookies
 
-  Multibuzz.track(
+  mbuzz.track(
     anonymous_id: visitor_id,
     event: 'Page View'
   )
@@ -300,7 +300,7 @@ class SignupsController < ApplicationController
   def create
     @user = User.create!(params)
 
-    Multibuzz.track(
+    mbuzz.track(
       user_id: @user.id,
       event: 'Signup'
     )
@@ -312,7 +312,7 @@ end
 1. Gem reads `request.original_url` (captures UTM params)
 2. Gem reads `request.referrer`
 3. Gem reads cookies for visitor/session tracking
-4. Sends all to Multibuzz API
+4. Sends all to mbuzz API
 5. API returns Set-Cookie headers
 6. Gem forwards cookies to response
 
@@ -321,7 +321,7 @@ end
 ```ruby
 class SubscriptionJob < ApplicationJob
   def perform(user_id)
-    Multibuzz.track(
+    mbuzz.track(
       user_id: user_id,
       event: 'Trial Expired'
     )
@@ -331,7 +331,7 @@ end
 
 **Behind the scenes:**
 1. No URL/referrer (okay - not needed for this event)
-2. Multibuzz backend looks up visitor/session by user_id
+2. mbuzz backend looks up visitor/session by user_id
 3. Attribution maintained via user_id linkage
 
 ---
@@ -359,7 +359,7 @@ multibuzz/
 #### Main Module
 
 ```ruby
-module Multibuzz
+module mbuzz
   def self.track(user_id: nil, anonymous_id: nil, event:, properties: {}, timestamp: nil)
     Client.track(
       user_id: user_id,
@@ -387,7 +387,7 @@ end
 #### Client
 
 ```ruby
-module Multibuzz
+module mbuzz
   class Client
     def self.track(user_id:, anonymous_id:, event:, properties:, timestamp:)
       # Build event payload
@@ -430,7 +430,7 @@ end
 #### Request Context (Thread-Safe)
 
 ```ruby
-module Multibuzz
+module mbuzz
   class RequestContext
     def self.with_context(request:, response:)
       Thread.current[:multibuzz_request] = request
@@ -484,7 +484,7 @@ end
 #### Controller Middleware
 
 ```ruby
-module Multibuzz
+module mbuzz
   class Middleware
     def initialize(app)
       @app = app
@@ -512,7 +512,7 @@ end
 #### Controller Helper
 
 ```ruby
-module Multibuzz
+module mbuzz
   module ControllerHelpers
     def multibuzz_visitor_id
       cookies[:_multibuzz_vid] ||= SecureRandom.hex(32)
@@ -527,7 +527,7 @@ end
 ## Configuration
 
 ```ruby
-module Multibuzz
+module mbuzz
   class Configuration
     attr_accessor :api_key, :api_url, :timeout
 
@@ -558,7 +558,7 @@ def self.track(...)
   # ... build payload
   Api.post('/events', payload)
 rescue => e
-  Rails.logger.error("[Multibuzz] #{e.message}")
+  Rails.logger.error("[mbuzz] #{e.message}")
   false
 end
 ```
@@ -567,23 +567,23 @@ end
 
 ## Comparison to Segment
 
-| Feature | Segment | Multibuzz |
+| Feature | Segment | mbuzz |
 |---------|---------|-----------|
-| API Style | `Analytics.track(user_id:, event:)` | `Multibuzz.track(user_id:, event:)` ✅ Same |
-| Identify | `Analytics.identify(user_id:, traits:)` | `Multibuzz.identify(user_id:, traits:)` ✅ Same |
-| Alias | `Analytics.alias(user_id:, previous_id:)` | `Multibuzz.alias(user_id:, previous_id:)` ✅ Same |
+| API Style | `Analytics.track(user_id:, event:)` | `mbuzz.track(user_id:, event:)` ✅ Same |
+| Identify | `Analytics.identify(user_id:, traits:)` | `mbuzz.identify(user_id:, traits:)` ✅ Same |
+| Alias | `Analytics.alias(user_id:, previous_id:)` | `mbuzz.alias(user_id:, previous_id:)` ✅ Same |
 | Dependencies | Many | Zero ✅ |
-| Focus | Multi-destination | Single destination (Multibuzz) |
+| Focus | Multi-destination | Single destination (mbuzz) |
 | Server-Side | ✅ | ✅ |
 
-**Multibuzz advantage**: Simpler (no batching, queuing complexity), zero dependencies, focused on attribution.
+**mbuzz advantage**: Simpler (no batching, queuing complexity), zero dependencies, focused on attribution.
 
 ---
 
 ## README Example
 
 ```markdown
-# Multibuzz
+# mbuzz
 
 Multi-channel attribution tracking for Rails.
 
@@ -597,7 +597,7 @@ gem 'multibuzz'
 
 ```ruby
 # config/initializers/multibuzz.rb
-Multibuzz.configure do |config|
+mbuzz.configure do |config|
   config.api_key = ENV['MULTIBUZZ_API_KEY']
 end
 ```
@@ -607,7 +607,7 @@ end
 ### Track Events
 
 ```ruby
-Multibuzz.track(
+mbuzz.track(
   user_id: current_user.id,
   event: 'Signup',
   properties: { plan: 'pro' }
@@ -617,7 +617,7 @@ Multibuzz.track(
 ### Identify Users
 
 ```ruby
-Multibuzz.identify(
+mbuzz.identify(
   user_id: current_user.id,
   traits: {
     email: current_user.email,
@@ -629,13 +629,13 @@ Multibuzz.identify(
 ### Anonymous Tracking (Before Signup)
 
 ```ruby
-Multibuzz.track(
+mbuzz.track(
   anonymous_id: multibuzz_visitor_id,
   event: 'Landing Page View'
 )
 
 # On signup, link anonymous visitor to user
-Multibuzz.alias(
+mbuzz.alias(
   user_id: @user.id,
   previous_id: multibuzz_visitor_id
 )
@@ -646,7 +646,7 @@ Multibuzz.alias(
 ```ruby
 class SubscriptionJob < ApplicationJob
   def perform(user_id)
-    Multibuzz.track(
+    mbuzz.track(
       user_id: user_id,
       event: 'Trial Expired'
     )
