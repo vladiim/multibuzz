@@ -33,14 +33,34 @@ module Events
       session_result[:session]
     end
 
+    def url
+      event_data["url"] || event_data[:url]
+    end
+
+    def referrer
+      event_data["referrer"] || event_data[:referrer]
+    end
+
     def utm_data
-      @utm_data ||= Sessions::UtmCaptureService.new.call(event_data["properties"])
+      @utm_data ||= Sessions::UtmCaptureService.new(url).call(event_properties)
+    end
+
+    def event_properties
+      event_data["properties"] || event_data[:properties]
+    end
+
+    def channel
+      @channel ||= Sessions::ChannelAttributionService.new(utm_data, referrer).call
     end
 
     def capture_utm_if_new_session
       return unless session.initial_utm.blank?
 
-      session.update(initial_utm: utm_data) if utm_data.present?
+      session.update(
+        initial_utm: utm_data,
+        initial_referrer: referrer,
+        channel: channel
+      )
     end
 
     def save_event
