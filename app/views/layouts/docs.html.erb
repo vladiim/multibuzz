@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Multibuzz API Documentation</title>
+    <title>mbuzz API Documentation</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
@@ -18,7 +18,7 @@
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-8">
               <%= link_to root_path, class: "text-2xl font-bold text-gray-900" do %>
-                Multibuzz
+                mbuzz
               <% end %>
               <nav class="hidden md:flex gap-6">
                 <%= link_to "Getting Started", docs_path(page: "getting-started"), class: "text-gray-600 hover:text-gray-900" %>
@@ -62,7 +62,7 @@
       <footer class="border-t border-gray-200 mt-24">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <p class="text-center text-gray-500 text-sm">
-            &copy; <%= Time.current.year %> Multibuzz. Built with Rails.
+            &copy; <%= Time.current.year %> mbuzz.
           </p>
         </div>
       </footer>

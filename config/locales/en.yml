@@ -33,7 +33,7 @@ en:
   pages:
     home:
       nav:
-        brand: "Multibuzz"
+        brand: "mbuzz"
         features: "Features"
         docs: "Docs"
         login: "Login"
@@ -51,7 +51,7 @@ en:
           email: "Email"
           direct: "Direct"
           organic: "Organic"
-        hub: "Multibuzz"
+        hub: "mbuzz"
         output: "Unified Attribution"
       features:
         title: "Everything you need for attribution"
@@ -79,7 +79,7 @@ en:
         subtitle: "Start tracking in 5 minutes. No credit card required."
         button: "Get Started Free"
       footer:
-        brand: "Multibuzz"
+        brand: "mbuzz"
         tagline: "Multi-channel marketing attribution for developers"
         product: "Product"
         product_features: "Features"
@@ -92,10 +92,10 @@ en:
         legal: "Legal"
         legal_privacy: "Privacy"
         legal_terms: "Terms"
-        copyright: "© %{year} Multibuzz. All rights reserved."
+        copyright: "© %{year} mbuzz. All rights reserved."
 
   auth:
-    brand: "Multibuzz"
+    brand: "mbuzz"
     tagline: "Multi-channel marketing attribution"
     privacy: "Privacy Policy"
     terms: "Terms of Service"
@@ -130,7 +130,7 @@ en:
     api_keys:
       index:
         title: "API Keys"
-        subtitle: "Manage your API keys for accessing the Multibuzz API"
+        subtitle: "Manage your API keys for accessing the mbuzz API"
         generate_button: "Generate New Key"
         no_keys: "No API keys yet. Generate one to get started."
         table:
