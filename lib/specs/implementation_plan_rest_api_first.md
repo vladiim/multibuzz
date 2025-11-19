@@ -5,7 +5,7 @@
 This document outlines the REST API-first implementation approach for Multibuzz, replacing the original gem-first strategy. We'll build a production-ready REST API that any client (any language/framework) can consume.
 
 **Domain**: multibuzz.io
-**API Base URL**: https://api.multibuzz.io/v1
+**API Base URL**: https://multibuzz.io/api/v1
 
 **Philosophy**: Documentation-Driven Development (DDD)
 - Write API docs first (contract-first design)
@@ -843,7 +843,295 @@ The implementation matches all specifications from `feature_1_utm_tracking_spec.
 
 ---
 
-## Next Steps
+## Phase 2: TimescaleDB + Multi-Touch Attribution (Next)
+
+### Week 1: TimescaleDB Integration
+
+**Goal**: Convert events/sessions to hypertables for 10-20x performance improvement.
+
+**Key Benefits**:
+- ✅ Lossless compression (90% storage savings, all data preserved)
+- ✅ Automatic time-based partitioning
+- ✅ Continuous aggregates for instant dashboard queries
+- ✅ No data deletion (keep all raw data forever)
+
+**Implementation**:
+1. Add `timescaledb` gem
+2. Migrations: Enable extension, convert events/sessions to hypertables (1-week chunks)
+3. Migrations: Add compression (events: 7 days, sessions: 30 days, NO retention policy)
+4. Migrations: Create continuous aggregates (channel-based, not UTM-only):
+   - `channel_attribution_daily` - Channel performance aggregated by day
+   - `source_attribution_daily` - Traffic source breakdown
+5. Update dashboard services to query continuous aggregates
+
+**Success Criteria**:
+- [  ] Events & sessions are hypertables
+- [  ] Compression active, no retention policy
+- [  ] Continuous aggregates created (channel-based)
+- [  ] Dashboard queries <100ms (vs 1-5 seconds)
+- [  ] All 242 tests still pass
+
+---
+
+### Week 2-4: Multi-Touch Attribution Models
+
+**Goal**: Implement 11 attribution models with declarative language for custom models.
+
+**IMPORTANT**: Attribution is **channel-based** (not UTM-based). UTM is stored for drill-down detail only.
+
+---
+
+#### 11 Attribution Models
+
+**Rule-Based Models** (8):
+1. **First Touch** - 100% credit to first channel
+2. **Last Touch** - 100% credit to last channel
+3. **Linear** (aka Participation) - Equal credit to all channels
+4. **Time Decay** - Exponential decay (7-day half-life)
+5. **U-Shaped** (Position-Based) - 40% first, 40% last, 20% middle
+6. **W-Shaped** - 30% first, 30% last, 30% opportunity (MQL event), 10% other
+7. **Z-Shaped** (B2B Full Path) - 22.5% each: first, MQL, SQL, last + 10% other
+8. **Custom** - User-defined via declarative language
+
+**Data-Driven Models** (3 - Phase 3+):
+9. **Algorithmic** - Machine learning based on conversion patterns
+10. **Markov Chain** - Probability-based using transition matrices
+11. **Shapley Value** - Game theory cooperative credit
+
+---
+
+#### Database Schema
+
+```
+conversions:
+- account_id, visitor_id, session_id, event_id
+- conversion_type (signup, purchase, trial_start)
+- revenue (decimal, nullable)
+- converted_at
+- has_prefix_id :conv
+
+attribution_credits:
+- account_id, conversion_id, session_id, attribution_model_id
+- attribution_model (first_touch, linear, etc.)
+- credit (0.0 to 1.0)
+- revenue_credit (nullable)
+- channel (PRIMARY - what gets credit)
+- utm_data (jsonb, REFERENCE - for drill-down)
+- has_prefix_id :cred
+
+attribution_models (custom models):
+- account_id, name, description
+- model_type (preset, custom)
+- dsl_code (text) - Declarative language source
+- rules (jsonb) - Compiled AST
+- is_active
+- has_prefix_id :amod
+```
+
+---
+
+#### Declarative Attribution Language
+
+**See**: `lib/specs/attribution_dsl_design.md` for full design spec.
+
+**Note**: Phase 2C will implement a **true declarative language**, not YAML config.
+
+**Design Goals**:
+- Users describe **what** they want, not **how** to compute it
+- Composable rules (combine conditions, weights, distributions)
+- Type-safe (credits sum to 1.0, validated at definition time)
+- Readable by non-technical marketers
+- Visual builder generates valid DSL code
+
+**Example Syntax** (draft):
+```
+model "U-Shaped Attribution"
+  credit first_touch with 0.4
+  credit last_touch with 0.4
+  credit middle_touches with 0.2 equally
+end
+
+model "Channel Weighted"
+  weight channel("paid_search") by 1.5
+  weight channel("email") by 1.2
+  distribute proportionally
+end
+```
+
+**Implementation Components**:
+- Lexer (tokenize DSL text)
+- Parser (build AST)
+- Validator (enforce credits sum to 1.0)
+- Interpreter (execute AST against journey)
+- Visual builder UI (generates DSL code)
+
+---
+
+#### Service Architecture
+
+```
+app/services/attribution/
+├── base_service.rb              # Abstract base
+├── dsl/                         # Declarative language engine
+│   ├── lexer.rb
+│   ├── parser.rb
+│   ├── validator.rb
+│   ├── interpreter.rb
+│   └── ast/                     # AST node types
+├── presets/                     # Built-in models (7)
+│   ├── first_touch_service.rb
+│   ├── last_touch_service.rb
+│   ├── linear_service.rb
+│   ├── time_decay_service.rb
+│   ├── u_shaped_service.rb
+│   ├── w_shaped_service.rb
+│   └── z_shaped_service.rb
+├── custom_service.rb            # Executes user-defined DSL
+└── factory.rb                   # Returns correct service
+
+app/services/conversions/
+└── tracking_service.rb          # Creates conversion, runs attribution
+```
+
+---
+
+#### API Endpoints
+
+**Conversion Tracking**:
+```
+POST /api/v1/conversions
+{
+  "conversion": {
+    "event_id": "evt_abc123",
+    "conversion_type": "signup",
+    "revenue": 99.99
+  }
+}
+
+Response 201:
+{
+  "conversion_id": "conv_xyz789",
+  "attribution_credits": {
+    "first_touch": [
+      { "channel": "organic_search", "credit": 1.0, "revenue_credit": 99.99, ... }
+    ],
+    "linear": [
+      { "channel": "organic_search", "credit": 0.33, ... },
+      { "channel": "paid_search", "credit": 0.33, ... },
+      { "channel": "email", "credit": 0.33, ... }
+    ]
+  }
+}
+```
+
+**Custom Attribution Models**:
+```
+POST /api/v1/attribution_models
+{
+  "attribution_model": {
+    "name": "My Custom Model",
+    "dsl_code": "model \"Custom\" credit first_touch with 0.5 ..."
+  }
+}
+
+GET /api/v1/attribution_models
+PATCH /api/v1/attribution_models/:id
+DELETE /api/v1/attribution_models/:id
+```
+
+---
+
+#### Dashboard Integration
+
+```
+app/controllers/dashboard/
+├── attribution_controller.rb        # Channel attribution reports
+│   - GET /dashboard/attribution?model=linear&days=30
+│   - Shows channel performance (primary)
+│   - Drill-down: channel → UTM campaigns
+│
+└── attribution_models_controller.rb # Manage custom models
+    - Visual DSL builder UI
+    - Live preview with sample journey
+
+app/views/dashboard/attribution/
+├── show.html.erb                    # Channel attribution report
+└── models/
+    ├── index.html.erb               # List models
+    ├── new.html.erb                 # Visual DSL builder
+    └── _form.html.erb               # DSL editor + preview
+```
+
+---
+
+#### Success Criteria
+
+**Phase 2A: TimescaleDB** (Week 1):
+- [  ] Hypertables created, compression active
+- [  ] Continuous aggregates (channel-based)
+- [  ] Dashboard queries <100ms
+
+**Phase 2B: Preset Models** (Week 2):
+- [  ] 7 preset models implemented
+- [  ] Channel-based attribution (not UTM)
+- [  ] Conversion tracking API working
+- [  ] Revenue attribution calculated
+
+**Phase 2C: Declarative Language** (Week 3-4):
+- [  ] DSL designed (see `attribution_dsl_design.md`)
+- [  ] Lexer, parser, validator, interpreter implemented
+- [  ] Custom models API (CRUD)
+- [  ] Visual DSL builder UI
+- [  ] 95%+ test coverage
+
+---
+
+## Phase 3: mbuzz-ruby Gem Integration
+
+### Current Status: ⚠️ PARTIAL - 11 Test Failures
+
+**Repository**: `/Users/vlad/code/mbuzz-ruby`
+
+**Critical Issues** (5):
+
+| # | Location | Problem | Fix | Time |
+|---|----------|---------|-----|------|
+| 1 | `middleware/tracking.rb:57` | Deprecated Rack API | Use `set_cookie_header!` | 1h |
+| 2 | `client.rb` | Wrong endpoints | Send via `/api/v1/events` | 2-3h |
+| 3 | `client.rb` | Wrong param name | Use `anonymous_id` | 1h |
+| 4 | `client.rb` | Missing context | Add URL/referrer to payload | 2h |
+| 5 | `README.md` | Placeholders | Write docs | 2-3h |
+
+**Integration Checklist**:
+- [  ] Fix 5 issues above
+- [  ] All 55+ tests passing
+- [  ] Complete README
+- [  ] Test with live backend
+- [  ] Demo Rails app integration
+
+---
+
+## Next Steps (Priority Order)
+
+### Immediate (Week 1)
+1. **✅ Phase 1 MVP** - COMPLETE (242 tests, production-ready)
+2. **⏳ TimescaleDB** - Hypertables, compression, continuous aggregates
+
+### Short-term (Weeks 2-4)
+3. **🎯 Multi-Touch Attribution**
+   - Week 2: 7 preset models (channel-based)
+   - Week 3-4: Declarative language + visual builder
+
+### Short-term (Week 5)
+4. **🔧 Fix mbuzz-ruby Gem** - Fix 5 issues, complete docs
+
+### Medium-term (Month 2+)
+5. **🚀 Launch Beta** - Integration, user testing
+6. **🤖 Data-Driven Models** - Algorithmic, Markov, Shapley (Phase 3)
+
+---
+
+## Original Next Steps (Archived)
 
 1. **Set up documentation structure**
    ```bash
