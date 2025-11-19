@@ -10,9 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_14_011758) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_19_030352) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+  enable_extension "timescaledb"
 
   create_table "accounts", force: :cascade do |t|
     t.string "name", null: false
@@ -45,7 +46,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_14_011758) do
     t.index ["revoked_at"], name: "index_api_keys_on_revoked_at"
   end
 
-  create_table "events", force: :cascade do |t|
+  create_table "events", primary_key: ["id", "occurred_at"], force: :cascade do |t|
+    t.bigserial "id", null: false
     t.bigint "account_id", null: false
     t.bigint "visitor_id", null: false
     t.bigint "session_id", null: false
@@ -62,12 +64,14 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_14_011758) do
     t.index ["account_id", "event_type"], name: "index_events_on_account_id_and_event_type"
     t.index ["account_id", "occurred_at"], name: "index_events_on_account_id_and_occurred_at"
     t.index ["account_id"], name: "index_events_on_account_id"
+    t.index ["occurred_at"], name: "events_occurred_at_idx", order: :desc
     t.index ["properties"], name: "index_events_on_properties", using: :gin
     t.index ["session_id"], name: "index_events_on_session_id"
     t.index ["visitor_id"], name: "index_events_on_visitor_id"
   end
 
-  create_table "sessions", force: :cascade do |t|
+  create_table "sessions", primary_key: ["id", "started_at"], force: :cascade do |t|
+    t.bigserial "id", null: false
     t.bigint "account_id", null: false
     t.bigint "visitor_id", null: false
     t.string "session_id", null: false
@@ -79,10 +83,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_14_011758) do
     t.datetime "updated_at", null: false
     t.string "initial_referrer"
     t.string "channel"
-    t.index ["account_id", "session_id"], name: "index_sessions_on_account_id_and_session_id", unique: true
+    t.index ["account_id", "session_id", "started_at"], name: "index_sessions_on_account_id_and_session_id", unique: true
     t.index ["account_id"], name: "index_sessions_on_account_id"
     t.index ["channel"], name: "index_sessions_on_channel"
     t.index ["ended_at"], name: "index_sessions_on_ended_at"
+    t.index ["id", "started_at"], name: "index_sessions_on_id_unique", unique: true
     t.index ["initial_utm"], name: "index_sessions_on_initial_utm", using: :gin
     t.index ["session_id"], name: "index_sessions_on_session_id"
     t.index ["started_at"], name: "index_sessions_on_started_at"
@@ -118,8 +123,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_14_011758) do
 
   add_foreign_key "api_keys", "accounts"
   add_foreign_key "events", "accounts"
-  add_foreign_key "events", "sessions"
   add_foreign_key "events", "visitors"
+  # Note: events -> sessions foreign key removed due to TimescaleDB composite primary key
+  # Application-level relationship still enforced via ActiveRecord associations
   add_foreign_key "sessions", "accounts"
   add_foreign_key "sessions", "visitors"
   add_foreign_key "users", "accounts"
