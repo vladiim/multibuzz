@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_19_032739) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_19_053646) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -44,6 +44,64 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_19_032739) do
     t.index ["key_digest"], name: "index_api_keys_on_key_digest", unique: true
     t.index ["key_prefix"], name: "index_api_keys_on_key_prefix"
     t.index ["revoked_at"], name: "index_api_keys_on_revoked_at"
+  end
+
+  create_table "attribution_credits", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "conversion_id", null: false
+    t.bigint "attribution_model_id", null: false
+    t.bigint "session_id", null: false
+    t.string "channel", null: false
+    t.decimal "credit", precision: 5, scale: 4, null: false
+    t.decimal "revenue_credit", precision: 10, scale: 2
+    t.string "utm_source"
+    t.string "utm_medium"
+    t.string "utm_campaign"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "attribution_model_id", "channel"], name: "index_credits_on_account_model_channel"
+    t.index ["account_id", "channel"], name: "index_attribution_credits_on_account_id_and_channel"
+    t.index ["account_id"], name: "index_attribution_credits_on_account_id"
+    t.index ["attribution_model_id", "channel"], name: "index_attribution_credits_on_attribution_model_id_and_channel"
+    t.index ["attribution_model_id"], name: "index_attribution_credits_on_attribution_model_id"
+    t.index ["conversion_id", "attribution_model_id"], name: "idx_on_conversion_id_attribution_model_id_08931b86a1"
+    t.index ["conversion_id"], name: "index_attribution_credits_on_conversion_id"
+  end
+
+  create_table "attribution_models", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "name", null: false
+    t.integer "model_type", default: 0, null: false
+    t.integer "algorithm"
+    t.text "dsl_code"
+    t.jsonb "compiled_rules", default: {}
+    t.boolean "is_active", default: true, null: false
+    t.boolean "is_default", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "is_active"], name: "index_attribution_models_on_account_id_and_is_active"
+    t.index ["account_id", "is_default"], name: "index_attribution_models_on_account_id_and_is_default"
+    t.index ["account_id", "name"], name: "index_attribution_models_on_account_id_and_name", unique: true
+    t.index ["account_id"], name: "index_attribution_models_on_account_id"
+  end
+
+  create_table "conversions", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "visitor_id", null: false
+    t.bigint "session_id", null: false
+    t.bigint "event_id", null: false
+    t.string "conversion_type", null: false
+    t.decimal "revenue", precision: 10, scale: 2
+    t.datetime "converted_at", null: false
+    t.bigint "journey_session_ids", default: [], array: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "converted_at"], name: "index_conversions_on_account_id_and_converted_at"
+    t.index ["account_id"], name: "index_conversions_on_account_id"
+    t.index ["conversion_type"], name: "index_conversions_on_conversion_type"
+    t.index ["converted_at"], name: "index_conversions_on_converted_at"
+    t.index ["visitor_id", "converted_at"], name: "index_conversions_on_visitor_id_and_converted_at"
+    t.index ["visitor_id"], name: "index_conversions_on_visitor_id"
   end
 
   create_table "events", primary_key: ["id", "occurred_at"], force: :cascade do |t|
@@ -122,15 +180,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_19_032739) do
   end
 
   add_foreign_key "api_keys", "accounts"
+  add_foreign_key "attribution_credits", "accounts"
+  add_foreign_key "attribution_credits", "attribution_models"
+  add_foreign_key "attribution_credits", "conversions"
+  add_foreign_key "attribution_models", "accounts"
+  add_foreign_key "conversions", "accounts"
+  add_foreign_key "conversions", "visitors"
   add_foreign_key "events", "accounts"
   add_foreign_key "events", "visitors"
-  # Note: events -> sessions foreign key removed due to TimescaleDB composite primary key
   add_foreign_key "sessions", "accounts"
   add_foreign_key "sessions", "visitors"
   add_foreign_key "users", "accounts"
   add_foreign_key "visitors", "accounts"
-
-  # TimescaleDB continuous aggregates (materialized views)
-  # - channel_attribution_daily: Channel performance by day
-  # - source_attribution_daily: Traffic source breakdown by day
-end
