@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_19_030352) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_19_032739) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -125,9 +125,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_19_030352) do
   add_foreign_key "events", "accounts"
   add_foreign_key "events", "visitors"
   # Note: events -> sessions foreign key removed due to TimescaleDB composite primary key
-  # Application-level relationship still enforced via ActiveRecord associations
   add_foreign_key "sessions", "accounts"
   add_foreign_key "sessions", "visitors"
   add_foreign_key "users", "accounts"
   add_foreign_key "visitors", "accounts"
+
+  # TimescaleDB continuous aggregates (materialized views)
+  # - channel_attribution_daily: Channel performance by day
+  # - source_attribution_daily: Traffic source breakdown by day
 end
