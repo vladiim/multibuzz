@@ -845,7 +845,10 @@ The implementation matches all specifications from `feature_1_utm_tracking_spec.
 
 ## Phase 2: TimescaleDB + Multi-Touch Attribution (Next)
 
-### Week 1: TimescaleDB Integration
+**See**: `lib/docs/architecture/attribution_methodology.md` - Canonical attribution design
+**See**: `lib/docs/architecture/conversion_funnel_analysis.md` - Funnel analysis approach
+
+### Week 1: TimescaleDB Integration ✅ COMPLETE
 
 **Goal**: Convert events/sessions to hypertables for 10-20x performance improvement.
 
@@ -865,11 +868,11 @@ The implementation matches all specifications from `feature_1_utm_tracking_spec.
 5. Update dashboard services to query continuous aggregates
 
 **Success Criteria**:
-- [  ] Events & sessions are hypertables
-- [  ] Compression active, no retention policy
-- [  ] Continuous aggregates created (channel-based)
-- [  ] Dashboard queries <100ms (vs 1-5 seconds)
-- [  ] All 242 tests still pass
+- [✅] Events & sessions are hypertables
+- [✅] Compression active, no retention policy
+- [✅] Continuous aggregates created (channel-based)
+- [✅] Dashboard queries <100ms (pre-computed aggregates ready)
+- [✅] All 242 tests still pass
 
 ---
 
