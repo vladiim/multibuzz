@@ -1,3 +1,9 @@
 class AttributionModel < ApplicationRecord
-  belongs_to :account
+  include AttributionModel::Enums
+  include AttributionModel::Relationships
+  include AttributionModel::Validations
+  include AttributionModel::Scopes
+  include AttributionModel::Callbacks
+
+  has_prefix_id :attr
 end

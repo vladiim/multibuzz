@@ -192,3 +192,4 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_19_053646) do
   add_foreign_key "sessions", "visitors"
   add_foreign_key "users", "accounts"
   add_foreign_key "visitors", "accounts"
+end

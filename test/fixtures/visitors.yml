@@ -11,8 +11,14 @@ two:
   first_seen_at: <%= 30.days.ago %>
   last_seen_at: <%= 1.day.ago %>
 
-other_account_visitor:
+three:
   account: two
   visitor_id: "vis_other123"
   first_seen_at: <%= 10.days.ago %>
   last_seen_at: <%= 2.hours.ago %>
+
+other_account_visitor:
+  account: two
+  visitor_id: "vis_other456"
+  first_seen_at: <%= 15.days.ago %>
+  last_seen_at: <%= 3.hours.ago %>
