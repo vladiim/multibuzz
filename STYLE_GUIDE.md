@@ -3,9 +3,9 @@
 ## Brand Identity
 
 ### Positioning
-**"Multi-Channel Marketing Attribution - No Frills, All Data"**
+**"Multi-Touch Marketing Attribution - No Frills, All Data"**
 - Developer-focused analytics platform
-- Multi-channel = Multi-color (visual metaphor)
+- Multi-touch = Multi-color (visual metaphor)
 - Professional but vibrant
 - Data-driven, not marketing-driven
 

@@ -177,7 +177,7 @@ Key principles:
 - **Minimal color**: Monochrome with blue for emphasis and interaction
 - **Data-forward**: Clean layouts with structured information (tables, cards, lists)
 - **Generous spacing**: Let content breathe
-- **Flow visualization**: Subtle animations showing multi-channel attribution flowing into unified insights
+- **Flow visualization**: Subtle animations showing multi-touch attribution flowing into unified insights
 
 ---
 
@@ -528,9 +528,9 @@ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', s
 }
 ```
 
-### Multi-Channel Attribution Flow Animation
+### Multi-Touch Attribution Flow Animation
 
-This is a key differentiator showing how multiple marketing channels flow into Multibuzz for unified attribution.
+This is a key differentiator showing how multiple marketing touchpoints flow into mbuzz for unified attribution.
 
 ```html
 <div class="attribution-flow">

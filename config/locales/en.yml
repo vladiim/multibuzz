@@ -38,7 +38,7 @@ en:
         docs: "Docs"
         login: "Login"
       hero:
-        title: "Multi-channel marketing attribution"
+        title: "Multi-touch marketing attribution"
         subtitle: "Track every touchpoint across Google, Facebook, LinkedIn, email, and more. See which channels drive conversions, not just clicks."
         cta_primary: "Get Started Free"
         cta_secondary: "View Documentation"
@@ -80,7 +80,7 @@ en:
         button: "Get Started Free"
       footer:
         brand: "mbuzz"
-        tagline: "Multi-channel marketing attribution for developers"
+        tagline: "Multi-touch marketing attribution for developers"
         product: "Product"
         product_features: "Features"
         product_pricing: "Pricing"
@@ -96,7 +96,7 @@ en:
 
   auth:
     brand: "mbuzz"
-    tagline: "Multi-channel marketing attribution"
+    tagline: "Multi-touch marketing attribution"
     privacy: "Privacy Policy"
     terms: "Terms of Service"
     login:

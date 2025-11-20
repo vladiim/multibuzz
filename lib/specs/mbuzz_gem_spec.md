@@ -8,7 +8,7 @@
 
 ## Overview
 
-A minimal Rails gem for multi-channel attribution tracking, following Segment's API design pattern.
+A minimal Rails gem for multi-touch attribution tracking, following Segment's API design pattern.
 
 **API Design**: Inspired by Segment analytics-ruby - simple class methods with named parameters.
 
@@ -585,7 +585,7 @@ end
 ```markdown
 # mbuzz
 
-Multi-channel attribution tracking for Rails.
+No-frills multi-touch attribution for Rails.
 
 ## Installation
 
