@@ -32,8 +32,12 @@ registry:
 env:
   secret:
     - RAILS_MASTER_KEY
-    - DATABASE_URL
+    - POSTGRES_PASSWORD
   clear:
+    POSTGRES_USER: multibuzz
+    POSTGRES_DB: multibuzz_production
+    DB_HOST: multibuzz-postgres
+    DB_PORT: 5432
     # Run the Solid Queue Supervisor inside the web server's Puma process to do jobs.
     # When you start using multiple servers, you should split out job processing to a dedicated machine.
     SOLID_QUEUE_IN_PUMA: true
@@ -90,25 +94,18 @@ builder:
 #   user: app
 
 # Use accessory services (secrets come from .kamal/secrets).
-# accessories:
-#   db:
-#     image: mysql:8.0
-#     host: 192.168.0.2
-#     # Change to 3306 to expose port to the world instead of just local network.
-#     port: "127.0.0.1:3306:3306"
-#     env:
-#       clear:
-#         MYSQL_ROOT_HOST: '%'
-#       secret:
-#         - MYSQL_ROOT_PASSWORD
-#     files:
-#       - config/mysql/production.cnf:/etc/mysql/my.cnf
-#       - db/production.sql:/docker-entrypoint-initdb.d/setup.sql
-#     directories:
-#       - data:/var/lib/mysql
-#   redis:
-#     image: redis:7.0
-#     host: 192.168.0.2
-#     port: 6379
-#     directories:
-#       - data:/data
+accessories:
+  postgres:
+    image: timescale/timescaledb:latest-pg18
+    host: 165.232.155.49
+    port: "127.0.0.1:5432:5432"
+    env:
+      clear:
+        POSTGRES_USER: multibuzz
+        POSTGRES_DB: multibuzz_production
+      secret:
+        - POSTGRES_PASSWORD
+    files:
+      - db/production_setup.sql:/docker-entrypoint-initdb.d/setup.sql
+    directories:
+      - data:/var/lib/postgresql/data
