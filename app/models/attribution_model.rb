@@ -4,6 +4,7 @@ class AttributionModel < ApplicationRecord
   include AttributionModel::Validations
   include AttributionModel::Scopes
   include AttributionModel::Callbacks
+  include AttributionModel::AlgorithmMapping
 
   has_prefix_id :attr
 end
