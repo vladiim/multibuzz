@@ -1,0 +1,31 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+signup:
+  account: one
+  visitor: one
+  session_id: 1
+  event_id: 1
+  conversion_type: signup
+  revenue:
+  converted_at: 2025-11-19 10:00:00
+  journey_session_ids: [1]
+
+purchase:
+  account: one
+  visitor: two
+  session_id: 2
+  event_id: 2
+  conversion_type: purchase
+  revenue: 99.99
+  converted_at: 2025-11-19 11:00:00
+  journey_session_ids: [2, 3]
+
+trial_start:
+  account: two
+  visitor: three
+  session_id: 4
+  event_id: 3
+  conversion_type: trial_start
+  revenue:
+  converted_at: 2025-11-19 12:00:00
+  journey_session_ids: [4, 5, 6] 
