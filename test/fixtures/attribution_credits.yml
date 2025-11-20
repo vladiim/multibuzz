@@ -1,0 +1,25 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+signup_first_touch:
+  account: one
+  conversion: signup
+  attribution_model: first_touch
+  session_id: 1
+  channel: organic_search
+  credit: 1.0000
+  revenue_credit:
+  utm_source: google
+  utm_medium: organic
+  utm_campaign:
+
+purchase_last_touch:
+  account: one
+  conversion: purchase
+  attribution_model: last_touch
+  session_id: 3
+  channel: paid_search
+  credit: 1.0000
+  revenue_credit: 99.99
+  utm_source: google
+  utm_medium: cpc
+  utm_campaign: summer_sale
