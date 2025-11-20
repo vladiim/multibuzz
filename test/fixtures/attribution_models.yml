@@ -9,6 +9,7 @@ first_touch:
   compiled_rules: {}
   is_active: true
   is_default: true
+  lookback_days: 30
 
 last_touch:
   account: one
@@ -19,6 +20,7 @@ last_touch:
   compiled_rules: {}
   is_active: true
   is_default: false
+  lookback_days: 30
 
 linear:
   account: two
@@ -29,3 +31,4 @@ linear:
   compiled_rules: {}
   is_active: true
   is_default: true
+  lookback_days: 30
