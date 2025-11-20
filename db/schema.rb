@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_19_053646) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_19_233245) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -79,6 +79,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_19_053646) do
     t.boolean "is_default", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "lookback_days", default: 30, null: false
     t.index ["account_id", "is_active"], name: "index_attribution_models_on_account_id_and_is_active"
     t.index ["account_id", "is_default"], name: "index_attribution_models_on_account_id_and_is_default"
     t.index ["account_id", "name"], name: "index_attribution_models_on_account_id_and_name", unique: true
