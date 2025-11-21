@@ -32,6 +32,7 @@ registry:
 env:
   secret:
     - RAILS_MASTER_KEY
+    - POSTGRES_PASSWORD
   clear:
     POSTGRES_USER: multibuzz
     POSTGRES_DB: multibuzz_production
