@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_20_034521) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_21_015619) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -129,6 +129,21 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_20_034521) do
     t.index ["visitor_id"], name: "index_events_on_visitor_id"
   end
 
+  create_table "form_submissions", force: :cascade do |t|
+    t.string "type", null: false
+    t.string "email", null: false
+    t.jsonb "data", default: {}, null: false
+    t.integer "status", default: 0, null: false
+    t.string "ip_address"
+    t.text "user_agent"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_form_submissions_on_created_at"
+    t.index ["email"], name: "index_form_submissions_on_email"
+    t.index ["status"], name: "index_form_submissions_on_status"
+    t.index ["type"], name: "index_form_submissions_on_type"
+  end
+
   create_table "sessions", primary_key: ["id", "started_at"], force: :cascade do |t|
     t.bigserial "id", null: false
     t.bigint "account_id", null: false
@@ -193,3 +208,4 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_20_034521) do
   add_foreign_key "sessions", "visitors"
   add_foreign_key "users", "accounts"
   add_foreign_key "visitors", "accounts"
+end
