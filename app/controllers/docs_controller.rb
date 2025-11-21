@@ -8,13 +8,7 @@ class DocsController < ApplicationController
 
     return render_404 unless ALLOWED_PAGES.include?(page_slug)
 
-    # Convert dashes to underscores for file lookup
-    # e.g., 'getting-started' -> 'getting_started.md.erb'
     @page_name = page_slug.tr("-", "_")
-
-    render template: "docs/#{@page_name}", formats: [:md]
-  rescue ActionView::MissingTemplate
-    render_404
   end
 
   private
