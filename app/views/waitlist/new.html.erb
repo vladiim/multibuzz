@@ -1,0 +1,89 @@
+<div class="min-h-screen flex items-center justify-center bg-white bg-pattern-dots px-6">
+  <div class="w-full max-w-md scroll-animate" data-controller="scroll-reveal">
+    <!-- Logo/Brand -->
+    <div class="text-center mb-8">
+      <h1 class="text-2xl font-bold text-gray-900"><%= t('waitlist.new.brand') %></h1>
+      <p class="mt-2 text-sm text-gray-600"><%= t('waitlist.new.tagline') %></p>
+    </div>
+
+    <!-- Waitlist Card -->
+    <div class="card">
+      <div class="mb-6">
+        <h2 class="text-xl font-semibold text-gray-900"><%= t('waitlist.new.title') %></h2>
+        <p class="mt-1 text-sm text-gray-600"><%= t('waitlist.new.subtitle') %></p>
+      </div>
+
+      <%= form_with model: @submission, url: waitlist_index_path, class: "space-y-5" do |form| %>
+        <!-- Email Field -->
+        <div>
+          <%= form.label :email, t('waitlist.new.email_label'), class: "block text-sm font-medium text-gray-900 mb-2" %>
+          <%= form.email_field :email,
+            required: true,
+            autofocus: true,
+            class: "w-full px-3 py-2 border border-gray-200 rounded-md text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all",
+            placeholder: t('waitlist.new.email_placeholder') %>
+          <% if @submission.errors[:email].any? %>
+            <p class="mt-1 text-sm text-red-600"><%= @submission.errors[:email].first %></p>
+          <% end %>
+        </div>
+
+        <!-- Role Field -->
+        <div>
+          <%= form.label :role, t('waitlist.new.role_label'), class: "block text-sm font-medium text-gray-900 mb-2" %>
+          <div class="space-y-2">
+            <% WaitlistSubmission::VALID_ROLES.each do |role_option| %>
+              <label class="flex items-center">
+                <%= form.radio_button :role, role_option,
+                  class: "mr-2 text-blue-600 focus:ring-blue-600" %>
+                <span class="text-sm text-gray-900"><%= t("waitlist.new.roles.#{role_option}") %></span>
+              </label>
+            <% end %>
+          </div>
+          <% if @submission.errors[:role].any? %>
+            <p class="mt-1 text-sm text-red-600"><%= @submission.errors[:role].first %></p>
+          <% end %>
+        </div>
+
+        <!-- Framework Field -->
+        <div>
+          <%= form.label :framework, t('waitlist.new.framework_label'), class: "block text-sm font-medium text-gray-900 mb-2" %>
+          <div class="space-y-2">
+            <% WaitlistSubmission::VALID_FRAMEWORKS.each do |framework_option| %>
+              <label class="flex items-center">
+                <%= form.radio_button :framework, framework_option,
+                  class: "mr-2 text-blue-600 focus:ring-blue-600",
+                  data: { action: "change->waitlist#toggleFrameworkOther" } %>
+                <span class="text-sm text-gray-900"><%= t("waitlist.new.frameworks.#{framework_option}") %></span>
+              </label>
+            <% end %>
+          </div>
+          <% if @submission.errors[:framework].any? %>
+            <p class="mt-1 text-sm text-red-600"><%= @submission.errors[:framework].first %></p>
+          <% end %>
+        </div>
+
+        <!-- Framework Other Field (Conditional) -->
+        <div id="framework-other-field" class="<%= 'hidden' unless @submission.framework == 'other' %>" data-waitlist-target="frameworkOtherField">
+          <%= form.label :framework_other, t('waitlist.new.framework_other_label'), class: "block text-sm font-medium text-gray-900 mb-2" %>
+          <%= form.text_field :framework_other,
+            class: "w-full px-3 py-2 border border-gray-200 rounded-md text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all",
+            placeholder: t('waitlist.new.framework_other_placeholder') %>
+          <% if @submission.errors[:framework_other].any? %>
+            <p class="mt-1 text-sm text-red-600"><%= @submission.errors[:framework_other].first %></p>
+          <% end %>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="pt-2">
+          <%= form.submit t('waitlist.new.submit'),
+            class: "w-full px-4 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-all focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2" %>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Footer Links -->
+    <div class="mt-6 text-center text-xs text-gray-500">
+      <%= link_to t('waitlist.new.back_home'), root_path, class: "hover:text-gray-900 transition-colors" %>
+    </div>
+  </div>
+</div>

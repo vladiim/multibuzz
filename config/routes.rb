@@ -21,6 +21,9 @@ Rails.application.routes.draw do
   # Public pages
   get "home", to: "pages#home"
 
+  # Waitlist
+  resources :waitlist, only: [ :new, :create, :show ]
+
   # Documentation routes
   get "docs/:page", to: "docs#show", as: :docs, constraints: { page: /[\w-]+/ }
 

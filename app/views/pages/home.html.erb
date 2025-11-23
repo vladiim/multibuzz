@@ -38,7 +38,7 @@
         <%= t('pages.home.hero.subtitle') %>
       </p>
       <div class="mt-10 flex justify-center gap-4 scroll-animate" data-controller="scroll-reveal">
-        <%= link_to t('pages.home.hero.cta_primary'), login_path, class: "px-6 py-3 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-all" %>
+        <%= link_to t('pages.home.hero.cta_primary'), new_waitlist_path, class: "px-6 py-3 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-all" %>
         <%= link_to t('pages.home.hero.cta_secondary'), docs_path('getting-started'), class: "px-6 py-3 text-sm font-semibold text-gray-900 bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 rounded-md transition-all" %>
       </div>
     </div>
@@ -243,7 +243,7 @@
         <%= t('pages.home.cta.subtitle') %>
       </p>
       <div class="mt-10">
-        <%= link_to t('pages.home.cta.button'), login_path, class: "px-8 py-3 text-base font-semibold text-gray-900 bg-white hover:bg-gray-100 rounded-md transition-all inline-block" %>
+        <%= link_to t('pages.home.cta.button'), new_waitlist_path, class: "px-8 py-3 text-base font-semibold text-gray-900 bg-white hover:bg-gray-100 rounded-md transition-all inline-block" %>
       </div>
     </div>
   </section>

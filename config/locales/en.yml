@@ -126,6 +126,38 @@ en:
       have_account: "Already have an account?"
       login_link: "Sign in"
 
+  waitlist:
+    new:
+      brand: "mbuzz"
+      tagline: "Multi-touch marketing attribution"
+      title: "Join the Waitlist"
+      subtitle: "Be the first to know when we launch"
+      email_label: "Email"
+      email_placeholder: "you@company.com"
+      role_label: "What's your role?"
+      roles:
+        developer: "Developer"
+        founder: "Founder"
+        product_manager: "Product Manager"
+        other: "Other"
+      framework_label: "What framework do you use?"
+      frameworks:
+        rails: "Ruby on Rails"
+        django: "Django"
+        laravel: "Laravel"
+        other: "Other"
+      framework_other_label: "Please specify"
+      framework_other_placeholder: "e.g., Express.js, FastAPI"
+      submit: "Join Waitlist"
+      back_home: "← Back to home"
+    create:
+      success: "Thanks for joining the waitlist! We'll be in touch soon."
+    show:
+      title: "You're on the list!"
+      subtitle: "Thanks for joining the waitlist"
+      message: "We'll reach out to you at %{email} as soon as we're ready to launch."
+      back_home: "Back to home"
+
   dashboard:
     api_keys:
       index:

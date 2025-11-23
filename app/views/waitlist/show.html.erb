@@ -1,0 +1,26 @@
+<div class="min-h-screen flex items-center justify-center bg-white bg-pattern-dots px-6">
+  <div class="w-full max-w-md scroll-animate" data-controller="scroll-reveal">
+    <!-- Success Icon -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+      </div>
+      <h1 class="text-2xl font-bold text-gray-900"><%= t('waitlist.show.title') %></h1>
+      <p class="mt-2 text-sm text-gray-600"><%= t('waitlist.show.subtitle') %></p>
+    </div>
+
+    <!-- Message Card -->
+    <div class="card">
+      <p class="text-sm text-gray-600 text-center">
+        <%= t('waitlist.show.message', email: @submission.email) %>
+      </p>
+
+      <div class="mt-6">
+        <%= link_to t('waitlist.show.back_home'), root_path,
+          class: "w-full block text-center px-4 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-all focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2" %>
+      </div>
+    </div>
+  </div>
+</div>
