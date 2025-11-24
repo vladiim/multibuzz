@@ -85,6 +85,123 @@ class Events::EnrichmentServiceTest < ActiveSupport::TestCase
     assert_equal 99.99, result[:properties][:amount]
   end
 
+  test "extracts host from URL" do
+    @properties = { url: "https://example.com/pricing" }
+
+    assert_equal "example.com", result[:properties][:host]
+  end
+
+  test "extracts host with subdomain from URL" do
+    @properties = { url: "https://app.example.com/dashboard" }
+
+    assert_equal "app.example.com", result[:properties][:host]
+  end
+
+  test "extracts path from URL" do
+    @properties = { url: "https://example.com/pricing" }
+
+    assert_equal "/pricing", result[:properties][:path]
+  end
+
+  test "extracts path from URL with query params" do
+    @properties = { url: "https://example.com/pricing?plan=pro" }
+
+    assert_equal "/pricing", result[:properties][:path]
+  end
+
+  test "extracts path as root for domain-only URL" do
+    @properties = { url: "https://example.com" }
+
+    assert_equal "/", result[:properties][:path]
+  end
+
+  test "extracts query params as hash" do
+    @properties = { url: "https://example.com/pricing?plan=pro&interval=monthly" }
+
+    assert_equal({ "plan" => "pro", "interval" => "monthly" }, result[:properties][:query_params])
+  end
+
+  test "handles URL with UTM and non-UTM query params" do
+    @properties = { url: "https://example.com/pricing?utm_source=google&plan=pro" }
+
+    assert_equal({ "utm_source" => "google", "plan" => "pro" }, result[:properties][:query_params])
+    assert_equal "google", result[:properties][:utm_source]
+  end
+
+  test "handles URL with no query params" do
+    @properties = { url: "https://example.com/pricing" }
+
+    assert_equal({}, result[:properties][:query_params])
+  end
+
+  test "handles URL with empty query string" do
+    @properties = { url: "https://example.com/pricing?" }
+
+    assert_equal({}, result[:properties][:query_params])
+  end
+
+  test "extracts referrer host" do
+    @properties = { referrer: "https://google.com/search" }
+
+    assert_equal "google.com", result[:properties][:referrer_host]
+  end
+
+  test "extracts referrer path" do
+    @properties = { referrer: "https://google.com/search?q=analytics" }
+
+    assert_equal "/search", result[:properties][:referrer_path]
+  end
+
+  test "handles empty referrer" do
+    @properties = { referrer: "" }
+
+    assert_nil result[:properties][:referrer_host]
+    assert_nil result[:properties][:referrer_path]
+  end
+
+  test "handles missing referrer" do
+    @properties = { url: "https://example.com" }
+
+    assert_nil result[:properties][:referrer_host]
+    assert_nil result[:properties][:referrer_path]
+  end
+
+  test "handles invalid URL gracefully" do
+    @properties = { url: "not-a-valid-url" }
+
+    assert_nil result[:properties][:host], "Expected host to be nil but got: #{result[:properties][:host].inspect}"
+    assert_nil result[:properties][:path], "Expected path to be nil but got: #{result[:properties][:path].inspect}"
+    assert_equal({}, result[:properties][:query_params])
+  end
+
+  test "handles invalid referrer gracefully" do
+    @properties = { referrer: "not-a-valid-url" }
+
+    assert_nil result[:properties][:referrer_host]
+    assert_nil result[:properties][:referrer_path]
+  end
+
+  test "extracts all UTM parameters from query string" do
+    @properties = {
+      url: "https://example.com/pricing?utm_source=google&utm_medium=cpc&utm_campaign=spring&utm_content=ad1&utm_term=analytics"
+    }
+
+    assert_equal "google", result[:properties][:utm_source]
+    assert_equal "cpc", result[:properties][:utm_medium]
+    assert_equal "spring", result[:properties][:utm_campaign]
+    assert_equal "ad1", result[:properties][:utm_content]
+    assert_equal "analytics", result[:properties][:utm_term]
+  end
+
+  test "preserves existing UTM parameters if present" do
+    @properties = {
+      url: "https://example.com/pricing?utm_source=google",
+      utm_source: "facebook"
+    }
+
+    assert_equal "facebook", result[:properties][:utm_source]
+  end
+
   private
 
   def result
