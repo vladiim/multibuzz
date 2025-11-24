@@ -1,6 +1,1 @@
-<%
-  # Read the markdown file
-  markdown_file = Rails.root.join("app/views/docs/#{@page_name}.md.erb")
-  markdown_content = ERB.new(File.read(markdown_file)).result(binding)
-%>
-<%= render_markdown(markdown_content) %>
+<%= render partial: "docs/#{@page_name}" %>

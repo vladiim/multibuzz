@@ -63,6 +63,40 @@
     @apply w-32 h-32 rounded-2xl flex items-center justify-center font-bold text-xl;
     box-shadow: 0 10px 25px rgba(37, 99, 235, 0.15);
   }
+
+  /* Code Blocks - Rouge Syntax Highlighting */
+  .code-block pre,
+  .code-block code { @apply bg-transparent; }
+  .code-block pre { @apply text-slate-50 font-mono; }
+  .code-header { @apply bg-slate-800 text-slate-400 text-xs font-medium px-4 py-2 rounded-t-lg border-b border-slate-700; }
+  .code-content { @apply bg-slate-900 rounded-b-lg overflow-x-auto; }
+
+  /* Rouge Tokens */
+  .highlight { @apply bg-transparent; }
+  .highlight .c, .highlight .cm, .highlight .cp, .highlight .c1, .highlight .cs { @apply text-slate-500 italic; }
+  .highlight .err { @apply text-red-400; }
+  .highlight .k, .highlight .kc, .highlight .kd, .highlight .kn, .highlight .kp, .highlight .kr, .highlight .kt { @apply text-pink-400 font-semibold; }
+  .highlight .o, .highlight .ow { @apply text-pink-300; }
+  .highlight .p { @apply text-slate-300; }
+  .highlight .n, .highlight .py { @apply text-slate-50; }
+  .highlight .na { @apply text-blue-400; }
+  .highlight .nb { @apply text-emerald-400; }
+  .highlight .nc { @apply text-yellow-400 font-semibold; }
+  .highlight .no { @apply text-orange-400; }
+  .highlight .nd { @apply text-blue-300; }
+  .highlight .nf { @apply text-blue-400 font-semibold; }
+  .highlight .nn { @apply text-yellow-400; }
+  .highlight .nt { @apply text-pink-400; }
+  .highlight .nv, .highlight .vc, .highlight .vg, .highlight .vi { @apply text-blue-300; }
+  .highlight .l, .highlight .ld { @apply text-emerald-300; }
+  .highlight .m, .highlight .mf, .highlight .mh, .highlight .mi, .highlight .mo { @apply text-orange-400; }
+  .highlight .s, .highlight .sb, .highlight .sc, .highlight .sd, .highlight .s2, .highlight .se, .highlight .sh, .highlight .si, .highlight .sx, .highlight .sr, .highlight .s1, .highlight .ss { @apply text-emerald-300; }
+  .highlight .ge { @apply italic; }
+  .highlight .gs { @apply font-bold; }
+  .highlight .gu { @apply text-purple-400 font-bold; }
+  .highlight .gd { @apply text-red-400; }
+  .highlight .gi { @apply text-emerald-400; }
+  .highlight .lineno { @apply text-slate-600 select-none mr-4; }
 }
 
 /* Custom Utilities */

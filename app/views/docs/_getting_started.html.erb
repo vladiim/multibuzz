@@ -1,0 +1,674 @@
+<%= render_markdown <<~MD
+  # Getting Started with Multibuzz
+
+  Server-side multi-touch attribution tracking for your application.
+
+  ---
+
+  ## Quick Start
+
+  ### 1. Get Your API Key
+
+  1. Log in to [your dashboard](#{dashboard_path})
+  2. Navigate to **API Keys**
+  3. Click **Create API Key**
+  4. Choose **Test** environment for development
+  5. Copy your API key (starts with `sk_test_...`)
+
+  ---
+
+  ### 2. Install the Client Library
+MD
+%>
+
+<%= code_tabs({
+  ruby: {
+    label: 'Ruby',
+    syntax: 'ruby',
+    code: <<~CODE
+      # Gemfile
+      gem 'mbuzz'
+
+      # Then run:
+      bundle install
+    CODE
+  },
+  python: {
+    label: 'Python',
+    syntax: 'bash',
+    code: <<~CODE
+      pip install mbuzz
+    CODE
+  },
+  php: {
+    label: 'PHP',
+    syntax: 'bash',
+    code: <<~CODE
+      composer require mbuzz/mbuzz-php
+    CODE
+  },
+  curl: {
+    label: 'REST API',
+    syntax: 'text',
+    code: <<~CODE
+      No installation needed.
+      Use any HTTP client.
+    CODE
+  }
+}) %>
+
+<%= render_markdown <<~MD
+  ---
+
+  ### 3. Configure
+MD
+%>
+
+<%= code_tabs({
+  ruby: {
+    label: 'Ruby',
+    syntax: 'ruby',
+    code: <<~CODE
+      # config/initializers/mbuzz.rb
+      Mbuzz.configure do |config|
+        config.api_key = ENV['MULTIBUZZ_API_KEY']
+        config.api_url = '#{api_v1_events_url.gsub('/events', '')}'
+        config.enabled = !Rails.env.test?
+        config.debug = Rails.env.development?
+      end
+    CODE
+  },
+  python: {
+    label: 'Python',
+    syntax: 'python',
+    code: <<~CODE
+      # settings.py or app initialization
+      import mbuzz
+
+      mbuzz.api_key = os.environ['MULTIBUZZ_API_KEY']
+      mbuzz.api_url = '#{api_v1_events_url.gsub('/events', '')}'
+    CODE
+  },
+  php: {
+    label: 'PHP',
+    syntax: 'php',
+    code: <<~CODE
+      <?php
+      // bootstrap.php
+      use Mbuzz\\Client;
+
+      Client::init([
+          'api_key' => getenv('MULTIBUZZ_API_KEY'),
+          'api_url' => '#{api_v1_events_url.gsub('/events', '')}'
+      ]);
+    CODE
+  },
+  curl: {
+    label: 'REST API',
+    syntax: 'bash',
+    code: <<~CODE
+      # Set your API key as environment variable
+      export MULTIBUZZ_API_KEY=sk_test_your_key_here
+
+      # Use in Authorization header
+      curl -H "Authorization: Bearer $MULTIBUZZ_API_KEY" \\
+           #{api_v1_events_url}
+    CODE
+  }
+}) %>
+
+<%= render_markdown <<~MD
+  **⚠️ Security**: Never commit API keys to git. Use environment variables.
+
+  ---
+
+  ### 4. Track Your First Event
+MD
+%>
+
+<%= code_tabs({
+  ruby: {
+    label: 'Ruby',
+    syntax: 'ruby',
+    code: <<~CODE
+      # Track a user event
+      Mbuzz.track(
+        user_id: current_user.id,
+        event: 'Signup',
+        properties: {
+          plan: 'pro',
+          trial_days: 14
+        }
+      )
+
+      # Track anonymous visitor event
+      Mbuzz.track(
+        visitor_id: mbuzz_visitor_id,  # From gem helper
+        event: 'Viewed Pricing',
+        properties: {
+          source: 'homepage'
+        }
+      )
+    CODE
+  },
+  python: {
+    label: 'Python',
+    syntax: 'python',
+    code: <<~CODE
+      import mbuzz
+
+      # Track a user event
+      mbuzz.track(
+          user_id=current_user.id,
+          event='Signup',
+          properties={
+              'plan': 'pro',
+              'trial_days': 14
+          }
+      )
+
+      # Track anonymous visitor event
+      mbuzz.track(
+          visitor_id=get_visitor_id(),
+          event='Viewed Pricing',
+          properties={
+              'source': 'homepage'
+          }
+      )
+    CODE
+  },
+  php: {
+    label: 'PHP',
+    syntax: 'php',
+    code: <<~CODE
+      <?php
+      use Mbuzz\\Client;
+
+      // Track a user event
+      Client::track([
+          'user_id' => $currentUser->id,
+          'event' => 'Signup',
+          'properties' => [
+              'plan' => 'pro',
+              'trial_days' => 14
+          ]
+      ]);
+
+      // Track anonymous visitor event
+      Client::track([
+          'visitor_id' => getVisitorId(),
+          'event' => 'Viewed Pricing',
+          'properties' => [
+              'source' => 'homepage'
+          ]
+      ]);
+    CODE
+  },
+  curl: {
+    label: 'REST API',
+    syntax: 'bash',
+    code: <<~CODE
+      curl -X POST #{api_v1_events_url} \\
+        -H "Authorization: Bearer $MULTIBUZZ_API_KEY" \\
+        -H "Content-Type: application/json" \\
+        -d '{
+          "user_id": "123",
+          "event": "Signup",
+          "properties": {
+            "plan": "pro",
+            "trial_days": 14
+          }
+        }'
+    CODE
+  }
+}, default: :ruby) %>
+
+<%= render_markdown <<~MD
+  ---
+
+  ## Core Concepts
+
+  ### Events
+
+  Actions users take in your application.
+
+  **Required fields**:
+  - `event` - Event name (e.g., "Signup", "Purchase", "Page View")
+  - `user_id` OR `visitor_id` - At least one identifier required
+
+  **Optional fields**:
+  - `properties` - Custom metadata (JSON object)
+  - `timestamp` - When event occurred (defaults to now)
+
+  ### Visitors
+
+  Anonymous users tracked via cookies.
+
+  - **Lifetime**: 2 years
+  - **Auto-generated**: By client library
+  - **Thread-safe**: Works with multi-threaded servers
+  - **Privacy-first**: No PII required
+
+  ### Users
+
+  Known, identified users in your system.
+
+  Link visitors to users with `Mbuzz.identify()` or `Mbuzz.alias()`.
+
+  ---
+
+  ## Automatic Page View Tracking
+
+  The Ruby gem includes Rack middleware that automatically tracks page views.
+
+  **Auto-tracked**:
+  - All GET requests
+  - URL with query parameters
+  - Referrer
+  - User-Agent
+  - Visitor ID from cookie
+
+  **Auto-filtered**:
+  - Asset requests (`.js`, `.css`, `.png`, etc.)
+  - Health check endpoints
+  - Rails error pages
+
+  **Disable if needed**:
+
+  ```ruby
+  # config/initializers/mbuzz.rb
+  Mbuzz.configure do |config|
+    config.enabled = false
+  end
+  ```
+
+  ---
+
+  ## User Identification
+
+  ### Identify
+
+  Associate traits with a user ID:
+MD
+%>
+
+<%= code_tabs({
+  ruby: {
+    label: 'Ruby',
+    syntax: 'ruby',
+    code: <<~CODE
+      Mbuzz.identify(
+        user_id: current_user.id,
+        traits: {
+          email: current_user.email,
+          name: current_user.name,
+          plan: current_user.plan,
+          company: current_user.company_name
+        }
+      )
+    CODE
+  },
+  python: {
+    label: 'Python',
+    syntax: 'python',
+    code: <<~CODE
+      mbuzz.identify(
+          user_id=current_user.id,
+          traits={
+              'email': current_user.email,
+              'name': current_user.name,
+              'plan': current_user.plan,
+              'company': current_user.company_name
+          }
+      )
+    CODE
+  },
+  php: {
+    label: 'PHP',
+    syntax: 'php',
+    code: <<~CODE
+      Client::identify([
+          'user_id' => $currentUser->id,
+          'traits' => [
+              'email' => $currentUser->email,
+              'name' => $currentUser->name,
+              'plan' => $currentUser->plan,
+              'company' => $currentUser->companyName
+          ]
+      ]);
+    CODE
+  },
+  curl: {
+    label: 'REST API',
+    syntax: 'bash',
+    code: <<~CODE
+      curl -X POST #{api_v1_events_url.gsub('/events', '/identify')} \\
+        -H "Authorization: Bearer $MULTIBUZZ_API_KEY" \\
+        -H "Content-Type: application/json" \\
+        -d '{
+          "user_id": "123",
+          "traits": {
+            "email": "user@example.com",
+            "name": "Jane Doe",
+            "plan": "pro"
+          }
+        }'
+    CODE
+  }
+}) %>
+
+<%= render_markdown <<~MD
+  **When to call**:
+  - On signup
+  - On login
+  - When user attributes change
+
+  ### Alias
+
+  Link anonymous visitor to user account:
+MD
+%>
+
+<%= code_tabs({
+  ruby: {
+    label: 'Ruby',
+    syntax: 'ruby',
+    code: <<~CODE
+      # After successful signup/login
+      Mbuzz.alias(
+        user_id: current_user.id,
+        visitor_id: mbuzz_visitor_id
+      )
+    CODE
+  },
+  python: {
+    label: 'Python',
+    syntax: 'python',
+    code: <<~CODE
+      # After successful signup/login
+      mbuzz.alias(
+          user_id=current_user.id,
+          visitor_id=get_visitor_id()
+      )
+    CODE
+  },
+  php: {
+    label: 'PHP',
+    syntax: 'php',
+    code: <<~CODE
+      // After successful signup/login
+      Client::alias([
+          'user_id' => $currentUser->id,
+          'visitor_id' => getVisitorId()
+      ]);
+    CODE
+  },
+  curl: {
+    label: 'REST API',
+    syntax: 'bash',
+    code: <<~CODE
+      curl -X POST #{api_v1_events_url.gsub('/events', '/alias')} \\
+        -H "Authorization: Bearer $MULTIBUZZ_API_KEY" \\
+        -H "Content-Type: application/json" \\
+        -d '{
+          "user_id": "123",
+          "visitor_id": "abc123def456"
+        }'
+    CODE
+  }
+}) %>
+
+<%= render_markdown <<~MD
+  **What this does**:
+  - Links all pre-signup visitor sessions to user account
+  - Enables full journey tracking (anonymous → identified)
+  - Required for accurate multi-touch attribution
+
+  ---
+
+  ## Common Use Cases
+
+  ### E-Commerce Tracking
+MD
+%>
+
+<%= code_tabs({
+  ruby: {
+    label: 'Ruby',
+    syntax: 'ruby',
+    code: <<~CODE
+      class OrdersController < ApplicationController
+        def create
+          @order = current_user.orders.create!(order_params)
+
+          Mbuzz.track(
+            user_id: current_user.id,
+            event: 'Purchase Completed',
+            properties: {
+              order_id: @order.id,
+              amount: @order.total,
+              items: @order.items.count,
+              currency: 'USD'
+            }
+          )
+
+          redirect_to order_path(@order)
+        end
+      end
+    CODE
+  },
+  python: {
+    label: 'Python',
+    syntax: 'python',
+    code: <<~CODE
+      @app.route('/orders', methods=['POST'])
+      def create_order():
+          order = current_user.orders.create(order_params)
+
+          mbuzz.track(
+              user_id=current_user.id,
+              event='Purchase Completed',
+              properties={
+                  'order_id': order.id,
+                  'amount': order.total,
+                  'items': len(order.items),
+                  'currency': 'USD'
+              }
+          )
+
+          return redirect(url_for('order', id=order.id))
+    CODE
+  },
+  php: {
+    label: 'PHP',
+    syntax: 'php',
+    code: <<~CODE
+      public function createOrder() {
+          $order = $this->currentUser->orders()->create($orderParams);
+
+          Client::track([
+              'user_id' => $this->currentUser->id,
+              'event' => 'Purchase Completed',
+              'properties' => [
+                  'order_id' => $order->id,
+                  'amount' => $order->total,
+                  'items' => count($order->items),
+                  'currency' => 'USD'
+              ]
+          ]);
+
+          return redirect()->route('order', $order->id);
+      }
+    CODE
+  }
+}) %>
+
+<%= render_markdown <<~MD
+  ### SaaS Subscription Tracking
+MD
+%>
+
+<%= code_tabs({
+  ruby: {
+    label: 'Ruby',
+    syntax: 'ruby',
+    code: <<~CODE
+      class SubscriptionsController < ApplicationController
+        def create
+          @subscription = current_user.create_subscription!(
+            plan: params[:plan]
+          )
+
+          Mbuzz.track(
+            user_id: current_user.id,
+            event: 'Subscription Created',
+            properties: {
+              plan: @subscription.plan,
+              billing_cycle: @subscription.billing_cycle,
+              mrr: @subscription.monthly_revenue
+            }
+          )
+
+          redirect_to dashboard_path
+        end
+      end
+    CODE
+  },
+  python: {
+    label: 'Python',
+    syntax: 'python',
+    code: <<~CODE
+      @app.route('/subscriptions', methods=['POST'])
+      def create_subscription():
+          subscription = current_user.create_subscription(
+              plan=request.form['plan']
+          )
+
+          mbuzz.track(
+              user_id=current_user.id,
+              event='Subscription Created',
+              properties={
+                  'plan': subscription.plan,
+                  'billing_cycle': subscription.billing_cycle,
+                  'mrr': subscription.monthly_revenue
+              }
+          )
+
+          return redirect('/dashboard')
+    CODE
+  },
+  php: {
+    label: 'PHP',
+    syntax: 'php',
+    code: <<~CODE
+      public function createSubscription() {
+          $subscription = $this->currentUser->createSubscription([
+              'plan' => $request->input('plan')
+          ]);
+
+          Client::track([
+              'user_id' => $this->currentUser->id,
+              'event' => 'Subscription Created',
+              'properties' => [
+                  'plan' => $subscription->plan,
+                  'billing_cycle' => $subscription->billing_cycle,
+                  'mrr' => $subscription->monthly_revenue
+              ]
+          ]);
+
+          return redirect('/dashboard');
+      }
+    CODE
+  }
+}) %>
+
+<%= render_markdown <<~MD
+  ---
+
+  ## Error Handling
+
+  **Client libraries never raise exceptions**. All errors are:
+
+  - Logged (if debug mode enabled)
+  - Returned as `false` from tracking methods
+  - Silently ignored otherwise
+
+  **Why**: Tracking failures should never break your application.
+
+  **Debugging**:
+
+  ```ruby
+  # Enable debug mode
+  Mbuzz.configure do |config|
+    config.debug = true
+  end
+
+  # Check return values
+  if Mbuzz.track(user_id: 1, event: 'Test')
+    puts "✅ Tracking succeeded"
+  else
+    puts "❌ Tracking failed (check logs)"
+  end
+  ```
+
+  ---
+
+  ## Testing
+
+  ### Disable Tracking in Tests
+MD
+%>
+
+<%= code_tabs({
+  ruby: {
+    label: 'Ruby',
+    syntax: 'ruby',
+    code: <<~CODE
+      # config/initializers/mbuzz.rb
+      Mbuzz.configure do |config|
+        config.enabled = !Rails.env.test?
+      end
+    CODE
+  },
+  python: {
+    label: 'Python',
+    syntax: 'python',
+    code: <<~CODE
+      # settings.py
+      import os
+
+      mbuzz.enabled = os.environ.get('FLASK_ENV') != 'test'
+    CODE
+  },
+  php: {
+    label: 'PHP',
+    syntax: 'php',
+    code: <<~CODE
+      <?php
+      Client::init([
+          'api_key' => getenv('MULTIBUZZ_API_KEY'),
+          'enabled' => getenv('APP_ENV') !== 'test'
+      ]);
+    CODE
+  }
+}) %>
+
+<%= render_markdown <<~MD
+  ---
+
+  ## Next Steps
+
+  Now that you're tracking events:
+
+  1. **View your data** - Check [your dashboard](#{dashboard_path}) for recent events
+  2. **Track conversions** - Add tracking for signups, purchases, subscriptions
+  3. **Identify users** - Call `identify()` on signup/login
+  4. **Link visitors** - Call `alias()` after signup
+  5. **Analyze attribution** - See which channels drive conversions
+
+  **Need help?** Check out:
+  - [Authentication](#{docs_path('authentication')}) - API key management
+  - [API Reference](#{docs_path('api-reference')}) - Full API documentation
+  - [Examples](#{docs_path('examples')}) - More integration examples
+MD
+%>
