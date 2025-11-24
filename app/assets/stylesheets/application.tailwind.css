@@ -73,14 +73,22 @@
 
   /* Code Tabs */
   .code-tabs-wrapper { @apply rounded-lg overflow-hidden shadow-lg; }
-  .code-tabs-nav { @apply bg-slate-800 flex items-center gap-1 px-2 pt-2; }
-  .code-tab {
-    @apply px-4 py-2 text-sm font-medium rounded-t transition-all cursor-pointer;
-    @apply text-slate-400 hover:text-slate-200 hover:bg-slate-700;
+  .code-tabs-nav {
+    @apply bg-slate-800 flex items-center gap-0.5 px-3 pt-3;
   }
-  .code-tab.active { @apply bg-slate-900 text-blue-400; }
+  .code-tab {
+    @apply px-4 py-2.5 text-sm font-semibold rounded-t-md transition-all cursor-pointer;
+    @apply text-slate-400 bg-slate-800 hover:text-slate-200 hover:bg-slate-700/50;
+    @apply border-b-2 border-transparent;
+  }
+  .code-tab.active {
+    @apply bg-slate-900 text-blue-400 border-b-blue-500;
+  }
+  .code-tabs-content { @apply bg-slate-900 rounded-b-lg; }
   .code-panel { @apply hidden; }
   .code-panel.active { @apply block; }
+  .code-panel pre { @apply text-slate-50 font-mono bg-transparent; }
+  .code-panel code { @apply bg-transparent; }
 
   /* Rouge Tokens */
   .highlight { @apply bg-transparent; }
