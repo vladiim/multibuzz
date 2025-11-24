@@ -35,12 +35,13 @@ en:
       nav:
         brand: "mbuzz"
         features: "Features"
+        pricing: "Pricing"
         docs: "Docs"
         login: "Login"
-        cta: "Start Free"
+        cta: "Get Started Free"
       hero:
-        title: "Multi-touch marketing attribution"
-        subtitle: "Track every touchpoint across Google, Facebook, LinkedIn, email, and more. See which channels drive conversions, not just clicks."
+        title: "No-Frills Multi-Touch Attribution"
+        subtitle: "You don't need another all-in-one analytics platform. You need attribution that works."
         cta_primary: "Get Started Free"
         cta_secondary: "View Documentation"
       attribution_flow:
@@ -55,37 +56,37 @@ en:
         hub: "mbuzz"
         output: "Unified Attribution"
       features:
-        title: "Everything you need for attribution"
-        subtitle: "Simple, powerful, developer-friendly"
+        title: "Everything you need. Nothing you don't."
+        subtitle: "Built for technical teams who value control without complexity."
         privacy_tracking:
-          title: "Server-Side Privacy Tracking"
-          description: "Backend-only event capture via API/webhooks, bypassing third-party cookies and ensuring GDPR/CCPA compliance. Unifies fragmented data without client-side scripts, reducing mismatches by up to 30%."
+          title: "10-Minute Setup"
+          description: "Framework-native SDKs for Rails, Django, Laravel, and Node.js. Drop in a gem, add your API key, and you're tracking. No complicated tag managers or JavaScript snippets to debug."
         dark_funnel:
-          title: "Dark Funnel Attribution"
-          description: "Integrate manual uploads or API feeds for offline events (calls, referrals) into multi-touch models, automating credit assignment to hidden touchpoints and aligning marketing-sales efforts for 15-30% efficiency gains."
+          title: "7 Attribution Models"
+          description: "First-touch, last-touch, linear, time-decay, U-shaped, W-shaped, and participation models built-in. Compare them side-by-side to understand which channels actually drive conversions."
         quick_setup:
-          title: "Quick Setup"
-          description: "REST API-first design works with any stack—Rails gem, Django package, Laravel, Node.js. Install in under 15 minutes with automatic visitor/event tracking—no dev-heavy configs needed."
+          title: "Roll Your Own Custom Models"
+          description: "Write custom attribution rules in minutes with a simple DSL. No need to wait for your analytics vendor to ship your feature request—just define the logic and run it."
         user_mapping:
-          title: "Hash-Based User ID Mapping"
-          description: "Generate anonymized, persistent IDs via email hashing or session traits, enabling accurate cross-device/session linking without privacy risks, solving incomplete profile challenges."
+          title: "Server-Side All The Way"
+          description: "Track events on your backend, not in the browser. No client-side scripts means no ad blockers, no privacy extensions, and no missing data. Just accurate attribution."
         custom_models:
-          title: "Multiple Attribution Models"
-          description: "Switch between pre-built models (linear, U-shaped) via simple admin dashboards that slice your data by model, with built-in revenue metrics like ROAS, LTV, and ARR—computed server-side and inspectable via SQL."
+          title: "Event Debugging"
+          description: "See every event in real-time with full context: UTM params, referrers, channels, and user journeys. Export to CSV or a database of your choice."
         etl_exports:
-          title: "Seamless ETL Exports"
-          description: "One-click API exports to Snowflake, BigQuery, or CSVs, breaking silos and enabling actionable insights—use your data effectively without add-ons or manual work."
+          title: "Attribution Dashboards"
+          description: "Attribution model dashboards let you compare any attribution model side-by-side. Funnel analysis shows you exactly where users drop off in their journey by channel and compare customer revenue across channels."
       cta:
         title: "Ready to unify your attribution?"
         subtitle: "Start tracking in 5 minutes. No credit card required."
         button: "Get Started Free"
       footer:
         brand: "mbuzz"
-        tagline: "Multi-touch marketing attribution for developers"
+        tagline: "No-frills multi-touch attribution"
         product: "Product"
         product_features: "Features"
         product_pricing: "Pricing"
-        product_docs: "API Docs"
+        product_docs: "Docs"
         company: "Company"
         company_about: "About"
         company_blog: "Blog"
