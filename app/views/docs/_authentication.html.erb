@@ -1,0 +1,304 @@
+<%= render_markdown <<~MD
+  # Authentication
+
+  How to authenticate API requests with API keys.
+
+  ---
+
+  ## Overview
+
+  Multibuzz uses API keys to authenticate requests. Your API keys carry many privileges, so be sure to keep them secure.
+
+  **Key Features**:
+  - Bearer token authentication
+  - Test and live environments
+  - Account-scoped isolation
+  - Rate limiting per key
+  - Easy rotation
+
+  ---
+
+  ## API Key Format
+
+  API keys follow this format:
+
+  ```
+  sk_{environment}_{random32}
+  ```
+
+  **Examples**:
+  - Test key: `sk_test_abc123def456ghi789jkl012mno345pq`
+  - Live key: `sk_live_xyz987wvu654tsr321qpo210nml109ij`
+
+  **Components**:
+  - `sk_` - Secret key prefix
+  - `test` / `live` - Environment
+  - `{random32}` - 32-character random string
+
+  ---
+
+  ## Creating API Keys
+
+  ### Via Dashboard
+
+  1. Log in to [your dashboard](#{dashboard_path})
+  2. Navigate to **API Keys**
+  3. Click **Create API Key**
+  4. Choose environment:
+     - **Test** - For development and testing
+     - **Live** - For production
+  5. Copy the key immediately (shown only once)
+  6. Store securely in environment variables
+
+  ### Environments
+
+  **Test Environment**:
+  - For development and testing
+  - Isolated test data
+  - No billing impact
+  - Full feature access
+
+  **Live Environment**:
+  - For production
+  - Real data
+  - Affects billing
+  - Full feature access
+
+  ---
+
+  ## Using API Keys
+
+  ### Authorization Header
+
+  Pass your API key in the `Authorization` header using Bearer token format:
+MD
+%>
+
+<%= api_key_usage_example %>
+
+<%= render_markdown <<~MD
+  ---
+
+  ## Security Best Practices
+
+  ### Store Securely
+
+  **✅ DO**:
+  - Store in environment variables
+  - Use secret management services
+  - Rotate regularly
+  - Limit access to keys
+
+  **❌ DON'T**:
+  - Commit to git
+  - Share via email/Slack
+  - Hardcode in source
+  - Log in plaintext
+
+  ### Environment Variables
+
+  Store API keys in environment variables:
+MD
+%>
+
+<%= code_tabs({
+  ruby: {
+    label: 'Ruby',
+    syntax: 'ruby',
+    code: <<~CODE
+      # config/initializers/mbuzz.rb
+      Mbuzz.configure do |config|
+        config.api_key = ENV['MULTIBUZZ_API_KEY']
+      end
+
+      # Never do this:
+      # config.api_key = "sk_test_abc123..."  # ❌
+    CODE
+  },
+  bash: {
+    label: 'Shell',
+    syntax: 'bash',
+    code: <<~CODE
+      # .env (add to .gitignore!)
+      MULTIBUZZ_API_KEY=sk_test_your_key_here
+
+      # Load in shell
+      export MULTIBUZZ_API_KEY=sk_test_your_key_here
+    CODE
+  }
+}) %>
+
+<%= render_markdown <<~MD
+  ### .gitignore
+
+  Always ignore environment files:
+
+  ```gitignore
+  # Environment variables
+  .env
+  .env.local
+  .env.*.local
+
+  # Credentials
+  /config/credentials/*.key
+  ```
+
+  ---
+
+  ## Testing Authentication
+
+  ### Validate API Key
+
+  Test your API key with the validation endpoint:
+MD
+%>
+
+<%= code_tabs({
+  curl: {
+    label: 'cURL',
+    syntax: 'bash',
+    code: <<~CODE
+      curl -X GET #{api_v1_validate_url} \\
+        -H "Authorization: Bearer $MULTIBUZZ_API_KEY"
+
+      # Success response:
+      {
+        "valid": true,
+        "account_id": "acct_abc123",
+        "environment": "test"
+      }
+
+      # Invalid key response:
+      {
+        "error": "Invalid API key"
+      }
+    CODE
+  },
+  ruby: {
+    label: 'Ruby',
+    syntax: 'ruby',
+    code: <<~CODE
+      # Gem automatically validates on first request
+      result = Mbuzz.track(
+        user_id: 1,
+        event: 'Test'
+      )
+
+      if result
+        puts "✅ API key valid"
+      else
+        puts "❌ API key invalid (check logs)"
+      end
+    CODE
+  }
+}, default: :curl) %>
+
+<%= render_markdown <<~MD
+  ---
+
+  ## Error Responses
+
+  ### Invalid API Key
+
+  **Status**: `401 Unauthorized`
+
+  ```json
+  {
+    "error": "Invalid API key"
+  }
+  ```
+
+  **Causes**:
+  - Key doesn't exist
+  - Key has been deleted
+  - Incorrect format
+  - Missing `Authorization` header
+
+  ### Rate Limited
+
+  **Status**: `429 Too Many Requests`
+
+  ```json
+  {
+    "error": "Rate limit exceeded",
+    "retry_after": 60
+  }
+  ```
+
+  **Causes**:
+  - Too many requests in short time
+  - Account rate limit reached
+
+  **Solution**: Wait `retry_after` seconds before retrying
+
+  ---
+
+  ## Rate Limits
+
+  Rate limits apply per account:
+
+  | Plan | Rate Limit |
+  |------|-----------|
+  | Free | 1,000 events/hour |
+  | Pro | 10,000 events/hour |
+  | Enterprise | Custom |
+
+  **Headers** (included in all responses):
+
+  ```
+  X-RateLimit-Limit: 10000
+  X-RateLimit-Remaining: 9523
+  X-RateLimit-Reset: 1699564800
+  ```
+
+  ---
+
+  ## Managing API Keys
+
+  ### Rotating Keys
+
+  1. Create new API key
+  2. Update environment variables in all environments
+  3. Deploy changes
+  4. Verify new key works
+  5. Delete old key
+
+  **Best practice**: Rotate keys every 90 days
+
+  ### Deleting Keys
+
+  1. Navigate to **API Keys**
+  2. Find key to delete
+  3. Click **Delete**
+  4. Confirm deletion
+
+  **Warning**: Deletion is immediate and cannot be undone. Requests using deleted keys will fail.
+
+  ---
+
+  ## Multi-Tenancy
+
+  Each API key is scoped to a single account. All data is isolated:
+
+  - ✅ Account A cannot access Account B's data
+  - ✅ Events are automatically scoped to the authenticated account
+  - ✅ No risk of data leakage between accounts
+
+  ---
+
+  ## Next Steps
+
+  Now that you understand authentication:
+
+  1. **Create an API key** - In [your dashboard](#{dashboard_path})
+  2. **Store securely** - Use environment variables
+  3. **Test it** - Make a test API call
+  4. **Track events** - See [Getting Started](#{docs_path('getting-started')})
+  5. **Explore the API** - Read [API Reference](#{docs_path('api-reference')})
+
+  **Need help?** Check out:
+  - [Getting Started](#{docs_path('getting-started')}) - Quick start guide
+  - [API Reference](#{docs_path('api-reference')}) - Complete API documentation
+  - [Examples](#{docs_path('examples')}) - Integration examples
+MD
+%>
