@@ -33,20 +33,6 @@ MD
       bundle install
     CODE
   },
-  python: {
-    label: 'Python',
-    syntax: 'bash',
-    code: <<~CODE
-      pip install mbuzz
-    CODE
-  },
-  php: {
-    label: 'PHP',
-    syntax: 'bash',
-    code: <<~CODE
-      composer require mbuzz/mbuzz-php
-    CODE
-  },
   curl: {
     label: 'REST API',
     syntax: 'text',
@@ -55,7 +41,7 @@ MD
       Use any HTTP client.
     CODE
   }
-}) %>
+}, default: :ruby) %>
 
 <%= render_markdown <<~MD
   ---
@@ -78,31 +64,6 @@ MD
       end
     CODE
   },
-  python: {
-    label: 'Python',
-    syntax: 'python',
-    code: <<~CODE
-      # settings.py or app initialization
-      import mbuzz
-
-      mbuzz.api_key = os.environ['MULTIBUZZ_API_KEY']
-      mbuzz.api_url = '#{api_v1_events_url.gsub('/events', '')}'
-    CODE
-  },
-  php: {
-    label: 'PHP',
-    syntax: 'php',
-    code: <<~CODE
-      <?php
-      // bootstrap.php
-      use Mbuzz\\Client;
-
-      Client::init([
-          'api_key' => getenv('MULTIBUZZ_API_KEY'),
-          'api_url' => '#{api_v1_events_url.gsub('/events', '')}'
-      ]);
-    CODE
-  },
   curl: {
     label: 'REST API',
     syntax: 'bash',
@@ -115,7 +76,7 @@ MD
            #{api_v1_events_url}
     CODE
   }
-}) %>
+}, default: :ruby) %>
 
 <%= render_markdown <<~MD
   **⚠️ Security**: Never commit API keys to git. Use environment variables.
@@ -149,59 +110,6 @@ MD
           source: 'homepage'
         }
       )
-    CODE
-  },
-  python: {
-    label: 'Python',
-    syntax: 'python',
-    code: <<~CODE
-      import mbuzz
-
-      # Track a user event
-      mbuzz.track(
-          user_id=current_user.id,
-          event='Signup',
-          properties={
-              'plan': 'pro',
-              'trial_days': 14
-          }
-      )
-
-      # Track anonymous visitor event
-      mbuzz.track(
-          visitor_id=get_visitor_id(),
-          event='Viewed Pricing',
-          properties={
-              'source': 'homepage'
-          }
-      )
-    CODE
-  },
-  php: {
-    label: 'PHP',
-    syntax: 'php',
-    code: <<~CODE
-      <?php
-      use Mbuzz\\Client;
-
-      // Track a user event
-      Client::track([
-          'user_id' => $currentUser->id,
-          'event' => 'Signup',
-          'properties' => [
-              'plan' => 'pro',
-              'trial_days' => 14
-          ]
-      ]);
-
-      // Track anonymous visitor event
-      Client::track([
-          'visitor_id' => getVisitorId(),
-          'event' => 'Viewed Pricing',
-          'properties' => [
-              'source' => 'homepage'
-          ]
-      ]);
     CODE
   },
   curl: {
@@ -308,36 +216,6 @@ MD
       )
     CODE
   },
-  python: {
-    label: 'Python',
-    syntax: 'python',
-    code: <<~CODE
-      mbuzz.identify(
-          user_id=current_user.id,
-          traits={
-              'email': current_user.email,
-              'name': current_user.name,
-              'plan': current_user.plan,
-              'company': current_user.company_name
-          }
-      )
-    CODE
-  },
-  php: {
-    label: 'PHP',
-    syntax: 'php',
-    code: <<~CODE
-      Client::identify([
-          'user_id' => $currentUser->id,
-          'traits' => [
-              'email' => $currentUser->email,
-              'name' => $currentUser->name,
-              'plan' => $currentUser->plan,
-              'company' => $currentUser->companyName
-          ]
-      ]);
-    CODE
-  },
   curl: {
     label: 'REST API',
     syntax: 'bash',
@@ -355,7 +233,7 @@ MD
         }'
     CODE
   }
-}) %>
+}, default: :ruby) %>
 
 <%= render_markdown <<~MD
   **When to call**:
@@ -381,28 +259,6 @@ MD
       )
     CODE
   },
-  python: {
-    label: 'Python',
-    syntax: 'python',
-    code: <<~CODE
-      # After successful signup/login
-      mbuzz.alias(
-          user_id=current_user.id,
-          visitor_id=get_visitor_id()
-      )
-    CODE
-  },
-  php: {
-    label: 'PHP',
-    syntax: 'php',
-    code: <<~CODE
-      // After successful signup/login
-      Client::alias([
-          'user_id' => $currentUser->id,
-          'visitor_id' => getVisitorId()
-      ]);
-    CODE
-  },
   curl: {
     label: 'REST API',
     syntax: 'bash',
@@ -416,7 +272,7 @@ MD
         }'
     CODE
   }
-}) %>
+}, default: :ruby) %>
 
 <%= render_markdown <<~MD
   **What this does**:
@@ -457,51 +313,26 @@ MD
       end
     CODE
   },
-  python: {
-    label: 'Python',
-    syntax: 'python',
+  curl: {
+    label: 'REST API',
+    syntax: 'bash',
     code: <<~CODE
-      @app.route('/orders', methods=['POST'])
-      def create_order():
-          order = current_user.orders.create(order_params)
-
-          mbuzz.track(
-              user_id=current_user.id,
-              event='Purchase Completed',
-              properties={
-                  'order_id': order.id,
-                  'amount': order.total,
-                  'items': len(order.items),
-                  'currency': 'USD'
-              }
-          )
-
-          return redirect(url_for('order', id=order.id))
-    CODE
-  },
-  php: {
-    label: 'PHP',
-    syntax: 'php',
-    code: <<~CODE
-      public function createOrder() {
-          $order = $this->currentUser->orders()->create($orderParams);
-
-          Client::track([
-              'user_id' => $this->currentUser->id,
-              'event' => 'Purchase Completed',
-              'properties' => [
-                  'order_id' => $order->id,
-                  'amount' => $order->total,
-                  'items' => count($order->items),
-                  'currency' => 'USD'
-              ]
-          ]);
-
-          return redirect()->route('order', $order->id);
-      }
+      curl -X POST #{api_v1_events_url} \\
+        -H "Authorization: Bearer $MULTIBUZZ_API_KEY" \\
+        -H "Content-Type: application/json" \\
+        -d '{
+          "user_id": "123",
+          "event": "Purchase Completed",
+          "properties": {
+            "order_id": "order_456",
+            "amount": 99.99,
+            "items": 2,
+            "currency": "USD"
+          }
+        }'
     CODE
   }
-}) %>
+}, default: :ruby) %>
 
 <%= render_markdown <<~MD
   ### SaaS Subscription Tracking
@@ -534,53 +365,25 @@ MD
       end
     CODE
   },
-  python: {
-    label: 'Python',
-    syntax: 'python',
+  curl: {
+    label: 'REST API',
+    syntax: 'bash',
     code: <<~CODE
-      @app.route('/subscriptions', methods=['POST'])
-      def create_subscription():
-          subscription = current_user.create_subscription(
-              plan=request.form['plan']
-          )
-
-          mbuzz.track(
-              user_id=current_user.id,
-              event='Subscription Created',
-              properties={
-                  'plan': subscription.plan,
-                  'billing_cycle': subscription.billing_cycle,
-                  'mrr': subscription.monthly_revenue
-              }
-          )
-
-          return redirect('/dashboard')
-    CODE
-  },
-  php: {
-    label: 'PHP',
-    syntax: 'php',
-    code: <<~CODE
-      public function createSubscription() {
-          $subscription = $this->currentUser->createSubscription([
-              'plan' => $request->input('plan')
-          ]);
-
-          Client::track([
-              'user_id' => $this->currentUser->id,
-              'event' => 'Subscription Created',
-              'properties' => [
-                  'plan' => $subscription->plan,
-                  'billing_cycle' => $subscription->billing_cycle,
-                  'mrr' => $subscription->monthly_revenue
-              ]
-          ]);
-
-          return redirect('/dashboard');
-      }
+      curl -X POST #{api_v1_events_url} \\
+        -H "Authorization: Bearer $MULTIBUZZ_API_KEY" \\
+        -H "Content-Type: application/json" \\
+        -d '{
+          "user_id": "123",
+          "event": "Subscription Created",
+          "properties": {
+            "plan": "pro",
+            "billing_cycle": "monthly",
+            "mrr": 99.00
+          }
+        }'
     CODE
   }
-}) %>
+}, default: :ruby) %>
 
 <%= render_markdown <<~MD
   ---
@@ -630,28 +433,18 @@ MD
       end
     CODE
   },
-  python: {
-    label: 'Python',
-    syntax: 'python',
+  curl: {
+    label: 'REST API',
+    syntax: 'bash',
     code: <<~CODE
-      # settings.py
-      import os
+      # No installation needed for REST API.
+      # All requests require the Authorization header with your API key.
 
-      mbuzz.enabled = os.environ.get('FLASK_ENV') != 'test'
-    CODE
-  },
-  php: {
-    label: 'PHP',
-    syntax: 'php',
-    code: <<~CODE
-      <?php
-      Client::init([
-          'api_key' => getenv('MULTIBUZZ_API_KEY'),
-          'enabled' => getenv('APP_ENV') !== 'test'
-      ]);
+      export MULTIBUZZ_API_KEY=sk_test_your_key_here
+      export MULTIBUZZ_API_URL=https://api.multibuzz.app
     CODE
   }
-}) %>
+}, default: :ruby) %>
 
 <%= render_markdown <<~MD
   ---

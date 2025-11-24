@@ -71,6 +71,17 @@
   .code-header { @apply bg-slate-800 text-slate-400 text-xs font-medium px-4 py-2 rounded-t-lg border-b border-slate-700; }
   .code-content { @apply bg-slate-900 rounded-b-lg overflow-x-auto; }
 
+  /* Code Tabs */
+  .code-tabs-wrapper { @apply rounded-lg overflow-hidden shadow-lg; }
+  .code-tabs-nav { @apply bg-slate-800 flex items-center gap-1 px-2 pt-2; }
+  .code-tab {
+    @apply px-4 py-2 text-sm font-medium rounded-t transition-all cursor-pointer;
+    @apply text-slate-400 hover:text-slate-200 hover:bg-slate-700;
+  }
+  .code-tab.active { @apply bg-slate-900 text-blue-400; }
+  .code-panel { @apply hidden; }
+  .code-panel.active { @apply block; }
+
   /* Rouge Tokens */
   .highlight { @apply bg-transparent; }
   .highlight .c, .highlight .cm, .highlight .cp, .highlight .c1, .highlight .cs { @apply text-slate-500 italic; }
