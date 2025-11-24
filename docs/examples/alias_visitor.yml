@@ -1,0 +1,26 @@
+title: "Alias Visitor"
+description: "Link anonymous visitor to user account"
+default_language: ruby
+
+languages:
+  ruby:
+    label: "Ruby"
+    syntax: "ruby"
+    code: |
+      # After successful signup/login
+      Mbuzz.alias(
+        user_id: current_user.id,
+        visitor_id: mbuzz_visitor_id
+      )
+
+  curl:
+    label: "REST API"
+    syntax: "bash"
+    code: |
+      curl -X POST <%= api_v1_events_url.gsub('/events', '/alias') %> \
+        -H "Authorization: Bearer $MBUZZ_API_KEY" \
+        -H "Content-Type: application/json" \
+        -d '{
+          "user_id": "123",
+          "visitor_id": "abc123def456"
+        }'

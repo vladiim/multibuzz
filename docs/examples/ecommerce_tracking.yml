@@ -1,0 +1,45 @@
+title: "E-Commerce Tracking"
+description: "Track purchase completion events"
+default_language: ruby
+
+languages:
+  ruby:
+    label: "Ruby"
+    syntax: "ruby"
+    code: |
+      class OrdersController < ApplicationController
+        def create
+          @order = current_user.orders.create!(order_params)
+
+          Mbuzz.track(
+            user_id: current_user.id,
+            event: 'Purchase Completed',
+            properties: {
+              order_id: @order.id,
+              amount: @order.total,
+              items: @order.items.count,
+              currency: 'USD'
+            }
+          )
+
+          redirect_to order_path(@order)
+        end
+      end
+
+  curl:
+    label: "REST API"
+    syntax: "bash"
+    code: |
+      curl -X POST <%= api_v1_events_url %> \
+        -H "Authorization: Bearer $MULTIBUZZ_API_KEY" \
+        -H "Content-Type: application/json" \
+        -d '{
+          "user_id": "123",
+          "event": "Purchase Completed",
+          "properties": {
+            "order_id": "order_abc123",
+            "amount": 99.99,
+            "items": 3,
+            "currency": "USD"
+          }
+        }'

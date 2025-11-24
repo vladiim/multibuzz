@@ -1,0 +1,26 @@
+title: "Store API Keys in Environment Variables"
+description: "Securely store API keys using environment variables"
+default_language: ruby
+
+languages:
+  ruby:
+    label: "Ruby"
+    syntax: "ruby"
+    code: |
+      # config/initializers/mbuzz.rb
+      Mbuzz.configure do |config|
+        config.api_key = ENV['MULTIBUZZ_API_KEY']
+      end
+
+      # Never do this:
+      # config.api_key = "sk_test_abc123..."  # ❌
+
+  bash:
+    label: "Shell"
+    syntax: "bash"
+    code: |
+      # .env (add to .gitignore!)
+      MULTIBUZZ_API_KEY=sk_test_your_key_here
+
+      # Load in shell
+      export MULTIBUZZ_API_KEY=sk_test_your_key_here

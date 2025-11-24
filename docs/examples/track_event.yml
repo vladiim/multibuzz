@@ -1,0 +1,43 @@
+title: "Track Event"
+description: "Send a custom event with user ID and properties"
+default_language: ruby
+
+languages:
+  ruby:
+    label: "Ruby"
+    syntax: "ruby"
+    code: |
+      # Track a user event
+      Mbuzz.track(
+        user_id: current_user.id,
+        event: 'Signup',
+        properties: {
+          plan: 'pro',
+          trial_days: 14
+        }
+      )
+
+      # Track anonymous visitor event
+      Mbuzz.track(
+        visitor_id: mbuzz_visitor_id,  # From gem helper
+        event: 'Viewed Pricing',
+        properties: {
+          source: 'homepage'
+        }
+      )
+
+  curl:
+    label: "REST API"
+    syntax: "bash"
+    code: |
+      curl -X POST <%= api_v1_events_url %> \
+        -H "Authorization: Bearer $MBUZZ_API_KEY" \
+        -H "Content-Type: application/json" \
+        -d '{
+          "user_id": "123",
+          "event": "Signup",
+          "properties": {
+            "plan": "pro",
+            "trial_days": 14
+          }
+        }'
