@@ -23,6 +23,101 @@ module DocsHelper
     }
   end
 
+  # Common code examples for documentation
+  def api_key_configuration_example
+    code_tabs({
+      ruby: {
+        label: 'Ruby',
+        syntax: 'ruby',
+        code: <<~CODE
+          # config/initializers/mbuzz.rb
+          Mbuzz.configure do |config|
+            config.api_key = ENV['MULTIBUZZ_API_KEY']
+            config.api_url = '#{api_v1_events_url.gsub('/events', '')}'
+            config.enabled = !Rails.env.test?
+            config.debug = Rails.env.development?
+          end
+        CODE
+      },
+      curl: {
+        label: 'REST API',
+        syntax: 'bash',
+        code: <<~CODE
+          # Set your API key as environment variable
+          export MULTIBUZZ_API_KEY=sk_test_your_key_here
+
+          # Use in Authorization header
+          curl -H "Authorization: Bearer $MULTIBUZZ_API_KEY" \\
+               #{api_v1_events_url}
+        CODE
+      }
+    })
+  end
+
+  def api_key_usage_example
+    code_tabs({
+      ruby: {
+        label: 'Ruby',
+        syntax: 'ruby',
+        code: <<~CODE
+          # Automatically handled by gem
+          Mbuzz.configure do |config|
+            config.api_key = ENV['MULTIBUZZ_API_KEY']
+          end
+
+          # Gem adds header to all requests:
+          # Authorization: Bearer sk_test_...
+        CODE
+      },
+      curl: {
+        label: 'cURL',
+        syntax: 'bash',
+        code: <<~CODE
+          curl -X POST #{api_v1_events_url} \\
+            -H "Authorization: Bearer sk_test_your_key_here" \\
+            -H "Content-Type: application/json" \\
+            -d '{"event": "Test", "user_id": "123"}'
+        CODE
+      }
+    }, default: :curl)
+  end
+
+  def track_event_example
+    code_tabs({
+      ruby: {
+        label: 'Ruby',
+        syntax: 'ruby',
+        code: <<~CODE
+          Mbuzz.track(
+            user_id: current_user.id,
+            event: 'Signup',
+            properties: {
+              plan: 'pro',
+              trial_days: 14
+            }
+          )
+        CODE
+      },
+      curl: {
+        label: 'REST API',
+        syntax: 'bash',
+        code: <<~CODE
+          curl -X POST #{api_v1_events_url} \\
+            -H "Authorization: Bearer $MULTIBUZZ_API_KEY" \\
+            -H "Content-Type: application/json" \\
+            -d '{
+              "user_id": "123",
+              "event": "Signup",
+              "properties": {
+                "plan": "pro",
+                "trial_days": 14
+              }
+            }'
+        CODE
+      }
+    }, default: :ruby)
+  end
+
   private
 
   def markdown_renderer
