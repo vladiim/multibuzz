@@ -74,38 +74,40 @@ Specific implementation for waitlist signups.
 - [x] Test fixtures for both models
 - [x] All tests passing (17 tests, 49 assertions)
 
-### ⏳ Todo
+### ✅ Completed (Frontend/Controller Layer)
 
 #### Routes
-- [ ] Add `resources :waitlist, only: [:new, :create]` route
-- [ ] Add thank you page route
+- [x] Add `resources :waitlist, only: [:new, :create, :show]` route
 
 #### Controller
-- [ ] Create `WaitlistController` with `new` and `create` actions
-- [ ] Capture IP address from `request.remote_ip`
-- [ ] Capture user agent from `request.user_agent`
-- [ ] Flash success message on successful submission
-- [ ] Flash error messages on validation failure
-- [ ] Redirect to thank you page on success
-- [ ] Render form again with errors on failure
+- [x] Create `WaitlistController` with `new`, `create`, and `show` actions
+- [x] Capture IP address from `request.remote_ip`
+- [x] Capture user agent from `request.user_agent`
+- [x] Flash success message on successful submission (i18n)
+- [x] Redirect to thank you page on success
+- [x] Render form again with errors on failure
+- [x] Comprehensive controller tests (9 tests, 21 assertions)
 
 #### Views
-- [ ] Create `app/views/waitlist/new.html.erb` - Main signup form
-- [ ] Form fields:
+- [x] Create `app/views/waitlist/new.html.erb` - Main signup form
+- [x] Form fields:
   - Email (text input, required)
-  - Role (radio buttons or select)
-  - Framework (radio buttons or select)
+  - Role (radio buttons)
+  - Framework (radio buttons)
   - Framework Other (text input, conditional display when framework == "other")
-- [ ] Use consistent styling with docs layout
-- [ ] Add client-side validation (optional)
-- [ ] Show/hide framework_other field based on framework selection
-- [ ] Create `app/views/waitlist/create.html.erb` - Thank you page
+- [x] Use consistent styling with auth layout
+- [x] Display inline validation errors
+- [x] Create `app/views/waitlist/show.html.erb` - Thank you page
+- [x] All i18n strings in `config/locales/en.yml`
 
 #### Homepage Integration
-- [ ] Add "Join Waitlist" button to homepage
-- [ ] Link to `/waitlist/new`
-- [ ] Update "Get Started Free" button to point to waitlist
-- [ ] Add waitlist CTA to navigation (optional)
+- [x] Update "Get Started Free" button to point to waitlist
+- [x] Update CTA section button to point to waitlist
+- [x] All buttons link to `/waitlist/new`
+
+#### Test Coverage
+- [x] All 325 tests passing (1852 assertions)
+- [x] Controller integration tests complete
 
 #### Future Enhancements (Not MVP)
 - [ ] Email confirmation/verification
