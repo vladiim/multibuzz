@@ -30,6 +30,7 @@ gem "prefixed_ids"
 
 # Markdown rendering for documentation [https://github.com/vmg/redcarpet]
 gem "redcarpet"
+gem "rouge"
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
