@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_21_015619) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_24_014723) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -115,6 +115,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_21_015619) do
     t.jsonb "properties", default: {}, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index "((properties -> 'host'::text))", name: "index_events_on_host", using: :gin
+    t.index "((properties -> 'path'::text))", name: "index_events_on_path", using: :gin
+    t.index "((properties -> 'referrer_host'::text))", name: "index_events_on_referrer_host", using: :gin
     t.index "((properties -> 'utm_campaign'::text))", name: "index_events_on_utm_campaign", using: :gin
     t.index "((properties -> 'utm_medium'::text))", name: "index_events_on_utm_medium", using: :gin
     t.index "((properties -> 'utm_source'::text))", name: "index_events_on_utm_source", using: :gin
@@ -208,4 +211,3 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_21_015619) do
   add_foreign_key "sessions", "visitors"
   add_foreign_key "users", "accounts"
   add_foreign_key "visitors", "accounts"
-end
