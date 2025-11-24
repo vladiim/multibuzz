@@ -37,6 +37,7 @@ en:
         features: "Features"
         docs: "Docs"
         login: "Login"
+        cta: "Start Free"
       hero:
         title: "Multi-touch marketing attribution"
         subtitle: "Track every touchpoint across Google, Facebook, LinkedIn, email, and more. See which channels drive conversions, not just clicks."
