@@ -28,11 +28,11 @@
 
       <div data-toggle-target="content" data-value="<%= lang %>" class="code-panel">
         <div class="overflow-x-auto">
-          <pre class="p-4 m-0"><code class="language-<%= syntax %> text-sm leading-relaxed"><%=
+          <pre class="p-4 m-0"><code class="language-<%= syntax %> text-sm leading-relaxed"><div class="highlight"><%=
             lexer = Rouge::Lexer.find_fancy(syntax.to_s, code) || Rouge::Lexers::PlainText.new
             formatter = Rouge::Formatters::HTML.new
             formatter.format(lexer.lex(code)).html_safe
-          %></code></pre>
+          %></div></code></pre>
         </div>
       </div>
     <% end %>
