@@ -64,7 +64,24 @@ export default class extends Controller {
     // Update triggers (tab buttons)
     this.triggerTargets.forEach(trigger => {
       const isActive = trigger.dataset.value === value
-      this.updateTriggerClasses(trigger, isActive)
+
+      if (isActive) {
+        trigger.classList.add('active')
+        if (this.hasActiveClass) {
+          this.activeClasses.forEach(cls => trigger.classList.add(cls))
+        }
+        if (this.hasInactiveClass) {
+          this.inactiveClasses.forEach(cls => trigger.classList.remove(cls))
+        }
+      } else {
+        trigger.classList.remove('active')
+        if (this.hasActiveClass) {
+          this.activeClasses.forEach(cls => trigger.classList.remove(cls))
+        }
+        if (this.hasInactiveClass) {
+          this.inactiveClasses.forEach(cls => trigger.classList.add(cls))
+        }
+      }
     })
 
     // Update content panels
@@ -72,25 +89,15 @@ export default class extends Controller {
       const isActive = content.dataset.value === value
 
       if (isActive) {
+        content.classList.add('active')
         content.classList.remove(this.hiddenClass)
         content.hidden = false
       } else {
+        content.classList.remove('active')
         content.classList.add(this.hiddenClass)
         content.hidden = true
       }
     })
-  }
-
-  updateTriggerClasses(element, isActive) {
-    if (this.hasActiveClass && this.hasInactiveClass) {
-      if (isActive) {
-        this.inactiveClasses.forEach(cls => element.classList.remove(cls))
-        this.activeClasses.forEach(cls => element.classList.add(cls))
-      } else {
-        this.activeClasses.forEach(cls => element.classList.remove(cls))
-        this.inactiveClasses.forEach(cls => element.classList.add(cls))
-      }
-    }
   }
 
   loadPreference() {
