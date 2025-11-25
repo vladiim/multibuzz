@@ -7,10 +7,10 @@ module Sessions
     end
 
     def call(properties = nil)
-      return extract_from_url if url.present?
-      return {} if properties.blank?
+      url_utm = url.present? ? extract_from_url : {}
+      props_utm = properties.present? ? extract_from_properties(properties) : {}
 
-      extract_from_properties(properties)
+      props_utm.merge(url_utm)
     end
 
     private

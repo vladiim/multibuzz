@@ -26,7 +26,7 @@ class Sessions::TrackingServiceTest < ActiveSupport::TestCase
 
     fresh_result = nil
     assert_difference -> { Session.count }, 1 do
-      fresh_result = service.call(session_id, visitor)
+      fresh_result = Sessions::TrackingService.new(account, session_id, visitor).call
     end
 
     assert fresh_result[:created]
@@ -40,7 +40,7 @@ class Sessions::TrackingServiceTest < ActiveSupport::TestCase
     initial_count = session.reload.page_view_count
 
     # Second call should increment
-    service.call(session_id, visitor)
+    Sessions::TrackingService.new(account, session_id, visitor).call
 
     assert_equal initial_count + 1, session.reload.page_view_count
   end
@@ -59,11 +59,11 @@ class Sessions::TrackingServiceTest < ActiveSupport::TestCase
   private
 
   def result
-    @result ||= service.call(session_id, visitor)
+    @result ||= service.call
   end
 
   def service
-    @service ||= Sessions::TrackingService.new(account)
+    @service ||= Sessions::TrackingService.new(account, session_id, visitor)
   end
 
   def account
