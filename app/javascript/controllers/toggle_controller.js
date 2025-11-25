@@ -54,7 +54,7 @@ export default class extends Controller {
   }
 
   // Tab switching
-  switch(event) {
+  select(event) {
     const value = event.currentTarget.dataset.value
     this.switchTo(value)
     this.savePreference(value)
