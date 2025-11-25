@@ -1,0 +1,21 @@
+title: "Install Client Library"
+description: "Add the mbuzz client to your project"
+default_language: ruby
+
+languages:
+  ruby:
+    label: "Ruby"
+    syntax: "ruby"
+    code: |
+      # Gemfile
+      gem 'mbuzz'
+
+      # Then run:
+      bundle install
+
+  curl:
+    label: "REST API"
+    syntax: "text"
+    code: |
+      No installation needed.
+      Use any HTTP client.
