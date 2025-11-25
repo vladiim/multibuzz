@@ -34,11 +34,11 @@ module Events
     end
 
     def url
-      event_data["url"] || event_data[:url]
+      event_data["url"] || event_data[:url] || event_properties&.dig("url") || event_properties&.dig(:url)
     end
 
     def referrer
-      event_data["referrer"] || event_data[:referrer]
+      event_data["referrer"] || event_data[:referrer] || event_properties&.dig("referrer") || event_properties&.dig(:referrer)
     end
 
     def utm_data
