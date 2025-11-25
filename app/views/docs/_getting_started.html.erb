@@ -121,7 +121,7 @@ MD
         -H "Content-Type: application/json" \\
         -d '{
           "user_id": "123",
-          "event": "Signup",
+          "event_type": "Signup",
           "properties": {
             "plan": "pro",
             "trial_days": 14
@@ -322,7 +322,7 @@ MD
         -H "Content-Type: application/json" \\
         -d '{
           "user_id": "123",
-          "event": "Purchase Completed",
+          "event_type": "Purchase Completed",
           "properties": {
             "order_id": "order_456",
             "amount": 99.99,
@@ -374,7 +374,7 @@ MD
         -H "Content-Type: application/json" \\
         -d '{
           "user_id": "123",
-          "event": "Subscription Created",
+          "event_type": "Subscription Created",
           "properties": {
             "plan": "pro",
             "billing_cycle": "monthly",

@@ -1,17 +1,27 @@
 module Events
   class EnrichmentService
-    def initialize(request, event_data)
+    def initialize(request, event_data, visitor_id:, session_id:)
       @request = request
       @event_data = event_data
+      @visitor_id = visitor_id
+      @session_id = session_id
     end
 
     def call
-      event_data.merge(enriched_properties)
+      event_data.merge(enriched_data)
     end
 
     private
 
-    attr_reader :request, :event_data
+    attr_reader :request, :event_data, :visitor_id, :session_id
+
+    def enriched_data
+      {
+        visitor_id: visitor_id,
+        session_id: session_id,
+        timestamp: (event_data["timestamp"] || event_data[:timestamp] || Time.current.utc.iso8601)
+      }.merge(enriched_properties)
+    end
 
     def enriched_properties
       {
