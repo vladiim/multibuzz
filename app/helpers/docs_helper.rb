@@ -32,8 +32,8 @@ module DocsHelper
         code: <<~CODE
           # config/initializers/mbuzz.rb
           Mbuzz.configure do |config|
-            config.api_key = ENV['MULTIBUZZ_API_KEY']
-            config.api_url = '#{api_v1_events_url.gsub('/events', '')}'
+            config.api_key = ENV['MBUZZ_API_KEY']
+            config.api_url = 'https://mbuzz.co/api/v1'
             config.enabled = !Rails.env.test?
             config.debug = Rails.env.development?
           end
@@ -44,11 +44,11 @@ module DocsHelper
         syntax: 'bash',
         code: <<~CODE
           # Set your API key as environment variable
-          export MULTIBUZZ_API_KEY=sk_test_your_key_here
+          export MBUZZ_API_KEY=sk_test_your_key_here
 
           # Use in Authorization header
-          curl -H "Authorization: Bearer $MULTIBUZZ_API_KEY" \\
-               #{api_v1_events_url}
+          curl -H "Authorization: Bearer $MBUZZ_API_KEY" \\
+               https://mbuzz.co/api/v1/events
         CODE
       }
     })
@@ -102,8 +102,8 @@ module DocsHelper
         label: 'REST API',
         syntax: 'bash',
         code: <<~CODE
-          curl -X POST #{api_v1_events_url} \\
-            -H "Authorization: Bearer $MULTIBUZZ_API_KEY" \\
+          curl -X POST https://mbuzz.co/api/v1/events \\
+            -H "Authorization: Bearer $MBUZZ_API_KEY" \\
             -H "Content-Type: application/json" \\
             -d '{
               "user_id": "123",
