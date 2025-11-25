@@ -1,6 +1,7 @@
 class Conversion < ApplicationRecord
   include Conversion::Relationships
   include Conversion::Validations
+  include Conversion::Callbacks
 
   has_prefix_id :conv
 
