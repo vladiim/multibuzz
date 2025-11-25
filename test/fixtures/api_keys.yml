@@ -30,3 +30,10 @@ other_account:
   key_prefix: "sk_test_othe"
   environment: 0  # test
   description: "Other Account Key"
+
+suspended_account:
+  account: suspended
+  key_digest: "<%= Digest::SHA256.hexdigest('sk_test_suspended789') %>"
+  key_prefix: "sk_test_susp"
+  environment: 0  # test
+  description: "Suspended Account Key"

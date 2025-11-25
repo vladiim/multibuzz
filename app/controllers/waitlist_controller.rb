@@ -8,7 +8,7 @@ class WaitlistController < ApplicationController
   end
 
   def show
-    @submission = WaitlistSubmission.find(params[:id])
+    @submission = WaitlistSubmission.find_by_prefix_id!(params[:id])
   end
 
   private
