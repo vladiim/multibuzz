@@ -164,7 +164,7 @@ module DocsHelper
             #{language}
           </div>
           <div class="code-content bg-slate-900 rounded-b-lg overflow-x-auto">
-            <pre class="p-4 m-0"><code class="language-#{language} text-sm leading-relaxed">#{highlighted_code}</code></pre>
+            <pre class="p-4 m-0"><code class="language-#{language} text-sm leading-relaxed"><div class="highlight">#{highlighted_code}</div></code></pre>
           </div>
         </div>
       HTML
