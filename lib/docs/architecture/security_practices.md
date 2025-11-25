@@ -1,6 +1,6 @@
 # Security Practices
 
-This document defines the security standards and practices for the Multibuzz codebase. **All code must adhere to these guidelines.**
+This document defines the security standards and practices for the mbuzz codebase. **All code must adhere to these guidelines.**
 
 ---
 
@@ -440,7 +440,7 @@ Configure explicit session expiry:
 ```ruby
 # config/initializers/session_store.rb
 Rails.application.config.session_store :cookie_store,
-  key: '_multibuzz_session',
+  key: '_mbuzz_session',
   expire_after: 24.hours
 ```
 

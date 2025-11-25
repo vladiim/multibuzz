@@ -1,4 +1,4 @@
-# Multibuzz Analytics Tracking: Architecture Review & Best Practices Research
+# mbuzz Analytics Tracking: Architecture Review & Best Practices Research
 
 **Date**: 2025-11-14
 **Status**: Phase 1 MVP Complete - Architecture Analysis for Future Rails Gem/Client Libraries
@@ -7,7 +7,7 @@
 
 ## Executive Summary
 
-This document analyzes the current Multibuzz REST API implementation against industry best practices for server-side analytics tracking systems. Based on deep research into how systems like Segment, Mixpanel, Google Analytics, and other enterprise analytics platforms handle visitor/session tracking, this document identifies critical architectural improvements needed for the upcoming Rails gem and client library implementations.
+This document analyzes the current mbuzz REST API implementation against industry best practices for server-side analytics tracking systems. Based on deep research into how systems like Segment, Mixpanel, Google Analytics, and other enterprise analytics platforms handle visitor/session tracking, this document identifies critical architectural improvements needed for the upcoming Rails gem and client library implementations.
 
 **Key Findings**:
 1. ❌ **Current approach requires client-side visitor/session ID generation** - brittle and insecure
@@ -146,12 +146,12 @@ Based on research of Segment, Mixpanel, Google Analytics (GA4), Amplitude, and P
 **Client code** (future Rails gem):
 ```ruby
 # Client must implement this in EVERY framework:
-class Multibuzz::Visitor::Identifier
+class Mbuzz::Visitor::Identifier
   def self.identify(request, response)
-    visitor_id = request.cookies["multibuzz_visitor_id"]
+    visitor_id = request.cookies["mbuzz_visitor_id"]
     visitor_id ||= SecureRandom.hex(32)
 
-    response.set_cookie("multibuzz_visitor_id",
+    response.set_cookie("mbuzz_visitor_id",
       value: visitor_id,
       expires: 1.year.from_now,
       httponly: true,
@@ -186,8 +186,8 @@ POST /api/v1/events
 }
 
 // Server response includes Set-Cookie headers:
-Set-Cookie: _multibuzz_vid=abc123...; Expires=...; HttpOnly; Secure; SameSite=Lax
-Set-Cookie: _multibuzz_sid=xyz789...; Max-Age=1800; HttpOnly; Secure; SameSite=Lax
+Set-Cookie: _mbuzz_vid=abc123...; Expires=...; HttpOnly; Secure; SameSite=Lax
+Set-Cookie: _mbuzz_sid=xyz789...; Max-Age=1800; HttpOnly; Secure; SameSite=Lax
 ```
 
 **Benefits**:
@@ -201,7 +201,7 @@ Set-Cookie: _multibuzz_sid=xyz789...; Max-Age=1800; HttpOnly; Secure; SameSite=L
 # app/services/visitors/identification_service.rb
 module Visitors
   class IdentificationService
-    COOKIE_NAME = "_multibuzz_vid"
+    COOKIE_NAME = "_mbuzz_vid"
     COOKIE_EXPIRY = 1.year
 
     def initialize(request, account)
@@ -246,7 +246,7 @@ end
 # app/services/sessions/identification_service.rb
 module Sessions
   class IdentificationService
-    COOKIE_NAME = "_multibuzz_sid"
+    COOKIE_NAME = "_mbuzz_sid"
     SESSION_TIMEOUT = 30.minutes
 
     def initialize(request, account, visitor_id)
@@ -284,7 +284,7 @@ uri = URI.parse(url)
 utm_params = CGI.parse(uri.query).slice("utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term")
 
 # Then send to API
-Multibuzz.track("page_view", properties: utm_params.merge(url: url))
+Mbuzz.track("page_view", properties: utm_params.merge(url: url))
 ```
 
 **Problems**:
@@ -525,16 +525,16 @@ sanitized_referrer = Events::SanitizationService.new.call(event_data["referrer"]
 ```
 
 **Server extracts automatically**:
-- `visitor_id` from `Cookie: _multibuzz_vid=...` header
-- `session_id` from `Cookie: _multibuzz_sid=...` header
+- `visitor_id` from `Cookie: _mbuzz_vid=...` header
+- `session_id` from `Cookie: _mbuzz_sid=...` header
 - UTM params from `url` query string
 - IP, User-Agent, etc. from request headers
 
 **Server returns**:
 ```http
 HTTP/1.1 202 Accepted
-Set-Cookie: _multibuzz_vid=acct_abc_visitor123; Expires=...; HttpOnly; Secure; SameSite=Lax
-Set-Cookie: _multibuzz_sid=acct_abc_sess456; Max-Age=1800; HttpOnly; Secure; SameSite=Lax
+Set-Cookie: _mbuzz_vid=acct_abc_visitor123; Expires=...; HttpOnly; Secure; SameSite=Lax
+Set-Cookie: _mbuzz_sid=acct_abc_sess456; Max-Age=1800; HttpOnly; Secure; SameSite=Lax
 
 {
   "accepted": 1,
@@ -549,7 +549,7 @@ Set-Cookie: _multibuzz_sid=acct_abc_sess456; Max-Age=1800; HttpOnly; Secure; Sam
 **Before (complex client-side logic)**:
 ```ruby
 # Middleware must do everything
-class Multibuzz::Middleware::Tracking
+class Mbuzz::Middleware::Tracking
   def call(env)
     request = Rack::Request.new(env)
 
@@ -579,7 +579,7 @@ class Multibuzz::Middleware::Tracking
     }
 
     # Send to API
-    Multibuzz::Api::Client.send_events([event])
+    Mbuzz::Api::Client.send_events([event])
 
     @app.call(env)
   end
@@ -589,7 +589,7 @@ end
 **After (simple pass-through)**:
 ```ruby
 # Middleware just forwards data
-class Multibuzz::Middleware::Tracking
+class Mbuzz::Middleware::Tracking
   def call(env)
     request = Rack::Request.new(env)
 
@@ -602,7 +602,7 @@ class Multibuzz::Middleware::Tracking
     }
 
     # Forward to API with cookies
-    Multibuzz::Api::Client.send_events([event], cookies: request.cookies)
+    Mbuzz::Api::Client.send_events([event], cookies: request.cookies)
 
     status, headers, body = @app.call(env)
 
@@ -717,7 +717,7 @@ end
 
 ## 7. Implementation Checklist
 
-### Backend (Multibuzz SaaS API)
+### Backend (mbuzz SaaS API)
 
 - [ ] Create `Visitors::IdentificationService` (cookie-based)
 - [ ] Create `Sessions::IdentificationService` (cookie-based)

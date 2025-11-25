@@ -2,7 +2,7 @@
 
 ## Overview
 
-Events in multibuzz use a flexible JSONB `properties` column to store dimensional data. This document defines the standard property keys that are automatically extracted and enriched by the platform.
+Events in mbuzz use a flexible JSONB `properties` column to store dimensional data. This document defines the standard property keys that are automatically extracted and enriched by the platform.
 
 ## Property Key Constants
 
