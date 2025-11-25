@@ -1,11 +1,15 @@
 module Events
-  class ProcessingService
+  class ProcessingService < ApplicationService
     def initialize(account, event_data)
       @account = account
       @event_data = event_data
     end
 
-    def call
+    private
+
+    attr_reader :account, :event_data
+
+    def run
       return error_result(visitor_result[:errors]) unless visitor_result[:success]
       return error_result(session_result[:errors]) unless session_result[:success]
 
@@ -13,16 +17,12 @@ module Events
       save_event
     end
 
-    private
-
-    attr_reader :account, :event_data
-
     def visitor_result
-      @visitor_result ||= Visitors::LookupService.new(account).call(event_data["visitor_id"])
+      @visitor_result ||= Visitors::LookupService.new(account, event_data["visitor_id"]).call
     end
 
     def session_result
-      @session_result ||= Sessions::TrackingService.new(account).call(event_data["session_id"], visitor)
+      @session_result ||= Sessions::TrackingService.new(account, event_data["session_id"], visitor).call
     end
 
     def visitor
@@ -64,7 +64,7 @@ module Events
     end
 
     def save_event
-      return success_result(event) if event.save
+      return success_result(event: event) if event.save
 
       error_result(event.errors.full_messages)
     end
@@ -83,12 +83,5 @@ module Events
       )
     end
 
-    def success_result(event)
-      { success: true, event: event }
-    end
-
-    def error_result(errors)
-      { success: false, errors: errors }
-    end
   end
 end

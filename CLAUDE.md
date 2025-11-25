@@ -295,92 +295,133 @@ end
 
 ---
 
-## Service Objects - Only `initialize` and `call` Public
+## Service Objects - ApplicationService Pattern
 
-**CRITICAL: Service objects should ONLY expose `initialize` and `call` as public methods. Everything else is private.**
+**CRITICAL: All service objects MUST inherit from `ApplicationService` and implement a private `#run` method. This ensures consistent error handling across ALL API endpoints.**
 
-### ✅ GOOD - Only Public Methods: initialize, call
+### ApplicationService Base Class
+
+All services inherit from `ApplicationService` which provides:
+- Automatic exception handling (ActiveRecord errors, StandardError)
+- Consistent response format (`{ success: true/false, errors: [...] }`)
+- Helper methods: `success_result(data = {})` and `error_result(errors)`
 
 ```ruby
-module Event
-  class IngestionService
-    def initialize(account)
-      @account = account
-    end
+# app/services/application_service.rb
+class ApplicationService
+  def call
+    run
+  rescue ActiveRecord::RecordInvalid => e
+    error_result(["Record invalid: #{e.message}"])
+  rescue ActiveRecord::RecordNotFound => e
+    error_result(["Record not found: #{e.message}"])
+  rescue StandardError => e
+    error_result(["Internal error: #{e.message}"])
+  end
 
-    def call(events_data)
-      {
-        accepted: valid_events(events_data).count,
-        rejected: rejected_events(events_data)
-      }.tap { |result| queue_valid_events(events_data) }
+  private
+
+  def run
+    raise NotImplementedError, "Subclasses must implement #run"
+  end
+
+  def success_result(data = {})
+    { success: true }.merge(data)
+  end
+
+  def error_result(errors)
+    { success: false, errors: Array(errors) }
+  end
+end
+```
+
+### Service Object Pattern
+
+**ONLY expose `initialize` and `call` as public methods. Everything else is private.**
+
+### ✅ GOOD - Inherits from ApplicationService
+
+```ruby
+module Users
+  class IdentificationService < ApplicationService
+    def initialize(account, params)
+      @account = account
+      @user_id = params[:user_id]
+      @visitor_id = params[:visitor_id]
+      @traits = params[:traits] || {}
     end
 
     private
 
-    attr_reader :account
+    attr_reader :account, :user_id, :visitor_id, :traits
 
-    def valid_events(events_data)
-      events_data.select { |event| valid_event?(event) }
+    def run
+      return error_result(["user_id is required"]) unless user_id.present?
+
+      persist_identification
+      link_visitor_if_present
+
+      success_result
     end
 
-    def rejected_events(events_data)
-      events_data
-        .reject { |event| valid_event?(event) }
-        .map { |event| rejection_info(event) }
+    def persist_identification
+      user.traits = traits
+      user.last_identified_at = Time.current
+      user.save!  # Exceptions caught by ApplicationService
     end
 
-    def queue_valid_events(events_data)
-      valid_events(events_data).each { |event| queue_event(event) }
+    def link_visitor_if_present
+      return unless visitor_id.present?
+      return unless visitor
+
+      visitor.update!(user_id: user_id)
     end
 
-    def queue_event(event)
-      Event::ProcessingJob.perform_later(account.id, event)
+    def user
+      @user ||= account.users.find_or_initialize_by(external_id: user_id)
     end
 
-    def valid_event?(event)
-      validator.valid?(event)
-    end
-
-    def validator
-      @validator ||= Event::ValidationService.new
-    end
-
-    def rejection_info(event)
-      {
-        event: event,
-        errors: validator.errors_for(event)
-      }
+    def visitor
+      @visitor ||= account.visitors.find_by(visitor_id: visitor_id)
     end
   end
 end
 
 # Usage
-result = Event::IngestionService.new(account).call(events_data)
+result = Users::IdentificationService.new(account, params).call
+# Returns: { success: true } or { success: false, errors: [...] }
 ```
 
-#### ❌ BAD - Public Methods Exposing Implementation
+**Key Points**:
+- Inherits from `ApplicationService`
+- Only `initialize` and `call` are public
+- Implements private `#run` method
+- Uses `success_result` and `error_result` helpers
+- Can use `save!` / `update!` - exceptions are caught
+- Early returns for validation errors
+
+#### ❌ BAD - Not Using ApplicationService
 
 ```ruby
-module Event
-  class IngestionService
-    def initialize(account)
+module Users
+  class IdentificationService
+    def initialize(account, params)
       @account = account
+      @params = params
     end
 
-    def call(events_data)
-      # ...
+    def call
+      # ❌ No error handling - exceptions will bubble up!
+      user = account.users.find_or_initialize_by(external_id: params[:user_id])
+      user.save!
     end
 
     # ❌ These should be private!
-    def valid_events(events_data)
+    def persist_user
       # ...
     end
 
-    def rejected_events(events_data)
-      # ...
-    end
-
-    def queue_event(event)
+    def link_visitor
       # ...
     end
   end
@@ -393,35 +434,47 @@ end
 
 ```ruby
 module EntityName
-  class ActionService
-    def initialize(required_param, optional: nil)
+  class ActionService < ApplicationService
+    def initialize(required_param, optional_param: nil)
       @required_param = required_param
-      @optional = optional
-    end
-
-    def call(input = nil)
-      # Main logic here
-      # Return value or hash
+      @optional_param = optional_param
     end
 
     private
 
-    attr_reader :required_param, :optional
+    attr_reader :required_param, :optional_param
 
-    # All helper methods go here
-    def helper_method
-      # ...
+    def run
+      return error_result(["validation error"]) unless valid?
+
+      perform_action
+
+      success_result(data: result_data)
     end
 
-    def another_helper
-      # ...
+    # All helper methods are private
+    def valid?
+      required_param.present?
+    end
+
+    def perform_action
+      # Use save! / update! - exceptions caught by ApplicationService
+      record.save!
     end
 
     # Memoized methods
-    def expensive_calculation
-      @expensive_calculation ||= perform_calculation
+    def record
+      @record ||= expensive_lookup
     end
   end
+end
+
+# Usage
+result = EntityName::ActionService.new(param).call
+if result[:success]
+  # Handle success
+else
+  # Handle errors: result[:errors]
 end
 ```
 

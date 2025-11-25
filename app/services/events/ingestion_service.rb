@@ -36,7 +36,7 @@ module Events
     end
 
     def validation_result_for(event_data)
-      Events::ValidationService.new.call(event_data)
+      Events::ValidationService.new(event_data).call
     end
 
     def enqueue_event(event_data)
