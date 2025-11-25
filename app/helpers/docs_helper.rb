@@ -62,7 +62,7 @@ module DocsHelper
         code: <<~CODE
           # Automatically handled by gem
           Mbuzz.configure do |config|
-            config.api_key = ENV['MULTIBUZZ_API_KEY']
+            config.api_key = ENV['MBUZZ_API_KEY']
           end
 
           # Gem adds header to all requests:
