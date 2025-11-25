@@ -1,0 +1,23 @@
+title: "Disable Tracking in Tests"
+description: "Configure tracking to be disabled in test environment"
+default_language: ruby
+
+languages:
+  ruby:
+    label: "Ruby"
+    syntax: "ruby"
+    code: |
+      # config/initializers/mbuzz.rb
+      Mbuzz.configure do |config|
+        config.enabled = !Rails.env.test?
+      end
+
+  curl:
+    label: "REST API"
+    syntax: "bash"
+    code: |
+      # Use test API key for development
+      export MULTIBUZZ_API_KEY=sk_test_your_key_here
+
+      # Use live API key for production
+      export MULTIBUZZ_API_KEY=sk_live_your_key_here

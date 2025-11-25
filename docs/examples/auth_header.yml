@@ -1,0 +1,25 @@
+title: "Using Authorization Header"
+description: "Pass API key in the Authorization header"
+default_language: curl
+
+languages:
+  curl:
+    label: "cURL"
+    syntax: "bash"
+    code: |
+      curl -X POST <%= api_v1_events_url %> \
+        -H "Authorization: Bearer sk_test_your_key_here" \
+        -H "Content-Type: application/json" \
+        -d '{"event": "Test", "user_id": "123"}'
+
+  ruby:
+    label: "Ruby"
+    syntax: "ruby"
+    code: |
+      # Automatically handled by gem
+      Mbuzz.configure do |config|
+        config.api_key = ENV['MULTIBUZZ_API_KEY']
+      end
+
+      # Gem adds header to all requests:
+      # Authorization: Bearer sk_test_...
