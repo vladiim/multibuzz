@@ -1,12 +1,10 @@
 <div class="code-tabs-wrapper not-prose my-6"
      data-controller="toggle"
      data-toggle-default-value="<%= default_lang %>"
-     data-toggle-persist-value="mbuzz_docs_language"
-     data-toggle-active-class="bg-slate-900 text-blue-400"
-     data-toggle-inactive-class="text-slate-400 hover:text-slate-200">
+     data-toggle-persist-value="mbuzz_docs_language">
 
   <%# Tab buttons %>
-  <div class="code-tabs-nav flex items-center space-x-1 bg-slate-800 rounded-t-lg px-2 pt-2">
+  <div class="code-tabs-nav">
     <% languages.each do |lang| %>
       <% example = examples[lang] %>
       <% label = example[:label] || lang.to_s.titleize %>
@@ -15,7 +13,7 @@
         data-toggle-target="trigger"
         data-action="click->toggle#switch"
         data-value="<%= lang %>"
-        class="code-tab px-4 py-2 text-sm font-medium rounded-t transition-colors">
+        class="code-tab">
         <%= label %>
       </button>
     <% end %>
@@ -29,14 +27,12 @@
       <% syntax = example[:syntax] || lang.to_s %>
 
       <div data-toggle-target="content" data-value="<%= lang %>" class="code-panel">
-        <div class="code-block">
-          <div class="code-content bg-slate-900 rounded-b-lg overflow-x-auto">
-            <pre class="p-4 m-0"><code class="language-<%= syntax %> text-sm leading-relaxed"><%=
-              lexer = Rouge::Lexer.find_fancy(syntax.to_s, code) || Rouge::Lexers::PlainText.new
-              formatter = Rouge::Formatters::HTML.new
-              formatter.format(lexer.lex(code)).html_safe
-            %></code></pre>
-          </div>
+        <div class="overflow-x-auto">
+          <pre class="p-4 m-0"><code class="language-<%= syntax %> text-sm leading-relaxed"><%=
+            lexer = Rouge::Lexer.find_fancy(syntax.to_s, code) || Rouge::Lexers::PlainText.new
+            formatter = Rouge::Formatters::HTML.new
+            formatter.format(lexer.lex(code)).html_safe
+          %></code></pre>
         </div>
       </div>
     <% end %>
