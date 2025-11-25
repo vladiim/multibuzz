@@ -51,7 +51,12 @@ module Api
       end
 
       def enrich_event(event_data)
-        Events::EnrichmentService.new(request, event_data).call
+        Events::EnrichmentService.new(
+          request,
+          event_data,
+          visitor_id: visitor_identification[:visitor_id],
+          session_id: session_identification[:session_id]
+        ).call
       end
 
       def events_data

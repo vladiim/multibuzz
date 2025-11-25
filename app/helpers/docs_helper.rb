@@ -76,7 +76,7 @@ module DocsHelper
           curl -X POST #{api_v1_events_url} \\
             -H "Authorization: Bearer sk_test_your_key_here" \\
             -H "Content-Type: application/json" \\
-            -d '{"event": "Test", "user_id": "123"}'
+            -d '{"event_type": "Test", "user_id": "123"}'
         CODE
       }
     }, default: :curl)
@@ -107,7 +107,7 @@ module DocsHelper
             -H "Content-Type: application/json" \\
             -d '{
               "user_id": "123",
-              "event": "Signup",
+              "event_type": "Signup",
               "properties": {
                 "plan": "pro",
                 "trial_days": 14
