@@ -1,15 +1,23 @@
 # User Acceptance Testing (UAT) Test Plan
 
-**Version**: 1.0
+**Version**: 1.1
 **Created**: 2025-11-25
+**Updated**: 2025-11-26
 **Author**: Vlad
 **Status**: Ready for Execution
 
 ---
 
+## Related Documents
+
+- **SDK UAT Guide**: `SDK_UAT_GUIDE.md` - Comprehensive SDK testing including attribution model verification
+- This document covers REST API testing; see SDK UAT Guide for SDK-specific tests and attribution model testing
+
+---
+
 ## Overview
 
-This document provides a comprehensive UAT test plan for Multibuzz, covering event tracking, UTM attribution, session management, and channel classification across development, staging, and production environments.
+This document provides a comprehensive UAT test plan for mbuzz, covering event tracking, UTM attribution, session management, and channel classification across development, staging, and production environments.
 
 ### Environments
 
