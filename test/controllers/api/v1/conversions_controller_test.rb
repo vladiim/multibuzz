@@ -5,6 +5,10 @@ require "test_helper"
 module Api
   module V1
     class ConversionsControllerTest < ActionDispatch::IntegrationTest
+      def setup
+        Rails.cache.clear
+      end
+
       test "creates conversion with valid params" do
         post api_v1_conversions_path,
           params: conversion_params,

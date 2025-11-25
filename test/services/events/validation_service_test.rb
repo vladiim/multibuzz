@@ -80,11 +80,11 @@ class Events::ValidationServiceTest < ActiveSupport::TestCase
   private
 
   def result
-    @result ||= service.call(event_data)
+    @result ||= service.call
   end
 
   def service
-    @service ||= Events::ValidationService.new
+    @service ||= Events::ValidationService.new(event_data)
   end
 
   def event_data

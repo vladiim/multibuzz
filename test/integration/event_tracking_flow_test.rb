@@ -18,22 +18,16 @@ class EventTrackingFlowTest < ActionDispatch::IntegrationTest
     plaintext_key = result[:plaintext_key]
 
     # When: Sending a batch of events via API
+    # Note: visitor_id and session_id are now server-generated from cookies
     post api_v1_events_url,
       params: {
         events: [
           {
             event_type: "page_view",
-            visitor_id: "integration_test_visitor",
-            session_id: "integration_test_session",
             timestamp: Time.current.utc.iso8601,
             properties: {
-              url: "https://example.com/products",
-              referrer: "https://google.com",
-              utm_source: "google",
-              utm_medium: "cpc",
-              utm_campaign: "integration_test",
-              utm_content: "ad_variant_a",
-              utm_term: "test keywords"
+              url: "https://example.com/products?utm_source=google&utm_medium=cpc&utm_campaign=integration_test&utm_content=ad_variant_a&utm_term=test+keywords",
+              referrer: "https://google.com"
             }
           }
         ]
@@ -54,26 +48,27 @@ class EventTrackingFlowTest < ActionDispatch::IntegrationTest
     # When: Processing the job
     perform_enqueued_jobs
 
-    # Then: Visitor is created
-    visitor = account.visitors.find_by(visitor_id: "integration_test_visitor")
+    # Then: Visitor is created (server-generated ID)
+    visitor = account.visitors.last
     assert visitor.present?, "Visitor should be created"
     assert visitor.first_seen_at.present?
     assert visitor.last_seen_at.present?
 
     # And: Session is created with UTM data
-    session = account.sessions.find_by(session_id: "integration_test_session")
+    session = account.sessions.last
     assert session.present?, "Session should be created"
     assert_equal visitor.id, session.visitor_id
     assert_equal 1, session.page_view_count
     assert session.started_at.present?
     assert_nil session.ended_at
 
-    # And: UTM parameters are captured
-    assert_equal "google", session.initial_utm["utm_source"]
-    assert_equal "cpc", session.initial_utm["utm_medium"]
-    assert_equal "integration_test", session.initial_utm["utm_campaign"]
-    assert_equal "ad_variant_a", session.initial_utm["utm_content"]
-    assert_equal "test keywords", session.initial_utm["utm_term"]
+    # And: UTM parameters are captured from URL query string
+    utm = session.initial_utm.with_indifferent_access
+    assert_equal "google", utm[:utm_source]
+    assert_equal "cpc", utm[:utm_medium]
+    assert_equal "integration_test", utm[:utm_campaign]
+    assert_equal "ad_variant_a", utm[:utm_content]
+    assert_equal "test keywords", utm[:utm_term]
 
     # And: Event is created for this specific visitor/session
     event = account.events.where(
@@ -84,7 +79,7 @@ class EventTrackingFlowTest < ActionDispatch::IntegrationTest
     assert event.occurred_at.present?
 
     # And: Event properties are stored
-    assert_equal "https://example.com/products", event.properties["url"]
+    assert_includes event.properties["url"], "example.com/products"
     assert_equal "https://google.com", event.properties["referrer"]
     assert_equal "google", event.properties["utm_source"]
   end
@@ -98,7 +93,9 @@ class EventTrackingFlowTest < ActionDispatch::IntegrationTest
     result_b = ApiKeys::GenerationService.new(account_b, :test).call
 
     api_key_a = result_a[:plaintext_key]
-    api_key_b = result_b[:plaintext_key]
+
+    initial_visitor_count_a = account_a.visitors.count
+    initial_visitor_count_b = account_b.visitors.count
 
     # When: Account A creates an event
     post api_v1_events_url,
@@ -106,8 +103,6 @@ class EventTrackingFlowTest < ActionDispatch::IntegrationTest
         events: [
           {
             event_type: "page_view",
-            visitor_id: "account_a_unique_visitor",
-            session_id: "account_a_unique_session",
             timestamp: Time.current.utc.iso8601,
             properties: { url: "https://example.com/account-a-page" }
           }
@@ -119,22 +114,20 @@ class EventTrackingFlowTest < ActionDispatch::IntegrationTest
     assert_response :accepted
     perform_enqueued_jobs
 
-    # Then: Account B cannot see Account A's data
-    assert_nil account_b.visitors.find_by(visitor_id: "account_a_unique_visitor"),
-      "Account B should not see Account A's visitor"
-    assert_nil account_b.sessions.find_by(session_id: "account_a_unique_session"),
-      "Account B should not see Account A's session"
+    # Then: Account A has one more visitor
+    assert_equal initial_visitor_count_a + 1, account_a.visitors.count,
+      "Account A should have one more visitor"
 
-    # Account B should not have any events for Account A's visitor
+    # And: Account B visitor count unchanged
+    assert_equal initial_visitor_count_b, account_b.visitors.count,
+      "Account B should not have new visitors"
+
+    # And: Account B cannot see Account A's event by URL
     assert_equal 0, account_b.events.where(
       "properties->>'url' = ?", "https://example.com/account-a-page"
     ).count, "Account B should not have Account A's events"
 
-    # And: Account A can see its own data
-    assert account_a.visitors.find_by(visitor_id: "account_a_unique_visitor").present?,
-      "Account A should see its own visitor"
-    assert account_a.sessions.find_by(session_id: "account_a_unique_session").present?,
-      "Account A should see its own session"
+    # And: Account A can see its own event
     assert account_a.events.where(
       "properties->>'url' = ?", "https://example.com/account-a-page"
     ).exists?, "Account A should have its own events"
@@ -150,8 +143,6 @@ class EventTrackingFlowTest < ActionDispatch::IntegrationTest
         events: [
           {
             event_type: "page_view",
-            visitor_id: "visitor_test",
-            session_id: "session_test",
             timestamp: Time.current.utc.iso8601,
             properties: { url: "https://example.com" }
           }
@@ -176,29 +167,24 @@ class EventTrackingFlowTest < ActionDispatch::IntegrationTest
     plaintext_key = result[:plaintext_key]
 
     # When: Sending a batch with valid and invalid events
+    # Note: visitor_id/session_id are now server-generated, so use empty event_type to trigger failure
     post api_v1_events_url,
       params: {
         events: [
           {
             event_type: "page_view",
-            visitor_id: "valid_visitor",
-            session_id: "valid_session",
+            timestamp: Time.current.utc.iso8601,
+            properties: { url: "https://example.com" }
+          },
+          {
+            event_type: "",  # Invalid - empty event type
             timestamp: Time.current.utc.iso8601,
             properties: { url: "https://example.com" }
           },
           {
             event_type: "page_view",
-            # Missing visitor_id
-            session_id: "invalid_session",
             timestamp: Time.current.utc.iso8601,
-            properties: { url: "https://example.com" }
-          },
-          {
-            event_type: "page_view",
-            visitor_id: "another_valid_visitor",
-            session_id: "another_valid_session",
-            timestamp: Time.current.utc.iso8601,
-            properties: { url: "https://example.com" }
+            properties: { url: "https://example.com/other" }
           }
         ]
       },
@@ -212,7 +198,7 @@ class EventTrackingFlowTest < ActionDispatch::IntegrationTest
 
     rejected = response.parsed_body["rejected"].first
     assert_equal 1, rejected["index"]
-    assert_includes rejected["errors"].join, "visitor_id"
+    assert_includes rejected["errors"].join, "event_type"
   end
 
   private
