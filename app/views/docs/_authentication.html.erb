@@ -108,7 +108,7 @@ MD
     code: <<~CODE
       # config/initializers/mbuzz.rb
       Mbuzz.configure do |config|
-        config.api_key = ENV['MULTIBUZZ_API_KEY']
+        config.api_key = ENV['MBUZZ_API_KEY']
       end
 
       # Never do this:
@@ -120,10 +120,10 @@ MD
     syntax: 'bash',
     code: <<~CODE
       # .env (add to .gitignore!)
-      MULTIBUZZ_API_KEY=sk_test_your_key_here
+      MBUZZ_API_KEY=sk_test_your_key_here
 
       # Load in shell
-      export MULTIBUZZ_API_KEY=sk_test_your_key_here
+      export MBUZZ_API_KEY=sk_test_your_key_here
     CODE
   }
 }) %>
@@ -159,7 +159,7 @@ MD
     syntax: 'bash',
     code: <<~CODE
       curl -X GET #{api_v1_validate_url} \\
-        -H "Authorization: Bearer $MULTIBUZZ_API_KEY"
+        -H "Authorization: Bearer $MBUZZ_API_KEY"
 
       # Success response:
       {
