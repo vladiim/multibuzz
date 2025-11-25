@@ -120,6 +120,13 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
     assert json_response["retry_after"].present?
   end
 
+  test "should return 401 with suspended account" do
+    post api_v1_events_path, params: events_payload, headers: suspended_auth_headers, as: :json
+
+    assert_response :unauthorized
+    assert_equal "Account suspended", json_response["error"]
+  end
+
   private
 
   def json_response
@@ -174,5 +181,9 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
       api_key.update_column(:key_digest, Digest::SHA256.hexdigest(key))
       key
     end
+  end
+
+  def suspended_auth_headers
+    { "Authorization" => "Bearer sk_test_suspended789" }
   end
 end
