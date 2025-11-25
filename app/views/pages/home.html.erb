@@ -58,7 +58,7 @@
       <h1 class="text-6xl font-bold text-gray-900 tracking-tight scroll-animate" data-controller="scroll-reveal">
         <%= t('pages.home.hero.title') %>
       </h1>
-      <p class="mt-6 text-xl text-gray-600 max-w-3xl mx-auto scroll-animate" data-controller="scroll-reveal">
+      <p class="mt-6 text-xl text-gray-600 max-w-4xl mx-auto scroll-animate" data-controller="scroll-reveal">
         <%= t('pages.home.hero.subtitle') %>
       </p>
       <div class="mt-10 flex justify-center gap-4 scroll-animate" data-controller="scroll-reveal">
@@ -245,7 +245,7 @@
         <div class="feature scroll-animate" data-controller="scroll-reveal">
           <div class="feature__icon">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V5a2 2 0 00-2-2H6a2 2 0 00-2 2v14a2 2 0 002 2z" />
             </svg>
           </div>
           <h3 class="feature__title">
@@ -261,7 +261,7 @@
 
   <!-- Pricing Section -->
   <section id="pricing" class="py-24 px-6 bg-white">
-    <div class="max-w-7xl mx-auto">
+    <div class="max-w-5xl mx-auto">
       <div class="text-center mb-16">
         <h2 class="text-4xl font-bold text-gray-900">Pricing that makes sense</h2>
         <p class="mt-4 text-xl text-gray-600">
@@ -269,15 +269,15 @@
         </p>
       </div>
 
-      <div class="overflow-x-auto">
-        <table class="w-full border-collapse bg-white rounded-lg overflow-hidden shadow-lg">
+      <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full">
           <thead>
             <tr class="bg-gray-900 text-white">
               <th class="px-6 py-4 text-left text-sm font-semibold">Tier</th>
               <th class="px-6 py-4 text-left text-sm font-semibold">Monthly Events</th>
               <th class="px-6 py-4 text-left text-sm font-semibold">Price/Month</th>
               <th class="px-6 py-4 text-left text-sm font-semibold">Effective $/1K Events</th>
-              <th class="px-6 py-4 text-left text-sm font-semibold">Target</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200">
@@ -290,7 +290,6 @@
                 <div class="text-xl font-bold text-gray-900">$0</div>
               </td>
               <td class="px-6 py-4 text-gray-500">—</td>
-              <td class="px-6 py-4 text-sm text-gray-600">Testing, indie devs</td>
             </tr>
             <tr class="hover:bg-gray-50 transition-colors">
               <td class="px-6 py-4">
@@ -301,7 +300,6 @@
                 <div class="text-xl font-bold text-gray-900">$29</div>
               </td>
               <td class="px-6 py-4 text-gray-600">$0.58</td>
-              <td class="px-6 py-4 text-sm text-gray-600">Early SaaS</td>
             </tr>
             <tr class="hover:bg-gray-50 transition-colors">
               <td class="px-6 py-4">
@@ -312,7 +310,6 @@
                 <div class="text-xl font-bold text-gray-900">$99</div>
               </td>
               <td class="px-6 py-4 text-gray-600">$0.40</td>
-              <td class="px-6 py-4 text-sm text-gray-600">Scaling SMBs</td>
             </tr>
             <tr class="hover:bg-gray-50 transition-colors">
               <td class="px-6 py-4">
@@ -323,7 +320,6 @@
                 <div class="text-xl font-bold text-gray-900">$299</div>
               </td>
               <td class="px-6 py-4 text-gray-600">$0.30</td>
-              <td class="px-6 py-4 text-sm text-gray-600">Mid-market</td>
             </tr>
             <tr class="hover:bg-gray-50 transition-colors">
               <td class="px-6 py-4">
@@ -335,10 +331,10 @@
                 <div class="text-sm text-gray-600 mt-1">+ $99 per 1M block</div>
               </td>
               <td class="px-6 py-4 text-gray-600">$0.10–$0.20</td>
-              <td class="px-6 py-4 text-sm text-gray-600">High-volume SaaS, agencies</td>
             </tr>
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
 
       <p class="mt-8 text-sm text-gray-500 text-center">
