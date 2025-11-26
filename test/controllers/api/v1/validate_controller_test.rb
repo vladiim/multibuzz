@@ -10,7 +10,7 @@ class Api::V1::ValidateControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert json_response["valid"]
-    assert_equal account.id, json_response["account_id"]
+    assert_equal account.prefix_id, json_response["account_id"]
     assert_equal api_key.environment, json_response["environment"]
   end
 

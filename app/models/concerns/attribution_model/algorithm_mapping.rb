@@ -10,8 +10,10 @@ module AttributionModel::AlgorithmMapping
   }.freeze
 
   def algorithm_class
+    raise ArgumentError, "algorithm not set for model '#{name}'" if algorithm.blank?
+
     ALGORITHM_CLASSES.fetch(algorithm.to_sym) do
-      raise ArgumentError, "Unknown algorithm: #{algorithm}"
+      raise ArgumentError, "No implementation for algorithm: #{algorithm}"
     end
   end
 end

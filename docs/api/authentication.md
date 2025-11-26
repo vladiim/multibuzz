@@ -1,6 +1,6 @@
 # Authentication
 
-All Multibuzz API requests require authentication using API keys passed via Bearer tokens.
+All mbuzz API requests require authentication using API keys passed via Bearer tokens.
 
 ## API Keys
 
@@ -39,7 +39,7 @@ sk_live_********************************
 
 ### Creating API Keys
 
-1. Log in to your [Multibuzz Dashboard](https://multibuzz.io/dashboard)
+1. Log in to your [mbuzz Dashboard](https://mbuzz.co/dashboard)
 2. Navigate to **Settings → API Keys**
 3. Click **Create API Key**
 4. Select environment (Test or Live)
@@ -59,7 +59,7 @@ Authorization: Bearer sk_test_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
 
 **cURL Example:**
 ```bash
-curl -X POST https://multibuzz.io/api/v1/events \
+curl -X POST https://mbuzz.co/api/v1/events \
   -H "Authorization: Bearer sk_test_YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"events": [...]}'
@@ -69,18 +69,18 @@ curl -X POST https://multibuzz.io/api/v1/events \
 ```ruby
 require 'net/http'
 
-uri = URI('https://multibuzz.io/api/v1/events')
+uri = URI('https://mbuzz.co/api/v1/events')
 request = Net::HTTP::Post.new(uri)
-request['Authorization'] = "Bearer #{ENV['MULTIBUZZ_API_KEY']}"
+request['Authorization'] = "Bearer #{ENV['MBUZZ_API_KEY']}"
 request['Content-Type'] = 'application/json'
 ```
 
 **JavaScript Example:**
 ```javascript
-fetch('https://multibuzz.io/api/v1/events', {
+fetch('https://mbuzz.co/api/v1/events', {
   method: 'POST',
   headers: {
-    'Authorization': `Bearer ${process.env.MULTIBUZZ_API_KEY}`,
+    'Authorization': `Bearer ${process.env.MBUZZ_API_KEY}`,
     'Content-Type': 'application/json'
   }
 })
@@ -91,7 +91,7 @@ fetch('https://multibuzz.io/api/v1/events', {
 Test your API key before making tracking requests:
 
 ```bash
-curl -X GET https://multibuzz.io/api/v1/validate \
+curl -X GET https://mbuzz.co/api/v1/validate \
   -H "Authorization: Bearer sk_test_YOUR_API_KEY"
 ```
 
@@ -121,7 +121,7 @@ curl -X GET https://multibuzz.io/api/v1/validate \
 
 #### Listing Keys
 
-View all your API keys in the [Dashboard → API Keys](https://multibuzz.io/dashboard/api-keys) page. You'll see:
+View all your API keys in the [Dashboard → API Keys](https://mbuzz.co/dashboard/api-keys) page. You'll see:
 - Key prefix (first 12 characters, e.g., `sk_test_a1b2...`)
 - Description
 - Environment (Test/Live)
@@ -157,7 +157,7 @@ Best practice: Rotate keys periodically (every 90 days recommended).
 
 **Request:**
 ```bash
-curl -X POST https://multibuzz.io/api/v1/events \
+curl -X POST https://mbuzz.co/api/v1/events \
   -H "Content-Type: application/json" \
   -d '{"events": [...]}'
 ```
@@ -212,7 +212,7 @@ Using a test key when live is required (or vice versa):
 
 - **Store keys in environment variables**
   ```bash
-  export MULTIBUZZ_API_KEY=sk_test_a1b2c3d4...
+  export MBUZZ_API_KEY=sk_test_a1b2c3d4...
   ```
 
 - **Use secrets management** (AWS Secrets Manager, HashiCorp Vault, etc.)
@@ -345,18 +345,18 @@ API keys are **hashed** before storage using SHA256:
 **Solutions:**
 ```bash
 # ❌ Wrong
-curl -X POST https://multibuzz.io/api/v1/events
+curl -X POST https://mbuzz.co/api/v1/events
 
 # ❌ Wrong header name
-curl -X POST https://multibuzz.io/api/v1/events \
+curl -X POST https://mbuzz.co/api/v1/events \
   -H "X-API-Key: sk_test_..."
 
 # ❌ Missing "Bearer" prefix
-curl -X POST https://multibuzz.io/api/v1/events \
+curl -X POST https://mbuzz.co/api/v1/events \
   -H "Authorization: sk_test_..."
 
 # ✅ Correct
-curl -X POST https://multibuzz.io/api/v1/events \
+curl -X POST https://mbuzz.co/api/v1/events \
   -H "Authorization: Bearer sk_test_..."
 ```
 

@@ -10,7 +10,7 @@
 
 ### Ruby SDK
 
-**Repository**: https://github.com/multibuzz/mbuzz-ruby
+**Repository**: https://github.com/mbuzz-tracking/mbuzz-ruby
 **Package**: https://rubygems.org/gems/mbuzz
 **Status**: 🟡 In Development
 **Current Version**: 0.1.0
@@ -55,7 +55,7 @@ gem 'mbuzz'
 
 ### Python SDK
 
-**Repository**: https://github.com/multibuzz/mbuzz-python (not created yet)
+**Repository**: https://github.com/mbuzz-tracking/mbuzz-python (not created yet)
 **Package**: https://pypi.org/project/mbuzz/ (not published yet)
 **Status**: 📋 Planned
 **Target Version**: 0.1.0
@@ -72,7 +72,7 @@ gem 'mbuzz'
 
 ### PHP SDK
 
-**Repository**: https://github.com/multibuzz/mbuzz-php (not created yet)
+**Repository**: https://github.com/mbuzz-tracking/mbuzz-php (not created yet)
 **Package**: https://packagist.org/packages/mbuzz/mbuzz (not published yet)
 **Status**: 📋 Planned
 **Target Version**: 0.1.0
@@ -89,7 +89,7 @@ gem 'mbuzz'
 
 ### Node.js SDK
 
-**Repository**: https://github.com/multibuzz/mbuzz-node (not created yet)
+**Repository**: https://github.com/mbuzz-tracking/mbuzz-node (not created yet)
 **Package**: https://www.npmjs.com/package/mbuzz (not published yet)
 **Status**: 📋 Planned
 **Target Version**: 0.1.0
@@ -305,7 +305,7 @@ mbuzz-{language}/
 ## Support & Contact
 
 **Questions about SDKs**:
-- GitHub Issues: https://github.com/multibuzz/mbuzz-ruby/issues
+- GitHub Issues: https://github.com/mbuzz-tracking/mbuzz-ruby/issues
 - Email: support@mbuzz.co
 - Docs: https://mbuzz.co/docs
 

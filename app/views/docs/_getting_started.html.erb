@@ -282,6 +282,145 @@ MD
 
   ---
 
+  ## Conversion Tracking
+
+  Conversions are the key metric for attribution. When a user converts (signup, purchase, etc.),
+  the system automatically calculates attribution across all your configured models.
+
+  ### Creating Conversions
+
+  You can create conversions in two ways:
+
+  **Option A: Event-based** (recommended for precise attribution)
+MD
+%>
+
+<%= code_tabs({
+  ruby: {
+    label: 'Ruby',
+    syntax: 'ruby',
+    code: <<~CODE
+      # First track the conversion event
+      result = Mbuzz::Client.track(
+        visitor_id: mbuzz_visitor_id,
+        event_type: 'checkout_completed',
+        properties: { order_id: order.id }
+      )
+
+      # Then create the conversion linked to that event
+      if result[:success]
+        conversion = Mbuzz::Client.conversion(
+          event_id: result[:event_id],
+          conversion_type: 'purchase',
+          revenue: order.total
+        )
+
+        # Access attribution data
+        if conversion[:success]
+          conversion[:attribution][:models].each do |model, credits|
+            puts "\#{model}: \#{credits.map { |c| c[:channel] }.join(', ')}"
+          end
+        end
+      end
+    CODE
+  },
+  curl: {
+    label: 'REST API',
+    syntax: 'bash',
+    code: <<~CODE
+      # Create conversion from event
+      curl -X POST https://mbuzz.co/api/v1/conversions \\
+        -H "Authorization: Bearer $MBUZZ_API_KEY" \\
+        -H "Content-Type: application/json" \\
+        -d '{
+          "conversion": {
+            "event_id": "evt_abc123",
+            "conversion_type": "purchase",
+            "revenue": 99.99
+          }
+        }'
+    CODE
+  }
+}, default: :ruby) %>
+
+<%= render_markdown <<~MD
+  **Option B: Visitor-based** (simpler, for direct conversions)
+MD
+%>
+
+<%= code_tabs({
+  ruby: {
+    label: 'Ruby',
+    syntax: 'ruby',
+    code: <<~CODE
+      # Create conversion directly from visitor ID
+      # (uses visitor's most recent session)
+      conversion = Mbuzz::Client.conversion(
+        visitor_id: mbuzz_visitor_id,
+        conversion_type: 'purchase',
+        revenue: order.total,
+        properties: { plan: 'pro' }
+      )
+    CODE
+  },
+  curl: {
+    label: 'REST API',
+    syntax: 'bash',
+    code: <<~CODE
+      # Create conversion from visitor ID
+      curl -X POST https://mbuzz.co/api/v1/conversions \\
+        -H "Authorization: Bearer $MBUZZ_API_KEY" \\
+        -H "Content-Type: application/json" \\
+        -d '{
+          "conversion": {
+            "visitor_id": "65dabef8d611f332d5bb88f5d6870c733d89f962594575b66f0e1de1ede1ebf0",
+            "conversion_type": "purchase",
+            "revenue": 99.99
+          }
+        }'
+    CODE
+  }
+}, default: :ruby) %>
+
+<%= render_markdown <<~MD
+  ### Conversion Response
+
+  Successful conversions return attribution data immediately:
+
+  ```json
+  {
+    "id": "conv_xyz789",
+    "conversion_type": "purchase",
+    "revenue": "99.99",
+    "attribution": {
+      "lookback_days": 30,
+      "sessions_analyzed": 3,
+      "models": {
+        "first_touch": [
+          { "channel": "organic_search", "credit": 1.0, "revenue_credit": "99.99" }
+        ],
+        "last_touch": [
+          { "channel": "email", "credit": 1.0, "revenue_credit": "99.99" }
+        ],
+        "linear": [
+          { "channel": "organic_search", "credit": 0.333, "revenue_credit": "33.00" },
+          { "channel": "paid_social", "credit": 0.333, "revenue_credit": "33.00" },
+          { "channel": "email", "credit": 0.334, "revenue_credit": "33.99" }
+        ]
+      }
+    }
+  }
+  ```
+
+  ### When to Use Each Approach
+
+  | Approach | Use Case |
+  |----------|----------|
+  | **Event-based** (`event_id`) | Tie conversion to specific action (checkout button click, form submit) |
+  | **Visitor-based** (`visitor_id`) | Direct conversions, offline imports, webhook integrations |
+
+  ---
+
   ## Common Use Cases
 
   ### E-Commerce Tracking
@@ -441,7 +580,7 @@ MD
       # All requests require the Authorization header with your API key.
 
       export MBUZZ_API_KEY=sk_test_your_key_here
-      export MULTIBUZZ_API_URL=https://api.multibuzz.app
+      export MBUZZ_API_URL=https://api.mbuzz.co
     CODE
   }
 }, default: :ruby) %>

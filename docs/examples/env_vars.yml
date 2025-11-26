@@ -9,7 +9,7 @@ languages:
     code: |
       # config/initializers/mbuzz.rb
       Mbuzz.configure do |config|
-        config.api_key = ENV['MULTIBUZZ_API_KEY']
+        config.api_key = ENV['MBUZZ_API_KEY']
       end
 
       # Never do this:
@@ -20,7 +20,7 @@ languages:
     syntax: "bash"
     code: |
       # .env (add to .gitignore!)
-      MULTIBUZZ_API_KEY=sk_test_your_key_here
+      MBUZZ_API_KEY=sk_test_your_key_here
 
       # Load in shell
-      export MULTIBUZZ_API_KEY=sk_test_your_key_here
+      export MBUZZ_API_KEY=sk_test_your_key_here

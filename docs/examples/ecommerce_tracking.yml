@@ -31,7 +31,7 @@ languages:
     syntax: "bash"
     code: |
       curl -X POST <%= api_v1_events_url %> \
-        -H "Authorization: Bearer $MULTIBUZZ_API_KEY" \
+        -H "Authorization: Bearer $MBUZZ_API_KEY" \
         -H "Content-Type: application/json" \
         -d '{
           "user_id": "123",

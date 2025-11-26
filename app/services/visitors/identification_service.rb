@@ -1,6 +1,6 @@
 module Visitors
   class IdentificationService
-    COOKIE_NAME = "_multibuzz_vid"
+    COOKIE_NAME = "_mbuzz_vid"
     COOKIE_EXPIRY = 1.year
 
     def initialize(request, account)

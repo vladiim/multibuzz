@@ -7,5 +7,8 @@ module Account::Relationships
     has_many :visitors, dependent: :destroy
     has_many :sessions, dependent: :destroy
     has_many :events, dependent: :destroy
+    has_many :conversions, dependent: :destroy
+    has_many :attribution_models, dependent: :destroy
+    has_many :attribution_credits, dependent: :destroy
   end
 end

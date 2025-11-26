@@ -17,7 +17,7 @@ languages:
     syntax: "bash"
     code: |
       # Use test API key for development
-      export MULTIBUZZ_API_KEY=sk_test_your_key_here
+      export MBUZZ_API_KEY=sk_test_your_key_here
 
       # Use live API key for production
-      export MULTIBUZZ_API_KEY=sk_live_your_key_here
+      export MBUZZ_API_KEY=sk_live_your_key_here

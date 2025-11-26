@@ -7,7 +7,7 @@ module Events
 
     def call(events_data)
       @events_data = events_data
-      @accepted_count = 0
+      @accepted = []
       @rejected = []
 
       process_events
@@ -16,7 +16,7 @@ module Events
 
     private
 
-    attr_reader :account, :events_data, :accepted_count, :rejected
+    attr_reader :account, :events_data, :accepted, :rejected
 
     def async?
       @async
@@ -30,7 +30,7 @@ module Events
 
     def process_single_event(event_data, index)
       validation_result = validation_result_for(event_data)
-      return reject_event(index, validation_result[:errors]) unless validation_result[:valid]
+      return reject_event(event_data, index, validation_result[:errors]) unless validation_result[:valid]
 
       async? ? enqueue_event(event_data) : process_event_sync(event_data, index)
     end
@@ -41,26 +41,51 @@ module Events
 
     def enqueue_event(event_data)
       Events::ProcessingJob.perform_later(account.id, event_data)
-      @accepted_count += 1
+      accept_event_async(event_data)
     end
 
     def process_event_sync(event_data, index)
       processing_result = processing_result_for(event_data)
-      return reject_event(index, processing_result[:errors]) unless processing_result[:success]
+      return reject_event(event_data, index, processing_result[:errors]) unless processing_result[:success]
 
-      @accepted_count += 1
+      accept_event(processing_result[:event], event_data)
     end
 
     def processing_result_for(event_data)
       Events::ProcessingService.new(account, event_data).call
     end
 
-    def reject_event(index, errors)
-      rejected << { index: index, errors: errors }
+    def accept_event(event, event_data)
+      accepted << {
+        id: event.prefix_id,
+        event_type: event_data["event_type"],
+        visitor_id: event_data["visitor_id"],
+        session_id: event_data["session_id"],
+        status: "accepted"
+      }
+    end
+
+    def accept_event_async(event_data)
+      accepted << {
+        id: nil,
+        event_type: event_data["event_type"],
+        visitor_id: event_data["visitor_id"],
+        session_id: event_data["session_id"],
+        status: "accepted"
+      }
+    end
+
+    def reject_event(event_data, index, errors)
+      rejected << {
+        index: index,
+        event_type: event_data["event_type"],
+        errors: errors,
+        status: "rejected"
+      }
     end
 
     def build_result
-      { accepted: accepted_count, rejected: rejected }
+      { accepted: accepted.count, rejected: rejected, events: accepted }
     end
   end
 end

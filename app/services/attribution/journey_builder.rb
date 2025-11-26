@@ -25,7 +25,7 @@ module Attribution
         .sessions
         .where(visitor: visitor)
         .where("started_at >= ?", lookback_window_start)
-        .where("started_at < ?", converted_at)
+        .where("started_at <= ?", converted_at)
     end
 
     def lookback_window_start

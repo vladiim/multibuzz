@@ -68,13 +68,13 @@ Server derives channel → Server enriches metadata → Server returns Set-Cooki
 #### Cookie Management
 **`Visitors::IdentificationService`**:
 - Input: `request`, `account`
-- Logic: Read `_multibuzz_vid` cookie OR generate new ID
+- Logic: Read `_mbuzz_vid` cookie OR generate new ID
 - Output: `{ visitor_id:, set_cookie: }`
 - Cookie: 1 year expiry, HttpOnly, Secure, SameSite=Lax
 
 **`Sessions::IdentificationService`**:
 - Input: `request`, `account`, `visitor_id`
-- Logic: Read `_multibuzz_sid` cookie, check expiry (30 min), OR create new
+- Logic: Read `_mbuzz_sid` cookie, check expiry (30 min), OR create new
 - Output: `{ session_id:, set_cookie:, created: bool }`
 - Marks old sessions as `ended_at` when expired
 
@@ -149,8 +149,8 @@ gem 'device_detector'  # User-Agent parsing
 
 **Response adds**:
 ```
-Set-Cookie: _multibuzz_vid=...; Expires=...; HttpOnly; Secure
-Set-Cookie: _multibuzz_sid=...; Max-Age=1800; HttpOnly; Secure
+Set-Cookie: _mbuzz_vid=...; Expires=...; HttpOnly; Secure
+Set-Cookie: _mbuzz_sid=...; Max-Age=1800; HttpOnly; Secure
 ```
 
 ---
@@ -217,9 +217,9 @@ Set-Cookie: _multibuzz_sid=...; Max-Age=1800; HttpOnly; Secure
 **Goal**: Working Rails gem that auto-tracks page views
 
 **Tasks**:
-- [ ] Generate gem skeleton (`bundle gem multibuzz`)
-- [ ] Create `Multibuzz::Middleware::Tracking` (Rack middleware)
-- [ ] Create `Multibuzz::Api::Client` (HTTP client)
+- [ ] Generate gem skeleton (`bundle gem mbuzz`)
+- [ ] Create `Mbuzz::Middleware::Tracking` (Rack middleware)
+- [ ] Create `Mbuzz::Api::Client` (HTTP client)
 - [ ] Cookie forwarding (request → API → response)
 - [ ] Configuration (API key, URL, batch settings)
 - [ ] Manual tracking helpers (for custom events)
@@ -258,9 +258,9 @@ Set-Cookie: _multibuzz_sid=...; Max-Age=1800; HttpOnly; Secure
 
 **Options**:
 - Same domain as client app (requires subdomain setup)
-- Multibuzz API domain (simpler, works cross-domain)
+- mbuzz API domain (simpler, works cross-domain)
 
-**Recommendation**: Multibuzz API domain (simpler for MVP)
+**Recommendation**: mbuzz API domain (simpler for MVP)
 
 ---
 
@@ -276,8 +276,8 @@ Set-Cookie: _multibuzz_sid=...; Max-Age=1800; HttpOnly; Secure
 - `Visitor`, `Session`, `Event` - Existing models work as-is
 
 ### Cookies
-- `_multibuzz_vid` - Visitor ID cookie (1 year)
-- `_multibuzz_sid` - Session ID cookie (30 min)
+- `_mbuzz_vid` - Visitor ID cookie (1 year)
+- `_mbuzz_sid` - Session ID cookie (30 min)
 
 ### Channels (Standard Taxonomy)
 - `paid_search`, `organic_search`

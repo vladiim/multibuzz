@@ -209,7 +209,7 @@ class Events::EnrichmentServiceTest < ActiveSupport::TestCase
   end
 
   def service
-    Events::EnrichmentService.new(request_stub, event_data)
+    Events::EnrichmentService.new(request_stub, event_data, visitor_id: "vis_test123", session_id: "sess_test456")
   end
 
   def event_data
