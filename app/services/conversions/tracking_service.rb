@@ -18,8 +18,6 @@ module Conversions
     def run
       return validation_error if validation_error
 
-      enqueue_attribution_calculation
-
       success_result(conversion: conversion)
     end
 
@@ -79,10 +77,6 @@ module Conversions
 
     def conversion_timestamp
       event&.occurred_at || Time.current
-    end
-
-    def enqueue_attribution_calculation
-      AttributionCalculationJob.perform_later(conversion.id)
     end
   end
 end
