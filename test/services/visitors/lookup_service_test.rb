@@ -23,8 +23,7 @@ class Visitors::LookupServiceTest < ActiveSupport::TestCase
     visitor.update_column(:last_seen_at, old_time)
 
     # Create fresh service instance to avoid memoization
-    fresh_service = Visitors::LookupService.new(account)
-    fresh_result = fresh_service.call(existing_visitor_id)
+    fresh_result = Visitors::LookupService.new(account, existing_visitor_id).call
 
     assert_in_delta Time.current, fresh_result[:visitor].last_seen_at, 1.second
   end
@@ -43,11 +42,11 @@ class Visitors::LookupServiceTest < ActiveSupport::TestCase
   private
 
   def result
-    @result ||= service.call(existing_visitor_id)
+    @result ||= service.call
   end
 
   def service
-    @service ||= Visitors::LookupService.new(account)
+    @service ||= Visitors::LookupService.new(account, existing_visitor_id)
   end
 
   def account

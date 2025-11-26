@@ -1,6 +1,6 @@
 module Sessions
   class IdentificationService
-    COOKIE_NAME = "_multibuzz_sid"
+    COOKIE_NAME = "_mbuzz_sid"
     SESSION_TIMEOUT = 30.minutes
 
     def initialize(request, account, visitor_id)

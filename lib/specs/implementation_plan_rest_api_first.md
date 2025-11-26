@@ -1,11 +1,11 @@
-# Multibuzz REST API - Doc-Driven Implementation Plan
+# mbuzz REST API - Doc-Driven Implementation Plan
 
 ## Overview
 
-This document outlines the REST API-first implementation approach for Multibuzz, replacing the original gem-first strategy. We'll build a production-ready REST API that any client (any language/framework) can consume.
+This document outlines the REST API-first implementation approach for mbuzz, replacing the original gem-first strategy. We'll build a production-ready REST API that any client (any language/framework) can consume.
 
-**Domain**: multibuzz.io
-**API Base URL**: https://multibuzz.io/api/v1
+**Domain**: mbuzz.co
+**API Base URL**: https://mbuzz.co/api/v1
 
 **Philosophy**: Documentation-Driven Development (DDD)
 - Write API docs first (contract-first design)
@@ -520,7 +520,7 @@ rails test:integration  # Run integration tests
 
 ### 2. Make Your First Request
 ```bash
-curl -X POST https://multibuzz.com/api/v1/events \
+curl -X POST https://mbuzz.co/api/v1/events \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -551,7 +551,7 @@ npm install -g @redocly/cli
 redocly build-docs docs/api/openapi.yml -o public/api-docs.html
 
 # Or use Swagger UI
-# Host at https://docs.multibuzz.io or https://multibuzz.io/docs
+# Host at https://docs.mbuzz.co or https://mbuzz.co/docs
 ```
 
 ---

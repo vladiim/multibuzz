@@ -26,7 +26,7 @@ class Sessions::TrackingServiceTest < ActiveSupport::TestCase
 
     fresh_result = nil
     assert_difference -> { Session.count }, 1 do
-      fresh_result = service.call(session_id, visitor)
+      fresh_result = Sessions::TrackingService.new(account, session_id, visitor).call
     end
 
     assert fresh_result[:created]
@@ -40,7 +40,7 @@ class Sessions::TrackingServiceTest < ActiveSupport::TestCase
     initial_count = session.reload.page_view_count
 
     # Second call should increment
-    service.call(session_id, visitor)
+    Sessions::TrackingService.new(account, session_id, visitor).call
 
     assert_equal initial_count + 1, session.reload.page_view_count
   end
@@ -56,14 +56,36 @@ class Sessions::TrackingServiceTest < ActiveSupport::TestCase
     assert result[:errors].present?
   end
 
+  test "should set started_at from event timestamp when creating session" do
+    @session_id = "sess_with_timestamp"
+    event_time = 3.days.ago
+
+    service = Sessions::TrackingService.new(account, @session_id, visitor, event_timestamp: event_time)
+    result = service.call
+
+    assert result[:success]
+    assert result[:created]
+    assert_in_delta event_time.to_i, result[:session].started_at.to_i, 1
+  end
+
+  test "should default to current time when no event timestamp provided" do
+    @session_id = "sess_no_timestamp"
+
+    service = Sessions::TrackingService.new(account, @session_id, visitor)
+    result = service.call
+
+    assert result[:success]
+    assert_in_delta Time.current.to_i, result[:session].started_at.to_i, 2
+  end
+
   private
 
   def result
-    @result ||= service.call(session_id, visitor)
+    @result ||= service.call
   end
 
   def service
-    @service ||= Sessions::TrackingService.new(account)
+    @service ||= Sessions::TrackingService.new(account, session_id, visitor)
   end
 
   def account

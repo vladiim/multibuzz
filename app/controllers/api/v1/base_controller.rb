@@ -16,6 +16,8 @@ module Api
 
         @current_account = authentication_result[:account]
         @current_api_key = authentication_result[:api_key]
+
+        return render_unauthorized("Account suspended") unless current_account.active?
       end
 
       def check_rate_limit

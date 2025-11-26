@@ -86,6 +86,32 @@ class Events::IngestionServiceTest < ActiveSupport::TestCase
     end
   end
 
+  test "should return events array with IDs for accepted events" do
+    assert_equal 2, result[:events].size
+
+    first_event = result[:events].first
+    assert_match(/^evt_/, first_event[:id])
+    assert_equal "page_view", first_event[:event_type]
+    assert_equal visitor.visitor_id, first_event[:visitor_id]
+    assert_equal session.session_id, first_event[:session_id]
+    assert_equal "accepted", first_event[:status]
+  end
+
+  test "should return empty events array when all rejected" do
+    @events_data = [invalid_event_data]
+
+    assert_empty result[:events]
+    assert_equal 1, result[:rejected].size
+  end
+
+  test "should include event_type in rejected events" do
+    @events_data = [{ "event_type" => "signup", "visitor_id" => "" }]
+
+    rejected = result[:rejected].first
+    assert_equal "signup", rejected[:event_type]
+    assert_equal "rejected", rejected[:status]
+  end
+
   private
 
   def result
