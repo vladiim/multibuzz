@@ -7,7 +7,7 @@ gem "propshaft"
 # Use postgresql as the database for Active Record
 gem "pg", "~> 1.1"
 # TimescaleDB for time-series optimization [https://github.com/jonatas/timescaledb]
-gem "timescaledb", "~> 0.2.0"
+gem "timescaledb", "~> 0.3.2"
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
 # Use JavaScript with ESM import maps [https://github.com/rails/importmap-rails]
