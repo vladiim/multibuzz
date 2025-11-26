@@ -105,6 +105,19 @@ class AccountTest < ActiveSupport::TestCase
     assert account.cancelled?
   end
 
+  test "should auto-create default attribution models on create" do
+    new_account = Account.create!(name: "Test Account", slug: "test-auto-#{SecureRandom.hex(4)}")
+
+    assert_equal AttributionAlgorithms::DEFAULTS.size, new_account.attribution_models.count
+
+    AttributionAlgorithms::DEFAULTS.each do |algorithm|
+      assert new_account.attribution_models.exists?(name: algorithm),
+        "Expected attribution model '#{algorithm}' to exist"
+    end
+
+    assert new_account.attribution_models.all?(&:is_active?)
+  end
+
   private
 
   def account

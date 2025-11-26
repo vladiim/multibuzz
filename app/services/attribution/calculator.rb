@@ -27,7 +27,7 @@ module Attribution
       @journey_builder ||= JourneyBuilder.new(
         visitor: conversion.visitor,
         converted_at: conversion.converted_at,
-        lookback_days: attribution_model.lookback_days
+        lookback_days: AttributionAlgorithms::DEFAULT_LOOKBACK_DAYS
       )
     end
 
