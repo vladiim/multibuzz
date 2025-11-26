@@ -71,7 +71,7 @@ Renders: Syntax-highlighted Ruby code with dark theme
   },
   curl: {
     label: 'cURL',
-    code: 'curl https://api.multibuzz.com',
+    code: 'curl https://api.mbuzz.co',
     syntax: 'bash'
   }
 }) %>

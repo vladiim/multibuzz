@@ -23,24 +23,39 @@ module Events
 
     def validate_required_fields
       REQUIRED_FIELDS.map do |field|
-        "#{field} is required" unless event_data&.key?(field)
+        "#{field} is required" unless field_present?(field)
       end.compact
     end
 
-    def validate_timestamp
-      return [] unless event_data&.key?("timestamp")
+    def field_present?(field)
+      return false unless has_field?(field)
 
-      Time.iso8601(event_data["timestamp"])
+      value = field_value(field)
+      value.is_a?(Hash) || value.present?
+    end
+
+    def has_field?(field)
+      event_data&.key?(field) || event_data&.key?(field.to_sym)
+    end
+
+    def validate_timestamp
+      return [] unless has_field?("timestamp")
+
+      Time.iso8601(field_value("timestamp"))
       []
     rescue ArgumentError
       ["timestamp must be a valid ISO8601 datetime"]
     end
 
     def validate_properties
-      return [] unless event_data&.key?("properties")
-      return [] if event_data["properties"].is_a?(Hash)
+      return [] unless has_field?("properties")
+      return [] if field_value("properties").is_a?(Hash)
 
       ["properties must be a hash"]
+    end
+
+    def field_value(field)
+      event_data[field] || event_data[field.to_sym]
     end
   end
 end

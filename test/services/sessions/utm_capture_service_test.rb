@@ -104,12 +104,14 @@ class Sessions::UtmCaptureServiceTest < ActiveSupport::TestCase
 
   test "should handle URL with no query string" do
     @url = "https://example.com/page"
+    @properties = nil
 
     assert_empty result
   end
 
   test "should handle URL with non-UTM params" do
     @url = "https://example.com?foo=bar&utm_source=google&baz=qux"
+    @properties = nil
 
     assert_equal({ utm_source: "google" }, result)
   end
@@ -123,6 +125,7 @@ class Sessions::UtmCaptureServiceTest < ActiveSupport::TestCase
 
   test "should handle invalid URL gracefully" do
     @url = "not a valid url"
+    @properties = nil
 
     assert_empty result
   end
@@ -155,7 +158,9 @@ class Sessions::UtmCaptureServiceTest < ActiveSupport::TestCase
   end
 
   def properties
-    @properties ||= {
+    return @properties if defined?(@properties)
+
+    @properties = {
       "utm_source" => "google",
       "utm_medium" => "cpc",
       "utm_campaign" => "spring_sale",

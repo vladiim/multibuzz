@@ -183,7 +183,7 @@ Remove identify/alias from docs and gem until implemented.
 
 **Current State**:
 - Getting Started guide uses: `MBUZZ_API_KEY`
-- Authentication doc uses: `MULTIBUZZ_API_KEY`
+- Authentication doc used: `MULTIBUZZ_API_KEY` (fixed)
 - Gem uses: `MBUZZ_API_KEY` (in examples)
 
 **Location**:
@@ -196,14 +196,14 @@ Standardize on `MBUZZ_API_KEY` everywhere (shorter, matches gem name).
 
 ```bash
 # Find and replace in authentication doc
-sed -i '' 's/MULTIBUZZ_API_KEY/MBUZZ_API_KEY/g' app/views/docs/_authentication.html.erb
+# Already fixed - all uses of MULTIBUZZ_API_KEY replaced with MBUZZ_API_KEY
 ```
 
 **Verification**:
 ```bash
 # Ensure no references to old name
-grep -r "MULTIBUZZ_API_KEY" app/views/docs/
-grep -r "MULTIBUZZ_API_KEY" app/helpers/
+grep -r "MULTIBUZZ_API_KEY" .
+# Should return no results (all replaced with MBUZZ_API_KEY)
 # Should return no results
 ```
 
@@ -270,7 +270,7 @@ grep -r "MULTIBUZZ_API_KEY" app/helpers/
 - [ ] Backend validates and processes all events correctly
 - [ ] Identify and alias endpoints work end-to-end
 - [ ] All documentation examples work when copy-pasted
-- [ ] No references to `MULTIBUZZ_API_KEY` in docs
+- [x] No references to `MULTIBUZZ_API_KEY` in docs (replaced with MBUZZ_API_KEY)
 - [ ] No references to `anonymous_id` in gem spec
 - [ ] UAT passes for complete user journey
 

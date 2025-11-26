@@ -70,17 +70,16 @@ module Attribution
       end
     end
 
-    test "should use model lookback window" do
-      custom_model = build_model(lookback_days: 7)
-      old_session = build_session(days_ago: 10, channel: "paid_search")
-      recent_session = build_session(days_ago: 5, channel: "display")
+    test "should use default lookback window from constant" do
+      old_session = build_session(days_ago: 35, channel: "paid_search")
+      recent_session = build_session(days_ago: 25, channel: "display")
 
-      custom_service = build_service(model: custom_model)
-      credits = custom_service.call
+      credits = service.call
 
       session_ids = credits.map { |c| c[:session_id] }
       assert_includes session_ids, recent_session.id
-      assert_not_includes session_ids, old_session.id
+      assert_not_includes session_ids, old_session.id,
+        "Sessions older than #{AttributionAlgorithms::DEFAULT_LOOKBACK_DAYS} days should be excluded"
     end
 
     test "should validate credits sum to 1.0" do

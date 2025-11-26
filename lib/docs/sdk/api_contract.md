@@ -566,7 +566,7 @@ All SDKs should eventually support:
 
 **For SDK developers**:
 - Email: dev@mbuzz.co
-- GitHub Issues: https://github.com/multibuzz/mbuzz-ruby/issues
+- GitHub Issues: https://github.com/mbuzz-tracking/mbuzz-ruby/issues
 
 **For API changes**:
 - Propose changes via GitHub issue

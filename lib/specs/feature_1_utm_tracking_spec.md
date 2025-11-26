@@ -88,7 +88,7 @@ ApiKey (Client Credential)
 │  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘          │
 │         │                 │                 │                 │
 │  ┌──────▼──────┐  ┌──────▼──────┐  ┌──────▼──────┐          │
-│  │ multibuzz-  │  │ multibuzz-  │  │ multibuzz-  │          │
+│  │ mbuzz-      │  │ multibuzz-  │  │ mbuzz-      │          │
 │  │   rails     │  │   django    │  │   laravel   │          │
 │  │  (gem)      │  │  (package)  │  │  (package)  │          │
 │  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘          │
@@ -98,7 +98,7 @@ ApiKey (Client Credential)
                             │ HTTP/JSON
                             ▼
 ┌──────────────────────────────────────────────────────────────┐
-│                   MULTIBUZZ SAAS API                          │
+│                      MBUZZ SAAS API                           │
 │                                                               │
 │  ┌────────────────────────────────────────────────────────┐  │
 │  │  API Layer (Rails)                                     │  │
@@ -140,7 +140,7 @@ ApiKey (Client Credential)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  MULTIBUZZ CLIENT LIBRARY (Framework-Specific)              │
+│  MBUZZ CLIENT LIBRARY (Framework-Specific)                  │
 │                                                              │
 │  ┌──────────────────────────────────────────────────────┐   │
 │  │  Framework Adapter Layer                             │   │
@@ -278,7 +278,7 @@ app/jobs/
 | **Namespace Organization** | Group tracking logic | `Visitor::Identifier`, `Event::Builder` |
 | **Middleware/Hook** | Transparent request interception | Rails Rack, Django Middleware |
 | **Builder** | Construct complex event payloads | `Event::Builder.page_view(request).with_utm().build()` |
-| **Singleton** | Global config, shared queue | `Multibuzz.configuration` |
+| **Singleton** | Global config, shared queue | `Mbuzz.configuration` |
 | **Template Method** | Reusable core, framework variations | Base `Tracker`, Rails `RackTracker` |
 | **Circuit Breaker** | Phase 2: Resilience to API failures | Disable tracking if API down |
 
@@ -445,7 +445,7 @@ POST /api/v1/events
 ### 7.1 Gem Organization (Rails)
 
 ```
-lib/multibuzz/
+lib/mbuzz/
 ├── version.rb
 ├── configuration.rb
 ├── railtie.rb
@@ -473,12 +473,12 @@ lib/multibuzz/
 
 ```ruby
 # Installation
-gem 'multibuzz'
+gem 'mbuzz'
 
 # Configuration
-Multibuzz.configure do |config|
-  config.api_key = ENV['MULTIBUZZ_API_KEY']
-  config.api_url = ENV.fetch('MULTIBUZZ_API_URL', 'https://multibuzz.com/api/v1')
+Mbuzz.configure do |config|
+  config.api_key = ENV['MBUZZ_API_KEY']
+  config.api_url = ENV.fetch('MBUZZ_API_URL', 'https://mbuzz.co/api/v1')
   config.enabled = !Rails.env.test?
   config.batch_size = 50
   config.flush_interval = 30
@@ -486,14 +486,14 @@ end
 
 # Automatic tracking via middleware (transparent)
 # Manual tracking (Phase 2)
-Multibuzz.track(:signup, properties: { plan: 'pro' })
+Mbuzz.track(:signup, properties: { plan: 'pro' })
 ```
 
 ### 7.3 Client Services (Match Backend Pattern)
 
 ```ruby
 # In gem
-module Multibuzz
+module Mbuzz
   module Visitor
     class Identifier
       def self.identify(request, response)
@@ -687,18 +687,18 @@ Multibuzz\Middleware\Tracking
 **Configuration**:
 ```ruby
 # Rails: Initializer
-Multibuzz.configure do |config|
-  config.api_key = ENV['MULTIBUZZ_API_KEY']
+Mbuzz.configure do |config|
+  config.api_key = ENV['MBUZZ_API_KEY']
 end
 
 # Django: settings.py
-MULTIBUZZ = {
-    'API_KEY': os.getenv('MULTIBUZZ_API_KEY')
+MBUZZ = {
+    'API_KEY': os.getenv('MBUZZ_API_KEY')
 }
 
-# Laravel: config/multibuzz.php
+# Laravel: config/mbuzz.php
 return [
-    'api_key' => env('MULTIBUZZ_API_KEY'),
+    'api_key' => env('MBUZZ_API_KEY'),
 ];
 ```
 

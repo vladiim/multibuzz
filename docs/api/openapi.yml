@@ -1,9 +1,9 @@
 openapi: 3.0.3
 info:
-  title: Multibuzz API
+  title: mbuzz API
   version: 1.0.0
   description: |
-    Multibuzz is a no-frills backend attribution SaaS for tracking marketing campaigns,
+    mbuzz is a no-frills backend attribution SaaS for tracking marketing campaigns,
     visitors, and conversions through a simple REST API.
 
     ## Key Features
@@ -21,15 +21,15 @@ info:
     - Live environment: 10000 requests/hour
 
   contact:
-    name: Multibuzz Support
-    url: https://multibuzz.io/support
+    name: mbuzz Support
+    url: https://mbuzz.co/support
   license:
     name: Proprietary
 
 servers:
-  - url: https://multibuzz.io/api/v1
+  - url: https://mbuzz.co/api/v1
     description: Production
-  - url: https://staging.multibuzz.io/api/v1
+  - url: https://staging.mbuzz.co/api/v1
     description: Staging
   - url: http://localhost:3000/api/v1
     description: Local Development
