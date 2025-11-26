@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_24_014723) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_26_034957) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -89,14 +89,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_24_014723) do
   create_table "conversions", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.bigint "visitor_id", null: false
-    t.bigint "session_id", null: false
-    t.bigint "event_id", null: false
+    t.bigint "session_id"
+    t.bigint "event_id"
     t.string "conversion_type", null: false
     t.decimal "revenue", precision: 10, scale: 2
     t.datetime "converted_at", null: false
     t.bigint "journey_session_ids", default: [], array: true
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "properties", default: {}, null: false
     t.index ["account_id", "converted_at"], name: "index_conversions_on_account_id_and_converted_at"
     t.index ["account_id"], name: "index_conversions_on_account_id"
     t.index ["conversion_type"], name: "index_conversions_on_conversion_type"

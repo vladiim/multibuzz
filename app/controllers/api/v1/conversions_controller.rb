@@ -16,7 +16,7 @@ module Api
       end
 
       def conversion_params
-        params.require(:conversion).permit(:event_id, :conversion_type, :revenue)
+        params.require(:conversion).permit(:event_id, :visitor_id, :conversion_type, :revenue, properties: {})
       end
     end
   end
