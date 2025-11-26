@@ -22,14 +22,14 @@ module Api
         assert_equal "signup", response.parsed_body.dig("conversion", "conversion_type")
       end
 
-      test "returns attribution credits in response" do
+      test "returns pending attribution status in response" do
         post api_v1_conversions_path,
           params: { conversion: { event_id: event.prefix_id, conversion_type: "signup" } },
           headers: auth_headers
 
         assert_response :created
         assert response.parsed_body.key?("attribution")
-        assert response.parsed_body.dig("attribution", "models").present?
+        assert_equal "pending", response.parsed_body.dig("attribution", "status")
       end
 
       test "returns 422 with invalid event_id" do

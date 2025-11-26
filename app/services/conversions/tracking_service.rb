@@ -18,10 +18,9 @@ module Conversions
     def run
       return validation_error if validation_error
 
-      success_result(
-        conversion: conversion,
-        attribution_credits: attribution_result[:credits_by_model]
-      )
+      enqueue_attribution_calculation
+
+      success_result(conversion: conversion)
     end
 
     def validation_error
@@ -82,8 +81,8 @@ module Conversions
       event&.occurred_at || Time.current
     end
 
-    def attribution_result
-      @attribution_result ||= AttributionCalculationService.new(conversion).call
+    def enqueue_attribution_calculation
+      AttributionCalculationJob.perform_later(conversion.id)
     end
   end
 end

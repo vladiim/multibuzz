@@ -4,6 +4,7 @@ require "test_helper"
 
 module Conversions
   class TrackingServiceTest < ActiveSupport::TestCase
+    include ActiveJob::TestHelper
     # ==========================================
     # Event-based conversion tests
     # ==========================================
@@ -157,11 +158,11 @@ module Conversions
       assert_equal "SAVE20", result[:conversion].properties["coupon"]
     end
 
-    test "triggers attribution calculation" do
-      result = build_service(event_id: event.prefix_id).call
-
-      assert result[:success]
-      assert_not_nil result[:attribution_credits]
+    test "enqueues attribution calculation job" do
+      assert_enqueued_with(job: Conversions::AttributionCalculationJob) do
+        result = build_service(event_id: event.prefix_id).call
+        assert result[:success]
+      end
     end
 
     test "allows nil event_id for visitor-based conversions" do
