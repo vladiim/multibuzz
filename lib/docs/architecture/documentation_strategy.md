@@ -37,7 +37,7 @@ docs/
 ### 2. SDK Documentation (GitHub Repositories)
 
 **Current SDKs**:
-- [mbuzz-ruby](https://github.com/multibuzz/mbuzz-ruby) - Ruby/Rails gem
+- [mbuzz-ruby](https://github.com/mbuzz-tracking/mbuzz-ruby) - Ruby/Rails gem
 - mbuzz-python (planned)
 - mbuzz-php (planned)
 
@@ -243,7 +243,7 @@ end
 - [ ] `timestamp` as ISO8601 string (not Unix epoch)
 
 **3. Check Environment Variables**:
-- [ ] Use `MBUZZ_API_KEY` (not `MULTIBUZZ_API_KEY`)
+- [ ] Use `MBUZZ_API_KEY` (not other variants)
 - [ ] Gem examples match user docs
 - [ ] README shows correct env var name
 

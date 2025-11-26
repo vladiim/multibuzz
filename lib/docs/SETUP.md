@@ -1,6 +1,6 @@
 # Local Development Setup
 
-Complete guide to setting up Multibuzz for local development.
+Complete guide to setting up mbuzz for local development.
 
 ---
 
@@ -153,8 +153,8 @@ DATABASE_URL=postgresql://localhost/multibuzz_development
 RAILS_ENV=development
 SECRET_KEY_BASE=your_secret_key_here
 
-# Optional: Multibuzz API key for testing gem
-MULTIBUZZ_API_KEY=sk_test_your_key_here
+# Optional: mbuzz API key for testing gem
+MBUZZ_API_KEY=sk_test_your_key_here
 ```
 
 ### 2. Generate Secret Key
@@ -207,7 +207,7 @@ bin/rails tailwindcss:watch
 
 Visit: http://localhost:3000
 
-You should see the Multibuzz homepage.
+You should see the mbuzz homepage.
 
 ### 2. Check Health Endpoint
 
@@ -473,11 +473,11 @@ puts "API Key: #{api_key[:plain_key]}"
 
 ```bash
 # Store API key
-export MULTIBUZZ_API_KEY=sk_test_your_key_here
+export MBUZZ_API_KEY=sk_test_your_key_here
 
 # Test event ingestion
 curl -X POST http://localhost:3000/api/v1/events \
-  -H "Authorization: Bearer $MULTIBUZZ_API_KEY" \
+  -H "Authorization: Bearer $MBUZZ_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "user_id": "123",
