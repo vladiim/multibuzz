@@ -26,15 +26,15 @@
 - Existing cookies (if any)
 
 **Server extracts**:
-- Visitor ID (from `_multibuzz_vid` cookie or generates new)
-- Session ID (from `_multibuzz_sid` cookie or generates new)
+- Visitor ID (from `_mbuzz_vid` cookie or generates new)
+- Session ID (from `_mbuzz_sid` cookie or generates new)
 - UTM parameters (from URL query string)
 - Referrer domain/path
 - IP address, User-Agent (request metadata)
 
 **Server returns**:
-- `Set-Cookie: _multibuzz_vid=...` (1 year expiry)
-- `Set-Cookie: _multibuzz_sid=...` (30 min expiry)
+- `Set-Cookie: _mbuzz_vid=...` (1 year expiry)
+- `Set-Cookie: _mbuzz_sid=...` (30 min expiry)
 
 ---
 
@@ -69,19 +69,19 @@ Event (Page View or Conversion)
 ## Three Visit Scenarios
 
 ### 1. First Visit (New Visitor)
-- **Cookie state**: No `_multibuzz_vid`
+- **Cookie state**: No `_mbuzz_vid`
 - **DB state**: Visitor not found
 - **Action**: Create Visitor + Create Session + Capture `initial_utm` + Capture `initial_referrer`
 - **Channel attribution**: Derive from UTM or referrer
 
 ### 2. Session Page View (Same Session)
-- **Cookie state**: Has both `_multibuzz_vid` + `_multibuzz_sid`, session not expired
+- **Cookie state**: Has both `_mbuzz_vid` + `_mbuzz_sid`, session not expired
 - **DB state**: Active Session exists
 - **Action**: Find Session + Increment `page_view_count` + **DO NOT** update `initial_utm`
 - **Channel attribution**: Use Session's existing `initial_utm`
 
 ### 3. New Session (Returning Visitor)
-- **Cookie state**: Has `_multibuzz_vid`, missing or expired `_multibuzz_sid`
+- **Cookie state**: Has `_mbuzz_vid`, missing or expired `_mbuzz_sid`
 - **DB state**: Visitor exists, Session missing/expired
 - **Action**: Find Visitor + Create NEW Session + Capture **fresh** `initial_utm` + Capture **fresh** `initial_referrer`
 - **Channel attribution**: Derive from new UTM or referrer (enables multi-touch)
@@ -201,12 +201,12 @@ Each new session captures its own `initial_utm`:
 ### `Visitors::IdentificationService`
 - **Input**: `request` (Rack::Request), `account`
 - **Output**: `{ visitor_id:, set_cookie: }`
-- **Logic**: Read `_multibuzz_vid` cookie OR generate new visitor_id
+- **Logic**: Read `_mbuzz_vid` cookie OR generate new visitor_id
 
 ### `Sessions::IdentificationService`
 - **Input**: `request`, `account`, `visitor_id`
 - **Output**: `{ session_id:, set_cookie:, created: }`
-- **Logic**: Read `_multibuzz_sid` cookie, check expiry, OR create new session
+- **Logic**: Read `_mbuzz_sid` cookie, check expiry, OR create new session
 
 ### `Sessions::UtmCaptureService`
 - **Input**: `url` (string)
@@ -344,35 +344,35 @@ Support multiple parallel funnels per account (e.g., lead funnel, subscription f
 **1. Lead Funnel**
 ```ruby
 # Step 1: Landing page view
-Multibuzz.track("page_view", funnel: "lead", funnel_step: "landing")
+Mbuzz.track("page_view", funnel: "lead", funnel_step: "landing")
 
 # Step 2: Lead form view
-Multibuzz.track("page_view", funnel: "lead", funnel_step: "form_view")
+Mbuzz.track("page_view", funnel: "lead", funnel_step: "form_view")
 
 # Step 3: Lead submitted
-Multibuzz.track("lead_submitted", funnel: "lead", funnel_step: "conversion")
+Mbuzz.track("lead_submitted", funnel: "lead", funnel_step: "conversion")
 ```
 
 **2. Subscription Funnel**
 ```ruby
 # Step 1: Pricing page
-Multibuzz.track("page_view", funnel: "subscription", funnel_step: "pricing")
+Mbuzz.track("page_view", funnel: "subscription", funnel_step: "pricing")
 
 # Step 2: Checkout started
-Multibuzz.track("checkout_started", funnel: "subscription", funnel_step: "checkout")
+Mbuzz.track("checkout_started", funnel: "subscription", funnel_step: "checkout")
 
 # Step 3: Payment completed
-Multibuzz.track("subscription_created", funnel: "subscription", funnel_step: "conversion")
+Mbuzz.track("subscription_created", funnel: "subscription", funnel_step: "conversion")
 ```
 
 **3. Multiple Funnels per Session**
 Same visitor can progress through different funnels:
 ```ruby
 # Morning: Browse content (lead funnel)
-Multibuzz.track("ebook_download", funnel: "lead")
+Mbuzz.track("ebook_download", funnel: "lead")
 
 # Afternoon: Sign up for trial (subscription funnel)
-Multibuzz.track("trial_started", funnel: "subscription")
+Mbuzz.track("trial_started", funnel: "subscription")
 ```
 
 ---
@@ -463,7 +463,7 @@ add_index :events, "(properties->>'funnel_step')", using: :btree, name: 'index_e
 **Client-side tracking (Rails gem)**:
 ```ruby
 # Automatic page view with funnel context
-Multibuzz::Middleware.configure do |config|
+Mbuzz::Middleware.configure do |config|
   config.funnel_detector = ->(request) {
     case request.path
     when /^\/pricing/
@@ -483,7 +483,7 @@ class SubscriptionsController < ApplicationController
   def create
     @subscription = Subscription.create!(...)
     
-    Multibuzz.track("subscription_created", {
+    Mbuzz.track("subscription_created", {
       funnel: "subscription",
       funnel_step: "conversion",
       funnel_position: 3,

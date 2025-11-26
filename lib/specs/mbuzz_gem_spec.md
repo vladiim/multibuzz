@@ -19,15 +19,15 @@ A minimal Rails gem for multi-touch attribution tracking, following Segment's AP
 ### Gemfile
 
 ```ruby
-gem 'multibuzz'
+gem 'mbuzz'
 ```
 
 ### Configuration
 
 ```ruby
-# config/initializers/multibuzz.rb
+# config/initializers/mbuzz.rb
 mbuzz.configure do |config|
-  config.api_key = ENV['MULTIBUZZ_API_KEY']
+  config.api_key = ENV['MBUZZ_API_KEY']
 end
 ```
 
@@ -105,7 +105,7 @@ class LandingController < ApplicationController
   def show
     # Track anonymous visitor (mbuzz creates visitor from cookies)
     mbuzz.track(
-      anonymous_id: multibuzz_visitor_id,  # Helper method
+      anonymous_id: mbuzz_visitor_id,  # Helper method
       event: 'Landing Page View'
     )
   end
@@ -118,7 +118,7 @@ class SignupsController < ApplicationController
     # Alias anonymous visitor to user
     mbuzz.alias(
       user_id: @user.id,
-      previous_id: multibuzz_visitor_id
+      previous_id: mbuzz_visitor_id
     )
 
     mbuzz.identify(
@@ -273,14 +273,14 @@ mbuzz.alias(
 
 **Use case:** User browses anonymously → signs up → you want to connect pre-signup events to their account.
 
-### Helper: `multibuzz_visitor_id`
+### Helper: `mbuzz_visitor_id`
 
 Available in controllers. Returns visitor ID from cookies (or creates one).
 
 ```ruby
 # In controller
 def show
-  visitor_id = multibuzz_visitor_id  # Reads from cookies
+  visitor_id = mbuzz_visitor_id  # Reads from cookies
 
   mbuzz.track(
     anonymous_id: visitor_id,
@@ -341,10 +341,10 @@ end
 ### Gem Structure
 
 ```
-multibuzz/
+mbuzz/
 ├── lib/
-│   ├── multibuzz.rb                    # Main module
-│   ├── multibuzz/
+│   ├── mbuzz.rb                    # Main module
+│   ├── mbuzz/
 │   │   ├── configuration.rb
 │   │   ├── client.rb                   # Main API (track, identify, alias)
 │   │   ├── request_context.rb          # Captures request data
@@ -433,20 +433,20 @@ end
 module mbuzz
   class RequestContext
     def self.with_context(request:, response:)
-      Thread.current[:multibuzz_request] = request
-      Thread.current[:multibuzz_response] = response
+      Thread.current[:mbuzz_request] = request
+      Thread.current[:mbuzz_response] = response
       yield
     ensure
-      Thread.current[:multibuzz_request] = nil
-      Thread.current[:multibuzz_response] = nil
+      Thread.current[:mbuzz_request] = nil
+      Thread.current[:mbuzz_response] = nil
     end
 
     def self.current
-      return nil unless Thread.current[:multibuzz_request]
+      return nil unless Thread.current[:mbuzz_request]
 
       new(
-        Thread.current[:multibuzz_request],
-        Thread.current[:multibuzz_response]
+        Thread.current[:mbuzz_request],
+        Thread.current[:mbuzz_response]
       )
     end
 
@@ -465,8 +465,8 @@ module mbuzz
 
     def cookies
       {
-        '_multibuzz_vid' => @request.cookies['_multibuzz_vid'],
-        '_multibuzz_sid' => @request.cookies['_multibuzz_sid']
+        '_mbuzz_vid' => @request.cookies['_mbuzz_vid'],
+        '_mbuzz_sid' => @request.cookies['_mbuzz_sid']
       }.compact
     end
 
@@ -514,9 +514,9 @@ end
 ```ruby
 module mbuzz
   module ControllerHelpers
-    def multibuzz_visitor_id
-      cookies[:_multibuzz_vid] ||= SecureRandom.hex(32)
-      cookies[:_multibuzz_vid]
+    def mbuzz_visitor_id
+      cookies[:_mbuzz_vid] ||= SecureRandom.hex(32)
+      cookies[:_mbuzz_vid]
     end
   end
 end
@@ -532,7 +532,7 @@ module mbuzz
     attr_accessor :api_key, :api_url, :timeout
 
     def initialize
-      @api_url = 'https://multibuzz.io/api/v1'
+      @api_url = 'https://mbuzz.co/api/v1'
       @timeout = 5
     end
   end
@@ -590,15 +590,15 @@ No-frills multi-touch attribution for Rails.
 ## Installation
 
 ```ruby
-gem 'multibuzz'
+gem 'mbuzz'
 ```
 
 ## Setup
 
 ```ruby
-# config/initializers/multibuzz.rb
+# config/initializers/mbuzz.rb
 mbuzz.configure do |config|
-  config.api_key = ENV['MULTIBUZZ_API_KEY']
+  config.api_key = ENV['MBUZZ_API_KEY']
 end
 ```
 
@@ -630,14 +630,14 @@ mbuzz.identify(
 
 ```ruby
 mbuzz.track(
-  anonymous_id: multibuzz_visitor_id,
+  anonymous_id: mbuzz_visitor_id,
   event: 'Landing Page View'
 )
 
 # On signup, link anonymous visitor to user
 mbuzz.alias(
   user_id: @user.id,
-  previous_id: multibuzz_visitor_id
+  previous_id: mbuzz_visitor_id
 )
 ```
 
