@@ -158,11 +158,11 @@ module Conversions
       assert_equal "SAVE20", result[:conversion].properties["coupon"]
     end
 
-    test "enqueues attribution calculation job" do
-      assert_enqueued_with(job: Conversions::AttributionCalculationJob) do
-        result = build_service(event_id: event.prefix_id).call
-        assert result[:success]
-      end
+    test "attribution job enqueued via model callback" do
+      # Job is enqueued by Conversion::Callbacks, not the service
+      result = build_service(event_id: event.prefix_id).call
+      assert result[:success]
+      assert_enqueued_jobs 1, only: Conversions::AttributionCalculationJob
     end
 
     test "allows nil event_id for visitor-based conversions" do
