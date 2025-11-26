@@ -52,7 +52,7 @@ This feature enables automatic attribution calculation when conversions are crea
 
 Creates a conversion and triggers attribution calculation.
 
-**Request**:
+**Request** (Option A - Event-based):
 ```json
 {
   "conversion": {
@@ -63,12 +63,41 @@ Creates a conversion and triggers attribution calculation.
 }
 ```
 
+**Request** (Option B - Visitor-based):
+```json
+{
+  "conversion": {
+    "visitor_id": "65dabef8d611f332d5bb88f5d6870c733d89f962594575b66f0e1de1ede1ebf0",
+    "conversion_type": "purchase",
+    "revenue": 99.99,
+    "properties": {
+      "plan": "pro"
+    }
+  }
+}
+```
+
+**Identifier Fields** (at least one required):
+- `event_id` (string) - Prefixed ID of the event that represents the conversion. Visitor and session are derived from the event.
+- `visitor_id` (string) - Raw visitor ID (64-char hex from `_mbuzz_vid` cookie). Uses visitor's most recent session.
+
 **Required Fields**:
-- `event_id` (string) - Prefixed ID of the event that represents the conversion
 - `conversion_type` (string) - User-defined type (e.g., "signup", "purchase", "trial_start")
 
 **Optional Fields**:
 - `revenue` (decimal) - Revenue amount for revenue attribution
+- `properties` (object) - Custom metadata for the conversion
+
+**Resolution Logic**:
+1. If `event_id` provided: Use event's visitor and session
+2. If only `visitor_id` provided: Look up visitor, use most recent session
+3. If both provided: `event_id` takes precedence
+
+**Use Cases**:
+| Approach | Use Case |
+|----------|----------|
+| `event_id` | Tie conversion to specific action (e.g., checkout button click) |
+| `visitor_id` | Direct conversions, offline imports, simpler SDK usage |
 
 **Response (201 Created)**:
 ```json
@@ -147,7 +176,21 @@ Creates a conversion and triggers attribution calculation.
 ```json
 {
   "success": false,
-  "errors": ["Event not found", "conversion_type is required"]
+  "errors": ["event_id or visitor_id is required"]
+}
+```
+
+```json
+{
+  "success": false,
+  "errors": ["Visitor not found"]
+}
+```
+
+```json
+{
+  "success": false,
+  "errors": ["conversion_type is required"]
 }
 ```
 
@@ -219,7 +262,7 @@ Conversions::TrackingService.new(account, conversion_params).call
 
 **Parameters**:
 - `account` - Current authenticated account
-- `conversion_params` - Hash with `event_id`, `conversion_type`, `revenue`
+- `conversion_params` - Hash with identifier (`event_id` OR `visitor_id`), `conversion_type`, `revenue`, `properties`
 
 **Output**:
 ```ruby
@@ -237,18 +280,37 @@ Conversions::TrackingService.new(account, conversion_params).call
 # Failure
 {
   success: false,
-  errors: ["Event not found"]
+  errors: ["event_id or visitor_id is required"]
 }
 ```
 
 **Responsibilities**:
-1. Find Event by `prefix_id` (not raw ID)
-2. Validate event belongs to account
-3. Validate `conversion_type` is present
-4. Extract visitor and session from event
+1. Validate at least one identifier provided (`event_id` OR `visitor_id`)
+2. Validate `conversion_type` is present
+3. Resolve visitor and session:
+   - If `event_id`: Find event, extract visitor/session from event
+   - If `visitor_id`: Find visitor by visitor_id string, use most recent session
+4. Validate resolved entities belong to account
 5. Create Conversion record
 6. Call `AttributionCalculationService`
 7. Return combined result
+
+**Resolution Logic**:
+```ruby
+def resolved_visitor
+  return event.visitor if event
+  account.visitors.find_by!(visitor_id: visitor_id)
+end
+
+def resolved_session
+  return event.session if event
+  resolved_visitor.sessions.order(started_at: :desc).first
+end
+
+def resolved_event
+  event  # May be nil for visitor-based conversions
+end
+```
 
 ---
 
@@ -376,7 +438,8 @@ end
 ```ruby
 # test/services/conversions/tracking_service_test.rb
 class Conversions::TrackingServiceTest < ActiveSupport::TestCase
-  test "creates conversion from valid event" do
+  # Event-based conversion tests
+  test "creates conversion from valid event_id" do
     # ...
   end
 
@@ -388,6 +451,37 @@ class Conversions::TrackingServiceTest < ActiveSupport::TestCase
     # ...
   end
 
+  # Visitor-based conversion tests
+  test "creates conversion from valid visitor_id" do
+    # ...
+  end
+
+  test "returns error for invalid visitor_id" do
+    # ...
+  end
+
+  test "returns error for visitor from different account" do
+    # ...
+  end
+
+  test "uses most recent session for visitor-based conversion" do
+    # ...
+  end
+
+  test "handles visitor with no sessions gracefully" do
+    # ...
+  end
+
+  # Identifier validation tests
+  test "returns error when neither event_id nor visitor_id provided" do
+    # ...
+  end
+
+  test "prefers event_id when both identifiers provided" do
+    # ...
+  end
+
+  # Common tests
   test "returns error for missing conversion_type" do
     # ...
   end
@@ -401,6 +495,10 @@ class Conversions::TrackingServiceTest < ActiveSupport::TestCase
   end
 
   test "stores journey_session_ids" do
+    # ...
+  end
+
+  test "allows nil event_id for visitor-based conversions" do
     # ...
   end
 end
@@ -529,15 +627,24 @@ end
 - Running all active models enables comparison dashboards
 - Storage is cheap, computation is fast
 
-### 3. Event-Based vs Direct Conversion Creation
+### 3. Event-Based vs Visitor-Based Conversion Creation
 
-**Decision**: Event-based (require `event_id`)
+**Decision**: Support both (`event_id` OR `visitor_id`)
 
 **Rationale**:
-- Conversions should always be tied to an event
-- Event has visitor/session context
-- Prevents orphaned conversions
-- Maintains data integrity
+- **Event-based** (`event_id`): Best for tying conversion to specific action
+- **Visitor-based** (`visitor_id`): Best for direct conversions, offline imports, simpler SDK usage
+
+**Resolution**:
+- If `event_id` provided: Use event's visitor and session (most precise)
+- If only `visitor_id`: Look up visitor, use most recent session
+- If both: `event_id` takes precedence
+
+**Why support both**:
+- Direct conversions: User lands and purchases immediately (no prior events needed)
+- Offline conversions: Import from CRM with just visitor_id
+- Server-side conversions: Webhook from payment provider with visitor_id only
+- Simpler SDK: Don't force users to track an event just to create a conversion
 
 ### 4. Error Handling
 
@@ -576,3 +683,4 @@ end
 | Date | Author | Change |
 |------|--------|--------|
 | 2025-11-25 | Claude | Initial spec created based on deep review |
+| 2025-11-26 | Claude | Added dual-path support: `event_id` OR `visitor_id` for conversions |
