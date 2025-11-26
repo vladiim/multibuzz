@@ -26,6 +26,13 @@ module AttributionAlgorithms
     PARTICIPATION
   ].freeze
 
-  # Default models created for new accounts
-  DEFAULTS = ALL.freeze
+  # Algorithms with implemented classes
+  IMPLEMENTED = [
+    FIRST_TOUCH,
+    LAST_TOUCH,
+    LINEAR
+  ].freeze
+
+  # Default models created for new accounts (only implemented ones)
+  DEFAULTS = IMPLEMENTED.freeze
 end
