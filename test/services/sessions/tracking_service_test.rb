@@ -56,6 +56,28 @@ class Sessions::TrackingServiceTest < ActiveSupport::TestCase
     assert result[:errors].present?
   end
 
+  test "should set started_at from event timestamp when creating session" do
+    @session_id = "sess_with_timestamp"
+    event_time = 3.days.ago
+
+    service = Sessions::TrackingService.new(account, @session_id, visitor, event_timestamp: event_time)
+    result = service.call
+
+    assert result[:success]
+    assert result[:created]
+    assert_in_delta event_time.to_i, result[:session].started_at.to_i, 1
+  end
+
+  test "should default to current time when no event timestamp provided" do
+    @session_id = "sess_no_timestamp"
+
+    service = Sessions::TrackingService.new(account, @session_id, visitor)
+    result = service.call
+
+    assert result[:success]
+    assert_in_delta Time.current.to_i, result[:session].started_at.to_i, 2
+  end
+
   private
 
   def result

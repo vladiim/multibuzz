@@ -22,7 +22,16 @@ module Events
     end
 
     def session_result
-      @session_result ||= Sessions::TrackingService.new(account, event_data["session_id"], visitor).call
+      @session_result ||= Sessions::TrackingService.new(
+        account,
+        event_data["session_id"],
+        visitor,
+        event_timestamp: event_timestamp
+      ).call
+    end
+
+    def event_timestamp
+      @event_timestamp ||= Time.iso8601(event_data["timestamp"])
     end
 
     def visitor
@@ -78,7 +87,7 @@ module Events
         event_type: event_data["event_type"],
         visitor: visitor,
         session: session,
-        occurred_at: Time.iso8601(event_data["timestamp"]),
+        occurred_at: event_timestamp,
         properties: event_data["properties"]
       )
     end
