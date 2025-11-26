@@ -2,6 +2,7 @@ class Account < ApplicationRecord
   include Account::Validations
   include Account::Relationships
   include Account::StatusManagement
+  include Account::Callbacks
 
   has_prefix_id :acct
 
