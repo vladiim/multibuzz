@@ -1,13 +1,14 @@
 # User Account Memberships
 
-**Status**: Ready for Implementation
+**Status**: Complete
 **Created**: 2025-11-27
+**Completed**: 2025-11-27
 
 ---
 
 ## Summary
 
-Replace `users.account_id` FK with `account_memberships` join table to enable multi-account users and per-account roles.
+Replaced `users.account_id` FK with `account_memberships` join table to enable multi-account users and per-account roles.
 
 ---
 
