@@ -10,10 +10,29 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_26_034957) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_27_001207) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
+
+  create_table "account_memberships", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "account_id", null: false
+    t.integer "role", default: 1, null: false
+    t.integer "status", default: 1, null: false
+    t.datetime "invited_at"
+    t.datetime "accepted_at"
+    t.string "invited_by_email"
+    t.datetime "deleted_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "role"], name: "index_account_memberships_on_account_id_and_role"
+    t.index ["account_id", "status"], name: "index_account_memberships_on_account_id_and_status"
+    t.index ["account_id"], name: "index_account_memberships_on_account_id"
+    t.index ["deleted_at"], name: "index_account_memberships_on_deleted_at"
+    t.index ["user_id", "account_id"], name: "index_account_memberships_unique_active", unique: true, where: "(deleted_at IS NULL)"
+    t.index ["user_id"], name: "index_account_memberships_on_user_id"
+  end
 
   create_table "accounts", force: :cascade do |t|
     t.string "name", null: false
@@ -199,6 +218,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_26_034957) do
     t.index ["visitor_id"], name: "index_visitors_on_visitor_id"
   end
 
+  add_foreign_key "account_memberships", "accounts"
+  add_foreign_key "account_memberships", "users"
   add_foreign_key "api_keys", "accounts"
   add_foreign_key "attribution_credits", "accounts"
   add_foreign_key "attribution_credits", "attribution_models"
