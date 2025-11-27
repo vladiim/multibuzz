@@ -1,13 +1,14 @@
 module Events
   class ProcessingService < ApplicationService
-    def initialize(account, event_data)
+    def initialize(account, event_data, is_test: false)
       @account = account
       @event_data = event_data
+      @is_test = is_test
     end
 
     private
 
-    attr_reader :account, :event_data
+    attr_reader :account, :event_data, :is_test
 
     def run
       return error_result(visitor_result[:errors]) unless visitor_result[:success]
@@ -18,7 +19,7 @@ module Events
     end
 
     def visitor_result
-      @visitor_result ||= Visitors::LookupService.new(account, event_data["visitor_id"]).call
+      @visitor_result ||= Visitors::LookupService.new(account, event_data["visitor_id"], is_test: is_test).call
     end
 
     def session_result
@@ -26,7 +27,8 @@ module Events
         account,
         event_data["session_id"],
         visitor,
-        event_timestamp: event_timestamp
+        event_timestamp: event_timestamp,
+        is_test: is_test
       ).call
     end
 
@@ -88,7 +90,8 @@ module Events
         visitor: visitor,
         session: session,
         occurred_at: event_timestamp,
-        properties: event_data["properties"]
+        properties: event_data["properties"],
+        is_test: is_test
       )
     end
 

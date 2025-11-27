@@ -2,19 +2,20 @@ module Events
   class ProcessingJob < ApplicationJob
     queue_as :default
 
-    def perform(account_id, event_data)
+    def perform(account_id, event_data, is_test = false)
       @account_id = account_id
       @event_data = event_data
+      @is_test = is_test
 
       process_event
     end
 
     private
 
-    attr_reader :account_id, :event_data
+    attr_reader :account_id, :event_data, :is_test
 
     def process_event
-      result = Events::ProcessingService.new(account, event_data).call
+      result = Events::ProcessingService.new(account, event_data, is_test: is_test).call
 
       log_error(result[:errors]) unless result[:success]
     end
