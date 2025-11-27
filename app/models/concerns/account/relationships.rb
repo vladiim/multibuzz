@@ -4,9 +4,6 @@ module Account::Relationships
   included do
     has_many :account_memberships, dependent: :destroy
     has_many :members, through: :account_memberships, source: :user
-
-    # Legacy - will be removed after migration complete
-    has_many :users, dependent: :destroy
     has_many :api_keys, dependent: :destroy
     has_many :visitors, dependent: :destroy
     has_many :sessions, dependent: :destroy
