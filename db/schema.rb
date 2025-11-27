@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_27_013421) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_27_015617) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -78,6 +78,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_27_013421) do
     t.string "utm_campaign"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "is_test", default: false, null: false
     t.index ["account_id", "attribution_model_id", "channel"], name: "index_credits_on_account_model_channel"
     t.index ["account_id", "channel"], name: "index_attribution_credits_on_account_id_and_channel"
     t.index ["account_id"], name: "index_attribution_credits_on_account_id"
@@ -85,6 +86,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_27_013421) do
     t.index ["attribution_model_id"], name: "index_attribution_credits_on_attribution_model_id"
     t.index ["conversion_id", "attribution_model_id"], name: "idx_on_conversion_id_attribution_model_id_08931b86a1"
     t.index ["conversion_id"], name: "index_attribution_credits_on_conversion_id"
+    t.index ["is_test"], name: "index_attribution_credits_on_is_test"
   end
 
   create_table "attribution_models", force: :cascade do |t|
@@ -117,10 +119,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_27_013421) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.jsonb "properties", default: {}, null: false
+    t.boolean "is_test", default: false, null: false
     t.index ["account_id", "converted_at"], name: "index_conversions_on_account_id_and_converted_at"
     t.index ["account_id"], name: "index_conversions_on_account_id"
     t.index ["conversion_type"], name: "index_conversions_on_conversion_type"
     t.index ["converted_at"], name: "index_conversions_on_converted_at"
+    t.index ["is_test"], name: "index_conversions_on_is_test"
     t.index ["visitor_id", "converted_at"], name: "index_conversions_on_visitor_id_and_converted_at"
     t.index ["visitor_id"], name: "index_conversions_on_visitor_id"
   end
@@ -135,6 +139,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_27_013421) do
     t.jsonb "properties", default: {}, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "is_test", default: false, null: false
     t.index "((properties -> 'host'::text))", name: "index_events_on_host", using: :gin
     t.index "((properties -> 'path'::text))", name: "index_events_on_path", using: :gin
     t.index "((properties -> 'referrer_host'::text))", name: "index_events_on_referrer_host", using: :gin
@@ -146,6 +151,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_27_013421) do
     t.index ["account_id", "event_type"], name: "index_events_on_account_id_and_event_type"
     t.index ["account_id", "occurred_at"], name: "index_events_on_account_id_and_occurred_at"
     t.index ["account_id"], name: "index_events_on_account_id"
+    t.index ["is_test"], name: "index_events_on_is_test"
     t.index ["occurred_at"], name: "events_occurred_at_idx", order: :desc
     t.index ["properties"], name: "index_events_on_properties", using: :gin
     t.index ["session_id"], name: "index_events_on_session_id"
@@ -180,12 +186,14 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_27_013421) do
     t.datetime "updated_at", null: false
     t.string "initial_referrer"
     t.string "channel"
+    t.boolean "is_test", default: false, null: false
     t.index ["account_id", "session_id", "started_at"], name: "index_sessions_on_account_id_and_session_id", unique: true
     t.index ["account_id"], name: "index_sessions_on_account_id"
     t.index ["channel"], name: "index_sessions_on_channel"
     t.index ["ended_at"], name: "index_sessions_on_ended_at"
     t.index ["id", "started_at"], name: "index_sessions_on_id_unique", unique: true
     t.index ["initial_utm"], name: "index_sessions_on_initial_utm", using: :gin
+    t.index ["is_test"], name: "index_sessions_on_is_test"
     t.index ["session_id"], name: "index_sessions_on_session_id"
     t.index ["started_at"], name: "index_sessions_on_started_at"
     t.index ["visitor_id"], name: "index_sessions_on_visitor_id"
@@ -207,8 +215,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_27_013421) do
     t.jsonb "traits", default: {}
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "is_test", default: false, null: false
     t.index ["account_id", "visitor_id"], name: "index_visitors_on_account_id_and_visitor_id", unique: true
     t.index ["account_id"], name: "index_visitors_on_account_id"
+    t.index ["is_test"], name: "index_visitors_on_is_test"
     t.index ["last_seen_at"], name: "index_visitors_on_last_seen_at"
     t.index ["traits"], name: "index_visitors_on_traits", using: :gin
     t.index ["visitor_id"], name: "index_visitors_on_visitor_id"
