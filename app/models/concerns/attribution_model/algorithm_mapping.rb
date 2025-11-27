@@ -6,7 +6,11 @@ module AttributionModel::AlgorithmMapping
   ALGORITHM_CLASSES = {
     first_touch: Attribution::Algorithms::FirstTouch,
     last_touch: Attribution::Algorithms::LastTouch,
-    linear: Attribution::Algorithms::Linear
+    linear: Attribution::Algorithms::Linear,
+    time_decay: Attribution::Algorithms::TimeDecay,
+    u_shaped: Attribution::Algorithms::UShaped,
+    w_shaped: Attribution::Algorithms::WShaped,
+    participation: Attribution::Algorithms::Participation
   }.freeze
 
   def algorithm_class
