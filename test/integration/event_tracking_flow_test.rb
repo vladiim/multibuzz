@@ -49,13 +49,14 @@ class EventTrackingFlowTest < ActionDispatch::IntegrationTest
     perform_enqueued_jobs
 
     # Then: Visitor is created (server-generated ID)
-    visitor = account.visitors.last
+    # Note: test API key creates test data, so use .test_data scope
+    visitor = account.visitors.unscope(where: :is_test).test_data.last
     assert visitor.present?, "Visitor should be created"
     assert visitor.first_seen_at.present?
     assert visitor.last_seen_at.present?
 
     # And: Session is created with UTM data
-    session = account.sessions.last
+    session = account.sessions.unscope(where: :is_test).test_data.last
     assert session.present?, "Session should be created"
     assert_equal visitor.id, session.visitor_id
     assert_equal 1, session.page_view_count
@@ -71,7 +72,7 @@ class EventTrackingFlowTest < ActionDispatch::IntegrationTest
     assert_equal "test keywords", utm[:utm_term]
 
     # And: Event is created for this specific visitor/session
-    event = account.events.where(
+    event = account.events.unscope(where: :is_test).test_data.where(
       visitor_id: visitor.id,
       session_id: session.id
     ).first
@@ -94,8 +95,9 @@ class EventTrackingFlowTest < ActionDispatch::IntegrationTest
 
     api_key_a = result_a[:plaintext_key]
 
-    initial_visitor_count_a = account_a.visitors.count
-    initial_visitor_count_b = account_b.visitors.count
+    # Test API keys create test data
+    initial_visitor_count_a = account_a.visitors.unscope(where: :is_test).test_data.count
+    initial_visitor_count_b = account_b.visitors.unscope(where: :is_test).test_data.count
 
     # When: Account A creates an event
     post api_v1_events_url,
@@ -115,20 +117,20 @@ class EventTrackingFlowTest < ActionDispatch::IntegrationTest
     perform_enqueued_jobs
 
     # Then: Account A has one more visitor
-    assert_equal initial_visitor_count_a + 1, account_a.visitors.count,
+    assert_equal initial_visitor_count_a + 1, account_a.visitors.unscope(where: :is_test).test_data.count,
       "Account A should have one more visitor"
 
     # And: Account B visitor count unchanged
-    assert_equal initial_visitor_count_b, account_b.visitors.count,
+    assert_equal initial_visitor_count_b, account_b.visitors.unscope(where: :is_test).test_data.count,
       "Account B should not have new visitors"
 
     # And: Account B cannot see Account A's event by URL
-    assert_equal 0, account_b.events.where(
+    assert_equal 0, account_b.events.unscope(where: :is_test).test_data.where(
       "properties->>'url' = ?", "https://example.com/account-a-page"
     ).count, "Account B should not have Account A's events"
 
     # And: Account A can see its own event
-    assert account_a.events.where(
+    assert account_a.events.unscope(where: :is_test).test_data.where(
       "properties->>'url' = ?", "https://example.com/account-a-page"
     ).exists?, "Account A should have its own events"
   end
