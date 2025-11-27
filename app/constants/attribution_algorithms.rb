@@ -27,11 +27,14 @@ module AttributionAlgorithms
   ].freeze
 
   # Algorithms with implemented classes
-  # TODO: Implement time_decay, u_shaped, w_shaped, participation
   IMPLEMENTED = [
     FIRST_TOUCH,
     LAST_TOUCH,
-    LINEAR
+    LINEAR,
+    TIME_DECAY,
+    U_SHAPED,
+    W_SHAPED,
+    PARTICIPATION
   ].freeze
 
   # Default models created for new accounts (only implemented ones for now)
