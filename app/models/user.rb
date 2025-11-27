@@ -6,6 +6,6 @@ class User < ApplicationRecord
 
   has_prefix_id :user
 
-  # Legacy - will be removed after migration complete
+  # Legacy - remove after production migration verified
   enum :role, { member: 0, admin: 1 }
 end

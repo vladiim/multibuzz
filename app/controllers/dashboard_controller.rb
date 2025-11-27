@@ -2,7 +2,7 @@ class DashboardController < ApplicationController
   before_action :require_login
 
   def show
-    @account = current_user.account
+    @account = current_user.primary_account
     @stats = build_stats
     @recent_events = @account.events.recent.limit(10)
     @utm_breakdown = utm_breakdown
