@@ -12,7 +12,11 @@ module Api
       private
 
       def tracking_result
-        @tracking_result ||= Conversions::TrackingService.new(current_account, conversion_params).call
+        @tracking_result ||= Conversions::TrackingService.new(
+          current_account,
+          conversion_params,
+          is_test: current_api_key.test?
+        ).call
       end
 
       def conversion_params

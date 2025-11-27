@@ -22,7 +22,7 @@ module Dashboard
     private
 
     def current_account
-      @current_account ||= current_user.account
+      @current_account ||= current_user.primary_account
     end
 
     def generation_result

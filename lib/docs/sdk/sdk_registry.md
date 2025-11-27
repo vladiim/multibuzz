@@ -104,6 +104,50 @@ gem 'mbuzz'
 
 ---
 
+### Magento 2 Extension
+
+**Repository**: https://github.com/mbuzz-tracking/mbuzz-magento (not created yet)
+**Package**: https://packagist.org/packages/mbuzz/module-tracking (not published yet)
+**Status**: 📋 Planned (Spec Complete)
+**Target Version**: 0.1.0
+
+**Platform Support** (planned):
+- Magento 2.4.x (Open Source)
+- Adobe Commerce (Cloud & On-Premise)
+- PHP 8.1+
+
+**Features** (planned):
+- Server-side purchase tracking (ad-blocker resistant)
+- Automatic page view tracking
+- Add to cart / remove from cart events
+- Customer registration & login (identify)
+- Admin configuration UI
+- Message queue support (RabbitMQ)
+- CLI test commands
+
+**Specification**: [lib/specs/magento_sdk_spec.md](../../specs/magento_sdk_spec.md)
+
+**Timeline**: Q2 2026
+
+---
+
+### Shopify App
+
+**Repository**: https://github.com/mbuzz-tracking/mbuzz-shopify (not created yet)
+**Status**: 📋 Planned
+**Target Version**: 0.1.0
+
+**Features** (planned):
+- Shopify Plus support
+- Order webhook integration
+- Customer event tracking
+- Automatic UTM capture
+- Shopify Admin embedded app
+
+**Timeline**: Q3 2026
+
+---
+
 ## SDK Development Guidelines
 
 ### All SDKs Must Implement

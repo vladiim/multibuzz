@@ -43,7 +43,11 @@ module Api
       end
 
       def ingestion_result
-        @ingestion_result ||= Events::IngestionService.new(current_account, async: false).call(enriched_events_data)
+        @ingestion_result ||= Events::IngestionService.new(
+          current_account,
+          async: false,
+          is_test: current_api_key.test?
+        ).call(enriched_events_data)
       end
 
       def enriched_events_data

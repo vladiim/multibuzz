@@ -1,0 +1,29 @@
+owner_one:
+  user: one
+  account: one
+  role: 3  # owner
+  status: 1  # accepted
+  accepted_at: <%= 1.month.ago %>
+
+owner_two:
+  user: two
+  account: two
+  role: 3  # owner
+  status: 1  # accepted
+  accepted_at: <%= 1.month.ago %>
+
+member_one_in_two:
+  user: one
+  account: two
+  role: 1  # member
+  status: 1  # accepted
+  accepted_at: <%= 1.week.ago %>
+  invited_by_email: user2@example.com
+
+pending_invite:
+  user: two
+  account: one
+  role: 1  # member
+  status: 0  # pending
+  invited_at: <%= 1.day.ago %>
+  invited_by_email: user1@example.com

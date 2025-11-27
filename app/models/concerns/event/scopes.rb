@@ -2,6 +2,10 @@ module Event::Scopes
   extend ActiveSupport::Concern
 
   included do
+    default_scope { production }
+
+    scope :production, -> { where(is_test: false) }
+    scope :test_data, -> { where(is_test: true) }
     scope :by_type, ->(type) { where(event_type: type) }
     scope :recent, -> { order(occurred_at: :desc) }
     scope :between, ->(start_time, end_time) { where(occurred_at: start_time..end_time) }

@@ -1,7 +1,7 @@
 # Multi-Touch Attribution Methodology
 
 **Status**: Design Standard - MUST follow for all attribution features
-**Last Updated**: 2025-11-19
+**Last Updated**: 2025-11-27
 **Research Sources**: GA4, Amplitude, Mixpanel, Adobe Analytics, Google Research (2024)
 
 ---
@@ -131,6 +131,16 @@ Total Journey: 3 touchpoints [Google Organic, Facebook Ad, Google Organic]
 
 **Formulas**:
 
+**First Touch**:
+```
+credit = 1.0 for first touchpoint only
+```
+
+**Last Touch**:
+```
+credit = 1.0 for last touchpoint only
+```
+
 **Linear**:
 ```
 credit_per_touchpoint = 1.0 / touchpoint_count
@@ -138,17 +148,43 @@ credit_per_touchpoint = 1.0 / touchpoint_count
 
 **Time Decay** (exponential, 7-day half-life):
 ```
-weight(t) = 2^(-days_before_conversion / 7)
+weight(t) = 2^(-days_before_conversion / half_life_days)
 credit(t) = weight(t) / sum_of_all_weights
 ```
+- Default half-life: 7 days (configurable)
+- Touchpoint at conversion: weight = 1.0
+- Touchpoint 7 days before: weight = 0.5
+- Touchpoint 14 days before: weight = 0.25
 
-**U-Shaped**:
+**U-Shaped** (Position-Based):
 ```
-first_credit = 0.4
-last_credit = 0.4
-middle_count = touchpoint_count - 2
-middle_credit_each = 0.2 / middle_count (if middle_count > 0)
+1 touchpoint:  100% to that touchpoint
+2 touchpoints: 50% each
+3+ touchpoints:
+  first_credit = 0.4 (40%)
+  last_credit = 0.4 (40%)
+  middle_credit_each = 0.2 / middle_count (20% split equally)
 ```
+
+**W-Shaped**:
+```
+1 touchpoint:  100% to that touchpoint
+2 touchpoints: 50% each
+3 touchpoints: 33.33% each
+4+ touchpoints:
+  first_credit = 0.3 (30%)
+  middle_credit = 0.3 (30%) - touchpoint at index n/2
+  last_credit = 0.3 (30%)
+  other_credit_each = 0.1 / other_count (10% split equally)
+```
+
+**Participation**:
+```
+credit = 1.0 for each unique channel
+```
+- Deduplicates by channel (not session)
+- Sum CAN exceed 1.0 (by design)
+- Uses first session_id for each channel
 
 ### 2.3 Multi-Model Execution
 
@@ -499,7 +535,50 @@ Journey Construction:
 
 ---
 
-## 12. Version History
+## 12. Implementation Status
+
+### Implemented Algorithms
+
+All 7 preset models are fully implemented:
+
+| Model | Class | Status |
+|-------|-------|--------|
+| First Touch | `Attribution::Algorithms::FirstTouch` | ✅ Complete |
+| Last Touch | `Attribution::Algorithms::LastTouch` | ✅ Complete |
+| Linear | `Attribution::Algorithms::Linear` | ✅ Complete |
+| Time Decay | `Attribution::Algorithms::TimeDecay` | ✅ Complete |
+| U-Shaped | `Attribution::Algorithms::UShaped` | ✅ Complete |
+| W-Shaped | `Attribution::Algorithms::WShaped` | ✅ Complete |
+| Participation | `Attribution::Algorithms::Participation` | ✅ Complete |
+
+### File Locations
+
+```
+app/services/attribution/algorithms/
+├── first_touch.rb
+├── last_touch.rb
+├── linear.rb
+├── time_decay.rb
+├── u_shaped.rb
+├── w_shaped.rb
+└── participation.rb
+```
+
+### Not Yet Implemented
+
+- **Custom Models (DSL)**: Phase 2C - see `lib/specs/attribution_dsl_design.md`
+- **Data-Driven Models**: Markov chains, Shapley values (requires ML infrastructure)
+
+---
+
+## 13. Version History
+
+- **v1.1** (2025-11-27): All 7 preset models implemented
+  - Added Time Decay algorithm (configurable half-life)
+  - Added U-Shaped algorithm (40/40/20 distribution)
+  - Added W-Shaped algorithm (30/30/30/10 distribution)
+  - Added Participation algorithm (100% per unique channel)
+  - Complete test coverage (44 algorithm tests)
 
 - **v1.0** (2025-11-19): Initial design based on research
   - Session-based touchpoint attribution

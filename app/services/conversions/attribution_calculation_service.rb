@@ -43,7 +43,8 @@ module Conversions
         revenue_credit: credit[:revenue_credit],
         utm_source: credit[:utm_source],
         utm_medium: credit[:utm_medium],
-        utm_campaign: credit[:utm_campaign]
+        utm_campaign: credit[:utm_campaign],
+        is_test: conversion.is_test
       )
 
       credit
