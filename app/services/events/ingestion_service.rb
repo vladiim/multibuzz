@@ -1,8 +1,9 @@
 module Events
   class IngestionService
-    def initialize(account, async: false)
+    def initialize(account, async: false, is_test: false)
       @account = account
       @async = async
+      @is_test = is_test
     end
 
     def call(events_data)
@@ -16,10 +17,14 @@ module Events
 
     private
 
-    attr_reader :account, :events_data, :accepted, :rejected
+    attr_reader :account, :events_data, :accepted, :rejected, :is_test
 
     def async?
       @async
+    end
+
+    def test_mode?
+      is_test
     end
 
     def process_events
@@ -40,7 +45,7 @@ module Events
     end
 
     def enqueue_event(event_data)
-      Events::ProcessingJob.perform_later(account.id, event_data)
+      Events::ProcessingJob.perform_later(account.id, event_data, is_test)
       accept_event_async(event_data)
     end
 
@@ -52,7 +57,7 @@ module Events
     end
 
     def processing_result_for(event_data)
-      Events::ProcessingService.new(account, event_data).call
+      Events::ProcessingService.new(account, event_data, is_test: is_test).call
     end
 
     def accept_event(event, event_data)
