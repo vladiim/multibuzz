@@ -1,6 +1,7 @@
 # Server-Side Attribution Architecture
 
 **Date**: 2025-11-14
+**Updated**: 2025-11-28
 
 ---
 
@@ -302,8 +303,26 @@ t.string :channel           # Derived channel (denormalized for performance)
 - Query conversions independently of page views
 - Support first-touch, last-touch, multi-touch models
 
-**Client library code**: ~50 lines (just forwards cookies + URLs)
-**Server handles**: ID generation, UTM extraction, channel derivation, session management
+### SDK Responsibilities
+
+The SDK must:
+1. Generate `visitor_id` (64 hex chars) and store in cookie `_mbuzz_vid`
+2. Generate `session_id` (64 hex chars) and store in cookie `_mbuzz_sid`
+3. Detect new sessions (no cookie or 30+ min since last activity)
+4. **POST to `/api/v1/sessions`** on new session with URL, referrer (async, non-blocking)
+5. Include `visitor_id`, `session_id`, URL, referrer in all event calls
+
+### API Responsibilities
+
+The API handles:
+- UTM extraction from URL
+- Referrer parsing
+- Channel derivation
+- Visitor/Session record creation
+- Identity resolution (visitor → user linking)
+- Attribution calculation
+
+**See**: [Identity & Sessions Spec](../../specs/identity_and_sessions_spec.md) for complete model
 
 
 ---
