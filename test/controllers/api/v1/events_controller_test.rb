@@ -11,6 +11,7 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
     assert_response :accepted
     assert_equal 2, json_response["accepted"]
     assert_empty json_response["rejected"]
+    assert_equal 2, account.events.unscoped.where(account: account).test_data.count
   end
 
   test "should return 401 without authorization header" do
@@ -93,7 +94,7 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
     post api_v1_events_path, params: events_payload, headers: auth_headers, as: :json
 
     assert_response :accepted
-    created_event = account.events.last
+    created_event = account.events.unscoped.where(account: account).test_data.last
     assert_equal account, created_event.account
   end
 

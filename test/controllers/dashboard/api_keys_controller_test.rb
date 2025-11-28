@@ -140,7 +140,7 @@ module Dashboard
     end
 
     def account
-      @account ||= user.account
+      @account ||= user.primary_account
     end
 
     def api_key
