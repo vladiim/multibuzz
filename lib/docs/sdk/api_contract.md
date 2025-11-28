@@ -2,7 +2,7 @@
 
 **Purpose**: Define the exact API behavior that all SDKs must implement to remain compatible with the mbuzz backend.
 
-**Last Updated**: 2025-11-25
+**Last Updated**: 2025-11-28
 **Backend Version**: 1.0.0
 
 ---
@@ -13,6 +13,42 @@
 **Staging**: `https://staging.mbuzz.co/api/v1` (if available)
 
 All endpoints are relative to this base URL.
+
+---
+
+## Identity Model
+
+Understanding the identity model is essential for correct SDK implementation.
+
+### Core Entities
+
+| Entity | Description | Identifier |
+|--------|-------------|------------|
+| **Visitor** | Anonymous browser/device | `visitor_id` (SDK-generated, stored in cookie) |
+| **User** | Known, identified individual | `user_id` (customer-provided) |
+| **Session** | A single visit with acquisition context | `session_id` (SDK-generated, stored in cookie) |
+
+### Identity Resolution
+
+A single person may have multiple visitors (multiple devices). When a user is identified (signup, login), the visitor is linked to the user:
+
+```
+Visitor (desktop) ──┐
+                    ├──→ User (jane@example.com)
+Visitor (mobile) ───┘
+```
+
+This link is **bidirectional in time**:
+- **Backward**: All past sessions from the visitor are attributed to the user
+- **Forward**: All future sessions from the visitor are attributed to the user
+
+### Attribution Flow
+
+When a conversion occurs:
+1. Find the converting visitor/user
+2. Find ALL visitors linked to that user
+3. Find ALL sessions from those visitors (within lookback window)
+4. Apply attribution models across all sessions
 
 ---
 
@@ -43,58 +79,98 @@ Authorization: Bearer sk_test_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
 Content-Type: application/json
 ```
 
-**Validation**:
-- Backend extracts key from `Authorization: Bearer {key}`
-- Validates key exists and belongs to an active account
-- Sets `@current_account` for request scope
-- All data operations are scoped to this account
-
 ---
 
 ## Endpoints
 
-### POST /api/v1/events
+### POST /api/v1/sessions
 
-**Purpose**: Track events (page views, signups, purchases, etc.)
+**Purpose**: Create a session when a visitor lands on the site. This is the foundation of attribution tracking.
+
+**When to call**: SDK middleware should call this on every new session (no session cookie, or session expired).
 
 **Request Headers**:
 ```
 Authorization: Bearer {api_key}
 Content-Type: application/json
-User-Agent: mbuzz-ruby/0.2.0 (Ruby/3.2.0)  # Include SDK version
+User-Agent: mbuzz-ruby/1.0.0 (Ruby/3.2.0)
+X-Forwarded-For: 1.2.3.4          # Visitor's real IP (for server-side SDKs)
+X-Mbuzz-User-Agent: Mozilla/5.0... # Visitor's real UA (for server-side SDKs)
 ```
 
-**Request Body** (single event):
+**Request Body**:
 ```json
 {
-  "event_type": "Signup",
-  "user_id": "user_123",
-  "visitor_id": "vis_a1b2c3d4e5f6g7h8",
-  "properties": {
-    "plan": "pro",
-    "trial_days": 14,
-    "source": "homepage"
-  },
-  "timestamp": "2025-11-25T10:30:00Z"
+  "session": {
+    "visitor_id": "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6",
+    "session_id": "x1y2z3a4b5c6d7e8f9g0h1i2j3k4l5m6x1y2z3a4b5c6d7e8f9g0h1i2j3k4l5m6",
+    "url": "https://example.com/landing?utm_source=google&utm_medium=cpc&utm_campaign=q4",
+    "referrer": "https://www.google.com/search?q=analytics",
+    "started_at": "2025-11-28T10:30:00Z"
+  }
 }
 ```
 
-**Request Body** (batch events):
+**Required Fields**:
+- `visitor_id` (String, 64 hex chars) - SDK-generated visitor identifier
+- `session_id` (String, 64 hex chars) - SDK-generated session identifier
+- `url` (String) - Full landing page URL including query parameters
+
+**Optional Fields**:
+- `referrer` (String) - Referring URL
+- `started_at` (String, ISO8601) - Session start time (defaults to now)
+
+**What the API does**:
+1. Creates Visitor record (if new visitor_id)
+2. Creates Session record with:
+   - UTM parameters extracted from URL
+   - Referrer host/path extracted
+   - Channel derived (paid_search, organic, email, etc.)
+   - Landing page stored
+3. Queues processing to background job (fast response)
+
+**Success Response** (202 Accepted):
+```json
+{
+  "status": "accepted",
+  "visitor_id": "a1b2c3d4...",
+  "session_id": "x1y2z3a4..."
+}
+```
+
+**SDK Behavior**:
+- Call asynchronously (fire and forget)
+- Do NOT block the customer's page render
+- Log errors but don't raise exceptions
+
+---
+
+### POST /api/v1/events
+
+**Purpose**: Track events (custom actions, conversions, etc.)
+
+**Request Headers**:
+```
+Authorization: Bearer {api_key}
+Content-Type: application/json
+User-Agent: mbuzz-ruby/1.0.0 (Ruby/3.2.0)
+```
+
+**Request Body** (batch format - preferred):
 ```json
 {
   "events": [
     {
-      "event_type": "Page View",
-      "visitor_id": "vis_a1b2c3d4e5f6g7h8",
-      "properties": { "url": "/pricing" },
-      "timestamp": "2025-11-25T10:29:00Z"
-    },
-    {
-      "event_type": "Signup",
-      "user_id": "user_123",
-      "visitor_id": "vis_a1b2c3d4e5f6g7h8",
-      "properties": { "plan": "pro" },
-      "timestamp": "2025-11-25T10:30:00Z"
+      "event_type": "add_to_cart",
+      "visitor_id": "a1b2c3d4e5f6...",
+      "session_id": "x1y2z3a4b5c6...",
+      "properties": {
+        "url": "https://example.com/product/123",
+        "referrer": "https://example.com/catalog",
+        "product_id": "SKU-123",
+        "price": 49.99
+      },
+      "timestamp": "2025-11-28T10:35:00Z"
     }
   ]
 }
@@ -102,80 +178,107 @@ User-Agent: mbuzz-ruby/0.2.0 (Ruby/3.2.0)  # Include SDK version
 
 **Required Fields**:
 - `event_type` (String) - Name of the event
-- `user_id` OR `visitor_id` (String) - At least one required
+- `visitor_id` OR `user_id` (String) - At least one required
+
+**Recommended Fields**:
+- `session_id` (String) - Links event to session for attribution
+- `properties.url` (String) - Current page URL
+- `properties.referrer` (String) - Referring URL
 
 **Optional Fields**:
 - `properties` (Object) - Custom event metadata
-- `timestamp` (String, ISO8601) - When event occurred (defaults to now if omitted)
+- `timestamp` (String, ISO8601) - When event occurred (defaults to now)
 
-**Validation Rules**:
-- `event_type` must be present and non-empty
-- Either `user_id` OR `visitor_id` must be present
-- `timestamp` must be valid ISO8601 format if provided
-- `properties` must be a valid JSON object (not array, not null)
-- Total request size < 1MB
-
-**Success Response** (200 OK):
+**Success Response** (202 Accepted):
 ```json
 {
   "accepted": 1,
-  "rejected": []
-}
-```
-
-**Validation Error** (422 Unprocessable Entity):
-```json
-{
-  "accepted": 0,
-  "rejected": [
+  "rejected": [],
+  "events": [
     {
-      "event": {
-        "event_type": "Invalid",
-        "properties": {}
-      },
-      "errors": ["user_id or visitor_id required"]
+      "id": "evt_abc123",
+      "event_type": "add_to_cart",
+      "visitor_id": "a1b2c3d4...",
+      "session_id": "x1y2z3a4...",
+      "status": "accepted"
     }
   ]
 }
 ```
 
-**Auth Error** (401 Unauthorized):
+---
+
+### POST /api/v1/conversions
+
+**Purpose**: Track conversions and calculate attribution
+
+**Request Body**:
 ```json
 {
-  "error": "Invalid API key"
+  "conversion": {
+    "visitor_id": "a1b2c3d4e5f6...",
+    "conversion_type": "purchase",
+    "revenue": 99.99,
+    "currency": "USD",
+    "properties": {
+      "order_id": "ORD-123"
+    }
+  }
 }
 ```
 
-**Rate Limit** (429 Too Many Requests):
+**Required Fields**:
+- `conversion_type` (String) - e.g., "purchase", "signup", "trial_start"
+- `visitor_id` OR `event_id` (String) - At least one required
+
+**Optional Fields**:
+- `revenue` (Number) - Conversion value
+- `currency` (String) - Currency code (default: USD)
+- `properties` (Object) - Custom metadata
+
+**Success Response** (201 Created):
 ```json
 {
-  "error": "Rate limit exceeded",
-  "retry_after": 3600
+  "conversion": {
+    "id": "conv_xyz789",
+    "conversion_type": "purchase",
+    "revenue": "99.99"
+  },
+  "attribution": {
+    "lookback_days": 30,
+    "sessions_analyzed": 3,
+    "models": {
+      "first_touch": [
+        { "channel": "paid_search", "credit": 1.0, "revenue_credit": "99.99" }
+      ],
+      "last_touch": [
+        { "channel": "email", "credit": 1.0, "revenue_credit": "99.99" }
+      ],
+      "linear": [
+        { "channel": "paid_search", "credit": 0.33, "revenue_credit": "33.00" },
+        { "channel": "organic_social", "credit": 0.33, "revenue_credit": "33.00" },
+        { "channel": "email", "credit": 0.34, "revenue_credit": "33.99" }
+      ]
+    }
+  }
 }
-```
-
-**Response Headers**:
-```
-X-RateLimit-Limit: 1000
-X-RateLimit-Remaining: 999
-X-RateLimit-Reset: 1732554000
 ```
 
 ---
 
 ### POST /api/v1/identify
 
-**Status**: 🚧 Planned (not yet implemented)
+**Purpose**: Associate traits with a user ID and optionally link to a visitor
 
-**Purpose**: Associate traits with a user ID
+**When to call**: On signup, login, or when user attributes change
 
 **Request Body**:
 ```json
 {
   "user_id": "user_123",
-  "visitor_id": "vis_a1b2c3d4e5f6g7h8",
+  "visitor_id": "a1b2c3d4e5f6...",
   "traits": {
-    "email": "user@example.com",
+    "email": "jane@example.com",
     "name": "Jane Doe",
     "plan": "pro",
     "company": "Acme Inc"
@@ -184,11 +287,16 @@ X-RateLimit-Reset: 1732554000
 ```
 
 **Required Fields**:
-- `user_id` (String)
+- `user_id` (String) - Your application's user identifier
 
 **Optional Fields**:
-- `visitor_id` (String) - Links anonymous visitor to user
+- `visitor_id` (String) - Links this visitor to the user (creates alias)
 - `traits` (Object) - User attributes
+
+**What happens when visitor_id is provided**:
+- Creates Visitor → User link
+- All past sessions from this visitor attributed to user
+- All future sessions from this visitor attributed to user
 
 **Success Response** (200 OK):
 ```json
@@ -201,21 +309,27 @@ X-RateLimit-Reset: 1732554000
 
 ### POST /api/v1/alias
 
-**Status**: 🚧 Planned (not yet implemented)
+**Purpose**: Explicitly link a visitor to a user (for cross-device tracking)
 
-**Purpose**: Link a visitor ID to a user ID (for cross-device tracking)
+**When to call**: After login, when you want to link anonymous browsing to a known user
 
 **Request Body**:
 ```json
 {
-  "visitor_id": "vis_a1b2c3d4e5f6g7h8",
+  "visitor_id": "a1b2c3d4e5f6...",
   "user_id": "user_123"
 }
 ```
 
 **Required Fields**:
-- `visitor_id` (String)
-- `user_id` (String)
+- `visitor_id` (String) - The anonymous visitor ID
+- `user_id` (String) - The known user ID
+
+**What happens**:
+- Creates Visitor → User link
+- **Backward**: All past sessions from visitor now attributed to user
+- **Forward**: All future sessions from visitor attributed to user
+- Enables cross-device attribution when user logs in on new device
 
 **Success Response** (200 OK):
 ```json
@@ -230,11 +344,6 @@ X-RateLimit-Reset: 1732554000
 
 **Purpose**: Validate an API key
 
-**Request Headers**:
-```
-Authorization: Bearer {api_key}
-```
-
 **Success Response** (200 OK):
 ```json
 {
@@ -243,14 +352,6 @@ Authorization: Bearer {api_key}
     "id": "acct_abc123",
     "name": "Acme Inc"
   }
-}
-```
-
-**Auth Error** (401 Unauthorized):
-```json
-{
-  "valid": false,
-  "error": "Invalid API key"
 }
 ```
 
@@ -272,40 +373,48 @@ Authorization: Bearer {api_key}
 
 ## Data Types & Formats
 
+### Visitor ID
+
+**Format**: 64-character hex string
+**Generation**: `SecureRandom.hex(32)` or equivalent
+**Lifetime**: 2 years
+**Storage**: Cookie named `_mbuzz_vid`
+
+**Cookie attributes**:
+```
+_mbuzz_vid=<64 hex chars>; Max-Age=63072000; Path=/; HttpOnly; SameSite=Lax; Secure
+```
+
+### Session ID
+
+**Format**: 64-character hex string
+**Generation**: `SecureRandom.hex(32)` or equivalent
+**Lifetime**: 30 minutes (sliding expiry)
+**Storage**: Cookie named `_mbuzz_sid`
+
+**Cookie attributes**:
+```
+_mbuzz_sid=<64 hex chars>; Max-Age=1800; Path=/; HttpOnly; SameSite=Lax; Secure
+```
+
+**New session when**:
+- No session cookie exists
+- Session cookie expired (30+ minutes since last activity)
+
+### User ID
+
+**Format**: Any string (max 255 characters)
+**Examples**: `"user_123"`, `"12345"`, `"usr_a1b2c3"`, `"jane@example.com"`
+
 ### Timestamps
 
-**Format**: ISO8601 with timezone
-**Required**: UTC timezone (Z suffix)
+**Format**: ISO8601 with timezone (UTC preferred)
 
 **Valid**:
 ```
-2025-11-25T10:30:00Z
-2025-11-25T10:30:00.123Z
-2025-11-25T10:30:00+00:00
-```
-
-**Invalid**:
-```
-1732550400                    # Unix timestamp (integer)
-2025-11-25 10:30:00          # Missing T separator
-2025-11-25T10:30:00          # Missing timezone
-2025-11-25T10:30:00-05:00    # Non-UTC timezone (will work but discouraged)
-```
-
-**SDK Implementation**:
-```ruby
-# Ruby
-Time.now.utc.iso8601
-# => "2025-11-25T10:30:00Z"
-
-# Python
-from datetime import datetime, timezone
-datetime.now(timezone.utc).isoformat()
-# => "2025-11-25T10:30:00+00:00"
-
-# JavaScript
-new Date().toISOString()
-# => "2025-11-25T10:30:00.123Z"
+2025-11-28T10:30:00Z
+2025-11-28T10:30:00.123Z
+2025-11-28T10:30:00+00:00
 ```
 
 ### Properties Object
@@ -314,261 +423,69 @@ new Date().toISOString()
 **Max Size**: 64KB
 **Max Depth**: 5 levels of nesting
 
-**Valid**:
-```json
-{
-  "plan": "pro",
-  "amount": 99.99,
-  "items": ["item1", "item2"],
-  "metadata": {
-    "source": "homepage",
-    "campaign": "black-friday"
-  }
-}
-```
-
-**Invalid**:
-```json
-["array", "at", "root"]      # Must be object, not array
-null                          # Must be object, not null
-"string"                      # Must be object, not string
-```
-
-### Visitor ID
-
-**Format**: 64-character hex string
-**Generation**: `SecureRandom.hex(32)`
-**Lifetime**: 2 years
-**Storage**: Cookie named `mbuzz_visitor_id`
-
-**Example**: `a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6`
-
-**SDK Behavior**:
-- Check for existing cookie
-- Generate new ID if not present
-- Set cookie with 2-year expiration
-- Include in all tracking calls
-
-### User ID
-
-**Format**: Any string (max 255 characters)
-**Examples**: `"user_123"`, `"12345"`, `"usr_a1b2c3"`
-
-**SDK Behavior**:
-- Accept any string provided by application
-- Don't validate format (app decides ID structure)
-- Include in tracking calls for identified users
+**Reserved property keys** (SDK should populate):
+- `url` - Current page URL (for UTM extraction)
+- `referrer` - Referring URL (for channel attribution)
 
 ---
 
 ## Error Handling
-
-### SDK Behavior on Errors
-
-**MUST NOT**:
-- Raise exceptions to application code
-- Block application execution
-- Retry indefinitely
-
-**MUST**:
-- Return `false` on any error
-- Log error if debug mode enabled
-- Continue application execution
-
-**Example**:
-```ruby
-# Ruby SDK
-result = Mbuzz.track(event_type: 'Signup', user_id: 1)
-if result
-  # Success - event tracked
-else
-  # Failure - but app continues
-end
-```
 
 ### HTTP Status Codes
 
 | Code | Meaning | SDK Action |
 |------|---------|------------|
 | 200 | Success | Return true |
+| 201 | Created | Return true |
+| 202 | Accepted | Return true (processing async) |
 | 401 | Invalid API key | Log error, return false |
 | 422 | Validation error | Log error, return false |
-| 429 | Rate limit | Log error, return false, don't retry |
-| 500 | Server error | Log error, return false |
-| 503 | Service unavailable | Log error, return false |
+| 429 | Rate limit | Log error, return false |
+| 500 | Server error | Log error, may retry |
 
-**SDK should NOT retry on**:
-- 401 (auth won't fix itself)
-- 422 (validation won't change)
-- 429 (already rate limited)
+### SDK Behavior on Errors
 
-**SDK MAY retry on** (with exponential backoff):
-- 500 (server error might be transient)
-- 503 (service might recover)
-- Network timeout
+**MUST NOT**:
+- Raise exceptions to application code
+- Block application execution
+- Crash the customer's app
 
----
-
-## Rate Limiting
-
-### Current Limits
-
-**All accounts**: 1,000 events per hour
-
-### Headers
-
-Every response includes:
-```
-X-RateLimit-Limit: 1000
-X-RateLimit-Remaining: 999
-X-RateLimit-Reset: 1732554000  # Unix timestamp
-```
-
-### SDK Behavior
-
-**On 429 response**:
-- Log warning if debug mode
-- Return false
-- Do NOT retry automatically
-- Respect `retry_after` header if provided
-
-**Example**:
-```ruby
-# Ruby SDK
-response = api_call()
-if response.status == 429
-  retry_after = response.headers['Retry-After'] || 3600
-  log_error("Rate limit exceeded. Retry after #{retry_after} seconds")
-  return false
-end
-```
+**MUST**:
+- Return `false` on any error
+- Log error if debug mode enabled
+- Continue application execution
 
 ---
 
-## Backwards Compatibility
+## SDK Feature Requirements
 
-### Breaking Changes
+### Core (Required)
 
-**Backend will maintain compatibility for**:
-- Accepted parameter names (won't remove `user_id`, `event_type`, etc.)
-- Response formats (won't change structure of success responses)
-- Authentication method (Bearer token)
+- ✅ Session creation (`POST /sessions`) - async, on new session
+- ✅ Event tracking (`POST /events`)
+- ✅ Visitor ID generation and cookie management
+- ✅ Session ID generation and cookie management
+- ✅ Authentication (Bearer token)
+- ✅ Error handling (never raise exceptions)
 
-**Backend may add without notice**:
-- New optional parameters
-- New response fields
-- New endpoints
-- New HTTP headers
+### Standard (Recommended)
 
-**SDK must**:
-- Ignore unknown response fields
-- Handle new optional parameters gracefully
-- Not break if new headers added
+- ✅ User identification (`POST /identify`)
+- ✅ Visitor aliasing (`POST /alias`)
+- ✅ Include URL and referrer in event properties
+- ✅ Conversion tracking (`POST /conversions`)
 
-### Deprecation Policy
+### Advanced (Optional)
 
-**Process**:
-1. Announce deprecation 6 months before removal
-2. Add deprecation warnings to API responses
-3. Update all SDKs with migration guide
-4. Remove after 6 months
-
-**Example deprecation header**:
-```
-X-Mbuzz-Deprecation: Parameter 'anonymous_id' is deprecated. Use 'visitor_id' instead.
-```
-
----
-
-## Testing Your SDK
-
-### Manual Testing Checklist
-
-- [ ] Install SDK in fresh app
-- [ ] Configure with test API key
-- [ ] Track a simple event
-- [ ] Verify event appears in dashboard
-- [ ] Test with invalid API key (should fail gracefully)
-- [ ] Test with missing required fields (should return false)
-- [ ] Test with malformed JSON (should return false)
-- [ ] Test visitor ID generation and persistence
-- [ ] Test batch event sending
-- [ ] Test rate limiting behavior
-
-### Integration Test Endpoints
-
-**Staging API** (when available):
-```
-https://staging.mbuzz.co/api/v1
-```
-
-Use test API keys starting with `sk_test_` for all testing.
-
-### Example cURL Commands
-
-**Track Event**:
-```bash
-curl -X POST https://mbuzz.co/api/v1/events \
-  -H "Authorization: Bearer sk_test_your_key_here" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "event_type": "Test Event",
-    "user_id": "test_user_123",
-    "properties": {
-      "test": true
-    },
-    "timestamp": "2025-11-25T10:30:00Z"
-  }'
-```
-
-**Validate Key**:
-```bash
-curl https://mbuzz.co/api/v1/validate \
-  -H "Authorization: Bearer sk_test_your_key_here"
-```
-
----
-
-## SDK Feature Parity
-
-All SDKs should eventually support:
-
-**Core** (required):
-- ✅ Track events
-- ✅ Visitor identification
-- ✅ Authentication
-- ✅ Error handling (no exceptions)
-
-**Standard** (recommended):
-- ⏳ User identification
-- ⏳ Visitor aliasing
-- ⏳ Batch event sending
-- ⏳ Automatic page view tracking
-
-**Advanced** (optional):
-- ❌ Offline queueing
-- ❌ Event sampling
-- ❌ Custom HTTP client
-- ❌ Middleware/plugins
+- Batch event sending
+- Offline queueing
+- Custom HTTP client
+- Event sampling
 
 ---
 
 ## Related Documentation
 
+- [Identity & Sessions Spec](../../specs/identity_and_sessions_spec.md) - Core concepts
 - [SDK Registry](./sdk_registry.md) - List of all SDKs
-- [Documentation Strategy](../architecture/documentation_strategy.md) - Cross-linking guide
-- [Bug Fixes](../../specs/bug_fixes_critical_inconsistencies.md) - Current issues
-- [Event Properties](../architecture/event_properties.md) - Detailed property specs
-
----
-
-## Questions?
-
-**For SDK developers**:
-- Email: dev@mbuzz.co
-- GitHub Issues: https://github.com/mbuzz-tracking/mbuzz-ruby/issues
-
-**For API changes**:
-- Propose changes via GitHub issue
-- Include use case and backwards compatibility plan
-- Update this document when approved
+- [Event Properties](../architecture/event_properties.md) - Property extraction details
