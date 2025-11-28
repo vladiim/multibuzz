@@ -18,6 +18,7 @@
 # Marketing
 
 * Launch SDK listings + associated newsletters (first being rubygems)
+* CA, Rebel etc (grant)
 * Reach out: key ICPs, intro LI then email then call
 * Content: docs, video how to, video - what is MTA?, MTA Lenny-style guide, survey potential users w/ LinkedIn / email outreach - compile
 * Landing pages: competitor breakdown (very detailed, feature by feature)
