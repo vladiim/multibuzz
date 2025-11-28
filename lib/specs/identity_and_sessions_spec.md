@@ -1,7 +1,8 @@
 # Identity Resolution & Session Tracking
 
-Version: 1.0.0
+Version: 1.1.0
 Last Updated: 2025-11-28
+Status: **IMPLEMENTED**
 
 This document defines Multibuzz's identity model and session tracking system. These are the foundational concepts that enable multi-touch attribution across devices, channels, and time.
 
@@ -33,7 +34,7 @@ A single person interacts with a business across multiple touchpoints:
 
 The actual human being. Never directly stored - instead, resolved from linked identifiers.
 
-A Person is the union of all Visitors and Users that have been linked together.
+A Person is the union of all Visitors and Identities that have been linked together.
 
 ### Visitor
 
@@ -48,18 +49,21 @@ An anonymous identifier representing a browser/device.
 
 A Person may have **many** Visitors (multiple devices/browsers).
 
-### User
+### Identity
 
-A known, identified individual in the customer's system.
+A known, identified individual in the customer's system. Called "Identity" internally to avoid confusion with dashboard Users.
 
 | Property | Description |
 |----------|-------------|
-| `user_id` | Customer-provided identifier |
+| `user_id` | Customer-provided identifier (stored as `external_id`) |
 | Scope | Cross-device, cross-channel |
 | Lifetime | Permanent |
 | Creation | When customer calls `identify` or `alias` |
+| Prefix ID | `idt_*` |
 
-A Person has **one** User identity (though the user_id format is up to the customer).
+A Person has **one** Identity (though the user_id format is up to the customer).
+
+**API Note:** The API accepts `user_id` in requests (for SDK compatibility), but internally stores this as `Identity.external_id`.
 
 ### Session
 
@@ -78,26 +82,26 @@ Sessions are the **touchpoints** used in attribution.
 
 ## Identity Resolution
 
-### The Link: Visitor → User
+### The Link: Visitor → Identity
 
 When a customer identifies a user (signup, login, etc.), they create a link:
 
 ```
-Visitor (abc) ──────→ User (usr_123)
+Visitor (abc) ──────→ Identity (usr_123)
 ```
 
 This link is **bidirectional in time**:
 
-- **Backward:** All past sessions from Visitor `abc` are now attributed to User `usr_123`
-- **Forward:** All future sessions from Visitor `abc` are attributed to User `usr_123`
+- **Backward:** All past sessions from Visitor `abc` are now attributed to Identity `usr_123`
+- **Forward:** All future sessions from Visitor `abc` are attributed to Identity `usr_123`
 
-### Multiple Visitors, One User
+### Multiple Visitors, One Identity
 
 When a user logs in on a new device:
 
 ```
 Visitor (abc) ─────┐
-                   ├──→ User (usr_123)
+                   ├──→ Identity (usr_123)
 Visitor (def) ─────┘
 ```
 
@@ -107,8 +111,8 @@ Now both visitors' sessions contribute to attribution for this user.
 
 When calculating attribution for a conversion:
 
-1. Start with the User (or Visitor if anonymous)
-2. Find ALL Visitors linked to that User
+1. Start with the Identity (or Visitor if anonymous)
+2. Find ALL Visitors linked to that Identity
 3. Find ALL Sessions from those Visitors
 4. Apply attribution model across all sessions
 
@@ -117,7 +121,7 @@ When calculating attribution for a conversion:
 SELECT sessions.*
 FROM sessions
 JOIN visitors ON sessions.visitor_id = visitors.id
-WHERE visitors.user_id = :user_id
+WHERE visitors.identity_id = :identity_id
    OR visitors.id = :converting_visitor_id
 ORDER BY sessions.started_at
 ```
@@ -291,25 +295,29 @@ Customer imports CRM data:
 | `id` | bigint | Internal primary key |
 | `account_id` | bigint | Customer account (multi-tenancy) |
 | `visitor_id` | string(64) | SDK-generated identifier |
-| `user_id` | bigint (nullable) | Link to User (when identified) |
+| `identity_id` | bigint (nullable) | Link to Identity (when identified) |
 | `first_seen_at` | timestamp | First session start |
 | `last_seen_at` | timestamp | Most recent activity |
 | `traits` | jsonb | Visitor-level properties |
+| `is_test` | boolean | Test mode flag |
 
 **Unique constraint:** `(account_id, visitor_id)`
+**Prefix ID:** `vis_*`
 
-### Users
+### Identities
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | bigint | Internal primary key |
 | `account_id` | bigint | Customer account |
-| `external_id` | string | Customer's user identifier |
+| `external_id` | string | Customer's user identifier (from `user_id` param) |
 | `traits` | jsonb | User properties (email, name, etc.) |
 | `first_identified_at` | timestamp | When first identified |
 | `last_identified_at` | timestamp | Most recent identify call |
+| `is_test` | boolean | Test mode flag |
 
 **Unique constraint:** `(account_id, external_id)`
+**Prefix ID:** `idt_*`
 
 ### Sessions
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_27_015617) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_28_074501) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -173,6 +173,22 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_27_015617) do
     t.index ["type"], name: "index_form_submissions_on_type"
   end
 
+  create_table "identities", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "external_id", null: false
+    t.jsonb "traits", default: {}
+    t.datetime "first_identified_at", null: false
+    t.datetime "last_identified_at", null: false
+    t.boolean "is_test", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "external_id"], name: "index_identities_on_account_id_and_external_id", unique: true
+    t.index ["account_id"], name: "index_identities_on_account_id"
+    t.index ["external_id"], name: "index_identities_on_external_id"
+    t.index ["is_test"], name: "index_identities_on_is_test"
+    t.index ["traits"], name: "index_identities_on_traits", using: :gin
+  end
+
   create_table "sessions", primary_key: ["id", "started_at"], force: :cascade do |t|
     t.bigserial "id", null: false
     t.bigint "account_id", null: false
@@ -216,8 +232,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_27_015617) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "is_test", default: false, null: false
+    t.bigint "identity_id"
     t.index ["account_id", "visitor_id"], name: "index_visitors_on_account_id_and_visitor_id", unique: true
     t.index ["account_id"], name: "index_visitors_on_account_id"
+    t.index ["identity_id"], name: "index_visitors_on_identity_id"
     t.index ["is_test"], name: "index_visitors_on_is_test"
     t.index ["last_seen_at"], name: "index_visitors_on_last_seen_at"
     t.index ["traits"], name: "index_visitors_on_traits", using: :gin
@@ -235,7 +253,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_27_015617) do
   add_foreign_key "conversions", "visitors"
   add_foreign_key "events", "accounts"
   add_foreign_key "events", "visitors"
+  add_foreign_key "identities", "accounts"
   add_foreign_key "sessions", "accounts"
   add_foreign_key "sessions", "visitors"
   add_foreign_key "visitors", "accounts"
+  add_foreign_key "visitors", "identities"
 end
