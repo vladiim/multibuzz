@@ -4,6 +4,22 @@ This document contains conventions, patterns, and best practices specific to thi
 
 ---
 
+## Tech Stack
+
+| Component | Technology | Notes |
+|-----------|------------|-------|
+| Framework | **Rails 8** | Hotwire (Turbo + Stimulus) for interactivity |
+| Database | **PostgreSQL + TimescaleDB** | Time-series data, continuous aggregates |
+| Cache | **Solid Cache** | NOT Redis - uses database-backed caching |
+| Queue | **Solid Queue** | NOT Sidekiq/Redis - database-backed jobs |
+| Cable | **Solid Cable** | NOT Redis - database-backed WebSockets |
+| Frontend | **Tailwind CSS** | Utility-first styling |
+| Charts | **Highcharts** | Complex visualizations |
+
+**Important**: We use the **Solid Stack** (Solid Cache, Solid Queue, Solid Cable) - all database-backed. Do NOT suggest Redis-based solutions.
+
+---
+
 ## Ruby Style Philosophy
 
 ### Write Prosaic Ruby, Not PHP
@@ -1185,6 +1201,41 @@ validates :slug,
 validates :slug,
 presence: true,
 uniqueness: true
+```
+
+### ERB/HTML Indentation
+
+**Use 2-space indentation for nested elements. Each nested level adds 2 spaces.**
+
+```erb
+# ✅ GOOD - 2 space indent for nested elements
+<div class="container">
+  <turbo-frame id="filters">
+    <div class="filter-group">
+      <label>Date Range</label>
+      <select>
+        <option value="7d">Last 7 days</option>
+        <option value="30d">Last 30 days</option>
+      </select>
+    </div>
+  </turbo-frame>
+</div>
+
+# ❌ BAD - 4 space indent
+<div class="container">
+    <turbo-frame id="filters">
+        <div class="filter-group">
+        </div>
+    </turbo-frame>
+</div>
+
+# ❌ BAD - Inconsistent indentation
+<div class="container">
+<turbo-frame id="filters">
+  <div class="filter-group">
+      </div>
+</turbo-frame>
+</div>
 ```
 
 ---
