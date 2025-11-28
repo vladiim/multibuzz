@@ -9,15 +9,17 @@
 * Content for subsidiary pages (terms etc)
 * Invite users
 * Live
-* Other channels: phone, emailp
+* CLV (doesn't work the same as new customer acquisition - think it through)
 * Rollout SDKs: python, php, shopify, magento etc
+* Other channels: phone, emailp
 
 ***
 
 # Marketing
 
 * Launch SDK listings + associated newsletters (first being rubygems)
-* Content: MTA Lenny-style guide, survey potential users w/ LinkedIn / email outreach - compile
+* Reach out: key ICPs, intro LI then email then call
+* Content: docs, video how to, video - what is MTA?, MTA Lenny-style guide, survey potential users w/ LinkedIn / email outreach - compile
 * Landing pages: competitor breakdown (very detailed, feature by feature)
 * SEO & AEO - lots of FAQs
 * Ad Words to competitor breakdowns: GA4 alternative, Segment alternative
