@@ -136,50 +136,89 @@ MD
 
   ## Core Concepts
 
-  ### Events
+  ### Sessions (The Foundation of Attribution)
 
-  Actions users take in your application.
+  A **session** is a single visit to your site with acquisition context. Sessions are the **touchpoints** used for attribution.
 
-  **Required fields**:
-  - `event` - Event name (e.g., "Signup", "Purchase", "Page View")
-  - `user_id` OR `visitor_id` - At least one identifier required
+  **What a session captures**:
+  - UTM parameters (`utm_source`, `utm_medium`, `utm_campaign`, etc.)
+  - Referrer URL (for organic/referral traffic)
+  - Channel (derived from UTMs + referrer: `paid_search`, `organic`, `email`, etc.)
+  - Landing page
 
-  **Optional fields**:
-  - `properties` - Custom metadata (JSON object)
-  - `timestamp` - When event occurred (defaults to now)
+  **Session behavior**:
+  - **Auto-created**: SDK middleware creates sessions automatically
+  - **30-minute timeout**: New session after 30 min of inactivity
+  - **Non-blocking**: Session POST is async (doesn't slow your app)
+
+  **Why sessions matter**: Without sessions, you can't know *how* a visitor arrived. Sessions make multi-touch attribution possible.
 
   ### Visitors
 
   Anonymous users tracked via cookies.
 
   - **Lifetime**: 2 years
-  - **Auto-generated**: By client library
+  - **Auto-generated**: By SDK (64-char hex, stored in `_mbuzz_vid` cookie)
   - **Thread-safe**: Works with multi-threaded servers
   - **Privacy-first**: No PII required
+
+  A single person may have multiple visitors (multiple devices/browsers).
 
   ### Users
 
   Known, identified users in your system.
 
+  - **Cross-device**: One user identity across all devices
+  - **Permanent**: Persists beyond cookies
+  - **Your ID**: Use your application's user identifier
+
   Link visitors to users with `Mbuzz.identify()` or `Mbuzz.alias()`.
+
+  ### Events
+
+  Actions users take in your application.
+
+  **Required fields**:
+  - `event_type` - Event name (e.g., "signup", "purchase", "add_to_cart")
+  - `user_id` OR `visitor_id` - At least one identifier required
+
+  **Recommended fields**:
+  - `session_id` - Links event to session for attribution
+
+  **Optional fields**:
+  - `properties` - Custom metadata (JSON object)
+  - `timestamp` - When event occurred (defaults to now)
 
   ---
 
-  ## Automatic Page View Tracking
+  ## Automatic Session Tracking
 
-  The Ruby gem includes Rack middleware that automatically tracks page views.
+  The Ruby gem includes Rack middleware that automatically creates sessions when visitors land on your site.
 
-  **Auto-tracked**:
-  - All GET requests
-  - URL with query parameters
-  - Referrer
+  **What happens on each request**:
+  1. SDK checks for existing visitor cookie (`_mbuzz_vid`)
+  2. SDK checks for existing session cookie (`_mbuzz_sid`)
+  3. If new session detected → **POST to API** with full context
+  4. Cookies refreshed
+
+  **Session context captured automatically**:
+  - Full URL (including UTM parameters)
+  - Referrer URL
   - User-Agent
-  - Visitor ID from cookie
+  - IP address (for geo lookup)
 
-  **Auto-filtered**:
-  - Asset requests (`.js`, `.css`, `.png`, etc.)
-  - Health check endpoints
-  - Rails error pages
+  **Session detection**:
+  - **New visitor**: No `_mbuzz_vid` cookie → new session
+  - **Returning visitor, new session**: `_mbuzz_vid` exists but `_mbuzz_sid` missing/expired (30+ min) → new session
+  - **Same session**: Both cookies valid → no new session
+
+  **The API handles**:
+  - UTM parameter extraction
+  - Referrer analysis
+  - Channel derivation (`paid_search`, `organic`, `email`, etc.)
+  - Visitor/Session record creation
+
+  **Important**: Session POSTs are async and non-blocking. Your page render is not slowed.
 
   **Disable if needed**:
 
@@ -275,10 +314,48 @@ MD
 }, default: :ruby) %>
 
 <%= render_markdown <<~MD
-  **What this does**:
-  - Links all pre-signup visitor sessions to user account
-  - Enables full journey tracking (anonymous → identified)
-  - Required for accurate multi-touch attribution
+  ### What Alias Does (Important!)
+
+  When you call `alias`, you create a **bidirectional link** between visitor and user:
+
+  **Backward attribution**:
+  - All past sessions from this visitor are now attributed to the user
+  - Sessions from before the user signed up become part of their journey
+
+  **Forward attribution**:
+  - All future sessions from this visitor are automatically attributed to the user
+  - No need to call alias again on subsequent logins
+
+  ### Cross-Device Tracking
+
+  Users often visit on multiple devices. Each device has a different visitor ID:
+
+  ```
+  Desktop visitor (abc) ─────┐
+                             ├──→ User (usr_123)
+  Mobile visitor (def) ──────┘
+  ```
+
+  **How to enable**:
+  1. User visits on desktop → visitor `abc` created
+  2. User visits on mobile → visitor `def` created
+  3. User signs up on mobile → `alias(visitor: def, user: usr_123)`
+  4. User logs in on desktop → `alias(visitor: abc, user: usr_123)`
+  5. Now both visitors linked → full cross-device attribution
+
+  **Call alias on every login**, not just signup. This ensures visitors from new devices get linked.
+
+  ### Example: Full Journey Attribution
+
+  ```
+  Day 1: Jane visits via Google Ads (desktop) → Session A
+  Day 3: Jane visits via Facebook (mobile) → Session B
+  Day 5: Jane signs up (mobile) → alias() links mobile visitor
+  Day 6: Jane logs in (desktop) → alias() links desktop visitor
+  Day 7: Jane purchases → Attribution spans ALL sessions (A, B, etc.)
+  ```
+
+  Without alias, you'd only see the mobile sessions.
 
   ---
 

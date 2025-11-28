@@ -2,7 +2,7 @@
 
 **Purpose**: Central registry of all mbuzz SDKs with version info, status, and maintenance notes.
 
-**Last Updated**: 2025-11-25
+**Last Updated**: 2025-11-28
 
 ---
 
@@ -27,19 +27,28 @@
 
 **Features**:
 - ✅ Event tracking (`Mbuzz.track`)
-- ✅ Visitor identification (automatic via cookies)
-- ✅ Session tracking (automatic)
-- ⚠️ User identification (`Mbuzz.identify`) - implemented but backend endpoint missing
-- ⚠️ Visitor aliasing (`Mbuzz.alias`) - implemented but backend endpoint missing
-- ✅ Automatic page view tracking (Rack middleware)
+- ✅ Visitor ID generation (cookie-based)
+- ⚠️ Session ID generation - generates ID but doesn't POST to API
+- ❌ Session creation (`POST /sessions`) - **CRITICAL: Not implemented**
+- ✅ User identification (`Mbuzz.identify`)
+- ✅ Visitor aliasing (`Mbuzz.alias`)
+- ❌ URL/referrer auto-capture - not included in events
 - ❌ Batch event sending (planned)
+
+**Critical Gap**:
+The SDK generates visitor/session IDs but does NOT post sessions to the API. This means:
+- Visitors who don't trigger an explicit `track()` call are invisible
+- UTM parameters from landing pages are lost
+- Attribution is broken for multi-session journeys
+
+See [Identity & Sessions Spec](../../specs/identity_and_sessions_spec.md) for required changes.
 
 **Known Issues**:
 - 🐛 Sends Unix timestamp instead of ISO8601 (will break validation)
 - 🐛 Sends `event` parameter instead of `event_type`
-- 📝 SPECIFICATION.md says `anonymous_id` but should say `visitor_id`
+- 🐛 Missing `POST /sessions` call on new session detection
 
-**Fix Status**: See [bug_fixes_critical_inconsistencies.md](../../specs/bug_fixes_critical_inconsistencies.md)
+**Fix Status**: See [mbuzz_ruby_upgrade_spec.md](../../specs/mbuzz_ruby_upgrade_spec.md)
 
 **Installation**:
 ```ruby
@@ -154,9 +163,18 @@ gem 'mbuzz'
 
 **Required Methods**:
 ```
-track(user_id:, visitor_id:, event_type:, properties:, timestamp:)
+# Session tracking (automatic, on new session)
+create_session(visitor_id:, session_id:, url:, referrer:, started_at:)
+
+# Event tracking (explicit calls)
+track(visitor_id:, session_id:, event_type:, properties:, timestamp:)
+
+# Identity management
 identify(user_id:, visitor_id:, traits:)
 alias(visitor_id:, user_id:)
+
+# Conversions
+conversion(visitor_id:, conversion_type:, revenue:, properties:)
 ```
 
 **Required Configuration**:
@@ -168,13 +186,17 @@ debug (default: false)
 ```
 
 **Required Behavior**:
+- Auto-generate visitor_id (64 hex chars) and store in cookie `_mbuzz_vid`
+- Auto-generate session_id (64 hex chars) and store in cookie `_mbuzz_sid`
+- Detect new sessions (no cookie or 30+ min expired)
+- POST to `/sessions` on new session (async, non-blocking)
+- Include URL and referrer in session and event calls
 - Never raise exceptions (return false on errors)
 - Log errors if debug mode enabled
-- Auto-generate visitor IDs if not provided
 - Send timestamps in ISO8601 format
-- Include User-Agent header with SDK version
 
 **See**: [API Contract](./api_contract.md) for complete specification
+**See**: [Identity & Sessions Spec](../../specs/identity_and_sessions_spec.md) for concepts
 
 ---
 
@@ -203,6 +225,9 @@ Before releasing any SDK version:
 - [ ] Error handling never raises exceptions
 - [ ] Tests cover all public methods
 - [ ] Examples in README work
+- [ ] Session creation on new session (POST /sessions)
+- [ ] URL and referrer included in sessions/events
+- [ ] Session detection (cookie missing or expired)
 
 ### Documentation
 - [ ] README updated with new features
