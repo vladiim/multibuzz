@@ -3,6 +3,7 @@
 * 1st client UAT - staging + prod
 * Dashboard: comp + funnel
 * Split dash funnel by dimension (properties)
+* Event debugging
 * Update homepage (screenshots of dash)
 * $ and plans
 * AST for attribution models
