@@ -3,7 +3,7 @@
 **Purpose**: Define the exact API behavior that all SDKs must implement to remain compatible with the mbuzz backend.
 
 **Last Updated**: 2025-11-28
-**Backend Version**: 1.0.0
+**Backend Version**: 1.1.0
 
 ---
 
@@ -25,8 +25,10 @@ Understanding the identity model is essential for correct SDK implementation.
 | Entity | Description | Identifier |
 |--------|-------------|------------|
 | **Visitor** | Anonymous browser/device | `visitor_id` (SDK-generated, stored in cookie) |
-| **User** | Known, identified individual | `user_id` (customer-provided) |
+| **Identity** | Known, identified individual | `user_id` (customer-provided, stored as `external_id`) |
 | **Session** | A single visit with acquisition context | `session_id` (SDK-generated, stored in cookie) |
+
+**Note**: The API accepts `user_id` in requests for SDK compatibility, but internally stores this as `Identity.external_id`. The term "Identity" avoids confusion with dashboard admin Users.
 
 ### Identity Resolution
 
@@ -134,7 +136,8 @@ X-Mbuzz-User-Agent: Mozilla/5.0... # Visitor's real UA (for server-side SDKs)
 {
   "status": "accepted",
   "visitor_id": "a1b2c3d4...",
-  "session_id": "x1y2z3a4..."
+  "session_id": "x1y2z3a4...",
+  "channel": "paid_search"
 }
 ```
 

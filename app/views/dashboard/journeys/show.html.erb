@@ -1,0 +1,57 @@
+<%= turbo_frame_tag "journeys_#{current_account.prefix_id}" do %>
+  <div class="dashboard-section">
+    <!-- Journey Position Filter -->
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-xl font-semibold text-gray-900">Customer Journeys</h2>
+      <form action="<%= dashboard_path %>" method="get" class="flex items-center gap-3">
+        <label class="text-sm font-medium text-gray-700">Journey Position</label>
+        <select name="journey_position" onchange="this.form.submit()" class="px-3 py-1.5 text-sm border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <% AttributionAlgorithms::JOURNEY_POSITIONS.each do |position| %>
+            <option value="<%= position %>" <%= 'selected' if @filter_params[:journey_position] == position %>>
+              <%= position.titleize %>
+            </option>
+          <% end %>
+        </select>
+      </form>
+    </div>
+
+    <% if @result[:success] %>
+      <% data = @result[:data] %>
+
+      <!-- Stage Summary Cards -->
+      <div class="flex gap-2 mb-6 overflow-x-auto">
+        <% data[:stages].each_with_index do |stage, index| %>
+          <div class="flex-shrink-0 bg-white px-4 py-3 rounded-lg shadow min-w-[140px]">
+            <div class="text-sm font-medium text-gray-500"><%= stage[:stage] %></div>
+            <div class="text-xl font-semibold text-gray-900"><%= number_with_delimiter(stage[:total]) %></div>
+            <% if stage[:conversion_rate] %>
+              <div class="text-xs text-gray-500"><%= stage[:conversion_rate] %>% from previous</div>
+            <% end %>
+          </div>
+          <% unless index == data[:stages].length - 1 %>
+            <div class="flex items-center text-gray-400">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+
+      <!-- Funnel Chart -->
+      <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Funnel by Channel</h3>
+        <div id="funnel-chart"
+          data-controller="chart"
+          data-chart-type-value="stacked-bar"
+          data-chart-data-value="<%= data[:stages].to_json %>"
+          class="h-96">
+        </div>
+      </div>
+    <% else %>
+      <div class="bg-red-50 p-4 rounded-lg">
+        <p class="text-red-700">Error loading funnel data: <%= @result[:errors].join(', ') %></p>
+      </div>
+    <% end %>
+  </div>
+<% end %>

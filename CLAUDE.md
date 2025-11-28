@@ -1391,6 +1391,16 @@ Account.find_by_prefix_id("acct_1a2b3c4d")
 - ❌ Internal background job IDs
 - ❌ Database foreign keys (use regular IDs internally)
 
+**IMPORTANT - Always compare using `prefix_id`, not `id`:**
+
+```ruby
+# ✅ GOOD - Compare prefix_ids
+@filter_params[:model]&.prefix_id == model.prefix_id
+
+# ❌ BAD - Don't use raw database IDs
+@filter_params[:model]&.id == model.id
+```
+
 ---
 
 ## Multi-Tenancy - CRITICAL

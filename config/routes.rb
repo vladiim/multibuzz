@@ -13,6 +13,7 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       resources :events, only: [ :create ]
+      resources :sessions, only: [ :create ]
       resources :conversions, only: [ :create ]
       post "identify", to: "identify#create"
       post "alias", to: "alias#create"
@@ -26,6 +27,7 @@ Rails.application.routes.draw do
 
   # Waitlist
   resources :waitlist, only: [ :new, :create, :show ]
+  get "signup", to: redirect("/waitlist/new")
 
   # Documentation routes
   get "docs/:page", to: "docs#show", as: :docs, constraints: { page: /[\w-]+/ }
@@ -38,6 +40,12 @@ Rails.application.routes.draw do
 
   namespace :dashboard do
     resources :api_keys, only: [ :index, :create, :destroy ]
+
+    # Turbo Frame endpoints for dashboard sections
+    get "filters", to: "filters#show"
+    get "conversions", to: "conversions#show"
+    get "journeys", to: "journeys#show"
+    get "events", to: "events#show"
   end
 
   root "pages#home"

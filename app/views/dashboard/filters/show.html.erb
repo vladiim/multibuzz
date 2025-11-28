@@ -1,0 +1,90 @@
+<%= turbo_frame_tag "filters_#{current_account.prefix_id}" do %>
+  <div class="dashboard-filters bg-white p-4 rounded-lg shadow">
+    <form action="<%= dashboard_path %>" method="get" class="flex flex-wrap gap-4 items-end">
+      <!-- Date Range Dropdown -->
+      <div class="filter-group">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+        <select name="date_range" class="block w-36 px-3 py-2 text-sm border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <option value="7d" <%= 'selected' if @filter_params[:date_range] == '7d' %>>Last 7 Days</option>
+          <option value="30d" <%= 'selected' if @filter_params[:date_range] == '30d' %>>Last 30 Days</option>
+          <option value="90d" <%= 'selected' if @filter_params[:date_range] == '90d' %>>Last 90 Days</option>
+          <option value="custom" <%= 'selected' if @filter_params[:date_range].is_a?(Hash) %>>Custom</option>
+        </select>
+      </div>
+
+      <!-- Attribution Models (multi-select, max 2 for comparison) -->
+      <div class="filter-group"
+        data-controller="toggle limited-checkbox"
+        data-toggle-close-on-click-outside-value="true"
+        data-limited-checkbox-max-value="2"
+        data-limited-checkbox-singular-value="model"
+        data-limited-checkbox-plural-value="models">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Attribution Model</label>
+        <div class="relative">
+          <button type="button"
+            data-action="click->toggle#toggle"
+            class="w-48 px-3 py-2 text-sm text-left border border-gray-300 rounded bg-white flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <span data-limited-checkbox-target="label">
+              <%= @filter_params[:models]&.length.to_i > 0 ? "#{@filter_params[:models].length} model#{'s' if @filter_params[:models].length > 1}" : "Select models" %>
+            </span>
+            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <div data-toggle-target="content" class="hidden absolute z-10 mt-1 w-48 bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-auto">
+            <% current_account.attribution_models.active.each do |model| %>
+              <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer">
+                <input type="checkbox"
+                  name="models[]"
+                  value="<%= model.prefix_id %>"
+                  data-limited-checkbox-target="checkbox"
+                  data-action="change->limited-checkbox#change"
+                  <%= 'checked' if @filter_params[:models]&.include?(model) %>
+                  class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                <span class="ml-2 text-sm text-gray-700"><%= model.name.titleize %></span>
+              </label>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Channels Multi-select -->
+      <div class="filter-group"
+        data-controller="toggle"
+        data-toggle-close-on-click-outside-value="true">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Channels</label>
+        <div class="relative">
+          <button type="button"
+            data-action="click->toggle#toggle"
+            class="w-44 px-3 py-2 text-sm text-left border border-gray-300 rounded bg-white flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <span data-toggle-target="label">
+              <%= @filter_params[:channels].length == Channels::ALL.length ? 'All Channels' : "#{@filter_params[:channels].length} selected" %>
+            </span>
+            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <div data-toggle-target="content" class="hidden absolute z-10 mt-1 w-44 bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-auto">
+            <% Channels::ALL.each do |channel| %>
+              <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer">
+                <input type="checkbox"
+                  name="channels[]"
+                  value="<%= channel %>"
+                  <%= 'checked' if @filter_params[:channels].include?(channel) %>
+                  class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                <span class="ml-2 text-sm text-gray-700"><%= channel.titleize %></span>
+              </label>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Apply Button -->
+      <div class="filter-group">
+        <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          Apply
+        </button>
+      </div>
+    </form>
+  </div>
+<% end %>
