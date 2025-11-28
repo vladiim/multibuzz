@@ -2,6 +2,15 @@
 
 * 1st client UAT - staging + prod
 * Dashboard: comp + funnel
+  - [x] Conversions tab with KPI cards (conversions, revenue, conversion rate, AOV)
+  - [x] KPI cards act as metric tabs (click to switch chart data)
+  - [x] Time series line chart (channel performance over time)
+  - [x] Bar chart by channel with drill-down to campaigns
+  - [x] Model comparison via multi-select (max 2 models)
+  - [x] Collapsible filters bar (date range, models, channels)
+  - [x] Export dropdown (CSV/PDF)
+  - [ ] Journeys tab
+  - [ ] Funnel visualization
 * Split dash funnel by dimension (properties)
 * Event debugging
 * Update homepage (screenshots of dash)
@@ -16,12 +25,18 @@
 
 ***
 
+# Mappings
+
+*  utm_term: "plcid_* -> Google Places
+
+***
+
 # Marketing
 
-* Launch SDK listings + associated newsletters (first being rubygems)
+* Launch SDK listings + associated newsletters (first being rubygems) - research the best way to get traction in the specific SDK community are there people to engage with?
 * CA, Rebel etc (grant), boris clients, audi, others?
 * Reach out: key ICPs, intro LI then email then call
-* Content: docs, video how to, video - what is MTA?, MTA Lenny-style guide, survey potential users w/ LinkedIn / email outreach - compile
+* Content: docs, video demo dropbox style, how to for each SDK, video - what is MTA?, MTA Lenny-style guide, survey potential users w/ LinkedIn / email outreach - compile
 * Landing pages: competitor breakdown (very detailed, feature by feature)
 * SEO & AEO - lots of FAQs
 * Ad Words to competitor breakdowns: GA4 alternative, Segment alternative

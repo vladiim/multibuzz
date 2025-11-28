@@ -17,11 +17,12 @@ import { Controller } from "@hotwired/stimulus"
 //   </div>
 //
 export default class extends Controller {
-  static targets = ["content", "trigger"]
-  static classes = ["hidden", "active", "inactive"]
+  static targets = ["content", "trigger", "input", "filters"]
+  static classes = ["hidden", "active", "inactive", "activeTab", "inactiveTab"]
   static values = {
     default: String,
-    persist: String  // localStorage key (optional)
+    persist: String,  // localStorage key (optional)
+    closeOnClickOutside: Boolean
   }
 
   connect() {
@@ -31,6 +32,24 @@ export default class extends Controller {
       if (initialValue) {
         this.switchTo(initialValue)
       }
+    }
+
+    // Set up click-outside listener if enabled
+    if (this.closeOnClickOutsideValue) {
+      this.boundCloseOnClickOutside = this.closeOnClickOutside.bind(this)
+      document.addEventListener("click", this.boundCloseOnClickOutside)
+    }
+  }
+
+  disconnect() {
+    if (this.boundCloseOnClickOutside) {
+      document.removeEventListener("click", this.boundCloseOnClickOutside)
+    }
+  }
+
+  closeOnClickOutside(event) {
+    if (!this.element.contains(event.target)) {
+      this.hide()
     }
   }
 
@@ -51,6 +70,13 @@ export default class extends Controller {
     this.contentTargets.forEach(target => {
       target.classList.add(this.hiddenClass)
     })
+  }
+
+  // Toggle filters panel specifically
+  toggleFilters() {
+    if (this.hasFiltersTarget) {
+      this.filtersTarget.classList.toggle(this.hiddenClass)
+    }
   }
 
   // Tab switching
@@ -98,6 +124,11 @@ export default class extends Controller {
         content.hidden = true
       }
     })
+
+    // Sync value to hidden input if present
+    if (this.hasInputTarget) {
+      this.inputTarget.value = value
+    }
   }
 
   loadPreference() {
