@@ -33,6 +33,47 @@ class Api::V1::IdentifyControllerTest < ActionDispatch::IntegrationTest
     assert_response :ok
     assert_not_nil visitor.reload.identity
     assert_equal "user_123", visitor.identity.external_id
+
+    # Verify response includes visitor_linked flag
+    response_body = JSON.parse(response.body)
+    assert response_body["visitor_linked"]
+  end
+
+  test "returns visitor_linked false when visitor_id not provided" do
+    post api_v1_identify_path,
+      params: identify_params,
+      headers: auth_headers,
+      as: :json
+
+    assert_response :ok
+
+    response_body = JSON.parse(response.body)
+    assert_equal false, response_body["visitor_linked"]
+  end
+
+  test "returns visitor_linked false when visitor not found" do
+    post api_v1_identify_path,
+      params: identify_params.merge(visitor_id: "nonexistent_visitor"),
+      headers: auth_headers,
+      as: :json
+
+    assert_response :ok
+
+    response_body = JSON.parse(response.body)
+    assert_equal false, response_body["visitor_linked"]
+  end
+
+  test "returns identity_id in response" do
+    post api_v1_identify_path,
+      params: identify_params,
+      headers: auth_headers,
+      as: :json
+
+    assert_response :ok
+
+    response_body = JSON.parse(response.body)
+    assert response_body["identity_id"].present?
+    assert response_body["identity_id"].start_with?("idt_")
   end
 
   test "updates existing identity traits" do
