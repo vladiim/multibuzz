@@ -16,9 +16,12 @@ module Identities
       return error_result(validation_errors) if invalid?
 
       persist_identity
-      link_visitor_if_present
+      visitor_was_linked = link_visitor_if_present
 
-      success_result
+      success_result(
+        identity_id: identity.prefix_id,
+        visitor_linked: visitor_was_linked
+      )
     end
 
     def invalid?
@@ -38,10 +41,11 @@ module Identities
     end
 
     def link_visitor_if_present
-      return unless visitor_id.present?
-      return unless visitor
+      return false unless visitor_id.present?
+      return false unless visitor
 
       visitor.update!(identity: identity)
+      true
     end
 
     def identity

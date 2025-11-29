@@ -20,7 +20,11 @@ module Api
       end
 
       def render_success
-        render json: { success: true }, status: :ok
+        render json: {
+          success: true,
+          identity_id: identification_result[:identity_id],
+          visitor_linked: identification_result[:visitor_linked]
+        }, status: :ok
       end
     end
   end
