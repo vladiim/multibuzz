@@ -493,32 +493,32 @@ Follow this DDD cycle for each feature:
 ### Phase 3: Retroactive Attribution
 
 **Tests first:**
-- [ ] **3.1** Write test: identify triggers reattribution when new sessions found
-- [ ] **3.2** Write test: no reattribution when sessions outside lookback
-- [ ] **3.3** Write test: reattribution job recalculates conversion credits
+- [x] **3.1** Write test: identify triggers reattribution when new sessions found
+- [x] **3.2** Write test: no reattribution when sessions outside lookback
+- [x] **3.3** Write test: reattribution job recalculates conversion credits
 
 **Implementation:**
-- [ ] **3.4** Create `Attribution::RecalculationJob`
-- [ ] **3.5** Add reattribution check to identification service
-- [ ] **3.6** Update response with attribution_updates
+- [x] **3.4** Create `Conversions::ReattributionJob` and `ReattributionService`
+- [x] **3.5** Create `Attribution::CrossDeviceJourneyBuilder` and `CrossDeviceCalculator`
+- [x] **3.6** Add reattribution check to identification service
 
 **Cleanup:**
-- [ ] **3.7** Run all tests, fix failures
-- [ ] **3.8** Git commit: "feat(attribution): retroactive recalculation on identify"
+- [x] **3.7** Run all tests, fix failures
+- [x] **3.8** Git commit: "feat(api): add retroactive attribution and remove alias endpoint"
 
 ### Phase 4: Remove Alias Endpoint
 
-- [ ] **4.1** Remove `Api::V1::AliasController`
-- [ ] **4.2** Remove alias route from `routes.rb`
-- [ ] **4.3** Remove alias tests
-- [ ] **4.4** Run all tests, fix failures
-- [ ] **4.5** Git commit: "chore(api): remove deprecated alias endpoint"
+- [x] **4.1** Remove `Api::V1::AliasController`
+- [x] **4.2** Remove alias route from `routes.rb`
+- [x] **4.3** Remove alias tests
+- [x] **4.4** Run all tests, fix failures
+- [x] **4.5** Git commit: "feat(api): add retroactive attribution and remove alias endpoint"
 
 ### Phase 5: Update API Contract Docs
 
-- [ ] **5.1** Update `lib/docs/sdk/api_contract.md`
-- [ ] **5.2** Update `lib/docs/sdk/sdk_registry.md`
-- [ ] **5.3** Git commit: "docs(sdk): update API contract for 4-call model"
+- [x] **5.1** Update `lib/docs/sdk/api_contract.md`
+- [x] **5.2** Update `lib/docs/sdk/sdk_registry.md`
+- [x] **5.3** Git commit: "docs(sdk): update API contract for 4-call model"
 
 ---
 
@@ -528,9 +528,9 @@ Follow this DDD cycle for each feature:
 |-------|--------|--------|
 | Phase 1: Documentation | Complete | 75050ba |
 | Phase 2: Merge Alias | Complete | 75050ba |
-| Phase 3: Retroactive Attribution | Not Started | - |
-| Phase 4: Remove Alias | Not Started | - |
-| Phase 5: API Contract | Not Started | - |
+| Phase 3: Retroactive Attribution | Complete | 5c4b555 |
+| Phase 4: Remove Alias | Complete | 5c4b555 |
+| Phase 5: API Contract | Complete | 64bdeee |
 
 ---
 

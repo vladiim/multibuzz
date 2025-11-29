@@ -2,7 +2,7 @@
 
 **Purpose**: Central registry of all mbuzz SDKs with version info, status, and maintenance notes.
 
-**Last Updated**: 2025-11-28
+**Last Updated**: 2025-11-29
 
 ---
 
@@ -25,15 +25,15 @@
 - ✅ Rack middleware
 - ✅ Plain Ruby
 
-**Features**:
-- ✅ Event tracking (`Mbuzz.track`)
+**Features** (4-Call Model - see [Streamlined SDK Spec](../../specs/streamlined_sdk_spec.md)):
+- ⚠️ `init` - needs update (currently `configure`)
+- ⚠️ `event` - needs rename (currently `track`)
+- ❌ `conversion` - not implemented
+- ⚠️ `identify` - works, but alias merged into identify (visitor_id param)
 - ✅ Visitor ID generation (cookie-based)
 - ⚠️ Session ID generation - generates ID but doesn't POST to API
 - ❌ Session creation (`POST /sessions`) - **CRITICAL: Not implemented**
-- ✅ User identification (`Mbuzz.identify`)
-- ✅ Visitor aliasing (`Mbuzz.alias`)
 - ❌ URL/referrer auto-capture - not included in events
-- ❌ Batch event sending (planned)
 
 **Critical Gap**:
 The SDK generates visitor/session IDs but does NOT post sessions to the API. This means:
@@ -159,22 +159,22 @@ gem 'mbuzz'
 
 ## SDK Development Guidelines
 
-### All SDKs Must Implement
+### All SDKs Must Implement (4-Call Model)
 
 **Required Methods**:
 ```
-# Session tracking (automatic, on new session)
-create_session(visitor_id:, session_id:, url:, referrer:, started_at:)
+# 1. init(config) - Configure SDK and establish session
+# Internally: Creates session via POST /sessions on new session detection
 
-# Event tracking (explicit calls)
-track(visitor_id:, session_id:, event_type:, properties:, timestamp:)
+# 2. event(event_type, properties) - Track journey steps
+# Maps to: POST /events
 
-# Identity management
-identify(user_id:, visitor_id:, traits:)
-alias(visitor_id:, user_id:)
+# 3. conversion(conversion_type, revenue, properties) - Track business outcomes
+# Maps to: POST /conversions
 
-# Conversions
-conversion(visitor_id:, conversion_type:, revenue:, properties:)
+# 4. identify(user_id, traits) - Link visitor to known user
+# Maps to: POST /identify (with visitor_id from cookie)
+# Note: alias() is deprecated - use identify() with visitor_id instead
 ```
 
 **Required Configuration**:

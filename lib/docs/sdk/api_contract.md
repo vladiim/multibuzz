@@ -2,8 +2,8 @@
 
 **Purpose**: Define the exact API behavior that all SDKs must implement to remain compatible with the mbuzz backend.
 
-**Last Updated**: 2025-11-28
-**Backend Version**: 1.1.0
+**Last Updated**: 2025-11-29
+**Backend Version**: 1.2.0
 
 ---
 
@@ -271,7 +271,7 @@ User-Agent: mbuzz-ruby/1.0.0 (Ruby/3.2.0)
 
 ### POST /api/v1/identify
 
-**Purpose**: Associate traits with a user ID and optionally link to a visitor
+**Purpose**: Associate traits with a user ID and optionally link to a visitor. This endpoint also handles cross-device attribution by linking anonymous visitors to known users.
 
 **When to call**: On signup, login, or when user attributes change
 
@@ -293,53 +293,30 @@ User-Agent: mbuzz-ruby/1.0.0 (Ruby/3.2.0)
 - `user_id` (String) - Your application's user identifier
 
 **Optional Fields**:
-- `visitor_id` (String) - Links this visitor to the user (creates alias)
+- `visitor_id` (String) - Links this visitor to the user (enables cross-device attribution)
 - `traits` (Object) - User attributes
 
 **What happens when visitor_id is provided**:
-- Creates Visitor → User link
-- All past sessions from this visitor attributed to user
-- All future sessions from this visitor attributed to user
+- Creates Visitor → Identity link
+- **Backward**: All past sessions from this visitor attributed to user
+- **Forward**: All future sessions from this visitor attributed to user
+- **Retroactive Attribution**: If the identity has other linked visitors with existing conversions, and the newly-linked visitor has sessions within those conversions' lookback windows, attribution is automatically recalculated to include the new touchpoints
 
 **Success Response** (200 OK):
 ```json
 {
-  "success": true
+  "success": true,
+  "identity_id": "idt_abc123def456",
+  "visitor_linked": true
 }
 ```
 
----
+**Response Fields**:
+- `success` (Boolean) - Whether the operation succeeded
+- `identity_id` (String) - The prefixed ID of the identity record
+- `visitor_linked` (Boolean) - Whether a visitor was linked to the identity (false if visitor_id not provided or not found)
 
-### POST /api/v1/alias
-
-**Purpose**: Explicitly link a visitor to a user (for cross-device tracking)
-
-**When to call**: After login, when you want to link anonymous browsing to a known user
-
-**Request Body**:
-```json
-{
-  "visitor_id": "a1b2c3d4e5f6...",
-  "user_id": "user_123"
-}
-```
-
-**Required Fields**:
-- `visitor_id` (String) - The anonymous visitor ID
-- `user_id` (String) - The known user ID
-
-**What happens**:
-- Creates Visitor → User link
-- **Backward**: All past sessions from visitor now attributed to user
-- **Forward**: All future sessions from visitor attributed to user
-- Enables cross-device attribution when user logs in on new device
-
-**Success Response** (200 OK):
-```json
-{
-  "success": true
-}
-```
+**Note**: The `/api/v1/alias` endpoint has been deprecated. Use `identify` with `visitor_id` for cross-device linking.
 
 ---
 
@@ -473,8 +450,7 @@ _mbuzz_sid=<64 hex chars>; Max-Age=1800; Path=/; HttpOnly; SameSite=Lax; Secure
 
 ### Standard (Recommended)
 
-- ✅ User identification (`POST /identify`)
-- ✅ Visitor aliasing (`POST /alias`)
+- ✅ User identification with cross-device linking (`POST /identify`)
 - ✅ Include URL and referrer in event properties
 - ✅ Conversion tracking (`POST /conversions`)
 
