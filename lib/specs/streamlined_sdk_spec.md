@@ -488,7 +488,7 @@ Follow this DDD cycle for each feature:
 
 **Cleanup:**
 - [x] **2.8** Run all tests, fix failures
-- [ ] **2.9** Git commit: "feat(api): merge alias into identify endpoint"
+- [x] **2.9** Git commit: "feat(api): merge alias into identify endpoint"
 
 ### Phase 3: Retroactive Attribution
 
@@ -526,8 +526,8 @@ Follow this DDD cycle for each feature:
 
 | Phase | Status | Commit |
 |-------|--------|--------|
-| Phase 1: Documentation | Complete | - |
-| Phase 2: Merge Alias | In Progress | - |
+| Phase 1: Documentation | Complete | 75050ba |
+| Phase 2: Merge Alias | Complete | 75050ba |
 | Phase 3: Retroactive Attribution | Not Started | - |
 | Phase 4: Remove Alias | Not Started | - |
 | Phase 5: API Contract | Not Started | - |
