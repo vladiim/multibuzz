@@ -58,7 +58,7 @@ A known, identified individual in the customer's system. Called "Identity" inter
 | `user_id` | Customer-provided identifier (stored as `external_id`) |
 | Scope | Cross-device, cross-channel |
 | Lifetime | Permanent |
-| Creation | When customer calls `identify` or `alias` |
+| Creation | When customer calls `identify` with `visitor_id` |
 | Prefix ID | `idt_*` |
 
 A Person has **one** Identity (though the user_id format is up to the customer).
@@ -150,7 +150,7 @@ Web Visit (visitor: abc) ────→ User (usr_123) ←──── In-Store
 User downloads app, logs in:
 
 1. App generates new visitor_id (or device_id)
-2. User logs in → `alias` called
+2. User logs in → `identify` called with visitor_id
 3. App sessions linked to same user as web sessions
 
 ### Offline Import
@@ -219,27 +219,7 @@ Customer imports CRM data:
 - User record created/updated with traits
 - If `visitor_id` provided, creates the Visitor → User link
 
-### 3. Alias (Link Visitor to User)
-
-**When:** Visitor becomes known (signup complete, login)
-
-**Purpose:** Explicitly link a visitor to a user for attribution
-
-**Endpoint:** `POST /api/v1/alias`
-
-```json
-{
-  "visitor_id": "abc123...",
-  "user_id": "usr_123"
-}
-```
-
-**What happens:**
-- Creates Visitor → User link
-- All past sessions from this visitor now attributed to user
-- All future sessions from this visitor attributed to user
-
-### 4. Track Event
+### 3. Track Event
 
 **When:** User performs a trackable action
 
@@ -258,7 +238,7 @@ Customer imports CRM data:
 }
 ```
 
-### 5. Track Conversion
+### 4. Track Conversion
 
 **When:** User converts (purchase, signup, etc.)
 
@@ -411,7 +391,7 @@ Session POSTs must be:
 
 ### Identity Operations: Can Be Synchronous
 
-Identify/Alias calls typically happen on:
+Identify calls typically happen on:
 - Signup (user is waiting anyway)
 - Login (user is waiting anyway)
 - Profile update (user is waiting anyway)
@@ -486,10 +466,10 @@ Day 3: Jane visits on mobile from Facebook
        → Session: visitor=def, channel=paid_social
 
 Day 5: Jane signs up on mobile
-       → Alias: visitor=def → user=usr_123
+       → Identify: visitor=def → user=usr_123
 
 Day 6: Jane logs in on desktop
-       → Alias: visitor=abc → user=usr_123
+       → Identify: visitor=abc → user=usr_123
        → Now both visitors linked to same user
 
 Day 7: Jane purchases on desktop
@@ -506,8 +486,7 @@ Day 1: Jane visits website from Google Ads
        → Session: visitor=abc, channel=paid_search
 
 Day 3: Jane signs up (provides email)
-       → Alias: visitor=abc → user=usr_123
-       → Identify: user=usr_123, email=jane@example.com
+       → Identify: visitor=abc → user=usr_123, email=jane@example.com
 
 Day 10: Jane purchases in-store (provides email)
         → POS looks up user by email → usr_123

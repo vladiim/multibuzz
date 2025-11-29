@@ -12,43 +12,34 @@
 
 **Repository**: https://github.com/mbuzz-tracking/mbuzz-ruby
 **Package**: https://rubygems.org/gems/mbuzz
-**Status**: 🟡 In Development
-**Current Version**: 0.1.0
-**Target Version**: 0.2.0 (fixing critical bugs)
+**Status**: ✅ Production Ready
+**Current Version**: 0.5.0
 
 **Maintainer**: Vlad
-**Last Verified**: 2025-11-25
+**Last Verified**: 2025-11-29
 
 **Framework Support**:
-- ✅ Ruby on Rails (5.2+)
+- ✅ Ruby on Rails (6.0+)
 - ✅ Sinatra
 - ✅ Rack middleware
 - ✅ Plain Ruby
 
-**Features** (4-Call Model - see [Streamlined SDK Spec](../../specs/streamlined_sdk_spec.md)):
-- ⚠️ `init` - needs update (currently `configure`)
-- ⚠️ `event` - needs rename (currently `track`)
-- ❌ `conversion` - not implemented
-- ⚠️ `identify` - works, but alias merged into identify (visitor_id param)
-- ✅ Visitor ID generation (cookie-based)
-- ⚠️ Session ID generation - generates ID but doesn't POST to API
-- ❌ Session creation (`POST /sessions`) - **CRITICAL: Not implemented**
-- ❌ URL/referrer auto-capture - not included in events
+**Features** (4-Call Model):
+- ✅ `Mbuzz.init(api_key:, ...)` - Configure SDK
+- ✅ `Mbuzz.event(type, **props)` - Track journey steps
+- ✅ `Mbuzz.conversion(type, revenue:, **props)` - Track business outcomes
+- ✅ `Mbuzz.identify(user_id, traits:, visitor_id:)` - Link visitor to user + traits
+- ✅ Visitor ID generation (cookie `_mbuzz_vid`, 64 hex chars, 2yr expiry)
+- ✅ Session ID generation (cookie `_mbuzz_sid`, 64 hex chars, 30min expiry)
+- ✅ Session creation (`POST /sessions`) on new session
+- ✅ URL/referrer auto-enrichment via RequestContext
 
-**Critical Gap**:
-The SDK generates visitor/session IDs but does NOT post sessions to the API. This means:
-- Visitors who don't trigger an explicit `track()` call are invisible
-- UTM parameters from landing pages are lost
-- Attribution is broken for multi-session journeys
+**Deprecated Methods** (emit warnings, still work):
+- `Mbuzz.configure { }` → use `Mbuzz.init`
+- `Mbuzz.track(...)` → use `Mbuzz.event`
 
-See [Identity & Sessions Spec](../../specs/identity_and_sessions_spec.md) for required changes.
-
-**Known Issues**:
-- 🐛 Sends Unix timestamp instead of ISO8601 (will break validation)
-- 🐛 Sends `event` parameter instead of `event_type`
-- 🐛 Missing `POST /sessions` call on new session detection
-
-**Fix Status**: See [mbuzz_ruby_upgrade_spec.md](../../specs/mbuzz_ruby_upgrade_spec.md)
+**Removed**:
+- `Mbuzz.alias` → merged into `Mbuzz.identify` with `visitor_id:` param
 
 **Installation**:
 ```ruby
@@ -204,7 +195,7 @@ debug (default: false)
 
 | Backend Version | Ruby SDK | Python SDK | PHP SDK | Node SDK |
 |----------------|----------|------------|---------|----------|
-| 1.0.0 (current) | 0.2.0+   | N/A        | N/A     | N/A      |
+| 1.2.0 (current) | 0.5.0+   | N/A        | N/A     | N/A      |
 
 **Breaking Change Policy**:
 - Backend maintains compatibility for 1 major version back
