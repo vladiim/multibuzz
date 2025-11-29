@@ -45,7 +45,51 @@ module Identities
       return false unless visitor
 
       visitor.update!(identity: identity)
+      queue_reattribution_if_needed
       true
+    end
+
+    def queue_reattribution_if_needed
+      conversions_needing_reattribution.each do |conversion|
+        Conversions::ReattributionJob.perform_later(conversion.id)
+      end
+    end
+
+    def conversions_needing_reattribution
+      return [] unless identity_visitors.count > 1
+
+      other_visitors_conversions.select do |conversion|
+        visitor_has_sessions_in_lookback?(conversion)
+      end
+    end
+
+    def other_visitors_conversions
+      other_visitor_ids = identity_visitors.where.not(id: visitor.id).pluck(:id)
+      return [] if other_visitor_ids.empty?
+
+      conversion_scope.where(visitor_id: other_visitor_ids)
+    end
+
+    def identity_visitors
+      @identity_visitors ||= identity.visitors.unscope(where: :is_test).reload
+    end
+
+    def visitor_has_sessions_in_lookback?(conversion)
+      lookback_start = conversion.converted_at - AttributionAlgorithms::DEFAULT_LOOKBACK_DAYS.days
+
+      session_scope
+        .where(visitor: visitor)
+        .where("started_at >= ?", lookback_start)
+        .where("started_at <= ?", conversion.converted_at)
+        .exists?
+    end
+
+    def conversion_scope
+      is_test ? account.conversions.unscope(where: :is_test) : account.conversions
+    end
+
+    def session_scope
+      is_test ? account.sessions.unscope(where: :is_test) : account.sessions
     end
 
     def identity

@@ -16,7 +16,6 @@ Rails.application.routes.draw do
       resources :sessions, only: [ :create ]
       resources :conversions, only: [ :create ]
       post "identify", to: "identify#create"
-      post "alias", to: "alias#create"
       get "validate", to: "validate#show"
       get "health", to: "health#show"
     end
@@ -24,6 +23,8 @@ Rails.application.routes.draw do
 
   # Public pages
   get "home", to: "pages#home"
+  get "about", to: "pages#about"
+  get "privacy", to: "pages#privacy"
 
   # Waitlist
   resources :waitlist, only: [ :new, :create, :show ]
