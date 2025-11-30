@@ -55,11 +55,17 @@
   <!-- Hero Section -->
   <section class="py-24 px-6 bg-pattern-dots">
     <div class="max-w-7xl mx-auto text-center">
-      <h1 class="text-6xl font-bold text-gray-900 tracking-tight scroll-animate" data-controller="scroll-reveal">
-        <%= t('pages.home.hero.title') %>
+      <h1 class="text-sm font-medium text-blue-600 uppercase tracking-wide mb-4 scroll-animate" data-controller="scroll-reveal">
+        Server-Side Multi-Touch Attribution
       </h1>
-      <p class="mt-6 text-xl text-gray-600 max-w-4xl mx-auto scroll-animate" data-controller="scroll-reveal">
-        <%= t('pages.home.hero.subtitle') %>
+      <p class="text-5xl md:text-6xl font-bold text-gray-900 tracking-tight scroll-animate" data-controller="scroll-reveal">
+        Stop renting your attribution.
+        <span class="block mt-2">Own it.</span>
+      </p>
+      <p class="mt-8 text-xl text-gray-600 max-w-3xl mx-auto scroll-animate" data-controller="scroll-reveal">
+        Black-box models. Inflated platform ROAS. Data you can't export.
+        <span class="font-medium text-gray-900">Sound familiar?</span>
+        mbuzz puts you back in control.
       </p>
       <div class="mt-10 flex justify-center gap-4 scroll-animate" data-controller="scroll-reveal">
         <%= link_to t('pages.home.hero.cta_primary'), new_waitlist_path, class: "px-6 py-3 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-all" %>
@@ -68,6 +74,129 @@
       <p class="mt-6 text-sm text-gray-500">
         Plug and play SDK: Ruby • Python • PHP • Rest API
       </p>
+    </div>
+  </section>
+
+  <!-- Why Attribution is Broken -->
+  <section class="py-20 px-6 bg-gray-50">
+    <div class="max-w-5xl mx-auto">
+      <h2 class="text-3xl font-bold text-gray-900 text-center mb-4">
+        Why attribution is broken
+      </h2>
+      <p class="text-lg text-gray-600 text-center mb-12 max-w-2xl mx-auto">
+        The tools that should help you understand your marketing are working against you.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white p-6 rounded-lg border border-gray-200">
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+              <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-900">GA4 killed your model choice</h3>
+              <p class="mt-1 text-gray-600 text-sm">First-touch, linear, time-decay — all gone. Now you get last-click or a black-box "data-driven" model you can't inspect.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg border border-gray-200">
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+              <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-900">Platforms grade their own homework</h3>
+              <p class="mt-1 text-gray-600 text-sm">Facebook says Facebook works. Google says Google works. Shocking. Their inflated ROAS numbers don't match reality.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg border border-gray-200">
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+              <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-900">Ad blockers eat 30% of your data</h3>
+              <p class="mt-1 text-gray-600 text-sm">Client-side tracking misses nearly a third of visitors. You're making budget decisions on incomplete data.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg border border-gray-200">
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+              <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-900">Enterprise pricing for basic features</h3>
+              <p class="mt-1 text-gray-600 text-sm">Amplitude starts at $2,000/mo. Segment charges $120/mo just to collect events. Attribution shouldn't require a finance committee.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- The mbuzz Way: Three Pillars -->
+  <section class="py-20 px-6">
+    <div class="max-w-5xl mx-auto">
+      <h2 class="text-3xl font-bold text-gray-900 text-center mb-4">
+        Accurate. Affordable. Yours.
+      </h2>
+      <p class="text-lg text-gray-600 text-center mb-12 max-w-2xl mx-auto">
+        Attribution that works for you, not against you.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Pillar 1: Accurate -->
+        <div class="text-center">
+          <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-3">Accurate</h3>
+          <p class="text-gray-600">
+            Server-side tracking that ad blockers can't touch. Capture 95%+ of events, not the 70% you get with client-side scripts.
+          </p>
+        </div>
+
+        <!-- Pillar 2: Affordable -->
+        <div class="text-center">
+          <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-3">Affordable</h3>
+          <p class="text-gray-600">
+            Free up to 10K events/month. Pro plans at 1/10th the price of Amplitude or Segment. No sales calls required.
+          </p>
+        </div>
+
+        <!-- Pillar 3: Yours -->
+        <div class="text-center">
+          <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-3">Yours</h3>
+          <p class="text-gray-600">
+            7 attribution models built-in. Write custom models with our AST editor. Export everything, anytime. No lock-in.
+          </p>
+        </div>
+      </div>
     </div>
   </section>
 
