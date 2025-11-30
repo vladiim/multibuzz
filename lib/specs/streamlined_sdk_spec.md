@@ -233,8 +233,7 @@ When identify triggers re-attribution, include in response:
 # config/initializers/mbuzz.rb
 Mbuzz.init(
   api_key: ENV['MBUZZ_API_KEY'],
-  auto_track_page_views: true,
-  session_timeout: 30  # minutes
+  debug: Rails.env.development?
 )
 
 # In application code - init already done
@@ -255,25 +254,28 @@ All SDKs MUST implement these 4 methods:
 
 #### `init(config)`
 
-**Purpose**: Configure SDK and establish session
+**Purpose**: Configure SDK credentials and options
 
 **Parameters**:
 | Name | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
 | `api_key` | string | Yes | - | API key (`sk_live_*` or `sk_test_*`) |
 | `api_url` | string | No | `https://mbuzz.co/api/v1` | API base URL |
-| `auto_track_page_views` | boolean | No | `true` | Auto-track page views |
-| `session_timeout` | integer | No | `30` | Session timeout in minutes |
 | `debug` | boolean | No | `false` | Enable debug logging |
+
+**Fixed Values** (not configurable):
+- Session timeout: 30 minutes (cookie expiry)
+- Visitor cookie expiry: 2 years
+- HTTP timeout: 5 seconds
 
 **Internal Behavior**:
 1. Store configuration
-2. Generate/retrieve `visitor_id` from cookie `_mbuzz_vid`
-3. Generate/retrieve `session_id` from cookie `_mbuzz_sid`
+2. Middleware generates/retrieves `visitor_id` from cookie `_mbuzz_vid`
+3. Middleware generates/retrieves `session_id` from cookie `_mbuzz_sid`
 4. If new session detected → POST to `/api/v1/sessions` (async, non-blocking)
 5. Set cookies in response
 
-**Server-Side SDKs**: Must provide middleware that calls init per-request
+**Server-Side SDKs**: Must provide middleware that runs per-request
 
 **Client-Side SDKs**: Called once on page load
 
@@ -336,7 +338,7 @@ result = Mbuzz.conversion('purchase',
 # result[:attribution] contains model breakdowns
 ```
 
-#### `identify(user_id, traits)`
+#### `identify(user_id, traits, visitor_id)`
 
 **Purpose**: Link visitor to known user identity + trigger retroactive attribution
 
@@ -345,31 +347,39 @@ result = Mbuzz.conversion('purchase',
 |------|------|----------|-------------|
 | `user_id` | string | Yes | Customer's user identifier |
 | `traits` | object | No | User properties (email, name, plan, etc.) |
+| `visitor_id` | string | No | Explicit visitor ID (auto-captured from cookie if not provided) |
 
 **Behavior**:
-1. Automatically includes `visitor_id` from cookie (if present)
-2. Creates Visitor → Identity link
+1. Uses `visitor_id` param OR auto-includes from cookie
+2. Creates Visitor → Identity link (if visitor_id present)
 3. Updates Identity traits
 4. **Checks for conversions needing re-attribution** (see 1.2)
 5. **Queues re-attribution jobs** if new sessions discovered
 
 **Maps to**: `POST /api/v1/identify`
 
+**Returns**: `true` on success, `false` on failure
+
+**Backend Response** (not exposed by SDK):
+```json
+{
+  "success": true,
+  "identity_id": "idt_abc123",
+  "visitor_linked": true
+}
+```
+
 **Example**:
 ```ruby
-# On signup/login
-result = Mbuzz.identify(current_user.id.to_s,
-  email: current_user.email,
-  name: current_user.name,
-  plan: current_user.plan
+# On signup/login - visitor_id auto-captured from cookie
+Mbuzz.identify(current_user.id.to_s,
+  traits: {
+    email: current_user.email,
+    name: current_user.name,
+    plan: current_user.plan
+  }
 )
-
-# result may include:
-# {
-#   success: true,
-#   identity_id: "idt_abc123",
-#   attribution_updates: { conversions_queued_for_reattribution: 2 }
-# }
+# Returns: true or false
 ```
 
 ### 2.3 Convenience Methods
