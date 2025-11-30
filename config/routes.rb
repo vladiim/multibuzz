@@ -25,6 +25,11 @@ Rails.application.routes.draw do
   get "home", to: "pages#home"
   get "about", to: "pages#about"
   get "privacy", to: "pages#privacy"
+  get "terms", to: "pages#terms"
+  get "cookies", to: "pages#cookies"
+  get "contact", to: "contacts#new"
+  post "contact", to: "contacts#create"
+  get "contact/thank-you", to: "contacts#show", as: :contact_thank_you
 
   # Waitlist
   resources :waitlist, only: [ :new, :create, :show ]
