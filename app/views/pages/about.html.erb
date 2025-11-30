@@ -1,0 +1,183 @@
+<% content_for(:title) { "About | mbuzz" } %>
+
+<%= render "layouts/nav" %>
+
+<div class="min-h-screen bg-white">
+  <!-- Hero Section -->
+  <section class="py-24 px-6">
+    <div class="max-w-4xl mx-auto text-center">
+      <h1 class="text-5xl md:text-6xl font-bold text-gray-900 tracking-tight">
+        Stop renting your attribution.
+        <span class="block mt-2">Own it.</span>
+      </h1>
+      <p class="mt-8 text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+        Black-box models. Inflated platform ROAS. Data you can't export. Enterprise pricing for basic features.
+        <span class="font-medium text-gray-900">Sound familiar?</span>
+      </p>
+      <p class="mt-6 text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+        mbuzz puts you back in control. Server-side tracking that takes minutes to set up.
+        Transparent models you can inspect and customize. And a free tier that actually lets you
+        get started — not a 14-day trial with a sales call.
+      </p>
+      <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
+        <%= link_to "Get Started Free", new_waitlist_path, class: "px-8 py-3 text-base font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-all" %>
+        <%= link_to "Read the Docs", docs_path('getting-started'), class: "px-8 py-3 text-base font-semibold text-gray-900 bg-white border border-gray-300 hover:border-gray-400 hover:bg-gray-50 rounded-md transition-all" %>
+      </div>
+    </div>
+  </section>
+
+  <!-- The Problem Section -->
+  <section class="py-20 px-6 bg-gray-50">
+    <div class="max-w-5xl mx-auto">
+      <h2 class="text-3xl font-bold text-gray-900 text-center mb-4">
+        Why attribution is broken
+      </h2>
+      <p class="text-lg text-gray-600 text-center mb-12 max-w-2xl mx-auto">
+        The tools that should help you understand your marketing are working against you.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white p-6 rounded-lg border border-gray-200">
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+              <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-900">GA4 killed your model choice</h3>
+              <p class="mt-1 text-gray-600 text-sm">First-touch, linear, time-decay — all gone. Now you get last-click or a black-box "data-driven" model you can't inspect.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg border border-gray-200">
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+              <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-900">Platforms grade their own homework</h3>
+              <p class="mt-1 text-gray-600 text-sm">Facebook says Facebook works. Google says Google works. Shocking. Their inflated ROAS numbers don't match reality.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg border border-gray-200">
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+              <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-900">Ad blockers eat 30% of your data</h3>
+              <p class="mt-1 text-gray-600 text-sm">Client-side tracking misses nearly a third of visitors. You're making budget decisions on incomplete data.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg border border-gray-200">
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+              <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-900">Enterprise pricing for basic features</h3>
+              <p class="mt-1 text-gray-600 text-sm">Amplitude starts at $2,000/mo. Segment charges $120/mo just to collect events. Attribution shouldn't require a finance committee.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- The mbuzz Way Section -->
+  <section class="py-20 px-6">
+    <div class="max-w-5xl mx-auto">
+      <h2 class="text-3xl font-bold text-gray-900 text-center mb-4">
+        The mbuzz way
+      </h2>
+      <p class="text-lg text-gray-600 text-center mb-12 max-w-2xl mx-auto">
+        Attribution that's accurate, affordable, and actually yours.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Pillar 1: Accurate -->
+        <div class="text-center">
+          <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-3">Accurate</h3>
+          <p class="text-gray-600">
+            Server-side tracking that ad blockers can't touch. Capture 95%+ of events, not the 70% you get with client-side scripts.
+          </p>
+        </div>
+
+        <!-- Pillar 2: Affordable -->
+        <div class="text-center">
+          <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-3">Affordable</h3>
+          <p class="text-gray-600">
+            Free up to 10K events/month. Pro plans at 1/10th the price of Amplitude or Segment. No sales calls required.
+          </p>
+        </div>
+
+        <!-- Pillar 3: Yours -->
+        <div class="text-center">
+          <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-3">Yours</h3>
+          <p class="text-gray-600">
+            7 attribution models built-in. Write custom models with our AST editor. Export everything, anytime. No lock-in.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Company Section (minimal) -->
+  <section class="py-20 px-6 bg-gray-50">
+    <div class="max-w-3xl mx-auto text-center">
+      <h2 class="text-3xl font-bold text-gray-900 mb-6">
+        Built by marketers tired of overpaying for attribution that doesn't work
+      </h2>
+      <p class="text-lg text-gray-600 leading-relaxed">
+        We spent years wrestling with GA4 limitations, platform-reported vanity metrics,
+        and enterprise tools that cost more than they were worth. So we built the attribution
+        platform we wished existed: accurate, transparent, and priced for real businesses.
+      </p>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-20 px-6 bg-blue-600">
+    <div class="max-w-4xl mx-auto text-center">
+      <h2 class="text-3xl font-bold text-white mb-4">
+        Ready to own your attribution?
+      </h2>
+      <p class="text-lg text-blue-100 mb-8">
+        Start free. No credit card required. No sales calls.
+      </p>
+      <div class="flex flex-col sm:flex-row justify-center gap-4">
+        <%= link_to "Get Started Free", new_waitlist_path, class: "px-8 py-3 text-base font-semibold text-blue-600 bg-white hover:bg-blue-50 rounded-md transition-all" %>
+        <%= link_to "Read the Docs", docs_path('getting-started'), class: "px-8 py-3 text-base font-semibold text-white border border-white/30 hover:bg-white/10 rounded-md transition-all" %>
+      </div>
+    </div>
+  </section>
+</div>
+
+<%= render "layouts/footer" %>

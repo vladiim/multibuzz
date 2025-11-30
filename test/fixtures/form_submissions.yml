@@ -30,3 +30,25 @@ waitlist_other_framework:
   status: 0
   ip_address: 192.168.1.3
   user_agent: Mozilla/5.0
+
+contact_general:
+  type: ContactSubmission
+  email: jane@example.com
+  data:
+    name: Jane Doe
+    subject: general
+    message: I have a general question.
+  status: 0
+  ip_address: 192.168.1.10
+  user_agent: Mozilla/5.0
+
+contact_support:
+  type: ContactSubmission
+  email: john@example.com
+  data:
+    name: John Smith
+    subject: support
+    message: I need help with the API integration.
+  status: 0
+  ip_address: 192.168.1.11
+  user_agent: Mozilla/5.0
