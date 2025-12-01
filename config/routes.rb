@@ -36,6 +36,7 @@ Rails.application.routes.draw do
   get "signup", to: redirect("/waitlist/new")
 
   # Documentation routes
+  get "docs", to: redirect("/docs/getting-started")
   get "docs/:page", to: "docs#show", as: :docs, constraints: { page: /[\w-]+/ }
 
   # Dashboard routes
