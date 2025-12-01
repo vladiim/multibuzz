@@ -154,6 +154,28 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Account suspended", json_response["error"]
   end
 
+  test "should preserve visitor_id from SDK payload" do
+    sdk_visitor_id = "sdk_visitor_#{SecureRandom.hex(16)}"
+    sdk_session_id = "sdk_session_#{SecureRandom.hex(16)}"
+
+    payload = {
+      events: [
+        valid_event_data.merge(
+          "visitor_id" => sdk_visitor_id,
+          "session_id" => sdk_session_id
+        )
+      ]
+    }
+
+    post api_v1_events_path, params: payload, headers: auth_headers, as: :json
+
+    assert_response :accepted
+
+    created_event = account.events.order(created_at: :desc).first
+    assert_equal sdk_visitor_id, created_event.visitor.visitor_id
+    assert_equal sdk_session_id, created_event.session.session_id
+  end
+
   private
 
   def json_response
