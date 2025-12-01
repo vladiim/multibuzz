@@ -15,13 +15,10 @@
             <dt class="text-sm font-medium text-gray-500">Conversions</dt>
           </div>
           <dd class="mt-1">
-            <span class="text-2xl font-semibold text-gray-900"><%= number_with_delimiter(totals[:conversions]) %></span>
-            <% change = ((totals[:conversions] - prior[:conversions]).to_f / prior[:conversions] * 100).round(1) %>
-            <span class="ml-2 text-sm <%= change >= 0 ? 'text-green-600' : 'text-red-600' %>">
-              <%= change >= 0 ? '↑' : '↓' %> <%= change.abs %>%
-            </span>
+            <span class="text-2xl font-semibold text-gray-900"><%= format_metric(totals[:conversions]) %></span>
+            <%= format_change(percentage_change(totals[:conversions], prior[:conversions])) %>
           </dd>
-          <div class="mt-1 text-xs text-gray-400">vs <%= number_with_delimiter(prior[:conversions]) %> prior</div>
+          <div class="mt-1 text-xs text-gray-400">vs <%= format_metric(prior[:conversions]) %> prior</div>
         <% end %>
 
         <%= link_to dashboard_path(request.query_parameters.merge(metric: "revenue")),
@@ -31,13 +28,10 @@
             <dt class="text-sm font-medium text-gray-500">Revenue</dt>
           </div>
           <dd class="mt-1">
-            <span class="text-2xl font-semibold text-gray-900"><%= number_to_currency(totals[:revenue], precision: 0) %></span>
-            <% change = ((totals[:revenue] - prior[:revenue]).to_f / prior[:revenue] * 100).round(1) %>
-            <span class="ml-2 text-sm <%= change >= 0 ? 'text-green-600' : 'text-red-600' %>">
-              <%= change >= 0 ? '↑' : '↓' %> <%= change.abs %>%
-            </span>
+            <span class="text-2xl font-semibold text-gray-900"><%= format_metric(totals[:revenue], type: :currency) %></span>
+            <%= format_change(percentage_change(totals[:revenue], prior[:revenue])) %>
           </dd>
-          <div class="mt-1 text-xs text-gray-400">vs <%= number_to_currency(prior[:revenue], precision: 0) %> prior</div>
+          <div class="mt-1 text-xs text-gray-400">vs <%= format_metric(prior[:revenue], type: :currency) %> prior</div>
         <% end %>
 
         <%= link_to dashboard_path(request.query_parameters.merge(metric: "conversion_rate")),
@@ -47,13 +41,10 @@
             <dt class="text-sm font-medium text-gray-500">Conversion Rate</dt>
           </div>
           <dd class="mt-1">
-            <span class="text-2xl font-semibold text-gray-900"><%= totals[:conversion_rate] %>%</span>
-            <% change = ((totals[:conversion_rate] - prior[:conversion_rate]) / prior[:conversion_rate] * 100).round(1) %>
-            <span class="ml-2 text-sm <%= change >= 0 ? 'text-green-600' : 'text-red-600' %>">
-              <%= change >= 0 ? '↑' : '↓' %> <%= change.abs %>%
-            </span>
+            <span class="text-2xl font-semibold text-gray-900"><%= format_metric(totals[:conversion_rate], type: :percentage) %></span>
+            <%= format_change(percentage_change(totals[:conversion_rate], prior[:conversion_rate])) %>
           </dd>
-          <div class="mt-1 text-xs text-gray-400">vs <%= prior[:conversion_rate] %>% prior</div>
+          <div class="mt-1 text-xs text-gray-400">vs <%= format_metric(prior[:conversion_rate], type: :percentage) %> prior</div>
         <% end %>
 
         <%= link_to dashboard_path(request.query_parameters.merge(metric: "aov")),
@@ -63,13 +54,10 @@
             <dt class="text-sm font-medium text-gray-500">Avg Order Value</dt>
           </div>
           <dd class="mt-1">
-            <span class="text-2xl font-semibold text-gray-900"><%= number_to_currency(totals[:aov]) %></span>
-            <% change = ((totals[:aov] - prior[:aov]) / prior[:aov] * 100).round(1) %>
-            <span class="ml-2 text-sm <%= change >= 0 ? 'text-green-600' : 'text-red-600' %>">
-              <%= change >= 0 ? '↑' : '↓' %> <%= change.abs %>%
-            </span>
+            <span class="text-2xl font-semibold text-gray-900"><%= format_metric(totals[:aov], type: :currency) %></span>
+            <%= format_change(percentage_change(totals[:aov], prior[:aov])) %>
           </dd>
-          <div class="mt-1 text-xs text-gray-400">vs <%= number_to_currency(prior[:aov]) %> prior</div>
+          <div class="mt-1 text-xs text-gray-400">vs <%= format_metric(prior[:aov], type: :currency) %> prior</div>
         <% end %>
       </div>
 
