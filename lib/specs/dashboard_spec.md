@@ -1,7 +1,7 @@
 # Attribution Dashboard Specification
 
-**Status**: Draft - Pending Approval
-**Last Updated**: 2025-11-28
+**Status**: Phase 2 Complete
+**Last Updated**: 2025-12-01
 **Epic**: E1S3 - Dashboard
 
 ---
@@ -483,21 +483,21 @@ app/
 
 ## Implementation Phases
 
-### Phase 1: Prototype with Dummy Data (This Sprint)
+### Phase 1: Prototype with Dummy Data ✅
 
 **Goal**: Build full UI with hardcoded data, validate UX
 
 **Deliverables**:
-- [ ] Dashboard shell with Turbo Frames (filters, conversions, events)
-- [ ] Skeleton loading states for all sections
-- [ ] Filter bar with dropdown multi-select for channels
-- [ ] **Apply button** pattern (no auto-apply)
-- [ ] **URL param persistence** (bookmarkable filters)
-- [ ] Conversions section (cards + bar chart)
-- [ ] Events section (funnel chart with touch filter)
-- [ ] Basic comparison mode (side-by-side)
-- [ ] Stimulus controllers (filter, dropdown, chart, comparison)
-- [ ] Highcharts integration
+- [x] Dashboard shell with Turbo Frames (filters, conversions, events)
+- [x] Skeleton loading states for all sections
+- [x] Filter bar with dropdown multi-select for channels
+- [x] **Apply button** pattern (no auto-apply)
+- [x] **URL param persistence** (bookmarkable filters)
+- [x] Conversions section (cards + bar chart)
+- [x] Events section (funnel chart with touch filter)
+- [x] Basic comparison mode (side-by-side)
+- [x] Stimulus controllers (filter, dropdown, chart, comparison)
+- [x] Highcharts integration
 
 **Tech Notes**:
 - Use `data-*` attributes for dummy data injection
@@ -505,17 +505,25 @@ app/
 - Turbo.visit() on Apply to update URL and reload
 - No backend queries yet
 
-### Phase 2: Wire Up Real Data
+### Phase 2: Wire Up Real Data ✅
 
 **Goal**: Replace dummy data with actual queries
 
 **Deliverables**:
-- [ ] Dashboard::ConversionDataService (queries attribution_credits)
-- [ ] Dashboard::FunnelDataService (queries events + sessions)
-- [ ] Dashboard::FilterOptionsService (dynamic channel list from DB)
-- [ ] Turbo Frame endpoints return real data
-- [ ] Continuous aggregate views for performance
-- [ ] Date range filtering with URL params
+- [x] Dashboard::ConversionsDataService (queries attribution_credits)
+- [x] Dashboard::FunnelDataService (queries events + sessions)
+- [x] Dashboard::DateRangeParser (value object for date parsing)
+- [x] Dashboard::Scopes::CreditsScope (filtered AR relation builder)
+- [x] Dashboard::Scopes::EventsScope (filtered AR relation builder)
+- [x] Dashboard::Queries::TotalsQuery (sum credits/revenue)
+- [x] Dashboard::Queries::ByChannelQuery (group by channel)
+- [x] Dashboard::Queries::TimeSeriesQuery (daily breakdown)
+- [x] Dashboard::Queries::TopCampaignsQuery (top campaigns per channel)
+- [x] Dashboard::Queries::FunnelStagesQuery (funnel stage data)
+- [x] Turbo Frame endpoints return real data
+- [x] Date range filtering with URL params (7d, 30d, 90d, custom)
+- [ ] Dashboard::FilterOptionsService (dynamic channel list from DB) - deferred
+- [ ] Continuous aggregate views for performance - deferred to Phase 3
 
 ### Phase 3: Caching & Performance
 
