@@ -1,8 +1,10 @@
 module Dashboard
   class BaseController < ApplicationController
     before_action :require_login
-    helper_method :current_account
+    helper_method :current_account, :view_mode, :test_mode?
 
+    VALID_VIEW_MODES = %w[production test].freeze
+    DEFAULT_VIEW_MODE = "production"
     PRESET_DATE_RANGES = %w[7d 30d 90d].freeze
     DEFAULT_DATE_RANGE = "30d"
     VALID_METRICS = %w[conversions revenue conversion_rate aov].freeze
@@ -68,6 +70,40 @@ module Dashboard
         journey_position: journey_position_param,
         metric: metric_param
       }
+    end
+
+    # View mode toggle (like Stripe's test/live mode)
+    def view_mode
+      session[:view_mode].presence_in(VALID_VIEW_MODES) || DEFAULT_VIEW_MODE
+    end
+
+    def test_mode?
+      view_mode == "test"
+    end
+
+    def environment_scope
+      test_mode? ? :test_data : :production
+    end
+
+    # Scoped accessors for dashboard queries
+    def scoped_visitors
+      current_account.visitors.send(environment_scope)
+    end
+
+    def scoped_sessions
+      current_account.sessions.send(environment_scope)
+    end
+
+    def scoped_events
+      current_account.events.send(environment_scope)
+    end
+
+    def scoped_conversions
+      current_account.conversions.send(environment_scope)
+    end
+
+    def scoped_attribution_credits
+      current_account.attribution_credits.send(environment_scope)
     end
   end
 end

@@ -23,6 +23,7 @@
 * CLV (doesn't work the same as new customer acquisition - think it through)
 * Rollout SDKs: python, php, shopify, magento etc
 * Other channels: phone, email
+* Push conversions to server-side ads (with rules on attribution)
 
 ## Homepage Update (E1S4)
 
@@ -39,6 +40,7 @@ See `lib/specs/homepage_visualization_spec.md`
 # Mappings
 
 *  utm_term: "plcid_* -> Google Places
+* Capture all ad pixels / process if poss
 
 ***
 
