@@ -79,6 +79,14 @@ export default class extends Controller {
     }
   }
 
+  // Handle date range select change - show/hide custom date inputs
+  handleDateRange(event) {
+    const isCustom = event.target.value === "custom"
+    this.contentTargets.forEach(target => {
+      target.classList.toggle(this.hiddenClass, !isCustom)
+    })
+  }
+
   // Tab switching
   select(event) {
     const value = event.currentTarget.dataset.value

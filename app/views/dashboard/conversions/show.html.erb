@@ -9,6 +9,7 @@
       <% selected_metric = @filter_params[:metric] %>
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <%= link_to dashboard_path(request.query_parameters.merge(metric: "conversions")),
+            data: { turbo_frame: "_top" },
             class: "bg-white p-5 rounded-lg shadow transition-all hover:shadow-md #{selected_metric == 'conversions' ? 'ring-2 ring-indigo-500' : 'cursor-pointer'}" do %>
           <div class="flex items-center gap-1.5">
             <dt class="text-sm font-medium text-gray-500">Conversions</dt>
@@ -24,6 +25,7 @@
         <% end %>
 
         <%= link_to dashboard_path(request.query_parameters.merge(metric: "revenue")),
+            data: { turbo_frame: "_top" },
             class: "bg-white p-5 rounded-lg shadow transition-all hover:shadow-md #{selected_metric == 'revenue' ? 'ring-2 ring-indigo-500' : 'cursor-pointer'}" do %>
           <div class="flex items-center gap-1.5">
             <dt class="text-sm font-medium text-gray-500">Revenue</dt>
@@ -39,6 +41,7 @@
         <% end %>
 
         <%= link_to dashboard_path(request.query_parameters.merge(metric: "conversion_rate")),
+            data: { turbo_frame: "_top" },
             class: "bg-white p-5 rounded-lg shadow transition-all hover:shadow-md #{selected_metric == 'conversion_rate' ? 'ring-2 ring-indigo-500' : 'cursor-pointer'}" do %>
           <div class="flex items-center gap-1.5">
             <dt class="text-sm font-medium text-gray-500">Conversion Rate</dt>
@@ -54,6 +57,7 @@
         <% end %>
 
         <%= link_to dashboard_path(request.query_parameters.merge(metric: "aov")),
+            data: { turbo_frame: "_top" },
             class: "bg-white p-5 rounded-lg shadow transition-all hover:shadow-md #{selected_metric == 'aov' ? 'ring-2 ring-indigo-500' : 'cursor-pointer'}" do %>
           <div class="flex items-center gap-1.5">
             <dt class="text-sm font-medium text-gray-500">Avg Order Value</dt>
