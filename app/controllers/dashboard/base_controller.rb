@@ -47,8 +47,17 @@ module Dashboard
     def channels_param
       return Channels::ALL if params[:channels].blank?
 
-      valid = params[:channels].split(",").map(&:strip) & Channels::ALL
+      channels = normalize_channels_param
+      valid = channels & Channels::ALL
       valid.presence || Channels::ALL
+    end
+
+    def normalize_channels_param
+      case params[:channels]
+      when Array then params[:channels].map(&:strip)
+      when String then params[:channels].split(",").map(&:strip)
+      else []
+      end
     end
 
     def journey_position_param
