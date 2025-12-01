@@ -69,7 +69,7 @@ module Conversions
         session_id: resolved_session&.id,
         event_id: event&.id,
         conversion_type: conversion_type,
-        revenue: revenue,
+        revenue: normalized_revenue,
         properties: properties,
         converted_at: conversion_timestamp,
         journey_session_ids: [],
@@ -79,6 +79,15 @@ module Conversions
 
     def conversion_timestamp
       event&.occurred_at || Time.current
+    end
+
+    def normalized_revenue
+      return nil if revenue.nil?
+      return nil if revenue.to_f.zero?
+
+      revenue
+    rescue
+      nil
     end
   end
 end
