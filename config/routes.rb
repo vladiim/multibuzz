@@ -47,6 +47,7 @@ Rails.application.routes.draw do
 
   namespace :dashboard do
     resources :api_keys, only: [ :index, :create, :destroy ]
+    patch "view_mode", to: "view_mode#update"
 
     # Turbo Frame endpoints for dashboard sections
     get "filters", to: "filters#show"

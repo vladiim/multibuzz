@@ -64,52 +64,36 @@ module Identities
     end
 
     def other_visitors_conversions
-      other_visitor_ids = identity_visitors.where.not(id: visitor.id).pluck(:id)
+      other_visitor_ids = identity.visitors.where.not(id: visitor.id).pluck(:id)
       return [] if other_visitor_ids.empty?
 
-      conversion_scope.where(visitor_id: other_visitor_ids)
-    end
-
-    def identity_visitors
-      @identity_visitors ||= identity.visitors.unscope(where: :is_test).reload
+      account.conversions.where(visitor_id: other_visitor_ids)
     end
 
     def visitor_has_sessions_in_lookback?(conversion)
       lookback_start = conversion.converted_at - AttributionAlgorithms::DEFAULT_LOOKBACK_DAYS.days
 
-      session_scope
+      account.sessions
         .where(visitor: visitor)
         .where("started_at >= ?", lookback_start)
         .where("started_at <= ?", conversion.converted_at)
         .exists?
     end
 
-    def conversion_scope
-      is_test ? account.conversions.unscope(where: :is_test) : account.conversions
-    end
-
-    def session_scope
-      is_test ? account.sessions.unscope(where: :is_test) : account.sessions
-    end
-
     def identity
-      @identity ||= identity_scope.find_or_initialize_by(external_id: user_id) do |i|
+      @identity ||= account.identities.find_or_initialize_by(external_id: user_id) do |i|
         i.first_identified_at = Time.current
         i.last_identified_at = Time.current
         i.is_test = is_test
       end
     end
 
-    def identity_scope
-      is_test ? account.identities.unscope(where: :is_test) : account.identities
-    end
-
     def visitor
-      @visitor ||= visitor_scope.find_by(visitor_id: visitor_id)
+      @visitor ||= account.visitors.find_by(visitor_id: visitor_id)
     end
 
-    def visitor_scope
-      is_test ? account.visitors.unscope(where: :is_test) : account.visitors
+    def identity_visitors
+      identity.visitors
     end
   end
 end

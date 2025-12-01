@@ -62,15 +62,11 @@ module Sessions
     end
 
     def find_or_create_visitor
-      visitor_scope.find_or_create_by!(visitor_id: visitor_id) do |v|
+      account.visitors.find_or_create_by!(visitor_id: visitor_id) do |v|
         v.first_seen_at = started_at
         v.last_seen_at = started_at
         v.is_test = is_test
       end
-    end
-
-    def visitor_scope
-      is_test ? account.visitors.unscope(where: :is_test) : account.visitors
     end
 
     def create_or_update_session
@@ -85,19 +81,15 @@ module Sessions
     end
 
     def find_or_initialize_session
-      existing = session_scope.find_by(session_id: session_id, visitor: visitor)
+      existing = account.sessions.find_by(session_id: session_id, visitor: visitor)
       return existing if existing
 
-      session_scope.new(
+      account.sessions.new(
         session_id: session_id,
         visitor: visitor,
         started_at: started_at,
         is_test: is_test
       )
-    end
-
-    def session_scope
-      is_test ? account.sessions.unscope(where: :is_test) : account.sessions
     end
 
     def session_attributes

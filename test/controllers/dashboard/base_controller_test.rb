@@ -45,6 +45,54 @@ class Dashboard::BaseControllerTest < ActionDispatch::IntegrationTest
     assert_equal AttributionAlgorithms::DEFAULT_JOURNEY_POSITION, controller.send(:journey_position_param)
   end
 
+  test "view_mode defaults to production" do
+    get dashboard_filters_path
+
+    assert_response :success
+    assert_equal "production", controller.send(:view_mode)
+    assert_not controller.send(:test_mode?)
+  end
+
+  test "view_mode returns test when set in session" do
+    get dashboard_filters_path
+    assert_response :success
+
+    # Set test mode via the view_mode controller
+    patch dashboard_view_mode_path(mode: "test")
+
+    get dashboard_filters_path
+    assert_response :success
+    assert_equal "test", controller.send(:view_mode)
+    assert controller.send(:test_mode?)
+  end
+
+  test "view_mode ignores invalid values" do
+    get dashboard_filters_path
+    assert_response :success
+
+    # Try to set invalid mode
+    patch dashboard_view_mode_path(mode: "invalid")
+
+    get dashboard_filters_path
+    assert_response :success
+    assert_equal "production", controller.send(:view_mode)
+  end
+
+  test "environment_scope returns production scope by default" do
+    get dashboard_filters_path
+
+    assert_response :success
+    assert_equal :production, controller.send(:environment_scope)
+  end
+
+  test "environment_scope returns test_data scope when in test mode" do
+    patch dashboard_view_mode_path(mode: "test")
+    get dashboard_filters_path
+
+    assert_response :success
+    assert_equal :test_data, controller.send(:environment_scope)
+  end
+
   private
 
   def sign_in_as(user)

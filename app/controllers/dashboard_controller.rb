@@ -2,7 +2,7 @@ class DashboardController < Dashboard::BaseController
   def show
     @account = current_account
     @stats = build_stats
-    @recent_events = @account.events.recent.limit(10)
+    @recent_events = scoped_events.recent.limit(10)
     @utm_breakdown = utm_breakdown
   end
 
@@ -10,10 +10,10 @@ class DashboardController < Dashboard::BaseController
 
   def build_stats
     {
-      total_events: @account.events.count,
-      total_visitors: @account.visitors.count,
-      total_sessions: @account.sessions.count,
-      events_today: @account.events.where("occurred_at >= ?", Time.current.beginning_of_day).count
+      total_events: scoped_events.count,
+      total_visitors: scoped_visitors.count,
+      total_sessions: scoped_sessions.count,
+      events_today: scoped_events.where("occurred_at >= ?", Time.current.beginning_of_day).count
     }
   end
 
@@ -25,7 +25,7 @@ class DashboardController < Dashboard::BaseController
   end
 
   def utm_counts
-    @account.events
+    scoped_events
       .where.not("properties->>'utm_source' IS NULL")
       .group("properties->>'utm_source'", "properties->>'utm_medium'", "properties->>'utm_campaign'")
       .count
