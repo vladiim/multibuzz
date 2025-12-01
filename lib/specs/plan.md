@@ -15,22 +15,14 @@
 * Event debugging
 * $ and plans
 * AST for attribution models
+  - Create new / edit (up to 20 models applied)
+  - New / updates can back calculate at a fixed one-time cost (10k free then $x per 10k)
 * Content for subsidiary pages (terms etc)
 * Invite users
 * Live
 * CLV (doesn't work the same as new customer acquisition - think it through)
 * Rollout SDKs: python, php, shopify, magento etc
 * Other channels: phone, email
-
-## SDK Simplification (E1S4)
-
-Streamline to 4-call model - see `lib/specs/streamlined_sdk_spec.md`
-
-- [ ] Merge `alias` into `identify` (single endpoint)
-- [ ] Retroactive attribution on identify (cross-device discovery)
-- [ ] Update Ruby SDK to 4-method model: init, event, conversion, identify
-- [ ] Update API contract documentation
-- [ ] Create platform SDK specs (Shopify implicit init, Magento implicit init)
 
 ## Homepage Update (E1S4)
 
