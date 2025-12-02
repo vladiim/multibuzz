@@ -1,7 +1,7 @@
 module Dashboard
   class BaseController < ApplicationController
     before_action :require_login
-    helper_method :current_account, :view_mode, :test_mode?
+    helper_method :view_mode, :test_mode?
 
     VALID_VIEW_MODES = %w[production test].freeze
     DEFAULT_VIEW_MODE = "production"
@@ -11,10 +11,6 @@ module Dashboard
     DEFAULT_METRIC = "conversions"
 
     private
-
-    def current_account
-      @current_account ||= current_user.primary_account
-    end
 
     def selected_attribution_models
       @selected_attribution_models ||= find_attribution_models.presence || [default_attribution_model]

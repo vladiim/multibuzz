@@ -1,0 +1,36 @@
+<div class="min-h-screen bg-gray-100">
+  <%= render "layouts/nav" %>
+
+  <div class="py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <!-- Header -->
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold leading-tight text-gray-900">Account Settings</h1>
+        <p class="mt-2 text-sm text-gray-600">Manage your account settings and API keys for <%= current_account.name %></p>
+      </div>
+
+      <!-- Tabs -->
+      <div class="border-b border-gray-200 mb-6">
+        <nav class="-mb-px flex gap-6">
+          <%= link_to dashboard_settings_path(tab: "api_keys"),
+            class: "py-3 px-1 text-sm font-medium border-b-2 #{@tab == 'api_keys' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}" do %>
+            API Keys
+          <% end %>
+          <span class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-400 cursor-not-allowed" title="Coming soon">
+            Team Members
+          </span>
+        </nav>
+      </div>
+
+      <!-- Tab Content -->
+      <% if @tab == "api_keys" %>
+        <%= render "dashboard/settings/api_keys" %>
+      <% else %>
+        <!-- Team Members placeholder -->
+        <div class="bg-white shadow rounded-lg p-8 text-center">
+          <p class="text-gray-500">Team member management coming soon.</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
