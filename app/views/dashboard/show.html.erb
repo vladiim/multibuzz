@@ -187,9 +187,9 @@
                     </label>
                   </form>
                   <!-- Connection Status -->
-                  <div class="flex items-center gap-1.5 text-sm text-gray-500">
-                    <span class="w-2 h-2 bg-green-500 rounded-full"></span>
-                    Connected
+                  <div data-controller="connection-status" class="flex items-center gap-1.5 text-sm text-gray-500">
+                    <span data-connection-status-target="dot" class="w-2 h-2 bg-yellow-500 rounded-full"></span>
+                    <span data-connection-status-target="text">Connecting...</span>
                   </div>
                 </div>
               </div>
