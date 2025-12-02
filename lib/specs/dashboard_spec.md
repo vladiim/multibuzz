@@ -1,6 +1,6 @@
 # Attribution Dashboard Specification
 
-**Status**: Phase 3 Complete (caching implemented)
+**Status**: Phase 3 Complete (caching + funnel chart)
 **Last Updated**: 2025-12-02
 **Epic**: E1S3 - Dashboard
 
@@ -495,7 +495,7 @@ app/
 - [x] **Apply button** pattern (no auto-apply)
 - [x] **URL param persistence** (bookmarkable filters)
 - [x] Conversions section (cards + bar chart)
-- [x] Events section (funnel chart with touch filter)
+- [x] Funnel tab (renamed from Journeys) with stacked column + conversion rate line
 - [x] Basic comparison mode (side-by-side)
 - [x] Stimulus controllers (filter, dropdown, chart, comparison)
 - [x] Highcharts integration

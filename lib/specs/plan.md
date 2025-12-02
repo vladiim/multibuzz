@@ -9,8 +9,8 @@
   - [x] Model comparison via multi-select (max 2 models)
   - [x] Collapsible filters bar (date range, models, channels)
   - [x] Export dropdown (CSV/PDF)
-  - [ ] Journeys tab
-  - [ ] Funnel visualization
+  - [x] Funnel tab (renamed from Journeys)
+  - [x] Funnel chart with conversion rate line + log scale toggle
 * Split dash funnel by dimension (properties)
 * Event debugging
 * $ and plans
