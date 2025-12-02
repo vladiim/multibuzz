@@ -454,7 +454,7 @@ module Dashboard
   # Caching tests
   # ==========================================
 
-  class CachingTest < ActiveSupport::TestCase
+  class ConversionsCachingTest < ActiveSupport::TestCase
     setup do
       AttributionCredit.delete_all
       Conversion.where(account: account).delete_all
