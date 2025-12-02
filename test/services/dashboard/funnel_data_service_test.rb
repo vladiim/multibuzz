@@ -276,16 +276,92 @@ module Dashboard
       assert_equal 5, visits_stage[:total]
     end
 
+    # ==========================================
+    # Funnel filtering tests
+    # ==========================================
+
+    test "returns stages filtered by funnel" do
+      create_events_with_unique_visitors("signup_start", 5, funnel: "signup")
+      create_events_with_unique_visitors("signup_complete", 3, funnel: "signup")
+      create_events_with_unique_visitors("add_to_cart", 10, funnel: "purchase")
+
+      result = service(funnel: "signup").call
+      event_types = result[:data][:stages].map { |s| s[:event_type] }
+
+      assert_includes event_types, "signup_start"
+      assert_includes event_types, "signup_complete"
+      refute_includes event_types, "add_to_cart"
+    end
+
+    test "returns all events when funnel is nil" do
+      create_events_with_unique_visitors("signup_start", 5, funnel: "signup")
+      create_events_with_unique_visitors("add_to_cart", 10, funnel: "purchase")
+
+      result = service(funnel: nil).call
+      event_types = result[:data][:stages].map { |s| s[:event_type] }
+
+      assert_includes event_types, "signup_start"
+      assert_includes event_types, "add_to_cart"
+    end
+
+    test "returns available_funnels list" do
+      create_events_with_unique_visitors("signup_start", 5, funnel: "signup")
+      create_events_with_unique_visitors("add_to_cart", 10, funnel: "purchase")
+      create_events_with_unique_visitors("page_view", 20, funnel: nil)
+
+      result = service.call
+
+      assert_includes result[:data][:available_funnels], "signup"
+      assert_includes result[:data][:available_funnels], "purchase"
+    end
+
+    test "available_funnels excludes nil values" do
+      create_events_with_unique_visitors("page_view", 20, funnel: nil)
+      create_events_with_unique_visitors("signup_start", 5, funnel: "signup")
+
+      result = service.call
+
+      refute_includes result[:data][:available_funnels], nil
+      assert_equal 1, result[:data][:available_funnels].size
+    end
+
+    test "available_funnels sorted alphabetically" do
+      create_events_with_unique_visitors("signup_start", 5, funnel: "signup")
+      create_events_with_unique_visitors("add_to_cart", 10, funnel: "purchase")
+      create_events_with_unique_visitors("page_view", 20, funnel: "awareness")
+
+      result = service.call
+      funnels = result[:data][:available_funnels]
+
+      assert_equal ["awareness", "purchase", "signup"], funnels
+    end
+
+    test "cache key includes funnel param" do
+      create_events_with_unique_visitors("signup_start", 5, funnel: "signup")
+      create_events_with_unique_visitors("add_to_cart", 10, funnel: "purchase")
+
+      # Different funnels should cache separately
+      assert_difference -> { cache_writes }, 2 do
+        service(funnel: "signup").call
+        service(funnel: "purchase").call
+      end
+    end
+
     private
 
-    def service(date_range: "30d", channels: Channels::ALL, unique_users: true)
+    def cache_writes
+      Rails.cache.instance_variable_get(:@data)&.size || 0
+    end
+
+    def service(date_range: "30d", channels: Channels::ALL, unique_users: true, funnel: nil)
       filter_params = {
         date_range: date_range,
         models: [attribution_models(:first_touch)],
         channels: channels,
         journey_position: "last_touch",
         metric: "conversions",
-        unique_users: unique_users
+        unique_users: unique_users,
+        funnel: funnel
       }
       Dashboard::FunnelDataService.new(account, filter_params)
     end
@@ -295,7 +371,7 @@ module Dashboard
     end
 
     # Creates multiple events for the SAME visitor (tests unique counting)
-    def create_events(event_type, count, channel: Channels::PAID_SEARCH, occurred_at: Time.current, is_test: false)
+    def create_events(event_type, count, channel: Channels::PAID_SEARCH, occurred_at: Time.current, is_test: false, funnel: nil)
       session = account.sessions.create!(
         session_id: "session_#{SecureRandom.hex(4)}",
         visitor: visitors(:one),
@@ -311,13 +387,14 @@ module Dashboard
           event_type: event_type,
           occurred_at: occurred_at,
           is_test: is_test,
+          funnel: funnel,
           properties: { url: "https://example.com/#{event_type}" }
         )
       end
     end
 
     # Creates events with UNIQUE visitors (each event = different visitor)
-    def create_events_with_unique_visitors(event_type, count, channel: Channels::PAID_SEARCH, occurred_at: Time.current, is_test: false)
+    def create_events_with_unique_visitors(event_type, count, channel: Channels::PAID_SEARCH, occurred_at: Time.current, is_test: false, funnel: nil)
       count.times do |i|
         visitor = account.visitors.create!(
           visitor_id: "visitor_#{event_type}_#{SecureRandom.hex(4)}_#{i}"
@@ -337,6 +414,7 @@ module Dashboard
           event_type: event_type,
           occurred_at: occurred_at,
           is_test: is_test,
+          funnel: funnel,
           properties: { url: "https://example.com/#{event_type}" }
         )
       end
@@ -416,14 +494,15 @@ module Dashboard
 
     private
 
-    def service(date_range: "30d", channels: Channels::ALL)
+    def service(date_range: "30d", channels: Channels::ALL, funnel: nil)
       filter_params = {
         date_range: date_range,
         models: [attribution_models(:first_touch)],
         channels: channels,
         journey_position: "last_touch",
         metric: "conversions",
-        unique_users: true
+        unique_users: true,
+        funnel: funnel
       }
       Dashboard::FunnelDataService.new(account, filter_params)
     end
@@ -437,7 +516,7 @@ module Dashboard
     end
 
     # Creates events with UNIQUE visitors (each event = different visitor)
-    def create_events_with_unique_visitors(event_type, count, channel: Channels::PAID_SEARCH, occurred_at: Time.current, is_test: false)
+    def create_events_with_unique_visitors(event_type, count, channel: Channels::PAID_SEARCH, occurred_at: Time.current, is_test: false, funnel: nil)
       count.times do |i|
         visitor = account.visitors.create!(
           visitor_id: "visitor_#{event_type}_#{SecureRandom.hex(4)}_#{i}"
@@ -457,6 +536,7 @@ module Dashboard
           event_type: event_type,
           occurred_at: occurred_at,
           is_test: is_test,
+          funnel: funnel,
           properties: { url: "https://example.com/#{event_type}" }
         )
       end

@@ -111,6 +111,10 @@ MD
       Mbuzz.event("page_view", url: "/pricing")
       Mbuzz.event("add_to_cart", product_id: "SKU-123", price: 49.99)
       Mbuzz.event("checkout_started", cart_total: 99.99)
+
+      # Group events into funnels for focused analysis
+      Mbuzz.event("signup_start", funnel: "signup", source: "homepage")
+      Mbuzz.event("signup_complete", funnel: "signup")
     CODE
   },
   curl: {
@@ -123,6 +127,7 @@ MD
         -d '{
           "event_type": "add_to_cart",
           "visitor_id": "abc123...",
+          "funnel": "purchase",
           "properties": {
             "product_id": "SKU-123",
             "price": 49.99
@@ -185,10 +190,35 @@ MD
 
   **Recommended fields**:
   - `session_id` - Links event to session for attribution
+  - `funnel` - Group events into funnels for focused analysis
 
   **Optional fields**:
   - `properties` - Custom metadata (JSON object)
   - `timestamp` - When event occurred (defaults to now)
+
+  ### Funnels
+
+  Group related events into **funnels** for focused conversion analysis.
+
+  **Why use funnels?**
+  - Separate signup flow from purchase flow
+  - Analyze each conversion path independently
+  - Filter dashboard to specific customer journeys
+
+  **Example funnels**:
+  ```ruby
+  # Signup funnel
+  Mbuzz.event("pricing_view", funnel: "signup")
+  Mbuzz.event("signup_start", funnel: "signup")
+  Mbuzz.event("signup_complete", funnel: "signup")
+
+  # Purchase funnel
+  Mbuzz.event("add_to_cart", funnel: "purchase")
+  Mbuzz.event("checkout_started", funnel: "purchase")
+  Mbuzz.event("purchase_complete", funnel: "purchase")
+  ```
+
+  **Dashboard filtering**: Use the funnel dropdown to view specific funnels. "All Funnels" shows everything.
 
   ---
 
@@ -409,6 +439,7 @@ MD
         visitor_id: mbuzz_visitor_id,
         conversion_type: 'purchase',
         revenue: order.total,
+        funnel: 'purchase',  # Optional: group into funnel
         properties: { plan: 'pro' }
       )
     CODE
@@ -425,6 +456,7 @@ MD
           "conversion": {
             "visitor_id": "65dabef8d611f332d5bb88f5d6870c733d89f962594575b66f0e1de1ede1ebf0",
             "conversion_type": "purchase",
+            "funnel": "purchase",
             "revenue": 99.99
           }
         }'
