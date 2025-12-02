@@ -449,4 +449,126 @@ module Dashboard
       )
     end
   end
+
+  # ==========================================
+  # Caching tests
+  # ==========================================
+
+  class CachingTest < ActiveSupport::TestCase
+    setup do
+      AttributionCredit.delete_all
+      Conversion.where(account: account).delete_all
+    end
+
+    test "caches results on first call" do
+      create_test_credits
+
+      assert_difference -> { cache_writes }, 1 do
+        service.call
+      end
+    end
+
+    test "returns cached results on second call" do
+      create_test_credits
+      service.call
+
+      assert_no_difference -> { cache_writes } do
+        result = service.call
+        assert_equal 2.0, result[:data][:totals][:conversions]
+      end
+    end
+
+    test "cache is invalidated when attribution credit is created" do
+      create_test_credits
+      service.call # populate cache
+
+      # Create new credit - should invalidate cache
+      new_conversion = account.conversions.create!(
+        visitor: visitors(:one),
+        conversion_type: "purchase",
+        converted_at: 3.days.ago
+      )
+
+      account.attribution_credits.create!(
+        conversion: new_conversion,
+        attribution_model: first_touch_model,
+        session_id: rand(100..999),
+        channel: Channels::DIRECT,
+        credit: 1.0,
+        is_test: false
+      )
+
+      # Next call should hit DB with new data
+      result = service.call
+      assert_equal 3.0, result[:data][:totals][:conversions]
+    end
+
+    test "different filter params use different cache keys" do
+      create_test_credits
+
+      service_7d = service(date_range: "7d")
+      service_30d = service(date_range: "30d")
+
+      # Both should cache separately
+      assert_difference -> { cache_writes }, 2 do
+        service_7d.call
+        service_30d.call
+      end
+    end
+
+    private
+
+    def service(date_range: "30d", models: nil, channels: Channels::ALL)
+      models ||= [first_touch_model]
+      filter_params = {
+        date_range: date_range,
+        models: models,
+        channels: channels,
+        journey_position: "last_touch",
+        metric: "conversions"
+      }
+      Dashboard::ConversionsDataService.new(account, filter_params)
+    end
+
+    def account
+      @account ||= accounts(:one)
+    end
+
+    def first_touch_model
+      @first_touch_model ||= attribution_models(:first_touch)
+    end
+
+    def cache_writes
+      Rails.cache.instance_variable_get(:@data)&.size || 0
+    end
+
+    def create_test_credits
+      conversion = account.conversions.create!(
+        visitor: visitors(:one),
+        conversion_type: "purchase",
+        revenue: 200,
+        converted_at: 5.days.ago
+      )
+
+      account.attribution_credits.create!(
+        conversion: conversion,
+        attribution_model: first_touch_model,
+        session_id: 1,
+        channel: Channels::PAID_SEARCH,
+        credit: 1.0,
+        revenue_credit: 100,
+        is_test: false
+      )
+
+      account.attribution_credits.create!(
+        conversion: conversion,
+        attribution_model: first_touch_model,
+        session_id: 2,
+        channel: Channels::EMAIL,
+        credit: 1.0,
+        revenue_credit: 100,
+        is_test: false
+      )
+    end
+  end
 end
