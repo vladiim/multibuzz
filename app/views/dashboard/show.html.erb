@@ -82,9 +82,9 @@
                 <button type="button"
                   data-toggle-target="trigger"
                   data-action="toggle#select"
-                  data-value="journeys"
+                  data-value="funnel"
                   class="py-3 px-1 text-sm font-medium border-b-2">
-                  Journeys
+                  Funnel
                 </button>
                 <button type="button"
                   data-toggle-target="trigger"
@@ -151,12 +151,12 @@
               <% end %>
             </div>
 
-            <!-- Journeys Tab -->
-            <div data-toggle-target="content" data-value="journeys" class="hidden">
-              <%= turbo_frame_tag "journeys_#{current_account.prefix_id}",
-                src: dashboard_journeys_path(request.query_parameters),
+            <!-- Funnel Tab -->
+            <div data-toggle-target="content" data-value="funnel" class="hidden">
+              <%= turbo_frame_tag "funnel_#{current_account.prefix_id}",
+                src: dashboard_funnel_path(request.query_parameters),
                 loading: :lazy do %>
-                <%= render "dashboard/journeys/skeleton" %>
+                <%= render "dashboard/funnel/skeleton" %>
               <% end %>
             </div>
 

@@ -17,16 +17,22 @@ const CHANNEL_COLORS = {
 }
 
 export default class extends Controller {
+  static targets = ["canvas"]
   static values = {
     type: String,
     data: String,
     metric: { type: String, default: "credits" },
     drilldown: { type: Boolean, default: false },
-    campaigns: String
+    campaigns: String,
+    logScale: { type: Boolean, default: false }
   }
 
   connect() {
     this.renderChart()
+  }
+
+  get chartElement() {
+    return this.hasCanvasTarget ? this.canvasTarget : this.element
   }
 
   disconnect() {
@@ -35,13 +41,25 @@ export default class extends Controller {
     }
   }
 
+  toggleLogScale() {
+    this.logScaleValue = !this.logScaleValue
+    this.renderChart()
+  }
+
   renderChart() {
+    if (this.chart) {
+      this.chart.destroy()
+    }
+
     switch (this.typeValue) {
       case "bar":
         this.renderBarChart()
         break
       case "stacked-bar":
         this.renderStackedBarChart()
+        break
+      case "funnel":
+        this.renderFunnelChart()
         break
       case "line":
         this.renderLineChart()
@@ -118,7 +136,7 @@ export default class extends Controller {
       credits: { enabled: false }
     }
 
-    this.chart = Highcharts.chart(this.element, chartConfig)
+    this.chart = Highcharts.chart(this.chartElement, chartConfig)
     this.originalData = data
     this.isDrilledDown = false
   }
@@ -171,7 +189,7 @@ export default class extends Controller {
       data: s.data
     }))
 
-    this.chart = Highcharts.chart(this.element, {
+    this.chart = Highcharts.chart(this.chartElement, {
       chart: { type: "line" },
       title: { text: null },
       xAxis: {
@@ -220,7 +238,7 @@ export default class extends Controller {
       data: stages.map(stage => stage.by_channel[channel] || 0)
     }))
 
-    this.chart = Highcharts.chart(this.element, {
+    this.chart = Highcharts.chart(this.chartElement, {
       chart: { type: "bar" },
       title: { text: null },
       xAxis: {
@@ -242,6 +260,124 @@ export default class extends Controller {
         series: { stacking: "normal" }
       },
       series: series,
+      credits: { enabled: false }
+    })
+  }
+
+  renderFunnelChart() {
+    const stages = this.parseData()
+    if (!Array.isArray(stages) || stages.length === 0) return
+
+    const useLog = this.logScaleValue
+    const categories = stages.map(s => s.stage)
+
+    // Get channels with data (filter out zero-only channels)
+    const allChannels = Object.keys(stages[0].by_channel || {})
+    const channels = allChannels.filter(channel =>
+      stages.some(stage => (stage.by_channel[channel] || 0) > 0)
+    )
+
+    // Build stacked column series for each channel
+    const columnSeries = channels.map(channel => ({
+      name: this.formatChannelName(channel),
+      type: "column",
+      color: CHANNEL_COLORS[channel] || CHANNEL_COLORS.other,
+      data: stages.map(stage => stage.by_channel[channel] || 0),
+      yAxis: 0
+    }))
+
+    // Build conversion rate line series
+    const conversionRates = stages.map(s => s.conversion_rate)
+    const lineSeries = {
+      name: "Conversion Rate",
+      type: "line",
+      color: "#EF4444",
+      data: conversionRates,
+      yAxis: 1,
+      marker: { enabled: true, radius: 6 },
+      lineWidth: 3,
+      dataLabels: {
+        enabled: true,
+        formatter: function() {
+          return this.y ? `${this.y}%` : ""
+        },
+        style: { fontWeight: "bold", color: "#EF4444" }
+      },
+      zIndex: 10
+    }
+
+    // Stack totals for data labels
+    const stageTotals = stages.map(s => s.total)
+
+    this.chart = Highcharts.chart(this.chartElement, {
+      chart: { type: "column" },
+      title: { text: null },
+      xAxis: {
+        categories: categories,
+        labels: {
+          style: { fontSize: "12px" },
+          rotation: -45
+        }
+      },
+      yAxis: [{
+        // Left Y-axis: Count
+        type: useLog ? "logarithmic" : "linear",
+        title: { text: useLog ? "Count (log scale)" : "Count" },
+        min: useLog ? 1 : 0,
+        stackLabels: {
+          enabled: true,
+          formatter: function() {
+            return Highcharts.numberFormat(this.total, 0)
+          },
+          style: { fontWeight: "bold", color: "#374151" }
+        }
+      }, {
+        // Right Y-axis: Conversion Rate %
+        type: useLog ? "logarithmic" : "linear",
+        title: {
+          text: useLog ? "Conversion Rate (%, log)" : "Conversion Rate (%)",
+          style: { color: "#EF4444" }
+        },
+        labels: {
+          format: "{value}%",
+          style: { color: "#EF4444" }
+        },
+        min: useLog ? 0.1 : 0,
+        max: useLog ? 10000 : null,
+        opposite: true
+      }],
+      legend: {
+        align: "center",
+        verticalAlign: "top",
+        layout: "horizontal",
+        itemStyle: { fontSize: "11px" }
+      },
+      plotOptions: {
+        column: {
+          stacking: "normal",
+          dataLabels: { enabled: false }
+        }
+      },
+      tooltip: {
+        shared: true,
+        formatter: function() {
+          let html = `<b>${this.x}</b><br/>`
+          let total = 0
+          this.points.forEach(point => {
+            if (point.series.type === "column") {
+              total += point.y
+              html += `<span style="color:${point.color}">●</span> ${point.series.name}: ${Highcharts.numberFormat(point.y, 0)}<br/>`
+            }
+          })
+          html += `<b>Total: ${Highcharts.numberFormat(total, 0)}</b><br/>`
+          const ratePoint = this.points.find(p => p.series.type === "line")
+          if (ratePoint && ratePoint.y) {
+            html += `<span style="color:#EF4444">●</span> Conversion Rate: ${ratePoint.y}%`
+          }
+          return html
+        }
+      },
+      series: [...columnSeries, lineSeries],
       credits: { enabled: false }
     })
   }

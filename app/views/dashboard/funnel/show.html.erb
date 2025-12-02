@@ -1,18 +1,8 @@
-<%= turbo_frame_tag "journeys_#{current_account.prefix_id}" do %>
+<%= turbo_frame_tag "funnel_#{current_account.prefix_id}" do %>
   <div class="dashboard-section">
-    <!-- Journey Position Filter -->
+    <!-- Funnel Header -->
     <div class="flex items-center justify-between mb-6">
-      <h2 class="text-xl font-semibold text-gray-900">Customer Journeys</h2>
-      <form action="<%= dashboard_path %>" method="get" class="flex items-center gap-3">
-        <label class="text-sm font-medium text-gray-700">Journey Position</label>
-        <select name="journey_position" onchange="this.form.submit()" class="px-3 py-1.5 text-sm border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-          <% AttributionAlgorithms::JOURNEY_POSITIONS.each do |position| %>
-            <option value="<%= position %>" <%= 'selected' if @filter_params[:journey_position] == position %>>
-              <%= position.titleize %>
-            </option>
-          <% end %>
-        </select>
-      </form>
+      <h2 class="text-xl font-semibold text-gray-900">Conversion Funnel</h2>
     </div>
 
     <% if @result[:success] %>
@@ -39,14 +29,15 @@
       </div>
 
       <!-- Funnel Chart -->
-      <div class="bg-white p-6 rounded-lg shadow">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">Funnel by Channel</h3>
-        <div id="funnel-chart"
-          data-controller="chart"
-          data-chart-type-value="stacked-bar"
-          data-chart-data-value="<%= data[:stages].to_json %>"
-          class="h-96">
+      <div class="bg-white p-6 rounded-lg shadow" data-controller="chart" data-chart-type-value="funnel" data-chart-data-value="<%= data[:stages].to_json %>">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-medium text-gray-900">Funnel by Channel</h3>
+          <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+            <input type="checkbox" data-action="change->chart#toggleLogScale" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+            Log scale
+          </label>
         </div>
+        <div data-chart-target="canvas" class="h-96"></div>
       </div>
     <% else %>
       <div class="bg-red-50 p-4 rounded-lg">
