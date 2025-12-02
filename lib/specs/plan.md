@@ -11,9 +11,9 @@
   - [x] Export dropdown (CSV/PDF)
   - [x] Funnel tab (renamed from Journeys)
   - [x] Funnel chart with conversion rate line + log scale toggle
-* Split dash funnel by dimension (properties)
-* Event debugging
+* [x] Event debugging
 * $ and plans
+* Split dash funnel by dimension (properties)
 * AST for attribution models
   - Create new / edit (up to 20 models applied)
   - New / updates can back calculate at a fixed one-time cost (10k free then $x per 10k)

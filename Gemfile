@@ -25,6 +25,12 @@ gem "jbuilder"
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 gem "bcrypt", "~> 3.1.7"
 
+# Stripe for payment processing [https://github.com/stripe/stripe-ruby]
+gem "stripe"
+
+# Postmark for transactional emails [https://github.com/ActiveCampaign/postmark-rails]
+gem "postmark-rails"
+
 # Use prefixed IDs for customer-facing identifiers [https://github.com/excid3/prefixed_ids]
 gem "prefixed_ids"
 
