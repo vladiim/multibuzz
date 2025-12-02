@@ -1,7 +1,7 @@
 # Attribution Dashboard Specification
 
-**Status**: Phase 2 Complete
-**Last Updated**: 2025-12-01
+**Status**: Phase 2 Complete (filters verified)
+**Last Updated**: 2025-12-02
 **Epic**: E1S3 - Dashboard
 
 ---
@@ -522,6 +522,7 @@ app/
 - [x] Dashboard::Queries::FunnelStagesQuery (funnel stage data)
 - [x] Turbo Frame endpoints return real data
 - [x] Date range filtering with URL params (7d, 30d, 90d, custom)
+- [x] **Filter verification** (44 tests covering date, channel, model filters)
 - [ ] Dashboard::FilterOptionsService (dynamic channel list from DB) - deferred
 - [ ] Continuous aggregate views for performance - deferred to Phase 3
 
