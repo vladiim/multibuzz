@@ -260,16 +260,17 @@ Based on research from [Adobe Analytics Attribution IQ](https://www.adobe.com/co
 
 ---
 
-## Events Funnel Chart
+## Funnel Chart ✅
 
-### Reference Design (from your screenshot)
+### Implementation (Completed)
 
 The funnel chart shows:
-- **X-axis**: Funnel stages (Visits, Event 1, Event 2, etc.)
-- **Y-left**: Count (logarithmic scale)
-- **Y-right**: Conversion Rate % (logarithmic scale)
-- **Bars**: Stacked by channel (color-coded)
-- **Line**: Conversion rate overlay with data labels
+- **X-axis**: Funnel stages (Visits, Add to Cart, Checkout, Purchase)
+- **Y-left**: Count (linear by default, log scale toggle)
+- **Y-right**: Conversion Rate % (linear by default, log scale toggle)
+- **Bars**: Stacked vertical columns by channel (color-coded)
+- **Line**: Conversion rate overlay with data labels (red)
+- **Toggle**: Log scale checkbox (off by default)
 
 ### Touch Filter Modes
 

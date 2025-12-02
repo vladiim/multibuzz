@@ -52,7 +52,7 @@ Rails.application.routes.draw do
     # Turbo Frame endpoints for dashboard sections
     get "filters", to: "filters#show"
     get "conversions", to: "conversions#show"
-    get "journeys", to: "journeys#show"
+    get "funnel", to: "funnel#show"
     get "events", to: "events#show"
   end
 
