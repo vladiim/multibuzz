@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_28_074501) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_02_040559) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -43,8 +43,27 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_28_074501) do
     t.datetime "cancelled_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "plan_id"
+    t.integer "billing_status", default: 0, null: false
+    t.string "stripe_customer_id"
+    t.string "stripe_subscription_id"
+    t.string "billing_email"
+    t.datetime "free_until"
+    t.datetime "trial_ends_at"
+    t.datetime "subscription_started_at"
+    t.datetime "current_period_start"
+    t.datetime "current_period_end"
+    t.datetime "payment_failed_at"
+    t.datetime "grace_period_ends_at"
+    t.index ["billing_status"], name: "index_accounts_on_billing_status"
+    t.index ["free_until"], name: "index_accounts_on_free_until"
+    t.index ["payment_failed_at"], name: "index_accounts_on_payment_failed_at"
+    t.index ["plan_id"], name: "index_accounts_on_plan_id"
     t.index ["slug"], name: "index_accounts_on_slug", unique: true
     t.index ["status"], name: "index_accounts_on_status"
+    t.index ["stripe_customer_id"], name: "index_accounts_on_stripe_customer_id", unique: true
+    t.index ["stripe_subscription_id"], name: "index_accounts_on_stripe_subscription_id", unique: true
+    t.index ["trial_ends_at"], name: "index_accounts_on_trial_ends_at"
   end
 
   create_table "api_keys", force: :cascade do |t|
@@ -107,6 +126,20 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_28_074501) do
     t.index ["account_id"], name: "index_attribution_models_on_account_id"
   end
 
+  create_table "billing_events", force: :cascade do |t|
+    t.bigint "account_id"
+    t.string "stripe_event_id", null: false
+    t.string "event_type", null: false
+    t.jsonb "payload", default: {}, null: false
+    t.datetime "processed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_billing_events_on_account_id"
+    t.index ["event_type"], name: "index_billing_events_on_event_type"
+    t.index ["processed_at"], name: "index_billing_events_on_processed_at"
+    t.index ["stripe_event_id"], name: "index_billing_events_on_stripe_event_id", unique: true
+  end
+
   create_table "conversions", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.bigint "visitor_id", null: false
@@ -140,6 +173,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_28_074501) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "is_test", default: false, null: false
+    t.boolean "locked", default: false, null: false
+    t.string "funnel"
     t.index "((properties -> 'host'::text))", name: "index_events_on_host", using: :gin
     t.index "((properties -> 'path'::text))", name: "index_events_on_path", using: :gin
     t.index "((properties -> 'referrer_host'::text))", name: "index_events_on_referrer_host", using: :gin
@@ -149,9 +184,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_28_074501) do
     t.index "((properties ->> 'funnel'::text))", name: "index_events_on_funnel"
     t.index "((properties ->> 'funnel_step'::text))", name: "index_events_on_funnel_step"
     t.index ["account_id", "event_type"], name: "index_events_on_account_id_and_event_type"
+    t.index ["account_id", "funnel"], name: "index_events_on_account_funnel"
     t.index ["account_id", "occurred_at"], name: "index_events_on_account_id_and_occurred_at"
     t.index ["account_id"], name: "index_events_on_account_id"
     t.index ["is_test"], name: "index_events_on_is_test"
+    t.index ["locked"], name: "index_events_on_locked"
     t.index ["occurred_at"], name: "events_occurred_at_idx", order: :desc
     t.index ["properties"], name: "index_events_on_properties", using: :gin
     t.index ["session_id"], name: "index_events_on_session_id"
@@ -187,6 +224,24 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_28_074501) do
     t.index ["external_id"], name: "index_identities_on_external_id"
     t.index ["is_test"], name: "index_identities_on_is_test"
     t.index ["traits"], name: "index_identities_on_traits", using: :gin
+  end
+
+  create_table "plans", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "slug", null: false
+    t.integer "monthly_price_cents", default: 0, null: false
+    t.integer "events_included", null: false
+    t.integer "overage_price_cents"
+    t.string "stripe_product_id"
+    t.string "stripe_price_id"
+    t.string "stripe_meter_id"
+    t.boolean "is_active", default: true, null: false
+    t.integer "sort_order", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["is_active"], name: "index_plans_on_is_active"
+    t.index ["slug"], name: "index_plans_on_slug", unique: true
+    t.index ["sort_order"], name: "index_plans_on_sort_order"
   end
 
   create_table "sessions", primary_key: ["id", "started_at"], force: :cascade do |t|
@@ -244,11 +299,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_28_074501) do
 
   add_foreign_key "account_memberships", "accounts"
   add_foreign_key "account_memberships", "users"
+  add_foreign_key "accounts", "plans"
   add_foreign_key "api_keys", "accounts"
   add_foreign_key "attribution_credits", "accounts"
   add_foreign_key "attribution_credits", "attribution_models"
   add_foreign_key "attribution_credits", "conversions"
   add_foreign_key "attribution_models", "accounts"
+  add_foreign_key "billing_events", "accounts"
   add_foreign_key "conversions", "accounts"
   add_foreign_key "conversions", "visitors"
   add_foreign_key "events", "accounts"
