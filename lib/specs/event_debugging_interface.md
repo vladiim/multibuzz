@@ -1,8 +1,109 @@
 # Event Debugging Interface Specification
 
+**Status**: MVP In Progress
+**Last Updated**: 2025-12-02
+
 ## Overview
 
 A real-time debugging interface that allows developers to tag events with a unique debug parameter (e.g., `?debug=howdy-123`) and monitor their ingestion, enrichment, and processing in real-time. This enables developers to validate their implementation, troubleshoot issues, and understand how Multibuzz processes their events.
+
+---
+
+## MVP Implementation (Phase 0)
+
+**Goal**: Simple live event viewer with real-time updates via Turbo Streams.
+
+### Route
+```
+GET /dashboard/events → Dashboard::LiveEventsController#show
+```
+
+### Features
+- Live event stream (last 100 events)
+- Toggle: "All Events" / "Test Only" (`is_test` filter)
+- Real-time updates via Turbo Streams (Solid Cable)
+- Click event → slide-out panel with details
+- Connection status indicator
+
+### UI Layout
+```
+┌─────────────────────────────────────────────────────────┐
+│ Live Events                                             │
+│                                                         │
+│ [All Events ○ ● Test Only]              🟢 Connected   │
+├─────────────────────────────────────────────────────────┤
+│ turbo-stream-from "account_{id}_events"                 │
+│                                                         │
+│ <div id="events-list">                                  │
+│   ┌───────────────────────────────────────────────────┐ │
+│   │ 🔵 page_view         12:34:56 PM    ▶            │ │
+│   │    /pricing • paid_search                         │ │
+│   └───────────────────────────────────────────────────┘ │
+│   ┌───────────────────────────────────────────────────┐ │
+│   │ 🟢 purchase          12:34:52 PM    ▶            │ │
+│   │    $99.00 • email                                 │ │
+│   └───────────────────────────────────────────────────┘ │
+│ </div>                                                  │
+│                                                         │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ Slide-out Panel (hidden by default)                 │ │
+│ │ - Event ID, type, timestamp                         │ │
+│ │ - Session info (channel, session_id)                │ │
+│ │ - Properties (formatted)                            │ │
+│ │ - Raw JSON (collapsible)                            │ │
+│ └─────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────┘
+```
+
+### MVP Checklist
+
+#### Backend
+- [x] Route: `get "live", to: "live_events#show"` in dashboard namespace
+- [x] `Dashboard::LiveEventsController#show`
+  - [x] Load last 100 events for account
+  - [x] Filter by `is_test` param (default: all)
+  - [x] Include session for channel info
+- [ ] `Event::Broadcasts` concern
+  - [ ] `after_create_commit :broadcast_to_account`
+  - [ ] Broadcast to `"account_#{account.prefix_id}_events"`
+  - [ ] Use `broadcast_prepend_to` with event_card partial
+- [x] Unit tests for controller
+- [ ] Unit tests for broadcast concern
+
+#### Frontend
+- [x] `app/views/dashboard/live_events/show.html.erb`
+  - [x] Turbo Stream subscription tag
+  - [x] Toggle switch (All / Test Only)
+  - [x] Events list container (`#events-list`)
+  - [x] Slide-out panel container
+- [x] `app/views/dashboard/live_events/_event_card.html.erb`
+  - [x] Event type initial (generic, not hardcoded)
+  - [x] Timestamp (relative)
+  - [x] Primary info (URL or key property)
+  - [x] Channel badge
+  - [x] Click target for panel
+- [x] `app/views/dashboard/live_events/_event_panel.html.erb`
+  - [x] Event ID (prefix_id)
+  - [x] Event type + timestamp
+  - [x] Session section (channel, session_id, visitor_id)
+  - [x] Properties section (formatted key-value)
+  - [x] Raw JSON section (collapsible)
+  - [x] Close button
+- [ ] `app/javascript/controllers/event_panel_controller.js`
+  - [ ] `open(event)` - show panel with event data
+  - [ ] `close()` - hide panel
+  - [ ] Click outside to close
+  - [ ] Escape key to close
+
+#### Tests
+- [x] `test/controllers/dashboard/live_events_controller_test.rb`
+  - [x] Returns recent events
+  - [x] Filters by is_test param
+  - [x] Scoped to current account
+- [ ] `test/models/concerns/event/broadcasts_test.rb`
+  - [ ] Broadcasts on create
+  - [ ] Broadcasts to correct channel
+  - [ ] Does not broadcast on update
 
 ---
 
