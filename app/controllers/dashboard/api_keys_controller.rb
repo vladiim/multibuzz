@@ -3,7 +3,7 @@ module Dashboard
     before_action :require_login
 
     def index
-      @api_keys = current_account.api_keys.order(created_at: :desc)
+      redirect_to dashboard_settings_path(tab: "api_keys")
     end
 
     def create
@@ -16,14 +16,10 @@ module Dashboard
       api_key = current_account.api_keys.find(params[:id])
       api_key.revoke!
 
-      redirect_to dashboard_api_keys_path, notice: t("dashboard.api_keys.destroy.success")
+      redirect_to dashboard_settings_path(tab: "api_keys"), notice: t("dashboard.api_keys.destroy.success")
     end
 
     private
-
-    def current_account
-      @current_account ||= current_user.primary_account
-    end
 
     def generation_result
       @generation_result ||= ApiKeys::GenerationService
@@ -43,15 +39,13 @@ module Dashboard
     end
 
     def create_failure
-      flash.now[:alert] = generation_result[:errors].join(", ")
-      @api_keys = current_account.api_keys.order(created_at: :desc)
-      render :index, status: :unprocessable_entity
+      flash[:alert] = generation_result[:errors].join(", ")
+      redirect_to dashboard_settings_path(tab: "api_keys")
     end
 
     def create_missing_environment
-      flash.now[:alert] = t("dashboard.api_keys.create.missing_environment")
-      @api_keys = current_account.api_keys.order(created_at: :desc)
-      render :index, status: :unprocessable_entity
+      flash[:alert] = t("dashboard.api_keys.create.missing_environment")
+      redirect_to dashboard_settings_path(tab: "api_keys")
     end
 
     def api_key_params

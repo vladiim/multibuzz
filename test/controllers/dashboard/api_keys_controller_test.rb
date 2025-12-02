@@ -9,28 +9,12 @@ module Dashboard
       assert_equal "Please log in to continue", flash[:alert]
     end
 
-    test "index shows api keys for current account" do
+    test "index redirects to settings" do
       login_as(user)
 
       get dashboard_api_keys_path
 
-      assert_response :success
-      assert_select "h1", "API Keys"
-    end
-
-    test "index only shows current account's api keys" do
-      login_as(user)
-      other_account_key = other_account.api_keys.create!(
-        key_digest: "other_digest",
-        key_prefix: "sk_test_other",
-        environment: :test
-      )
-
-      get dashboard_api_keys_path
-
-      assert_response :success
-      assert_select "td", text: "#{api_key.key_prefix}****"
-      assert_select "td", text: "#{other_account_key.key_prefix}****", count: 0
+      assert_redirected_to dashboard_settings_path(tab: "api_keys")
     end
 
     test "create generates new api key" do
@@ -56,7 +40,8 @@ module Dashboard
         }
       end
 
-      assert_response :unprocessable_entity
+      assert_redirected_to dashboard_settings_path(tab: "api_keys")
+      assert_equal "Environment is required", flash[:alert]
     end
 
     test "destroy revokes api key" do
@@ -64,7 +49,7 @@ module Dashboard
 
       delete dashboard_api_key_path(api_key)
 
-      assert_redirected_to dashboard_api_keys_path
+      assert_redirected_to dashboard_settings_path(tab: "api_keys")
       assert_equal "API key revoked successfully", flash[:notice]
       assert api_key.reload.revoked?
     end
@@ -111,8 +96,8 @@ module Dashboard
       assert_equal 64, created_key.key_digest.length # SHA256 hex length
       assert created_key.key_prefix.start_with?("sk_test_")
 
-      # Navigating back to index should NOT show plaintext key
-      get dashboard_api_keys_path
+      # Navigating to settings should NOT show plaintext key
+      get dashboard_settings_path(tab: "api_keys")
 
       assert_response :success
       assert_no_match /sk_test_\w{32}/, response.body # No full keys

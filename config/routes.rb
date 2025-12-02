@@ -53,6 +53,9 @@ Rails.application.routes.draw do
     get "filters", to: "filters#show"
     get "conversions", to: "conversions#show"
     get "funnel", to: "funnel#show"
+
+    # Account settings
+    get "settings", to: "settings#show"
   end
 
   root "pages#home"
