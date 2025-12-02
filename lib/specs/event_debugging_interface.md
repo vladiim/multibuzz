@@ -1,105 +1,105 @@
 # Event Debugging Interface Specification
 
-**Status**: MVP In Progress
+**Status**: MVP Complete ✅
 **Last Updated**: 2025-12-02
 
 ## Overview
 
-A real-time debugging interface that allows developers to tag events with a unique debug parameter (e.g., `?debug=howdy-123`) and monitor their ingestion, enrichment, and processing in real-time. This enables developers to validate their implementation, troubleshoot issues, and understand how Multibuzz processes their events.
+A real-time debugging interface integrated into the main dashboard that allows developers to monitor event ingestion in real-time. This enables developers to validate their implementation, troubleshoot issues, and understand how Multibuzz processes their events.
 
 ---
 
-## MVP Implementation (Phase 0)
+## MVP Implementation (Phase 0) - COMPLETE
 
 **Goal**: Simple live event viewer with real-time updates via Turbo Streams.
 
-### Route
+### Location
+Integrated into the main dashboard as the **Events** tab (not a separate page).
+
 ```
-GET /dashboard/events → Dashboard::LiveEventsController#show
+GET /dashboard → DashboardController#show (Events tab)
 ```
 
 ### Features
-- Live event stream (last 100 events)
-- Toggle: "All Events" / "Test Only" (`is_test` filter)
-- Real-time updates via Turbo Streams (Solid Cable)
-- Click event → slide-out panel with details
-- Connection status indicator
+- [x] Live event stream (last 100 events)
+- [x] Toggle: "All Events" / "Test Only" (`is_test` filter)
+- [x] Real-time updates via Turbo Streams (Solid Cable)
+- [x] Click event → slide-out panel with details
+- [x] Live connection status indicator ("Live" / "Refresh required")
 
-### UI Layout
+### Architecture
+
 ```
 ┌─────────────────────────────────────────────────────────┐
-│ Live Events                                             │
-│                                                         │
-│ [All Events ○ ● Test Only]              🟢 Connected   │
+│ Dashboard                                               │
+│ [Conversions] [Funnel] [Events]                        │
 ├─────────────────────────────────────────────────────────┤
-│ turbo-stream-from "account_{id}_events"                 │
+│ Events Tab                                              │
 │                                                         │
-│ <div id="events-list">                                  │
-│   ┌───────────────────────────────────────────────────┐ │
-│   │ 🔵 page_view         12:34:56 PM    ▶            │ │
-│   │    /pricing • paid_search                         │ │
-│   └───────────────────────────────────────────────────┘ │
-│   ┌───────────────────────────────────────────────────┐ │
-│   │ 🟢 purchase          12:34:52 PM    ▶            │ │
-│   │    $99.00 • email                                 │ │
-│   └───────────────────────────────────────────────────┘ │
-│ </div>                                                  │
+│ Showing last 100 events  [☐ Test events only] 🟢 Live  │
+│                                                         │
+│ turbo-stream-from "account_{prefix_id}_events"         │
+│                                                         │
+│ ┌───────────────────────────────────────────────────┐   │
+│ │ P  page_view           5 minutes ago    →         │   │
+│ │    https://example.com/pricing • Paid Search      │   │
+│ └───────────────────────────────────────────────────┘   │
+│ ┌───────────────────────────────────────────────────┐   │
+│ │ P  purchase            10 minutes ago   →         │   │
+│ │    $99.00 • Email                                 │   │
+│ └───────────────────────────────────────────────────┘   │
 │                                                         │
 │ ┌─────────────────────────────────────────────────────┐ │
-│ │ Slide-out Panel (hidden by default)                 │ │
-│ │ - Event ID, type, timestamp                         │ │
-│ │ - Session info (channel, session_id)                │ │
-│ │ - Properties (formatted)                            │ │
-│ │ - Raw JSON (collapsible)                            │ │
+│ │ Slide-out Panel (click event to open)              │ │
+│ │ - Event ID (prefix_id)                             │ │
+│ │ - Event type + formatted timestamp                 │ │
+│ │ - Session: channel, session_id, visitor_id        │ │
+│ │ - Properties (key-value pairs)                    │ │
+│ │ - Raw JSON (collapsible)                          │ │
 │ └─────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### MVP Checklist
+### Implementation
 
 #### Backend
-- [x] Route: `get "live", to: "live_events#show"` in dashboard namespace
-- [x] `Dashboard::LiveEventsController#show`
-  - [x] Load last 100 events for account
-  - [x] Filter by `is_test` param (default: all)
-  - [x] Include session for channel info
+- [x] `DashboardController#show` loads `@live_events` and `@test_only`
 - [x] `Event::Broadcasts` concern
   - [x] `after_create_commit :broadcast_to_account`
-  - [x] Broadcast to `"account_#{account.prefix_id}_events"`
-  - [x] Use `broadcast_prepend_to` with event_card partial
-- [x] Unit tests for controller
+  - [x] Broadcasts to `"account_#{account.prefix_id}_events"`
+  - [x] Uses `broadcast_prepend_to` with event_card partial
+- [x] Solid Cable configured for development (cross-process broadcasts)
 - [x] Unit tests for broadcast concern
 
 #### Frontend
-- [x] `app/views/dashboard/live_events/show.html.erb`
+- [x] Events tab in `app/views/dashboard/show.html.erb`
   - [x] Turbo Stream subscription tag
-  - [x] Toggle switch (All / Test Only)
+  - [x] Test-only checkbox filter (auto-submit)
   - [x] Events list container (`#events-list`)
-  - [x] Slide-out panel container
+  - [x] Slide-out panel with backdrop
 - [x] `app/views/dashboard/live_events/_event_card.html.erb`
-  - [x] Event type initial (generic, not hardcoded)
-  - [x] Timestamp (relative)
-  - [x] Primary info (URL or key property)
-  - [x] Channel badge
-  - [x] Click target for panel
+  - [x] Event type initial (generic, first letter)
+  - [x] Relative timestamp
+  - [x] Primary info (URL, revenue, or first property)
+  - [x] Channel from session
+  - [x] Click to open panel
 - [x] `app/views/dashboard/live_events/_event_panel.html.erb`
-  - [x] Event ID (prefix_id)
-  - [x] Event type + timestamp
-  - [x] Session section (channel, session_id, visitor_id)
-  - [x] Properties section (formatted key-value)
-  - [x] Raw JSON section (collapsible)
+  - [x] Event details sections
+  - [x] Raw JSON (collapsible)
   - [x] Close button
 - [x] `app/javascript/controllers/event_panel_controller.js`
-  - [x] `open(event)` - show panel with event data
-  - [x] `close()` - hide panel
-  - [x] Click outside to close (via backdrop)
+  - [x] Open/close panel
+  - [x] Populate with event data
   - [x] Escape key to close
+  - [x] Click backdrop to close
+- [x] `app/javascript/controllers/connection_status_controller.js`
+  - [x] Monitors ActionCable WebSocket connection
+  - [x] Shows "Live" (green) when connected
+  - [x] Shows "Refresh required" (yellow) when disconnected
+- [x] `app/javascript/controllers/auto_submit_controller.js`
+  - [x] Auto-submits filter form on change
 
 #### Tests
-- [x] `test/controllers/dashboard/live_events_controller_test.rb`
-  - [x] Returns recent events
-  - [x] Filters by is_test param
-  - [x] Scoped to current account
 - [x] `test/models/concerns/event/broadcasts_test.rb`
   - [x] Broadcasts on create
   - [x] Broadcasts to correct channel
