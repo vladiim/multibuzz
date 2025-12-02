@@ -1,42 +1,19 @@
 class DashboardController < Dashboard::BaseController
   def show
     @account = current_account
-    @stats = build_stats
-    @recent_events = scoped_events.recent.limit(10)
-    @utm_breakdown = utm_breakdown
+    @live_events = load_live_events
+    @test_only = test_only?
   end
 
   private
 
-  def build_stats
-    {
-      total_events: scoped_events.count,
-      total_visitors: scoped_visitors.count,
-      total_sessions: scoped_sessions.count,
-      events_today: scoped_events.where("occurred_at >= ?", Time.current.beginning_of_day).count
-    }
+  def load_live_events
+    scope = current_account.events.includes(:session)
+    scope = scope.where(is_test: true) if test_only?
+    scope.order(occurred_at: :desc).limit(100)
   end
 
-  def utm_breakdown
-    utm_counts
-      .map { |(source, medium, campaign), count| build_utm_hash(source, medium, campaign, count) }
-      .sort_by { |utm| -utm[:count] }
-      .take(10)
-  end
-
-  def utm_counts
-    scoped_events
-      .where.not("properties->>'utm_source' IS NULL")
-      .group("properties->>'utm_source'", "properties->>'utm_medium'", "properties->>'utm_campaign'")
-      .count
-  end
-
-  def build_utm_hash(source, medium, campaign, count)
-    {
-      utm_source: source,
-      utm_medium: medium,
-      utm_campaign: campaign,
-      count: count
-    }
+  def test_only?
+    params[:test_only] == "true"
   end
 end
