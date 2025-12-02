@@ -1,5 +1,7 @@
 module Dashboard
   class FunnelDataService < ApplicationService
+    CACHE_TTL = 5.minutes
+
     def initialize(account, filter_params)
       @account = account
       @filter_params = filter_params
@@ -10,7 +12,30 @@ module Dashboard
     attr_reader :account, :filter_params
 
     def run
-      success_result(data: { stages: stages })
+      success_result(data: cached_data)
+    end
+
+    def cached_data
+      Rails.cache.fetch(cache_key, expires_in: CACHE_TTL) { query_data }
+    end
+
+    def query_data
+      { stages: stages }
+    end
+
+    def cache_key
+      "dashboard/funnel/#{account.prefix_id}/#{params_hash}"
+    end
+
+    def params_hash
+      Digest::MD5.hexdigest(cache_params.to_json)[0..11]
+    end
+
+    def cache_params
+      {
+        date_range: filter_params[:date_range],
+        channels: filter_params[:channels].sort
+      }
     end
 
     def stages

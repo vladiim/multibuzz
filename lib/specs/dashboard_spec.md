@@ -1,6 +1,6 @@
 # Attribution Dashboard Specification
 
-**Status**: Phase 2 Complete (filters verified)
+**Status**: Phase 3 Complete (caching implemented)
 **Last Updated**: 2025-12-02
 **Epic**: E1S3 - Dashboard
 
@@ -526,17 +526,18 @@ app/
 - [ ] Dashboard::FilterOptionsService (dynamic channel list from DB) - deferred
 - [ ] Continuous aggregate views for performance - deferred to Phase 3
 
-### Phase 3: Caching & Performance
+### Phase 3: Caching & Performance ✅
 
 **Goal**: Production-ready dashboard with fast queries
 
 **Deliverables**:
-- [ ] **Rails.cache** for query results (Solid Cache, 5-15 min TTL)
-- [ ] **Cache key** based on account + filter params
-- [ ] **Cache invalidation** on event ingestion
-- [ ] Fragment caching for chart HTML
-- [ ] Continuous aggregates hourly refresh
-- [ ] Manual refresh button for users
+- [x] **Rails.cache** for query results (memory_store dev, Solid Cache prod, 5 min TTL)
+- [x] **Cache key** based on account prefix_id + MD5 hash of filter params
+- [x] **Cache invalidation** on attribution credit create/update/destroy
+- [x] **Dashboard::CacheInvalidator** service for explicit invalidation
+- [ ] Fragment caching for chart HTML - deferred
+- [ ] Continuous aggregates hourly refresh - deferred
+- [ ] Manual refresh button for users - deferred
 
 ### Phase 4: Polish & Accessibility
 
