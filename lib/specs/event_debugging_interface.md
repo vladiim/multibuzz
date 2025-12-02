@@ -63,12 +63,12 @@ GET /dashboard/events → Dashboard::LiveEventsController#show
   - [x] Load last 100 events for account
   - [x] Filter by `is_test` param (default: all)
   - [x] Include session for channel info
-- [ ] `Event::Broadcasts` concern
-  - [ ] `after_create_commit :broadcast_to_account`
-  - [ ] Broadcast to `"account_#{account.prefix_id}_events"`
-  - [ ] Use `broadcast_prepend_to` with event_card partial
+- [x] `Event::Broadcasts` concern
+  - [x] `after_create_commit :broadcast_to_account`
+  - [x] Broadcast to `"account_#{account.prefix_id}_events"`
+  - [x] Use `broadcast_prepend_to` with event_card partial
 - [x] Unit tests for controller
-- [ ] Unit tests for broadcast concern
+- [x] Unit tests for broadcast concern
 
 #### Frontend
 - [x] `app/views/dashboard/live_events/show.html.erb`
@@ -89,21 +89,21 @@ GET /dashboard/events → Dashboard::LiveEventsController#show
   - [x] Properties section (formatted key-value)
   - [x] Raw JSON section (collapsible)
   - [x] Close button
-- [ ] `app/javascript/controllers/event_panel_controller.js`
-  - [ ] `open(event)` - show panel with event data
-  - [ ] `close()` - hide panel
-  - [ ] Click outside to close
-  - [ ] Escape key to close
+- [x] `app/javascript/controllers/event_panel_controller.js`
+  - [x] `open(event)` - show panel with event data
+  - [x] `close()` - hide panel
+  - [x] Click outside to close (via backdrop)
+  - [x] Escape key to close
 
 #### Tests
 - [x] `test/controllers/dashboard/live_events_controller_test.rb`
   - [x] Returns recent events
   - [x] Filters by is_test param
   - [x] Scoped to current account
-- [ ] `test/models/concerns/event/broadcasts_test.rb`
-  - [ ] Broadcasts on create
-  - [ ] Broadcasts to correct channel
-  - [ ] Does not broadcast on update
+- [x] `test/models/concerns/event/broadcasts_test.rb`
+  - [x] Broadcasts on create
+  - [x] Broadcasts to correct channel
+  - [x] Does not broadcast on update
 
 ---
 
