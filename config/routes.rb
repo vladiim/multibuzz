@@ -53,10 +53,6 @@ Rails.application.routes.draw do
     get "filters", to: "filters#show"
     get "conversions", to: "conversions#show"
     get "funnel", to: "funnel#show"
-    get "events", to: "events#show"
-
-    # Live events debugger
-    get "live", to: "live_events#show"
   end
 
   root "pages#home"
