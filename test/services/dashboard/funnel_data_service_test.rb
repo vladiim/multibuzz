@@ -236,4 +236,118 @@ module Dashboard
       end
     end
   end
+
+  # ==========================================
+  # Caching tests
+  # ==========================================
+
+  class FunnelCachingTest < ActiveSupport::TestCase
+    setup do
+      Event.delete_all
+    end
+
+    test "caches results on first call" do
+      create_events("page_view", 5)
+
+      assert_difference -> { cache_writes }, 1 do
+        service.call
+      end
+    end
+
+    test "returns cached results on second call" do
+      create_events("page_view", 5)
+      service.call
+
+      assert_no_difference -> { cache_writes } do
+        result = service.call
+        visits_stage = result[:data][:stages].find { |s| s[:stage] == "Visits" }
+        assert_equal 5, visits_stage[:total]
+      end
+    end
+
+    test "cache is invalidated when events change" do
+      create_events("page_view", 5)
+      service.call # populate cache
+
+      # Create new events via a new session (simulating new data)
+      create_events("page_view", 3)
+
+      # Clear cache manually (in real app, this happens via invalidation)
+      Dashboard::CacheInvalidator.new(account).call
+
+      # Next call should hit DB with new data
+      result = service.call
+      visits_stage = result[:data][:stages].find { |s| s[:stage] == "Visits" }
+      assert_equal 8, visits_stage[:total]
+    end
+
+    test "different filter params use different cache keys" do
+      create_events("page_view", 5)
+
+      service_7d = service(date_range: "7d")
+      service_30d = service(date_range: "30d")
+
+      # Both should cache separately
+      assert_difference -> { cache_writes }, 2 do
+        service_7d.call
+        service_30d.call
+      end
+    end
+
+    test "different channel filters use different cache keys" do
+      create_events("page_view", 5, channel: Channels::PAID_SEARCH)
+      create_events("page_view", 3, channel: Channels::EMAIL)
+
+      service_all = service(channels: Channels::ALL)
+      service_paid = service(channels: [Channels::PAID_SEARCH])
+
+      # Both should cache separately
+      assert_difference -> { cache_writes }, 2 do
+        service_all.call
+        service_paid.call
+      end
+    end
+
+    private
+
+    def service(date_range: "30d", channels: Channels::ALL)
+      filter_params = {
+        date_range: date_range,
+        models: [attribution_models(:first_touch)],
+        channels: channels,
+        journey_position: "last_touch",
+        metric: "conversions"
+      }
+      Dashboard::FunnelDataService.new(account, filter_params)
+    end
+
+    def account
+      @account ||= accounts(:one)
+    end
+
+    def cache_writes
+      Rails.cache.instance_variable_get(:@data)&.size || 0
+    end
+
+    def create_events(event_type, count, channel: Channels::PAID_SEARCH, occurred_at: Time.current, is_test: false)
+      session = account.sessions.create!(
+        session_id: "session_#{SecureRandom.hex(4)}",
+        visitor: visitors(:one),
+        started_at: occurred_at,
+        channel: channel,
+        is_test: is_test
+      )
+
+      count.times do
+        account.events.create!(
+          visitor: visitors(:one),
+          session: session,
+          event_type: event_type,
+          occurred_at: occurred_at,
+          is_test: is_test,
+          properties: { url: "https://example.com/#{event_type}" }
+        )
+      end
+    end
+  end
 end
