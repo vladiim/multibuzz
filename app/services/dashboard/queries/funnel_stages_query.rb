@@ -1,45 +1,71 @@
 module Dashboard
   module Queries
     class FunnelStagesQuery
-      # Maps event_type to display name
-      STAGES = {
+      # Display name overrides for common event types
+      # Falls back to humanized event_type if not in this map
+      DISPLAY_NAMES = {
         "page_view" => "Visits",
         "add_to_cart" => "Add to Cart",
         "checkout_started" => "Checkout Started",
         "purchase" => "Purchase"
       }.freeze
 
-      def initialize(scope)
+      def initialize(scope, unique_users: true)
         @scope = scope
+        @unique_users = unique_users
       end
 
       def call
-        previous_total = nil
-
-        STAGES.map do |event_type, stage_name|
-          stage_data = build_stage(event_type, stage_name, previous_total)
-          previous_total = stage_data[:total]
-          stage_data
-        end
+        stages_with_conversion_rates
       end
 
       private
 
-      attr_reader :scope
+      attr_reader :scope, :unique_users
 
-      def build_stage(event_type, stage_name, previous_total)
-        total = stage_total(event_type)
+      def stages_with_conversion_rates
+        previous_total = nil
+
+        ordered_stages.map do |stage_data|
+          stage = build_stage(stage_data, previous_total)
+          previous_total = stage[:total]
+          stage
+        end
+      end
+
+      def ordered_stages
+        event_type_counts
+          .sort_by { |_type, count| -count }
+          .map { |event_type, count| { event_type: event_type, count: count } }
+      end
+
+      def event_type_counts
+        @event_type_counts ||= unique_users ? unique_user_counts : total_event_counts
+      end
+
+      def unique_user_counts
+        scope.group(:event_type).distinct.count(:visitor_id)
+      end
+
+      def total_event_counts
+        scope.group(:event_type).count
+      end
+
+      def build_stage(stage_data, previous_total)
+        event_type = stage_data[:event_type]
+        total = stage_data[:count]
 
         {
-          stage: stage_name,
+          stage: display_name(event_type),
+          event_type: event_type,
           total: total,
           by_channel: channel_breakdown(event_type),
           conversion_rate: conversion_rate(total, previous_total)
         }
       end
 
-      def stage_total(event_type)
-        scope.where(event_type: event_type).count
+      def display_name(event_type)
+        DISPLAY_NAMES[event_type] || event_type.humanize.titleize
       end
 
       def channel_breakdown(event_type)
@@ -50,7 +76,20 @@ module Dashboard
 
       def channel_counts(event_type)
         @channel_counts ||= {}
-        @channel_counts[event_type] ||= scope
+        @channel_counts[event_type] ||= unique_users ? unique_channel_counts(event_type) : total_channel_counts(event_type)
+      end
+
+      def unique_channel_counts(event_type)
+        scope
+          .where(event_type: event_type)
+          .joins(:session)
+          .group("sessions.channel")
+          .distinct
+          .count(:visitor_id)
+      end
+
+      def total_channel_counts(event_type)
+        scope
           .where(event_type: event_type)
           .joins(:session)
           .group("sessions.channel")
