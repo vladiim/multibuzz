@@ -265,12 +265,43 @@ Based on research from [Adobe Analytics Attribution IQ](https://www.adobe.com/co
 ### Implementation (Completed)
 
 The funnel chart shows:
-- **X-axis**: Funnel stages (Visits, Add to Cart, Checkout, Purchase)
+- **X-axis**: Funnel stages - **dynamically discovered from customer's actual event_types**
 - **Y-left**: Count (linear by default, log scale toggle)
 - **Y-right**: Conversion Rate % (linear by default, log scale toggle)
 - **Bars**: Stacked vertical columns by channel (color-coded)
 - **Line**: Conversion rate overlay with data labels (red)
 - **Toggle**: Log scale checkbox (off by default)
+- **Toggle**: Unique users vs Total events (default: unique users)
+
+### Dynamic Funnel Stages
+
+**Key principle**: Funnel stages are NOT hardcoded. They are dynamically discovered from the customer's actual event data.
+
+**Ordering**: Stages are ordered by count (largest first → smallest last). This creates the classic funnel shape where top-of-funnel events appear first.
+
+**Counting modes**:
+| Mode | Description | Use Case |
+|------|-------------|----------|
+| **Unique Users** (default) | `COUNT(DISTINCT visitor_id)` | How many unique visitors performed this action |
+| **Total Events** | `COUNT(*)` | Total number of times this action occurred |
+
+**Example**:
+```
+Customer's events (ordered by unique users desc):
+1. page_view      - 10,000 unique users
+2. plan_page      -  2,500 unique users
+3. pricing_click  -  1,200 unique users
+4. signup_start   -    800 unique users
+5. signup_complete -   450 unique users
+
+This creates the funnel: page_view → plan_page → pricing_click → signup_start → signup_complete
+```
+
+**Why dynamic stages?**
+- Each customer has different event taxonomies
+- E-commerce: page_view → add_to_cart → checkout → purchase
+- SaaS: page_view → signup_start → signup_complete → subscription
+- No hardcoded assumptions - adapts to customer's tracking
 
 ### Touch Filter Modes
 

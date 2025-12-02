@@ -34,12 +34,17 @@ module Dashboard
     def cache_params
       {
         date_range: filter_params[:date_range],
-        channels: filter_params[:channels].sort
+        channels: filter_params[:channels].sort,
+        unique_users: unique_users
       }
     end
 
     def stages
-      Queries::FunnelStagesQuery.new(events_scope).call
+      Queries::FunnelStagesQuery.new(events_scope, unique_users: unique_users).call
+    end
+
+    def unique_users
+      filter_params.fetch(:unique_users, true)
     end
 
     def events_scope
