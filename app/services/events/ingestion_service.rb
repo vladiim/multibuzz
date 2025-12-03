@@ -11,7 +11,10 @@ module Events
       @accepted = []
       @rejected = []
 
+      return billing_blocked_result unless can_ingest?
+
       process_events
+      increment_usage_counter
       build_result
     end
 
@@ -91,6 +94,36 @@ module Events
 
     def build_result
       { accepted: accepted.count, rejected: rejected, events: accepted }
+    end
+
+    # --- Billing ---
+
+    def can_ingest?
+      account.can_ingest_events?
+    end
+
+    def billing_blocked_result
+      {
+        accepted: 0,
+        rejected: [],
+        events: [],
+        billing_blocked: true,
+        billing_error: "Account cannot accept events"
+      }
+    end
+
+    def increment_usage_counter
+      return if accepted.empty?
+
+      usage_counter.increment!(accepted.count)
+    end
+
+    def usage_counter
+      @usage_counter ||= Billing::UsageCounter.new(account)
+    end
+
+    def should_lock_events?
+      account.should_lock_events?
     end
   end
 end
