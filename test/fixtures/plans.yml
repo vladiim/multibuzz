@@ -1,0 +1,35 @@
+free:
+  name: "Free"
+  slug: "free"
+  monthly_price_cents: 0
+  events_included: 10000
+  overage_price_cents: null
+  is_active: true
+  sort_order: 0
+
+starter:
+  name: "Starter"
+  slug: "starter"
+  monthly_price_cents: 2900
+  events_included: 50000
+  overage_price_cents: 580
+  is_active: true
+  sort_order: 1
+
+growth:
+  name: "Growth"
+  slug: "growth"
+  monthly_price_cents: 9900
+  events_included: 250000
+  overage_price_cents: 396
+  is_active: true
+  sort_order: 2
+
+pro:
+  name: "Pro"
+  slug: "pro"
+  monthly_price_cents: 29900
+  events_included: 1000000
+  overage_price_cents: 299
+  is_active: true
+  sort_order: 3
