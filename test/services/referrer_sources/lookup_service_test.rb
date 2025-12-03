@@ -1,0 +1,117 @@
+require "test_helper"
+
+class ReferrerSources::LookupServiceTest < ActiveSupport::TestCase
+  setup do
+    create_test_sources
+  end
+
+  test "finds source by exact domain match" do
+    result = service("https://www.google.com/search?q=test").call
+
+    assert_not_nil result
+    assert_equal "Google", result[:source_name]
+    assert_equal ReferrerSources::Mediums::SEARCH, result[:medium]
+    assert_equal "q", result[:keyword_param]
+    assert_equal false, result[:is_spam]
+  end
+
+  test "finds source stripping www prefix" do
+    result = service("https://www.facebook.com/post/123").call
+
+    assert_not_nil result
+    assert_equal "Facebook", result[:source_name]
+  end
+
+  test "returns nil for unknown domain" do
+    result = service("https://unknown-site.com/page").call
+
+    assert_nil result
+  end
+
+  test "returns nil for blank referrer" do
+    assert_nil service("").call
+    assert_nil service(nil).call
+  end
+
+  test "identifies spam referrers" do
+    result = service("https://spam-site.com/evil").call
+
+    assert_not_nil result
+    assert_equal true, result[:is_spam]
+  end
+
+  test "extracts search term from url" do
+    result = service("https://www.google.com/search?q=ruby+on+rails").call
+
+    assert_equal "ruby on rails", result[:search_term]
+  end
+
+  test "returns nil search term when param missing" do
+    result = service("https://www.google.com/search").call
+
+    assert_nil result[:search_term]
+  end
+
+  test "caches lookup results" do
+    service("https://www.google.com/search").call
+
+    assert_not_nil Rails.cache.read("referrer_sources/domain/google.com")
+  end
+
+  test "uses cached result on subsequent lookups" do
+    # First lookup
+    service("https://www.google.com/search").call
+
+    # Delete from DB
+    ReferrerSource.where(domain: "google.com").delete_all
+
+    # Second lookup should still work from cache
+    result = service("https://www.google.com/search").call
+
+    assert_not_nil result
+    assert_equal "Google", result[:source_name]
+  end
+
+  test "handles invalid URL gracefully" do
+    result = service("not a valid url").call
+
+    assert_nil result
+  end
+
+  test "handles subdomain lookups" do
+    result = service("https://m.facebook.com/post").call
+
+    # Should match facebook.com (strips subdomain)
+    assert_not_nil result
+    assert_equal "Facebook", result[:source_name]
+  end
+
+  private
+
+  def service(referrer)
+    ReferrerSources::LookupService.new(referrer)
+  end
+
+  def create_test_sources
+    ReferrerSource.create!(
+      domain: "google.com",
+      source_name: "Google",
+      medium: ReferrerSources::Mediums::SEARCH,
+      keyword_param: "q",
+      data_origin: ReferrerSources::DataOrigins::MATOMO_SEARCH
+    )
+    ReferrerSource.create!(
+      domain: "facebook.com",
+      source_name: "Facebook",
+      medium: ReferrerSources::Mediums::SOCIAL,
+      data_origin: ReferrerSources::DataOrigins::MATOMO_SOCIAL
+    )
+    ReferrerSource.create!(
+      domain: "spam-site.com",
+      source_name: "spam-site.com",
+      medium: ReferrerSources::Mediums::SOCIAL,
+      is_spam: true,
+      data_origin: ReferrerSources::DataOrigins::MATOMO_SPAM
+    )
+  end
+end
