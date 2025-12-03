@@ -45,7 +45,12 @@ module Dashboard
     end
 
     def totals
-      Queries::TotalsQuery.new(credits_scope, prior_scope: prior_credits_scope).call
+      Queries::TotalsQuery.new(
+        credits_scope,
+        prior_scope: prior_credits_scope,
+        sessions_scope: sessions_scope,
+        prior_sessions_scope: prior_sessions_scope
+      ).call
     end
 
     def by_channel
@@ -61,17 +66,33 @@ module Dashboard
     end
 
     def credits_scope
-      @credits_scope ||= build_scope(date_range)
+      @credits_scope ||= build_credits_scope(date_range)
     end
 
     def prior_credits_scope
-      @prior_credits_scope ||= build_scope(date_range.prior_period)
+      @prior_credits_scope ||= build_credits_scope(date_range.prior_period)
     end
 
-    def build_scope(range)
+    def sessions_scope
+      @sessions_scope ||= build_sessions_scope(date_range)
+    end
+
+    def prior_sessions_scope
+      @prior_sessions_scope ||= build_sessions_scope(date_range.prior_period)
+    end
+
+    def build_credits_scope(range)
       Scopes::CreditsScope.new(
         account: account,
         models: filter_params[:models],
+        date_range: range,
+        channels: filter_params[:channels]
+      ).call
+    end
+
+    def build_sessions_scope(range)
+      Scopes::SessionsScope.new(
+        account: account,
         date_range: range,
         channels: filter_params[:channels]
       ).call

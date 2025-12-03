@@ -81,14 +81,83 @@ class Sessions::ChannelAttributionServiceTest < ActiveSupport::TestCase
     assert_equal Channels::PAID_SEARCH, service(utm_data).call
   end
 
-  test "returns other for unrecognized utm_medium" do
+  test "returns other for unrecognized utm_medium without referrer" do
     utm_data = { utm_medium: "unknown_medium" }
+
+    assert_equal Channels::OTHER, service(utm_data).call
+  end
+
+  test "falls back to referrer when utm_medium is unrecognized" do
+    utm_data = { utm_medium: "unknown_medium" }
+
+    assert_equal Channels::ORGANIC_SEARCH, service(utm_data, "https://google.com/search").call
+  end
+
+  test "returns organic_search when utm_source is google without utm_medium" do
+    utm_data = { utm_source: "google" }
+
+    assert_equal Channels::ORGANIC_SEARCH, service(utm_data).call
+  end
+
+  test "falls back to referrer when only utm_source present with google referrer" do
+    utm_data = { utm_source: "google" }
+
+    assert_equal Channels::ORGANIC_SEARCH, service(utm_data, "https://www.google.com/search").call
+  end
+
+  test "returns organic_social when utm_source is facebook without utm_medium" do
+    utm_data = { utm_source: "facebook" }
+
+    assert_equal Channels::ORGANIC_SOCIAL, service(utm_data).call
+  end
+
+  test "returns video when utm_source is youtube without utm_medium" do
+    utm_data = { utm_source: "youtube" }
+
+    assert_equal Channels::VIDEO, service(utm_data).call
+  end
+
+  test "returns other when utm_source is unrecognized without utm_medium" do
+    utm_data = { utm_source: "newsletter" }
 
     assert_equal Channels::OTHER, service(utm_data).call
   end
 
   test "handles invalid referrer URL gracefully" do
     assert_equal Channels::DIRECT, service({}, "not a valid url").call
+  end
+
+  # ==========================================
+  # Database lookup integration tests
+  # ==========================================
+
+  test "uses database lookup for known referrer" do
+    ReferrerSource.create!(
+      domain: "duckduckgo.com",
+      source_name: "DuckDuckGo",
+      medium: ReferrerSources::Mediums::SEARCH,
+      keyword_param: "q",
+      data_origin: ReferrerSources::DataOrigins::MATOMO_SEARCH
+    )
+
+    assert_equal Channels::ORGANIC_SEARCH, service({}, "https://duckduckgo.com/search").call
+  end
+
+  test "returns other for spam referrer from database" do
+    ReferrerSource.create!(
+      domain: "spam-referrer.com",
+      source_name: "spam-referrer.com",
+      medium: ReferrerSources::Mediums::SOCIAL,
+      is_spam: true,
+      data_origin: ReferrerSources::DataOrigins::MATOMO_SPAM
+    )
+
+    assert_equal Channels::OTHER, service({}, "https://spam-referrer.com/evil").call
+  end
+
+  test "falls back to patterns when not in database" do
+    # google.com not in database, but matches SEARCH_ENGINES pattern
+    assert_equal Channels::ORGANIC_SEARCH, service({}, "https://google.com/search").call
   end
 
   private
