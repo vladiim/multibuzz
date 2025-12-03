@@ -15,8 +15,21 @@ This document contains conventions, patterns, and best practices specific to thi
 | Cable | **Solid Cable** | NOT Redis - database-backed WebSockets |
 | Frontend | **Tailwind CSS** | Utility-first styling |
 | Charts | **Highcharts** | Complex visualizations |
+| Deployment | **Kamal** | See `config/deploy.yml` |
 
 **Important**: We use the **Solid Stack** (Solid Cache, Solid Queue, Solid Cable) - all database-backed. Do NOT suggest Redis-based solutions.
+
+---
+
+## Production Environment
+
+| Setting | Value |
+|---------|-------|
+| Domain | **mbuzz.co** |
+| Server | 68.183.173.51 |
+| Registry | ghcr.io/vladiim/multibuzz |
+
+**IMPORTANT**: Never guess URLs. The production domain is `mbuzz.co` - check `config/deploy.yml` for deployment details.
 
 ---
 
