@@ -1,0 +1,16 @@
+<h1>Approaching Event Limit</h1>
+
+<p>Hi <%= @account.name %>,</p>
+
+<p>You've used <%= @usage_percentage %>% of your monthly event limit.</p>
+
+<p>Consider upgrading your plan to avoid hitting your limit and missing events.</p>
+
+<p>
+  <%= link_to "View Plans", dashboard_url %>
+</p>
+
+<p>
+  Thanks,<br>
+  The multibuzz Team
+</p>

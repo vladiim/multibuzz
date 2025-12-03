@@ -1,0 +1,16 @@
+<h1>Free Access Granted</h1>
+
+<p>Hi <%= @account.name %>,</p>
+
+<p>You've been granted free access to multibuzz for <%= @days_remaining %> days.</p>
+
+<p>Enjoy full access to all features during this period. No payment required.</p>
+
+<p>
+  <%= link_to "View Dashboard", dashboard_url %>
+</p>
+
+<p>
+  Thanks,<br>
+  The multibuzz Team
+</p>
