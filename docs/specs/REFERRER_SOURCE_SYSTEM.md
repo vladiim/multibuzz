@@ -252,6 +252,62 @@ Track and log:
 
 ---
 
+## Code Review Findings
+
+### Brittleness Issues (Must Fix)
+
+| Issue | Severity | Location | Fix |
+|-------|----------|----------|-----|
+| N+1 on sync | HIGH | `SyncService#upsert_records` | Use `upsert_all` with conflict resolution |
+| No transaction | HIGH | `SyncService#upsert_records` | Wrap in `ActiveRecord::Base.transaction` |
+| No HTTP timeout | MEDIUM | `SyncService#fetch_source` | Add `Net::HTTP` read/open timeout |
+| No retry logic | MEDIUM | `SyncService#fetch_source` | Add exponential backoff (3 retries) |
+| Naive root_domain | MEDIUM | `LookupService#root_domain` | Use `public_suffix` gem for proper TLD handling |
+| Cache key collision | MEDIUM | `LookupService#cache_key` | Sanitize domain before cache key |
+| Nuclear cache invalidation | LOW | `SyncService#invalidate_cache` | Only invalidate changed records |
+
+### Code Smells (Should Fix)
+
+| Smell | Location | Fix |
+|-------|----------|-----|
+| Mixed concerns | `SyncService` | Extract `FetchService` for HTTP logic |
+| Silent failures | Parsers | Add logging on parse errors |
+| Inconsistent patterns | `LookupService` | Inherit from `ApplicationService` |
+| Duplicate domain extraction | Both services | Extract shared `DomainExtractor` |
+| No observability | All services | Add Rails logger calls + timing metrics |
+
+### Design Improvements (Nice to Have)
+
+| Improvement | Description |
+|-------------|-------------|
+| Typed result objects | Replace hash returns with proper result structs |
+| Configurable URLs | Move source URLs to Rails config/credentials |
+| Bulk operations | Use `insert_all`/`upsert_all` for performance |
+| Parallel fetching | Fetch from all sources concurrently |
+
+---
+
+## Implementation Fixes (Priority Order)
+
+### Phase 1: Critical Fixes
+1. Wrap sync in transaction
+2. Use `upsert_all` instead of N+1
+3. Add HTTP timeout (30s)
+4. Add logging throughout
+
+### Phase 2: Robustness
+5. Add retry logic with exponential backoff
+6. Use `public_suffix` gem for proper domain parsing
+7. Make `LookupService` inherit from `ApplicationService`
+8. Sanitize cache keys
+
+### Phase 3: Observability
+9. Add sync duration metrics
+10. Add per-source timing
+11. Log parse errors with source context
+
+---
+
 ## Future Enhancements
 
 - AI assistant detection (ChatGPT, Claude, Perplexity referrers)

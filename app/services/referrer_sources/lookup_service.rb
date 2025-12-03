@@ -1,21 +1,21 @@
 module ReferrerSources
-  class LookupService
+  class LookupService < ApplicationService
     CACHE_TTL = 24.hours
 
     def initialize(referrer)
       @referrer = referrer
     end
 
-    def call
+    private
+
+    attr_reader :referrer
+
+    def run
       return nil if referrer.blank?
       return nil unless domain
 
       cached_lookup || database_lookup
     end
-
-    private
-
-    attr_reader :referrer
 
     def cached_lookup
       Rails.cache.read(cache_key)
@@ -63,7 +63,11 @@ module ReferrerSources
     end
 
     def cache_key
-      "referrer_sources/domain/#{domain}"
+      "referrer_sources/domain/#{sanitized_domain}"
+    end
+
+    def sanitized_domain
+      domain.gsub(/[^a-z0-9.-]/i, "_")
     end
 
     def domain
@@ -71,10 +75,15 @@ module ReferrerSources
     end
 
     def root_domain
-      parts = domain&.split(".")
-      return nil unless parts && parts.size >= 2
+      @root_domain ||= extract_root_domain
+    end
 
-      parts.last(2).join(".")
+    def extract_root_domain
+      return nil unless domain
+
+      PublicSuffix.domain(domain)
+    rescue PublicSuffix::DomainNotAllowed, PublicSuffix::DomainInvalid
+      nil
     end
 
     def extract_domain

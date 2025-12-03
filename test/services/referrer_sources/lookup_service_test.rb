@@ -86,6 +86,37 @@ class ReferrerSources::LookupServiceTest < ActiveSupport::TestCase
     assert_equal "Facebook", result[:source_name]
   end
 
+  test "handles multi-part TLDs correctly" do
+    ReferrerSource.create!(
+      domain: "google.co.uk",
+      source_name: "Google UK",
+      medium: ReferrerSources::Mediums::SEARCH,
+      keyword_param: "q",
+      data_origin: ReferrerSources::DataOrigins::MATOMO_SEARCH
+    )
+
+    result = service("https://www.google.co.uk/search?q=test").call
+
+    assert_not_nil result
+    assert_equal "Google UK", result[:source_name]
+  end
+
+  test "handles subdomain with multi-part TLDs" do
+    ReferrerSource.create!(
+      domain: "google.co.uk",
+      source_name: "Google UK",
+      medium: ReferrerSources::Mediums::SEARCH,
+      keyword_param: "q",
+      data_origin: ReferrerSources::DataOrigins::MATOMO_SEARCH
+    )
+
+    result = service("https://mail.google.co.uk/search?q=test").call
+
+    # Should match google.co.uk (strips subdomain correctly)
+    assert_not_nil result
+    assert_equal "Google UK", result[:source_name]
+  end
+
   private
 
   def service(referrer)
