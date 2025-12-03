@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_02_040559) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_03_031011) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -242,6 +242,21 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_02_040559) do
     t.index ["is_active"], name: "index_plans_on_is_active"
     t.index ["slug"], name: "index_plans_on_slug", unique: true
     t.index ["sort_order"], name: "index_plans_on_sort_order"
+  end
+
+  create_table "referrer_sources", force: :cascade do |t|
+    t.string "domain", null: false
+    t.string "source_name", null: false
+    t.string "medium", null: false
+    t.string "keyword_param"
+    t.boolean "is_spam", default: false, null: false
+    t.string "data_origin", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["data_origin"], name: "index_referrer_sources_on_data_origin"
+    t.index ["domain"], name: "index_referrer_sources_on_domain", unique: true
+    t.index ["is_spam"], name: "index_referrer_sources_on_is_spam"
+    t.index ["medium"], name: "index_referrer_sources_on_medium"
   end
 
   create_table "sessions", primary_key: ["id", "started_at"], force: :cascade do |t|
