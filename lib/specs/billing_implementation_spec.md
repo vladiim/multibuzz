@@ -1,8 +1,8 @@
 # Billing Implementation Specification
 
-**Status**: In Progress (Phase 1 Complete)
+**Status**: In Progress (Phase 2 Complete)
 **Priority**: P0 (Required for launch)
-**Last Updated**: 2025-12-02
+**Last Updated**: 2025-12-03
 
 ---
 
@@ -433,14 +433,15 @@ postmark:
 - [x] Set up Stripe products/prices in test mode (sandbox)
 - [ ] Configure Postmark credentials (deferred to Phase 7)
 
-### Phase 2: Free Until & State Management
-- [ ] Implement free_until state logic
-- [ ] Implement can_ingest_event? for all states
-- [ ] Implement event locking for past_due
-- [ ] Create Billing::UnlockEventsService
-- [ ] Add admin action to grant free_until
-- [ ] Add admin action to extend free_until
-- [ ] Create Billing::ExpireFreeUntilJob (daily check)
+### Phase 2: Free Until & State Management ✅ COMPLETE
+- [x] Implement free_until state logic (Account::Billing concern)
+- [x] Implement can_ingest_events? for all states (Account::Billing concern)
+- [x] Implement event locking for past_due (should_lock_events?)
+- [x] Create Billing::UnlockEventsService
+- [x] Add grant_free_until! / extend_free_until! methods
+- [x] Create Billing::ExpireFreeUntilJob (daily check)
+- [x] Comprehensive test coverage (60 tests)
+- [ ] Admin UI for free_until management (deferred to Phase 8)
 
 ### Phase 3: Usage Tracking
 - [ ] Create Billing::UsageCounter (Solid Cache)
