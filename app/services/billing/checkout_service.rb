@@ -71,8 +71,7 @@ module Billing
     end
 
     def line_items
-      # Don't pass quantity for metered prices
-      [{ price: plan.stripe_price_id }]
+      [{ price: plan.stripe_price_id, quantity: 1 }]
     end
 
     def session_metadata
