@@ -1,6 +1,6 @@
 # Billing Implementation Specification
 
-**Status**: In Progress (Phase 5 Complete)
+**Status**: In Progress (Phase 6 Complete)
 **Priority**: P0 (Required for launch)
 **Last Updated**: 2025-12-03
 
@@ -473,14 +473,21 @@ postmark:
 - [ ] Add "Manage Subscription" to account settings (deferred to Phase 8/9)
 - [ ] Test checkout flow with real Stripe test cards (deferred to Phase 9)
 
-### Phase 6: Webhooks
-- [ ] Create Webhooks::StripeController
-- [ ] Implement signature verification
-- [ ] Create Billing::WebhookHandler dispatcher
-- [ ] Implement all webhook handlers
-- [ ] On invoice.paid: unlock events + recalc attribution
-- [ ] Configure webhook in Stripe Dashboard
-- [ ] Test with Stripe CLI locally
+### Phase 6: Webhooks ✅ COMPLETE
+- [x] Create Webhooks::StripeController with CSRF skip
+- [x] Implement Stripe signature verification (configurable for testing)
+- [x] Create Billing::WebhookHandler dispatcher with handler map
+- [x] Create Handlers::Base with common account lookup logic
+- [x] Implement Handlers::InvoicePaid (clears past_due, unlocks events)
+- [x] Implement Handlers::InvoicePaymentFailed (marks past_due)
+- [x] Implement Handlers::SubscriptionUpdated (syncs subscription details)
+- [x] Implement Handlers::SubscriptionDeleted (cancels subscription)
+- [x] Implement Handlers::CheckoutCompleted (activates subscription)
+- [x] Add Stripe status constants and status map to Billing module
+- [x] BillingEvent idempotency (skip duplicate events)
+- [x] Controller tests (6 tests) + Handler tests (7 tests)
+- [ ] Configure webhook endpoint in Stripe Dashboard (deferred - requires deployment)
+- [ ] Test with Stripe CLI locally (deferred to Phase 9)
 
 ### Phase 7: Emails
 - [ ] Configure Postmark in production.rb
