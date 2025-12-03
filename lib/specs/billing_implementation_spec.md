@@ -1,6 +1,6 @@
 # Billing Implementation Specification
 
-**Status**: In Progress (Phase 4 Complete)
+**Status**: In Progress (Phase 5 Complete)
 **Priority**: P0 (Required for launch)
 **Last Updated**: 2025-12-03
 
@@ -461,14 +461,17 @@ postmark:
 - [x] Add banners to dashboard layout
 - [x] Controller tests for all banner states (6 tests)
 
-### Phase 5: Checkout & Portal
-- [ ] Create Billing::CheckoutService
-- [ ] Create Billing::PortalService
-- [ ] Add BillingController
-- [ ] Add routes (checkout, portal, success, cancel)
-- [ ] Create pricing page UI
-- [ ] Add "Manage Subscription" to account settings
-- [ ] Test checkout flow with test cards
+### Phase 5: Checkout & Portal ✅ COMPLETE
+- [x] Create Billing::CheckoutService (with dependency injection for testing)
+- [x] Create Billing::PortalService (with dependency injection for testing)
+- [x] Add Dashboard::BillingController with checkout, portal, success, cancel
+- [x] Add routes (checkout, portal, success, cancel)
+- [x] Create success page view
+- [x] Controller tests (9 tests)
+- [x] Service tests (13 tests)
+- [ ] Create pricing page UI (deferred to Phase 8/9)
+- [ ] Add "Manage Subscription" to account settings (deferred to Phase 8/9)
+- [ ] Test checkout flow with real Stripe test cards (deferred to Phase 9)
 
 ### Phase 6: Webhooks
 - [ ] Create Webhooks::StripeController

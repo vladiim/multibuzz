@@ -4,6 +4,7 @@ free:
   monthly_price_cents: 0
   events_included: 10000
   overage_price_cents: null
+  stripe_price_id: null
   is_active: true
   sort_order: 0
 
@@ -13,6 +14,7 @@ starter:
   monthly_price_cents: 2900
   events_included: 50000
   overage_price_cents: 580
+  stripe_price_id: "price_starter_test"
   is_active: true
   sort_order: 1
 
@@ -22,6 +24,7 @@ growth:
   monthly_price_cents: 9900
   events_included: 250000
   overage_price_cents: 396
+  stripe_price_id: "price_growth_test"
   is_active: true
   sort_order: 2
 
@@ -31,5 +34,6 @@ pro:
   monthly_price_cents: 29900
   events_included: 1000000
   overage_price_cents: 299
+  stripe_price_id: "price_pro_test"
   is_active: true
   sort_order: 3
