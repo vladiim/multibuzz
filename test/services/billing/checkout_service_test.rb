@@ -66,7 +66,7 @@ class Billing::CheckoutServiceTest < ActiveSupport::TestCase
     service(stripe_client: client).call
 
     assert_equal "cus_123", captured_params[:customer]
-    assert_equal [{ price: "price_starter123" }], captured_params[:line_items]
+    assert_equal [{ price: "price_starter123", quantity: 1 }], captured_params[:line_items]
     assert_equal "subscription", captured_params[:mode]
     assert captured_params[:success_url].include?("{CHECKOUT_SESSION_ID}")
     assert captured_params[:cancel_url].present?
