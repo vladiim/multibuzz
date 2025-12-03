@@ -614,6 +614,58 @@ module Event
 end
 ```
 
+### Background Jobs - Thin Wrappers Only
+
+**Jobs are thin wrappers around services. All business logic lives in services. Never test jobs - test the services they call.**
+
+```ruby
+# ✅ GOOD - Thin job wrapper (no tests needed for jobs)
+module Billing
+  class ReportUsageJob < ApplicationJob
+    queue_as :default
+
+    def perform(account_id)
+      ReportUsageService.new(Account.find(account_id)).call
+    end
+  end
+end
+
+# ✅ GOOD - Service has the logic and tests
+module Billing
+  class ReportUsageService < ApplicationService
+    def initialize(account)
+      @account = account
+    end
+
+    private
+
+    attr_reader :account
+
+    def run
+      # All business logic here
+      # This is what gets tested
+    end
+  end
+end
+
+# ❌ BAD - Logic in job
+module Billing
+  class ReportUsageJob < ApplicationJob
+    def perform(account_id)
+      account = Account.find(account_id)
+      usage = Rails.cache.read(account.usage_cache_key)
+      # Business logic in job - don't do this!
+      Stripe::Billing::MeterEvent.create(...)
+    end
+  end
+end
+```
+
+**Testing Jobs:**
+- **Don't test jobs directly** - they're just wrappers
+- **Test the service** the job calls
+- Job tests only needed if testing retry logic, queue configuration, or error handling specific to ActiveJob
+
 ---
 
 ## Method Design Principles
