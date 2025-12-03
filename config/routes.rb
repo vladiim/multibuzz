@@ -56,6 +56,12 @@ Rails.application.routes.draw do
 
     # Account settings
     get "settings", to: "settings#show"
+
+    # Billing
+    post "billing/checkout", to: "billing#checkout", as: :billing_checkout
+    get "billing/portal", to: "billing#portal", as: :billing_portal
+    get "billing/success", to: "billing#success", as: :billing_success
+    get "billing/cancel", to: "billing#cancel", as: :billing_cancel
   end
 
   root "pages#home"
