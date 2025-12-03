@@ -46,6 +46,7 @@ See `lib/specs/homepage_visualization_spec.md`
 
 # Marketing
 
+* Sales - find people like those in https://page.funnel.io/2026-marketing-intelligence-report#access-report; reach out for advice - thoughts on MTA - soft sell
 * Launch SDK listings + associated newsletters (first being rubygems) - research the best way to get traction in the specific SDK community are there people to engage with?
 * CA, Rebel etc (grant), boris clients, audi, others?
 * Waitlist for SDK - 1st to implement get 3 months free and priority support
