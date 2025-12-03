@@ -1,0 +1,16 @@
+<h1>Your Trial Ends Soon</h1>
+
+<p>Hi <%= @account.name %>,</p>
+
+<p>Your trial ends in <%= @days_remaining %> days.</p>
+
+<p>Add a payment method to continue using multibuzz without interruption. Your data and settings will be preserved.</p>
+
+<p>
+  <%= link_to "Subscribe Now", dashboard_url %>
+</p>
+
+<p>
+  Thanks,<br>
+  The multibuzz Team
+</p>

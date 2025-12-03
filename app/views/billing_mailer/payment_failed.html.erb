@@ -1,0 +1,18 @@
+<h1>Payment Failed</h1>
+
+<p>Hi <%= @account.name %>,</p>
+
+<p>We were unable to process your payment. Please update your payment method to continue using multibuzz.</p>
+
+<p>Your events will continue to be tracked for the next 3 days. After that, new events will be stored but locked until payment is received.</p>
+
+<p>
+  <%= link_to "Update Payment Method", dashboard_billing_portal_url %>
+</p>
+
+<p>If you have any questions, please reply to this email.</p>
+
+<p>
+  Thanks,<br>
+  The multibuzz Team
+</p>

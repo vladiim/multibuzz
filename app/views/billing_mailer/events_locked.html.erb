@@ -1,0 +1,16 @@
+<h1>Events Locked</h1>
+
+<p>Hi <%= @account.name %>,</p>
+
+<p>Your payment is still outstanding. New events are now being stored but locked until payment is received.</p>
+
+<p>Your locked events will be restored once your payment is processed.</p>
+
+<p>
+  <%= link_to "Update Payment Method", dashboard_billing_portal_url %>
+</p>
+
+<p>
+  Thanks,<br>
+  The multibuzz Team
+</p>
