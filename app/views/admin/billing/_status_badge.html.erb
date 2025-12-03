@@ -1,0 +1,19 @@
+<%
+  badge_classes = case status.to_s
+  when "active"
+    "bg-green-100 text-green-800"
+  when "trialing"
+    "bg-blue-100 text-blue-800"
+  when "free_forever", "free_until"
+    "bg-gray-100 text-gray-800"
+  when "past_due"
+    "bg-red-100 text-red-800"
+  when "cancelled", "expired"
+    "bg-gray-100 text-gray-500"
+  else
+    "bg-gray-100 text-gray-800"
+  end
+%>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= badge_classes %>">
+  <%= status.to_s.humanize %>
+</span>

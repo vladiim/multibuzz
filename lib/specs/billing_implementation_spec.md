@@ -1,6 +1,6 @@
 # Billing Implementation Specification
 
-**Status**: In Progress (Phase 7 Complete)
+**Status**: In Progress (Phase 8 Complete)
 **Priority**: P0 (Required for launch)
 **Last Updated**: 2025-12-03
 
@@ -500,14 +500,18 @@ postmark:
 - [ ] Add email preview routes (deferred - optional)
 - [ ] Test email delivery in staging (deferred to Phase 9)
 
-### Phase 8: Admin Dashboard
-- [ ] Create Admin::BaseController with auth
-- [ ] Create Admin::BillingController
-- [ ] Create Billing::MetricsService
-- [ ] Build admin dashboard view
-- [ ] Add MRR chart (Highcharts)
-- [ ] Add free_until management UI
-- [ ] Add account billing history view
+### Phase 8: Admin Dashboard ✅ COMPLETE
+- [x] Add is_admin column to users table with User::Roles concern
+- [x] Create Admin::BaseController with admin-only authentication
+- [x] Create Admin::BillingController with metrics dashboard
+- [x] Create Billing::MetricsService (MRR, account counts by status)
+- [x] Build admin billing dashboard view with metrics cards
+- [x] Create Admin::AccountsController for account management
+- [x] Add free_until management UI (grant/extend/clear)
+- [x] Add account billing history view (BillingEvent history)
+- [x] Add status badge partial for billing status display
+- [x] Full test coverage (13 new tests)
+- [ ] Add MRR chart (Highcharts) - deferred to Phase 9
 
 ### Phase 9: Testing & Polish
 - [ ] Unit tests for all billing states
