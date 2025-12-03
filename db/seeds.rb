@@ -5,6 +5,9 @@
 # --- Plans ---
 puts "Seeding plans..."
 
+# Stripe price IDs from credentials (environment-specific)
+stripe_prices = Rails.application.credentials.dig(:stripe, :prices) || {}
+
 plans = [
   {
     name: "Free",
@@ -12,6 +15,7 @@ plans = [
     monthly_price_cents: Billing::FREE_MONTHLY_PRICE_CENTS,
     events_included: Billing::FREE_EVENT_LIMIT,
     overage_price_cents: nil,
+    stripe_price_id: nil,
     sort_order: Billing::FREE_SORT_ORDER
   },
   {
@@ -20,6 +24,7 @@ plans = [
     monthly_price_cents: Billing::STARTER_MONTHLY_PRICE_CENTS,
     events_included: Billing::STARTER_EVENT_LIMIT,
     overage_price_cents: Billing::STARTER_OVERAGE_CENTS,
+    stripe_price_id: stripe_prices[:starter],
     sort_order: Billing::STARTER_SORT_ORDER
   },
   {
@@ -28,6 +33,7 @@ plans = [
     monthly_price_cents: Billing::GROWTH_MONTHLY_PRICE_CENTS,
     events_included: Billing::GROWTH_EVENT_LIMIT,
     overage_price_cents: Billing::GROWTH_OVERAGE_CENTS,
+    stripe_price_id: stripe_prices[:growth],
     sort_order: Billing::GROWTH_SORT_ORDER
   },
   {
@@ -36,18 +42,15 @@ plans = [
     monthly_price_cents: Billing::PRO_MONTHLY_PRICE_CENTS,
     events_included: Billing::PRO_EVENT_LIMIT,
     overage_price_cents: Billing::PRO_OVERAGE_CENTS,
+    stripe_price_id: stripe_prices[:pro],
     sort_order: Billing::PRO_SORT_ORDER
   }
 ]
 
 plans.each do |plan_attrs|
-  Plan.find_or_create_by!(slug: plan_attrs[:slug]) do |plan|
-    plan.name = plan_attrs[:name]
-    plan.monthly_price_cents = plan_attrs[:monthly_price_cents]
-    plan.events_included = plan_attrs[:events_included]
-    plan.overage_price_cents = plan_attrs[:overage_price_cents]
-    plan.sort_order = plan_attrs[:sort_order]
-  end
+  plan = Plan.find_or_initialize_by(slug: plan_attrs[:slug])
+  plan.assign_attributes(plan_attrs)
+  plan.save!
 end
 
-puts "Created #{Plan.count} plans"
+puts "Created/updated #{Plan.count} plans"
