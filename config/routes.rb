@@ -50,6 +50,12 @@ Rails.application.routes.draw do
   delete "logout", to: "sessions#destroy"
   get "dashboard", to: "dashboard#show"
 
+  # Admin routes
+  namespace :admin do
+    get "billing", to: "billing#show", as: :billing
+    resources :accounts, only: [:show, :update]
+  end
+
   namespace :dashboard do
     resources :api_keys, only: [ :index, :create, :destroy ]
     patch "view_mode", to: "view_mode#update"
