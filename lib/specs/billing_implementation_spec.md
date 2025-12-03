@@ -1,6 +1,6 @@
 # Billing Implementation Specification
 
-**Status**: In Progress (Phase 3 Complete)
+**Status**: In Progress (Phase 4 Complete)
 **Priority**: P0 (Required for launch)
 **Last Updated**: 2025-12-03
 
@@ -453,13 +453,13 @@ postmark:
 - [ ] Set up Stripe Meter (deferred - requires Stripe dashboard config)
 - [ ] Test usage tracking end-to-end (deferred to Phase 9)
 
-### Phase 4: Dashboard Banners
-- [ ] Create shared billing banner partial
-- [ ] Implement past_due banner with payment link
-- [ ] Implement free_until expiring banner
-- [ ] Implement usage limit banner
-- [ ] Add banners to dashboard layout
-- [ ] Style banners (warning, info, error states)
+### Phase 4: Dashboard Banners ✅ COMPLETE
+- [x] Create shared billing banner partial
+- [x] Implement past_due banner (red) with payment link
+- [x] Implement free_until expiring banner (blue) with plans link
+- [x] Implement usage limit/warning banners (amber) with upgrade links
+- [x] Add banners to dashboard layout
+- [x] Controller tests for all banner states (6 tests)
 
 ### Phase 5: Checkout & Portal
 - [ ] Create Billing::CheckoutService
