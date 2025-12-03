@@ -113,4 +113,20 @@ module Billing
   PRICE_FORMAT = "$%d/mo"
   EVENTS_MILLIONS_FORMAT = "%dM"
   EVENTS_THOUSANDS_FORMAT = "%dK"
+
+  # --- Stripe Subscription Statuses ---
+  STRIPE_STATUS_ACTIVE = "active"
+  STRIPE_STATUS_TRIALING = "trialing"
+  STRIPE_STATUS_PAST_DUE = "past_due"
+  STRIPE_STATUS_CANCELED = "canceled"
+  STRIPE_STATUS_UNPAID = "unpaid"
+
+  # Map Stripe subscription status to our billing status
+  STRIPE_STATUS_MAP = {
+    STRIPE_STATUS_ACTIVE => :active,
+    STRIPE_STATUS_TRIALING => :trialing,
+    STRIPE_STATUS_PAST_DUE => :past_due,
+    STRIPE_STATUS_CANCELED => :cancelled,
+    STRIPE_STATUS_UNPAID => :cancelled
+  }.freeze
 end
