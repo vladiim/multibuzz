@@ -1,6 +1,6 @@
 # Billing Implementation Specification
 
-**Status**: In Progress (Phase 2 Complete)
+**Status**: In Progress (Phase 3 Complete)
 **Priority**: P0 (Required for launch)
 **Last Updated**: 2025-12-03
 
@@ -443,13 +443,15 @@ postmark:
 - [x] Comprehensive test coverage (60 tests)
 - [ ] Admin UI for free_until management (deferred to Phase 8)
 
-### Phase 3: Usage Tracking
-- [ ] Create Billing::UsageCounter (Solid Cache)
-- [ ] Integrate counter into event ingestion
-- [ ] Add locked flag to events during post-grace past_due
-- [ ] Create Billing::ReportUsageJob (Solid Queue)
-- [ ] Set up Stripe Meter
-- [ ] Test usage tracking end-to-end
+### Phase 3: Usage Tracking ✅ COMPLETE
+- [x] Create Billing::UsageCounter (Solid Cache)
+- [x] Integrate counter into event ingestion (IngestionService)
+- [x] Add locked flag to events during post-grace past_due (ProcessingService)
+- [x] Create Billing::ReportUsageService + thin job wrapper
+- [x] Refactor ExpireFreeUntilJob to service pattern
+- [x] Update CLAUDE.md with jobs-as-thin-wrappers guideline
+- [ ] Set up Stripe Meter (deferred - requires Stripe dashboard config)
+- [ ] Test usage tracking end-to-end (deferred to Phase 9)
 
 ### Phase 4: Dashboard Banners
 - [ ] Create shared billing banner partial
