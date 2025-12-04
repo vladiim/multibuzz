@@ -99,6 +99,28 @@ class Events::ProcessingServiceTest < ActiveSupport::TestCase
     @event_data ||= valid_event_data
   end
 
+  # Funnel tests
+  test "should save funnel to event" do
+    @event_data = valid_event_data.merge("funnel" => "signup")
+
+    assert result[:success]
+    assert_equal "signup", result[:event].funnel
+  end
+
+  test "should allow nil funnel" do
+    @event_data = valid_event_data.merge("funnel" => nil)
+
+    assert result[:success]
+    assert_nil result[:event].funnel
+  end
+
+  test "should save funnel with symbol key" do
+    @event_data = valid_event_data.merge(funnel: "purchase")
+
+    assert result[:success]
+    assert_equal "purchase", result[:event].funnel
+  end
+
   def valid_event_data
     {
       "event_type" => "page_view",

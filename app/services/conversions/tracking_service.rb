@@ -8,13 +8,14 @@ module Conversions
       @visitor_id_param = params[:visitor_id]
       @conversion_type = params[:conversion_type]
       @revenue = params[:revenue]
+      @funnel = params[:funnel]
       @properties = params[:properties] || {}
       @is_test = is_test
     end
 
     private
 
-    attr_reader :account, :event_id, :visitor_id_param, :conversion_type, :revenue, :properties, :is_test
+    attr_reader :account, :event_id, :visitor_id_param, :conversion_type, :revenue, :funnel, :properties, :is_test
 
     def run
       return validation_error if validation_error
@@ -70,6 +71,7 @@ module Conversions
         event_id: event&.id,
         conversion_type: conversion_type,
         revenue: normalized_revenue,
+        funnel: funnel,
         properties: properties,
         converted_at: conversion_timestamp,
         journey_session_ids: [],
