@@ -1,22 +1,13 @@
 module Api
   module V1
     class HealthController < ActionController::API
+      API_VERSION = "1.0.0"
+
       def show
         render json: {
           status: "ok",
-          timestamp: Time.current.iso8601,
-          checks: {
-            database: database_connected?
-          }
+          version: API_VERSION
         }
-      end
-
-      private
-
-      def database_connected?
-        ActiveRecord::Base.connection.active?
-      rescue StandardError
-        false
       end
     end
   end

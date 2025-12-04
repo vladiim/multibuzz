@@ -108,8 +108,25 @@ Event (Page View or Conversion)
 - `utm_medium = "affiliate"` → `"affiliate"`
 - `utm_medium = "referral"` → `"referral"`
 - `utm_medium = "organic"` → `"organic_search"`
+- `utm_medium = "video"` → `"video"`
+
+**1b. UTM Source inference** (if only `utm_source` present, no `utm_medium`):
+- `utm_source` matches search engines (google, bing, etc.) → `"organic_search"`
+- `utm_source` matches social networks (facebook, twitter, etc.) → `"organic_social"`
+- `utm_source` matches video platforms (youtube, vimeo, etc.) → `"video"`
+- Otherwise → `"other"`
 
 **2. Referrer-based channels** (if no UTM, fallback to `initial_referrer`):
+
+First, `ReferrerSources::LookupService` checks against a database of known referrer domains with their associated medium (search, social, email, video, shopping, news). If found:
+- Medium = search → `"organic_search"`
+- Medium = social → `"organic_social"`
+- Medium = email → `"email"`
+- Medium = video → `"video"`
+- Medium = shopping/news → `"referral"`
+- Spam flagged → `"other"`
+
+If no database match, fallback to pattern matching:
 - Referrer domain matches `google|bing|yahoo|duckduckgo` → `"organic_search"`
 - Referrer domain matches `facebook|instagram|linkedin|twitter|tiktok` → `"organic_social"`
 - Referrer domain matches `youtube` → `"video"`

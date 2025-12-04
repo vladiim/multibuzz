@@ -209,6 +209,20 @@ User-Agent: mbuzz-ruby/1.0.0 (Ruby/3.2.0)
 }
 ```
 
+**Billing Blocked Response** (202 Accepted):
+
+When the account cannot accept events due to billing issues (exceeded quota, payment failed, etc.):
+
+```json
+{
+  "accepted": 0,
+  "rejected": [],
+  "events": [],
+  "billing_blocked": true,
+  "billing_error": "Account cannot accept events"
+}
+```
+
 ---
 
 ### POST /api/v1/conversions
@@ -245,27 +259,17 @@ User-Agent: mbuzz-ruby/1.0.0 (Ruby/3.2.0)
   "conversion": {
     "id": "conv_xyz789",
     "conversion_type": "purchase",
-    "revenue": "99.99"
+    "revenue": "99.99",
+    "converted_at": "2025-11-28T10:35:00Z",
+    "visitor_id": "vis_abc123"
   },
   "attribution": {
-    "lookback_days": 30,
-    "sessions_analyzed": 3,
-    "models": {
-      "first_touch": [
-        { "channel": "paid_search", "credit": 1.0, "revenue_credit": "99.99" }
-      ],
-      "last_touch": [
-        { "channel": "email", "credit": 1.0, "revenue_credit": "99.99" }
-      ],
-      "linear": [
-        { "channel": "paid_search", "credit": 0.33, "revenue_credit": "33.00" },
-        { "channel": "organic_social", "credit": 0.33, "revenue_credit": "33.00" },
-        { "channel": "email", "credit": 0.34, "revenue_credit": "33.99" }
-      ]
-    }
+    "status": "pending"
   }
 }
 ```
+
+**Note**: Attribution is calculated asynchronously. The initial response returns `"status": "pending"`. Attribution credits can be retrieved via the dashboard or API once processing completes (typically within seconds).
 
 ---
 

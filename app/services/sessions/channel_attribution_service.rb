@@ -40,8 +40,8 @@ module Sessions
 
     def call
       return channel_from_utm_or_fallback if utm_medium.present?
-      return channel_from_referrer if referrer_domain.present?
       return channel_from_utm_source if utm_source.present?
+      return channel_from_referrer if referrer_domain.present?
 
       Channels::DIRECT
     end

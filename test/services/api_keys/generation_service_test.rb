@@ -58,7 +58,7 @@ class ApiKeys::GenerationServiceTest < ActiveSupport::TestCase
     end
 
     test "should accept optional description" do
-      result = service(:test).call(description: "Production Server")
+      result = ApiKeys::GenerationService.new(account, environment: :test, description: "Production Server").call
 
       assert_equal "Production Server", result[:api_key].description
     end
@@ -89,10 +89,10 @@ class ApiKeys::GenerationServiceTest < ActiveSupport::TestCase
       )
 
       # Mock the hash to return existing digest
-      service = ApiKeys::GenerationService.new(account, :test)
-      service.define_singleton_method(:hash_key) { |_| "existing_digest" }
+      svc = ApiKeys::GenerationService.new(account, environment: :test)
+      svc.define_singleton_method(:hash_key) { |_| "existing_digest" }
 
-      result = service.call
+      result = svc.call
 
       assert_not result[:success]
       assert result[:errors].present?
@@ -103,7 +103,7 @@ class ApiKeys::GenerationServiceTest < ActiveSupport::TestCase
 
     def service(environment)
       @service ||= {}
-      @service[environment] ||= ApiKeys::GenerationService.new(account, environment)
+      @service[environment] ||= ApiKeys::GenerationService.new(account, environment: environment)
     end
 
     def account

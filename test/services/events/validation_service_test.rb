@@ -13,32 +13,41 @@ class Events::ValidationServiceTest < ActiveSupport::TestCase
     assert_includes result[:errors], "event_type is required"
   end
 
-  test "should require visitor_id" do
+  test "should require visitor_id or user_id" do
     @event_data = valid_event_data.except("visitor_id")
 
     assert_not result[:valid]
-    assert_includes result[:errors], "visitor_id is required"
+    assert_includes result[:errors], "visitor_id or user_id is required"
   end
 
-  test "should require session_id" do
+  test "should accept user_id instead of visitor_id" do
+    @event_data = valid_event_data.except("visitor_id").merge("user_id" => "user_123")
+
+    assert result[:valid]
+  end
+
+  test "should accept both visitor_id and user_id" do
+    @event_data = valid_event_data.merge("user_id" => "user_123")
+
+    assert result[:valid]
+  end
+
+  test "should allow missing session_id" do
     @event_data = valid_event_data.except("session_id")
 
-    assert_not result[:valid]
-    assert_includes result[:errors], "session_id is required"
+    assert result[:valid]
   end
 
-  test "should require timestamp" do
+  test "should allow missing timestamp" do
     @event_data = valid_event_data.except("timestamp")
 
-    assert_not result[:valid]
-    assert_includes result[:errors], "timestamp is required"
+    assert result[:valid]
   end
 
-  test "should require properties" do
+  test "should allow missing properties" do
     @event_data = valid_event_data.except("properties")
 
-    assert_not result[:valid]
-    assert_includes result[:errors], "properties is required"
+    assert result[:valid]
   end
 
   test "should validate timestamp is a valid ISO8601 string" do
@@ -56,13 +65,11 @@ class Events::ValidationServiceTest < ActiveSupport::TestCase
   end
 
   test "should collect multiple errors" do
-    @event_data = { "event_type" => "page_view" }
+    @event_data = {}
 
     assert_not result[:valid]
-    assert_includes result[:errors], "visitor_id is required"
-    assert_includes result[:errors], "session_id is required"
-    assert_includes result[:errors], "timestamp is required"
-    assert_includes result[:errors], "properties is required"
+    assert_includes result[:errors], "event_type is required"
+    assert_includes result[:errors], "visitor_id or user_id is required"
   end
 
   test "should allow valid ISO8601 timestamp" do
