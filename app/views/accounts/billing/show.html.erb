@@ -1,0 +1,103 @@
+<div class="min-h-screen bg-gray-100">
+  <%= render "layouts/nav" %>
+
+  <div class="py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex gap-8">
+        <%= render "layouts/account_nav" %>
+
+        <div class="flex-1 space-y-6">
+          <h1 class="text-xl font-semibold text-gray-900">Billing</h1>
+
+          <%# Current Plan %>
+          <div class="bg-white shadow rounded-lg">
+            <div class="px-6 py-5 border-b border-gray-200">
+              <h2 class="text-lg font-medium text-gray-900">Current Plan</h2>
+            </div>
+            <div class="px-6 py-5">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900">
+                    <%= current_account.plan&.name || "Free" %>
+                    <% if current_account.plan&.monthly_price&.positive? %>
+                      <span class="text-gray-500 font-normal">$<%= current_account.plan.monthly_price.to_i %>/month</span>
+                    <% end %>
+                  </h3>
+                  <% if current_account.current_period_end.present? %>
+                    <p class="mt-1 text-sm text-gray-500">
+                      Next billing date: <%= current_account.current_period_end.strftime("%B %d, %Y") %>
+                    </p>
+                  <% end %>
+                </div>
+                <div class="flex items-center gap-4">
+                  <%= render "shared/billing_status_badge", account: current_account %>
+                  <% if current_account.has_active_subscription? %>
+                    <%= link_to "Manage Subscription", portal_account_billing_path, class: "inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50" %>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <%# Usage %>
+          <div class="bg-white shadow rounded-lg">
+            <div class="px-6 py-5 border-b border-gray-200">
+              <h2 class="text-lg font-medium text-gray-900">Usage This Period</h2>
+            </div>
+            <div class="px-6 py-5">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-medium text-gray-700">
+                  <%= number_with_delimiter(current_account.current_period_usage) %> / <%= number_with_delimiter(current_account.free_event_limit) %> events
+                </span>
+                <span class="text-sm text-gray-500"><%= current_account.usage_percentage %>%</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2.5" data-testid="usage-progress">
+                <div class="bg-indigo-600 h-2.5 rounded-full" style="width: <%= [current_account.usage_percentage, 100].min %>%"></div>
+              </div>
+              <% if current_account.current_period_start.present? && current_account.current_period_end.present? %>
+                <p class="mt-2 text-xs text-gray-500">
+                  <%= current_account.current_period_start.strftime("%b %d") %> - <%= current_account.current_period_end.strftime("%b %d, %Y") %>
+                </p>
+              <% end %>
+            </div>
+          </div>
+
+          <%# Available Plans %>
+          <% unless current_account.has_active_subscription? && current_account.plan == @plans.last %>
+            <div class="bg-white shadow rounded-lg">
+              <div class="px-6 py-5 border-b border-gray-200">
+                <h2 class="text-lg font-medium text-gray-900">
+                  <%= current_account.has_active_subscription? ? "Upgrade Plan" : "Available Plans" %>
+                </h2>
+              </div>
+              <div class="px-6 py-5">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <% @plans.each do |plan| %>
+                    <% is_current = current_account.plan == plan %>
+                    <div class="border rounded-lg p-4 <%= is_current ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200' %>">
+                      <h3 class="font-semibold text-gray-900"><%= plan.name %></h3>
+                      <p class="text-2xl font-bold text-gray-900 mt-2">
+                        $<%= plan.monthly_price.to_i %><span class="text-sm font-normal text-gray-500">/mo</span>
+                      </p>
+                      <p class="text-sm text-gray-500 mt-1"><%= plan.formatted_events %> events</p>
+                      <% if is_current %>
+                        <span class="mt-4 inline-block w-full text-center py-2 px-4 text-sm font-medium text-indigo-700">
+                          Current Plan
+                        </span>
+                      <% else %>
+                        <%= form_with url: checkout_account_billing_path, method: :post, class: "mt-4" do |f| %>
+                          <%= f.hidden_field :plan_slug, value: plan.slug %>
+                          <%= f.submit "Upgrade", class: "w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 cursor-pointer" %>
+                        <% end %>
+                      <% end %>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

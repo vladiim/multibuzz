@@ -1,9 +1,7 @@
-module Dashboard
-  class ApiKeysController < ApplicationController
-    before_action :require_login
-
+module Accounts
+  class ApiKeysController < BaseController
     def index
-      redirect_to dashboard_settings_path(tab: "api_keys")
+      @api_keys = current_account.api_keys.order(created_at: :desc)
     end
 
     def create
@@ -16,7 +14,7 @@ module Dashboard
       api_key = current_account.api_keys.find(params[:id])
       api_key.revoke!
 
-      redirect_to dashboard_settings_path(tab: "api_keys"), notice: t("dashboard.api_keys.destroy.success")
+      redirect_to account_api_keys_path, notice: t(".success")
     end
 
     private
@@ -34,18 +32,18 @@ module Dashboard
     def create_success
       @plaintext_key = generation_result[:plaintext_key]
       @api_key = generation_result[:api_key]
-      flash.now[:notice] = t("dashboard.api_keys.create.success")
+      flash.now[:notice] = t(".success")
       render :show_key
     end
 
     def create_failure
       flash[:alert] = generation_result[:errors].join(", ")
-      redirect_to dashboard_settings_path(tab: "api_keys")
+      redirect_to account_api_keys_path
     end
 
     def create_missing_environment
-      flash[:alert] = t("dashboard.api_keys.create.missing_environment")
-      redirect_to dashboard_settings_path(tab: "api_keys")
+      flash[:alert] = t(".missing_environment")
+      redirect_to account_api_keys_path
     end
 
     def api_key_params
