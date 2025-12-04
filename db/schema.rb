@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_04_070418) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_04_094445) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -154,6 +154,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_04_070418) do
     t.jsonb "properties", default: {}, null: false
     t.boolean "is_test", default: false, null: false
     t.string "funnel"
+    t.string "currency", default: "USD"
     t.index ["account_id", "converted_at"], name: "index_conversions_on_account_id_and_converted_at"
     t.index ["account_id", "funnel"], name: "index_conversions_on_account_funnel"
     t.index ["account_id"], name: "index_conversions_on_account_id"

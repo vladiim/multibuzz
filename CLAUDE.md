@@ -326,7 +326,7 @@ end
 
 ## Service Objects - ApplicationService Pattern
 
-**CRITICAL: All service objects MUST inherit from `ApplicationService` and implement a private `#run` method. This ensures consistent error handling across ALL API endpoints.**
+**Service objects that can succeed or fail SHOULD inherit from `ApplicationService` and implement a private `#run` method. This ensures consistent error handling across API endpoints. See "When NOT to Use ApplicationService" below for documented exceptions.**
 
 ### ApplicationService Base Class
 
@@ -363,6 +363,94 @@ class ApplicationService
   end
 end
 ```
+
+### When NOT to Use ApplicationService
+
+Some classes don't fit the `ApplicationService` pattern. These are **intentional exceptions**:
+
+#### 1. Specialized Return Formats
+
+Classes that need domain-specific return structures instead of `{success:, errors:}`:
+
+```ruby
+# ✅ OK - Auth flow needs account, api_key, error_codes
+class AuthenticationService
+  def call
+    { account: account, api_key: api_key, error_codes: [] }
+  end
+end
+
+# ✅ OK - Rate limiting needs allowed, remaining, reset_at
+class RateLimiterService
+  def call
+    { allowed: true, remaining: 999, reset_at: Time.current + 1.hour }
+  end
+end
+
+# ✅ OK - Batch processing needs accepted count, rejected array
+class IngestionService
+  def call(events)
+    { accepted: 5, rejected: [], events: processed_events }
+  end
+end
+```
+
+#### 2. Utility/Extractor Classes
+
+Classes that extract or derive data rather than perform actions:
+
+```ruby
+# ✅ OK - Extracts UTM params, returns hash
+class UtmCaptureService
+  def call
+    { utm_source: "google", utm_medium: "cpc" }
+  end
+end
+
+# ✅ OK - Derives channel from data, returns string
+class ChannelAttributionService
+  def call
+    "paid_search"
+  end
+end
+```
+
+#### 3. Strategy Pattern Implementations
+
+Algorithm classes that implement a common interface:
+
+```ruby
+# ✅ OK - Attribution algorithms return credit arrays
+module Attribution::Algorithms
+  class Linear
+    def call
+      [{ session_id: 1, credit: 0.5 }, { session_id: 2, credit: 0.5 }]
+    end
+  end
+end
+```
+
+#### 4. Query Objects and Builders
+
+Classes focused on building queries or response structures:
+
+```ruby
+# ✅ OK - Query objects return ActiveRecord relations
+class Dashboard::Queries::EventsQuery
+  def call
+    Event.where(account: account).recent
+  end
+end
+
+# ✅ OK - Response builders return API response hashes
+class ResponseBuilder
+  def call
+    { conversion: conversion_data, attribution: { status: "pending" } }
+  end
+end
+```
+
+**Rule of thumb:** Use `ApplicationService` when the operation can succeed or fail and needs consistent error handling. Use plain classes when returning domain-specific data structures.
 
 ### Service Object Pattern
 

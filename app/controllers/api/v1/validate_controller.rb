@@ -4,8 +4,10 @@ module Api
       def show
         render json: {
           valid: true,
-          account_id: current_account.prefix_id,
-          environment: current_api_key.environment
+          account: {
+            id: current_account.prefix_id,
+            name: current_account.name
+          }
         }
       end
     end

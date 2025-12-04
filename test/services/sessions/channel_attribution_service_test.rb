@@ -99,10 +99,19 @@ class Sessions::ChannelAttributionServiceTest < ActiveSupport::TestCase
     assert_equal Channels::ORGANIC_SEARCH, service(utm_data).call
   end
 
-  test "falls back to referrer when only utm_source present with google referrer" do
+  test "utm_source takes priority over referrer" do
+    # utm_source says google (search), but referrer is facebook (social)
+    # utm_source should win since UTM has priority over referrer
     utm_data = { utm_source: "google" }
 
-    assert_equal Channels::ORGANIC_SEARCH, service(utm_data, "https://www.google.com/search").call
+    assert_equal Channels::ORGANIC_SEARCH, service(utm_data, "https://facebook.com/post").call
+  end
+
+  test "utm_source priority over referrer with different channels" do
+    # utm_source says youtube (video), but referrer is linkedin (social)
+    utm_data = { utm_source: "youtube" }
+
+    assert_equal Channels::VIDEO, service(utm_data, "https://linkedin.com/feed").call
   end
 
   test "returns organic_social when utm_source is facebook without utm_medium" do

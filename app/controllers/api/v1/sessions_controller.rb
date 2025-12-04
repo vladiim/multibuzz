@@ -4,7 +4,7 @@ module Api
       def create
         return render_bad_request("Missing 'session' parameter") unless session_param_present?
 
-        creation_result[:success] ? render_accepted : render_unprocessable(errors: creation_result[:errors])
+        creation_result[:success] ? render_accepted : render_unprocessable(creation_result)
       end
 
       private
