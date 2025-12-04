@@ -59,7 +59,7 @@ Rails.application.configure do
     api_token: Rails.application.credentials.dig(:postmark, :api_token)
   }
   config.action_mailer.raise_delivery_errors = true
-  config.action_mailer.default_url_options = { host: "multibuzz.io" }
+  config.action_mailer.default_url_options = { host: "mbuzz.co" }
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).
