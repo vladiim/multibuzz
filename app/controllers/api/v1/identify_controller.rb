@@ -2,7 +2,7 @@ module Api
   module V1
     class IdentifyController < BaseController
       def create
-        identification_result[:success] ? render_success : render_unprocessable(errors: identification_result[:errors])
+        identification_result[:success] ? render_success : render_unprocessable(identification_result)
       end
 
       private

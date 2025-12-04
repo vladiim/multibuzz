@@ -1,7 +1,5 @@
 module Events
   class ValidationService < ApplicationService
-    REQUIRED_FIELDS = %w[event_type visitor_id session_id timestamp properties].freeze
-
     def initialize(event_data)
       @event_data = event_data
     end
@@ -12,7 +10,8 @@ module Events
 
     def run
       errors = []
-      errors.concat(validate_required_fields)
+      errors.concat(validate_event_type)
+      errors.concat(validate_identity)
       errors.concat(validate_timestamp)
       errors.concat(validate_properties)
       errors.concat(validate_funnel)
@@ -22,10 +21,16 @@ module Events
       { valid: true, errors: [] }
     end
 
-    def validate_required_fields
-      REQUIRED_FIELDS.map do |field|
-        "#{field} is required" unless field_present?(field)
-      end.compact
+    def validate_event_type
+      return [] if field_present?("event_type")
+
+      ["event_type is required"]
+    end
+
+    def validate_identity
+      return [] if field_present?("visitor_id") || field_present?("user_id")
+
+      ["visitor_id or user_id is required"]
     end
 
     def field_present?(field)

@@ -31,7 +31,7 @@ module Api
       def set_rate_limit_headers
         return unless rate_limit_result
 
-        response.set_header("X-RateLimit-Limit", "1000")
+        response.set_header("X-RateLimit-Limit", ApiKeys::RateLimiterService::DEFAULT_LIMIT.to_s)
         response.set_header("X-RateLimit-Remaining", rate_limit_result[:remaining].to_s)
         response.set_header("X-RateLimit-Reset", rate_limit_result[:reset_at].to_i.to_s)
       end

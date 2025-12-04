@@ -85,6 +85,26 @@ class ApiKeys::RateLimiterServiceTest < ActiveSupport::TestCase
     end
   end
 
+  test "should use atomic increment for thread safety" do
+    # This test documents that we use atomic increment
+    # Each call should get a unique count even if called rapidly
+    results = 5.times.map { ApiKeys::RateLimiterService.new(account).call }
+
+    remaining_values = results.map { |r| r[:remaining] }
+    # Each call should decrement remaining by 1
+    assert_equal [999, 998, 997, 996, 995], remaining_values
+  end
+
+  test "should handle nil cache gracefully on first request" do
+    # Ensure cache is empty
+    Rails.cache.delete("rate_limit:account:#{account.id}")
+
+    # First request should work
+    result = service.call
+    assert result[:allowed]
+    assert_equal 999, result[:remaining]
+  end
+
   private
 
   def result

@@ -1,28 +1,29 @@
 module ApiKeys
-  class GenerationService
-    def initialize(account, environment = :test)
+  class GenerationService < ApplicationService
+    def initialize(account, environment: :test, description: nil)
       @account = account
       @environment = environment
-    end
-
-    def call(description: nil)
-      plaintext_key = generate_key
-      api_key = build_api_key(plaintext_key, description)
-
-      return success_result(api_key, plaintext_key) if api_key.save
-
-      error_result(api_key)
+      @description = description
     end
 
     private
 
-    attr_reader :account, :environment
+    attr_reader :account, :environment, :description
+
+    def run
+      plaintext_key = generate_key
+      api_key = build_api_key(plaintext_key)
+
+      return error_result(api_key.errors.full_messages) unless api_key.save
+
+      success_result(api_key: api_key, plaintext_key: plaintext_key)
+    end
 
     def generate_key
       "sk_#{environment}_#{SecureRandom.hex(16)}"
     end
 
-    def build_api_key(plaintext_key, description)
+    def build_api_key(plaintext_key)
       account.api_keys.build(
         key_digest: hash_key(plaintext_key),
         key_prefix: key_prefix(plaintext_key),
@@ -37,21 +38,6 @@ module ApiKeys
 
     def key_prefix(plaintext_key)
       plaintext_key[0..11]
-    end
-
-    def success_result(api_key, plaintext_key)
-      {
-        success: true,
-        api_key: api_key,
-        plaintext_key: plaintext_key
-      }
-    end
-
-    def error_result(api_key)
-      {
-        success: false,
-        errors: api_key.errors.full_messages
-      }
     end
   end
 end
