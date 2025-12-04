@@ -1,19 +1,10 @@
 # Product
 
-* 1st client UAT - staging + prod
-* Dashboard: comp + funnel
-  - [x] Conversions tab with KPI cards (conversions, revenue, conversion rate, AOV)
-  - [x] KPI cards act as metric tabs (click to switch chart data)
-  - [x] Time series line chart (channel performance over time)
-  - [x] Bar chart by channel with drill-down to campaigns
-  - [x] Model comparison via multi-select (max 2 models)
-  - [x] Collapsible filters bar (date range, models, channels)
-  - [x] Export dropdown (CSV/PDF)
-  - [x] Funnel tab (renamed from Journeys)
-  - [x] Funnel chart with conversion rate line + log scale toggle
-* [x] Event debugging
+* Data not coming through properly (petp)
+* Funnel not working
 * $ and plans
-* Split dash funnel by dimension (properties)
+* Filter dash funnel by dimension (properties)
+* Cancel conversion (via id)
 * AST for attribution models
   - Create new / edit (up to 20 models applied)
   - New / updates can back calculate at a fixed one-time cost (10k free then $x per 10k)

@@ -5,13 +5,9 @@
     <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
       <div class="bg-white shadow sm:rounded-lg">
         <div class="px-4 py-5 sm:p-6">
-          <div class="sm:flex sm:items-start sm:justify-between">
-            <div>
-              <h3 class="text-lg leading-6 font-medium text-gray-900"><%= t(".title") %></h3>
-              <div class="mt-2 max-w-xl text-sm text-gray-500">
-                <p><%= t(".subtitle") %></p>
-              </div>
-            </div>
+          <h3 class="text-lg leading-6 font-medium text-gray-900">API Key Generated</h3>
+          <div class="mt-2 max-w-xl text-sm text-gray-500">
+            <p>Your new API key has been created. Copy it now - you won't be able to see it again.</p>
           </div>
 
           <div class="mt-6">
@@ -23,24 +19,24 @@
                   </svg>
                 </div>
                 <div class="ml-3">
-                  <h3 class="text-sm font-medium text-yellow-800"><%= t(".warning") %></h3>
+                  <h3 class="text-sm font-medium text-yellow-800">Store this key securely. It will not be shown again.</h3>
                 </div>
               </div>
             </div>
           </div>
 
           <div class="mt-6">
-            <label for="api-key" class="block text-sm font-medium text-gray-700"><%= t(".key_label") %></label>
+            <label for="api-key" class="block text-sm font-medium text-gray-700">Your API Key</label>
             <div class="mt-2 flex rounded-md shadow-sm">
               <input type="text" readonly name="api-key" id="api-key" class="flex-1 min-w-0 block w-full px-3 py-2 rounded-md border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm font-mono bg-gray-50" value="<%= @plaintext_key %>">
-              <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('api-key').value); this.textContent = 'Copied!'; setTimeout(() => this.textContent = 'Copy', 2000)" class="ml-3 inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+              <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('api-key').value); this.textContent = 'Copied!'; setTimeout(() => this.textContent = 'Copy', 2000)" class="ml-3 inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                 Copy
               </button>
             </div>
           </div>
 
           <div class="mt-8">
-            <%= link_to t(".done_button"), dashboard_settings_path(tab: "api_keys"), class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
+            <%= link_to "Done", account_api_keys_path, class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700" %>
           </div>
         </div>
       </div>

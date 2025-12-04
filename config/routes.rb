@@ -56,24 +56,33 @@ Rails.application.routes.draw do
     resources :accounts, only: [:show, :update]
   end
 
+  # Account settings
+  resource :account, only: [:show, :update], controller: "account" do
+    scope module: :accounts do
+      resource :billing, only: [:show], controller: "billing" do
+        post :checkout
+        get :portal
+        get :success
+        get :cancel
+      end
+      resource :team, only: [:show], controller: "team"
+      resources :api_keys, only: [:index, :create, :destroy]
+    end
+  end
+
   namespace :dashboard do
-    resources :api_keys, only: [ :index, :create, :destroy ]
     patch "view_mode", to: "view_mode#update"
 
     # Turbo Frame endpoints for dashboard sections
     get "filters", to: "filters#show"
     get "conversions", to: "conversions#show"
     get "funnel", to: "funnel#show"
-
-    # Account settings
-    get "settings", to: "settings#show"
-
-    # Billing
-    post "billing/checkout", to: "billing#checkout", as: :billing_checkout
-    get "billing/portal", to: "billing#portal", as: :billing_portal
-    get "billing/success", to: "billing#success", as: :billing_success
-    get "billing/cancel", to: "billing#cancel", as: :billing_cancel
   end
+
+  # Redirects from old dashboard routes to new /account routes
+  get "dashboard/settings", to: redirect("/account")
+  get "dashboard/billing", to: redirect("/account/billing")
+  get "dashboard/api_keys", to: redirect("/account/api_keys")
 
   root "pages#home"
 end
