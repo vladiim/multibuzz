@@ -73,8 +73,13 @@ module Dashboard
         models: selected_attribution_models,
         channels: channels_param,
         journey_position: journey_position_param,
-        metric: metric_param
+        metric: metric_param,
+        funnel: funnel_param
       }
+    end
+
+    def funnel_param
+      params[:funnel].presence
     end
 
     # View mode toggle (like Stripe's test/live mode)

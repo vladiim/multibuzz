@@ -12,7 +12,7 @@ module Dashboard
     attr_reader :account, :filter_params
 
     def run
-      success_result(data: cached_data)
+      success_result(data: cached_data.merge(available_funnels: available_funnels))
     end
 
     def cached_data
@@ -21,6 +21,14 @@ module Dashboard
 
     def query_data
       { stages: stages }
+    end
+
+    def available_funnels
+      @available_funnels ||= account.events
+        .where.not(funnel: nil)
+        .distinct
+        .pluck(:funnel)
+        .sort
     end
 
     def cache_key
@@ -35,8 +43,13 @@ module Dashboard
       {
         date_range: filter_params[:date_range],
         channels: filter_params[:channels].sort,
-        unique_users: unique_users
+        unique_users: unique_users,
+        funnel: funnel
       }
+    end
+
+    def funnel
+      filter_params[:funnel]
     end
 
     def stages
@@ -51,7 +64,8 @@ module Dashboard
       @events_scope ||= Scopes::EventsScope.new(
         account: account,
         date_range: date_range,
-        channels: filter_params[:channels]
+        channels: filter_params[:channels],
+        funnel: funnel
       ).call
     end
 

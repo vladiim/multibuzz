@@ -1,6 +1,6 @@
 # Funnel Filtering Specification
 
-**Status**: Draft
+**Status**: Complete
 **Created**: 2025-12-02
 **Epic**: E1S3 - Dashboard
 
@@ -186,24 +186,24 @@ account.events
 - [ ] Update Event model (no validation needed - nullable string)
 
 ### Phase 2: API Updates
-- [ ] Update `Events::IngestionService` to accept `funnel` param
-- [ ] Update `Conversions::TrackingService` to accept `funnel` param
-- [ ] Add validation for funnel format (alphanumeric + underscore)
+- [x] Update `Events::IngestionService` to accept `funnel` param
+- [x] Update `Conversions::TrackingService` to accept `funnel` param
+- [x] Add validation for funnel format (alphanumeric + underscore)
 - [ ] Update API documentation
 
 ### Phase 3: Dashboard Service Layer
-- [ ] Update `Dashboard::Scopes::EventsScope` to filter by funnel
-- [ ] Update `Dashboard::FunnelDataService` to:
-  - [ ] Accept `funnel` filter param
-  - [ ] Return `available_funnels` in response
-  - [ ] Include funnel in cache key
-- [ ] Update `Dashboard::Queries::FunnelStagesQuery` (no changes needed - uses scope)
+- [x] Update `Dashboard::Scopes::EventsScope` to filter by funnel
+- [x] Update `Dashboard::FunnelDataService` to:
+  - [x] Accept `funnel` filter param
+  - [x] Return `available_funnels` in response
+  - [x] Include funnel in cache key
+- [x] Update `Dashboard::Queries::FunnelStagesQuery` (no changes needed - uses scope)
 
 ### Phase 4: Dashboard UI
-- [ ] Add funnel dropdown to Funnel tab header
-- [ ] Create Stimulus controller for funnel selection
-- [ ] Update URL params to include `funnel` filter
-- [ ] Handle empty state (no funnels defined)
+- [x] Add funnel dropdown to Funnel tab header
+- [x] Create Stimulus controller for funnel selection (url-param controller)
+- [x] Update URL params to include `funnel` filter
+- [x] Handle empty state (no funnels defined - dropdown hidden)
 
 ### Phase 5: Testing
 - [x] Unit tests for EventsScope funnel filtering (9 tests)
