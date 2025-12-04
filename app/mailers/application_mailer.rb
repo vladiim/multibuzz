@@ -1,4 +1,4 @@
 class ApplicationMailer < ActionMailer::Base
-  default from: "multibuzz <hello@multibuzz.io>"
+  default from: "mbuzz <hello@mbuzz.co>"
   layout "mailer"
 end
