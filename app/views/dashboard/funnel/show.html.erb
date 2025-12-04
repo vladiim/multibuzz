@@ -2,7 +2,22 @@
   <div class="dashboard-section">
     <!-- Funnel Header -->
     <div class="flex items-center justify-between mb-6">
-      <h2 class="text-xl font-semibold text-gray-900">Conversion Funnel</h2>
+      <div class="flex items-center gap-4">
+        <h2 class="text-xl font-semibold text-gray-900">Conversion Funnel</h2>
+        <% if @result[:success] && @result[:data][:available_funnels].present? %>
+          <div data-controller="url-param" data-url-param-name-value="funnel">
+            <select
+              data-action="change->url-param#update"
+              class="text-sm border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            >
+              <option value="" <%= 'selected' unless @filter_params[:funnel] %>>All Funnels</option>
+              <% @result[:data][:available_funnels].each do |funnel| %>
+                <option value="<%= funnel %>" <%= 'selected' if @filter_params[:funnel] == funnel %>><%= funnel.titleize %></option>
+              <% end %>
+            </select>
+          </div>
+        <% end %>
+      </div>
     </div>
 
     <% if @result[:success] %>

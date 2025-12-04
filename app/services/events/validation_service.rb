@@ -15,6 +15,7 @@ module Events
       errors.concat(validate_required_fields)
       errors.concat(validate_timestamp)
       errors.concat(validate_properties)
+      errors.concat(validate_funnel)
 
       return error_result(errors) if errors.any?
 
@@ -52,6 +53,18 @@ module Events
       return [] if field_value("properties").is_a?(Hash)
 
       ["properties must be a hash"]
+    end
+
+    def validate_funnel
+      return [] unless has_field?("funnel")
+
+      funnel = field_value("funnel")
+      return [] if funnel.nil?
+      return ["funnel must be a string"] unless funnel.is_a?(String)
+      return ["funnel must be 255 characters or less"] if funnel.length > 255
+      return ["funnel must contain only alphanumeric characters and underscores"] unless funnel.match?(/\A[a-zA-Z0-9_]+\z/)
+
+      []
     end
 
     def field_value(field)

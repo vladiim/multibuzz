@@ -77,6 +77,53 @@ class Events::ValidationServiceTest < ActiveSupport::TestCase
     assert result[:valid]
   end
 
+  # Funnel validation tests
+  test "should allow valid funnel param" do
+    @event_data = valid_event_data.merge("funnel" => "signup")
+
+    assert result[:valid]
+  end
+
+  test "should allow nil funnel" do
+    @event_data = valid_event_data.merge("funnel" => nil)
+
+    assert result[:valid]
+  end
+
+  test "should allow funnel with underscores" do
+    @event_data = valid_event_data.merge("funnel" => "user_signup_flow")
+
+    assert result[:valid]
+  end
+
+  test "should reject funnel with invalid characters" do
+    @event_data = valid_event_data.merge("funnel" => "sign-up")
+
+    assert_not result[:valid]
+    assert_includes result[:errors], "funnel must contain only alphanumeric characters and underscores"
+  end
+
+  test "should reject funnel with spaces" do
+    @event_data = valid_event_data.merge("funnel" => "sign up")
+
+    assert_not result[:valid]
+    assert_includes result[:errors], "funnel must contain only alphanumeric characters and underscores"
+  end
+
+  test "should reject funnel that is not a string" do
+    @event_data = valid_event_data.merge("funnel" => 123)
+
+    assert_not result[:valid]
+    assert_includes result[:errors], "funnel must be a string"
+  end
+
+  test "should reject funnel exceeding 255 characters" do
+    @event_data = valid_event_data.merge("funnel" => "a" * 256)
+
+    assert_not result[:valid]
+    assert_includes result[:errors], "funnel must be 255 characters or less"
+  end
+
   private
 
   def result
