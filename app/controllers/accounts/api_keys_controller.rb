@@ -21,8 +21,8 @@ module Accounts
 
     def generation_result
       @generation_result ||= ApiKeys::GenerationService
-        .new(current_account, environment_param)
-        .call(description: api_key_params[:name])
+        .new(current_account, environment: environment_param, description: api_key_params[:name])
+        .call
     end
 
     def environment_param
