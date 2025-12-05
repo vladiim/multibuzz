@@ -53,7 +53,12 @@ module Dashboard
     end
 
     def stages
-      Queries::FunnelStagesQuery.new(events_scope, unique_users: unique_users).call
+      Queries::FunnelStagesQuery.new(
+        events_scope,
+        sessions_scope: sessions_scope,
+        conversions_scope: conversions_scope,
+        unique_users: unique_users
+      ).call
     end
 
     def unique_users
@@ -66,6 +71,22 @@ module Dashboard
         date_range: date_range,
         channels: filter_params[:channels],
         funnel: funnel
+      ).call
+    end
+
+    def sessions_scope
+      @sessions_scope ||= Scopes::SessionsScope.new(
+        account: account,
+        date_range: date_range,
+        channels: filter_params[:channels]
+      ).call
+    end
+
+    def conversions_scope
+      @conversions_scope ||= Scopes::ConversionsScope.new(
+        account: account,
+        date_range: date_range,
+        channels: filter_params[:channels]
       ).call
     end
 
