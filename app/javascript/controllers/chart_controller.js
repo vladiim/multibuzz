@@ -75,12 +75,12 @@ export default class extends Controller {
 
     const campaigns = this.parseCampaigns()
     const metric = this.metricValue
-    const isRevenue = metric === "revenue"
-    const hasDrilldown = this.drilldownValue && Object.keys(campaigns).length > 0
+    const metricConfig = this.getMetricConfig(metric)
+    const hasDrilldown = this.drilldownValue && Object.keys(campaigns).length > 0 && metricConfig.drilldownable
 
     const categories = data.map(d => this.formatChannelName(d.channel))
     const channelIds = data.map(d => d.channel)
-    const values = data.map(d => d[metric])
+    const values = data.map(d => d[metricConfig.dataKey] || 0)
     const colors = data.map(d => CHANNEL_COLORS[d.channel] || CHANNEL_COLORS.other)
 
     const chartConfig = {
@@ -100,14 +100,13 @@ export default class extends Controller {
         labels: { style: { fontSize: "12px" } }
       },
       yAxis: {
-        title: { text: isRevenue ? "Revenue ($)" : "Conversions" },
+        title: { text: metricConfig.yAxisTitle },
         min: 0
       },
       legend: { enabled: false },
       tooltip: {
         formatter: function() {
-          const val = isRevenue ? `$${Highcharts.numberFormat(this.y, 0)}` : this.y
-          return `<b>${this.x}</b><br/>${val}`
+          return `<b>${this.x}</b><br/>${metricConfig.formatValue(this.y)}`
         }
       },
       plotOptions: {
@@ -117,20 +116,20 @@ export default class extends Controller {
           cursor: hasDrilldown ? "pointer" : "default",
           dataLabels: {
             enabled: true,
-            format: isRevenue ? "${y:,.0f}" : "{y}"
+            format: metricConfig.dataLabelFormat
           },
           point: {
             events: hasDrilldown ? {
               click: (e) => {
                 const channelId = channelIds[e.point.index]
-                this.drillDown(channelId, isRevenue)
+                this.drillDown(channelId, metric === "revenue")
               }
             } : {}
           }
         }
       },
       series: [{
-        name: isRevenue ? "Revenue" : "Conversions",
+        name: metricConfig.seriesName,
         data: values
       }],
       credits: { enabled: false }
@@ -139,6 +138,52 @@ export default class extends Controller {
     this.chart = Highcharts.chart(this.chartElement, chartConfig)
     this.originalData = data
     this.isDrilledDown = false
+  }
+
+  getMetricConfig(metric) {
+    const configs = {
+      revenue: {
+        dataKey: "revenue",
+        yAxisTitle: "Revenue ($)",
+        seriesName: "Revenue",
+        dataLabelFormat: "${y:,.0f}",
+        formatValue: (y) => `$${Highcharts.numberFormat(y, 0)}`,
+        drilldownable: true
+      },
+      credits: {
+        dataKey: "credits",
+        yAxisTitle: "Conversions",
+        seriesName: "Conversions",
+        dataLabelFormat: "{y:.1f}",
+        formatValue: (y) => Highcharts.numberFormat(y, 1),
+        drilldownable: true
+      },
+      avg_channels: {
+        dataKey: "avg_channels",
+        yAxisTitle: "Avg Channels",
+        seriesName: "Avg Channels",
+        dataLabelFormat: "{y:.1f}",
+        formatValue: (y) => Highcharts.numberFormat(y, 1),
+        drilldownable: false
+      },
+      avg_visits: {
+        dataKey: "avg_visits",
+        yAxisTitle: "Avg Visits",
+        seriesName: "Avg Visits",
+        dataLabelFormat: "{y:.1f}",
+        formatValue: (y) => Highcharts.numberFormat(y, 1),
+        drilldownable: false
+      },
+      avg_days: {
+        dataKey: "avg_days",
+        yAxisTitle: "Avg Days",
+        seriesName: "Avg Days",
+        dataLabelFormat: "{y:.1f}",
+        formatValue: (y) => Highcharts.numberFormat(y, 1),
+        drilldownable: false
+      }
+    }
+    return configs[metric] || configs.credits
   }
 
   drillDown(channelId, isRevenue) {
@@ -162,10 +207,10 @@ export default class extends Controller {
   drillUp() {
     const data = this.originalData
     const metric = this.metricValue
-    const isRevenue = metric === "revenue"
+    const metricConfig = this.getMetricConfig(metric)
 
     const categories = data.map(d => this.formatChannelName(d.channel))
-    const values = data.map(d => d[metric])
+    const values = data.map(d => d[metricConfig.dataKey] || 0)
 
     this.chart.update({
       xAxis: { categories: categories },

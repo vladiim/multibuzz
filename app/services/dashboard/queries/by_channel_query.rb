@@ -28,7 +28,9 @@ module Dashboard
           channel: row.channel,
           credits: row.total_credits.to_f,
           revenue: row.total_revenue.to_f,
-          percentage: percentage(row.total_credits)
+          percentage: percentage(row.total_credits),
+          avg_channels: journey_metrics.avg_channels_by_channel[row.channel],
+          avg_visits: journey_metrics.avg_visits_by_channel[row.channel]
         }
       end
 
@@ -38,6 +40,10 @@ module Dashboard
 
       def total_credits
         @total_credits ||= scope.sum(:credit).to_f
+      end
+
+      def journey_metrics
+        @journey_metrics ||= JourneyMetricsByChannel.new(scope)
       end
     end
   end

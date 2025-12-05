@@ -30,8 +30,10 @@ module Dashboard
 
       assert totals.key?(:conversions)
       assert totals.key?(:revenue)
-      assert totals.key?(:conversion_rate)
       assert totals.key?(:aov)
+      assert totals.key?(:avg_days_to_convert)
+      assert totals.key?(:avg_channels_to_convert)
+      assert totals.key?(:avg_visits_to_convert)
       assert totals.key?(:prior_period)
     end
 
@@ -77,7 +79,9 @@ module Dashboard
       assert_equal 0, totals[:conversions]
       assert_equal 0, totals[:revenue]
       assert_nil totals[:aov]
-      assert_nil totals[:conversion_rate]
+      assert_nil totals[:avg_days_to_convert]
+      assert_nil totals[:avg_channels_to_convert]
+      assert_nil totals[:avg_visits_to_convert]
     end
 
     # ==========================================

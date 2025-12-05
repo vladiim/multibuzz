@@ -1,0 +1,34 @@
+<%# Required locals: metric, label, value %>
+<%# Optional locals: prior_value, type, subtitle, clickable (default true), accent_color (default indigo) %>
+<% clickable = local_assigns.fetch(:clickable, true) %>
+<% accent_color = local_assigns.fetch(:accent_color, "indigo") %>
+<% type = local_assigns[:type] %>
+<% prior_value = local_assigns[:prior_value] %>
+<% selected = @filter_params[:metric] == metric %>
+
+<% ring_class = selected ? "ring-2 ring-#{accent_color}-500" : "cursor-pointer" %>
+
+<% if clickable %>
+  <%= link_to dashboard_path(request.query_parameters.merge(metric: metric)),
+      data: { turbo_frame: "_top" },
+      class: "bg-white p-4 rounded-lg shadow transition-all hover:shadow-md #{ring_class}" do %>
+    <dt class="text-xs font-medium text-gray-500"><%= label %></dt>
+    <dd class="mt-1">
+      <span class="text-xl font-semibold text-gray-900">
+        <%= value.present? ? format_metric(value, type: type) : "—" %>
+      </span>
+      <% if prior_value.present? %>
+        <%= format_change(percentage_change(value, prior_value)) %>
+      <% end %>
+    </dd>
+  <% end %>
+<% else %>
+  <div class="bg-white p-4 rounded-lg shadow">
+    <dt class="text-xs font-medium text-gray-500"><%= label %></dt>
+    <dd class="mt-1">
+      <span class="text-xl font-semibold text-gray-900">
+        <%= value.present? ? format_metric(value, type: type) : "—" %>
+      </span>
+    </dd>
+  </div>
+<% end %>
