@@ -45,13 +45,10 @@ module Dashboard
       end
 
       def fetch_daily_credits(channel)
-        # Use date_trunc for consistent timezone handling
-        # Cast to date to ensure consistent key format
         scope
           .where(channel: channel)
-          .group(Arel.sql("(conversions.converted_at AT TIME ZONE 'UTC')::date"))
+          .group(Arel.sql("TO_CHAR(conversions.converted_at, 'YYYY-MM-DD')"))
           .sum(:credit)
-          .transform_keys { |k| k.is_a?(Date) ? k.to_s : k.to_s }
       end
     end
   end
