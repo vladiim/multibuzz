@@ -40,14 +40,21 @@ module Dashboard
       end
 
       def daily_data_for_channel(channel)
-        @daily_data_by_channel ||= {}
-        @daily_data_by_channel[channel] ||= fetch_daily_credits(channel)
+        daily_credits_by_channel[channel] || {}
       end
 
-      def fetch_daily_credits(channel)
-        scope
-          .where(channel: channel)
-          .group(Arel.sql("TO_CHAR(conversions.converted_at, 'YYYY-MM-DD')"))
+      def daily_credits_by_channel
+        @daily_credits_by_channel ||= raw_daily_credits.each_with_object({}) do |((channel, date), credits), result|
+          result[channel] ||= {}
+          date_key = date.respond_to?(:strftime) ? date.strftime("%Y-%m-%d") : date.to_s
+          result[channel][date_key] = credits
+        end
+      end
+
+      def raw_daily_credits
+        @raw_daily_credits ||= scope
+          .where(channel: top_channels)
+          .group(:channel, Arel.sql("DATE(conversions.converted_at)"))
           .sum(:credit)
       end
     end
