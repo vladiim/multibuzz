@@ -87,6 +87,152 @@
     </div>
   </section>
 
+  <!-- Dashboard Preview -->
+  <section class="pb-24 px-6 -mt-8">
+    <div class="max-w-6xl mx-auto">
+      <div class="bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden">
+        <!-- Dashboard Header -->
+        <div class="bg-gray-50 border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+          <div class="flex items-center gap-6">
+            <span class="text-sm font-medium text-indigo-600 border-b-2 border-indigo-600 pb-1">Conversions</span>
+            <span class="text-sm text-gray-500">Funnel</span>
+            <span class="text-sm text-gray-500">Events</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-gray-500 bg-white px-3 py-1.5 rounded border border-gray-200">Last 30 days</span>
+            <span class="text-xs text-gray-500 bg-white px-3 py-1.5 rounded border border-gray-200">First Touch</span>
+          </div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="p-6">
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white p-5 rounded-lg border-2 border-indigo-500 shadow-sm">
+              <div class="text-sm font-medium text-gray-500">Conversions</div>
+              <div class="mt-1 flex items-baseline gap-2">
+                <span class="text-2xl font-semibold text-gray-900">2,847</span>
+                <span class="text-sm text-green-600">+12.3%</span>
+              </div>
+              <div class="mt-1 text-xs text-gray-400">vs 2,534 prior</div>
+            </div>
+            <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
+              <div class="text-sm font-medium text-gray-500">Revenue</div>
+              <div class="mt-1 flex items-baseline gap-2">
+                <span class="text-2xl font-semibold text-gray-900">$284,720</span>
+                <span class="text-sm text-green-600">+18.7%</span>
+              </div>
+              <div class="mt-1 text-xs text-gray-400">vs $239,891 prior</div>
+            </div>
+            <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
+              <div class="text-sm font-medium text-gray-500">Conversion Rate</div>
+              <div class="mt-1 flex items-baseline gap-2">
+                <span class="text-2xl font-semibold text-gray-900">3.2%</span>
+                <span class="text-sm text-green-600">+0.4%</span>
+              </div>
+              <div class="mt-1 text-xs text-gray-400">vs 2.8% prior</div>
+            </div>
+            <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
+              <div class="text-sm font-medium text-gray-500">Avg Order Value</div>
+              <div class="mt-1 flex items-baseline gap-2">
+                <span class="text-2xl font-semibold text-gray-900">$100</span>
+                <span class="text-sm text-green-600">+5.6%</span>
+              </div>
+              <div class="mt-1 text-xs text-gray-400">vs $94.71 prior</div>
+            </div>
+          </div>
+
+          <!-- Charts Row -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Time Series Chart -->
+            <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-medium text-gray-900">Channel Performance Over Time</h3>
+                <div class="flex items-center gap-3 text-xs">
+                  <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-indigo-500"></span> Paid Search</span>
+                  <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-pink-500"></span> Email</span>
+                  <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-lime-500"></span> Organic</span>
+                </div>
+              </div>
+              <!-- SVG Chart -->
+              <svg viewBox="0 0 400 120" class="w-full h-32">
+                <!-- Grid lines -->
+                <line x1="0" y1="30" x2="400" y2="30" stroke="#f3f4f6" stroke-width="1"/>
+                <line x1="0" y1="60" x2="400" y2="60" stroke="#f3f4f6" stroke-width="1"/>
+                <line x1="0" y1="90" x2="400" y2="90" stroke="#f3f4f6" stroke-width="1"/>
+
+                <!-- Paid Search line (indigo) -->
+                <polyline fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  points="0,80 40,75 80,65 120,70 160,55 200,45 240,50 280,35 320,40 360,25 400,20"/>
+
+                <!-- Email line (pink) -->
+                <polyline fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  points="0,90 40,88 80,85 120,82 160,78 200,75 240,72 280,68 320,65 360,60 400,55"/>
+
+                <!-- Organic line (lime) -->
+                <polyline fill="none" stroke="#84cc16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  points="0,95 40,93 80,90 120,92 160,88 200,85 240,87 280,82 320,80 360,78 400,75"/>
+
+                <!-- X-axis labels -->
+                <text x="0" y="115" font-size="10" fill="#9ca3af">Nov 6</text>
+                <text x="95" y="115" font-size="10" fill="#9ca3af">Nov 13</text>
+                <text x="195" y="115" font-size="10" fill="#9ca3af">Nov 20</text>
+                <text x="295" y="115" font-size="10" fill="#9ca3af">Nov 27</text>
+                <text x="370" y="115" font-size="10" fill="#9ca3af">Dec 4</text>
+              </svg>
+            </div>
+
+            <!-- Bar Chart -->
+            <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
+              <h3 class="text-sm font-medium text-gray-900 mb-4">Conversions by Channel</h3>
+              <div class="space-y-3">
+                <div class="flex items-center gap-3">
+                  <span class="text-xs text-gray-600 w-20 text-right">Paid Search</span>
+                  <div class="flex-1 bg-gray-100 rounded-full h-5 overflow-hidden">
+                    <div class="bg-indigo-500 h-full rounded-full" style="width: 85%"></div>
+                  </div>
+                  <span class="text-xs font-medium text-gray-900 w-16">$142,360</span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-xs text-gray-600 w-20 text-right">Email</span>
+                  <div class="flex-1 bg-gray-100 rounded-full h-5 overflow-hidden">
+                    <div class="bg-pink-500 h-full rounded-full" style="width: 52%"></div>
+                  </div>
+                  <span class="text-xs font-medium text-gray-900 w-16">$71,180</span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-xs text-gray-600 w-20 text-right">Organic</span>
+                  <div class="flex-1 bg-gray-100 rounded-full h-5 overflow-hidden">
+                    <div class="bg-lime-500 h-full rounded-full" style="width: 35%"></div>
+                  </div>
+                  <span class="text-xs font-medium text-gray-900 w-16">$42,708</span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-xs text-gray-600 w-20 text-right">Direct</span>
+                  <div class="flex-1 bg-gray-100 rounded-full h-5 overflow-hidden">
+                    <div class="bg-gray-400 h-full rounded-full" style="width: 18%"></div>
+                  </div>
+                  <span class="text-xs font-medium text-gray-900 w-16">$21,354</span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-xs text-gray-600 w-20 text-right">Referral</span>
+                  <div class="flex-1 bg-gray-100 rounded-full h-5 overflow-hidden">
+                    <div class="bg-orange-500 h-full rounded-full" style="width: 8%"></div>
+                  </div>
+                  <span class="text-xs font-medium text-gray-900 w-16">$7,118</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subtle caption -->
+      <p class="text-center text-sm text-gray-400 mt-4">
+        Real-time attribution dashboard • Compare models side-by-side • Export anytime
+      </p>
+    </div>
+  </section>
+
   <!-- Why Attribution is Broken -->
   <section class="py-20 px-6 bg-gray-50">
     <div class="max-w-5xl mx-auto">
@@ -205,88 +351,6 @@
           <p class="text-gray-600">
             7 attribution models built-in. Write custom models with our AST editor. Export everything, anytime. No lock-in.
           </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Attribution Flow Visualization -->
-  <section class="py-24 px-6 bg-gray-50 bg-pattern-grid">
-    <div class="max-w-7xl mx-auto">
-      <h2 class="text-3xl font-bold text-gray-900 text-center mb-16">
-        <%= t('pages.home.attribution_flow.title') %>
-      </h2>
-
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 items-center">
-        <!-- Channel Sources -->
-        <div class="space-y-4">
-          <div class="card card--channel card--interactive scroll-animate" data-controller="scroll-reveal">
-            <div class="icon-circle bg-red-500 text-white">G</div>
-            <span class="text-sm font-medium text-gray-900"><%= t('pages.home.attribution_flow.channels.google') %></span>
-            <div class="ml-auto">
-              <div class="flow-line" data-delay="0"></div>
-            </div>
-          </div>
-
-          <div class="card card--channel card--interactive scroll-animate" data-controller="scroll-reveal">
-            <div class="icon-circle bg-blue-600 text-white">f</div>
-            <span class="text-sm font-medium text-gray-900"><%= t('pages.home.attribution_flow.channels.facebook') %></span>
-            <div class="ml-auto">
-              <div class="flow-line" data-delay="200"></div>
-            </div>
-          </div>
-
-          <div class="card card--channel card--interactive scroll-animate" data-controller="scroll-reveal">
-            <div class="icon-circle bg-blue-700 text-white text-xs">in</div>
-            <span class="text-sm font-medium text-gray-900"><%= t('pages.home.attribution_flow.channels.linkedin') %></span>
-            <div class="ml-auto">
-              <div class="flow-line" data-delay="400"></div>
-            </div>
-          </div>
-
-          <div class="card card--channel card--interactive scroll-animate" data-controller="scroll-reveal">
-            <div class="icon-circle bg-green-600 text-white">@</div>
-            <span class="text-sm font-medium text-gray-900"><%= t('pages.home.attribution_flow.channels.email') %></span>
-            <div class="ml-auto">
-              <div class="flow-line" data-delay="600"></div>
-            </div>
-          </div>
-
-          <div class="card card--channel card--interactive scroll-animate" data-controller="scroll-reveal">
-            <div class="icon-circle bg-purple-600 text-white">↗</div>
-            <span class="text-sm font-medium text-gray-900"><%= t('pages.home.attribution_flow.channels.direct') %></span>
-            <div class="ml-auto">
-              <div class="flow-line" data-delay="800"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Center Hub -->
-        <div class="flex justify-center">
-          <div class="text-center scroll-animate" data-controller="scroll-reveal">
-            <div class="icon-hub bg-blue-600 text-white animate-pulse-slow mx-auto">
-              <span><%= t('pages.home.attribution_flow.hub') %></span>
-            </div>
-            <p class="mt-4 text-sm font-medium text-gray-600"><%= t('pages.home.attribution_flow.output') %></p>
-          </div>
-        </div>
-
-        <!-- Output Metrics -->
-        <div class="space-y-4">
-          <div class="card card--metric scroll-animate" data-controller="scroll-reveal">
-            <div class="card__metric-value">87%</div>
-            <div class="card__metric-label">Attribution Accuracy</div>
-          </div>
-
-          <div class="card card--metric scroll-animate" data-controller="scroll-reveal">
-            <div class="card__metric-value">5.2x</div>
-            <div class="card__metric-label">ROI Improvement</div>
-          </div>
-
-          <div class="card card--metric scroll-animate" data-controller="scroll-reveal">
-            <div class="card__metric-value">12</div>
-            <div class="card__metric-label">Avg Touchpoints</div>
-          </div>
         </div>
       </div>
     </div>
