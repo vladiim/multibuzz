@@ -12,8 +12,10 @@ module Dashboard
         {
           conversions: sum_credits,
           revenue: sum_revenue,
-          conversion_rate: calculate_conversion_rate,
           aov: calculate_aov,
+          avg_days_to_convert: avg_days_to_convert,
+          avg_channels_to_convert: avg_channels_to_convert,
+          avg_visits_to_convert: avg_visits_to_convert,
           prior_period: prior_period_data
         }
       end
@@ -30,41 +32,62 @@ module Dashboard
         @sum_revenue ||= scope.sum(:revenue_credit).to_f
       end
 
-      def sessions_count
-        @sessions_count ||= sessions_scope&.count || 0
-      end
-
-      def calculate_conversion_rate
-        return nil if sessions_scope.nil?
-        return nil if sessions_count.zero?
-        return nil if sum_credits.zero?
-
-        ((sum_credits / sessions_count) * 100).round(1)
-      end
-
       def calculate_aov
         return nil if sum_credits.zero?
 
         (sum_revenue / sum_credits).round(2)
       end
 
+      def avg_days_to_convert
+        nil # TODO: implement when we have journey timing data
+      end
+
+      def avg_channels_to_convert
+        return nil if conversion_count.zero?
+        return nil if channels_per_conversion.empty?
+
+        (channels_per_conversion.values.sum.to_f / channels_per_conversion.size).round(1)
+      end
+
+      def avg_visits_to_convert
+        return nil if conversion_count.zero?
+        return nil if visits_per_conversion.empty?
+
+        (visits_per_conversion.values.sum.to_f / visits_per_conversion.size).round(1)
+      end
+
+      def channels_per_conversion
+        @channels_per_conversion ||= scope
+          .group(:conversion_id)
+          .distinct
+          .count(:channel)
+      end
+
+      def visits_per_conversion
+        @visits_per_conversion ||= scope
+          .group(:conversion_id)
+          .count
+      end
+
+      def conversion_count
+        @conversion_count ||= scope.distinct.count(:conversion_id)
+      end
+
       def prior_period_data
         return empty_prior_period unless prior_scope
 
         prior_conversions = prior_scope.sum(:credit).to_f
-        prior_sessions = prior_sessions_scope&.count || 0
-        prior_rate = prior_sessions.positive? ? ((prior_conversions / prior_sessions) * 100).round(1) : nil
+        prior_revenue = prior_scope.sum(:revenue_credit).to_f
 
         {
           conversions: prior_conversions,
-          revenue: prior_scope.sum(:revenue_credit).to_f,
-          conversion_rate: prior_rate,
-          aov: nil
+          revenue: prior_revenue,
+          aov: prior_conversions.positive? ? (prior_revenue / prior_conversions).round(2) : nil
         }
       end
 
       def empty_prior_period
-        { conversions: 0, revenue: 0, conversion_rate: nil, aov: nil }
+        { conversions: 0, revenue: 0, aov: nil }
       end
     end
   end

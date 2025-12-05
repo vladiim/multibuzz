@@ -3,11 +3,12 @@
     <% if @comparison_mode %>
       <!-- Side-by-side comparison mode -->
       <div class="grid grid-cols-2 gap-6">
-        <% @results.each do |item| %>
+        <% @results.each_with_index do |item, index| %>
           <% if item[:result][:success] %>
             <%= render "dashboard/conversions/dashboard_panel",
               result: item[:result],
-              model: item[:model] %>
+              model: item[:model],
+              panel_index: index %>
           <% else %>
             <div class="bg-red-50 p-4 rounded-lg">
               <h3 class="font-semibold text-red-900 mb-2"><%= item[:model].name.titleize %></h3>
