@@ -35,7 +35,7 @@ module Dashboard
       def build_series(channel)
         {
           channel: channel,
-          data: dates.map { |date| daily_data_for_channel(channel)[date.to_s] || 0 }
+          data: dates.map { |date| (daily_data_for_channel(channel)[date.to_s] || 0).to_f }
         }
       end
 
