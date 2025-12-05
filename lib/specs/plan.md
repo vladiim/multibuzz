@@ -8,9 +8,9 @@
 * AST for attribution models
   - Create new / edit (up to 20 models applied)
   - New / updates can back calculate at a fixed one-time cost (10k free then $x per 10k)
-* Content for subsidiary pages (terms etc)
 * Invite users
 * Live
+* export data (csv - simple + api - with property queries)
 * CLV (doesn't work the same as new customer acquisition - think it through)
 * Rollout SDKs: python, php, shopify, magento etc
 * Other channels: phone, email
