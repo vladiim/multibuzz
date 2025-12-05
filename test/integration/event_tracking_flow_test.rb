@@ -40,10 +40,10 @@ class EventTrackingFlowTest < ActionDispatch::IntegrationTest
     assert_equal 1, response.parsed_body["accepted"]
     assert_empty response.parsed_body["rejected"]
 
-    # And: Rate limit headers are present
-    assert response.headers["X-RateLimit-Limit"]
-    assert response.headers["X-RateLimit-Remaining"]
-    assert response.headers["X-RateLimit-Reset"]
+    # Rate limiting disabled for MVP - headers no longer present
+    # assert response.headers["X-RateLimit-Limit"]
+    # assert response.headers["X-RateLimit-Remaining"]
+    # assert response.headers["X-RateLimit-Reset"]
 
     # When: Processing the job
     perform_enqueued_jobs
@@ -135,33 +135,9 @@ class EventTrackingFlowTest < ActionDispatch::IntegrationTest
     ).exists?, "Account A should have its own events"
   end
 
+  # Rate limiting disabled for MVP - re-enable when billing-based limits implemented
   test "rate limiting headers present in response" do
-    result = ApiKeys::GenerationService.new(account, environment: :test).call
-    plaintext_key = result[:plaintext_key]
-
-    # When: Making a request
-    post api_v1_events_url,
-      params: {
-        events: [
-          {
-            event_type: "page_view",
-            timestamp: Time.current.utc.iso8601,
-            properties: { url: "https://example.com" }
-          }
-        ]
-      },
-      headers: { "Authorization" => "Bearer #{plaintext_key}" },
-      as: :json
-
-    # Then: Response includes rate limit headers
-    assert_response :accepted
-    assert response.headers["X-RateLimit-Limit"].present?
-    assert response.headers["X-RateLimit-Remaining"].present?
-    assert response.headers["X-RateLimit-Reset"].present?
-
-    # And: Rate limit info is valid
-    assert_equal "1000", response.headers["X-RateLimit-Limit"]
-    assert response.headers["X-RateLimit-Remaining"].to_i >= 0
+    skip "Rate limiting disabled for MVP"
   end
 
   test "batch processing with partial failures" do
