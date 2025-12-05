@@ -1,0 +1,51 @@
+<footer class="bg-white border-t border-gray-200">
+  <div class="max-w-7xl mx-auto px-6 py-12">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">
+          <%= t('pages.home.footer.brand') %>
+        </h3>
+        <p class="text-sm text-gray-600">
+          <%= t('pages.home.footer.tagline') %>
+        </p>
+      </div>
+
+      <div>
+        <h4 class="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-4">
+          <%= t('pages.home.footer.product') %>
+        </h4>
+        <ul class="space-y-2">
+          <li><a href="#features" class="text-sm text-gray-600 hover:text-gray-900"><%= t('pages.home.footer.product_features') %></a></li>
+          <li><%= link_to t('pages.home.footer.product_docs'), docs_path('getting-started'), class: "text-sm text-gray-600 hover:text-gray-900" %></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-4">
+          <%= t('pages.home.footer.company') %>
+        </h4>
+        <ul class="space-y-2">
+          <li><%= link_to t('pages.home.footer.company_about'), about_path, class: "text-sm text-gray-600 hover:text-gray-900" %></li>
+          <li><%= link_to t('pages.home.footer.company_contact'), contact_path, class: "text-sm text-gray-600 hover:text-gray-900" %></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-4">
+          <%= t('pages.home.footer.legal') %>
+        </h4>
+        <ul class="space-y-2">
+          <li><%= link_to t('pages.home.footer.legal_privacy'), privacy_path, class: "text-sm text-gray-600 hover:text-gray-900" %></li>
+          <li><%= link_to t('pages.home.footer.legal_terms'), terms_path, class: "text-sm text-gray-600 hover:text-gray-900" %></li>
+          <li><%= link_to "Cookie Policy", cookies_path, class: "text-sm text-gray-600 hover:text-gray-900" %></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-8 pt-8 border-t border-gray-200">
+      <p class="text-sm text-gray-500 text-center">
+        <%= t('pages.home.footer.copyright', year: Time.current.year) %>
+      </p>
+    </div>
+  </div>
+</footer>
