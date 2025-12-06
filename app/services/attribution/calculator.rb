@@ -2,6 +2,9 @@
 
 module Attribution
   class Calculator
+    CREDIT_PRECISION = 4
+    CREDIT_TOLERANCE = 0.0001
+
     def initialize(conversion:, attribution_model:)
       @conversion = conversion
       @attribution_model = attribution_model
@@ -10,7 +13,7 @@ module Attribution
     def call
       return [] if touchpoints.empty?
 
-      algorithm_credits
+      normalize_credits(algorithm_credits)
         .map { |credit| enrich_with_session_data(credit) }
         .map { |credit| add_revenue_credit(credit) }
     end
@@ -33,6 +36,22 @@ module Attribution
 
     def algorithm_credits
       @algorithm_credits ||= algorithm.call
+    end
+
+    def normalize_credits(credits)
+      return credits if credits.empty?
+
+      credits
+        .map { |c| c.merge(credit: c[:credit].round(CREDIT_PRECISION)) }
+        .then { |rounded| ensure_sum_equals_one(rounded) }
+    end
+
+    def ensure_sum_equals_one(credits)
+      diff = (1.0 - credits.sum { |c| c[:credit] }).round(CREDIT_PRECISION)
+
+      return credits if diff.abs < CREDIT_TOLERANCE
+
+      credits[0..-2] << credits.last.merge(credit: (credits.last[:credit] + diff).round(CREDIT_PRECISION))
     end
 
     def algorithm

@@ -1,0 +1,63 @@
+<%= turbo_frame_tag "funnel_#{current_account.prefix_id}" do %>
+  <div class="dashboard-section">
+    <!-- Funnel Header -->
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-4">
+        <h2 class="text-xl font-semibold text-gray-900">Conversion Funnel</h2>
+        <% if @result[:success] && @result[:data][:available_funnels].present? %>
+          <div data-controller="url-param" data-url-param-name-value="funnel">
+            <select
+              data-action="change->url-param#update"
+              class="text-sm border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            >
+              <option value="" <%= 'selected' unless @filter_params[:funnel] %>>All Funnels</option>
+              <% @result[:data][:available_funnels].each do |funnel| %>
+                <option value="<%= funnel %>" <%= 'selected' if @filter_params[:funnel] == funnel %>><%= funnel.titleize %></option>
+              <% end %>
+            </select>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <% if @result[:success] %>
+      <% data = @result[:data] %>
+
+      <!-- Stage Summary Cards -->
+      <div class="flex gap-2 mb-6 overflow-x-auto">
+        <% data[:stages].each_with_index do |stage, index| %>
+          <div class="flex-shrink-0 bg-white px-4 py-3 rounded-lg shadow min-w-[140px]">
+            <div class="text-sm font-medium text-gray-500"><%= stage[:stage] %></div>
+            <div class="text-xl font-semibold text-gray-900"><%= number_with_delimiter(stage[:total]) %></div>
+            <% if stage[:conversion_rate] %>
+              <div class="text-xs text-gray-500"><%= stage[:conversion_rate] %>% from previous</div>
+            <% end %>
+          </div>
+          <% unless index == data[:stages].length - 1 %>
+            <div class="flex items-center text-gray-400">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+
+      <!-- Funnel Chart -->
+      <div class="bg-white p-6 rounded-lg shadow" data-controller="chart" data-chart-type-value="funnel" data-chart-data-value="<%= data[:stages].to_json %>">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-medium text-gray-900">Funnel by Channel</h3>
+          <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+            <input type="checkbox" data-action="change->chart#toggleLogScale" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+            Log scale
+          </label>
+        </div>
+        <div data-chart-target="canvas" class="h-96"></div>
+      </div>
+    <% else %>
+      <div class="bg-red-50 p-4 rounded-lg">
+        <p class="text-red-700">Error loading funnel data: <%= @result[:errors].join(', ') %></p>
+      </div>
+    <% end %>
+  </div>
+<% end %>

@@ -58,8 +58,8 @@ module Api
         Events::EnrichmentService.new(
           request,
           event_data,
-          visitor_id: visitor_identification[:visitor_id],
-          session_id: session_identification[:session_id]
+          visitor_id: event_data["visitor_id"] || event_data[:visitor_id] || visitor_identification[:visitor_id],
+          session_id: event_data["session_id"] || event_data[:session_id] || session_identification[:session_id]
         ).call
       end
 

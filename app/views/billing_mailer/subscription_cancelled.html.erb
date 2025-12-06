@@ -1,0 +1,18 @@
+<h1>Subscription Cancelled</h1>
+
+<p>Hi <%= @account.name %>,</p>
+
+<p>Your subscription has been cancelled. You'll continue to have access until the end of your current billing period.</p>
+
+<p>Your historical data will remain accessible, but new events will no longer be tracked.</p>
+
+<p>We'd love to have you back! If you change your mind, you can resubscribe at any time.</p>
+
+<p>
+  <%= link_to "Resubscribe", account_billing_url %>
+</p>
+
+<p>
+  Thanks,<br>
+  The multibuzz Team
+</p>

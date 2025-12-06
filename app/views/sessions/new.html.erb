@@ -58,9 +58,9 @@
 
     <!-- Footer Links -->
     <div class="mt-6 text-center text-xs text-gray-500">
-      <a href="#" class="hover:text-gray-900 transition-colors"><%= t('auth.privacy') %></a>
+      <%= link_to t('auth.privacy'), privacy_path, class: "hover:text-gray-900 transition-colors" %>
       <span class="mx-2">·</span>
-      <a href="#" class="hover:text-gray-900 transition-colors"><%= t('auth.terms') %></a>
+      <%= link_to t('auth.terms'), terms_path, class: "hover:text-gray-900 transition-colors" %>
     </div>
   </div>
 </div>

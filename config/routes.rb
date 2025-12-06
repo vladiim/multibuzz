@@ -9,13 +9,18 @@ Rails.application.routes.draw do
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
+  # Webhooks (before API routes for clarity)
+  namespace :webhooks do
+    post "stripe", to: "stripe#create"
+  end
+
   # API routes
   namespace :api do
     namespace :v1 do
       resources :events, only: [ :create ]
+      resources :sessions, only: [ :create ]
       resources :conversions, only: [ :create ]
       post "identify", to: "identify#create"
-      post "alias", to: "alias#create"
       get "validate", to: "validate#show"
       get "health", to: "health#show"
     end
@@ -23,11 +28,20 @@ Rails.application.routes.draw do
 
   # Public pages
   get "home", to: "pages#home"
+  get "about", to: "pages#about"
+  get "privacy", to: "pages#privacy"
+  get "terms", to: "pages#terms"
+  get "cookies", to: "pages#cookies"
+  get "contact", to: "contacts#new"
+  post "contact", to: "contacts#create"
+  get "contact/thank-you", to: "contacts#show", as: :contact_thank_you
 
   # Waitlist
   resources :waitlist, only: [ :new, :create, :show ]
+  get "signup", to: redirect("/waitlist/new")
 
   # Documentation routes
+  get "docs", to: redirect("/docs/getting-started"), as: :docs_index
   get "docs/:page", to: "docs#show", as: :docs, constraints: { page: /[\w-]+/ }
 
   # Dashboard routes
@@ -36,9 +50,39 @@ Rails.application.routes.draw do
   delete "logout", to: "sessions#destroy"
   get "dashboard", to: "dashboard#show"
 
-  namespace :dashboard do
-    resources :api_keys, only: [ :index, :create, :destroy ]
+  # Admin routes
+  namespace :admin do
+    get "billing", to: "billing#show", as: :billing
+    resources :accounts, only: [:show, :update]
   end
+
+  # Account settings
+  resource :account, only: [:show, :update], controller: "account" do
+    scope module: :accounts do
+      resource :billing, only: [:show], controller: "billing" do
+        post :checkout
+        get :portal
+        get :success
+        get :cancel
+      end
+      resource :team, only: [:show], controller: "team"
+      resources :api_keys, only: [:index, :create, :destroy]
+    end
+  end
+
+  namespace :dashboard do
+    patch "view_mode", to: "view_mode#update"
+
+    # Turbo Frame endpoints for dashboard sections
+    get "filters", to: "filters#show"
+    get "conversions", to: "conversions#show"
+    get "funnel", to: "funnel#show"
+  end
+
+  # Redirects from old dashboard routes to new /account routes
+  get "dashboard/settings", to: redirect("/account")
+  get "dashboard/billing", to: redirect("/account/billing")
+  get "dashboard/api_keys", to: redirect("/account/api_keys")
 
   root "pages#home"
 end

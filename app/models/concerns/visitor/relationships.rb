@@ -3,6 +3,7 @@ module Visitor::Relationships
 
   included do
     belongs_to :account
+    belongs_to :identity, optional: true, inverse_of: :visitors, class_name: "Identity"
     has_many :sessions, dependent: :destroy
     has_many :events, dependent: :destroy
   end

@@ -1,128 +1,170 @@
 <div class="min-h-screen bg-gray-100">
-  <nav class="bg-white shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between h-16">
-        <div class="flex">
-          <div class="flex-shrink-0 flex items-center gap-3">
-            <div class="p-1.5">
-              <svg width="24" height="24" viewBox="0 0 963 963" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: block;">
-                <path d="M60.2819 352C36.0202 352 14.0154 362.255 4.6117 378.033C-4.79205 393.811 0.474051 411.823 17.7769 423.788L361.202 664.001V814.809C361.202 825.984 367.596 836.634 378.881 844.523L499.249 928.67C516.552 940.766 542.318 944.316 564.887 937.742C587.456 931.168 601.938 915.917 601.938 898.956V664.001L945.363 423.919C962.666 411.823 967.744 393.811 958.34 378.033C948.936 362.255 927.12 352 902.858 352H60.2819Z" fill="#1F2937"/>
-                <rect x="57" y="120" width="199" height="210" rx="6" fill="#6366F1"/>
-                <rect x="290" y="49" width="177" height="153" rx="8" fill="#EC4899"/>
-                <rect x="501" y="3" width="175" height="273" rx="8" fill="#10B981"/>
-                <rect x="710" y="172" width="207" height="158" rx="6" fill="#F59E0B"/>
-              </svg>
-            </div>
-            <h1 class="text-2xl font-bold text-gray-900">mbuzz</h1>
-          </div>
-          <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-            <%= link_to "Dashboard", dashboard_path, class: "border-b-2 border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 text-sm font-medium" %>
-            <%= link_to "API Keys", dashboard_api_keys_path, class: "text-gray-500 hover:text-gray-900 inline-flex items-center px-1 pt-1 text-sm font-medium" %>
-          </div>
-        </div>
-        <div class="flex items-center">
-          <span class="text-gray-700 mr-4"><%= current_user.email %></span>
-          <%= button_to "Logout", logout_path, method: :delete, class: "text-gray-700 hover:text-gray-900" %>
-        </div>
-      </div>
-    </div>
-  </nav>
+  <%= render "layouts/nav" %>
+  <%= render "shared/billing_banner", account: current_account %>
 
-  <div class="py-10">
-    <header>
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 class="text-3xl font-bold leading-tight text-gray-900">Dashboard</h1>
-        <p class="mt-2 text-sm text-gray-600">Account: <%= @account.name %></p>
-      </div>
-    </header>
+  <div class="py-6">
     <main>
-      <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <!-- Stats Grid -->
-        <div class="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <div class="bg-white overflow-hidden shadow rounded-lg">
-            <div class="px-4 py-5 sm:p-6">
-              <dt class="text-sm font-medium text-gray-500 truncate">Total Events</dt>
-              <dd class="mt-1 text-3xl font-semibold text-gray-900"><%= number_with_delimiter(@stats[:total_events]) %></dd>
-            </div>
-          </div>
-          <div class="bg-white overflow-hidden shadow rounded-lg">
-            <div class="px-4 py-5 sm:p-6">
-              <dt class="text-sm font-medium text-gray-500 truncate">Total Visitors</dt>
-              <dd class="mt-1 text-3xl font-semibold text-gray-900"><%= number_with_delimiter(@stats[:total_visitors]) %></dd>
-            </div>
-          </div>
-          <div class="bg-white overflow-hidden shadow rounded-lg">
-            <div class="px-4 py-5 sm:p-6">
-              <dt class="text-sm font-medium text-gray-500 truncate">Total Sessions</dt>
-              <dd class="mt-1 text-3xl font-semibold text-gray-900"><%= number_with_delimiter(@stats[:total_sessions]) %></dd>
-            </div>
-          </div>
-          <div class="bg-white overflow-hidden shadow rounded-lg">
-            <div class="px-4 py-5 sm:p-6">
-              <dt class="text-sm font-medium text-gray-500 truncate">Events Today</dt>
-              <dd class="mt-1 text-3xl font-semibold text-gray-900"><%= number_with_delimiter(@stats[:events_today]) %></dd>
-            </div>
-          </div>
-        </div>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Main Dashboard Container -->
+        <div data-controller="toggle"
+          data-toggle-default-value="conversions"
+          data-toggle-active-class="border-indigo-500 text-indigo-600"
+          data-toggle-inactive-class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
 
-        <!-- UTM Breakdown -->
-        <div class="mt-8">
-          <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-            <div class="px-4 py-5 sm:px-6">
-              <h3 class="text-lg leading-6 font-medium text-gray-900">Top UTM Campaigns</h3>
-            </div>
-            <div class="border-t border-gray-200">
-              <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                  <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Medium</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Campaign</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Events</th>
-                  </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                  <% @utm_breakdown.each do |utm| %>
-                    <tr>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><%= utm[:utm_source] %></td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= utm[:utm_medium] %></td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= utm[:utm_campaign] %></td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><%= number_with_delimiter(utm[:count]) %></td>
-                    </tr>
-                  <% end %>
-                </tbody>
-              </table>
+          <!-- Tab Bar: Tabs on left, Filters/Export on right -->
+          <div class="border-b border-gray-200">
+            <div class="flex items-center justify-between">
+              <!-- Tab Navigation -->
+              <nav class="-mb-px flex gap-6">
+                <button type="button"
+                  data-toggle-target="trigger"
+                  data-action="toggle#select"
+                  data-value="conversions"
+                  class="py-3 px-1 text-sm font-medium border-b-2">
+                  Conversions
+                </button>
+                <button type="button"
+                  data-toggle-target="trigger"
+                  data-action="toggle#select"
+                  data-value="funnel"
+                  class="py-3 px-1 text-sm font-medium border-b-2">
+                  Funnel
+                </button>
+                <button type="button"
+                  data-toggle-target="trigger"
+                  data-action="toggle#select"
+                  data-value="events"
+                  class="py-3 px-1 text-sm font-medium border-b-2">
+                  Events
+                </button>
+              </nav>
+
+              <!-- Filters & Export Buttons -->
+              <div class="flex items-center gap-2 pb-3">
+                <!-- Filters Toggle -->
+                <button type="button"
+                  data-action="click->toggle#toggleFilters"
+                  data-toggle-target="filtersButton"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                  </svg>
+                  Filters
+                </button>
+                <!-- Export Dropdown -->
+                <div data-controller="toggle" data-toggle-close-on-click-outside-value="true" class="relative">
+                  <button type="button" data-action="click->toggle#toggle" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Export
+                  </button>
+                  <div data-toggle-target="content" class="hidden absolute right-0 mt-1 w-36 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+                    <%= link_to "Export CSV", dashboard_conversions_path(format: :csv), class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" %>
+                    <%= link_to "Export PDF", dashboard_conversions_path(format: :pdf), class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" %>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Recent Events -->
-        <div class="mt-8">
-          <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-            <div class="px-4 py-5 sm:px-6">
-              <h3 class="text-lg leading-6 font-medium text-gray-900">Recent Events</h3>
+          <!-- Collapsible Filters Bar (pushes content down) -->
+          <div data-toggle-target="filters" class="hidden py-4">
+            <%= turbo_frame_tag "filters_#{current_account.prefix_id}",
+              src: dashboard_filters_path(request.query_parameters),
+              loading: :lazy do %>
+              <div class="bg-white p-4 rounded-lg shadow animate-pulse">
+                <div class="flex gap-4">
+                  <div class="h-9 w-36 bg-gray-200 rounded"></div>
+                  <div class="h-9 w-48 bg-gray-200 rounded"></div>
+                  <div class="h-9 w-44 bg-gray-200 rounded"></div>
+                  <div class="h-9 w-20 bg-gray-200 rounded"></div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+
+          <!-- Tab Content -->
+          <div class="mt-6">
+            <!-- Conversions Tab -->
+            <div data-toggle-target="content" data-value="conversions">
+              <%= turbo_frame_tag "conversions_#{current_account.prefix_id}",
+                src: dashboard_conversions_path(request.query_parameters),
+                loading: :lazy do %>
+                <%= render "dashboard/conversions/skeleton" %>
+              <% end %>
             </div>
-            <div class="border-t border-gray-200">
-              <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                  <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">URL</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">UTM Source</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Occurred</th>
-                  </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                  <% @recent_events.each do |event| %>
-                    <tr>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><%= event.event_type %></td>
-                      <td class="px-6 py-4 text-sm text-gray-500 truncate max-w-xs"><%= event.url %></td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= event.utm_source || "-" %></td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= time_ago_in_words(event.occurred_at) %> ago</td>
-                    </tr>
+
+            <!-- Funnel Tab -->
+            <div data-toggle-target="content" data-value="funnel" class="hidden">
+              <%= turbo_frame_tag "funnel_#{current_account.prefix_id}",
+                src: dashboard_funnel_path(request.query_parameters),
+                loading: :lazy do %>
+                <%= render "dashboard/funnel/skeleton" %>
+              <% end %>
+            </div>
+
+            <!-- Events Tab (Live) -->
+            <div data-toggle-target="content" data-value="events" class="hidden" data-controller="event-panel">
+              <!-- Turbo Stream subscription for real-time updates -->
+              <%= turbo_stream_from "account_#{current_account.prefix_id}_events" %>
+
+              <!-- Header with filter -->
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-3">
+                  <span class="text-sm text-gray-600">Showing last <%= @live_events.size %> events</span>
+                  <% if @test_only %>
+                    <span class="px-2 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 rounded">Test only</span>
                   <% end %>
-                </tbody>
-              </table>
+                </div>
+                <div class="flex items-center gap-4">
+                  <!-- Test Only Toggle -->
+                  <form action="<%= dashboard_path %>" method="get" data-controller="auto-submit">
+                    <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                      <input type="checkbox"
+                        name="test_only"
+                        value="true"
+                        <%= "checked" if @test_only %>
+                        data-action="change->auto-submit#submit"
+                        class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                      Test events only
+                    </label>
+                  </form>
+                  <!-- Connection Status -->
+                  <div data-controller="connection-status" class="flex items-center gap-1.5 text-sm text-gray-500">
+                    <span data-connection-status-target="dot" class="w-2 h-2 bg-yellow-500 rounded-full"></span>
+                    <span data-connection-status-target="text">Connecting...</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Events List -->
+              <div class="bg-white shadow rounded-lg overflow-hidden">
+                <div id="events-list" class="divide-y divide-gray-200">
+                  <% @live_events.each do |event| %>
+                    <%= render "dashboard/live_events/event_card", event: event %>
+                  <% end %>
+
+                  <% if @live_events.empty? %>
+                    <div class="px-4 py-12 text-center text-gray-500">
+                      <p class="text-lg">No events yet</p>
+                      <p class="text-sm mt-1">Events will appear here in real-time as they're received</p>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+
+              <!-- Slide-out Panel -->
+              <div id="event-panel"
+                class="fixed inset-y-0 right-0 w-96 bg-white shadow-xl transform translate-x-full transition-transform duration-200 ease-in-out z-50">
+                <%= render "dashboard/live_events/event_panel" %>
+              </div>
+
+              <!-- Panel Backdrop -->
+              <div id="event-panel-backdrop"
+                data-action="click->event-panel#close"
+                class="fixed inset-0 bg-black bg-opacity-25 hidden z-40">
+              </div>
             </div>
           </div>
         </div>

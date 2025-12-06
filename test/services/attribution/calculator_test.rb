@@ -92,6 +92,32 @@ module Attribution
       assert_in_delta 1.0, total, 0.0001
     end
 
+    test "should normalize credits to sum exactly 1.0 for odd divisions" do
+      # 3 touchpoints with linear = 1/3 each, prone to rounding
+      session_one
+      session_two
+      session_three
+
+      credits = service.call
+
+      assert_equal 3, credits.size
+      total = credits.sum { |c| c[:credit] }
+      assert_equal 1.0, total.round(4), "Credits must sum to exactly 1.0"
+    end
+
+    test "should round credits to 4 decimal places" do
+      session_one
+      session_two
+      session_three
+
+      credits = service.call
+
+      credits.each do |credit|
+        decimal_places = credit[:credit].to_s.split(".").last&.length || 0
+        assert decimal_places <= 4, "Credit #{credit[:credit]} has more than 4 decimal places"
+      end
+    end
+
     test "should return empty array for visitor with no sessions" do
       empty_visitor = visitors(:other_account_visitor)
       empty_conversion = build_conversion(visitor: empty_visitor)
@@ -167,6 +193,15 @@ module Attribution
         utm_source: "newsletter",
         utm_medium: "email",
         utm_campaign: "weekly"
+      )
+    end
+
+    def session_three
+      @session_three ||= build_session(
+        days_ago: 1,
+        channel: "paid_search",
+        utm_source: "google",
+        utm_medium: "cpc"
       )
     end
 

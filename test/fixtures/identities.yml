@@ -1,0 +1,20 @@
+one:
+  account: one
+  external_id: "fixture_user_001"
+  traits: { "email": "user1@example.com" }
+  first_identified_at: <%= 30.days.ago %>
+  last_identified_at: <%= 1.day.ago %>
+
+two:
+  account: one
+  external_id: "user_789"
+  traits: { "email": "user2@example.com" }
+  first_identified_at: <%= 14.days.ago %>
+  last_identified_at: <%= 2.days.ago %>
+
+other_account_identity:
+  account: two
+  external_id: "user_other"
+  traits: {}
+  first_identified_at: <%= 7.days.ago %>
+  last_identified_at: <%= 1.day.ago %>

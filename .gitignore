@@ -7,6 +7,9 @@
 # Ignore bundler config.
 /.bundle
 
+# Ignore node modules.
+/node_modules
+
 # Ignore all environment files.
 /.env*
 
@@ -37,3 +40,5 @@
 !/app/assets/builds/.keep
 
 /config/credentials/production.key
+
+/config/credentials/development.key

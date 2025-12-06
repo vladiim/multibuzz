@@ -8,13 +8,15 @@ module Conversions
       @visitor_id_param = params[:visitor_id]
       @conversion_type = params[:conversion_type]
       @revenue = params[:revenue]
+      @currency = params[:currency]
+      @funnel = params[:funnel]
       @properties = params[:properties] || {}
       @is_test = is_test
     end
 
     private
 
-    attr_reader :account, :event_id, :visitor_id_param, :conversion_type, :revenue, :properties, :is_test
+    attr_reader :account, :event_id, :visitor_id_param, :conversion_type, :revenue, :currency, :funnel, :properties, :is_test
 
     def run
       return validation_error if validation_error
@@ -69,7 +71,9 @@ module Conversions
         session_id: resolved_session&.id,
         event_id: event&.id,
         conversion_type: conversion_type,
-        revenue: revenue,
+        revenue: normalized_revenue,
+        currency: currency.presence || "USD",
+        funnel: funnel,
         properties: properties,
         converted_at: conversion_timestamp,
         journey_session_ids: [],
@@ -79,6 +83,15 @@ module Conversions
 
     def conversion_timestamp
       event&.occurred_at || Time.current
+    end
+
+    def normalized_revenue
+      return nil if revenue.nil?
+      return nil if revenue.to_f.zero?
+
+      revenue
+    rescue ArgumentError, TypeError, NoMethodError
+      nil
     end
   end
 end
