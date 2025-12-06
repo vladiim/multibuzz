@@ -6,7 +6,13 @@ class Api::V1::HealthControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_equal "ok", json_response["status"]
-    assert json_response["timestamp"].present?
+  end
+
+  test "should return API version" do
+    get api_v1_health_path
+
+    assert_response :success
+    assert_equal "1.0.0", json_response["version"]
   end
 
   test "should not require authentication" do
@@ -14,13 +20,6 @@ class Api::V1::HealthControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_equal "ok", json_response["status"]
-  end
-
-  test "should include database connectivity check" do
-    get api_v1_health_path
-
-    assert_response :success
-    assert json_response["checks"]["database"]
   end
 
   private

@@ -25,11 +25,7 @@ module Visitors
     end
 
     def visitor
-      @visitor ||= visitor_scope.find_by(visitor_id: visitor_id)
-    end
-
-    def visitor_scope
-      is_test ? account.visitors.unscope(where: :is_test).test_data : account.visitors
+      @visitor ||= account.visitors.find_by(visitor_id: visitor_id)
     end
   end
 end

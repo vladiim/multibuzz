@@ -107,12 +107,10 @@ MD
     syntax: 'ruby',
     code: <<~CODE
       # config/initializers/mbuzz.rb
-      Mbuzz.configure do |config|
-        config.api_key = ENV['MBUZZ_API_KEY']
-      end
+      Mbuzz.init(api_key: ENV['MBUZZ_API_KEY'])
 
       # Never do this:
-      # config.api_key = "sk_test_abc123..."  # ❌
+      # Mbuzz.init(api_key: "sk_test_abc123...")  # ❌
     CODE
   },
   bash: {
@@ -179,15 +177,12 @@ MD
     syntax: 'ruby',
     code: <<~CODE
       # Gem automatically validates on first request
-      result = Mbuzz.track(
-        user_id: 1,
-        event: 'Test'
-      )
+      result = Mbuzz.event("test_event", foo: "bar")
 
       if result
-        puts "✅ API key valid"
+        puts "API key valid"
       else
-        puts "❌ API key invalid (check logs)"
+        puts "API key invalid (check logs)"
       end
     CODE
   }

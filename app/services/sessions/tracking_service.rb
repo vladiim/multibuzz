@@ -32,11 +32,7 @@ module Sessions
     end
 
     def session
-      @session ||= session_scope.active.find_by(session_id: session_id, visitor: visitor)
-    end
-
-    def session_scope
-      is_test ? account.sessions.unscope(where: :is_test).test_data : account.sessions
+      @session ||= account.sessions.active.find_by(session_id: session_id, visitor: visitor)
     end
   end
 end

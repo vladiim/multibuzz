@@ -1,7 +1,5 @@
 module Events
   class ValidationService < ApplicationService
-    REQUIRED_FIELDS = %w[event_type visitor_id session_id timestamp properties].freeze
-
     def initialize(event_data)
       @event_data = event_data
     end
@@ -12,19 +10,27 @@ module Events
 
     def run
       errors = []
-      errors.concat(validate_required_fields)
+      errors.concat(validate_event_type)
+      errors.concat(validate_identity)
       errors.concat(validate_timestamp)
       errors.concat(validate_properties)
+      errors.concat(validate_funnel)
 
       return error_result(errors) if errors.any?
 
       { valid: true, errors: [] }
     end
 
-    def validate_required_fields
-      REQUIRED_FIELDS.map do |field|
-        "#{field} is required" unless field_present?(field)
-      end.compact
+    def validate_event_type
+      return [] if field_present?("event_type")
+
+      ["event_type is required"]
+    end
+
+    def validate_identity
+      return [] if field_present?("visitor_id") || field_present?("user_id")
+
+      ["visitor_id or user_id is required"]
     end
 
     def field_present?(field)
@@ -52,6 +58,18 @@ module Events
       return [] if field_value("properties").is_a?(Hash)
 
       ["properties must be a hash"]
+    end
+
+    def validate_funnel
+      return [] unless has_field?("funnel")
+
+      funnel = field_value("funnel")
+      return [] if funnel.nil?
+      return ["funnel must be a string"] unless funnel.is_a?(String)
+      return ["funnel must be 255 characters or less"] if funnel.length > 255
+      return ["funnel must contain only alphanumeric characters and underscores"] unless funnel.match?(/\A[a-zA-Z0-9_]+\z/)
+
+      []
     end
 
     def field_value(field)

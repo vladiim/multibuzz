@@ -1,0 +1,114 @@
+<% data = result[:data] %>
+<% totals = data[:totals] %>
+<% prior = totals[:prior_period] %>
+<% selected_metric = @filter_params[:metric] %>
+
+<!-- KPI Cards -->
+<div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+  <%= render "dashboard/conversions/kpi_card",
+    metric: "conversions",
+    label: "Conversions",
+    value: totals[:conversions],
+    prior_value: prior[:conversions] %>
+
+  <%= render "dashboard/conversions/kpi_card",
+    metric: "revenue",
+    label: "Revenue",
+    value: totals[:revenue],
+    prior_value: prior[:revenue],
+    type: :currency %>
+
+  <%= render "dashboard/conversions/kpi_card",
+    metric: "aov",
+    label: "Avg Order Value",
+    value: totals[:aov],
+    prior_value: prior[:aov],
+    type: :currency %>
+
+  <%= render "dashboard/conversions/kpi_card",
+    metric: "avg_days",
+    label: "Avg Days to Convert",
+    value: totals[:avg_days_to_convert],
+    subtitle: "from first touch" %>
+
+  <%= render "dashboard/conversions/kpi_card",
+    metric: "avg_channels",
+    label: "Avg Channels",
+    value: totals[:avg_channels_to_convert],
+    subtitle: "per conversion" %>
+
+  <%= render "dashboard/conversions/kpi_card",
+    metric: "avg_visits",
+    label: "Avg Visits",
+    value: totals[:avg_visits_to_convert],
+    subtitle: "per conversion" %>
+</div>
+
+<!-- Time Series Chart -->
+<div class="bg-white p-6 rounded-lg shadow mb-6">
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="text-lg font-medium text-gray-900">Channel Performance Over Time</h3>
+    <div class="flex items-center gap-1.5">
+      <div class="group relative">
+        <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <div class="hidden group-hover:block absolute z-10 w-56 p-2 text-xs text-gray-600 bg-white border border-gray-200 rounded shadow-lg right-0 top-6">
+          Daily conversions by channel. Shows top 5 channels for clarity.
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="time-series-chart"
+    data-controller="chart"
+    data-chart-type-value="line"
+    data-chart-data-value="<%= data[:time_series].to_json %>"
+    class="h-72">
+  </div>
+</div>
+
+<!-- Attribution Chart (metric-driven) -->
+<%
+chart_metric = case selected_metric
+  when "revenue", "aov" then "revenue"
+  when "avg_channels" then "avg_channels"
+  when "avg_visits" then "avg_visits"
+  when "avg_days" then "avg_days"
+  else "credits"
+  end
+chart_titles = {
+  "conversions" => "Conversions",
+  "revenue" => "Revenue",
+  "aov" => "Revenue",
+  "avg_channels" => "Avg Channels",
+  "avg_visits" => "Avg Visits",
+  "avg_days" => "Avg Days"
+}
+chart_title = chart_titles[selected_metric] || "Conversions"
+%>
+<div class="bg-white p-6 rounded-lg shadow mb-6">
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="text-lg font-medium text-gray-900"><%= chart_title %> by Channel</h3>
+    <div class="group relative">
+      <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <div class="hidden group-hover:block absolute z-10 w-56 p-2 text-xs text-gray-600 bg-white border border-gray-200 rounded shadow-lg right-0 top-6">
+        <% @filter_params[:models].each do |m| %>
+          <div class="<%= 'mb-1' unless m == @filter_params[:models].last %>">
+            <strong><%= m.name.titleize %></strong>: <%= attribution_model_description(m.algorithm) %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  <div id="channel-chart"
+    data-controller="chart"
+    data-chart-type-value="bar"
+    data-chart-metric-value="<%= chart_metric %>"
+    data-chart-drilldown-value="true"
+    data-chart-campaigns-value="<%= data[:top_campaigns].to_json %>"
+    data-chart-data-value="<%= data[:by_channel].to_json %>"
+    class="h-80">
+  </div>
+</div>

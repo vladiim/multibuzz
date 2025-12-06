@@ -1,0 +1,414 @@
+require "test_helper"
+
+class Account::BillingTest < ActiveSupport::TestCase
+  # --- Billing Status Enum ---
+
+  test "should default to free_forever billing status" do
+    new_account = Account.new(name: "Test", slug: "test-billing-#{SecureRandom.hex(4)}")
+    assert new_account.billing_free_forever?
+  end
+
+  test "should have all billing statuses" do
+    statuses = %w[free_forever free_until trialing active past_due cancelled expired]
+    statuses.each do |status|
+      assert Account.billing_statuses.key?(status), "Missing billing status: #{status}"
+    end
+  end
+
+  # --- can_ingest_events? ---
+
+  test "can_ingest_events? returns true for free_forever within limit" do
+    account.update!(billing_status: :free_forever, plan: free_plan)
+    Rails.cache.write(account.usage_cache_key, 5000)
+
+    assert account.can_ingest_events?
+  end
+
+  test "can_ingest_events? returns false for free_forever at limit" do
+    account.update!(billing_status: :free_forever, plan: free_plan)
+    Rails.cache.write(account.usage_cache_key, 10_000)
+
+    assert_not account.can_ingest_events?
+  end
+
+  test "can_ingest_events? returns true for free_until before expiry" do
+    account.update!(
+      billing_status: :free_until,
+      free_until: 7.days.from_now,
+      plan: starter_plan
+    )
+
+    assert account.can_ingest_events?
+  end
+
+  test "can_ingest_events? returns false for free_until after expiry" do
+    account.update!(
+      billing_status: :free_until,
+      free_until: 1.day.ago,
+      plan: starter_plan
+    )
+
+    assert_not account.can_ingest_events?
+  end
+
+  test "can_ingest_events? returns true for trialing" do
+    account.update!(
+      billing_status: :trialing,
+      trial_ends_at: 14.days.from_now,
+      plan: starter_plan
+    )
+
+    assert account.can_ingest_events?
+  end
+
+  test "can_ingest_events? returns true for active" do
+    account.update!(billing_status: :active, plan: starter_plan)
+
+    assert account.can_ingest_events?
+  end
+
+  test "can_ingest_events? returns true for past_due within grace period" do
+    account.update!(
+      billing_status: :past_due,
+      payment_failed_at: 1.day.ago,
+      grace_period_ends_at: 2.days.from_now,
+      plan: starter_plan
+    )
+
+    assert account.can_ingest_events?
+  end
+
+  test "can_ingest_events? returns true for past_due within suspension period" do
+    account.update!(
+      billing_status: :past_due,
+      payment_failed_at: 5.days.ago,
+      grace_period_ends_at: 2.days.ago,
+      plan: starter_plan
+    )
+
+    assert account.can_ingest_events?
+  end
+
+  test "can_ingest_events? returns false for past_due after suspension period" do
+    account.update!(
+      billing_status: :past_due,
+      payment_failed_at: 35.days.ago,
+      grace_period_ends_at: 32.days.ago,
+      plan: starter_plan
+    )
+
+    assert_not account.can_ingest_events?
+  end
+
+  test "can_ingest_events? returns false for cancelled" do
+    account.update!(billing_status: :cancelled)
+
+    assert_not account.can_ingest_events?
+  end
+
+  test "can_ingest_events? returns false for expired" do
+    account.update!(billing_status: :expired)
+
+    assert_not account.can_ingest_events?
+  end
+
+  # --- should_lock_events? ---
+
+  test "should_lock_events? returns false within grace period" do
+    account.update!(
+      billing_status: :past_due,
+      payment_failed_at: 1.day.ago,
+      grace_period_ends_at: 2.days.from_now
+    )
+
+    assert_not account.should_lock_events?
+  end
+
+  test "should_lock_events? returns true after grace period" do
+    account.update!(
+      billing_status: :past_due,
+      payment_failed_at: 5.days.ago,
+      grace_period_ends_at: 2.days.ago
+    )
+
+    assert account.should_lock_events?
+  end
+
+  test "should_lock_events? returns false for non-past_due statuses" do
+    account.update!(billing_status: :active)
+    assert_not account.should_lock_events?
+
+    account.update!(billing_status: :trialing)
+    assert_not account.should_lock_events?
+  end
+
+  # --- Usage Tracking ---
+
+  test "current_period_usage returns cached value" do
+    Rails.cache.write(account.usage_cache_key, 1234)
+
+    assert_equal 1234, account.current_period_usage
+  end
+
+  test "current_period_usage returns 0 when cache empty" do
+    Rails.cache.delete(account.usage_cache_key)
+
+    assert_equal 0, account.current_period_usage
+  end
+
+  test "increment_usage! increments cache value" do
+    Rails.cache.write(account.usage_cache_key, 100)
+
+    account.increment_usage!(5)
+
+    assert_equal 105, account.current_period_usage
+  end
+
+  test "usage_percentage calculates correctly" do
+    account.update!(plan: free_plan)
+    Rails.cache.write(account.usage_cache_key, 8000)
+
+    assert_equal 80, account.usage_percentage
+  end
+
+  test "approaching_limit? returns true at 80%" do
+    account.update!(plan: free_plan)
+    Rails.cache.write(account.usage_cache_key, 8000)
+
+    assert account.approaching_limit?
+  end
+
+  test "approaching_limit? returns false below 80%" do
+    account.update!(plan: free_plan)
+    Rails.cache.write(account.usage_cache_key, 7000)
+
+    assert_not account.approaching_limit?
+  end
+
+  test "at_limit? returns true at 100%" do
+    account.update!(plan: free_plan)
+    Rails.cache.write(account.usage_cache_key, 10_000)
+
+    assert account.at_limit?
+  end
+
+  # --- Billing Actions ---
+
+  test "start_trial! sets trial state" do
+    account.start_trial!(plan: starter_plan, ends_at: 14.days.from_now)
+
+    assert account.billing_trialing?
+    assert_equal starter_plan, account.plan
+    assert account.trial_ends_at.present?
+    assert account.current_period_start.present?
+  end
+
+  test "activate_subscription! sets active state" do
+    account.activate_subscription!(
+      stripe_subscription_id: "sub_123",
+      period_start: Time.current,
+      period_end: 30.days.from_now
+    )
+
+    assert account.billing_active?
+    assert_equal "sub_123", account.stripe_subscription_id
+    assert_nil account.payment_failed_at
+    assert_nil account.grace_period_ends_at
+  end
+
+  test "mark_past_due! sets past_due state with grace period" do
+    account.mark_past_due!
+
+    assert account.billing_past_due?
+    assert account.payment_failed_at.present?
+    assert account.grace_period_ends_at.present?
+    assert account.grace_period_ends_at > Time.current
+  end
+
+  test "restore_from_past_due! clears failure state" do
+    account.update!(
+      billing_status: :past_due,
+      payment_failed_at: 5.days.ago,
+      grace_period_ends_at: 2.days.ago
+    )
+
+    account.restore_from_past_due!
+
+    assert account.billing_active?
+    assert_nil account.payment_failed_at
+    assert_nil account.grace_period_ends_at
+  end
+
+  test "cancel_subscription! sets cancelled state" do
+    account.update!(stripe_subscription_id: "sub_123")
+
+    account.cancel_subscription!
+
+    assert account.billing_cancelled?
+    assert_nil account.stripe_subscription_id
+  end
+
+  test "expire! sets expired state" do
+    account.update!(billing_status: :free_until, free_until: 1.day.ago)
+
+    account.expire!
+
+    assert account.billing_expired?
+  end
+
+  test "grant_free_until! sets free_until state" do
+    account.grant_free_until!(until_date: 90.days.from_now, plan: growth_plan)
+
+    assert account.billing_free_until?
+    assert_equal growth_plan, account.plan
+    assert account.free_until > 89.days.from_now
+  end
+
+  test "extend_free_until! extends existing free_until" do
+    account.update!(billing_status: :free_until, free_until: 30.days.from_now)
+
+    account.extend_free_until!(until_date: 90.days.from_now)
+
+    assert account.free_until > 89.days.from_now
+  end
+
+  test "extend_free_until! does nothing if not free_until status" do
+    account.update!(billing_status: :active, free_until: nil)
+
+    account.extend_free_until!(until_date: 90.days.from_now)
+
+    assert_nil account.free_until
+  end
+
+  # --- Stripe ---
+
+  test "has_stripe_customer? returns true when customer_id present" do
+    account.update!(stripe_customer_id: "cus_123")
+
+    assert account.has_stripe_customer?
+  end
+
+  test "has_stripe_customer? returns false when customer_id blank" do
+    account.update!(stripe_customer_id: nil)
+
+    assert_not account.has_stripe_customer?
+  end
+
+  test "has_active_subscription? requires both subscription_id and active status" do
+    account.update!(stripe_subscription_id: "sub_123", billing_status: :active)
+    assert account.has_active_subscription?
+
+    account.update!(billing_status: :past_due)
+    assert_not account.has_active_subscription?
+
+    account.update!(stripe_subscription_id: nil, billing_status: :active)
+    assert_not account.has_active_subscription?
+  end
+
+  # --- Banner Display ---
+
+  test "billing_banner_type returns :past_due for past_due accounts" do
+    account.update!(billing_status: :past_due, payment_failed_at: 1.day.ago)
+
+    assert_equal ::Billing::BANNER_PAST_DUE, account.billing_banner_type
+  end
+
+  test "billing_banner_type returns :free_until_expiring when expiring soon" do
+    account.update!(billing_status: :free_until, free_until: 5.days.from_now)
+
+    assert_equal ::Billing::BANNER_FREE_UNTIL_EXPIRING, account.billing_banner_type
+  end
+
+  test "billing_banner_type returns :usage_limit at 100%" do
+    account.update!(billing_status: :free_forever, plan: free_plan)
+    Rails.cache.write(account.usage_cache_key, 10_000)
+
+    assert_equal ::Billing::BANNER_USAGE_LIMIT, account.billing_banner_type
+  end
+
+  test "billing_banner_type returns :usage_warning at 80%" do
+    account.update!(billing_status: :free_forever, plan: free_plan)
+    Rails.cache.write(account.usage_cache_key, 8000)
+
+    assert_equal ::Billing::BANNER_USAGE_WARNING, account.billing_banner_type
+  end
+
+  test "billing_banner_type returns nil when no warnings" do
+    account.update!(billing_status: :active, plan: starter_plan)
+    Rails.cache.write(account.usage_cache_key, 1000)
+
+    assert_nil account.billing_banner_type
+  end
+
+  test "free_until_expiring_soon? returns true within warning window" do
+    account.update!(billing_status: :free_until, free_until: 5.days.from_now)
+
+    assert account.free_until_expiring_soon?
+  end
+
+  test "free_until_expiring_soon? returns false outside warning window" do
+    account.update!(billing_status: :free_until, free_until: 14.days.from_now)
+
+    assert_not account.free_until_expiring_soon?
+  end
+
+  test "days_until_free_expires calculates correctly" do
+    account.update!(free_until: 5.days.from_now)
+
+    assert_equal 5, account.days_until_free_expires
+  end
+
+  # --- Scopes ---
+
+  test "billing_active scope includes correct statuses" do
+    account.update!(billing_status: :active)
+    other_account.update!(billing_status: :cancelled)
+
+    active = Account.billing_active
+
+    assert_includes active, account
+    assert_not_includes active, other_account
+  end
+
+  test "past_due scope includes only past_due" do
+    account.update!(billing_status: :past_due)
+    other_account.update!(billing_status: :active)
+
+    past_due = Account.past_due
+
+    assert_includes past_due, account
+    assert_not_includes past_due, other_account
+  end
+
+  test "with_expiring_free_until scope finds accounts expiring within days" do
+    account.update!(billing_status: :free_until, free_until: 5.days.from_now)
+    other_account.update!(billing_status: :free_until, free_until: 30.days.from_now)
+
+    expiring = Account.with_expiring_free_until(7)
+
+    assert_includes expiring, account
+    assert_not_includes expiring, other_account
+  end
+
+  private
+
+  def account
+    @account ||= accounts(:one)
+  end
+
+  def other_account
+    @other_account ||= accounts(:two)
+  end
+
+  def free_plan
+    @free_plan ||= plans(:free)
+  end
+
+  def starter_plan
+    @starter_plan ||= plans(:starter)
+  end
+
+  def growth_plan
+    @growth_plan ||= plans(:growth)
+  end
+end

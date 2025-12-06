@@ -1,0 +1,16 @@
+<h1>Event Limit Reached</h1>
+
+<p>Hi <%= @account.name %>,</p>
+
+<p>You've reached your monthly event limit. New events are no longer being tracked.</p>
+
+<p>Upgrade your plan now to continue tracking and never miss important attribution data.</p>
+
+<p>
+  <%= link_to "Upgrade Now", account_billing_url %>
+</p>
+
+<p>
+  Thanks,<br>
+  The multibuzz Team
+</p>
