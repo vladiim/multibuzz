@@ -7,7 +7,7 @@ module Dashboard
     DEFAULT_VIEW_MODE = "production"
     PRESET_DATE_RANGES = %w[7d 30d 90d].freeze
     DEFAULT_DATE_RANGE = "30d"
-    VALID_METRICS = %w[conversions revenue conversion_rate aov].freeze
+    VALID_METRICS = %w[conversions revenue aov avg_days avg_channels avg_visits].freeze
     DEFAULT_METRIC = "conversions"
 
     private

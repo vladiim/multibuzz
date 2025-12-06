@@ -1,61 +1,47 @@
 <% data = result[:data] %>
 <% totals = data[:totals] %>
 <% prior = totals[:prior_period] %>
-
-<!-- KPI Cards as Metric Tabs -->
 <% selected_metric = @filter_params[:metric] %>
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-  <%= link_to dashboard_path(request.query_parameters.merge(metric: "conversions")),
-      data: { turbo_frame: "_top" },
-      class: "bg-white p-5 rounded-lg shadow transition-all hover:shadow-md #{selected_metric == 'conversions' ? 'ring-2 ring-indigo-500' : 'cursor-pointer'}" do %>
-    <div class="flex items-center gap-1.5">
-      <dt class="text-sm font-medium text-gray-500">Conversions</dt>
-    </div>
-    <dd class="mt-1">
-      <span class="text-2xl font-semibold text-gray-900"><%= format_metric(totals[:conversions]) %></span>
-      <%= format_change(percentage_change(totals[:conversions], prior[:conversions])) %>
-    </dd>
-    <div class="mt-1 text-xs text-gray-400">vs <%= format_metric(prior[:conversions]) %> prior</div>
-  <% end %>
 
-  <%= link_to dashboard_path(request.query_parameters.merge(metric: "revenue")),
-      data: { turbo_frame: "_top" },
-      class: "bg-white p-5 rounded-lg shadow transition-all hover:shadow-md #{selected_metric == 'revenue' ? 'ring-2 ring-indigo-500' : 'cursor-pointer'}" do %>
-    <div class="flex items-center gap-1.5">
-      <dt class="text-sm font-medium text-gray-500">Revenue</dt>
-    </div>
-    <dd class="mt-1">
-      <span class="text-2xl font-semibold text-gray-900"><%= format_metric(totals[:revenue], type: :currency) %></span>
-      <%= format_change(percentage_change(totals[:revenue], prior[:revenue])) %>
-    </dd>
-    <div class="mt-1 text-xs text-gray-400">vs <%= format_metric(prior[:revenue], type: :currency) %> prior</div>
-  <% end %>
+<!-- KPI Cards -->
+<div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+  <%= render "dashboard/conversions/kpi_card",
+    metric: "conversions",
+    label: "Conversions",
+    value: totals[:conversions],
+    prior_value: prior[:conversions] %>
 
-  <%= link_to dashboard_path(request.query_parameters.merge(metric: "conversion_rate")),
-      data: { turbo_frame: "_top" },
-      class: "bg-white p-5 rounded-lg shadow transition-all hover:shadow-md #{selected_metric == 'conversion_rate' ? 'ring-2 ring-indigo-500' : 'cursor-pointer'}" do %>
-    <div class="flex items-center gap-1.5">
-      <dt class="text-sm font-medium text-gray-500">Conversion Rate</dt>
-    </div>
-    <dd class="mt-1">
-      <span class="text-2xl font-semibold text-gray-900"><%= format_metric(totals[:conversion_rate], type: :percentage) %></span>
-      <%= format_change(percentage_change(totals[:conversion_rate], prior[:conversion_rate])) %>
-    </dd>
-    <div class="mt-1 text-xs text-gray-400">vs <%= format_metric(prior[:conversion_rate], type: :percentage) %> prior</div>
-  <% end %>
+  <%= render "dashboard/conversions/kpi_card",
+    metric: "revenue",
+    label: "Revenue",
+    value: totals[:revenue],
+    prior_value: prior[:revenue],
+    type: :currency %>
 
-  <%= link_to dashboard_path(request.query_parameters.merge(metric: "aov")),
-      data: { turbo_frame: "_top" },
-      class: "bg-white p-5 rounded-lg shadow transition-all hover:shadow-md #{selected_metric == 'aov' ? 'ring-2 ring-indigo-500' : 'cursor-pointer'}" do %>
-    <div class="flex items-center gap-1.5">
-      <dt class="text-sm font-medium text-gray-500">Avg Order Value</dt>
-    </div>
-    <dd class="mt-1">
-      <span class="text-2xl font-semibold text-gray-900"><%= format_metric(totals[:aov], type: :currency) %></span>
-      <%= format_change(percentage_change(totals[:aov], prior[:aov])) %>
-    </dd>
-    <div class="mt-1 text-xs text-gray-400">vs <%= format_metric(prior[:aov], type: :currency) %> prior</div>
-  <% end %>
+  <%= render "dashboard/conversions/kpi_card",
+    metric: "aov",
+    label: "Avg Order Value",
+    value: totals[:aov],
+    prior_value: prior[:aov],
+    type: :currency %>
+
+  <%= render "dashboard/conversions/kpi_card",
+    metric: "avg_days",
+    label: "Avg Days to Convert",
+    value: totals[:avg_days_to_convert],
+    subtitle: "from first touch" %>
+
+  <%= render "dashboard/conversions/kpi_card",
+    metric: "avg_channels",
+    label: "Avg Channels",
+    value: totals[:avg_channels_to_convert],
+    subtitle: "per conversion" %>
+
+  <%= render "dashboard/conversions/kpi_card",
+    metric: "avg_visits",
+    label: "Avg Visits",
+    value: totals[:avg_visits_to_convert],
+    subtitle: "per conversion" %>
 </div>
 
 <!-- Time Series Chart -->
@@ -82,8 +68,24 @@
 </div>
 
 <!-- Attribution Chart (metric-driven) -->
-<% chart_metric = %w[revenue aov].include?(selected_metric) ? "revenue" : "credits" %>
-<% chart_title = { "conversions" => "Conversions", "revenue" => "Revenue", "conversion_rate" => "Conversions", "aov" => "Revenue" }[selected_metric] %>
+<%
+chart_metric = case selected_metric
+  when "revenue", "aov" then "revenue"
+  when "avg_channels" then "avg_channels"
+  when "avg_visits" then "avg_visits"
+  when "avg_days" then "avg_days"
+  else "credits"
+  end
+chart_titles = {
+  "conversions" => "Conversions",
+  "revenue" => "Revenue",
+  "aov" => "Revenue",
+  "avg_channels" => "Avg Channels",
+  "avg_visits" => "Avg Visits",
+  "avg_days" => "Avg Days"
+}
+chart_title = chart_titles[selected_metric] || "Conversions"
+%>
 <div class="bg-white p-6 rounded-lg shadow mb-6">
   <div class="flex items-center justify-between mb-4">
     <h3 class="text-lg font-medium text-gray-900"><%= chart_title %> by Channel</h3>
