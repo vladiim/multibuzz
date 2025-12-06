@@ -1,0 +1,22 @@
+<%# Required locals: label, value %>
+<%# Optional locals: prior_value, type, subtitle %>
+<% type = local_assigns[:type] %>
+<% subtitle = local_assigns[:subtitle] %>
+<% prior_value = local_assigns[:prior_value] %>
+
+<div class="flex items-center gap-1.5">
+  <dt class="text-sm font-medium text-gray-500"><%= label %></dt>
+</div>
+<dd class="mt-1">
+  <span class="text-2xl font-semibold text-gray-900">
+    <%= value.present? ? format_metric(value, type: type) : "—" %>
+  </span>
+  <% if prior_value.present? %>
+    <%= format_change(percentage_change(value, prior_value)) %>
+  <% end %>
+</dd>
+<% if subtitle.present? %>
+  <div class="mt-1 text-xs text-gray-400"><%= subtitle %></div>
+<% elsif prior_value.present? %>
+  <div class="mt-1 text-xs text-gray-400">vs <%= format_metric(prior_value, type: type) %> prior</div>
+<% end %>
