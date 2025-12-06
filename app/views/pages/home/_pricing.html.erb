@@ -1,0 +1,86 @@
+<section id="pricing" class="py-24 px-6 bg-white">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-16">
+      <h2 class="text-4xl font-bold text-gray-900">Pricing that makes sense</h2>
+      <p class="mt-4 text-xl text-gray-600">
+        Start free. Scale affordably. That's 1/10th the price of Amplitude or Segment.
+      </p>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="bg-gray-900 text-white">
+              <th class="px-6 py-4 text-left text-sm font-semibold">Tier</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold">Monthly Events</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold">Price/Month</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold">Effective $/1K Events</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <tr class="hover:bg-gray-50 transition-colors">
+              <td class="px-6 py-4">
+                <div class="font-semibold text-gray-900">Free</div>
+              </td>
+              <td class="px-6 py-4 text-gray-600">&le;10K</td>
+              <td class="px-6 py-4">
+                <div class="text-xl font-bold text-gray-900">$0</div>
+              </td>
+              <td class="px-6 py-4 text-gray-500">&mdash;</td>
+            </tr>
+            <tr class="hover:bg-gray-50 transition-colors">
+              <td class="px-6 py-4">
+                <div class="font-semibold text-gray-900">Starter</div>
+              </td>
+              <td class="px-6 py-4 text-gray-600">&le;50K</td>
+              <td class="px-6 py-4">
+                <div class="text-xl font-bold text-gray-900">$29</div>
+              </td>
+              <td class="px-6 py-4 text-gray-600">$0.58</td>
+            </tr>
+            <tr class="hover:bg-gray-50 transition-colors">
+              <td class="px-6 py-4">
+                <div class="font-semibold text-gray-900">Growth</div>
+              </td>
+              <td class="px-6 py-4 text-gray-600">&le;250K</td>
+              <td class="px-6 py-4">
+                <div class="text-xl font-bold text-gray-900">$99</div>
+              </td>
+              <td class="px-6 py-4 text-gray-600">$0.40</td>
+            </tr>
+            <tr class="hover:bg-gray-50 transition-colors">
+              <td class="px-6 py-4">
+                <div class="font-semibold text-gray-900">Pro</div>
+              </td>
+              <td class="px-6 py-4 text-gray-600">&le;1M</td>
+              <td class="px-6 py-4">
+                <div class="text-xl font-bold text-gray-900">$299</div>
+              </td>
+              <td class="px-6 py-4 text-gray-600">$0.30</td>
+            </tr>
+            <tr class="hover:bg-gray-50 transition-colors">
+              <td class="px-6 py-4">
+                <div class="font-semibold text-gray-900">Enterprise</div>
+              </td>
+              <td class="px-6 py-4 text-gray-600">1M+</td>
+              <td class="px-6 py-4">
+                <div class="text-xl font-bold text-gray-900">$299 base</div>
+                <div class="text-sm text-gray-600 mt-1">+ $99 per 1M block</div>
+              </td>
+              <td class="px-6 py-4 text-gray-600">$0.10&ndash;$0.20</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <p class="mt-8 text-sm text-gray-500 text-center">
+      * Metered billing: Pay only for what you use in 10K increments if you exceed your plan tier.
+    </p>
+
+    <div class="mt-12 text-center">
+      <%= link_to "Get Started Free", new_waitlist_path, class: "inline-block px-8 py-4 text-base font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-all shadow-sm" %>
+    </div>
+  </div>
+</section>
