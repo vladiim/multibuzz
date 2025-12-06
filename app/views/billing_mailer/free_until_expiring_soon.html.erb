@@ -1,0 +1,16 @@
+<h1>Free Access Ending Soon</h1>
+
+<p>Hi <%= @account.name %>,</p>
+
+<p>Your free access to multibuzz expires in <%= @days_remaining %> days.</p>
+
+<p>Subscribe now to continue tracking your marketing attribution without interruption.</p>
+
+<p>
+  <%= link_to "View Plans", account_billing_url %>
+</p>
+
+<p>
+  Thanks,<br>
+  The multibuzz Team
+</p>

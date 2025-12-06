@@ -1,0 +1,128 @@
+<section class="pb-24 px-4 md:px-6 -mt-8">
+  <div class="max-w-6xl mx-auto">
+    <div class="bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden">
+      <!-- Header -->
+      <div class="bg-gray-50 border-b border-gray-200 px-4 md:px-6 py-3 md:py-4 flex items-center justify-between">
+        <div class="flex items-center gap-4 md:gap-6">
+          <span class="text-sm font-medium text-indigo-600 border-b-2 border-indigo-600 pb-1">Conversions</span>
+          <span class="text-sm text-gray-500 hidden sm:inline">Funnel</span>
+          <span class="text-sm text-gray-500 hidden sm:inline">Events</span>
+        </div>
+        <div class="flex items-center gap-2 md:gap-3">
+          <span class="text-xs text-gray-500 bg-white px-2 md:px-3 py-1 md:py-1.5 rounded border border-gray-200">30d</span>
+          <span class="text-xs text-gray-500 bg-white px-2 md:px-3 py-1 md:py-1.5 rounded border border-gray-200 hidden sm:inline">First Touch</span>
+        </div>
+      </div>
+
+      <div class="p-4 md:p-6">
+        <!-- KPI Cards - horizontal scroll on mobile -->
+        <div class="flex gap-3 mb-4 md:mb-6 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory">
+          <div class="flex-shrink-0 w-32 md:w-40 snap-start bg-white p-3 md:p-4 rounded-lg border-2 border-indigo-500 shadow-sm">
+            <div class="text-xs font-medium text-gray-500">Conversions</div>
+            <div class="mt-1 flex items-baseline gap-1">
+              <span class="text-lg md:text-xl font-semibold text-gray-900">2,847</span>
+              <span class="text-xs text-green-600">+12%</span>
+            </div>
+          </div>
+          <div class="flex-shrink-0 w-32 md:w-40 snap-start bg-white p-3 md:p-4 rounded-lg border border-gray-200 shadow-sm">
+            <div class="text-xs font-medium text-gray-500">Revenue</div>
+            <div class="mt-1 flex items-baseline gap-1">
+              <span class="text-lg md:text-xl font-semibold text-gray-900">$284K</span>
+              <span class="text-xs text-green-600">+19%</span>
+            </div>
+          </div>
+          <div class="flex-shrink-0 w-32 md:w-40 snap-start bg-white p-3 md:p-4 rounded-lg border border-gray-200 shadow-sm">
+            <div class="text-xs font-medium text-gray-500">AOV</div>
+            <div class="mt-1 flex items-baseline gap-1">
+              <span class="text-lg md:text-xl font-semibold text-gray-900">$100</span>
+              <span class="text-xs text-green-600">+6%</span>
+            </div>
+          </div>
+          <div class="flex-shrink-0 w-32 md:w-40 snap-start bg-white p-3 md:p-4 rounded-lg border border-gray-200 shadow-sm">
+            <div class="text-xs font-medium text-gray-500">Avg Days</div>
+            <div class="mt-1">
+              <span class="text-lg md:text-xl font-semibold text-gray-900">4.2</span>
+            </div>
+          </div>
+          <div class="flex-shrink-0 w-32 md:w-40 snap-start bg-white p-3 md:p-4 rounded-lg border border-gray-200 shadow-sm">
+            <div class="text-xs font-medium text-gray-500">Channels</div>
+            <div class="mt-1">
+              <span class="text-lg md:text-xl font-semibold text-gray-900">2.8</span>
+            </div>
+          </div>
+          <div class="flex-shrink-0 w-32 md:w-40 snap-start bg-white p-3 md:p-4 rounded-lg border border-gray-200 shadow-sm">
+            <div class="text-xs font-medium text-gray-500">Visits</div>
+            <div class="mt-1">
+              <span class="text-lg md:text-xl font-semibold text-gray-900">5.3</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts - horizontal scroll on mobile -->
+        <div class="flex md:grid md:grid-cols-2 gap-4 md:gap-6 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory">
+          <!-- Line Chart -->
+          <div class="flex-shrink-0 w-72 md:w-auto snap-start bg-white p-4 md:p-5 rounded-lg border border-gray-200 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-xs md:text-sm font-medium text-gray-900">Performance</h3>
+              <div class="flex items-center gap-2 text-xs">
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-indigo-500"></span><span class="hidden md:inline">Paid</span></span>
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-pink-500"></span><span class="hidden md:inline">Email</span></span>
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-lime-500"></span><span class="hidden md:inline">Organic</span></span>
+              </div>
+            </div>
+            <svg viewBox="0 0 280 80" class="w-full h-20">
+              <line x1="0" y1="20" x2="280" y2="20" stroke="#f3f4f6" stroke-width="1"/>
+              <line x1="0" y1="40" x2="280" y2="40" stroke="#f3f4f6" stroke-width="1"/>
+              <line x1="0" y1="60" x2="280" y2="60" stroke="#f3f4f6" stroke-width="1"/>
+              <polyline fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                points="0,55 40,50 80,42 120,46 160,35 200,28 240,32 280,18"/>
+              <polyline fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                points="0,62 40,60 80,56 120,54 160,50 200,48 240,44 280,38"/>
+              <polyline fill="none" stroke="#84cc16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                points="0,66 40,64 80,62 120,63 160,60 200,58 240,59 280,55"/>
+            </svg>
+          </div>
+
+          <!-- Bar Chart -->
+          <div class="flex-shrink-0 w-72 md:w-auto snap-start bg-white p-4 md:p-5 rounded-lg border border-gray-200 shadow-sm">
+            <h3 class="text-xs md:text-sm font-medium text-gray-900 mb-3">By Channel</h3>
+            <div class="space-y-2">
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-600 w-14 text-right">Paid</span>
+                <div class="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden">
+                  <div class="bg-indigo-500 h-full rounded-full" style="width: 85%"></div>
+                </div>
+                <span class="text-xs font-medium text-gray-900 w-12">$142K</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-600 w-14 text-right">Email</span>
+                <div class="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden">
+                  <div class="bg-pink-500 h-full rounded-full" style="width: 52%"></div>
+                </div>
+                <span class="text-xs font-medium text-gray-900 w-12">$71K</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-600 w-14 text-right">Organic</span>
+                <div class="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden">
+                  <div class="bg-lime-500 h-full rounded-full" style="width: 35%"></div>
+                </div>
+                <span class="text-xs font-medium text-gray-900 w-12">$43K</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-600 w-14 text-right">Direct</span>
+                <div class="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden">
+                  <div class="bg-gray-400 h-full rounded-full" style="width: 18%"></div>
+                </div>
+                <span class="text-xs font-medium text-gray-900 w-12">$21K</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="text-center text-xs md:text-sm text-gray-400 mt-4">
+      Real-time attribution &bull; Compare models &bull; Export anytime
+    </p>
+  </div>
+</section>

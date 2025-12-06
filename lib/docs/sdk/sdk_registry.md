@@ -2,7 +2,7 @@
 
 **Purpose**: Central registry of all mbuzz SDKs with version info, status, and maintenance notes.
 
-**Last Updated**: 2025-11-25
+**Last Updated**: 2025-11-29
 
 ---
 
@@ -12,34 +12,34 @@
 
 **Repository**: https://github.com/mbuzz-tracking/mbuzz-ruby
 **Package**: https://rubygems.org/gems/mbuzz
-**Status**: 🟡 In Development
-**Current Version**: 0.1.0
-**Target Version**: 0.2.0 (fixing critical bugs)
+**Status**: ✅ Production Ready
+**Current Version**: 0.5.0
 
 **Maintainer**: Vlad
-**Last Verified**: 2025-11-25
+**Last Verified**: 2025-11-29
 
 **Framework Support**:
-- ✅ Ruby on Rails (5.2+)
+- ✅ Ruby on Rails (6.0+)
 - ✅ Sinatra
 - ✅ Rack middleware
 - ✅ Plain Ruby
 
-**Features**:
-- ✅ Event tracking (`Mbuzz.track`)
-- ✅ Visitor identification (automatic via cookies)
-- ✅ Session tracking (automatic)
-- ⚠️ User identification (`Mbuzz.identify`) - implemented but backend endpoint missing
-- ⚠️ Visitor aliasing (`Mbuzz.alias`) - implemented but backend endpoint missing
-- ✅ Automatic page view tracking (Rack middleware)
-- ❌ Batch event sending (planned)
+**Features** (4-Call Model):
+- ✅ `Mbuzz.init(api_key:, ...)` - Configure SDK
+- ✅ `Mbuzz.event(type, **props)` - Track journey steps
+- ✅ `Mbuzz.conversion(type, revenue:, **props)` - Track business outcomes
+- ✅ `Mbuzz.identify(user_id, traits:, visitor_id:)` - Link visitor to user + traits
+- ✅ Visitor ID generation (cookie `_mbuzz_vid`, 64 hex chars, 2yr expiry)
+- ✅ Session ID generation (cookie `_mbuzz_sid`, 64 hex chars, 30min expiry)
+- ✅ Session creation (`POST /sessions`) on new session
+- ✅ URL/referrer auto-enrichment via RequestContext
 
-**Known Issues**:
-- 🐛 Sends Unix timestamp instead of ISO8601 (will break validation)
-- 🐛 Sends `event` parameter instead of `event_type`
-- 📝 SPECIFICATION.md says `anonymous_id` but should say `visitor_id`
+**Deprecated Methods** (emit warnings, still work):
+- `Mbuzz.configure { }` → use `Mbuzz.init`
+- `Mbuzz.track(...)` → use `Mbuzz.event`
 
-**Fix Status**: See [bug_fixes_critical_inconsistencies.md](../../specs/bug_fixes_critical_inconsistencies.md)
+**Removed**:
+- `Mbuzz.alias` → merged into `Mbuzz.identify` with `visitor_id:` param
 
 **Installation**:
 ```ruby
@@ -150,13 +150,22 @@ gem 'mbuzz'
 
 ## SDK Development Guidelines
 
-### All SDKs Must Implement
+### All SDKs Must Implement (4-Call Model)
 
 **Required Methods**:
 ```
-track(user_id:, visitor_id:, event_type:, properties:, timestamp:)
-identify(user_id:, visitor_id:, traits:)
-alias(visitor_id:, user_id:)
+# 1. init(config) - Configure SDK and establish session
+# Internally: Creates session via POST /sessions on new session detection
+
+# 2. event(event_type, properties) - Track journey steps
+# Maps to: POST /events
+
+# 3. conversion(conversion_type, revenue, properties) - Track business outcomes
+# Maps to: POST /conversions
+
+# 4. identify(user_id, traits) - Link visitor to known user
+# Maps to: POST /identify (with visitor_id from cookie)
+# Note: alias() is deprecated - use identify() with visitor_id instead
 ```
 
 **Required Configuration**:
@@ -168,13 +177,17 @@ debug (default: false)
 ```
 
 **Required Behavior**:
+- Auto-generate visitor_id (64 hex chars) and store in cookie `_mbuzz_vid`
+- Auto-generate session_id (64 hex chars) and store in cookie `_mbuzz_sid`
+- Detect new sessions (no cookie or 30+ min expired)
+- POST to `/sessions` on new session (async, non-blocking)
+- Include URL and referrer in session and event calls
 - Never raise exceptions (return false on errors)
 - Log errors if debug mode enabled
-- Auto-generate visitor IDs if not provided
 - Send timestamps in ISO8601 format
-- Include User-Agent header with SDK version
 
 **See**: [API Contract](./api_contract.md) for complete specification
+**See**: [Identity & Sessions Spec](../../specs/identity_and_sessions_spec.md) for concepts
 
 ---
 
@@ -182,7 +195,7 @@ debug (default: false)
 
 | Backend Version | Ruby SDK | Python SDK | PHP SDK | Node SDK |
 |----------------|----------|------------|---------|----------|
-| 1.0.0 (current) | 0.2.0+   | N/A        | N/A     | N/A      |
+| 1.2.0 (current) | 0.5.0+   | N/A        | N/A     | N/A      |
 
 **Breaking Change Policy**:
 - Backend maintains compatibility for 1 major version back
@@ -203,6 +216,9 @@ Before releasing any SDK version:
 - [ ] Error handling never raises exceptions
 - [ ] Tests cover all public methods
 - [ ] Examples in README work
+- [ ] Session creation on new session (POST /sessions)
+- [ ] URL and referrer included in sessions/events
+- [ ] Session detection (cookie missing or expired)
 
 ### Documentation
 - [ ] README updated with new features

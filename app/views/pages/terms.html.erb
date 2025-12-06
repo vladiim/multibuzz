@@ -1,0 +1,315 @@
+<% content_for(:title) { "Terms of Service | mbuzz" } %>
+
+<%= render "layouts/nav" %>
+
+<div class="min-h-screen bg-white">
+  <!-- Header -->
+  <section class="py-16 px-6 border-b border-gray-200">
+    <div class="max-w-3xl mx-auto">
+      <h1 class="text-4xl font-bold text-gray-900 tracking-tight">Terms of Service</h1>
+      <p class="mt-4 text-gray-600">Last updated: November 29, 2025</p>
+    </div>
+  </section>
+
+  <!-- TL;DR Section -->
+  <section class="py-12 px-6 bg-blue-50 border-b border-blue-100">
+    <div class="max-w-3xl mx-auto">
+      <h2 class="text-xl font-bold text-gray-900 mb-4">TL;DR</h2>
+      <ul class="space-y-2 text-gray-700">
+        <li class="flex items-start gap-2">
+          <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          <span>Pay your plan fee upfront each month. If you go over your limit, we charge for extra 10K blocks automatically</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          <span>If a payment fails, we stop storing new events until it's fixed. Events during that time are lost</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          <span>Free tier: 10K events/month, hard cap. Upgrade to continue beyond that</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          <span>Use mbuzz legally and don't abuse our service. We can terminate accounts that violate these terms</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <section class="py-12 px-6">
+    <div class="max-w-3xl mx-auto prose prose-gray">
+
+      <!-- Agreement -->
+      <h2>Agreement to Terms</h2>
+      <p>
+        By accessing or using mbuzz, you agree to be bound by these Terms of Service. If you're using mbuzz
+        on behalf of a company, you represent that you have authority to bind that company to these terms.
+      </p>
+      <p>
+        mbuzz is operated by <strong>Forebrite Pty Ltd</strong> (ABN 64 671 038 958). When we say "mbuzz,"
+        "we," "us," or "our," we mean Forebrite Pty Ltd.
+      </p>
+
+      <!-- Service Description -->
+      <h2>What mbuzz Does</h2>
+      <p>
+        mbuzz is a multi-touch attribution platform. We provide:
+      </p>
+      <ul>
+        <li>APIs and SDKs to collect events from your website or application</li>
+        <li>Attribution models to analyze your marketing touchpoints</li>
+        <li>Dashboards to visualize your data</li>
+        <li>Data export capabilities</li>
+      </ul>
+
+      <!-- Accounts -->
+      <h2>Your Account</h2>
+      <p>
+        To use mbuzz, you must create an account with a valid email address and company name. You're
+        responsible for:
+      </p>
+      <ul>
+        <li>Keeping your login credentials secure</li>
+        <li>All activity that occurs under your account</li>
+        <li>Notifying us immediately if you suspect unauthorized access</li>
+      </ul>
+      <p>
+        You must be at least 18 years old and legally able to enter into contracts to use mbuzz.
+      </p>
+
+      <!-- Billing Section - Critical -->
+      <h2>Billing and Payment</h2>
+
+      <h3>How Billing Works</h3>
+      <p>
+        mbuzz uses a <strong>prepaid base plan with metered overage</strong> model:
+      </p>
+      <ol>
+        <li><strong>Base plan</strong>: You pay your monthly plan fee in advance at the start of each billing cycle</li>
+        <li><strong>Included events</strong>: Your plan includes a set number of events per month (e.g., 50K for Starter)</li>
+        <li><strong>Overage</strong>: If you exceed your limit, we automatically charge your card for additional 10K blocks</li>
+      </ol>
+
+      <h3>Overage Charges</h3>
+      <p>
+        When you exceed your plan's event limit:
+      </p>
+      <ul>
+        <li>We charge your card <strong>immediately</strong> for one 10K block at your plan's overage rate</li>
+        <li>Charges are in full 10K blocks (no partial blocks)</li>
+        <li>Each additional 10K events triggers another charge</li>
+        <li>You can track your usage in real-time on the dashboard</li>
+      </ul>
+      <p>
+        <strong>Current overage rates:</strong>
+      </p>
+      <ul>
+        <li>Starter: $5.80 per 10K events</li>
+        <li>Growth: $3.96 per 10K events</li>
+        <li>Pro: $2.99 per 10K events</li>
+      </ul>
+      <p>
+        We send email notifications at 80% and 100% of your plan limit, and for each overage charge.
+      </p>
+
+      <h3>Free Tier</h3>
+      <p>
+        The Free tier includes up to 10,000 events per month. This is a <strong>hard cap</strong>:
+      </p>
+      <ul>
+        <li>When you reach 10K events, we stop storing new events</li>
+        <li>There are no overage charges on the Free tier (no payment method required)</li>
+        <li>To continue tracking beyond 10K, you must upgrade to a paid plan</li>
+        <li>Your event counter resets at the start of each monthly cycle</li>
+      </ul>
+
+      <h3>Payment Failures</h3>
+      <p>
+        If a payment fails (overage charge or plan renewal):
+      </p>
+      <ul>
+        <li><strong>Immediately</strong>: We stop storing new events</li>
+        <li>Your existing data remains accessible (read-only)</li>
+        <li>We retry the payment: after 24 hours, 72 hours, and 7 days</li>
+        <li>We send email notifications for each retry attempt</li>
+      </ul>
+      <p>
+        <strong>Important</strong>: Events that occur during a payment failure are <strong>not stored</strong>
+        and <strong>cannot be recovered</strong>. Once payment succeeds, event storage resumes, but lost
+        events are gone permanently.
+      </p>
+      <p>
+        For plan renewals, we provide a 3-day grace period where events continue to be stored while
+        we retry the payment.
+      </p>
+
+      <h3>Plan Changes</h3>
+      <ul>
+        <li><strong>Upgrades</strong>: Take effect immediately. You receive prorated credit for your current plan</li>
+        <li><strong>Downgrades</strong>: Take effect at the start of your next billing cycle</li>
+        <li><strong>Cancellation</strong>: Your plan remains active until the end of the current billing cycle. No prorated refunds</li>
+      </ul>
+
+      <h3>Refunds</h3>
+      <p>
+        We don't offer refunds for partial months or unused events. If you believe you were incorrectly
+        charged, <%= link_to "contact us", contact_path, class: "text-blue-600 hover:text-blue-500" %>.
+      </p>
+
+      <!-- Acceptable Use -->
+      <h2>Acceptable Use</h2>
+      <p>
+        You agree not to use mbuzz to:
+      </p>
+      <ul>
+        <li>Violate any laws or regulations</li>
+        <li>Track users without proper consent where required by law</li>
+        <li>Collect sensitive personal data (health, financial, etc.) without appropriate safeguards</li>
+        <li>Attempt to reverse-engineer, hack, or compromise our systems</li>
+        <li>Resell mbuzz services without our written permission</li>
+        <li>Send events designed to artificially inflate your usage or test our rate limits</li>
+        <li>Use automated systems to circumvent usage limits</li>
+      </ul>
+      <p>
+        We reserve the right to suspend or terminate accounts that violate these terms.
+      </p>
+
+      <!-- Your Data -->
+      <h2>Your Data</h2>
+      <p>
+        You own your data. We don't claim any ownership of the events, sessions, or visitor data you
+        collect through mbuzz.
+      </p>
+      <p>
+        You can export your data at any time through the dashboard or API. If you cancel your account,
+        you have 90 days to export your data before it's permanently deleted (see our
+        <%= link_to "Privacy Policy", privacy_path, class: "text-blue-600 hover:text-blue-500" %>
+        for details).
+      </p>
+      <p>
+        You're responsible for ensuring you have proper consent and legal basis to collect data from
+        your users. mbuzz is the data processor; you are the data controller.
+      </p>
+
+      <!-- Intellectual Property -->
+      <h2>Intellectual Property</h2>
+      <p>
+        mbuzz and its original content, features, and functionality are owned by Forebrite Pty Ltd
+        and are protected by copyright, trademark, and other intellectual property laws.
+      </p>
+      <p>
+        We grant you a limited, non-exclusive license to use our APIs and SDKs for the purpose of
+        sending events to mbuzz. You may not copy, modify, or distribute our code except as provided
+        in our SDK documentation.
+      </p>
+
+      <!-- Service Availability -->
+      <h2>Service Availability</h2>
+      <p>
+        We strive for high availability but don't guarantee 100% uptime. We may occasionally:
+      </p>
+      <ul>
+        <li>Perform maintenance (we'll try to notify you in advance)</li>
+        <li>Experience unplanned outages</li>
+        <li>Rate-limit or throttle requests to protect system stability</li>
+      </ul>
+      <p>
+        We don't offer formal SLAs at this time. For enterprise customers needing guaranteed uptime,
+        contact us to discuss custom arrangements.
+      </p>
+
+      <!-- Limitation of Liability -->
+      <h2>Limitation of Liability</h2>
+      <p>
+        To the maximum extent permitted by law:
+      </p>
+      <ul>
+        <li>mbuzz is provided "as is" without warranties of any kind</li>
+        <li>We're not liable for any indirect, incidental, or consequential damages</li>
+        <li>Our total liability is limited to the amount you paid us in the 12 months before the claim</li>
+        <li>We're not liable for data loss, including events not stored due to payment failures or service outages</li>
+      </ul>
+      <p>
+        Some jurisdictions don't allow these limitations, so they may not apply to you.
+      </p>
+
+      <!-- Indemnification -->
+      <h2>Indemnification</h2>
+      <p>
+        You agree to indemnify and hold harmless mbuzz and Forebrite Pty Ltd from any claims, damages,
+        or expenses arising from:
+      </p>
+      <ul>
+        <li>Your use of mbuzz</li>
+        <li>Your violation of these terms</li>
+        <li>Your violation of any third-party rights</li>
+        <li>Data you collect through mbuzz</li>
+      </ul>
+
+      <!-- Termination -->
+      <h2>Termination</h2>
+      <p>
+        <strong>You can cancel</strong> your account at any time through the dashboard. Your service
+        continues until the end of your billing cycle.
+      </p>
+      <p>
+        <strong>We can terminate</strong> your account if you:
+      </p>
+      <ul>
+        <li>Violate these terms</li>
+        <li>Fail to pay after all retry attempts</li>
+        <li>Use mbuzz in a way that could harm us or other users</li>
+      </ul>
+      <p>
+        Upon termination, your data is handled according to our
+        <%= link_to "Privacy Policy", privacy_path, class: "text-blue-600 hover:text-blue-500" %>
+        (tracking data deleted immediately, account data retained for 90 days).
+      </p>
+
+      <!-- Disputes -->
+      <h2>Disputes</h2>
+      <p>
+        These terms are governed by the laws of New South Wales, Australia. Any disputes will be
+        resolved in the courts of New South Wales.
+      </p>
+      <p>
+        Before filing a formal dispute, please
+        <%= link_to "contact us", contact_path, class: "text-blue-600 hover:text-blue-500" %>.
+        We'll try to resolve things informally first.
+      </p>
+
+      <!-- Changes -->
+      <h2>Changes to These Terms</h2>
+      <p>
+        We may update these terms from time to time. If we make significant changes, we'll notify you
+        by email at least 30 days before they take effect.
+      </p>
+      <p>
+        Continued use of mbuzz after changes take effect means you accept the new terms.
+      </p>
+
+      <!-- Contact -->
+      <h2>Contact Us</h2>
+      <p>
+        Questions about these terms?
+        <%= link_to "Get in touch", contact_path, class: "text-blue-600 hover:text-blue-500" %>.
+      </p>
+      <p class="mt-6 text-sm text-gray-500">
+        Forebrite Pty Ltd<br>
+        ABN 64 671 038 958<br>
+        Australia
+      </p>
+    </div>
+  </section>
+</div>
+
+<%= render "layouts/footer" %>

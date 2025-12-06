@@ -1,0 +1,97 @@
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="mb-6">
+    <%= link_to "← Back to Billing Admin", admin_billing_path, class: "text-indigo-600 hover:text-indigo-900" %>
+  </div>
+
+  <h1 class="text-2xl font-bold text-gray-900 mb-8"><%= @account.name %></h1>
+
+  <!-- Account Info -->
+  <div class="bg-white shadow rounded-lg p-6 mb-8">
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">Account Information</h2>
+    <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <dt class="text-sm font-medium text-gray-500">Slug</dt>
+        <dd class="text-sm text-gray-900"><%= @account.slug %></dd>
+      </div>
+      <div>
+        <dt class="text-sm font-medium text-gray-500">Status</dt>
+        <dd><%= render "admin/billing/status_badge", status: @account.billing_status %></dd>
+      </div>
+      <div>
+        <dt class="text-sm font-medium text-gray-500">Current Plan</dt>
+        <dd class="text-sm text-gray-900"><%= @account.plan&.name || "None" %></dd>
+      </div>
+      <div>
+        <dt class="text-sm font-medium text-gray-500">Created</dt>
+        <dd class="text-sm text-gray-900"><%= @account.created_at.strftime("%B %d, %Y") %></dd>
+      </div>
+      <% if @account.free_until.present? %>
+        <div>
+          <dt class="text-sm font-medium text-gray-500">Free Until</dt>
+          <dd class="text-sm text-gray-900"><%= @account.free_until.strftime("%B %d, %Y") %></dd>
+        </div>
+      <% end %>
+      <% if @account.stripe_customer_id.present? %>
+        <div>
+          <dt class="text-sm font-medium text-gray-500">Stripe Customer</dt>
+          <dd class="text-sm text-gray-900"><%= @account.stripe_customer_id %></dd>
+        </div>
+      <% end %>
+    </dl>
+  </div>
+
+  <!-- Free Until Management -->
+  <div class="bg-white shadow rounded-lg p-6 mb-8">
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">Grant Free Access</h2>
+    <p class="text-sm text-gray-600 mb-4">
+      Grant this account free access until a specific date. Leave blank to remove free access.
+    </p>
+
+    <%= form_with model: @account, url: admin_account_path(@account), method: :patch, class: "space-y-4" do |f| %>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="account_free_until" class="block text-sm font-medium text-gray-700">Free Until Date</label>
+          <%= f.date_field :free_until, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+        </div>
+        <div>
+          <label for="account_plan_id" class="block text-sm font-medium text-gray-700">Plan (for access level)</label>
+          <%= f.collection_select :plan_id, @plans, :id, :name, { include_blank: "Select a plan" }, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <%= f.submit "Update Free Access", class: "inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 cursor-pointer" %>
+        <% if @account.billing_free_until? %>
+          <span class="text-sm text-gray-500">Currently has free access until <%= @account.free_until.strftime("%B %d, %Y") %></span>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Billing History -->
+  <div class="bg-white shadow rounded-lg p-6">
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">Billing Events</h2>
+    <% billing_events = @account.billing_events.order(created_at: :desc).limit(20) %>
+    <% if billing_events.any? %>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Event</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <% billing_events.each do |event| %>
+              <tr>
+                <td class="px-4 py-3 text-sm text-gray-900"><%= event.stripe_event_type %></td>
+                <td class="px-4 py-3 text-sm text-gray-500"><%= event.created_at.strftime("%b %d, %Y %H:%M") %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <p class="text-sm text-gray-500">No billing events recorded yet.</p>
+    <% end %>
+  </div>
+</div>

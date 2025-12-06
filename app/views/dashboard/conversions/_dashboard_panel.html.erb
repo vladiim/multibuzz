@@ -1,0 +1,97 @@
+<% data = result[:data] %>
+<% totals = data[:totals] %>
+<% prior = totals[:prior_period] %>
+<% model = local_assigns[:model] %>
+<% panel_index = local_assigns.fetch(:panel_index, 0) %>
+<% panel_id = model&.prefix_id || "default" %>
+<% accent_color = panel_index.zero? ? "indigo" : "teal" %>
+<% border_class = panel_index.zero? ? "border-l-4 border-indigo-500" : "border-l-4 border-teal-500" %>
+<% selected_metric = @filter_params[:metric] %>
+
+<div class="dashboard-panel <%= border_class %> pl-4">
+  <% if model %>
+    <h3 class="text-lg font-semibold text-gray-900 mb-4"><%= model.name.titleize %></h3>
+  <% end %>
+
+  <!-- KPI Cards -->
+  <div class="grid grid-cols-2 gap-3 mb-4">
+    <%= render "dashboard/conversions/kpi_card_compact",
+      metric: "conversions",
+      label: "Conversions",
+      value: totals[:conversions],
+      prior_value: prior[:conversions],
+      accent_color: accent_color %>
+
+    <%= render "dashboard/conversions/kpi_card_compact",
+      metric: "revenue",
+      label: "Revenue",
+      value: totals[:revenue],
+      prior_value: prior[:revenue],
+      type: :currency,
+      accent_color: accent_color %>
+
+    <%= render "dashboard/conversions/kpi_card_compact",
+      metric: "aov",
+      label: "Avg Order Value",
+      value: totals[:aov],
+      prior_value: prior[:aov],
+      type: :currency,
+      accent_color: accent_color %>
+
+    <%= render "dashboard/conversions/kpi_card_compact",
+      metric: "avg_channels",
+      label: "Avg Channels",
+      value: totals[:avg_channels_to_convert],
+      accent_color: accent_color %>
+
+    <%= render "dashboard/conversions/kpi_card_compact",
+      metric: "avg_visits",
+      label: "Avg Visits",
+      value: totals[:avg_visits_to_convert],
+      accent_color: accent_color %>
+
+    <%= render "dashboard/conversions/kpi_card_compact",
+      metric: "avg_days",
+      label: "Avg Days",
+      value: totals[:avg_days_to_convert],
+      accent_color: accent_color %>
+  </div>
+
+  <!-- Time Series Chart -->
+  <div class="bg-white p-4 rounded-lg shadow mb-4">
+    <div class="flex items-center justify-between mb-3">
+      <h4 class="text-sm font-medium text-gray-900">Channel Performance</h4>
+    </div>
+    <div id="time-series-chart-<%= panel_id %>"
+      data-controller="chart"
+      data-chart-type-value="line"
+      data-chart-data-value="<%= data[:time_series].to_json %>"
+      class="h-48">
+    </div>
+  </div>
+
+  <!-- Attribution Chart -->
+  <%
+  chart_metric = case selected_metric
+    when "revenue", "aov" then "revenue"
+    when "avg_channels" then "avg_channels"
+    when "avg_visits" then "avg_visits"
+    when "avg_days" then "avg_days"
+    else "credits"
+    end
+  %>
+  <div class="bg-white p-4 rounded-lg shadow">
+    <div class="flex items-center justify-between mb-3">
+      <h4 class="text-sm font-medium text-gray-900">By Channel</h4>
+    </div>
+    <div id="channel-chart-<%= panel_id %>"
+      data-controller="chart"
+      data-chart-type-value="bar"
+      data-chart-metric-value="<%= chart_metric %>"
+      data-chart-drilldown-value="true"
+      data-chart-campaigns-value="<%= data[:top_campaigns].to_json %>"
+      data-chart-data-value="<%= data[:by_channel].to_json %>"
+      class="h-56">
+    </div>
+  </div>
+</div>

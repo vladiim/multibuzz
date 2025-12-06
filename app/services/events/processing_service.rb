@@ -91,9 +91,14 @@ module Events
         session: session,
         occurred_at: event_timestamp,
         properties: event_data["properties"],
-        is_test: is_test
+        funnel: event_data["funnel"] || event_data[:funnel],
+        is_test: is_test,
+        locked: should_lock_event?
       )
     end
 
+    def should_lock_event?
+      account.should_lock_events?
+    end
   end
 end

@@ -172,6 +172,66 @@ module Conversions
       assert_nil result[:conversion].event_id
     end
 
+    # ==========================================
+    # Revenue normalization tests
+    # ==========================================
+
+    test "normalizes zero revenue to nil" do
+      result = build_service(event_id: event.prefix_id, revenue: 0).call
+
+      assert result[:success]
+      assert_nil result[:conversion].revenue
+    end
+
+    test "normalizes string zero revenue to nil" do
+      result = build_service(event_id: event.prefix_id, revenue: "0").call
+
+      assert result[:success]
+      assert_nil result[:conversion].revenue
+    end
+
+    test "handles invalid revenue gracefully" do
+      # Object that raises TypeError on to_f
+      invalid_revenue = Object.new
+
+      result = build_service(event_id: event.prefix_id, revenue: invalid_revenue).call
+
+      assert result[:success]
+      assert_nil result[:conversion].revenue
+    end
+
+    test "preserves valid numeric revenue" do
+      result = build_service(event_id: event.prefix_id, revenue: 150.50).call
+
+      assert result[:success]
+      assert_equal 150.50, result[:conversion].revenue.to_f
+    end
+
+    test "preserves valid string revenue" do
+      result = build_service(event_id: event.prefix_id, revenue: "99.99").call
+
+      assert result[:success]
+      assert_equal 99.99, result[:conversion].revenue.to_f
+    end
+
+    # ==========================================
+    # Currency tests
+    # ==========================================
+
+    test "stores currency when provided" do
+      result = build_service(event_id: event.prefix_id, currency: "EUR").call
+
+      assert result[:success]
+      assert_equal "EUR", result[:conversion].currency
+    end
+
+    test "uses default USD when currency not provided" do
+      result = build_service(event_id: event.prefix_id).call
+
+      assert result[:success]
+      assert_equal "USD", result[:conversion].currency
+    end
+
     private
 
     def build_service(
@@ -179,6 +239,7 @@ module Conversions
       visitor_id: nil,
       conversion_type: "signup",
       revenue: nil,
+      currency: nil,
       properties: {}
     )
       Conversions::TrackingService.new(
@@ -188,6 +249,7 @@ module Conversions
           visitor_id: visitor_id,
           conversion_type: conversion_type,
           revenue: revenue,
+          currency: currency,
           properties: properties
         }
       )

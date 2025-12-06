@@ -1,0 +1,7 @@
+class AddLockedToEvents < ActiveRecord::Migration[8.0]
+  def change
+    add_column :events, :locked, :boolean, null: false, default: false
+
+    add_index :events, :locked
+  end
+end

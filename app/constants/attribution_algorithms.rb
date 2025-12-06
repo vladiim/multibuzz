@@ -12,6 +12,9 @@ module AttributionAlgorithms
   W_SHAPED = "w_shaped"
   PARTICIPATION = "participation"
 
+  # Journey position (for funnel segmentation)
+  ASSISTED = "assisted"
+
   # Default lookback window for attribution calculations
   DEFAULT_LOOKBACK_DAYS = 30
 
@@ -39,4 +42,13 @@ module AttributionAlgorithms
 
   # Default models created for new accounts (only implemented ones for now)
   DEFAULTS = IMPLEMENTED.freeze
+
+  # Journey positions for funnel segmentation (where channel appears in journey)
+  JOURNEY_POSITIONS = [
+    FIRST_TOUCH,
+    LAST_TOUCH,
+    ASSISTED
+  ].freeze
+
+  DEFAULT_JOURNEY_POSITION = LAST_TOUCH
 end
