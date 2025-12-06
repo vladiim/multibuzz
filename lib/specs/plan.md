@@ -1,8 +1,5 @@
 # Product
 
-* Data not coming through properly (petp)
-* Funnel not working
-* $ and plans
 * Filter dash funnel by dimension (properties)
 * Cancel conversion (via id)
 * AST for attribution models
@@ -11,10 +8,13 @@
 * Invite users
 * Live
 * export data (csv - simple + api - with property queries)
-* CLV (doesn't work the same as new customer acquisition - think it through)
+* are complex models like w-shaped ok out the box? do they need more? e.g. conversion_stage: [0, 1,2 etc]
 * Rollout SDKs: python, php, shopify, magento etc
+* CLV (doesn't work the same as new customer acquisition - think it through)
 * Other channels: phone, email
 * Push conversions to server-side ads (with rules on attribution)
+* integrate with ads to get payback period
+* change bigger defaults e.g. customer storage for 2 years etc
 
 ## Homepage Update (E1S4)
 
