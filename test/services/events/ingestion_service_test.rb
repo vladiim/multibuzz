@@ -112,6 +112,68 @@ class Events::IngestionServiceTest < ActiveSupport::TestCase
     assert_equal "rejected", rejected[:status]
   end
 
+  # --- Billing Integration ---
+
+  test "should reject all events when account cannot ingest" do
+    account.update!(billing_status: :cancelled)
+    @events_data = [valid_event_data]
+
+    assert_no_difference -> { Event.count } do
+      assert result[:billing_blocked]
+      assert_equal "Account cannot accept events", result[:billing_error]
+    end
+  end
+
+  test "should reject events when free tier at limit" do
+    account.update!(billing_status: :free_forever, plan: plans(:free))
+    Rails.cache.write(account.usage_cache_key, 10_000)
+    @events_data = [valid_event_data]
+
+    assert_no_difference -> { Event.count } do
+      assert result[:billing_blocked]
+    end
+  end
+
+  test "should increment usage counter for accepted events" do
+    account.update!(billing_status: :active, plan: plans(:starter))
+    Rails.cache.write(account.usage_cache_key, 100)
+    @events_data = [valid_event_data]
+
+    result
+
+    assert_equal 101, Billing::UsageCounter.new(account).current_usage
+  end
+
+  test "should mark events as locked when past_due beyond grace period" do
+    account.update!(
+      billing_status: :past_due,
+      payment_failed_at: 5.days.ago,
+      grace_period_ends_at: 2.days.ago,
+      plan: plans(:starter)
+    )
+    @events_data = [valid_event_data]
+
+    result
+
+    event = Event.last
+    assert event.locked?
+  end
+
+  test "should not lock events when past_due within grace period" do
+    account.update!(
+      billing_status: :past_due,
+      payment_failed_at: 1.day.ago,
+      grace_period_ends_at: 2.days.from_now,
+      plan: plans(:starter)
+    )
+    @events_data = [valid_event_data]
+
+    result
+
+    event = Event.last
+    assert_not event.locked?
+  end
+
   private
 
   def result

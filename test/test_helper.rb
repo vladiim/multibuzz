@@ -10,6 +10,7 @@ module ActiveSupport
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
 
-    # Add more helper methods to be used by all tests here...
+    # Clear cache before each test to ensure isolation
+    setup { Rails.cache.clear }
   end
 end

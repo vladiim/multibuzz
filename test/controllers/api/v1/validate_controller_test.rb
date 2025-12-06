@@ -10,8 +10,8 @@ class Api::V1::ValidateControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert json_response["valid"]
-    assert_equal account.prefix_id, json_response["account_id"]
-    assert_equal api_key.environment, json_response["environment"]
+    assert_equal account.prefix_id, json_response.dig("account", "id")
+    assert_equal account.name, json_response.dig("account", "name")
   end
 
   test "should return 401 without authorization header" do

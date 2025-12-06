@@ -1,0 +1,11 @@
+<% status_config = {
+  active: { bg: "bg-green-100", text: "text-green-800", label: "Active" },
+  trialing: { bg: "bg-blue-100", text: "text-blue-800", label: "Trial" },
+  past_due: { bg: "bg-yellow-100", text: "text-yellow-800", label: "Past Due" },
+  cancelled: { bg: "bg-red-100", text: "text-red-800", label: "Cancelled" },
+  free_forever: { bg: "bg-gray-100", text: "text-gray-800", label: "Free" }
+}.fetch(account.billing_status.to_sym, { bg: "bg-gray-100", text: "text-gray-800", label: account.billing_status.humanize }) %>
+
+<span data-testid="status-badge" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= status_config[:bg] %> <%= status_config[:text] %>">
+  <%= status_config[:label] %>
+</span>

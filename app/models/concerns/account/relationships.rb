@@ -4,7 +4,9 @@ module Account::Relationships
   included do
     has_many :account_memberships, dependent: :destroy
     has_many :members, through: :account_memberships, source: :user
+    has_many :users, through: :account_memberships
     has_many :api_keys, dependent: :destroy
+    has_many :identities, dependent: :destroy
     has_many :visitors, dependent: :destroy
     has_many :sessions, dependent: :destroy
     has_many :events, dependent: :destroy

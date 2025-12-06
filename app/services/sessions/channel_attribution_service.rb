@@ -16,11 +16,21 @@ module Sessions
       /^video$/i => Channels::VIDEO
     }.freeze
 
-    # Referrer domain patterns mapped to channels
+    # Referrer domain patterns mapped to channels (fallback)
     REFERRER_DOMAIN_PATTERNS = {
       Channels::SEARCH_ENGINES => Channels::ORGANIC_SEARCH,
       Channels::SOCIAL_NETWORKS => Channels::ORGANIC_SOCIAL,
       Channels::VIDEO_PLATFORMS => Channels::VIDEO
+    }.freeze
+
+    # Map ReferrerSource mediums to Channels constants
+    MEDIUM_TO_CHANNEL = {
+      ReferrerSources::Mediums::SEARCH => Channels::ORGANIC_SEARCH,
+      ReferrerSources::Mediums::SOCIAL => Channels::ORGANIC_SOCIAL,
+      ReferrerSources::Mediums::EMAIL => Channels::EMAIL,
+      ReferrerSources::Mediums::VIDEO => Channels::VIDEO,
+      ReferrerSources::Mediums::SHOPPING => Channels::REFERRAL,
+      ReferrerSources::Mediums::NEWS => Channels::REFERRAL
     }.freeze
 
     def initialize(utm_data, referrer)
@@ -29,7 +39,8 @@ module Sessions
     end
 
     def call
-      return channel_from_utm if utm_present?
+      return channel_from_utm_or_fallback if utm_medium.present?
+      return channel_from_utm_source if utm_source.present?
       return channel_from_referrer if referrer_domain.present?
 
       Channels::DIRECT
@@ -44,14 +55,23 @@ module Sessions
 
     attr_reader :utm_data, :referrer
 
-    def utm_present?
-      utm_data.present? && utm_data.any?
+    def channel_from_utm_or_fallback
+      match = UTM_MEDIUM_PATTERNS.find { |pattern, _| utm_medium.match?(pattern) }
+      return resolve_channel(match.last) if match
+
+      # utm_medium doesn't match known patterns - fall back to referrer or other
+      return channel_from_referrer if referrer_domain.present?
+
+      Channels::OTHER
     end
 
-    def channel_from_utm
-      UTM_MEDIUM_PATTERNS
-        .find { |pattern, _| utm_medium&.match?(pattern) }
-        .then { |match| match ? resolve_channel(match.last) : Channels::OTHER }
+    def channel_from_utm_source
+      # When only utm_source is present (no utm_medium), infer channel from source
+      return Channels::ORGANIC_SEARCH if utm_source.match?(Channels::SEARCH_ENGINES)
+      return Channels::ORGANIC_SOCIAL if utm_source.match?(Channels::SOCIAL_NETWORKS)
+      return Channels::VIDEO if utm_source.match?(Channels::VIDEO_PLATFORMS)
+
+      Channels::OTHER
     end
 
     def resolve_channel(value)
@@ -71,6 +91,21 @@ module Sessions
     end
 
     def channel_from_referrer
+      channel_from_lookup || channel_from_patterns
+    end
+
+    def channel_from_lookup
+      return nil unless referrer_lookup
+      return Channels::OTHER if referrer_lookup[:is_spam]
+
+      MEDIUM_TO_CHANNEL.fetch(referrer_lookup[:medium], Channels::REFERRAL)
+    end
+
+    def referrer_lookup
+      @referrer_lookup ||= ReferrerSources::LookupService.new(referrer).call
+    end
+
+    def channel_from_patterns
       REFERRER_DOMAIN_PATTERNS
         .find { |pattern, _| referrer_domain&.match?(pattern) }
         .then { |match| match ? match.last : Channels::REFERRAL }

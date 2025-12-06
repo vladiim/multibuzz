@@ -160,6 +160,32 @@ en:
       message: "We'll reach out to you at %{email} as soon as we're ready to launch."
       back_home: "Back to home"
 
+  contact:
+    new:
+      title: "Contact Us"
+      subtitle: "Have a question or feedback? We'd love to hear from you."
+      name_label: "Name"
+      name_placeholder: "Your name"
+      email_label: "Email"
+      email_placeholder: "you@example.com"
+      subject_label: "Subject"
+      subjects:
+        general: "General Inquiry"
+        sales: "Sales Question"
+        support: "Technical Support"
+        partnership: "Partnership"
+        other: "Other"
+      message_label: "Message"
+      message_placeholder: "How can we help?"
+      submit: "Send Message"
+    create:
+      success: "Thanks for reaching out! We'll get back to you soon."
+    show:
+      title: "Message Sent!"
+      subtitle: "Thanks for getting in touch"
+      message: "We've received your message and will get back to you at %{email} as soon as possible."
+      back_home: "Back to home"
+
   dashboard:
     api_keys:
       index:

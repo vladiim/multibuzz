@@ -5,6 +5,21 @@
 
   ---
 
+  ## The 4-Call Model
+
+  Multibuzz uses a simple 4-call SDK model:
+
+  | Method | Purpose | When to Call |
+  |--------|---------|--------------|
+  | **init** | Configure SDK | App startup |
+  | **event** | Track journey steps | User interactions (page views, add to cart, etc.) |
+  | **conversion** | Track revenue outcomes | Purchases, signups, subscriptions |
+  | **identify** | Link visitor to user | Login, signup (enables cross-device attribution) |
+
+  That's it. Four methods to complete multi-touch attribution.
+
+  ---
+
   ## Quick Start
 
   ### 1. Get Your API Key
@@ -46,7 +61,7 @@ MD
 <%= render_markdown <<~MD
   ---
 
-  ### 3. Configure
+  ### 3. Initialize (init)
 MD
 %>
 
@@ -56,12 +71,10 @@ MD
     syntax: 'ruby',
     code: <<~CODE
       # config/initializers/mbuzz.rb
-      Mbuzz.configure do |config|
-        config.api_key = ENV['MBUZZ_API_KEY']
-        config.api_url = 'https://mbuzz.co/api/v1'
-        config.enabled = !Rails.env.test?
-        config.debug = Rails.env.development?
-      end
+      Mbuzz.init(
+        api_key: ENV['MBUZZ_API_KEY'],
+        debug: Rails.env.development?
+      )
     CODE
   },
   curl: {
@@ -83,7 +96,9 @@ MD
 
   ---
 
-  ### 4. Track Your First Event
+  ### 4. Track Events (event)
+
+  Track steps in the customer journey:
 MD
 %>
 
@@ -92,24 +107,14 @@ MD
     label: 'Ruby',
     syntax: 'ruby',
     code: <<~CODE
-      # Track a user event
-      Mbuzz.track(
-        user_id: current_user.id,
-        event: 'Signup',
-        properties: {
-          plan: 'pro',
-          trial_days: 14
-        }
-      )
+      # Track user interactions
+      Mbuzz.event("page_view", url: "/pricing")
+      Mbuzz.event("add_to_cart", product_id: "SKU-123", price: 49.99)
+      Mbuzz.event("checkout_started", cart_total: 99.99)
 
-      # Track anonymous visitor event
-      Mbuzz.track(
-        visitor_id: mbuzz_visitor_id,  # From gem helper
-        event: 'Viewed Pricing',
-        properties: {
-          source: 'homepage'
-        }
-      )
+      # Group events into funnels for focused analysis
+      Mbuzz.event("signup_start", funnel: "signup", source: "homepage")
+      Mbuzz.event("signup_complete", funnel: "signup")
     CODE
   },
   curl: {
@@ -120,11 +125,12 @@ MD
         -H "Authorization: Bearer $MBUZZ_API_KEY" \\
         -H "Content-Type: application/json" \\
         -d '{
-          "user_id": "123",
-          "event_type": "Signup",
+          "event_type": "add_to_cart",
+          "visitor_id": "abc123...",
+          "funnel": "purchase",
           "properties": {
-            "plan": "pro",
-            "trial_days": 14
+            "product_id": "SKU-123",
+            "price": 49.99
           }
         }'
     CODE
@@ -136,50 +142,114 @@ MD
 
   ## Core Concepts
 
-  ### Events
+  ### Sessions (The Foundation of Attribution)
 
-  Actions users take in your application.
+  A **session** is a single visit to your site with acquisition context. Sessions are the **touchpoints** used for attribution.
 
-  **Required fields**:
-  - `event` - Event name (e.g., "Signup", "Purchase", "Page View")
-  - `user_id` OR `visitor_id` - At least one identifier required
+  **What a session captures**:
+  - UTM parameters (`utm_source`, `utm_medium`, `utm_campaign`, etc.)
+  - Referrer URL (for organic/referral traffic)
+  - Channel (derived from UTMs + referrer: `paid_search`, `organic`, `email`, etc.)
+  - Landing page
 
-  **Optional fields**:
-  - `properties` - Custom metadata (JSON object)
-  - `timestamp` - When event occurred (defaults to now)
+  **Session behavior**:
+  - **Auto-created**: SDK middleware creates sessions automatically
+  - **30-minute timeout**: New session after 30 min of inactivity
+  - **Non-blocking**: Session POST is async (doesn't slow your app)
+
+  **Why sessions matter**: Without sessions, you can't know *how* a visitor arrived. Sessions make multi-touch attribution possible.
 
   ### Visitors
 
   Anonymous users tracked via cookies.
 
   - **Lifetime**: 2 years
-  - **Auto-generated**: By client library
+  - **Auto-generated**: By SDK (64-char hex, stored in `_mbuzz_vid` cookie)
   - **Thread-safe**: Works with multi-threaded servers
   - **Privacy-first**: No PII required
+
+  A single person may have multiple visitors (multiple devices/browsers).
 
   ### Users
 
   Known, identified users in your system.
 
+  - **Cross-device**: One user identity across all devices
+  - **Permanent**: Persists beyond cookies
+  - **Your ID**: Use your application's user identifier
+
   Link visitors to users with `Mbuzz.identify()` or `Mbuzz.alias()`.
+
+  ### Events
+
+  Actions users take in your application.
+
+  **Required fields**:
+  - `event_type` - Event name (e.g., "signup", "purchase", "add_to_cart")
+  - `user_id` OR `visitor_id` - At least one identifier required
+
+  **Recommended fields**:
+  - `session_id` - Links event to session for attribution
+  - `funnel` - Group events into funnels for focused analysis
+
+  **Optional fields**:
+  - `properties` - Custom metadata (JSON object)
+  - `timestamp` - When event occurred (defaults to now)
+
+  ### Funnels
+
+  Group related events into **funnels** for focused conversion analysis.
+
+  **Why use funnels?**
+  - Separate signup flow from purchase flow
+  - Analyze each conversion path independently
+  - Filter dashboard to specific customer journeys
+
+  **Example funnels**:
+  ```ruby
+  # Signup funnel
+  Mbuzz.event("pricing_view", funnel: "signup")
+  Mbuzz.event("signup_start", funnel: "signup")
+  Mbuzz.event("signup_complete", funnel: "signup")
+
+  # Purchase funnel
+  Mbuzz.event("add_to_cart", funnel: "purchase")
+  Mbuzz.event("checkout_started", funnel: "purchase")
+  Mbuzz.event("purchase_complete", funnel: "purchase")
+  ```
+
+  **Dashboard filtering**: Use the funnel dropdown to view specific funnels. "All Funnels" shows everything.
 
   ---
 
-  ## Automatic Page View Tracking
+  ## Automatic Session Tracking
 
-  The Ruby gem includes Rack middleware that automatically tracks page views.
+  The Ruby gem includes Rack middleware that automatically creates sessions when visitors land on your site.
 
-  **Auto-tracked**:
-  - All GET requests
-  - URL with query parameters
-  - Referrer
+  **What happens on each request**:
+  1. SDK checks for existing visitor cookie (`_mbuzz_vid`)
+  2. SDK checks for existing session cookie (`_mbuzz_sid`)
+  3. If new session detected → **POST to API** with full context
+  4. Cookies refreshed
+
+  **Session context captured automatically**:
+  - Full URL (including UTM parameters)
+  - Referrer URL
   - User-Agent
-  - Visitor ID from cookie
+  - IP address (for geo lookup)
 
-  **Auto-filtered**:
-  - Asset requests (`.js`, `.css`, `.png`, etc.)
-  - Health check endpoints
-  - Rails error pages
+  **Session detection**:
+  - **New visitor**: No `_mbuzz_vid` cookie → new session
+  - **Returning visitor, new session**: `_mbuzz_vid` exists but `_mbuzz_sid` missing/expired (30+ min) → new session
+  - **Same session**: Both cookies valid → no new session
+
+  **The API handles**:
+  - UTM parameter extraction
+  - Referrer analysis
+  - Channel derivation (`paid_search`, `organic`, `email`, etc.)
+  - Visitor/Session record creation
+
+  **Important**: Session POSTs are async and non-blocking. Your page render is not slowed.
 
   **Disable if needed**:
 
@@ -192,11 +262,9 @@ MD
 
   ---
 
-  ## User Identification
+  ## User Identification (identify)
 
-  ### Identify
-
-  Associate traits with a user ID:
+  Link visitors to known users and store traits. This enables **cross-device attribution**.
 MD
 %>
 
@@ -205,13 +273,12 @@ MD
     label: 'Ruby',
     syntax: 'ruby',
     code: <<~CODE
-      Mbuzz.identify(
-        user_id: current_user.id,
+      # On signup or login - links visitor automatically
+      Mbuzz.identify(current_user.id,
         traits: {
           email: current_user.email,
           name: current_user.name,
-          plan: current_user.plan,
-          company: current_user.company_name
+          plan: current_user.plan
         }
       )
     CODE
@@ -225,6 +292,7 @@ MD
         -H "Content-Type: application/json" \\
         -d '{
           "user_id": "123",
+          "visitor_id": "abc123def456...",
           "traits": {
             "email": "user@example.com",
             "name": "Jane Doe",
@@ -237,48 +305,60 @@ MD
 
 <%= render_markdown <<~MD
   **When to call**:
-  - On signup
-  - On login
+  - On signup (links first visitor to new user)
+  - On every login (links new devices to existing user)
   - When user attributes change
 
-  ### Alias
+  ### What Identify Does
 
-  Link anonymous visitor to user account:
-MD
-%>
+  `identify` performs two actions in one call:
 
-<%= code_tabs({
-  ruby: {
-    label: 'Ruby',
-    syntax: 'ruby',
-    code: <<~CODE
-      # After successful signup/login
-      Mbuzz.alias(
-        user_id: current_user.id,
-        visitor_id: mbuzz_visitor_id
-      )
-    CODE
-  },
-  curl: {
-    label: 'REST API',
-    syntax: 'bash',
-    code: <<~CODE
-      curl -X POST #{api_v1_events_url.gsub('/events', '/alias')} \\
-        -H "Authorization: Bearer $MBUZZ_API_KEY" \\
-        -H "Content-Type: application/json" \\
-        -d '{
-          "user_id": "123",
-          "visitor_id": "abc123def456"
-        }'
-    CODE
-  }
-}, default: :ruby) %>
+  1. **Links visitor to user** (if visitor_id provided or available from cookie)
+  2. **Stores user traits** (email, name, plan, etc.)
 
-<%= render_markdown <<~MD
-  **What this does**:
-  - Links all pre-signup visitor sessions to user account
-  - Enables full journey tracking (anonymous → identified)
-  - Required for accurate multi-touch attribution
+  When you link a visitor:
+
+  **Backward attribution**:
+  - All past sessions from this visitor are attributed to the user
+  - Sessions from before signup become part of their journey
+
+  **Forward attribution**:
+  - All future sessions from this visitor automatically attributed to the user
+
+  **Retroactive recalculation**:
+  - If the user has existing conversions, and the newly-linked visitor has sessions
+    within those conversions' lookback windows, attribution is **automatically recalculated**
+
+  ### Cross-Device Attribution
+
+  Users often visit on multiple devices. Each device has a different visitor ID:
+
+  ```
+  Desktop visitor (abc) ─────┐
+                             ├──→ User (usr_123)
+  Mobile visitor (def) ──────┘
+  ```
+
+  **How it works**:
+  1. User visits on desktop → visitor `abc` created
+  2. User visits on mobile → visitor `def` created
+  3. User signs up on mobile → `identify()` links mobile visitor
+  4. User logs in on desktop → `identify()` links desktop visitor
+  5. Now both visitors linked → full cross-device attribution
+
+  **Call identify on every login**, not just signup. This ensures visitors from new devices get linked.
+
+  ### Example: Full Journey Attribution
+
+  ```
+  Day 1: Jane visits via Google Ads (desktop) → Session A
+  Day 3: Jane visits via Facebook (mobile) → Session B
+  Day 5: Jane signs up (mobile) → identify() links mobile visitor
+  Day 6: Jane logs in (desktop) → identify() links desktop visitor
+  Day 7: Jane purchases → Attribution spans ALL sessions (A, B, etc.)
+  ```
+
+  Without identify on each device, you'd only see mobile sessions.
 
   ---
 
@@ -359,6 +439,7 @@ MD
         visitor_id: mbuzz_visitor_id,
         conversion_type: 'purchase',
         revenue: order.total,
+        funnel: 'purchase',  # Optional: group into funnel
         properties: { plan: 'pro' }
       )
     CODE
@@ -375,6 +456,7 @@ MD
           "conversion": {
             "visitor_id": "65dabef8d611f332d5bb88f5d6870c733d89f962594575b66f0e1de1ede1ebf0",
             "conversion_type": "purchase",
+            "funnel": "purchase",
             "revenue": 99.99
           }
         }'
@@ -436,15 +518,13 @@ MD
         def create
           @order = current_user.orders.create!(order_params)
 
-          Mbuzz.track(
-            user_id: current_user.id,
-            event: 'Purchase Completed',
-            properties: {
-              order_id: @order.id,
-              amount: @order.total,
-              items: @order.items.count,
-              currency: 'USD'
-            }
+          # Track the event
+          Mbuzz.event("checkout_completed", order_id: @order.id)
+
+          # Record the conversion with revenue
+          Mbuzz.conversion("purchase",
+            revenue: @order.total,
+            order_id: @order.id
           )
 
           redirect_to order_path(@order)
@@ -489,14 +569,11 @@ MD
             plan: params[:plan]
           )
 
-          Mbuzz.track(
-            user_id: current_user.id,
-            event: 'Subscription Created',
-            properties: {
-              plan: @subscription.plan,
-              billing_cycle: @subscription.billing_cycle,
-              mrr: @subscription.monthly_revenue
-            }
+          # Record as conversion with MRR
+          Mbuzz.conversion("subscription",
+            revenue: @subscription.monthly_revenue,
+            plan: @subscription.plan,
+            billing_cycle: @subscription.billing_cycle
           )
 
           redirect_to dashboard_path
@@ -540,16 +617,15 @@ MD
   **Debugging**:
 
   ```ruby
-  # Enable debug mode
-  Mbuzz.configure do |config|
-    config.debug = true
-  end
+  # Enable debug mode in initializer
+  Mbuzz.init(api_key: ENV['MBUZZ_API_KEY'], debug: true)
 
   # Check return values
-  if Mbuzz.track(user_id: 1, event: 'Test')
-    puts "✅ Tracking succeeded"
+  result = Mbuzz.event("test_event", foo: "bar")
+  if result
+    puts "Tracking succeeded"
   else
-    puts "❌ Tracking failed (check logs)"
+    puts "Tracking failed (check logs)"
   end
   ```
 
@@ -567,20 +643,18 @@ MD
     syntax: 'ruby',
     code: <<~CODE
       # config/initializers/mbuzz.rb
-      Mbuzz.configure do |config|
-        config.enabled = !Rails.env.test?
-      end
+      Mbuzz.init(
+        api_key: ENV['MBUZZ_API_KEY'],
+        enabled: !Rails.env.test?
+      )
     CODE
   },
   curl: {
     label: 'REST API',
     syntax: 'bash',
     code: <<~CODE
-      # No installation needed for REST API.
-      # All requests require the Authorization header with your API key.
-
+      # Use test API key for development
       export MBUZZ_API_KEY=sk_test_your_key_here
-      export MBUZZ_API_URL=https://api.mbuzz.co
     CODE
   }
 }, default: :ruby) %>
@@ -590,17 +664,15 @@ MD
 
   ## Next Steps
 
-  Now that you're tracking events:
+  Now that you understand the 4-call model:
 
-  1. **View your data** - Check [your dashboard](#{dashboard_path}) for recent events
-  2. **Track conversions** - Add tracking for signups, purchases, subscriptions
-  3. **Identify users** - Call `identify()` on signup/login
-  4. **Link visitors** - Call `alias()` after signup
-  5. **Analyze attribution** - See which channels drive conversions
+  1. **Initialize** - Set up `Mbuzz.init()` in your app
+  2. **Track events** - Call `Mbuzz.event()` for user interactions
+  3. **Record conversions** - Call `Mbuzz.conversion()` for revenue events
+  4. **Identify users** - Call `Mbuzz.identify()` on signup/login (enables cross-device)
+  5. **View attribution** - Check [your dashboard](#{dashboard_path}) for attribution data
 
   **Need help?** Check out:
   - [Authentication](#{docs_path('authentication')}) - API key management
-  - [API Reference](#{docs_path('api-reference')}) - Full API documentation
-  - [Examples](#{docs_path('examples')}) - More integration examples
 MD
 %>

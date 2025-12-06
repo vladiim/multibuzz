@@ -19,9 +19,15 @@ class WaitlistController < ApplicationController
 
   def create_submission_params
     submission_params.merge(
-      ip_address: request.remote_ip,
+      ip_address: anonymized_ip,
       user_agent: request.user_agent
     )
+  end
+
+  def anonymized_ip
+    IPAddr.new(request.remote_ip).mask(24).to_s
+  rescue IPAddr::InvalidAddressError
+    nil
   end
 
   def submission_params

@@ -10,9 +10,11 @@ module ApiKeys
     end
 
     def call
+      # Atomic increment - ensures thread safety under concurrent load
+      @current_count = atomic_increment
+
       return rate_limited_result if rate_limited?
 
-      increment_counter
       allowed_result
     end
 
@@ -21,17 +23,24 @@ module ApiKeys
     attr_reader :account, :limit, :window
 
     def rate_limited?
-      current_count >= limit
+      current_count > limit
     end
 
     def current_count
-      @current_count ||= Rails.cache.read(cache_key) || 0
+      @current_count ||= Rails.cache.read(cache_key).to_i
     end
 
-    def increment_counter
-      new_count = current_count + 1
-      Rails.cache.write(cache_key, new_count, expires_in: window)
-      @current_count = new_count
+    def atomic_increment
+      # Rails.cache.increment is atomic and handles initialization
+      # If key doesn't exist, it initializes to 0 then increments to 1
+      count = Rails.cache.increment(cache_key, 1, expires_in: window)
+
+      # Some cache stores return nil on first increment, handle gracefully
+      return count if count
+
+      # Fallback: write initial value and return it
+      Rails.cache.write(cache_key, 1, expires_in: window)
+      1
     end
 
     def cache_key

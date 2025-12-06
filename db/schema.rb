@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_27_015617) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_04_094445) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -43,8 +43,27 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_27_015617) do
     t.datetime "cancelled_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "plan_id"
+    t.integer "billing_status", default: 0, null: false
+    t.string "stripe_customer_id"
+    t.string "stripe_subscription_id"
+    t.string "billing_email"
+    t.datetime "free_until"
+    t.datetime "trial_ends_at"
+    t.datetime "subscription_started_at"
+    t.datetime "current_period_start"
+    t.datetime "current_period_end"
+    t.datetime "payment_failed_at"
+    t.datetime "grace_period_ends_at"
+    t.index ["billing_status"], name: "index_accounts_on_billing_status"
+    t.index ["free_until"], name: "index_accounts_on_free_until"
+    t.index ["payment_failed_at"], name: "index_accounts_on_payment_failed_at"
+    t.index ["plan_id"], name: "index_accounts_on_plan_id"
     t.index ["slug"], name: "index_accounts_on_slug", unique: true
     t.index ["status"], name: "index_accounts_on_status"
+    t.index ["stripe_customer_id"], name: "index_accounts_on_stripe_customer_id", unique: true
+    t.index ["stripe_subscription_id"], name: "index_accounts_on_stripe_subscription_id", unique: true
+    t.index ["trial_ends_at"], name: "index_accounts_on_trial_ends_at"
   end
 
   create_table "api_keys", force: :cascade do |t|
@@ -107,6 +126,20 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_27_015617) do
     t.index ["account_id"], name: "index_attribution_models_on_account_id"
   end
 
+  create_table "billing_events", force: :cascade do |t|
+    t.bigint "account_id"
+    t.string "stripe_event_id", null: false
+    t.string "event_type", null: false
+    t.jsonb "payload", default: {}, null: false
+    t.datetime "processed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_billing_events_on_account_id"
+    t.index ["event_type"], name: "index_billing_events_on_event_type"
+    t.index ["processed_at"], name: "index_billing_events_on_processed_at"
+    t.index ["stripe_event_id"], name: "index_billing_events_on_stripe_event_id", unique: true
+  end
+
   create_table "conversions", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.bigint "visitor_id", null: false
@@ -120,7 +153,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_27_015617) do
     t.datetime "updated_at", null: false
     t.jsonb "properties", default: {}, null: false
     t.boolean "is_test", default: false, null: false
+    t.string "funnel"
+    t.string "currency", default: "USD"
     t.index ["account_id", "converted_at"], name: "index_conversions_on_account_id_and_converted_at"
+    t.index ["account_id", "funnel"], name: "index_conversions_on_account_funnel"
     t.index ["account_id"], name: "index_conversions_on_account_id"
     t.index ["conversion_type"], name: "index_conversions_on_conversion_type"
     t.index ["converted_at"], name: "index_conversions_on_converted_at"
@@ -140,6 +176,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_27_015617) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "is_test", default: false, null: false
+    t.boolean "locked", default: false, null: false
+    t.string "funnel"
     t.index "((properties -> 'host'::text))", name: "index_events_on_host", using: :gin
     t.index "((properties -> 'path'::text))", name: "index_events_on_path", using: :gin
     t.index "((properties -> 'referrer_host'::text))", name: "index_events_on_referrer_host", using: :gin
@@ -149,9 +187,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_27_015617) do
     t.index "((properties ->> 'funnel'::text))", name: "index_events_on_funnel"
     t.index "((properties ->> 'funnel_step'::text))", name: "index_events_on_funnel_step"
     t.index ["account_id", "event_type"], name: "index_events_on_account_id_and_event_type"
+    t.index ["account_id", "funnel"], name: "index_events_on_account_funnel"
     t.index ["account_id", "occurred_at"], name: "index_events_on_account_id_and_occurred_at"
     t.index ["account_id"], name: "index_events_on_account_id"
     t.index ["is_test"], name: "index_events_on_is_test"
+    t.index ["locked"], name: "index_events_on_locked"
     t.index ["occurred_at"], name: "events_occurred_at_idx", order: :desc
     t.index ["properties"], name: "index_events_on_properties", using: :gin
     t.index ["session_id"], name: "index_events_on_session_id"
@@ -171,6 +211,55 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_27_015617) do
     t.index ["email"], name: "index_form_submissions_on_email"
     t.index ["status"], name: "index_form_submissions_on_status"
     t.index ["type"], name: "index_form_submissions_on_type"
+  end
+
+  create_table "identities", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "external_id", null: false
+    t.jsonb "traits", default: {}
+    t.datetime "first_identified_at", null: false
+    t.datetime "last_identified_at", null: false
+    t.boolean "is_test", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "external_id"], name: "index_identities_on_account_id_and_external_id", unique: true
+    t.index ["account_id"], name: "index_identities_on_account_id"
+    t.index ["external_id"], name: "index_identities_on_external_id"
+    t.index ["is_test"], name: "index_identities_on_is_test"
+    t.index ["traits"], name: "index_identities_on_traits", using: :gin
+  end
+
+  create_table "plans", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "slug", null: false
+    t.integer "monthly_price_cents", default: 0, null: false
+    t.integer "events_included", null: false
+    t.integer "overage_price_cents"
+    t.string "stripe_product_id"
+    t.string "stripe_price_id"
+    t.string "stripe_meter_id"
+    t.boolean "is_active", default: true, null: false
+    t.integer "sort_order", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["is_active"], name: "index_plans_on_is_active"
+    t.index ["slug"], name: "index_plans_on_slug", unique: true
+    t.index ["sort_order"], name: "index_plans_on_sort_order"
+  end
+
+  create_table "referrer_sources", force: :cascade do |t|
+    t.string "domain", null: false
+    t.string "source_name", null: false
+    t.string "medium", null: false
+    t.string "keyword_param"
+    t.boolean "is_spam", default: false, null: false
+    t.string "data_origin", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["data_origin"], name: "index_referrer_sources_on_data_origin"
+    t.index ["domain"], name: "index_referrer_sources_on_domain", unique: true
+    t.index ["is_spam"], name: "index_referrer_sources_on_is_spam"
+    t.index ["medium"], name: "index_referrer_sources_on_medium"
   end
 
   create_table "sessions", primary_key: ["id", "started_at"], force: :cascade do |t|
@@ -204,6 +293,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_27_015617) do
     t.string "password_digest", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "is_admin", default: false, null: false
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
@@ -216,8 +306,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_27_015617) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "is_test", default: false, null: false
+    t.bigint "identity_id"
     t.index ["account_id", "visitor_id"], name: "index_visitors_on_account_id_and_visitor_id", unique: true
     t.index ["account_id"], name: "index_visitors_on_account_id"
+    t.index ["identity_id"], name: "index_visitors_on_identity_id"
     t.index ["is_test"], name: "index_visitors_on_is_test"
     t.index ["last_seen_at"], name: "index_visitors_on_last_seen_at"
     t.index ["traits"], name: "index_visitors_on_traits", using: :gin
@@ -226,16 +318,20 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_27_015617) do
 
   add_foreign_key "account_memberships", "accounts"
   add_foreign_key "account_memberships", "users"
+  add_foreign_key "accounts", "plans"
   add_foreign_key "api_keys", "accounts"
   add_foreign_key "attribution_credits", "accounts"
   add_foreign_key "attribution_credits", "attribution_models"
   add_foreign_key "attribution_credits", "conversions"
   add_foreign_key "attribution_models", "accounts"
+  add_foreign_key "billing_events", "accounts"
   add_foreign_key "conversions", "accounts"
   add_foreign_key "conversions", "visitors"
   add_foreign_key "events", "accounts"
   add_foreign_key "events", "visitors"
+  add_foreign_key "identities", "accounts"
   add_foreign_key "sessions", "accounts"
   add_foreign_key "sessions", "visitors"
   add_foreign_key "visitors", "accounts"
+  add_foreign_key "visitors", "identities"
 end

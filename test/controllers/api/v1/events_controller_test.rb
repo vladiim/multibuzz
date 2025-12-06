@@ -124,27 +124,14 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "rejected", rejected["status"]
   end
 
+  # Rate limiting disabled for MVP - re-enable tests when billing-based limits implemented
   test "should set rate limit headers" do
-    post api_v1_events_path, params: events_payload, headers: auth_headers, as: :json
-
-    assert_response :accepted
-    assert_equal "1000", response.headers["X-RateLimit-Limit"]
-    assert_equal "999", response.headers["X-RateLimit-Remaining"]
-    assert response.headers["X-RateLimit-Reset"].present?
+    skip "Rate limiting disabled for MVP"
   end
 
+  # Rate limiting disabled for MVP - re-enable tests when billing-based limits implemented
   test "should return 429 when rate limit exceeded" do
-    1000.times do |i|
-      post api_v1_events_path, params: events_payload, headers: auth_headers, as: :json
-      assert_response :accepted if i < 999
-    end
-
-    # This is the 1001st request
-    post api_v1_events_path, params: events_payload, headers: auth_headers, as: :json
-
-    assert_response :too_many_requests
-    assert_equal "Rate limit exceeded", json_response["error"]
-    assert json_response["retry_after"].present?
+    skip "Rate limiting disabled for MVP"
   end
 
   test "should return 401 with suspended account" do
@@ -152,6 +139,28 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unauthorized
     assert_equal "Account suspended", json_response["error"]
+  end
+
+  test "should preserve visitor_id from SDK payload" do
+    sdk_visitor_id = "sdk_visitor_#{SecureRandom.hex(16)}"
+    sdk_session_id = "sdk_session_#{SecureRandom.hex(16)}"
+
+    payload = {
+      events: [
+        valid_event_data.merge(
+          "visitor_id" => sdk_visitor_id,
+          "session_id" => sdk_session_id
+        )
+      ]
+    }
+
+    post api_v1_events_path, params: payload, headers: auth_headers, as: :json
+
+    assert_response :accepted
+
+    created_event = account.events.order(created_at: :desc).first
+    assert_equal sdk_visitor_id, created_event.visitor.visitor_id
+    assert_equal sdk_session_id, created_event.session.session_id
   end
 
   private

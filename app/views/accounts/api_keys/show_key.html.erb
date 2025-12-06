@@ -1,0 +1,45 @@
+<div class="min-h-screen bg-gray-100">
+  <%= render "layouts/nav" %>
+
+  <div class="py-10">
+    <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
+      <div class="bg-white shadow sm:rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+          <h3 class="text-lg leading-6 font-medium text-gray-900">API Key Generated</h3>
+          <div class="mt-2 max-w-xl text-sm text-gray-500">
+            <p>Your new API key has been created. Copy it now - you won't be able to see it again.</p>
+          </div>
+
+          <div class="mt-6">
+            <div class="rounded-md bg-yellow-50 p-4">
+              <div class="flex">
+                <div class="flex-shrink-0">
+                  <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+                <div class="ml-3">
+                  <h3 class="text-sm font-medium text-yellow-800">Store this key securely. It will not be shown again.</h3>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6">
+            <label for="api-key" class="block text-sm font-medium text-gray-700">Your API Key</label>
+            <div class="mt-2 flex rounded-md shadow-sm">
+              <input type="text" readonly name="api-key" id="api-key" class="flex-1 min-w-0 block w-full px-3 py-2 rounded-md border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm font-mono bg-gray-50" value="<%= @plaintext_key %>">
+              <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('api-key').value); this.textContent = 'Copied!'; setTimeout(() => this.textContent = 'Copy', 2000)" class="ml-3 inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                Copy
+              </button>
+            </div>
+          </div>
+
+          <div class="mt-8">
+            <%= link_to "Done", account_api_keys_path, class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700" %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
