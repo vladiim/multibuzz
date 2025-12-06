@@ -1,13 +1,13 @@
 # Product
 
-* Filter dash funnel by dimension (properties)
-* Cancel conversion (via id)
 * AST for attribution models
   - Create new / edit (up to 20 models applied)
   - New / updates can back calculate at a fixed one-time cost (10k free then $x per 10k)
 * Invite users
-* Live
+* Live (sign up, ruby gems)
 * export data (csv - simple + api - with property queries)
+* Filter dash funnel by dimension (properties)
+* Cancel conversion (via id)
 * are complex models like w-shaped ok out the box? do they need more? e.g. conversion_stage: [0, 1,2 etc]
 * Rollout SDKs: python, php, shopify, magento etc
 * CLV (doesn't work the same as new customer acquisition - think it through)
