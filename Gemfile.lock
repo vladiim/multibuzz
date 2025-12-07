@@ -398,6 +398,7 @@ DEPENDENCIES
   importmap-rails
   jbuilder
   kamal
+  ostruct
   pg (~> 1.1)
   postmark-rails
   prefixed_ids

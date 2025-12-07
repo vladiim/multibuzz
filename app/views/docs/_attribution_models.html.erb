@@ -1,0 +1,1084 @@
+<%= render_markdown <<~MD
+  # Custom Attribution Models
+
+  Build custom attribution models using **AML** (Attribution Modeling Language).
+
+  ---
+
+  ## Overview
+
+  AML is a Ruby-based domain-specific language for defining how credit is distributed across touchpoints in a customer journey.
+
+  **Key Features**:
+  - Declarative syntax with Ruby array operations
+  - Rails date helpers (`30.days`, `7.days.ago`)
+  - Sandboxed execution (secure, no arbitrary code)
+  - Automatic validation (credits must sum to 1.0)
+  - Visual builder generates valid AML code
+
+  **Security**: AML runs in a **sandboxed environment** with strict constraints. Only whitelisted operations are allowed.
+
+  ---
+
+  ## Quick Example
+
+  ### First Touch Attribution
+MD
+%>
+
+<%= code_tabs({
+  aml: {
+    label: 'AML',
+    syntax: 'ruby',
+    code: <<~CODE
+      within_window 30.days
+        apply 1.0 to touchpoints[0]
+      end
+    CODE
+  },
+  visual: {
+    label: 'Visual Builder',
+    syntax: 'text',
+    code: <<~CODE
+      ┌─────────────────────────────┐
+      │ Lookback: [30 days]         │
+      ├─────────────────────────────┤
+      │ First Touch → 100%          │
+      └─────────────────────────────┘
+    CODE
+  }
+}, default: :aml) %>
+
+<%= render_markdown <<~MD
+  ---
+
+  ## Core Syntax
+
+  Every attribution model has this structure:
+
+  ```ruby
+  within_window <duration>
+    apply <credit> to <target>
+    [apply <credit> to <target>]
+    ...
+  end
+  ```
+
+  **Required**:
+  - `within_window` - Lookback period for attribution (must be first)
+  - `apply` - Credit assignment rule (one or more)
+  - Credits must sum to 1.0 (or use `normalize!`)
+
+  ---
+
+  ## Standard Models
+
+  ### First Touch
+MD
+%>
+
+<%= code_tabs({
+  aml: {
+    label: 'AML',
+    syntax: 'ruby',
+    code: <<~CODE
+      within_window 30.days
+        apply 1.0 to touchpoints[0]
+      end
+    CODE
+  }
+}, default: :aml) %>
+
+<%= render_markdown <<~MD
+  Gives 100% credit to the first touchpoint in the journey.
+
+  ---
+
+  ### Last Touch
+MD
+%>
+
+<%= code_tabs({
+  aml: {
+    label: 'AML',
+    syntax: 'ruby',
+    code: <<~CODE
+      within_window 30.days
+        apply 1.0 to touchpoints[-1]
+      end
+    CODE
+  }
+}, default: :aml) %>
+
+<%= render_markdown <<~MD
+  Gives 100% credit to the last touchpoint before conversion.
+
+  ---
+
+  ### Linear (Equal Distribution)
+MD
+%>
+
+<%= code_tabs({
+  aml: {
+    label: 'AML',
+    syntax: 'ruby',
+    code: <<~CODE
+      within_window 30.days
+        apply 1.0 / touchpoints.length to touchpoints
+      end
+    CODE
+  }
+}, default: :aml) %>
+
+<%= render_markdown <<~MD
+  Distributes credit equally across all touchpoints.
+
+  ---
+
+  ### U-Shaped (40/40/20)
+MD
+%>
+
+<%= code_tabs({
+  aml: {
+    label: 'AML',
+    syntax: 'ruby',
+    code: <<~CODE
+      within_window 30.days
+        apply 0.4 to touchpoints[0]
+        apply 0.4 to touchpoints[-1]
+        apply 0.2 to touchpoints[1..-2], distribute: :equal
+      end
+    CODE
+  }
+}, default: :aml) %>
+
+<%= render_markdown <<~MD
+  **Credit distribution**:
+  - First touch: 40%
+  - Last touch: 40%
+  - Middle touches: 20% (split equally)
+
+  **Edge cases**:
+  - 1 touchpoint: 100% to first
+  - 2 touchpoints: 50% to each
+  - 3+ touchpoints: 40/20/40 split
+
+  ---
+
+  ### Time Decay (7-day half-life)
+MD
+%>
+
+<%= code_tabs({
+  aml: {
+    label: 'AML',
+    syntax: 'ruby',
+    code: <<~CODE
+      within_window 30.days
+        time_decay half_life: 7.days
+      end
+    CODE
+  }
+}, default: :aml) %>
+
+<%= render_markdown <<~MD
+  Exponential decay with 7-day half-life:
+  - Touchpoint today: 100% weight
+  - Touchpoint 7 days ago: 50% weight
+  - Touchpoint 14 days ago: 25% weight
+  - Touchpoint 21 days ago: 12.5% weight
+
+  **Helper method automatically normalizes credits to sum to 1.0.**
+
+  ---
+
+  ## Custom Models
+
+  ### Paid Channels Priority
+MD
+%>
+
+<%= code_tabs({
+  aml: {
+    label: 'AML',
+    syntax: 'ruby',
+    code: <<~CODE
+      within_window 30.days
+        paid = touchpoints.select { |tp| tp.channel.starts_with?("paid_") }
+        organic = touchpoints - paid
+
+        apply 0.7 to paid, distribute: :equal
+        apply 0.3 to organic, distribute: :equal
+      end
+    CODE
+  }
+}, default: :aml) %>
+
+<%= render_markdown <<~MD
+  Gives 70% credit to paid channels, 30% to organic.
+
+  ---
+
+  ### Recent Week Focus
+MD
+%>
+
+<%= code_tabs({
+  aml: {
+    label: 'AML',
+    syntax: 'ruby',
+    code: <<~CODE
+      within_window 90.days
+        recent = touchpoints.select { |tp| tp.occurred_at > 7.days.ago }
+        older = touchpoints - recent
+
+        apply 0.6 to recent, distribute: :equal
+        apply 0.4 to older, distribute: :equal
+      end
+    CODE
+  }
+}, default: :aml) %>
+
+<%= render_markdown <<~MD
+  Prioritizes touchpoints from the last 7 days.
+
+  ---
+
+  ### High-Value Last Touch
+MD
+%>
+
+<%= code_tabs({
+  aml: {
+    label: 'AML',
+    syntax: 'ruby',
+    code: <<~CODE
+      within_window 30.days
+        if conversion_value >= 1000
+          apply 0.7 to touchpoints[-1]
+          apply 0.3 to touchpoints[0]
+        else
+          apply 1.0 / touchpoints.length to touchpoints
+        end
+      end
+    CODE
+  }
+}, default: :aml) %>
+
+<%= render_markdown <<~MD
+  Conditional logic based on conversion value:
+  - High-value (≥$1,000): Last touch gets 70%
+  - Regular conversions: Equal distribution
+
+  ---
+
+  ## AML Language Reference
+
+  ### Window Declaration
+
+  **Required first line**. Defines the lookback period for attribution.
+
+  ```ruby
+  within_window 30.days    # 30-day lookback
+  within_window 7.days     # 7-day lookback
+  within_window 90.days    # 90-day lookback
+  ```
+
+  **Allowed durations**: `1.day`, `7.days`, `30.days`, `60.days`, `90.days`, `180.days`, `365.days`
+
+  ---
+
+  ### Array Selectors
+
+  Use Ruby array syntax to target specific touchpoints:
+
+  | Selector | Description | Example |
+  |----------|-------------|---------|
+  | `touchpoints[0]` | First touchpoint | First touch |
+  | `touchpoints[-1]` | Last touchpoint | Last touch |
+  | `touchpoints[1]` | Second touchpoint | Second touch |
+  | `touchpoints[1..-2]` | Middle touchpoints (excludes first/last) | U-shaped middle |
+  | `touchpoints[-3..-1]` | Last three touchpoints | Recency focus |
+  | `touchpoints` | All touchpoints | Linear attribution |
+
+  ---
+
+  ### Filtering Methods
+
+  Filter touchpoints using Ruby Enumerable methods:
+
+  ```ruby
+  # By channel
+  touchpoints.select { |tp| tp.channel == "paid_search" }
+  touchpoints.select { |tp| tp.channel.starts_with?("paid_") }
+  touchpoints.reject { |tp| tp.channel == "direct" }
+
+  # By time
+  touchpoints.select { |tp| tp.occurred_at > 7.days.ago }
+  touchpoints.select { |tp| tp.occurred_at.between?(30.days.ago, 7.days.ago) }
+
+  # By event type
+  touchpoints.find { |tp| tp.event_type == "demo_requested" }
+  touchpoints.select { |tp| tp.event_type == "form_submission" }
+
+  # Set operations
+  touchpoints - excluded_touchpoints
+  ```
+
+  **Security Note**: Only **whitelisted methods** are allowed (see Security section).
+
+  ---
+
+  ### Credit Application
+
+  #### Fixed Credit
+  ```ruby
+  apply 1.0 to touchpoints[0]           # 100% to first
+  apply 0.4 to touchpoints[0]           # 40% to first
+  apply 0.2 to touchpoints[1..-2]       # 20% to middle (must use distribute)
+  ```
+
+  #### Calculated Credit
+  ```ruby
+  apply 1.0 / touchpoints.length to touchpoints    # Equal distribution
+  ```
+
+  #### Distribution Strategy
+  ```ruby
+  apply 0.6 to touchpoints[1..-2], distribute: :equal
+  # Splits 60% equally among middle touchpoints
+  ```
+
+  #### Block-Based Credit (Advanced)
+  ```ruby
+  apply to touchpoints do |tp|
+    days_ago = (conversion_time - tp.occurred_at) / 1.day
+    2 ** (-days_ago / 7.0)  # Exponential decay
+  end
+  normalize!  # Required when using blocks
+  ```
+
+  ---
+
+  ### Available Context
+
+  Inside AML models, you have access to:
+
+  | Variable | Type | Description |
+  |----------|------|-------------|
+  | `touchpoints` | Array | All touchpoints in journey |
+  | `touchpoints.length` | Integer | Number of touchpoints |
+  | `conversion_time` | Time | When conversion occurred |
+  | `conversion_value` | Decimal | Revenue amount |
+
+  **Per touchpoint** (inside blocks):
+
+  | Attribute | Type | Description |
+  |-----------|------|-------------|
+  | `tp.occurred_at` | Time | When touchpoint occurred |
+  | `tp.channel` | String | Channel name (`paid_search`, `email`, etc.) |
+  | `tp.event_type` | String | Event type (if touchpoint is an event) |
+  | `tp.properties` | Hash | Custom properties |
+
+  ---
+
+  ### Time Helpers (Rails)
+
+  Leverage Rails' ActiveSupport duration helpers:
+
+  ```ruby
+  # Durations
+  1.day
+  7.days
+  30.days
+  90.days
+  1.week
+  1.month
+  1.year
+
+  # Relative time
+  7.days.ago
+  1.week.ago
+  30.days.ago
+
+  # Comparisons
+  tp.occurred_at > 7.days.ago
+  tp.occurred_at <= 30.days.ago
+  tp.occurred_at.between?(7.days.ago, 3.days.ago)
+
+  # Time math
+  (conversion_time - tp.occurred_at) / 1.day
+  (conversion_time - tp.occurred_at) / 1.hour
+  ```
+
+  ---
+
+  ### Normalization
+
+  When credits might not sum to exactly 1.0 (e.g., using blocks or weighted calculations):
+
+  ```ruby
+  normalize!    # Forces credits to sum to 1.0
+  ```
+
+  **When to use**:
+  - Block-based credit calculations
+  - Weighted distributions
+  - Complex conditional logic
+  - Any time credits might exceed or fall short of 1.0
+
+  ---
+
+  ## Security & Sandboxing
+
+  **AML runs in a sandboxed environment** to prevent malicious code execution.
+
+  ### Allowed Operations
+
+  ✅ **Safe array operations**:
+  - `touchpoints[index]`, `touchpoints[range]`
+  - `touchpoints.length`, `touchpoints.size`, `touchpoints.count`
+  - `touchpoints.select`, `touchpoints.reject`, `touchpoints.find`
+  - `touchpoints.map`, `touchpoints.each`
+  - Array arithmetic: `touchpoints - excluded`
+
+  ✅ **Safe string methods**:
+  - `channel.starts_with?(prefix)`
+  - `channel.ends_with?(suffix)`
+  - `channel == value`
+  - `channel.match?(regex)` (limited patterns)
+
+  ✅ **Safe time operations**:
+  - `occurred_at > time`, `occurred_at < time`
+  - `occurred_at.between?(start, stop)`
+  - `occurred_at.hour`, `occurred_at.wday`
+  - Rails duration helpers: `30.days`, `7.days.ago`
+  - Time arithmetic: `(time1 - time2) / 1.day`
+
+  ✅ **Safe numeric operations**:
+  - Basic math: `+`, `-`, `*`, `/`, `**`
+  - Comparisons: `>`, `<`, `>=`, `<=`, `==`
+  - `Math.exp`, `Math.log`
+
+  ✅ **Safe control flow**:
+  - `if/elsif/else/end`
+  - Blocks with whitelisted methods only
+
+  ---
+
+  ### Blocked Operations
+
+  ❌ **Dangerous operations are blocked**:
+  - File system access (`File`, `Dir`, `IO`)
+  - Network access (`Net::HTTP`, `open`, `URI.open`)
+  - System commands (backticks, `system`, `exec`, `spawn`)
+  - Arbitrary code execution (`eval`, `instance_eval`, `class_eval`)
+  - Constant manipulation (`const_set`, `const_get`)
+  - Method manipulation (`define_method`, `send`, `method`)
+  - Process operations (`fork`, `exit`, `abort`)
+  - Dangerous globals (`$0`, `$LOAD_PATH`, `ENV`)
+
+  ---
+
+  ### Execution Limits
+
+  **Timeout**: 5 seconds per model execution
+  **Memory**: Limited allocation per execution
+  **Iterations**: Max 10,000 loop iterations
+
+  If any limit is exceeded, execution is terminated and an error is returned.
+
+  ---
+
+  ### AST Validation
+
+  Before execution, AML code is:
+
+  1. **Parsed** into an Abstract Syntax Tree (AST)
+  2. **Validated** for:
+     - Required `within_window` declaration
+     - Only whitelisted method calls
+     - No dangerous operations
+     - Valid syntax
+  3. **Analyzed** for:
+     - Credit sum validation (must equal 1.0 or use `normalize!`)
+     - Type safety
+     - Resource usage estimation
+
+  **Invalid code is rejected before execution.**
+
+  ---
+
+  ### Example: Blocked Code
+
+  These examples will **fail validation**:
+MD
+%>
+
+<%= code_tabs({
+  bad_1: {
+    label: 'File Access',
+    syntax: 'ruby',
+    code: <<~CODE
+      within_window 30.days
+        # ❌ BLOCKED: File system access
+        File.read("/etc/passwd")
+        apply 1.0 to touchpoints[0]
+      end
+    CODE
+  },
+  bad_2: {
+    label: 'System Command',
+    syntax: 'ruby',
+    code: <<~CODE
+      within_window 30.days
+        # ❌ BLOCKED: System commands
+        `rm -rf /`
+        apply 1.0 to touchpoints[0]
+      end
+    CODE
+  },
+  bad_3: {
+    label: 'Eval',
+    syntax: 'ruby',
+    code: <<~CODE
+      within_window 30.days
+        # ❌ BLOCKED: Arbitrary code execution
+        eval("malicious code")
+        apply 1.0 to touchpoints[0]
+      end
+    CODE
+  },
+  bad_4: {
+    label: 'Network',
+    syntax: 'ruby',
+    code: <<~CODE
+      within_window 30.days
+        # ❌ BLOCKED: Network access
+        Net::HTTP.get("evil.com", "/data")
+        apply 1.0 to touchpoints[0]
+      end
+    CODE
+  }
+}) %>
+
+<%= render_markdown <<~MD
+  **Error response**:
+  ```json
+  {
+    "error": "Validation failed",
+    "message": "Forbidden operation detected: File system access not allowed"
+  }
+  ```
+
+  ---
+
+  ## Validation Rules
+
+  ### Credits Must Sum to 1.0
+
+  All credit assignments must total exactly 1.0 (within 0.0001 tolerance).
+MD
+%>
+
+<%= code_tabs({
+  valid: {
+    label: 'Valid ✅',
+    syntax: 'ruby',
+    code: <<~CODE
+      within_window 30.days
+        apply 0.4 to touchpoints[0]
+        apply 0.4 to touchpoints[-1]
+        apply 0.2 to touchpoints[1..-2], distribute: :equal
+      end
+      # Sum: 0.4 + 0.4 + 0.2 = 1.0 ✅
+    CODE
+  },
+  invalid: {
+    label: 'Invalid ❌',
+    syntax: 'ruby',
+    code: <<~CODE
+      within_window 30.days
+        apply 0.5 to touchpoints[0]
+        apply 0.4 to touchpoints[-1]
+        apply 0.2 to touchpoints[1..-2], distribute: :equal
+      end
+      # Sum: 0.5 + 0.4 + 0.2 = 1.1 ❌
+    CODE
+  }
+}) %>
+
+<%= render_markdown <<~MD
+  **Error**:
+  ```
+  Validation failed: Credits sum to 1.1 but must equal 1.0
+
+  Current assignments:
+    touchpoints[0]: 0.5
+    touchpoints[-1]: 0.4
+    touchpoints[1..-2]: 0.2
+
+  Suggestion: Reduce one assignment by 0.1
+  ```
+
+  **Solution**: Use `normalize!` to automatically adjust credits to 1.0.
+
+  ---
+
+  ### Window is Required
+
+  Every model must start with `within_window`.
+MD
+%>
+
+<%= code_tabs({
+  valid: {
+    label: 'Valid ✅',
+    syntax: 'ruby',
+    code: <<~CODE
+      within_window 30.days
+        apply 1.0 to touchpoints[0]
+      end
+    CODE
+  },
+  invalid: {
+    label: 'Invalid ❌',
+    syntax: 'ruby',
+    code: <<~CODE
+      # Missing within_window!
+      apply 1.0 to touchpoints[0]
+    CODE
+  }
+}) %>
+
+<%= render_markdown <<~MD
+  ---
+
+  ### No Overlapping Targets
+
+  Cannot apply credit to the same touchpoint twice without explicit strategy.
+MD
+%>
+
+<%= code_tabs({
+  invalid: {
+    label: 'Invalid ❌',
+    syntax: 'ruby',
+    code: <<~CODE
+      within_window 30.days
+        apply 0.5 to touchpoints[0]
+        apply 0.5 to touchpoints[0]  # ❌ Duplicate target
+      end
+    CODE
+  },
+  valid: {
+    label: 'Valid ✅',
+    syntax: 'ruby',
+    code: <<~CODE
+      within_window 30.days
+        apply 0.5 to touchpoints[0]
+        apply 0.5 to touchpoints[-1]  # Different target
+      end
+    CODE
+  }
+}) %>
+
+<%= render_markdown <<~MD
+  ---
+
+  ## Error Handling
+
+  ### Validation Errors
+
+  Returned when model definition is invalid:
+
+  ```json
+  {
+    "error": "Validation failed",
+    "message": "Credits sum to 1.2 but must equal 1.0",
+    "line": 4,
+    "suggestion": "Add normalize! or adjust credit amounts"
+  }
+  ```
+
+  ---
+
+  ### Execution Errors
+
+  Returned when model execution fails:
+
+  ```json
+  {
+    "error": "Execution timeout",
+    "message": "Model execution exceeded 5 second limit"
+  }
+  ```
+
+  ---
+
+  ### Common Errors
+
+  | Error | Cause | Solution |
+  |-------|-------|----------|
+  | Credits don't sum to 1.0 | Math error | Add `normalize!` or fix amounts |
+  | Missing within_window | Forgot window declaration | Add `within_window` at top |
+  | Forbidden operation | Tried to use blocked method | Use only whitelisted methods |
+  | Execution timeout | Model too complex | Simplify logic |
+  | Division by zero | Empty touchpoint array | Add edge case handling |
+
+  ---
+
+  ## Edge Cases
+
+  ### Handle Empty/Small Journeys
+
+  Always consider edge cases:
+MD
+%>
+
+<%= code_tabs({
+  safe: {
+    label: 'Safe Handling',
+    syntax: 'ruby',
+    code: <<~CODE
+      within_window 30.days
+        case touchpoints.length
+        when 0
+          # No touchpoints - no attribution
+        when 1
+          apply 1.0 to touchpoints[0]
+        when 2
+          apply 0.5 to touchpoints[0]
+          apply 0.5 to touchpoints[-1]
+        else
+          apply 0.4 to touchpoints[0]
+          apply 0.4 to touchpoints[-1]
+          apply 0.2 to touchpoints[1..-2], distribute: :equal
+        end
+      end
+    CODE
+  }
+}) %>
+
+<%= render_markdown <<~MD
+  ---
+
+  ### Division by Zero Protection
+MD
+%>
+
+<%= code_tabs({
+  unsafe: {
+    label: 'Unsafe ❌',
+    syntax: 'ruby',
+    code: <<~CODE
+      within_window 30.days
+        paid = touchpoints.select { |tp| tp.channel.starts_with?("paid_") }
+
+        # ❌ Crashes if no paid touchpoints
+        apply 1.0 / paid.length to paid
+      end
+    CODE
+  },
+  safe: {
+    label: 'Safe ✅',
+    syntax: 'ruby',
+    code: <<~CODE
+      within_window 30.days
+        paid = touchpoints.select { |tp| tp.channel.starts_with?("paid_") }
+
+        if paid.any?
+          apply 1.0 to paid, distribute: :equal
+        else
+          apply 1.0 to touchpoints, distribute: :equal
+        end
+      end
+    CODE
+  }
+}) %>
+
+<%= render_markdown <<~MD
+  ---
+
+  ## Best Practices
+
+  ### 1. Always Handle Edge Cases
+
+  Test your model with:
+  - 0 touchpoints
+  - 1 touchpoint
+  - 2 touchpoints
+  - Many touchpoints
+
+  ---
+
+  ### 2. Use `normalize!` for Complex Logic
+
+  When using blocks or weighted calculations, always normalize:
+
+  ```ruby
+  within_window 30.days
+    apply to touchpoints do |tp|
+      # Complex calculation
+    end
+    normalize!  # Ensures sum = 1.0
+  end
+  ```
+
+  ---
+
+  ### 3. Test in Sandbox First
+
+  Use the **Model Builder** preview to test with sample journeys before saving.
+
+  ---
+
+  ### 4. Comment Your Logic
+
+  Add comments to explain custom logic:
+
+  ```ruby
+  within_window 90.days
+    # Prioritize high-value paid channels
+    paid = touchpoints.select { |tp| tp.channel.starts_with?("paid_") }
+
+    # 70% to paid, 30% to organic
+    apply 0.7 to paid, distribute: :equal
+    apply 0.3 to (touchpoints - paid), distribute: :equal
+  end
+  ```
+
+  ---
+
+  ### 5. Start Simple, Iterate
+
+  Begin with simple models and add complexity as needed.
+
+  **Iteration example**:
+
+  1. **V1**: Simple U-Shaped
+  2. **V2**: Add paid channel boost
+  3. **V3**: Add recency weighting
+  4. **V4**: Add conversion value logic
+
+  ---
+
+  ## Visual Model Builder
+
+  Create models visually without writing code:
+
+  1. Navigate to **Attribution Models** → **Create Model**
+  2. Drag rules to define credit distribution
+  3. Preview with sample journey
+  4. Save (generates AML automatically)
+
+  **Behind the scenes**: The visual builder generates valid AML code.
+
+  **Power users**: Switch to "Code" tab to edit AML directly.
+
+  ---
+
+  ## Testing Your Model
+
+  ### Preview with Sample Journey
+
+  Test your model before saving:
+
+  ```
+  Sample Journey:
+  ┌─────────────────────────────────────┐
+  │ 1. Organic Search (30 days ago)     │
+  │ 2. Paid Search (14 days ago)        │
+  │ 3. Email (7 days ago)               │
+  │ 4. Direct (today) → Conversion      │
+  └─────────────────────────────────────┘
+
+  Your Model Attribution:
+  ┌─────────────────────────────────────┐
+  │ Organic Search:  40%                │
+  │ Paid Search:     10%                │
+  │ Email:           10%                │
+  │ Direct:          40%                │
+  └─────────────────────────────────────┘
+  ```
+
+  ---
+
+  ### Compare Models
+
+  Compare your custom model against standard models:
+
+  | Model | Organic | Paid | Email | Direct |
+  |-------|---------|------|-------|--------|
+  | **Your Model** | 40% | 10% | 10% | 40% |
+  | First Touch | 100% | 0% | 0% | 0% |
+  | Last Touch | 0% | 0% | 0% | 100% |
+  | Linear | 25% | 25% | 25% | 25% |
+
+  ---
+
+  ## FAQ
+
+  ### Can I use my own custom Ruby gems?
+
+  **No.** For security, only built-in Ruby/Rails methods are available in the sandbox.
+
+  ---
+
+  ### Can I query the database?
+
+  **No.** AML has no database access. You can only operate on the provided `touchpoints` array.
+
+  ---
+
+  ### What's the maximum lookback window?
+
+  **365 days** (1 year). Longer windows can be requested for Enterprise plans.
+
+  ---
+
+  ### Can I use regular expressions?
+
+  **Limited.** Only simple patterns for string matching:
+
+  ```ruby
+  channel.starts_with?("paid_")    # ✅ Allowed
+  channel.match?(/^paid_/)         # ✅ Allowed (simple patterns)
+  channel.match?(/(?<!foo)bar/)    # ❌ Blocked (complex patterns)
+  ```
+
+  ---
+
+  ### What happens if my model errors during execution?
+
+  - Execution stops immediately
+  - Error is logged
+  - Conversion is attributed using **fallback model** (Last Touch)
+  - You're notified via dashboard alert
+
+  ---
+
+  ### Can I share models across accounts?
+
+  **Not yet.** This feature is planned for Q2 2026.
+
+  ---
+
+  ## Advanced Examples
+
+  ### Channel Weight Matrix
+MD
+%>
+
+<%= code_tabs({
+  aml: {
+    label: 'AML',
+    syntax: 'ruby',
+    code: <<~CODE
+      within_window 30.days
+        weights = touchpoints.map do |tp|
+          case tp.channel
+          when "paid_search" then 2.0
+          when "paid_social" then 1.8
+          when "email" then 1.5
+          when "organic_search" then 1.2
+          when "referral" then 1.0
+          else 0.5
+          end
+        end
+
+        total_weight = weights.sum
+
+        apply to touchpoints.each_with_index do |tp, i|
+          weights[i] / total_weight
+        end
+      end
+    CODE
+  }
+}) %>
+
+<%= render_markdown <<~MD
+  ---
+
+  ### Position × Recency Weighting
+MD
+%>
+
+<%= code_tabs({
+  aml: {
+    label: 'AML',
+    syntax: 'ruby',
+    code: <<~CODE
+      within_window 60.days
+        apply to touchpoints.each_with_index do |tp, i|
+          # Position weight (first and last get 1.5x)
+          position_weight = (i == 0 || i == touchpoints.length - 1) ? 1.5 : 1.0
+
+          # Recency weight (last 7 days get 1.3x)
+          recency_weight = tp.occurred_at > 7.days.ago ? 1.3 : 1.0
+
+          # Combined
+          position_weight * recency_weight
+        end
+
+        normalize!
+      end
+    CODE
+  }
+}) %>
+
+<%= render_markdown <<~MD
+  ---
+
+  ### Multi-Tier Value-Based
+MD
+%>
+
+<%= code_tabs({
+  aml: {
+    label: 'AML',
+    syntax: 'ruby',
+    code: <<~CODE
+      within_window 90.days
+        multiplier = case conversion_value
+          when 0...100 then 1.0
+          when 100...500 then 1.2
+          when 500...1000 then 1.5
+          else 2.0
+        end
+
+        # High-value conversions favor last touch more
+        first_credit = 0.3 * multiplier
+        last_credit = 0.5 * multiplier
+        total = first_credit + last_credit
+
+        # Normalize first and last
+        first_credit = first_credit / total * 0.7
+        last_credit = last_credit / total * 0.7
+
+        apply first_credit to touchpoints[0]
+        apply last_credit to touchpoints[-1]
+        apply 0.3 to touchpoints[1..-2], distribute: :equal
+      end
+    CODE
+  }
+}) %>
+
+<%= render_markdown <<~MD
+  ---
+
+  ## Next Steps
+
+  Ready to create custom attribution models?
+
+  1. **Start simple** - Try modifying a standard model
+  2. **Use visual builder** - Drag-and-drop interface for quick models
+  3. **Test thoroughly** - Preview with sample journeys
+  4. **Monitor performance** - Check execution time in model dashboard
+  5. **Iterate** - Refine based on business needs
+
+  **Need inspiration?** Check out our [Model Library](#{docs_path('attribution-library')}) for community-contributed models.
+MD
+%>

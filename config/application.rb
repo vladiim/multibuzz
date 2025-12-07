@@ -23,5 +23,8 @@ module Multibuzz
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+
+    # Skip automatic schema dump after migrations due to timescaledb gem compatibility
+    config.active_record.dump_schema_after_migration = false
   end
 end
