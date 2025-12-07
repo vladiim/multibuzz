@@ -8,6 +8,8 @@ gem "propshaft"
 gem "pg", "~> 1.1"
 # TimescaleDB for time-series optimization [https://github.com/jonatas/timescaledb]
 gem "timescaledb", "~> 0.2.0"
+# OpenStruct is required by timescaledb gem but not included in Ruby 3.x by default
+gem "ostruct"
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
 # Use JavaScript with ESM import maps [https://github.com/rails/importmap-rails]
