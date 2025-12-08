@@ -40,6 +40,9 @@ gem "prefixed_ids"
 gem "redcarpet"
 gem "rouge"
 
+# Ruby AST parser for AML DSL validation [https://github.com/whitequark/parser]
+gem "parser"
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
