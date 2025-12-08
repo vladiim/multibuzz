@@ -63,7 +63,7 @@ module Dashboard
 
       def build_row(row)
         {
-          name: row.dimension_value || "(not set)",
+          channel: row.dimension_value || "(not set)",
           credits: row.total_credits.to_f,
           revenue: row.total_revenue.to_f,
           conversion_count: row.conversion_count,
