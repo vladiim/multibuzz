@@ -15,7 +15,6 @@ A SQL-like DSL for defining custom attribution models with broad flexibility whi
 | **Linear** | `1.0 / count` to each | Distribute equally |
 | **Time Decay** | `2^(-days/half_life)` | Decay function, time math |
 | **U-Shaped** | first=0.4, last=0.4, middle=0.2 | Position weights, distribute remainder |
-| **W-Shaped** | first=0.3, mid=0.3, last=0.3, others=0.1 | Multiple key positions, distribute remainder |
 | **Participation** | 1.0 per unique channel | Group by channel, no normalization |
 
 ---
@@ -233,17 +232,7 @@ MODEL "U-Shaped"
 END
 ```
 
-### 3.6 W-Shaped
-```sql
-MODEL "W-Shaped"
-  ASSIGN 0.3 TO FIRST
-  ASSIGN 0.3 TO MIDDLE
-  ASSIGN 0.3 TO LAST
-  ASSIGN REMAINING DISTRIBUTE EQUAL TO OTHERS
-END
-```
-
-### 3.7 Custom: Channel Bonus
+### 3.6 Custom: Channel Bonus
 ```sql
 MODEL "Paid Search Boost"
   ASSIGN 0.5 TO FIRST WHERE channel MATCHES 'paid_*'
@@ -324,59 +313,16 @@ POSITION_BASED(first: 0.4, last: 0.4, middle: 0.2)
 
 ---
 
-## 5. W-Shaped Model Deep Dive
+## 5. Edge Cases & Validation
 
-To define W-shaped, we need:
-
-1. **Three key positions**: first, middle (calculated), last
-2. **Equal weight to each key position**: 0.3 each = 0.9 total
-3. **Remaining 0.1 distributed equally** to non-key touchpoints
-
-```sql
-MODEL "W-Shaped"
-  -- Key positions get 30% each
-  ASSIGN 0.3 TO FIRST
-  ASSIGN 0.3 TO MIDDLE    -- INDEX(count / 2)
-  ASSIGN 0.3 TO LAST
-
-  -- Remaining 10% split among others
-  ASSIGN REMAINING DISTRIBUTE EQUAL TO OTHERS
-
-  VALIDATE credits SUM TO 1.0
-END
-```
-
-**AST Representation:**
-```ruby
-ModelDefinition.new(
-  name: "W-Shaped",
-  rules: [
-    CreditRule.new(target: PositionTarget.new(position: :first), amount: FixedAmount.new(value: 0.3)),
-    CreditRule.new(target: PositionTarget.new(position: :middle), amount: FixedAmount.new(value: 0.3)),
-    CreditRule.new(target: PositionTarget.new(position: :last), amount: FixedAmount.new(value: 0.3)),
-    CreditRule.new(
-      target: PositionTarget.new(position: :others),
-      amount: DistributedAmount.new(total: :remaining, strategy: :equal)
-    )
-  ],
-  validations: [
-    ValidationRule.new(type: :sum_equals, target: :credits, value: 1.0)
-  ]
-)
-```
-
----
-
-## 6. Edge Cases & Validation
-
-### 6.1 Edge Cases to Handle
-| Touchpoints | First Touch | Linear | U-Shaped | W-Shaped |
-|-------------|-------------|--------|----------|----------|
-| 0 | [] | [] | [] | [] |
-| 1 | [1.0] | [1.0] | [1.0] | [1.0] |
-| 2 | [1.0, 0] | [0.5, 0.5] | [0.5, 0.5] | [0.5, 0.5] |
-| 3 | [1.0, 0, 0] | [0.33, 0.33, 0.33] | [0.4, 0.2, 0.4] | [0.33, 0.33, 0.33] |
-| 4+ | [1.0, 0, ...] | [0.25, ...] | [0.4, 0.1, 0.1, 0.4] | [0.3, 0.05, 0.3, 0.05, 0.3] |
+### 5.1 Edge Cases to Handle
+| Touchpoints | First Touch | Linear | U-Shaped |
+|-------------|-------------|--------|----------|
+| 0 | [] | [] | [] |
+| 1 | [1.0] | [1.0] | [1.0] |
+| 2 | [1.0, 0] | [0.5, 0.5] | [0.5, 0.5] |
+| 3 | [1.0, 0, 0] | [0.33, 0.33, 0.33] | [0.4, 0.2, 0.4] |
+| 4+ | [1.0, 0, ...] | [0.25, ...] | [0.4, 0.1, 0.1, 0.4] |
 
 ### 6.2 Validation Rules
 1. **Sum validation**: Credits must sum to 1.0 (±0.0001 tolerance)
@@ -434,12 +380,11 @@ Store compiled AST as JSONB for fast execution:
 ```json
 {
   "version": 1,
-  "name": "W-Shaped",
+  "name": "U-Shaped",
   "rules": [
-    {"type": "credit", "target": {"type": "position", "value": "first"}, "amount": 0.3},
-    {"type": "credit", "target": {"type": "position", "value": "middle"}, "amount": 0.3},
-    {"type": "credit", "target": {"type": "position", "value": "last"}, "amount": 0.3},
-    {"type": "credit", "target": {"type": "position", "value": "others"}, "amount": {"type": "remaining", "distribute": "equal"}}
+    {"type": "credit", "target": {"type": "position", "value": "first"}, "amount": 0.4},
+    {"type": "credit", "target": {"type": "position", "value": "last"}, "amount": 0.4},
+    {"type": "credit", "target": {"type": "position", "value": "middle"}, "amount": {"type": "remaining", "distribute": "equal"}}
   ],
   "validations": [
     {"type": "sum_equals", "value": 1.0}

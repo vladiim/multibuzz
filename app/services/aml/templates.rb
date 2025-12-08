@@ -55,22 +55,6 @@ module AML
         AML
       },
 
-      w_shaped: {
-        name: "W-Shaped",
-        description: "30% first, 30% middle, 30% last, 10% distributed to rest",
-        code: <<~AML
-          within_window %{lookback_days}.days do
-            mid = touchpoints.length / 2
-            apply 0.3, to: touchpoints.first
-            apply 0.3, to: touchpoints[mid]
-            apply 0.3, to: touchpoints.last
-            remaining = touchpoints.reject { |tp| tp == touchpoints.first || tp == touchpoints[mid] || tp == touchpoints.last }
-            apply 0.1, to: remaining, distribute: :equal if remaining.any?
-            normalize!
-          end
-        AML
-      },
-
       participation: {
         name: "Participation",
         description: "Equal credit to every touchpoint that participated (sums to 100%)",

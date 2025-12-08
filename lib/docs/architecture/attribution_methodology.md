@@ -107,14 +107,13 @@ Total Journey: 3 touchpoints [Google Organic, Facebook Ad, Google Organic]
 
 ### 2.1 Model Categories
 
-**Preset Models** (7 standard models):
+**Preset Models** (6 standard models):
 1. **First Touch**: 100% credit to first touchpoint
 2. **Last Touch**: 100% credit to last touchpoint
 3. **Linear**: Equal credit to all touchpoints (1/n each)
 4. **Time Decay**: Exponential decay (7-day half-life default)
 5. **U-Shaped**: 40% first, 40% last, 20% middle (equally distributed)
-6. **W-Shaped**: 30% first, 30% conversion session, 30% last, 10% others
-7. **Participation**: 100% credit to all unique channels (sum > 1.0)
+6. **Participation**: 100% credit to all unique channels (sum > 1.0)
 
 **Custom Models** (Phase 2C):
 - Defined via declarative DSL
@@ -166,17 +165,6 @@ credit(t) = weight(t) / sum_of_all_weights
   middle_credit_each = 0.2 / middle_count (20% split equally)
 ```
 
-**W-Shaped**:
-```
-1 touchpoint:  100% to that touchpoint
-2 touchpoints: 50% each
-3 touchpoints: 33.33% each
-4+ touchpoints:
-  first_credit = 0.3 (30%)
-  middle_credit = 0.3 (30%) - touchpoint at index n/2
-  last_credit = 0.3 (30%)
-  other_credit_each = 0.1 / other_count (10% split equally)
-```
 
 **Participation**:
 ```
@@ -539,7 +527,7 @@ Journey Construction:
 
 ### Implemented Algorithms
 
-All 7 preset models are fully implemented:
+All 6 preset models are fully implemented:
 
 | Model | Class | Status |
 |-------|-------|--------|
@@ -548,7 +536,6 @@ All 7 preset models are fully implemented:
 | Linear | `Attribution::Algorithms::Linear` | ✅ Complete |
 | Time Decay | `Attribution::Algorithms::TimeDecay` | ✅ Complete |
 | U-Shaped | `Attribution::Algorithms::UShaped` | ✅ Complete |
-| W-Shaped | `Attribution::Algorithms::WShaped` | ✅ Complete |
 | Participation | `Attribution::Algorithms::Participation` | ✅ Complete |
 
 ### File Locations
@@ -560,7 +547,6 @@ app/services/attribution/algorithms/
 ├── linear.rb
 ├── time_decay.rb
 ├── u_shaped.rb
-├── w_shaped.rb
 └── participation.rb
 ```
 
@@ -573,12 +559,16 @@ app/services/attribution/algorithms/
 
 ## 13. Version History
 
-- **v1.1** (2025-11-27): All 7 preset models implemented
+- **v1.2** (2025-12-08): Removed W-Shaped model
+  - W-Shaped requires "lead creation" touchpoint that conflicts with visitor-based tracking
+  - B2B users should use multiple conversion types (MQL, SQL, etc.) instead
+  - Updated to 6 preset models
+
+- **v1.1** (2025-11-27): All preset models implemented
   - Added Time Decay algorithm (configurable half-life)
   - Added U-Shaped algorithm (40/40/20 distribution)
-  - Added W-Shaped algorithm (30/30/30/10 distribution)
   - Added Participation algorithm (100% per unique channel)
-  - Complete test coverage (44 algorithm tests)
+  - Complete test coverage
 
 - **v1.0** (2025-11-19): Initial design based on research
   - Session-based touchpoint attribution
