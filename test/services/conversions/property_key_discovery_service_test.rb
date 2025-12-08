@@ -118,7 +118,7 @@ module Conversions
       account.conversions.create!(
         visitor: visitor,
         conversion_type: "test",
-        properties: properties,
+        properties: { "properties" => properties },
         converted_at: Time.current
       )
     end

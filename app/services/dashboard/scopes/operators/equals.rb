@@ -15,7 +15,7 @@ module Dashboard
         end
 
         def property_conditions
-          @property_conditions ||= values.map { "conversions.properties->>'#{sanitized_field}' = ?" }.join(" OR ")
+          @property_conditions ||= values.map { "#{property_path} = ?" }.join(" OR ")
         end
       end
     end
