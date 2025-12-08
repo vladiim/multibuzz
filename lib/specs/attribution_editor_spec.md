@@ -399,9 +399,9 @@ end
   - [x] Parse and validate AML code
   - [x] Return errors with line/column/suggestion
   - [x] Return success with parsed structure
-- [ ] Implement `test` action
-  - [ ] Execute AML with sample touchpoints
-  - [ ] Return credit distribution
+- [x] Implement `test` action
+  - [x] Execute AML with sample touchpoints
+  - [x] Return credit distribution (via Turbo Frame)
 - [x] Implement `reset` action
   - [x] Clear dsl_code, restore template
 - [x] Implement `set_default` action
@@ -420,7 +420,7 @@ end
 - [x] Test destroy allows deleting custom models
 - [x] Test validate endpoint returns errors
 - [x] Test validate endpoint returns success
-- [ ] Test test endpoint executes AML
+- [x] Test test endpoint executes AML
 - [x] Test reset clears customization
 - [x] Test set_default updates flags
 - [x] Test authorization (account scoping)
@@ -465,24 +465,24 @@ Using simple textarea with server-side validation for now. CodeMirror can be add
 
 ### Phase 8: Test Panel
 
-- [ ] Expandable "Test Your Model" section
-- [ ] Sample journey presets:
-  - [ ] 4 touchpoints (organic → email → paid → direct)
-  - [ ] 2 touchpoints (first/last only)
-  - [ ] Single touchpoint
-  - [ ] Custom (editable JSON)
-- [ ] "Run Test" button
-- [ ] Results display:
-  - [ ] Visual bar chart of credit distribution
-  - [ ] Table with touchpoint → credit mapping
-  - [ ] Total validation (should sum to 100%)
+- [x] Expandable "Test Your Model" section
+- [x] Sample journey presets:
+  - [x] 4 touchpoints (organic → email → paid → direct)
+  - [x] 2 touchpoints (paid social → email)
+  - [x] Single touchpoint (organic search)
+  - [ ] Custom (editable JSON) - deferred
+- [x] "Run Test" button
+- [x] Results display (via Turbo Frame):
+  - [x] Visual bar chart of credit distribution
+  - [x] Touchpoint → credit mapping
+  - [x] Total validation (shows green/red based on sum)
 
 ### Phase 9: Stimulus Controllers
 
-- [ ] `code_editor_controller.js` - CodeMirror wrapper
-- [ ] `validation_controller.js` - Real-time validation display
-- [ ] `test_panel_controller.js` - Test execution and results
-- [ ] `model_form_controller.js` - Form state management
+- [x] `code_editor_controller.js` - Basic syntax highlighting
+- [ ] `validation_controller.js` - Real-time validation display (deferred)
+- [x] Test panel uses Turbo Frames (no custom JS needed)
+- [ ] `model_form_controller.js` - Form state management (deferred)
 
 ### Phase 10: Polish
 

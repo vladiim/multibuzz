@@ -2,7 +2,7 @@
 
 module Accounts
   class AttributionModelsController < BaseController
-    before_action :set_attribution_model, only: [:edit, :update, :destroy, :reset, :set_default, :rerun]
+    before_action :set_attribution_model, only: [:edit, :update, :destroy, :reset, :set_default, :rerun, :test]
 
     def index
       @preset_models = current_account.attribution_models.preset
@@ -54,6 +54,10 @@ module Accounts
       return redirect_with_rerun_errors unless rerun_result[:success]
 
       redirect_with_rerun_success
+    end
+
+    def test
+      @test_result = test_result
     end
 
     private
@@ -136,6 +140,13 @@ module Accounts
     def render_overage_confirmation
       @overage = rerun_result[:overage]
       render :rerun_confirmation
+    end
+
+    def test_result
+      @test_result ||= AttributionModels::TestService.new(
+        dsl_code: params[:dsl_code],
+        journey_type: params[:journey_type] || :four_touch
+      ).call
     end
   end
 end

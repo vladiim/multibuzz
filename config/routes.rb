@@ -76,6 +76,7 @@ Rails.application.routes.draw do
           post :reset
           post :set_default
           post :rerun
+          post :test
         end
       end
     end
