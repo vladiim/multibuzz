@@ -67,6 +67,9 @@
   </div>
 </div>
 
+<!-- Conversions by Name Chart -->
+<%= render "dashboard/conversions/by_conversion_name_chart", data: data %>
+
 <!-- Attribution Chart (metric-driven) -->
 <%
 chart_metric = case selected_metric

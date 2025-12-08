@@ -1,4 +1,6 @@
 ENV["RAILS_ENV"] ||= "test"
+ENV["BROWSERSLIST_IGNORE_OLD_DATA"] ||= "1"
+$VERBOSE = nil # Suppress Ruby warnings during tests
 require_relative "../config/environment"
 require "rails/test_help"
 

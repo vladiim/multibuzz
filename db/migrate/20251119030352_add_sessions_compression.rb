@@ -2,9 +2,8 @@
 
 class AddSessionsCompression < ActiveRecord::Migration[8.0]
   def up
-    # Enable compression on sessions hypertable
-    # Segment by account_id and visitor_id
-    # Order by started_at DESC
+    return if Rails.env.test?
+
     execute <<-SQL
       ALTER TABLE sessions SET (
         timescaledb.compress,
@@ -21,6 +20,8 @@ class AddSessionsCompression < ActiveRecord::Migration[8.0]
   end
 
   def down
+    return if Rails.env.test?
+
     execute <<-SQL
       SELECT remove_compression_policy('sessions');
     SQL

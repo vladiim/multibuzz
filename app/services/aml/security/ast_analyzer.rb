@@ -48,9 +48,15 @@ module AML
       end
 
       def parse_code
-        Parser::CurrentRuby.parse(code)
+        # Suppress diagnostic output from parser gem
+        buffer = Parser::Source::Buffer.new("(string)")
+        buffer.source = code
+        builder = Parser::Builders::Default.new
+        parser = Parser::CurrentRuby.new(builder)
+        parser.diagnostics.consumer = ->(diagnostic) {} # Silence diagnostics
+        parser.parse(buffer)
       rescue ::Parser::SyntaxError => e
-        raise AML::SyntaxError.new(e.message, line: e.diagnostic.location.line)
+        raise AML::SyntaxError.new(e.message, line: e.diagnostic&.location&.line || 1)
       end
 
       def walk(node)

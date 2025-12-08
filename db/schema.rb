@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_08_024352) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_09_003300) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -85,6 +85,18 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_08_024352) do
     t.index ["revoked_at"], name: "index_api_keys_on_revoked_at"
   end
 
+  create_table "conversion_property_keys", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "property_key", null: false
+    t.integer "occurrences", default: 0, null: false
+    t.datetime "last_seen_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "occurrences"], name: "index_conversion_property_keys_on_account_id_and_occurrences"
+    t.index ["account_id", "property_key"], name: "index_conversion_property_keys_on_account_id_and_property_key", unique: true
+    t.index ["account_id"], name: "index_conversion_property_keys_on_account_id"
+  end
+
   create_table "attribution_credits", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.bigint "conversion_id", null: false
@@ -143,6 +155,18 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_08_024352) do
     t.index ["event_type"], name: "index_billing_events_on_event_type"
     t.index ["processed_at"], name: "index_billing_events_on_processed_at"
     t.index ["stripe_event_id"], name: "index_billing_events_on_stripe_event_id", unique: true
+  end
+
+  create_table "conversion_property_keys", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "property_key", null: false
+    t.integer "occurrences", default: 0, null: false
+    t.datetime "last_seen_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "occurrences"], name: "index_conversion_property_keys_on_account_id_and_occurrences"
+    t.index ["account_id", "property_key"], name: "index_conversion_property_keys_on_account_id_and_property_key", unique: true
+    t.index ["account_id"], name: "index_conversion_property_keys_on_account_id"
   end
 
   create_table "conversions", force: :cascade do |t|
@@ -350,6 +374,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_08_024352) do
   add_foreign_key "attribution_credits", "conversions"
   add_foreign_key "attribution_models", "accounts"
   add_foreign_key "billing_events", "accounts"
+  add_foreign_key "conversion_property_keys", "accounts"
   add_foreign_key "conversions", "accounts"
   add_foreign_key "conversions", "visitors"
   add_foreign_key "events", "accounts"
@@ -361,34 +386,38 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_08_024352) do
   add_foreign_key "sessions", "visitors"
   add_foreign_key "visitors", "accounts"
   add_foreign_key "visitors", "identities"
-  create_hypertable "events", time_column: "occurred_at", chunk_time_interval: "7 days", compress_segmentby: "account_id, visitor_id", compress_orderby: "occurred_at DESC", compression_interval: "P7D"
-  create_hypertable "sessions", time_column: "started_at", chunk_time_interval: "7 days", compress_segmentby: "account_id, visitor_id", compress_orderby: "started_at DESC", compression_interval: "P30D"
-  create_continuous_aggregate("channel_attribution_daily", <<-SQL, materialized_only: true, finalized: true)
-    SELECT account_id,
-      channel,
-      time_bucket('P1D'::interval, started_at) AS day,
-      count(*) AS session_count,
-      count(DISTINCT visitor_id) AS unique_visitors,
-      sum(page_view_count) AS total_page_views,
-      avg(page_view_count) AS avg_page_views_per_session
-     FROM sessions
-    WHERE (channel IS NOT NULL)
-    GROUP BY account_id, channel, (time_bucket('P1D'::interval, started_at))
-  SQL
 
-  create_continuous_aggregate("source_attribution_daily", <<-SQL, materialized_only: true, finalized: true)
-    SELECT account_id,
-      (initial_utm ->> 'utm_source'::text) AS utm_source,
-      (initial_utm ->> 'utm_medium'::text) AS utm_medium,
-      (initial_utm ->> 'utm_campaign'::text) AS utm_campaign,
-      channel,
-      time_bucket('P1D'::interval, started_at) AS day,
-      count(*) AS session_count,
-      count(DISTINCT visitor_id) AS unique_visitors,
-      sum(page_view_count) AS total_page_views
-     FROM sessions
-    WHERE ((initial_utm IS NOT NULL) AND (initial_utm <> '{}'::jsonb))
-    GROUP BY account_id, (initial_utm ->> 'utm_source'::text), (initial_utm ->> 'utm_medium'::text), (initial_utm ->> 'utm_campaign'::text), channel, (time_bucket('P1D'::interval, started_at))
-  SQL
+  # TimescaleDB hypertables and continuous aggregates - skip in test environment
+  # Hypertables don't support disabling triggers which Rails needs for fixture loading
+  unless Rails.env.test?
+    create_hypertable "events", time_column: "occurred_at", chunk_time_interval: "7 days", compress_segmentby: "account_id, visitor_id", compress_orderby: "occurred_at DESC", compression_interval: "P7D"
+    create_hypertable "sessions", time_column: "started_at", chunk_time_interval: "7 days", compress_segmentby: "account_id, visitor_id", compress_orderby: "started_at DESC", compression_interval: "P30D"
+    create_continuous_aggregate("channel_attribution_daily", <<-SQL, materialized_only: true, finalized: true)
+      SELECT account_id,
+        channel,
+        time_bucket('P1D'::interval, started_at) AS day,
+        count(*) AS session_count,
+        count(DISTINCT visitor_id) AS unique_visitors,
+        sum(page_view_count) AS total_page_views,
+        avg(page_view_count) AS avg_page_views_per_session
+       FROM sessions
+      WHERE (channel IS NOT NULL)
+      GROUP BY account_id, channel, (time_bucket('P1D'::interval, started_at))
+    SQL
 
+    create_continuous_aggregate("source_attribution_daily", <<-SQL, materialized_only: true, finalized: true)
+      SELECT account_id,
+        (initial_utm ->> 'utm_source'::text) AS utm_source,
+        (initial_utm ->> 'utm_medium'::text) AS utm_medium,
+        (initial_utm ->> 'utm_campaign'::text) AS utm_campaign,
+        channel,
+        time_bucket('P1D'::interval, started_at) AS day,
+        count(*) AS session_count,
+        count(DISTINCT visitor_id) AS unique_visitors,
+        sum(page_view_count) AS total_page_views
+       FROM sessions
+      WHERE ((initial_utm IS NOT NULL) AND (initial_utm <> '{}'::jsonb))
+      GROUP BY account_id, (initial_utm ->> 'utm_source'::text), (initial_utm ->> 'utm_medium'::text), (initial_utm ->> 'utm_campaign'::text), channel, (time_bucket('P1D'::interval, started_at))
+    SQL
+  end
 end

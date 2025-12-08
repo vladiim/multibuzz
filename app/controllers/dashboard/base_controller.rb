@@ -74,12 +74,34 @@ module Dashboard
         channels: channels_param,
         journey_position: journey_position_param,
         metric: metric_param,
-        funnel: funnel_param
+        funnel: funnel_param,
+        conversion_filters: conversion_filters_param,
+        breakdown_dimension: breakdown_dimension_param
       }
     end
 
     def funnel_param
       params[:funnel].presence
+    end
+
+    def conversion_filters_param
+      @conversion_filters_param ||= parse_conversion_filters
+    end
+
+    def parse_conversion_filters
+      return [] unless params[:conversion_filters].present?
+
+      params[:conversion_filters].map do |filter|
+        {
+          field: filter[:field].to_s,
+          operator: filter[:operator].to_s,
+          values: Array(filter[:values]).map(&:to_s)
+        }
+      end.select { |f| f[:field].present? && f[:values].any? }
+    end
+
+    def breakdown_dimension_param
+      params[:breakdown_dimension].presence || "conversion_type"
     end
 
     # View mode toggle (like Stripe's test/live mode)

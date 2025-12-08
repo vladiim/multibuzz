@@ -1,0 +1,28 @@
+<div class="border-t border-gray-200 pt-4 mt-4">
+  <div class="flex items-center justify-between mb-2">
+    <span class="text-sm font-medium text-gray-700">Conversion Filters</span>
+  </div>
+
+  <!-- Filter rows container -->
+  <div id="conversion-filters">
+    <% if local_assigns[:filters].present? %>
+      <% filters.each_with_index do |filter, index| %>
+        <%= render "dashboard/conversion_filters/filter_row",
+          dimensions: dimensions,
+          index: index,
+          filter: filter %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <!-- Add filter button -->
+  <%= button_to dashboard_conversion_filters_add_row_path(index: next_filter_index),
+    method: :post,
+    class: "mt-2 text-sm text-indigo-600 hover:text-indigo-800 flex items-center gap-1",
+    data: { turbo_stream: true } do %>
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+    </svg>
+    Add filter
+  <% end %>
+</div>
