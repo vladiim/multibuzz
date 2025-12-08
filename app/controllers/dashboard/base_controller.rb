@@ -91,13 +91,18 @@ module Dashboard
     def parse_conversion_filters
       return [] unless params[:conversion_filters].present?
 
-      params[:conversion_filters].map do |filter|
+      raw_filters.map do |filter|
         {
           field: filter[:field].to_s,
           operator: filter[:operator].to_s,
           values: Array(filter[:values]).map(&:to_s)
         }
       end.select { |f| f[:field].present? && f[:values].any? }
+    end
+
+    def raw_filters
+      # Rails sends indexed hash like {"0" => {...}} - convert to array
+      params[:conversion_filters].to_unsafe_h.values
     end
 
     def breakdown_dimension_param
