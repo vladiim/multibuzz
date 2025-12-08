@@ -14,12 +14,12 @@
   </select>
 
   <select name="conversion_filters[<%= index %>][operator]"
-    class="w-20 px-2 py-1.5 text-sm border border-gray-300 rounded bg-white">
-    <option value="equals" <%= "selected" if selected_operator == "equals" %>>=</option>
-    <option value="not_equals" <%= "selected" if selected_operator == "not_equals" %>>≠</option>
-    <option value="contains" <%= "selected" if selected_operator == "contains" %>>∋</option>
-    <option value="greater_than" <%= "selected" if selected_operator == "greater_than" %>>></option>
-    <option value="less_than" <%= "selected" if selected_operator == "less_than" %>><</option>
+    class="w-24 px-2 py-1.5 text-sm border border-gray-300 rounded bg-white">
+    <option value="equals" <%= "selected" if selected_operator == "equals" %>>equals</option>
+    <option value="not_equals" <%= "selected" if selected_operator == "not_equals" %>>not equals</option>
+    <option value="contains" <%= "selected" if selected_operator == "contains" %>>contains</option>
+    <option value="greater_than" <%= "selected" if selected_operator == "greater_than" %>>greater than</option>
+    <option value="less_than" <%= "selected" if selected_operator == "less_than" %>>less than</option>
   </select>
 
   <input type="text"
