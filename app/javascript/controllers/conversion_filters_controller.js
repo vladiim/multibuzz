@@ -13,7 +13,7 @@ export default class extends Controller {
       el.name = el.name.replace("INDEX", index)
     })
 
-    this.emptyTarget?.remove()
+    if (this.hasEmptyTarget) this.emptyTarget.remove()
     this.containerTarget.appendChild(clone)
     this.updateLabel()
   }
