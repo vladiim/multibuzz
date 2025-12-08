@@ -228,3 +228,23 @@ en:
         name_placeholder: "e.g., Production server"
         submit: "Generate Key"
         cancel: "Cancel"
+
+  accounts:
+    attribution_models:
+      new:
+        at_limit: "Custom model limit reached"
+        upgrade_required: "Upgrade to create custom attribution models"
+      create:
+        success: "Attribution model created successfully"
+      update:
+        success: "Attribution model updated successfully"
+      destroy:
+        success: "Attribution model deleted successfully"
+        cannot_delete_preset: "Cannot delete preset attribution models"
+      reset:
+        success: "Attribution model reset to default"
+      set_default:
+        success: "Default attribution model updated"
+      rerun:
+        success: "Rerun started for %{count} conversions"
+        no_stale_conversions: "No conversions need reattribution"

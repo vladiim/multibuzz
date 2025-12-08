@@ -8,3 +8,7 @@ pin_all_from "app/javascript/controllers", under: "controllers"
 
 # Charting
 pin "highcharts", to: "https://cdn.jsdelivr.net/npm/highcharts@11.4.0/es-modules/masters/highcharts.src.min.js"
+
+# Syntax highlighting
+pin "highlight.js/lib/core", to: "https://esm.sh/highlight.js@11.9.0/lib/core"
+pin "highlight.js/lib/languages/ruby", to: "https://esm.sh/highlight.js@11.9.0/lib/languages/ruby"
