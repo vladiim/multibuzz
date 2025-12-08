@@ -15,13 +15,13 @@ module Dashboard
           conversion_type: "purchase",
           funnel: "checkout",
           revenue: 100.0,
-          properties: { "plan" => "pro", "source" => "web" }
+          properties: { "properties" => { "plan" => "pro", "source" => "web" } }
         )
         @signup_conversion = create_conversion(
           conversion_type: "signup",
           funnel: "onboarding",
           revenue: 10.0,
-          properties: { "plan" => "free", "source" => "mobile" }
+          properties: { "properties" => { "plan" => "free", "source" => "mobile" } }
         )
       end
 

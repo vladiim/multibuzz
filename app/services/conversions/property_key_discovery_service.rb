@@ -33,12 +33,12 @@ module Conversions
     def discovered_keys
       @discovered_keys ||= account
         .conversions
-        .where("properties != '{}'::jsonb")
-        .pluck(Arel.sql("DISTINCT jsonb_object_keys(properties)"))
+        .where("properties->'properties' IS NOT NULL")
+        .pluck(Arel.sql("DISTINCT jsonb_object_keys(properties->'properties')"))
     end
 
     def key_occurrence_count(key)
-      account.conversions.where("jsonb_exists(properties, ?)", key).count
+      account.conversions.where("jsonb_exists(properties->'properties', ?)", key).count
     end
 
     def prune_stale_keys

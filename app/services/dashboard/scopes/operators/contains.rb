@@ -19,7 +19,7 @@ module Dashboard
         end
 
         def property_conditions
-          @property_conditions ||= values.map { "conversions.properties->>'#{sanitized_field}' ILIKE ?" }.join(" OR ")
+          @property_conditions ||= values.map { "#{property_path} ILIKE ?" }.join(" OR ")
         end
 
         def like_values

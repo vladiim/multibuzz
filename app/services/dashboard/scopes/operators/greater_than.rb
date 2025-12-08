@@ -11,7 +11,7 @@ module Dashboard
         end
 
         def apply_to_property(scope)
-          scope.where("(conversions.properties->>'#{sanitized_field}')::numeric > ?", numeric_value)
+          scope.where("(#{property_path})::numeric > ?", numeric_value)
         end
 
         def numeric_value

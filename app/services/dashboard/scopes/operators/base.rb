@@ -29,6 +29,10 @@ module Dashboard
           @sanitized_field ||= field.gsub(/[^a-zA-Z0-9_]/, "")
         end
 
+        def property_path
+          "conversions.properties->'properties'->>'#{sanitized_field}'"
+        end
+
         def apply_to_column(scope)
           raise NotImplementedError
         end

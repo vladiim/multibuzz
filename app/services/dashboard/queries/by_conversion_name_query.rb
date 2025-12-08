@@ -50,7 +50,7 @@ module Dashboard
       end
 
       def property_expression
-        "conversions.properties->>'#{sanitized_dimension}'"
+        "conversions.properties->'properties'->>'#{sanitized_dimension}'"
       end
 
       def built_in_dimension?
