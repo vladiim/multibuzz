@@ -8,7 +8,7 @@
 * export data (csv - simple + api - with property queries)
 * Filter dash funnel by dimension (properties)
 * Cancel conversion (via id)
-* are complex models like w-shaped ok out the box? do they need more? e.g. conversion_stage: [0, 1,2 etc]
+* For complex B2B funnels, use multiple conversion types (MQL, SQL, Opportunity, etc.)
 * Rollout SDKs: python, php, shopify, magento etc
 * CLV (doesn't work the same as new customer acquisition - think it through)
 * Other channels: phone, email
@@ -152,7 +152,7 @@ Create `/glossary` with SEO-optimized definitions:
 - First touch / Last touch
 - Linear attribution
 - Time decay
-- U-shaped / W-shaped
+- U-shaped
 - Cross-device tracking
 - Identity resolution
 - Session

@@ -112,13 +112,6 @@ model "Channel Weighted"
   distribute credit proportionally
 end
 
-model "W-Shaped"
-  credit first_touch with 0.3
-  credit last_touch with 0.3
-  credit event(type: "opportunity_created") with 0.3
-  credit remaining with 0.1 distributed equally
-end
-
 model "Custom Time Decay"
   for each touch in journey
     credit with decay(half_life: 14.days)
@@ -248,26 +241,6 @@ model "U-Shaped"
 end
 ```
 
-### W-Shaped
-```
-model "W-Shaped"
-  credit first_touch with 0.3
-  credit last_touch with 0.3
-  credit event("opportunity_created") with 0.3
-  credit remaining with 0.1 equally
-end
-```
-
-### Z-Shaped (B2B)
-```
-model "Z-Shaped"
-  credit first_touch with 0.225
-  credit event("mql_conversion") with 0.225
-  credit event("sql_conversion") with 0.225
-  credit last_touch with 0.225
-  credit remaining with 0.1 equally
-end
-```
 
 ### Custom Weighted
 ```

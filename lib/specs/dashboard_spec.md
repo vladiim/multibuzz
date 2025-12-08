@@ -618,7 +618,6 @@ app/
         <option value="linear" selected>Linear</option>
         <option value="time_decay">Time Decay</option>
         <option value="u_shaped">U-Shaped</option>
-        <option value="w_shaped">W-Shaped</option>
         <option value="participation">Participation</option>
       </select>
     </div>

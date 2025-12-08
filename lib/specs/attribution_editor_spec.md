@@ -3,7 +3,7 @@
 ## Overview
 
 This spec covers the UI for managing attribution models, including:
-- Viewing and editing the 7 default templates
+- Viewing and editing the 6 default templates
 - Creating custom models (paid plans)
 - Real-time AML validation with CodeMirror editor
 - Testing models with sample journeys
@@ -17,7 +17,7 @@ This spec covers the UI for managing attribution models, including:
 │                                                                  │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  │
 │  │  AML::Templates │  │ AttributionModel│  │  AML::Executor  │  │
-│  │  (7 defaults)   │──│  (user models)  │──│  (validation)   │  │
+│  │  (6 defaults)   │──│  (user models)  │──│  (validation)   │  │
 │  └─────────────────┘  └─────────────────┘  └─────────────────┘  │
 │           │                    │                    │            │
 │           ▼                    ▼                    ▼            │
@@ -40,7 +40,7 @@ This spec covers the UI for managing attribution models, including:
 
 | Plan    | Edit Defaults    | Custom Models | Total Models |
 |---------|------------------|---------------|--------------|
-| Free    | Variables only   | 0             | 7            |
+| Free    | Variables only   | 0             | 6            |
 | Starter | Full AML         | 3             | 10           |
 | Growth  | Full AML         | 5             | 12           |
 | Pro     | Full AML         | 10            | 17           |
@@ -101,7 +101,7 @@ Rerun limits match the event quota per plan:
 - Rerun limits match event limits per plan
 - Free plans can't exceed their rerun limit (max 10K events = max 10K conversions)
 - Limits reset monthly with billing period
-- Overage = `event_overage / 7` (reattributing one of seven models)
+- Overage = `event_overage / 6` (reattributing one of six models)
 
 - Starter: $5.80/10K events → $0.83/10K reruns
 - Growth: $3.96/10K events → $0.57/10K reruns
@@ -260,11 +260,11 @@ RERUN_LIMITS = {
   PLAN_PRO => 1_000_000
 }.freeze
 
-# Overage = event_overage / 7 (rounded)
+# Overage = event_overage / 6 (rounded)
 RERUN_OVERAGE_CENTS = {
-  PLAN_STARTER => 83,   # $5.80 / 7
-  PLAN_GROWTH => 57,    # $3.96 / 7
-  PLAN_PRO => 43        # $2.99 / 7
+  PLAN_STARTER => 97,   # $5.80 / 6
+  PLAN_GROWTH => 66,    # $3.96 / 6
+  PLAN_PRO => 50        # $2.99 / 6
 }.freeze
 ```
 
@@ -296,15 +296,14 @@ RERUN_OVERAGE_CENTS = {
 
 ---
 
-## 7 Default Templates
+## 6 Default Templates
 
 1. **First Touch** - 100% to first touchpoint
 2. **Last Touch** - 100% to last touchpoint
 3. **Linear** - Equal credit to all touchpoints
 4. **Time Decay** - Exponential decay toward conversion
 5. **U-Shaped** - 40% first, 40% last, 20% middle
-6. **W-Shaped** - 30% first, 30% lead creation, 30% last, 10% rest
-7. **Participation** - 100% to each touchpoint (non-normalized)
+6. **Participation** - 100% to each touchpoint (non-normalized)
 
 ## Data Model
 
@@ -353,7 +352,7 @@ end
 ### Phase 1: Templates Service
 
 - [x] Create `AML::Templates` module
-  - [x] Define DEFINITIONS hash with 7 templates
+  - [x] Define DEFINITIONS hash with 6 templates
   - [x] Each template has: key, name, description, code (with %{lookback_days} interpolation)
   - [x] `generate(algorithm, lookback_days:)` method
   - [x] `all` method returning list of templates
@@ -427,7 +426,7 @@ end
 
 ### Phase 5: Index View
 
-- [x] List 7 default templates
+- [x] List 6 default templates
   - [x] Show name, description
   - [x] Show "Customized" badge if dsl_code present
   - [x] Edit button
@@ -586,11 +585,7 @@ Sets model as account default.
 
 ## Open Questions
 
-1. **W-Shaped template** - Needs "lead creation" stage. How to identify?
-   - Option: Use middle touchpoint as proxy
-   - Option: Wait for user-defined stages feature
-
-2. **Participation model** - Credits don't sum to 1.0 (100% each).
+1. **Participation model** - Credits don't sum to 1.0 (100% each).
    - Need to handle this specially in validation?
 
 ## File Structure

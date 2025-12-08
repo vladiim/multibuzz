@@ -57,7 +57,6 @@ class AttributionModelTest < ActiveSupport::TestCase
     assert_respond_to model, :linear?
     assert_respond_to model, :time_decay?
     assert_respond_to model, :u_shaped?
-    assert_respond_to model, :w_shaped?
     assert_respond_to model, :participation?
 
     assert model.first_touch?

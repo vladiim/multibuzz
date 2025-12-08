@@ -5,12 +5,12 @@ require "test_helper"
 module AML
   class TemplatesTest < ActiveSupport::TestCase
     # Template definitions
-    test "defines 7 default templates" do
-      assert_equal 7, AML::Templates::DEFINITIONS.length
+    test "defines 6 default templates" do
+      assert_equal 6, AML::Templates::DEFINITIONS.length
     end
 
     test "includes all expected algorithms" do
-      expected = %i[first_touch last_touch linear time_decay u_shaped w_shaped participation]
+      expected = %i[first_touch last_touch linear time_decay u_shaped participation]
       assert_equal expected.sort, AML::Templates::DEFINITIONS.keys.sort
     end
 
@@ -46,7 +46,7 @@ module AML
     test "all returns list of template hashes" do
       templates = AML::Templates.all
 
-      assert_equal 7, templates.length
+      assert_equal 6, templates.length
       assert templates.all? { |t| t[:key].present? }
       assert templates.all? { |t| t[:name].present? }
     end
@@ -83,10 +83,6 @@ module AML
       assert_template_secure(:u_shaped)
     end
 
-    test "w_shaped template passes security validation" do
-      assert_template_secure(:w_shaped)
-    end
-
     test "participation template passes security validation" do
       assert_template_secure(:participation)
     end
@@ -110,10 +106,6 @@ module AML
 
     test "u_shaped template executes and returns valid credits" do
       assert_template_executes(:u_shaped)
-    end
-
-    test "w_shaped template executes and returns valid credits" do
-      assert_template_executes(:w_shaped)
     end
 
     test "participation template executes and returns valid credits" do

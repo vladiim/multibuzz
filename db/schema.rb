@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_04_094445) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_08_024352) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -55,6 +55,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_04_094445) do
     t.datetime "current_period_end"
     t.datetime "payment_failed_at"
     t.datetime "grace_period_ends_at"
+    t.integer "reruns_used_this_period", default: 0, null: false
     t.index ["billing_status"], name: "index_accounts_on_billing_status"
     t.index ["free_until"], name: "index_accounts_on_free_until"
     t.index ["payment_failed_at"], name: "index_accounts_on_payment_failed_at"
@@ -98,10 +99,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_04_094445) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "is_test", default: false, null: false
+    t.integer "model_version"
     t.index ["account_id", "attribution_model_id", "channel"], name: "index_credits_on_account_model_channel"
     t.index ["account_id", "channel"], name: "index_attribution_credits_on_account_id_and_channel"
     t.index ["account_id"], name: "index_attribution_credits_on_account_id"
     t.index ["attribution_model_id", "channel"], name: "index_attribution_credits_on_attribution_model_id_and_channel"
+    t.index ["attribution_model_id", "model_version"], name: "index_credits_staleness"
     t.index ["attribution_model_id"], name: "index_attribution_credits_on_attribution_model_id"
     t.index ["conversion_id", "attribution_model_id"], name: "idx_on_conversion_id_attribution_model_id_08931b86a1"
     t.index ["conversion_id"], name: "index_attribution_credits_on_conversion_id"
@@ -120,6 +123,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_04_094445) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "lookback_days", default: 30, null: false
+    t.integer "version", default: 1, null: false
+    t.datetime "version_updated_at"
     t.index ["account_id", "is_active"], name: "index_attribution_models_on_account_id_and_is_active"
     t.index ["account_id", "is_default"], name: "index_attribution_models_on_account_id_and_is_default"
     t.index ["account_id", "name"], name: "index_attribution_models_on_account_id_and_name", unique: true
@@ -262,6 +267,26 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_04_094445) do
     t.index ["medium"], name: "index_referrer_sources_on_medium"
   end
 
+  create_table "rerun_jobs", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "attribution_model_id", null: false
+    t.integer "status", default: 0, null: false
+    t.integer "total_conversions", null: false
+    t.integer "processed_conversions", default: 0, null: false
+    t.integer "from_version", null: false
+    t.integer "to_version", null: false
+    t.integer "overage_blocks", default: 0, null: false
+    t.datetime "started_at"
+    t.datetime "completed_at"
+    t.text "error_message"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "status"], name: "index_rerun_jobs_on_account_id_and_status"
+    t.index ["account_id"], name: "index_rerun_jobs_on_account_id"
+    t.index ["attribution_model_id", "status"], name: "index_rerun_jobs_on_attribution_model_id_and_status"
+    t.index ["attribution_model_id"], name: "index_rerun_jobs_on_attribution_model_id"
+  end
+
   create_table "sessions", primary_key: ["id", "started_at"], force: :cascade do |t|
     t.bigserial "id", null: false
     t.bigint "account_id", null: false
@@ -330,8 +355,40 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_04_094445) do
   add_foreign_key "events", "accounts"
   add_foreign_key "events", "visitors"
   add_foreign_key "identities", "accounts"
+  add_foreign_key "rerun_jobs", "accounts"
+  add_foreign_key "rerun_jobs", "attribution_models"
   add_foreign_key "sessions", "accounts"
   add_foreign_key "sessions", "visitors"
   add_foreign_key "visitors", "accounts"
   add_foreign_key "visitors", "identities"
+  create_hypertable "events", time_column: "occurred_at", chunk_time_interval: "7 days", compress_segmentby: "account_id, visitor_id", compress_orderby: "occurred_at DESC", compression_interval: "P7D"
+  create_hypertable "sessions", time_column: "started_at", chunk_time_interval: "7 days", compress_segmentby: "account_id, visitor_id", compress_orderby: "started_at DESC", compression_interval: "P30D"
+  create_continuous_aggregate("channel_attribution_daily", <<-SQL, materialized_only: true, finalized: true)
+    SELECT account_id,
+      channel,
+      time_bucket('P1D'::interval, started_at) AS day,
+      count(*) AS session_count,
+      count(DISTINCT visitor_id) AS unique_visitors,
+      sum(page_view_count) AS total_page_views,
+      avg(page_view_count) AS avg_page_views_per_session
+     FROM sessions
+    WHERE (channel IS NOT NULL)
+    GROUP BY account_id, channel, (time_bucket('P1D'::interval, started_at))
+  SQL
+
+  create_continuous_aggregate("source_attribution_daily", <<-SQL, materialized_only: true, finalized: true)
+    SELECT account_id,
+      (initial_utm ->> 'utm_source'::text) AS utm_source,
+      (initial_utm ->> 'utm_medium'::text) AS utm_medium,
+      (initial_utm ->> 'utm_campaign'::text) AS utm_campaign,
+      channel,
+      time_bucket('P1D'::interval, started_at) AS day,
+      count(*) AS session_count,
+      count(DISTINCT visitor_id) AS unique_visitors,
+      sum(page_view_count) AS total_page_views
+     FROM sessions
+    WHERE ((initial_utm IS NOT NULL) AND (initial_utm <> '{}'::jsonb))
+    GROUP BY account_id, (initial_utm ->> 'utm_source'::text), (initial_utm ->> 'utm_medium'::text), (initial_utm ->> 'utm_campaign'::text), channel, (time_bucket('P1D'::interval, started_at))
+  SQL
+
 end

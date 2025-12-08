@@ -14,61 +14,7 @@ AML is a Ruby-based DSL for defining custom attribution models. This spec outlin
 
 ## Open Questions / Requirements Needed
 
-### W-Shaped Attribution: Stage/Milestone Definition
-
-**BLOCKER**: W-shaped attribution requires identifying "key milestones" in the customer journey (e.g., MQL, SQL, Opportunity creation). We need user input on how stages should be defined.
-
-**Options to discuss with user:**
-
-1. **Stage as event type string**
-   ```ruby
-   # User defines stages when creating the model
-   stages: ["mql_conversion", "sql_conversion", "opportunity_created"]
-
-   # In AML:
-   apply 0.3 to touchpoints.find { |tp| tp.event_type == "mql_conversion" }
-   ```
-
-2. **Stage as integer (funnel position)**
-   ```ruby
-   # Touchpoints have a stage integer (0 = awareness, 1 = consideration, etc.)
-   apply 0.3 to touchpoints.find { |tp| tp.stage == 1 }
-   ```
-
-3. **Named stages array on conversion**
-   ```ruby
-   # Conversion has stages: ["mql", "sql", "opportunity"]
-   stages.each do |stage_event|
-     apply 0.3 / stages.length to touchpoints.find { |tp| tp.event_type == stage_event }
-   end
-   ```
-
-4. **Stage markers in journey**
-   ```ruby
-   # Journey has explicit stage markers
-   journey.stage(:mql)  # Returns touchpoint that triggered MQL
-   journey.stage(:sql)  # Returns touchpoint that triggered SQL
-
-   apply 0.3 to journey.stage(:mql)
-   apply 0.3 to journey.stage(:sql)
-   ```
-
-**Questions for user:**
-- How do customers define their funnel stages today?
-- Should stages be account-level configuration or per-model?
-- Are stages always event types, or can they be based on properties?
-- Should we support "closest touchpoint to stage" for when exact match isn't found?
-
-**Recommended approach:** Option 3 or 4 - explicit stage configuration with event_type matching.
-
-**Database impact:**
-```ruby
-# Possible migration
-add_column :attribution_models, :stage_events, :jsonb, default: []
-# Or
-add_column :conversions, :stage_events, :jsonb, default: {}
-# e.g., { "mql": "evt_123", "sql": "evt_456" }
-```
+> **Note**: W-Shaped attribution was removed from the product (2025-12-08). It required "lead creation" touchpoint identification that conflicts with our visitor-based tracking model. B2B users who need funnel stage tracking should use multiple conversion types (MQL, SQL, Opportunity, Closed Won) instead.
 
 ---
 
@@ -147,11 +93,6 @@ test/services/aml/
 ---
 
 ## Implementation Checklist
-
-### Phase 0: Requirements Clarification
-- [ ] **BLOCKER**: Get user input on stage/milestone definition for W-shaped
-- [ ] Decide on stage storage (model config vs conversion property)
-- [ ] Define stage matching semantics (exact vs closest)
 
 ### Phase 1: Foundation & Security Layer
 
@@ -335,7 +276,6 @@ Write tests FIRST for each attack vector:
 - [ ] Linear AML definition
 - [ ] Time Decay AML definition
 - [ ] U-Shaped AML definition
-- [ ] W-Shaped AML definition (requires stage resolution - see Phase 0)
 - [ ] Participation AML definition
 - [ ] Write integration tests for each
 
@@ -344,7 +284,6 @@ Write tests FIRST for each attack vector:
 - [ ] Add `compiled_ast` (jsonb) column
 - [ ] Add `last_compiled_at` (datetime) column
 - [ ] Add `compilation_error` (text) column
-- [ ] Add `stage_events` (jsonb) column (if needed for W-shaped)
 - [ ] Run migration
 
 #### 4.3 Model Integration
@@ -362,7 +301,7 @@ Write tests FIRST for each attack vector:
 #### 5.1 Edge Case Handling
 - [ ] 0 touchpoints → empty result
 - [ ] 1 touchpoint → 100% credit
-- [ ] 2 touchpoints → handle U-shaped/W-shaped
+- [ ] 2 touchpoints → handle U-shaped edge case
 - [ ] Division by zero protection
 - [ ] Empty filter results
 - [ ] Write edge case tests
@@ -691,54 +630,6 @@ module AML
           apply 0.4 to touchpoints[0]
           apply 0.4 to touchpoints[-1]
           apply 0.2 to touchpoints[1..-2], distribute: :equal
-        end
-      end
-    AML
-
-    # W-Shaped requires stage configuration - see Open Questions
-    # This is a placeholder that will need stage resolution
-    W_SHAPED = <<~AML
-      within_window 30.days
-        # W-Shaped: First, Key Milestone(s), Last
-        # Requires: stages array to be configured on the model
-        #
-        # Example with stages = ["mql_conversion", "sql_conversion"]:
-        #   First touch: 22.5%
-        #   MQL event:   22.5%
-        #   SQL event:   22.5%
-        #   Last touch:  22.5%
-        #   Others:      10% (distributed equally)
-
-        case touchpoints.length
-        when 0
-          # No touchpoints
-        when 1
-          apply 1.0 to touchpoints[0]
-        when 2
-          apply 0.5 to touchpoints[0]
-          apply 0.5 to touchpoints[-1]
-        else
-          # Placeholder - actual implementation depends on stage resolution
-          key_positions = 2 + stages.length  # first + stages + last
-          key_credit = 0.9 / key_positions
-
-          apply key_credit to touchpoints[0]
-          apply key_credit to touchpoints[-1]
-
-          stages.each do |stage_event|
-            stage_tp = touchpoints.find { |tp| tp.event_type == stage_event }
-            apply key_credit to stage_tp if stage_tp
-          end
-
-          # Remaining 10% to others
-          others = touchpoints.reject { |tp|
-            tp == touchpoints[0] ||
-            tp == touchpoints[-1] ||
-            stages.include?(tp.event_type)
-          }
-          apply 0.1 to others, distribute: :equal if others.any?
-
-          normalize!
         end
       end
     AML

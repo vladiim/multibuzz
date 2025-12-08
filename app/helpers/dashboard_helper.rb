@@ -5,7 +5,6 @@ module DashboardHelper
     "linear" => "Equal credit distributed across all touchpoints",
     "time_decay" => "More credit to touchpoints closer to conversion",
     "u_shaped" => "40% to first, 40% to last, 20% split among middle",
-    "w_shaped" => "30% first, 30% lead creation, 30% last, 10% middle",
     "participation" => "100% credit to every touchpoint (totals > 100%)"
   }.freeze
 
