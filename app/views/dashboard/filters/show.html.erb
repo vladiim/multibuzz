@@ -128,23 +128,21 @@
         </div>
       </div>
 
+      <!-- Conversion Filters -->
+      <%
+        dimensions = Dashboard::ConversionDimensionsService.new(current_account).call[:dimensions] || []
+        filters = @filter_params[:conversion_filters] || []
+      %>
+      <%= render "dashboard/conversion_filters/conversion_filters",
+        dimensions: dimensions,
+        filters: filters %>
+
       <!-- Apply Button -->
       <div class="filter-group">
         <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
           Apply
         </button>
       </div>
-
-      <!-- Conversion Filters -->
-      <%
-        dimensions = Dashboard::ConversionDimensionsService.new(current_account).call[:dimensions]
-        filters = @filter_params[:conversion_filters] || []
-        next_filter_index = filters.size
-      %>
-      <%= render "dashboard/conversion_filters/conversion_filters",
-        dimensions: dimensions,
-        filters: filters,
-        next_filter_index: next_filter_index %>
     </form>
   </div>
 <% end %>
