@@ -4,7 +4,7 @@
   selected_operator = filter[:operator] || "equals"
   selected_value = filter[:values]&.first || ""
 %>
-<div data-filter-row class="flex items-center gap-2">
+<div data-filter-row class="flex flex-wrap items-center gap-2">
   <select name="conversion_filters[<%= index %>][field]"
     class="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded bg-white">
     <option value="">Field...</option>
