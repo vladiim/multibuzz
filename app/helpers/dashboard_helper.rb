@@ -37,4 +37,37 @@ module DashboardHelper
 
     METRIC_FORMATTERS.fetch(type, METRIC_FORMATTERS[:number]).call(value, self)
   end
+
+  def chart_or_empty(data:, empty_message: "No data for the selected period", &block)
+    if data.blank?
+      content_tag(:div, empty_message, class: "h-64 flex items-center justify-center text-gray-500")
+    else
+      capture(&block)
+    end
+  end
+
+  def hidden_filter_params(except: [])
+    params_to_preserve = @filter_params.except(*Array(except))
+
+    safe_join(params_to_preserve.flat_map { |key, value| hidden_inputs_for(key, value) })
+  end
+
+  private
+
+  def hidden_inputs_for(key, value)
+    case value
+    when Array
+      value.map { |v| hidden_input_tag(key, v, array: true) }
+    when Hash
+      value.map { |k, v| tag.input(type: "hidden", name: "#{key}[#{k}]", value: v) }
+    else
+      [tag.input(type: "hidden", name: key, value: value)]
+    end
+  end
+
+  def hidden_input_tag(key, value, array: false)
+    name = array ? "#{key}[]" : key
+    actual_value = value.respond_to?(:prefix_id) ? value.prefix_id : value
+    tag.input(type: "hidden", name: name, value: actual_value)
+  end
 end

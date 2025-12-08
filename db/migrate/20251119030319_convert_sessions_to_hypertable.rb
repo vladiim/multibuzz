@@ -2,8 +2,8 @@
 
 class ConvertSessionsToHypertable < ActiveRecord::Migration[8.0]
   def up
-    # Convert sessions table to hypertable partitioned by started_at
-    # chunk_time_interval: 1 week
+    return if Rails.env.test?
+
     execute <<-SQL
       SELECT create_hypertable(
         'sessions',
@@ -16,6 +16,7 @@ class ConvertSessionsToHypertable < ActiveRecord::Migration[8.0]
   end
 
   def down
+    return if Rails.env.test?
     raise ActiveRecord::IrreversibleMigration, "Cannot automatically revert hypertable to regular table"
   end
 end

@@ -1,0 +1,59 @@
+<%
+  filter ||= {}
+  selected_field = filter[:field]
+  selected_operator = filter[:operator] || "equals"
+  selected_value = filter[:values]&.first || ""
+%>
+<div id="filter-row-<%= index %>" class="flex items-center gap-2 py-2">
+  <% if index > 0 %>
+    <span class="text-xs font-medium text-gray-500 uppercase w-8">and</span>
+  <% else %>
+    <span class="text-xs font-medium text-gray-500 uppercase w-8">where</span>
+  <% end %>
+
+  <!-- Field selector -->
+  <select name="conversion_filters[<%= index %>][field]"
+    class="block w-40 px-3 py-2 text-sm border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+    <option value="">Select field...</option>
+    <optgroup label="Fields">
+      <% dimensions.select { |d| d[:type] != "property" }.each do |dim| %>
+        <option value="<%= dim[:key] %>" <%= "selected" if selected_field == dim[:key] %>><%= dim[:label] %></option>
+      <% end %>
+    </optgroup>
+    <% property_dims = dimensions.select { |d| d[:type] == "property" } %>
+    <% if property_dims.any? %>
+      <optgroup label="Properties">
+        <% property_dims.each do |dim| %>
+          <option value="<%= dim[:key] %>" <%= "selected" if selected_field == dim[:key] %>><%= dim[:label] %></option>
+        <% end %>
+      </optgroup>
+    <% end %>
+  </select>
+
+  <!-- Operator selector -->
+  <select name="conversion_filters[<%= index %>][operator]"
+    class="block w-36 px-3 py-2 text-sm border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+    <option value="equals" <%= "selected" if selected_operator == "equals" %>>equals</option>
+    <option value="not_equals" <%= "selected" if selected_operator == "not_equals" %>>does not equal</option>
+    <option value="contains" <%= "selected" if selected_operator == "contains" %>>contains</option>
+    <option value="greater_than" <%= "selected" if selected_operator == "greater_than" %>>greater than</option>
+    <option value="less_than" <%= "selected" if selected_operator == "less_than" %>>less than</option>
+  </select>
+
+  <!-- Value input -->
+  <input type="text"
+    name="conversion_filters[<%= index %>][values][]"
+    value="<%= selected_value %>"
+    placeholder="Enter value..."
+    class="block w-32 px-3 py-2 text-sm border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+
+  <!-- Remove row button -->
+  <%= button_to dashboard_conversion_filters_remove_row_path(row_id: "filter-row-#{index}"),
+    method: :delete,
+    class: "p-1 text-gray-400 hover:text-red-600",
+    data: { turbo_stream: true } do %>
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  <% end %>
+</div>

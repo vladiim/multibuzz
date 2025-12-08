@@ -5,8 +5,8 @@
   - New / updates can back calculate at a fixed one-time cost (10k free then $x per 10k)
 * Invite users
 * Live (sign up, ruby gems)
-* export data (csv - simple + api - with property queries)
 * Filter dash funnel by dimension (properties)
+* export data (csv - simple + api - with property queries)
 * Cancel conversion (via id)
 * For complex B2B funnels, use multiple conversion types (MQL, SQL, Opportunity, etc.)
 * Rollout SDKs: python, php, shopify, magento etc

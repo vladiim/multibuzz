@@ -134,6 +134,17 @@
           Apply
         </button>
       </div>
+
+      <!-- Conversion Filters -->
+      <%
+        dimensions = Dashboard::ConversionDimensionsService.new(current_account).call[:dimensions]
+        filters = @filter_params[:conversion_filters] || []
+        next_filter_index = filters.size
+      %>
+      <%= render "dashboard/conversion_filters/conversion_filters",
+        dimensions: dimensions,
+        filters: filters,
+        next_filter_index: next_filter_index %>
     </form>
   </div>
 <% end %>

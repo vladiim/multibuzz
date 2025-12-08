@@ -89,6 +89,14 @@ Rails.application.routes.draw do
     get "filters", to: "filters#show"
     get "conversions", to: "conversions#show"
     get "funnel", to: "funnel#show"
+
+    # Conversion filter endpoints
+    namespace :conversion_filters do
+      get :dimensions
+      get :values
+      post :add_row
+      delete :remove_row
+    end
   end
 
   # Redirects from old dashboard routes to new /account routes
