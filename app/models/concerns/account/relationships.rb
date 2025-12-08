@@ -13,5 +13,6 @@ module Account::Relationships
     has_many :conversions, dependent: :destroy
     has_many :attribution_models, dependent: :destroy
     has_many :attribution_credits, dependent: :destroy
+    has_many :rerun_jobs, dependent: :destroy
   end
 end

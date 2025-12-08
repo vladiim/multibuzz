@@ -1,0 +1,79 @@
+<section id="aml-editor" class="py-24 px-6 bg-gray-50">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-12">
+      <h2 class="text-4xl font-bold text-gray-900 scroll-animate" data-controller="scroll-reveal">No More Black Boxes</h2>
+      <p class="mt-4 text-xl text-gray-600 scroll-animate" data-controller="scroll-reveal">
+        Choose from 7 models. Customize the rules. Create your own.
+      </p>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden scroll-animate" data-controller="aml-showcase scroll-reveal">
+      <div class="flex flex-col md:flex-row">
+        <!-- Model Tabs (vertical on desktop, horizontal on mobile) -->
+        <div class="flex md:flex-col overflow-x-auto md:overflow-visible bg-slate-100 border-b md:border-b-0 md:border-r border-slate-200">
+          <button type="button"
+            data-aml-showcase-target="tab"
+            data-action="click->aml-showcase#selectModel"
+            data-model="first_touch"
+            class="flex-shrink-0 p-4 text-center hover:bg-slate-200 transition-colors border-b-2 md:border-b-0 md:border-l-2 border-transparent">
+            <span class="block text-2xl mb-1">&#9889;</span>
+            <span class="text-xs text-slate-600 whitespace-nowrap">First Touch</span>
+          </button>
+          <button type="button"
+            data-aml-showcase-target="tab"
+            data-action="click->aml-showcase#selectModel"
+            data-model="last_touch"
+            class="flex-shrink-0 p-4 text-center hover:bg-slate-200 transition-colors border-b-2 md:border-b-0 md:border-l-2 border-transparent">
+            <span class="block text-2xl mb-1">&#127919;</span>
+            <span class="text-xs text-slate-600 whitespace-nowrap">Last Touch</span>
+          </button>
+          <button type="button"
+            data-aml-showcase-target="tab"
+            data-action="click->aml-showcase#selectModel"
+            data-model="linear"
+            class="flex-shrink-0 p-4 text-center hover:bg-slate-200 transition-colors border-b-2 md:border-b-0 md:border-l-2 border-transparent">
+            <span class="block text-2xl mb-1">&#9552;</span>
+            <span class="text-xs text-slate-600 whitespace-nowrap">Linear</span>
+          </button>
+          <button type="button"
+            data-aml-showcase-target="tab"
+            data-action="click->aml-showcase#selectModel"
+            data-model="time_decay"
+            class="flex-shrink-0 p-4 text-center hover:bg-slate-200 transition-colors border-b-2 md:border-b-0 md:border-l-2 border-transparent">
+            <span class="block text-2xl mb-1">&#9202;</span>
+            <span class="text-xs text-slate-600 whitespace-nowrap">Time Decay</span>
+          </button>
+          <button type="button"
+            data-aml-showcase-target="tab"
+            data-action="click->aml-showcase#selectModel"
+            data-model="u_shaped"
+            class="flex-shrink-0 p-4 text-center hover:bg-slate-200 transition-colors border-b-2 md:border-b-0 md:border-l-2 border-transparent">
+            <span class="block text-2xl mb-1">&#8746;</span>
+            <span class="text-xs text-slate-600 whitespace-nowrap">U-Shaped</span>
+          </button>
+        </div>
+
+        <!-- Code Editor + Description -->
+        <div class="flex-1 flex flex-col">
+          <div class="bg-slate-900 p-6 min-h-[200px] md:min-h-[280px]">
+            <pre class="hljs font-mono text-sm leading-relaxed" data-aml-showcase-target="code"></pre>
+          </div>
+          <div class="p-5 border-t border-slate-200 bg-white">
+            <h3 class="font-semibold text-gray-900 text-lg" data-aml-showcase-target="modelName"></h3>
+            <p class="text-gray-600 mt-1" data-aml-showcase-target="modelDesc"></p>
+            <p class="text-sm text-gray-500 mt-3" data-aml-showcase-target="bestFor"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-10 text-center">
+      <%= link_to new_registration_path, class: "inline-flex items-center px-6 py-3 text-base font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors" do %>
+        Try It Free
+        <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      <% end %>
+    </div>
+  </div>
+</section>

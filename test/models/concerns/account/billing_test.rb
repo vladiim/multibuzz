@@ -390,6 +390,96 @@ class Account::BillingTest < ActiveSupport::TestCase
     assert_not_includes expiring, other_account
   end
 
+  # --- Attribution Model Limits ---
+
+  test "custom_model_limit returns 0 for free plan" do
+    account.update!(plan: free_plan)
+
+    assert_equal 0, account.custom_model_limit
+  end
+
+  test "custom_model_limit returns 3 for starter plan" do
+    account.update!(plan: starter_plan)
+
+    assert_equal 3, account.custom_model_limit
+  end
+
+  test "custom_model_limit returns 5 for growth plan" do
+    account.update!(plan: growth_plan)
+
+    assert_equal 5, account.custom_model_limit
+  end
+
+  test "custom_model_limit returns 10 for pro plan" do
+    account.update!(plan: pro_plan)
+
+    assert_equal 10, account.custom_model_limit
+  end
+
+  test "custom_model_limit defaults to 0 for nil plan" do
+    account.update!(plan: nil)
+
+    assert_equal 0, account.custom_model_limit
+  end
+
+  test "custom_models_count returns count of custom models" do
+    account.attribution_models.create!(name: "Custom 1", model_type: :custom, dsl_code: "test")
+    account.attribution_models.create!(name: "Custom 2", model_type: :custom, dsl_code: "test")
+    account.attribution_models.create!(name: "Preset", model_type: :preset, algorithm: :first_touch)
+
+    assert_equal 2, account.custom_models_count
+  end
+
+  test "can_create_custom_model? returns true when under limit" do
+    account.update!(plan: starter_plan)
+    account.attribution_models.create!(name: "Custom 1", model_type: :custom, dsl_code: "test")
+
+    assert account.can_create_custom_model?
+  end
+
+  test "can_create_custom_model? returns false when at limit" do
+    account.update!(plan: starter_plan)
+    3.times { |i| account.attribution_models.create!(name: "Custom #{i}", model_type: :custom, dsl_code: "test") }
+
+    assert_not account.can_create_custom_model?
+  end
+
+  test "can_create_custom_model? returns false for free plan" do
+    account.update!(plan: free_plan)
+
+    assert_not account.can_create_custom_model?
+  end
+
+  test "can_edit_full_aml? returns false for free plan" do
+    account.update!(plan: free_plan)
+
+    assert_not account.can_edit_full_aml?
+  end
+
+  test "can_edit_full_aml? returns false for nil plan" do
+    account.update!(plan: nil)
+
+    assert_not account.can_edit_full_aml?
+  end
+
+  test "can_edit_full_aml? returns true for starter plan" do
+    account.update!(plan: starter_plan)
+
+    assert account.can_edit_full_aml?
+  end
+
+  test "can_edit_full_aml? returns true for growth plan" do
+    account.update!(plan: growth_plan)
+
+    assert account.can_edit_full_aml?
+  end
+
+  test "can_edit_full_aml? returns true for pro plan" do
+    account.update!(plan: pro_plan)
+
+    assert account.can_edit_full_aml?
+  end
+
   private
 
   def account
@@ -410,5 +500,9 @@ class Account::BillingTest < ActiveSupport::TestCase
 
   def growth_plan
     @growth_plan ||= plans(:growth)
+  end
+
+  def pro_plan
+    @pro_plan ||= plans(:pro)
   end
 end

@@ -220,3 +220,129 @@ Could even combine: Timeline shows the journey FIRST, then transitions to Sankey
 3. **Loop or trigger?** Should animation loop continuously, or play once then allow replay?
 
 4. **Mobile**: Simplified static version, or attempt responsive animation?
+
+---
+
+## NEW SECTION: Attribution Model Editor Showcase
+
+**Status**: TODO
+**Position**: After Features section, before SDKs
+
+### The Value Proposition
+
+Every other attribution tool is a black box. You pick a model, you get a number, and you have no idea how it was calculated. Multibuzz is different—we show you exactly how credit is assigned, and let you change it.
+
+### Headline & Messaging
+
+**Title**: No More Black Boxes
+
+**Subtitle**: "Your competitors are stuck with one-size-fits-all attribution. You're not."
+
+**Supporting Copy Ideas**:
+- "See exactly how credit flows to each channel. Customize it in minutes."
+- "Finally understand why Facebook gets 40% and Google gets 10%."
+- "Stop trusting algorithms you can't see. Start using models you control."
+
+### Visual Layout
+
+Vertical tabs on the left (model selector) + code/preview panel on the right.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                                                                      │
+│                     No More Black Boxes                              │
+│     Your competitors are stuck with one-size-fits-all attribution.   │
+│                         You're not.                                  │
+│                                                                      │
+│   ┌────────┬──────────────────────────────────────────────────────┐ │
+│   │        │                                                       │ │
+│   │  [⚡]  │  ┌─────────────────────────────────────────────────┐ │ │
+│   │ First  │  │                                                  │ │ │
+│   │ Touch  │  │  within_window 30.days do                        │ │ │
+│   │        │  │    apply 1.0, to: touchpoints.first              │ │ │
+│   │  [🎯]  │  │  end                                             │ │ │
+│   │ Last   │  │                                                  │ │ │
+│   │ Touch  │  └─────────────────────────────────────────────────┘ │ │
+│   │        │                                                       │ │
+│   │  [═]   │  ─────────────────────────────────────────────────── │ │
+│   │Linear  │                                                       │ │
+│   │        │   First Touch Attribution                             │ │
+│   │  [⏱]   │   Give 100% credit to the channel that started       │ │
+│   │ Time   │   the customer journey.                               │ │
+│   │ Decay  │                                                       │ │
+│   │        │   Best for: Brand awareness campaigns, top-of-funnel  │ │
+│   │  [∪]   │   measurement, understanding discovery channels.      │ │
+│   │U-Shape │                                                       │ │
+│   │        │                                                       │ │
+│   └────────┴──────────────────────────────────────────────────────┘ │
+│                                                                      │
+│                    [See How It Works →]                              │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Model Tabs with Icons
+
+| Model | Icon | Marketing Description |
+|-------|------|----------------------|
+| First Touch | ⚡ | Credit the channel that started it all |
+| Last Touch | 🎯 | Credit the channel that closed the deal |
+| Linear | ═ | Split credit equally across every touchpoint |
+| Time Decay | ⏱ | More credit to recent interactions |
+| U-Shaped | ∪ | Heavy credit to first and last, less to middle |
+| Custom | ✏️ | Build your own model (teaser for paid) |
+
+### Key Differentiators to Emphasize
+
+1. **Transparency**: "This is the actual code. No hidden formulas, no proprietary algorithms."
+2. **Control**: "Don't like how credit is assigned? Change it in 30 seconds."
+3. **Flexibility**: "Match attribution to your actual business, not someone else's assumptions."
+4. **No Vendor Lock-in**: "Export your models. Own your logic."
+
+### Model Descriptions (Marketing-Focused)
+
+**First Touch**
+> Give 100% credit to the channel that introduced the customer to your brand. Perfect for measuring brand awareness and discovery.
+
+**Last Touch**
+> Give 100% credit to the final touchpoint before conversion. See which channels are closing deals.
+
+**Linear**
+> Split credit equally across every interaction. Fair, simple, and easy to explain to stakeholders.
+
+**Time Decay**
+> Recent touchpoints get more credit than earlier ones. Ideal when you want to weight what happened closest to conversion.
+
+**U-Shaped**
+> 40% to first touch, 40% to last touch, 20% split across the middle. Rewards both discovery and conversion.
+
+**Custom**
+> Your business isn't average—why should your attribution be? Create models that match your actual customer journey.
+
+### Interaction Flow
+
+1. User lands on section, First Touch is selected by default
+2. Click different model tab → code updates, description updates
+3. Code is syntax-highlighted for readability (keywords in pink, numbers in orange)
+4. Below code: Plain-English description + "Best for:" use cases
+5. CTA: "See How It Works" or "Try It Free"
+
+### Mobile Design
+
+- Horizontal scrolling tabs (icons only)
+- Stacked layout: tabs → code → description
+- Tap tab to switch model
+
+### Animation Considerations
+
+Keep it simple—the code itself is the hero. Consider:
+- Subtle fade transition between models
+- Highlight effect on active tab
+- Avoid distracting animations that compete with the message
+
+### Success Metrics
+
+- Section engagement time
+- Tab interactions (which models are users exploring?)
+- Clicks through to signup from this section
+- Scroll continuation past section

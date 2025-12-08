@@ -35,6 +35,29 @@ module Billing
   GROWTH_EVENT_LIMIT = 250_000
   PRO_EVENT_LIMIT = 1_000_000
 
+  # --- Custom Attribution Model Limits ---
+  CUSTOM_MODEL_LIMITS = {
+    PLAN_FREE => 0,
+    PLAN_STARTER => 3,
+    PLAN_GROWTH => 5,
+    PLAN_PRO => 10
+  }.freeze
+
+  # --- Attribution Rerun Limits (matches event limits) ---
+  RERUN_LIMITS = {
+    PLAN_FREE => 10_000,
+    PLAN_STARTER => 50_000,
+    PLAN_GROWTH => 250_000,
+    PLAN_PRO => 1_000_000
+  }.freeze
+
+  # --- Rerun Overage (event_overage / 7, in cents per 10K) ---
+  RERUN_OVERAGE_CENTS = {
+    PLAN_STARTER => 83,   # $5.80 / 7
+    PLAN_GROWTH => 57,    # $3.96 / 7
+    PLAN_PRO => 43        # $2.99 / 7
+  }.freeze
+
   # --- Plan Prices (cents) ---
   FREE_MONTHLY_PRICE_CENTS = 0
   STARTER_MONTHLY_PRICE_CENTS = 2900

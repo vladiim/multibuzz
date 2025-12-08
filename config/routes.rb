@@ -39,6 +39,7 @@ Rails.application.routes.draw do
   # Waitlist
   resources :waitlist, only: [ :new, :create, :show ]
   get "signup", to: redirect("/waitlist/new")
+  get "register", to: redirect("/waitlist/new"), as: :new_registration
 
   # Documentation routes
   get "docs", to: redirect("/docs/getting-started"), as: :docs_index
@@ -67,6 +68,16 @@ Rails.application.routes.draw do
       end
       resource :team, only: [:show], controller: "team"
       resources :api_keys, only: [:index, :create, :destroy]
+      resources :attribution_models, except: [:show] do
+        collection do
+          post :validate
+        end
+        member do
+          post :reset
+          post :set_default
+          post :rerun
+        end
+      end
     end
   end
 
