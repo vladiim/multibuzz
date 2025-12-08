@@ -139,6 +139,55 @@
                 </div>
               </div>
             <% end %>
+
+            <!-- Test Panel (outside form to avoid nested forms) -->
+            <div class="mt-6 bg-white shadow rounded-lg overflow-hidden">
+              <div class="px-6 py-4">
+                <details class="group">
+                  <summary class="flex items-center justify-between cursor-pointer list-none">
+                    <h3 class="text-sm font-medium text-gray-900">Test Your Model</h3>
+                    <svg class="w-5 h-5 text-gray-500 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                  </summary>
+
+                  <div class="mt-4 space-y-4">
+                    <p class="text-sm text-gray-500">
+                      Test how your model distributes credit across a sample customer journey.
+                    </p>
+
+                    <%= form_with url: test_account_attribution_model_path(@attribution_model),
+                      method: :post,
+                      data: { turbo_frame: "test-results" },
+                      class: "space-y-4" do %>
+
+                      <%= hidden_field_tag :dsl_code, @effective_code, id: "test_dsl_code" %>
+
+                      <div>
+                        <label for="journey_type" class="block text-sm font-medium text-gray-700">Sample Journey</label>
+                        <select name="journey_type" id="journey_type"
+                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                          <option value="four_touch">4 touchpoints: Organic → Email → Paid → Direct</option>
+                          <option value="two_touch">2 touchpoints: Paid Social → Email</option>
+                          <option value="single_touch">1 touchpoint: Organic Search</option>
+                        </select>
+                      </div>
+
+                      <button type="submit"
+                        class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Run Test
+                      </button>
+                    <% end %>
+
+                    <%= turbo_frame_tag "test-results" do %>
+                      <div class="p-4 bg-gray-50 rounded-md text-sm text-gray-500 text-center">
+                        Click "Run Test" to see credit distribution
+                      </div>
+                    <% end %>
+                  </div>
+                </details>
+              </div>
+            </div>
           </div>
         </div>
       </div>

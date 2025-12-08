@@ -379,6 +379,68 @@ class Accounts::AttributionModelsControllerTest < ActionDispatch::IntegrationTes
     @free_plan ||= plans(:free)
   end
 
+# --- Test (AML execution) ---
+
+  test "test executes AML code and renders credit distribution" do
+    sign_in
+    model = account.attribution_models.create!(
+      name: "Test Model #{SecureRandom.hex(4)}",
+      model_type: :preset,
+      algorithm: :first_touch
+    )
+
+    post test_account_attribution_model_path(model),
+      params: { dsl_code: first_touch_code, journey_type: "four_touch" }
+
+    assert_response :success
+    assert_match(/100\.0%/, response.body)
+    assert_match(/Organic Search/, response.body)
+  end
+
+  test "test renders error for invalid AML code" do
+    sign_in
+    model = account.attribution_models.create!(
+      name: "Test Model #{SecureRandom.hex(4)}",
+      model_type: :preset,
+      algorithm: :first_touch
+    )
+
+    post test_account_attribution_model_path(model),
+      params: { dsl_code: "invalid ruby {{{{", journey_type: "four_touch" }
+
+    assert_response :success
+    assert_match(/bg-red-50/, response.body)
+  end
+
+  test "test works with different journey types" do
+    sign_in
+    model = account.attribution_models.create!(
+      name: "Test Model #{SecureRandom.hex(4)}",
+      model_type: :preset,
+      algorithm: :linear
+    )
+
+    post test_account_attribution_model_path(model),
+      params: { dsl_code: linear_code, journey_type: "two_touch" }
+
+    assert_response :success
+    assert_match(/50\.0%/, response.body)
+    assert_match(/Paid Social/, response.body)
+  end
+
+  test "test requires authentication" do
+    model = account.attribution_models.create!(
+      name: "Test Model #{SecureRandom.hex(4)}",
+      model_type: :preset,
+      algorithm: :first_touch
+    )
+
+    post test_account_attribution_model_path(model),
+      params: { dsl_code: first_touch_code }
+
+    assert_redirected_to login_path
+  end
+
   def starter_plan
     @starter_plan ||= plans(:starter)
   end
@@ -415,5 +477,21 @@ class Accounts::AttributionModelsControllerTest < ActionDispatch::IntegrationTes
     )
 
     model
+  end
+
+  def first_touch_code
+    <<~AML
+      within_window 30.days do
+        apply 1.0, to: touchpoints.first
+      end
+    AML
+  end
+
+  def linear_code
+    <<~AML
+      within_window 30.days do
+        apply 1.0, to: touchpoints, distribute: :equal
+      end
+    AML
   end
 end
