@@ -38,6 +38,13 @@ module DashboardHelper
     METRIC_FORMATTERS.fetch(type, METRIC_FORMATTERS[:number]).call(value, self)
   end
 
+  def conversion_filters_label(filters)
+    return "No filters" if filters.blank?
+
+    count = filters.size
+    count == 1 ? "1 filter" : "#{count} filters"
+  end
+
   def chart_or_empty(data:, empty_message: "No data for the selected period", &block)
     if data.blank?
       content_tag(:div, empty_message, class: "h-64 flex items-center justify-center text-gray-500")
