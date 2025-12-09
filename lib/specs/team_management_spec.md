@@ -238,10 +238,10 @@ All team operations use `ApplicationService` base class:
 
 ### Phase 5: Ownership Transfer
 
-- [ ] Add transfer ownership action (owner only)
-- [ ] Require confirmation (type account name)
-- [ ] Create `Team::OwnershipTransferService`
-- [ ] Demote previous owner to admin
+- [x] Add transfer ownership action (owner only)
+- [x] Require confirmation (type account name)
+- [x] Create `Team::OwnershipTransferService`
+- [x] Demote previous owner to admin
 - [ ] Send notification emails to both parties
 
 ### Phase 6: Authorization Hardening

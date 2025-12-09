@@ -1390,6 +1390,23 @@ presence: true,
 uniqueness: true
 ```
 
+### ERB View Rules
+
+**Extract conditionals to partials.** If/else statements in views should use partials for cleaner code:
+
+```erb
+# ✅ GOOD - Use partials for conditional sections
+<%= render "admin_controls" if @can_manage %>
+<%= render "owner_section" if @is_owner %>
+
+# ❌ BAD - Inline conditionals with lots of HTML
+<% if @can_manage %>
+  <div class="admin-panel">
+    <!-- 50 lines of HTML -->
+  </div>
+<% end %>
+```
+
 ### ERB/HTML Indentation
 
 **Use 2-space indentation for nested elements. Each nested level adds 2 spaces.**
