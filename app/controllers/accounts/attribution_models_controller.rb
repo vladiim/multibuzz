@@ -2,6 +2,8 @@
 
 module Accounts
   class AttributionModelsController < BaseController
+    include RequireAdmin
+
     before_action :set_attribution_model, only: [:edit, :update, :destroy, :reset, :set_default, :rerun, :test]
 
     def index
