@@ -233,7 +233,7 @@ All team operations use `ApplicationService` base class:
 - [x] Add account switcher component to header
 - [x] Track `last_accessed_at` on membership
 - [x] Update login to select default account
-- [ ] Add "Create New Account" flow for existing users
+- [x] Add "Create New Account" flow for existing users
 - [x] Handle pending invitations display
 
 ### Phase 5: Ownership Transfer
@@ -242,7 +242,7 @@ All team operations use `ApplicationService` base class:
 - [x] Require confirmation (type account name)
 - [x] Create `Team::OwnershipTransferService`
 - [x] Demote previous owner to admin
-- [ ] Send notification emails to both parties
+- [x] Send notification emails to both parties
 
 ### Phase 6: Authorization Hardening
 

@@ -2,6 +2,7 @@ require "test_helper"
 
 module Team
   class OwnershipTransferServiceTest < ActiveSupport::TestCase
+    include ActionMailer::TestHelper
     # ==========================================
     # Successful transfers
     # ==========================================
@@ -16,6 +17,12 @@ module Team
       assert transfer_to_member[:success]
       assert member_membership.reload.owner?
       assert owner_membership.reload.admin?
+    end
+
+    test "sends notification emails to both parties" do
+      assert_enqueued_emails 2 do
+        transfer_with_emails
+      end
     end
 
     # ==========================================
@@ -67,6 +74,14 @@ module Team
 
     def transfer_to_member
       @transfer_to_member ||= build_service(new_owner: member_membership, confirmation: account.name).call
+    end
+
+    def transfer_with_emails
+      build_service(new_owner: fresh_admin_membership, confirmation: account.name).call
+    end
+
+    def fresh_admin_membership
+      account.account_memberships.find_by(user: admin_user)
     end
 
     def wrong_confirmation

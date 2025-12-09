@@ -30,4 +30,26 @@ class TeamMailer < ApplicationMailer
       subject: "You've been removed from #{@account.name}"
     )
   end
+
+  def ownership_transferred_to_new_owner(account:, new_owner:, previous_owner:)
+    @account = account
+    @new_owner = new_owner
+    @previous_owner = previous_owner
+
+    mail(
+      to: new_owner.email,
+      subject: "You are now the owner of #{account.name}"
+    )
+  end
+
+  def ownership_transferred_to_previous_owner(account:, new_owner:, previous_owner:)
+    @account = account
+    @new_owner = new_owner
+    @previous_owner = previous_owner
+
+    mail(
+      to: previous_owner.email,
+      subject: "Ownership of #{account.name} has been transferred"
+    )
+  end
 end

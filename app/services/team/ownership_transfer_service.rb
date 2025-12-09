@@ -62,7 +62,25 @@ module Team
         actor_membership.update!(role: :admin)
         new_owner_membership.update!(role: :owner)
       end
+      notify_new_owner
+      notify_previous_owner
       success_result
+    end
+
+    def notify_new_owner
+      TeamMailer.ownership_transferred_to_new_owner(
+        account: account,
+        new_owner: new_owner_membership.user,
+        previous_owner: actor
+      ).deliver_later
+    end
+
+    def notify_previous_owner
+      TeamMailer.ownership_transferred_to_previous_owner(
+        account: account,
+        new_owner: new_owner_membership.user,
+        previous_owner: actor
+      ).deliver_later
     end
 
     def actor_membership
