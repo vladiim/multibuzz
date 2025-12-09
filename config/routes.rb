@@ -51,6 +51,10 @@ Rails.application.routes.draw do
   delete "logout", to: "sessions#destroy"
   get "dashboard", to: "dashboard#show"
 
+  # Team invitations
+  get "invitations/:token/accept", to: "invitations#show", as: :accept_invitation
+  post "invitations/:token/accept", to: "invitations#create"
+
   # Admin routes
   namespace :admin do
     get "billing", to: "billing#show", as: :billing
@@ -66,7 +70,10 @@ Rails.application.routes.draw do
         get :success
         get :cancel
       end
-      resource :team, only: [:show], controller: "team"
+      resource :team, only: [:show], controller: "team" do
+        resources :invitations, only: [:create, :destroy], controller: "team/invitations"
+        resources :memberships, only: [:update, :destroy], controller: "team/memberships"
+      end
       resources :api_keys, only: [:index, :create, :destroy]
       resources :attribution_models, except: [:show] do
         collection do

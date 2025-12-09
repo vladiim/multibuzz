@@ -27,3 +27,19 @@ pending_invite:
   status: 0  # pending
   invited_at: <%= 1.day.ago %>
   invited_by_email: user1@example.com
+
+admin_in_one:
+  user: three
+  account: one
+  role: 2  # admin
+  status: 1  # accepted
+  accepted_at: <%= 2.weeks.ago %>
+  invited_by_email: user1@example.com
+
+member_in_one:
+  user: four
+  account: one
+  role: 1  # member
+  status: 1  # accepted
+  accepted_at: <%= 1.week.ago %>
+  invited_by_email: user1@example.com
