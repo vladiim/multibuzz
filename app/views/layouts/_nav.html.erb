@@ -66,14 +66,14 @@
 
               <div class="border-t border-gray-100"></div>
 
-              <!-- Create Account (disabled for now) -->
+              <!-- Create Account -->
               <div class="py-1">
-                <span class="flex items-center gap-2 px-4 py-2 text-sm text-gray-400 cursor-not-allowed">
+                <%= link_to new_account_path, class: "flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" do %>
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                   </svg>
                   Create Account
-                </span>
+                <% end %>
               </div>
 
               <div class="border-t border-gray-100"></div>

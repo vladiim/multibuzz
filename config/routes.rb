@@ -56,6 +56,9 @@ Rails.application.routes.draw do
   post "invitations/:token/accept", to: "invitations#create"
   post "invitations/:id/accept_pending", to: "invitations#accept_pending", as: :accept_pending_invitation
 
+  # Account creation for existing users
+  resources :accounts, only: [:new, :create]
+
   # Admin routes
   namespace :admin do
     get "billing", to: "billing#show", as: :billing
