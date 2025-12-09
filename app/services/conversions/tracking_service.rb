@@ -74,11 +74,23 @@ module Conversions
         revenue: normalized_revenue,
         currency: currency.presence || "USD",
         funnel: funnel,
-        properties: properties,
+        properties: normalized_properties,
         converted_at: conversion_timestamp,
         journey_session_ids: [],
         is_test: is_test
       )
+    end
+
+    # Flatten nested "properties" key if present
+    # Input:  { "url" => "...", "properties" => { "location" => "Sydney" } }
+    # Output: { "url" => "...", "location" => "Sydney" }
+    def normalized_properties
+      return properties unless properties.is_a?(Hash)
+
+      nested = properties["properties"] || properties[:properties]
+      return properties unless nested.is_a?(Hash)
+
+      properties.except("properties", :properties).merge(nested)
     end
 
     def conversion_timestamp

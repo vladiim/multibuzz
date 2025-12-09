@@ -10,18 +10,19 @@ module Dashboard
         account.attribution_credits.delete_all
         account.conversions.delete_all
 
-        # Create conversions with different properties
+        # Create conversions with FLAT properties structure
+        # Properties are stored flat at root level, not nested
         @purchase_conversion = create_conversion(
           conversion_type: "purchase",
           funnel: "checkout",
           revenue: 100.0,
-          properties: { "properties" => { "plan" => "pro", "source" => "web" } }
+          properties: { "plan" => "pro", "source" => "web" }
         )
         @signup_conversion = create_conversion(
           conversion_type: "signup",
           funnel: "onboarding",
           revenue: 10.0,
-          properties: { "properties" => { "plan" => "free", "source" => "mobile" } }
+          properties: { "plan" => "free", "source" => "mobile" }
         )
       end
 

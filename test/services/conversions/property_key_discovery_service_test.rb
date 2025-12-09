@@ -96,6 +96,45 @@ module Conversions
       assert_equal initial_count, account.conversion_property_keys.count
     end
 
+    test "excludes reserved keys like url and referrer from discovery" do
+      # Real-world data has url, referrer at root alongside custom properties
+      account.conversions.create!(
+        visitor: visitor,
+        conversion_type: "test",
+        properties: {
+          "url" => "https://example.com/checkout",
+          "referrer" => "https://example.com/cart",
+          "location" => "Sydney",
+          "plan" => "pro"
+        },
+        converted_at: Time.current
+      )
+
+      service.call
+
+      # Should discover custom properties but NOT url/referrer
+      assert_includes discovered_keys, "location"
+      assert_includes discovered_keys, "plan"
+      refute_includes discovered_keys, "url"
+      refute_includes discovered_keys, "referrer"
+    end
+
+    test "discovers keys from flat properties structure" do
+      # Flat structure (target format)
+      account.conversions.create!(
+        visitor: visitor,
+        conversion_type: "test",
+        properties: { "location" => "Melbourne", "tier" => "gold" },
+        converted_at: Time.current
+      )
+
+      result = service.call
+
+      assert result[:success]
+      assert_includes discovered_keys, "location"
+      assert_includes discovered_keys, "tier"
+    end
+
     private
 
     def service
@@ -114,11 +153,14 @@ module Conversions
       account.conversion_property_keys.reload.pluck(:property_key)
     end
 
+    # Properties are stored FLAT at root level, not nested
+    # { "plan" => "pro", "source" => "api" }
+    # NOT: { "properties" => { "plan" => "pro" } }
     def create_conversion_with_properties(properties)
       account.conversions.create!(
         visitor: visitor,
         conversion_type: "test",
-        properties: { "properties" => properties },
+        properties: properties.stringify_keys,
         converted_at: Time.current
       )
     end
