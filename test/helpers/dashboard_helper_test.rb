@@ -74,4 +74,81 @@ class DashboardHelperTest < ActionView::TestCase
   test "attribution_model_description returns default for unknown algorithm" do
     assert_equal "Custom attribution model", attribution_model_description("unknown")
   end
+
+  # hidden_filter_params tests
+  test "hidden_filter_params preserves conversion_filters array of hashes" do
+    @filter_params = {
+      date_range: "30d",
+      conversion_filters: [
+        { field: "location", operator: "equals", values: ["Port Melbourne"] }
+      ]
+    }
+
+    result = hidden_filter_params
+
+    # Should generate properly indexed nested inputs
+    assert_includes result, 'name="conversion_filters[0][field]"'
+    assert_includes result, 'value="location"'
+    assert_includes result, 'name="conversion_filters[0][operator]"'
+    assert_includes result, 'value="equals"'
+    assert_includes result, 'name="conversion_filters[0][values][]"'
+    assert_includes result, 'value="Port Melbourne"'
+  end
+
+  test "hidden_filter_params preserves multiple conversion_filters" do
+    @filter_params = {
+      conversion_filters: [
+        { field: "location", operator: "equals", values: ["Sydney"] },
+        { field: "plan", operator: "equals", values: ["pro", "enterprise"] }
+      ]
+    }
+
+    result = hidden_filter_params
+
+    # First filter
+    assert_includes result, 'name="conversion_filters[0][field]"'
+    assert_includes result, 'name="conversion_filters[0][values][]"'
+
+    # Second filter
+    assert_includes result, 'name="conversion_filters[1][field]"'
+    assert_includes result, 'name="conversion_filters[1][values][]"'
+  end
+
+  test "hidden_filter_params handles simple arrays" do
+    @filter_params = {
+      channels: ["paid_search", "organic"]
+    }
+
+    result = hidden_filter_params
+
+    assert_includes result, 'name="channels[]"'
+    assert_includes result, 'value="paid_search"'
+    assert_includes result, 'value="organic"'
+  end
+
+  test "hidden_filter_params handles simple values" do
+    @filter_params = {
+      date_range: "7d",
+      metric: "conversions"
+    }
+
+    result = hidden_filter_params
+
+    assert_includes result, 'name="date_range"'
+    assert_includes result, 'value="7d"'
+    assert_includes result, 'name="metric"'
+    assert_includes result, 'value="conversions"'
+  end
+
+  test "hidden_filter_params excludes specified keys" do
+    @filter_params = {
+      date_range: "7d",
+      breakdown_dimension: "conversion_type"
+    }
+
+    result = hidden_filter_params(except: [:breakdown_dimension])
+
+    assert_includes result, 'name="date_range"'
+    refute_includes result, 'breakdown_dimension'
+  end
 end
