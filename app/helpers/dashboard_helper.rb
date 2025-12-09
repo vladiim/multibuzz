@@ -64,12 +64,18 @@ module DashboardHelper
   def hidden_inputs_for(key, value)
     case value
     when Array
-      value.map { |v| hidden_input_tag(key, v, array: true) }
+      value.flat_map.with_index { |v, i| hidden_inputs_for_array_element(key, v, i) }
     when Hash
-      value.map { |k, v| tag.input(type: "hidden", name: "#{key}[#{k}]", value: v) }
+      value.flat_map { |k, v| hidden_inputs_for("#{key}[#{k}]", v) }
     else
-      [tag.input(type: "hidden", name: key, value: value)]
+      [hidden_input_tag(key, value)]
     end
+  end
+
+  def hidden_inputs_for_array_element(key, value, index)
+    return hidden_inputs_for("#{key}[#{index}]", value) if value.is_a?(Hash)
+
+    [hidden_input_tag(key, value, array: true)]
   end
 
   def hidden_input_tag(key, value, array: false)
