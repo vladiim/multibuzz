@@ -5,6 +5,7 @@
 * Coming soon for features (e.g. export - track how many people are waiting)
 * Dogfood - tracking via mbuzz
 * Live (sign up, ruby gems)
+* All contact forms - emailed to me
 * Rollout SDKs: python, php, shopify, magento etc
     1. Launch everywhere (Hacker News, Product Hunt, Reddit, X, LinkedIn, YouTube etc.). Spend a week giving your MVP its best shot.
     2. (if #1 didn't take off) — Rebrand. New name, new logo, new design, new landing page, new headline. Same product. Repeat #1

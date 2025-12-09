@@ -212,21 +212,21 @@ All team operations use `ApplicationService` base class:
 - [x] Create `Team::InvitationService`
 - [x] Handle new user vs existing user paths
 - [x] Create `TeamMailer` with invitation email
-- [ ] Create invitation acceptance page
-- [ ] Create `Team::AcceptanceService`
+- [x] Create invitation acceptance page
+- [x] Create `Team::AcceptanceService`
 - [x] Add invitation token to AccountMembership migration
 - [x] Add invited_by_id to track who sent invite
 
 ### Phase 3: Member Management
 
-- [ ] Create `Team::RoleChangeService`
-- [ ] Add role change dropdown (admin+ only)
-- [ ] Prevent owner demotion without transfer
-- [ ] Prevent self-demotion to member
-- [ ] Create `Team::RemovalService`
-- [ ] Add remove button with confirmation
-- [ ] Prevent removing last owner
-- [ ] Handle soft delete with deleted_at
+- [x] Create `Team::RoleChangeService`
+- [x] Add role change dropdown (admin+ only)
+- [x] Prevent owner demotion without transfer
+- [x] Prevent self-demotion to member
+- [x] Create `Team::RemovalService`
+- [x] Add remove button with confirmation
+- [x] Prevent removing last owner
+- [x] Handle soft delete with deleted_at
 
 ### Phase 4: Multi-Account Support
 
