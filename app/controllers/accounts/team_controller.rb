@@ -3,6 +3,7 @@ module Accounts
     def show
       @memberships = team_memberships
       @can_manage = current_user.admin_of?(current_account)
+      @is_owner = current_user.owner_of?(current_account)
     end
 
     private

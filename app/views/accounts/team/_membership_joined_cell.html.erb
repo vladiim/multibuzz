@@ -1,0 +1,7 @@
+<% if membership.accepted? %>
+  <%= membership.accepted_at&.strftime("%b %d, %Y") || "—" %>
+<% elsif membership.pending? %>
+  Invited <%= time_ago_in_words(membership.invited_at) %> ago
+<% else %>
+  —
+<% end %>

@@ -74,6 +74,9 @@ Rails.application.routes.draw do
       resource :team, only: [:show], controller: "team" do
         resources :invitations, only: [:create, :destroy], controller: "team/invitations"
         resources :memberships, only: [:update, :destroy], controller: "team/memberships"
+        resource :ownership, only: [], controller: "team/ownership" do
+          post :transfer
+        end
       end
       resources :api_keys, only: [:index, :create, :destroy]
       resources :attribution_models, except: [:show] do
