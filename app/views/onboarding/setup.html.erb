@@ -17,18 +17,15 @@
       <p class="text-gray-600 mb-4">Use this test key during development. You'll switch to a live key when ready for production.</p>
 
       <% if test_api_key %>
-        <div class="bg-gray-100 rounded-lg p-4 font-mono text-sm flex items-center justify-between">
-          <code class="text-gray-800"><%= test_api_key.display_key %></code>
-          <button
-            onclick="navigator.clipboard.writeText('<%= test_api_key.raw_key %>')"
-            class="ml-4 px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700"
-          >
-            Copy
-          </button>
+        <div class="bg-gray-100 rounded-lg p-4 font-mono text-sm">
+          <code class="text-gray-800"><%= test_api_key.masked_key %></code>
         </div>
-        <p class="mt-2 text-sm text-gray-500">Test keys start with <code>sk_test_</code></p>
+        <p class="mt-2 text-sm text-gray-500">
+          Your key starts with <code><%= test_api_key.key_prefix %></code>.
+          <%= link_to "Manage API keys", account_api_keys_path, class: "text-indigo-600 hover:text-indigo-800" %>
+        </p>
       <% else %>
-        <p class="text-yellow-600">No test API key found. Please contact support.</p>
+        <p class="text-yellow-600">No test API key found. <%= link_to "Create one", account_api_keys_path, class: "text-indigo-600 hover:text-indigo-800" %>.</p>
       <% end %>
     </div>
 

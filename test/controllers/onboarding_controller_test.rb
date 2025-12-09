@@ -37,23 +37,23 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "persona updates account persona and redirects to setup" do
-    sign_in
+    sign_in_as_new_user
 
     post onboarding_persona_path, params: { persona: "developer" }
 
-    account.reload
-    assert account.developer?
-    assert account.onboarding_step_completed?(:persona_selected)
+    @test_account.reload
+    assert @test_account.developer?
+    assert @test_account.onboarding_step_completed?(:persona_selected)
     assert_redirected_to onboarding_setup_path
   end
 
   test "persona redirects marketer to dashboard with demo data" do
-    sign_in
+    sign_in_as_new_user
 
     post onboarding_persona_path, params: { persona: "marketer" }
 
-    account.reload
-    assert account.marketer?
+    @test_account.reload
+    assert @test_account.marketer?
     assert_redirected_to dashboard_path
   end
 
@@ -94,13 +94,13 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "select_sdk saves selected SDK and redirects to install" do
-    sign_in
+    sign_in_as_new_user
 
     post onboarding_select_sdk_path, params: { sdk: "ruby" }
 
-    account.reload
-    assert_equal "ruby", account.selected_sdk
-    assert account.onboarding_step_completed?(:sdk_selected)
+    @test_account.reload
+    assert_equal "ruby", @test_account.selected_sdk
+    assert @test_account.onboarding_step_completed?(:sdk_selected)
     assert_redirected_to onboarding_install_path
   end
 
@@ -160,7 +160,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
   # --- Event Status (polling endpoint) ---
 
   test "event_status returns received false when no events" do
-    sign_in
+    sign_in_as_new_user
 
     get onboarding_event_status_path
 
@@ -171,7 +171,6 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
 
   test "event_status returns received true when events exist" do
     sign_in
-    create_test_event
 
     get onboarding_event_status_path
 
@@ -195,7 +194,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     get onboarding_conversion_path
 
     assert_response :success
-    assert_select "code", /conversion/
+    assert_select "pre", /conversion/
   end
 
   # --- Attribution (aha moment) ---
@@ -233,6 +232,13 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     post login_path, params: { email: user.email, password: "password123" }
   end
 
+  def sign_in_as_new_user
+    @test_user = User.create!(email: "newuser#{SecureRandom.hex(4)}@example.com", password: "password123")
+    @test_account = Account.create!(name: "New Account", slug: "new-account-#{SecureRandom.hex(4)}")
+    AccountMembership.create!(user: @test_user, account: @test_account, role: :owner, status: :accepted)
+    post login_path, params: { email: @test_user.email, password: "password123" }
+  end
+
   def user
     @user ||= users(:one)
   end
@@ -242,15 +248,6 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
   end
 
   def create_test_event
-    account.events.create!(
-      event_type: "test_event",
-      visitor: account.visitors.create!(visitor_id: SecureRandom.hex(32)),
-      occurred_at: Time.current,
-      properties: {}
-    )
-  end
-
-  def create_test_conversion
     visitor = account.visitors.create!(visitor_id: SecureRandom.hex(32))
     session = account.sessions.create!(
       visitor: visitor,
@@ -258,9 +255,19 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
       started_at: Time.current,
       channel: Channels::DIRECT
     )
-    account.conversions.create!(
+    account.events.create!(
+      event_type: "test_event",
       visitor: visitor,
       session: session,
+      occurred_at: Time.current,
+      properties: { test: true }
+    )
+  end
+
+  def create_test_conversion
+    visitor = account.visitors.create!(visitor_id: SecureRandom.hex(32))
+    account.conversions.create!(
+      visitor: visitor,
       conversion_type: "test",
       revenue: 99.99,
       converted_at: Time.current
