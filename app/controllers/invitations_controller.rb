@@ -22,7 +22,34 @@ class InvitationsController < ApplicationController
     handler ? send(handler) : complete_acceptance
   end
 
+  def accept_pending
+    return redirect_to login_path, alert: "Please log in to accept invitation" unless current_user
+
+    pending_acceptance_result[:success] ? complete_pending_acceptance : redirect_with_error
+  end
+
   private
+
+  def pending_acceptance_result
+    @pending_acceptance_result ||= pending_membership&.pending? ? accept_pending_membership : { success: false }
+  end
+
+  def pending_membership
+    @pending_membership ||= current_user.account_memberships.pending.not_deleted.find_by_prefix_id(params[:id])
+  end
+
+  def accept_pending_membership
+    pending_membership.update!(status: :accepted, accepted_at: Time.current, invitation_token_digest: nil)
+    { success: true }
+  end
+
+  def complete_pending_acceptance
+    redirect_to dashboard_path(account_id: pending_membership.account.prefix_id), notice: "Welcome to #{pending_membership.account.name}!"
+  end
+
+  def redirect_with_error
+    redirect_to dashboard_path, alert: "Could not accept invitation"
+  end
 
   def lookup_result
     @lookup_result ||= acceptance_service(lookup_only: true).call

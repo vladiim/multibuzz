@@ -54,6 +54,7 @@ Rails.application.routes.draw do
   # Team invitations
   get "invitations/:token/accept", to: "invitations#show", as: :accept_invitation
   post "invitations/:token/accept", to: "invitations#create"
+  post "invitations/:id/accept_pending", to: "invitations#accept_pending", as: :accept_pending_invitation
 
   # Admin routes
   namespace :admin do
