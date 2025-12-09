@@ -33,4 +33,8 @@ module SdkHelper
   def sdk_icon_path(sdk)
     "icons/sdks/#{sdk.icon}.svg"
   end
+
+  def sdk_icon_for(sdk, css_class: "w-10 h-10")
+    render partial: "shared/icons/sdks/#{sdk.icon}", locals: { class: css_class }
+  end
 end

@@ -10,10 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_10_001827) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_10_042009) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
-  enable_extension "timescaledb"
+  # enable_extension "timescaledb" - skipped for test env compatibility
 
   create_table "account_memberships", force: :cascade do |t|
     t.bigint "user_id", null: false
@@ -61,6 +61,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_10_001827) do
     t.datetime "payment_failed_at"
     t.datetime "grace_period_ends_at"
     t.integer "reruns_used_this_period", default: 0, null: false
+    t.integer "onboarding_progress", default: 1, null: false
+    t.integer "onboarding_persona"
+    t.string "selected_sdk"
+    t.datetime "onboarding_started_at"
+    t.datetime "onboarding_completed_at"
+    t.datetime "activated_at"
     t.index ["billing_status"], name: "index_accounts_on_billing_status"
     t.index ["free_until"], name: "index_accounts_on_free_until"
     t.index ["payment_failed_at"], name: "index_accounts_on_payment_failed_at"
@@ -380,16 +386,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_10_001827) do
   add_foreign_key "visitors", "accounts"
   add_foreign_key "visitors", "identities"
 
-  # TimescaleDB hypertables and continuous aggregates are created via migrations
-  # and skipped in test environment (hypertables don't support disabling triggers
-  # which Rails needs for fixture loading). These are NOT included in schema.rb
-  # to allow `db:schema:load` to work in test environment.
-  #
-  # Production hypertables:
-  # - events (occurred_at, 7 day chunks, compression)
-  # - sessions (started_at, 7 day chunks, compression)
-  #
-  # Continuous aggregates:
-  # - channel_attribution_daily
-  # - source_attribution_daily
+  # TimescaleDB features excluded from schema.rb (see CLAUDE.md):
+  # - create_hypertable for events and sessions
+  # - channel_attribution_daily continuous aggregate
+  # - source_attribution_daily continuous aggregate
+  # - compression policies
+  # These are applied via migrations in production (db:migrate)
 end

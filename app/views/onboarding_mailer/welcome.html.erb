@@ -1,0 +1,15 @@
+<h1>Welcome to mbuzz</h1>
+
+<p>Your account is ready.</p>
+
+<% if @api_key %>
+<p>
+  <strong>Your test API key:</strong><br>
+  <code><%= @api_key.masked_key %></code>
+</p>
+<% end %>
+
+<p>
+  <%= link_to "Start Setup", onboarding_url %>
+</p>
+
