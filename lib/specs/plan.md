@@ -4,6 +4,7 @@
   - Create new / edit (up to 20 models applied)
   - New / updates can back calculate at a fixed one-time cost (10k free then $x per 10k)
 * Invite users
+* Onboarding
 * Live (sign up, ruby gems)
 * Filter dash funnel by dimension (properties)
 * export data (csv - simple + api - with property queries)

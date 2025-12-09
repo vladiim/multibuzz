@@ -1,5 +1,11 @@
 # Conversion Filters & Breakdown Feature Spec
 
+**Status**: ✅ Complete
+**Created**: 2025-12-08
+**Completed**: 2025-12-09
+
+---
+
 ## Overview
 
 Add a "Conversions by Name" chart to the conversion dashboard with:
@@ -11,43 +17,43 @@ Add a "Conversions by Name" chart to the conversion dashboard with:
 
 ## Implementation Checklist
 
-### Phase 1: Database & Models
-- [ ] Migration: Create `conversion_property_keys` table
-- [ ] Model: `ConversionPropertyKey` with concerns
-- [ ] Update `Account::Relationships` with has_many association
+### Phase 1: Database & Models ✅
+- [x] Migration: Create `conversion_property_keys` table
+- [x] Model: `ConversionPropertyKey` with concerns
+- [x] Update `Account::Relationships` with has_many association
 
-### Phase 2: Property Discovery System
-- [ ] Service: `Conversions::PropertyKeyDiscoveryService`
-- [ ] Job: `Conversions::PropertyKeyDiscoveryJob`
-- [ ] Callback: Trigger discovery on conversion creation
+### Phase 2: Property Discovery System ✅
+- [x] Service: `Conversions::PropertyKeyDiscoveryService`
+- [x] Job: `Conversions::PropertyKeyDiscoveryJob`
+- [x] Callback: Trigger discovery on conversion creation
 
-### Phase 3: Query & Filter Infrastructure
-- [ ] Query: `Dashboard::Queries::ByConversionNameQuery`
-- [ ] Scope: `Dashboard::Scopes::FilteredCreditsScope`
-- [ ] Update `Dashboard::ConversionsDataService`
+### Phase 3: Query & Filter Infrastructure ✅
+- [x] Query: `Dashboard::Queries::ByConversionNameQuery`
+- [x] Scope: `Dashboard::Scopes::FilteredCreditsScope`
+- [x] Update `Dashboard::ConversionsDataService`
 
-### Phase 4: Controller Layer
-- [ ] Update `Dashboard::BaseController` filter parsing
-- [ ] Controller: `Dashboard::ConversionFiltersController`
-- [ ] Routes for conversion_filters endpoints
+### Phase 4: Controller Layer ✅
+- [x] Update `Dashboard::BaseController` filter parsing
+- [x] Controller: `Dashboard::ConversionFiltersController`
+- [x] Routes for conversion_filters endpoints
 
-### Phase 5: Frontend Components
-- [ ] Stimulus: `conversion_filter_controller.js`
-- [ ] Partial: `_conversion_filters.html.erb`
-- [ ] Partial: `_filter_row.html.erb`
-- [ ] Partial: `_by_conversion_name_chart.html.erb`
-- [ ] Update existing views to include partials
+### Phase 5: Frontend Components ✅
+- [x] Stimulus: `conversion_filter_controller.js`
+- [x] Partial: `_conversion_filters.html.erb`
+- [x] Partial: `_filter_row.html.erb`
+- [x] Partial: `_by_conversion_name_chart.html.erb`
+- [x] Update existing views to include partials
 
-### Phase 6: Polish & Testing
-- [ ] Test all new components
-- [ ] Manual testing of filter bar interactions
-- [ ] Performance validation
+### Phase 6: Polish & Testing ✅
+- [x] Test all new components
+- [x] Manual testing of filter bar interactions
+- [x] Performance validation
 
 ---
 
 ## Database Schema
 
-### New Table: `conversion_property_keys`
+### Table: `conversion_property_keys` ✅
 
 ```ruby
 create_table :conversion_property_keys do |t|
@@ -64,7 +70,7 @@ add_index :conversion_property_keys, [:account_id, :occurrences]
 
 ---
 
-## API Endpoints
+## API Endpoints ✅
 
 ### GET `/dashboard/conversion_filters/dimensions`
 
@@ -96,7 +102,7 @@ Returns matching values for autocomplete.
 
 ---
 
-## Filter Parameters
+## Filter Parameters ✅
 
 ### URL Structure
 
@@ -111,7 +117,7 @@ Returns matching values for autocomplete.
           &breakdown=conversion_type
 ```
 
-### Supported Operators
+### Supported Operators ✅
 
 | Operator | Label | Applicable To |
 |----------|-------|---------------|
@@ -123,39 +129,7 @@ Returns matching values for autocomplete.
 
 ---
 
-## UI Components
-
-### Filter Bar (PostHog-style)
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│ Filter conversions                                                   │
-│                                                                      │
-│ where  [Conversion Name ▾]  [= equals ▾]  [signup ×] [purchase ×]   │
-│                                                                      │
-│ [AND]  [Revenue ▾]          [> greater than ▾]  [100]               │
-│                                                                      │
-│ + Add filter                                                         │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-### Breakdown Selector (in chart header)
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│ Conversions by Name                          [Conversion Name ▾]    │
-│                                                                      │
-│  █████████████████████████████████  signup (45%)                    │
-│  ████████████████████              purchase (28%)                   │
-│  ██████████████                    trial_start (18%)                │
-│  ██████                            demo_request (9%)                │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Data Flow
+## Data Flow ✅
 
 ```
 1. User applies filter in UI
@@ -175,7 +149,7 @@ Returns matching values for autocomplete.
 
 ---
 
-## Files to Create
+## Files Created ✅
 
 | File | Purpose |
 |------|---------|
@@ -187,13 +161,14 @@ Returns matching values for autocomplete.
 | `app/jobs/conversions/property_key_discovery_job.rb` | Background job |
 | `app/services/dashboard/queries/by_conversion_name_query.rb` | Query object |
 | `app/services/dashboard/scopes/filtered_credits_scope.rb` | Filter scope |
+| `app/services/dashboard/scopes/operators/*.rb` | Filter operators |
 | `app/controllers/dashboard/conversion_filters_controller.rb` | AJAX endpoints |
 | `app/javascript/controllers/conversion_filter_controller.js` | Stimulus controller |
 | `app/views/dashboard/conversions/_conversion_filters.html.erb` | Filter bar |
 | `app/views/dashboard/conversions/_filter_row.html.erb` | Filter row template |
 | `app/views/dashboard/conversions/_by_conversion_name_chart.html.erb` | Chart partial |
 
-## Files to Modify
+## Files Modified ✅
 
 | File | Changes |
 |------|---------|
@@ -204,35 +179,54 @@ Returns matching values for autocomplete.
 | `app/views/dashboard/filters/show.html.erb` | Include conversion_filters partial |
 | `app/views/dashboard/conversions/_full_dashboard.html.erb` | Include chart partial |
 | `config/routes.rb` | Add conversion_filters routes |
-| `config/recurring.yml` | Add scheduled job |
 
 ---
 
-## Test Strategy (Outside-In TDD)
+## Test Coverage ✅
 
-### 1. Controller Tests (Start Here)
+### Controller Tests
 - `Dashboard::ConversionFiltersController#dimensions`
 - `Dashboard::ConversionFiltersController#values`
 - Integration tests for filter application
 
-### 2. Service Tests
+### Service Tests
 - `PropertyKeyDiscoveryService` discovers keys
-- `ConversionsDataService` includes by_conversion_name
+- `ConversionDimensionsService` returns dimensions
+- `ConversionValuesService` returns values
 
-### 3. Query Tests
+### Query Tests
 - `ByConversionNameQuery` grouping behavior
 
-### 4. Scope Tests
+### Scope Tests
 - `FilteredCreditsScope` filter application
+- All operator tests (equals, not_equals, contains, greater_than, less_than)
 
-### 5. Model Tests
+### Model Tests
 - `ConversionPropertyKey` validations and scopes
 
 ---
 
-## Performance Considerations
+## Bug Fixes Applied ✅
+
+### Flat Properties Structure (2025-12-09)
+- Fixed property storage from nested `{ "properties" => { "location" => "Sydney" } }` to flat `{ "location" => "Sydney" }`
+- Updated `Conversions::TrackingService` to flatten properties on ingestion
+- Created migration to flatten existing data
+- Updated all queries to use flat property path
+
+### Filter Preservation (2025-12-09)
+- Fixed `hidden_filter_params` helper to properly serialize arrays of hashes
+- Filters now preserved when changing breakdown dimension
+
+### Malformed Params Handling (2025-12-09)
+- Fixed `raw_filters` method to handle array of strings gracefully
+- Added defensive checks for various param formats
+
+---
+
+## Performance Considerations ✅
 
 1. **Property key discovery**: Background job, not on every dashboard load
 2. **Caching**: Results cached with filter params in cache key
 3. **Query limits**: Top 10 values in breakdown, top 20 in autocomplete
-4. **JSONB indexes**: Existing GIN index on properties column
+4. **JSONB indexes**: GIN index on properties column
