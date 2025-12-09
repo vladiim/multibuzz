@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_09_003300) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_10_001827) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -26,10 +26,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_09_003300) do
     t.datetime "deleted_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "invitation_token_digest"
+    t.bigint "invited_by_id"
+    t.datetime "last_accessed_at"
     t.index ["account_id", "role"], name: "index_account_memberships_on_account_id_and_role"
     t.index ["account_id", "status"], name: "index_account_memberships_on_account_id_and_status"
     t.index ["account_id"], name: "index_account_memberships_on_account_id"
     t.index ["deleted_at"], name: "index_account_memberships_on_deleted_at"
+    t.index ["invitation_token_digest"], name: "index_account_memberships_on_invitation_token_digest", unique: true
+    t.index ["invited_by_id"], name: "index_account_memberships_on_invited_by_id"
     t.index ["user_id", "account_id"], name: "index_account_memberships_unique_active", unique: true, where: "(deleted_at IS NULL)"
     t.index ["user_id"], name: "index_account_memberships_on_user_id"
   end
@@ -83,18 +88,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_09_003300) do
     t.index ["key_digest"], name: "index_api_keys_on_key_digest", unique: true
     t.index ["key_prefix"], name: "index_api_keys_on_key_prefix"
     t.index ["revoked_at"], name: "index_api_keys_on_revoked_at"
-  end
-
-  create_table "conversion_property_keys", force: :cascade do |t|
-    t.bigint "account_id", null: false
-    t.string "property_key", null: false
-    t.integer "occurrences", default: 0, null: false
-    t.datetime "last_seen_at"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["account_id", "occurrences"], name: "index_conversion_property_keys_on_account_id_and_occurrences"
-    t.index ["account_id", "property_key"], name: "index_conversion_property_keys_on_account_id_and_property_key", unique: true
-    t.index ["account_id"], name: "index_conversion_property_keys_on_account_id"
   end
 
   create_table "attribution_credits", force: :cascade do |t|
@@ -387,37 +380,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_09_003300) do
   add_foreign_key "visitors", "accounts"
   add_foreign_key "visitors", "identities"
 
-  # TimescaleDB hypertables and continuous aggregates - skip in test environment
-  # Hypertables don't support disabling triggers which Rails needs for fixture loading
-  unless Rails.env.test?
-    create_hypertable "events", time_column: "occurred_at", chunk_time_interval: "7 days", compress_segmentby: "account_id, visitor_id", compress_orderby: "occurred_at DESC", compression_interval: "P7D"
-    create_hypertable "sessions", time_column: "started_at", chunk_time_interval: "7 days", compress_segmentby: "account_id, visitor_id", compress_orderby: "started_at DESC", compression_interval: "P30D"
-    create_continuous_aggregate("channel_attribution_daily", <<-SQL, materialized_only: true, finalized: true)
-      SELECT account_id,
-        channel,
-        time_bucket('P1D'::interval, started_at) AS day,
-        count(*) AS session_count,
-        count(DISTINCT visitor_id) AS unique_visitors,
-        sum(page_view_count) AS total_page_views,
-        avg(page_view_count) AS avg_page_views_per_session
-       FROM sessions
-      WHERE (channel IS NOT NULL)
-      GROUP BY account_id, channel, (time_bucket('P1D'::interval, started_at))
-    SQL
-
-    create_continuous_aggregate("source_attribution_daily", <<-SQL, materialized_only: true, finalized: true)
-      SELECT account_id,
-        (initial_utm ->> 'utm_source'::text) AS utm_source,
-        (initial_utm ->> 'utm_medium'::text) AS utm_medium,
-        (initial_utm ->> 'utm_campaign'::text) AS utm_campaign,
-        channel,
-        time_bucket('P1D'::interval, started_at) AS day,
-        count(*) AS session_count,
-        count(DISTINCT visitor_id) AS unique_visitors,
-        sum(page_view_count) AS total_page_views
-       FROM sessions
-      WHERE ((initial_utm IS NOT NULL) AND (initial_utm <> '{}'::jsonb))
-      GROUP BY account_id, (initial_utm ->> 'utm_source'::text), (initial_utm ->> 'utm_medium'::text), (initial_utm ->> 'utm_campaign'::text), channel, (time_bucket('P1D'::interval, started_at))
-    SQL
-  end
+  # TimescaleDB hypertables and continuous aggregates are created via migrations
+  # and skipped in test environment (hypertables don't support disabling triggers
+  # which Rails needs for fixture loading). These are NOT included in schema.rb
+  # to allow `db:schema:load` to work in test environment.
+  #
+  # Production hypertables:
+  # - events (occurred_at, 7 day chunks, compression)
+  # - sessions (started_at, 7 day chunks, compression)
+  #
+  # Continuous aggregates:
+  # - channel_attribution_daily
+  # - source_attribution_daily
 end

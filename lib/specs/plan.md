@@ -1,16 +1,17 @@
 # Product
 
-* AST for attribution models
-  - Create new / edit (up to 20 models applied)
-  - New / updates can back calculate at a fixed one-time cost (10k free then $x per 10k)
 * Invite users
 * Onboarding
+* Coming soon for features (e.g. export - track how many people are waiting)
+* Dogfood - tracking via mbuzz
 * Live (sign up, ruby gems)
-* Filter dash funnel by dimension (properties)
+* Rollout SDKs: python, php, shopify, magento etc
+    1. Launch everywhere (Hacker News, Product Hunt, Reddit, X, LinkedIn, YouTube etc.). Spend a week giving your MVP its best shot.
+    2. (if #1 didn't take off) — Rebrand. New name, new logo, new design, new landing page, new headline. Same product. Repeat #1
+    3. (if #2 didn't take off) — Target new market segment experiencing the same problem your product solves. Repeat #1. Repeat #2.
 * export data (csv - simple + api - with property queries)
 * Cancel conversion (via id)
 * For complex B2B funnels, use multiple conversion types (MQL, SQL, Opportunity, etc.)
-* Rollout SDKs: python, php, shopify, magento etc
 * CLV (doesn't work the same as new customer acquisition - think it through)
 * Other channels: phone, email
 * Push conversions to server-side ads (with rules on attribution)
