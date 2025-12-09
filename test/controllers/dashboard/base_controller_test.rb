@@ -93,6 +93,56 @@ class Dashboard::BaseControllerTest < ActionDispatch::IntegrationTest
     assert_equal :test_data, controller.send(:environment_scope)
   end
 
+  # ==========================================
+  # Conversion filters param parsing tests
+  # ==========================================
+
+  test "conversion_filters_param parses nested hash structure" do
+    get dashboard_filters_path(
+      conversion_filters: {
+        "0" => { field: "location", operator: "equals", values: ["Port Melbourne"] }
+      }
+    )
+
+    assert_response :success
+    filters = controller.send(:conversion_filters_param)
+
+    assert_equal 1, filters.size
+    assert_equal "location", filters.first[:field]
+    assert_equal "equals", filters.first[:operator]
+    assert_equal ["Port Melbourne"], filters.first[:values]
+  end
+
+  test "conversion_filters_param handles array of strings gracefully" do
+    # This is how the URL sometimes encodes filters as array of strings
+    # e.g., conversion_filters[]=field+location+operator+equals+values+["Port Melbourne"]
+    get dashboard_filters_path(
+      conversion_filters: ['field location operator equals values ["Port Melbourne"]']
+    )
+
+    assert_response :success
+    filters = controller.send(:conversion_filters_param)
+
+    # Should return empty array for malformed input (no crash)
+    assert_equal [], filters
+  end
+
+  test "conversion_filters_param handles empty array" do
+    get dashboard_filters_path(conversion_filters: [])
+
+    assert_response :success
+    filters = controller.send(:conversion_filters_param)
+    assert_equal [], filters
+  end
+
+  test "conversion_filters_param handles nil" do
+    get dashboard_filters_path
+
+    assert_response :success
+    filters = controller.send(:conversion_filters_param)
+    assert_equal [], filters
+  end
+
   private
 
   def sign_in_as(user)

@@ -101,8 +101,22 @@ module Dashboard
     end
 
     def raw_filters
-      # Rails sends indexed hash like {"0" => {...}} - convert to array
-      params[:conversion_filters].to_unsafe_h.values
+      conversion_filters
+        .then { |cf| normalize_conversion_filters(cf) }
+        .select { |f| f.respond_to?(:to_h) && !f.is_a?(String) }
+    end
+
+    def conversion_filters
+      params[:conversion_filters]
+    end
+
+    def normalize_conversion_filters(filters)
+      return [] if filters.blank?
+      return filters.to_unsafe_h.values if filters.is_a?(ActionController::Parameters)
+      return filters.values if filters.is_a?(Hash)
+      return filters if filters.is_a?(Array)
+
+      []
     end
 
     def breakdown_dimension_param
