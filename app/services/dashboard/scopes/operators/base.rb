@@ -30,7 +30,9 @@ module Dashboard
         end
 
         def property_path
-          "conversions.properties->'properties'->>'#{sanitized_field}'"
+          # Properties are stored flat at root level: { "location" => "Sydney" }
+          # NOT nested: { "properties" => { "location" => "Sydney" } }
+          "conversions.properties->>'#{sanitized_field}'"
         end
 
         def apply_to_column(scope)

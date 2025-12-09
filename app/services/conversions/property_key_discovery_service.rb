@@ -4,6 +4,10 @@ module Conversions
   class PropertyKeyDiscoveryService < ApplicationService
     STALE_THRESHOLD = 90.days
 
+    # Reserved keys that should not be discovered as custom properties
+    # These are system-level properties, not user-defined dimensions
+    RESERVED_KEYS = %w[url referrer].freeze
+
     def initialize(account)
       @account = account
     end
@@ -30,15 +34,18 @@ module Conversions
       record.save!
     end
 
+    # Properties are stored FLAT at root level: { "location" => "Sydney", "plan" => "pro" }
+    # NOT nested: { "properties" => { "location" => "Sydney" } }
     def discovered_keys
       @discovered_keys ||= account
         .conversions
-        .where("properties->'properties' IS NOT NULL")
-        .pluck(Arel.sql("DISTINCT jsonb_object_keys(properties->'properties')"))
+        .where("properties IS NOT NULL AND properties != '{}'::jsonb")
+        .pluck(Arel.sql("DISTINCT jsonb_object_keys(properties)"))
+        .reject { |key| RESERVED_KEYS.include?(key) }
     end
 
     def key_occurrence_count(key)
-      account.conversions.where("jsonb_exists(properties->'properties', ?)", key).count
+      account.conversions.where("jsonb_exists(properties, ?)", key).count
     end
 
     def prune_stale_keys

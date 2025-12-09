@@ -49,8 +49,10 @@ module Dashboard
         ].join(", ")
       end
 
+      # Properties are stored FLAT at root level: { "location" => "Sydney" }
+      # NOT nested: { "properties" => { "location" => "Sydney" } }
       def property_expression
-        "conversions.properties->'properties'->>'#{sanitized_dimension}'"
+        "conversions.properties->>'#{sanitized_dimension}'"
       end
 
       def built_in_dimension?
