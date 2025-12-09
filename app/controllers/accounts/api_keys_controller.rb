@@ -1,5 +1,7 @@
 module Accounts
   class ApiKeysController < BaseController
+    include RequireAdmin
+
     def index
       @api_keys = current_account.api_keys.order(created_at: :desc)
     end

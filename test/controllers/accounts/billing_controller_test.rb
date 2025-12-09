@@ -117,6 +117,40 @@ class Accounts::BillingControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to login_path
   end
 
+  # --- Authorization ---
+
+  test "member cannot access show" do
+    sign_in_as_member
+
+    get account_billing_path
+
+    assert_response :forbidden
+  end
+
+  test "member cannot initiate checkout" do
+    sign_in_as_member
+
+    post checkout_account_billing_path, params: { plan_slug: "starter" }
+
+    assert_response :forbidden
+  end
+
+  test "member cannot access portal" do
+    sign_in_as_member
+
+    get portal_account_billing_path
+
+    assert_response :forbidden
+  end
+
+  test "admin can access show" do
+    sign_in_as_admin
+
+    get account_billing_path
+
+    assert_response :success
+  end
+
   private
 
   def sign_in
@@ -137,5 +171,21 @@ class Accounts::BillingControllerTest < ActionDispatch::IntegrationTest
 
   def pro_plan
     @pro_plan ||= plans(:pro)
+  end
+
+  def sign_in_as_member
+    post login_path, params: { email: member_user.email, password: "password123" }
+  end
+
+  def sign_in_as_admin
+    post login_path, params: { email: admin_user.email, password: "password123" }
+  end
+
+  def member_user
+    @member_user ||= users(:four)
+  end
+
+  def admin_user
+    @admin_user ||= users(:three)
   end
 end

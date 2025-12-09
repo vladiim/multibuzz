@@ -29,6 +29,98 @@ class Accounts::AttributionModelsControllerTest < ActionDispatch::IntegrationTes
     assert_redirected_to login_path
   end
 
+  # --- Authorization ---
+
+  test "member cannot access index" do
+    sign_in_as_member
+
+    get account_attribution_models_path
+
+    assert_response :forbidden
+  end
+
+  test "member cannot access new" do
+    account.update!(plan: starter_plan)
+    sign_in_as_member
+
+    get new_account_attribution_model_path
+
+    assert_response :forbidden
+  end
+
+  test "member cannot create model" do
+    account.update!(plan: starter_plan)
+    sign_in_as_member
+
+    post account_attribution_models_path, params: {
+      attribution_model: { name: "My Model", dsl_code: "test" }
+    }
+
+    assert_response :forbidden
+  end
+
+  test "member cannot edit model" do
+    sign_in_as_member
+    model = account.attribution_models.create!(
+      name: "Test Model #{SecureRandom.hex(4)}",
+      model_type: :preset,
+      algorithm: :first_touch
+    )
+
+    get edit_account_attribution_model_path(model)
+
+    assert_response :forbidden
+  end
+
+  test "member cannot update model" do
+    sign_in_as_member
+    model = account.attribution_models.create!(
+      name: "Test Model #{SecureRandom.hex(4)}",
+      model_type: :preset,
+      algorithm: :first_touch
+    )
+
+    patch account_attribution_model_path(model), params: {
+      attribution_model: { lookback_days: 60 }
+    }
+
+    assert_response :forbidden
+  end
+
+  test "member cannot destroy model" do
+    sign_in_as_member
+    model = account.attribution_models.create!(
+      name: "Test Model #{SecureRandom.hex(4)}",
+      model_type: :custom,
+      dsl_code: "test"
+    )
+
+    delete account_attribution_model_path(model)
+
+    assert_response :forbidden
+  end
+
+  test "member cannot set default" do
+    sign_in_as_member
+    model = account.attribution_models.create!(
+      name: "Test Model #{SecureRandom.hex(4)}",
+      model_type: :custom,
+      dsl_code: "test"
+    )
+
+    post set_default_account_attribution_model_path(model)
+
+    assert_response :forbidden
+  end
+
+  test "admin can access index" do
+    sign_in_as_admin
+
+    get account_attribution_models_path
+
+    assert_response :success
+  end
+
   # --- New ---
 
   test "new shows form for custom model" do
@@ -493,5 +585,21 @@ class Accounts::AttributionModelsControllerTest < ActionDispatch::IntegrationTes
         apply 1.0, to: touchpoints, distribute: :equal
       end
     AML
+  end
+
+  def sign_in_as_member
+    post login_path, params: { email: member_user.email, password: "password123" }
+  end
+
+  def sign_in_as_admin
+    post login_path, params: { email: admin_user.email, password: "password123" }
+  end
+
+  def member_user
+    @member_user ||= users(:four)
+  end
+
+  def admin_user
+    @admin_user ||= users(:three)
   end
 end

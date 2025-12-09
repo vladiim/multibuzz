@@ -246,12 +246,12 @@ All team operations use `ApplicationService` base class:
 
 ### Phase 6: Authorization Hardening
 
-- [ ] Audit all dashboard controllers for role checks
-- [ ] Add before_action guards to admin-only actions
-- [ ] Restrict attribution model CRUD to admin+
-- [ ] Restrict billing pages to admin+
-- [ ] Restrict API key management to admin+
-- [ ] Add authorization tests for each controller
+- [x] Audit all dashboard controllers for role checks
+- [x] Add before_action guards to admin-only actions
+- [x] Restrict attribution model CRUD to admin+
+- [x] Restrict billing pages to admin+
+- [x] Restrict API key management to admin+
+- [x] Add authorization tests for each controller
 
 ---
 
