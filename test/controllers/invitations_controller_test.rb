@@ -158,6 +158,36 @@ class InvitationsControllerTest < ActionDispatch::IntegrationTest
     assert_response :gone
   end
 
+  # ==========================================
+  # Accept pending action (logged in user from nav)
+  # ==========================================
+
+  test "accept_pending accepts invitation for logged in user" do
+    sign_in_as invited_user
+
+    post accept_pending_invitation_path(pending_membership.prefix_id)
+
+    assert_redirected_to dashboard_path(account_id: account.prefix_id)
+    pending_membership.reload
+    assert pending_membership.accepted?
+  end
+
+  test "accept_pending redirects to login if not logged in" do
+    post accept_pending_invitation_path(pending_membership.prefix_id)
+
+    assert_redirected_to login_path
+  end
+
+  test "accept_pending fails for wrong user" do
+    sign_in_as owner
+
+    post accept_pending_invitation_path(pending_membership.prefix_id)
+
+    assert_redirected_to dashboard_path
+    pending_membership.reload
+    assert pending_membership.pending?
+  end
+
   private
 
   def sign_in_as(user)

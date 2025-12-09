@@ -230,11 +230,11 @@ All team operations use `ApplicationService` base class:
 
 ### Phase 4: Multi-Account Support
 
-- [ ] Add account switcher component to header
-- [ ] Track `last_accessed_at` on membership
-- [ ] Update login to select default account
+- [x] Add account switcher component to header
+- [x] Track `last_accessed_at` on membership
+- [x] Update login to select default account
 - [ ] Add "Create New Account" flow for existing users
-- [ ] Handle pending invitations display
+- [x] Handle pending invitations display
 
 ### Phase 5: Ownership Transfer
 

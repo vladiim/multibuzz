@@ -6,6 +6,13 @@ module TeamHelper
     "viewer" => { bg: "bg-gray-100", text: "text-gray-600", label: "Viewer" }
   }.freeze
 
+  COMPACT_ROLE_BADGES = {
+    "owner" => { bg: "bg-purple-100", text: "text-purple-700", label: "Owner" },
+    "admin" => { bg: "bg-blue-100", text: "text-blue-700", label: "Admin" },
+    "member" => { bg: "bg-gray-100", text: "text-gray-600", label: "Member" },
+    "viewer" => { bg: "bg-gray-100", text: "text-gray-500", label: "Viewer" }
+  }.freeze
+
   STATUS_BADGES = {
     "accepted" => { bg: "bg-green-100", text: "text-green-800", label: "Active" },
     "pending" => { bg: "bg-yellow-100", text: "text-yellow-800", label: "Pending" },
@@ -19,9 +26,19 @@ module TeamHelper
       class: "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{badge[:bg]} #{badge[:text]}")
   end
 
+  def render_compact_role_badge(role)
+    badge = COMPACT_ROLE_BADGES.fetch(role.to_s, COMPACT_ROLE_BADGES["member"])
+    content_tag(:span, badge[:label],
+      class: "inline-flex items-center px-2 py-0.5 rounded text-xs #{badge[:bg]} #{badge[:text]}")
+  end
+
   def render_status_badge(status)
     badge = STATUS_BADGES.fetch(status.to_s, STATUS_BADGES["pending"])
     content_tag(:span, badge[:label],
       class: "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{badge[:bg]} #{badge[:text]}")
+  end
+
+  def current_account?(account)
+    account.id == current_account.id
   end
 end

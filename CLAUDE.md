@@ -1517,6 +1517,8 @@ feat(auth): add API key generation service
 Closes #5
 ```
 
+**Important**: Do NOT include any Claude/AI attribution in commit messages (no "Generated with Claude", no "Co-Authored-By: Claude", etc.).
+
 ---
 
 ## Security Patterns
