@@ -23,14 +23,12 @@
               label: 'Ruby',
               syntax: 'ruby',
               code: <<~CODE
-                # Call this when a user logs in or signs up
-                Mbuzz.identify(
-                  user_id: current_user.id,
+                # Call on signup or login - links visitor automatically
+                Mbuzz.identify(current_user.id,
                   traits: {
                     email: current_user.email,
                     name: current_user.name,
-                    plan: current_user.plan_name,
-                    created_at: current_user.created_at.iso8601
+                    plan: current_user.plan
                   }
                 )
               CODE
@@ -44,6 +42,7 @@
                   -H "Content-Type: application/json" \\
                   -d '{
                     "user_id": "user_123",
+                    "visitor_id": "abc123...",
                     "traits": {
                       "email": "jane@example.com",
                       "name": "Jane Doe",
@@ -65,8 +64,7 @@
         </div>
       </div>
       <div class="px-6 py-4 border-t border-gray-200 flex justify-between items-center">
-        <%= link_to "View full documentation", "https://docs.mbuzz.co/tracking/identify",
-          target: "_blank",
+        <%= link_to "View full documentation", docs_path(page: "getting-started"),
           class: "text-sm text-indigo-600 hover:text-indigo-900" %>
         <button type="button" data-action="click->modal#close"
           class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md">
