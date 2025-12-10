@@ -17,7 +17,7 @@
           method: :patch,
           params: { mode: "production" },
           class: "text-sm font-medium text-amber-700 hover:text-amber-900 underline",
-          data: { turbo_frame: "_top" } do %>
+          data: { turbo: false } do %>
           Switch to live data
         <% end %>
       </div>
