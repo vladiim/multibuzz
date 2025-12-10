@@ -135,11 +135,6 @@ class EventTrackingFlowTest < ActionDispatch::IntegrationTest
     ).exists?, "Account A should have its own events"
   end
 
-  # Rate limiting disabled for MVP - re-enable when billing-based limits implemented
-  test "rate limiting headers present in response" do
-    skip "Rate limiting disabled for MVP"
-  end
-
   test "batch processing with partial failures" do
     result = ApiKeys::GenerationService.new(account, environment: :test).call
     plaintext_key = result[:plaintext_key]
