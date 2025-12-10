@@ -34,8 +34,18 @@ module Accounts
     def create_success
       @plaintext_key = generation_result[:plaintext_key]
       @api_key = generation_result[:api_key]
-      flash.now[:notice] = t(".success")
-      render :show_key
+
+      if during_onboarding?
+        session[:plaintext_api_key] = @plaintext_key
+        redirect_to onboarding_setup_path, notice: t(".success")
+      else
+        flash.now[:notice] = t(".success")
+        render :show_key
+      end
+    end
+
+    def during_onboarding?
+      !current_account.onboarding_complete? && !current_account.onboarding_skipped?
     end
 
     def create_failure

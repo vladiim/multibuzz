@@ -13,7 +13,7 @@ class SdkRegistryTest < ActiveSupport::TestCase
 
     assert_equal "ruby", sdk.key
     assert_equal "Ruby", sdk.name
-    assert_equal "Ruby / Rails", sdk.display_name
+    assert_equal "Ruby / Rails / Rack", sdk.display_name
   end
 
   test ".find returns nil for unknown key" do
@@ -55,19 +55,16 @@ class SdkRegistryTest < ActiveSupport::TestCase
     assert sdks.all?(&:api?)
   end
 
-  test ".for_onboarding returns live server-side and API SDKs plus coming_soon server-side" do
+  test ".for_onboarding returns all SDKs" do
     sdks = SdkRegistry.for_onboarding
 
-    assert sdks.any?
+    assert_equal SdkRegistry.all.count, sdks.count
+  end
 
-    live_sdks = sdks.select(&:live?)
-    coming_soon_sdks = sdks.select(&:coming_soon?)
+  test ".for_homepage returns all SDKs" do
+    sdks = SdkRegistry.for_homepage
 
-    # Live SDKs should be server_side or api
-    assert live_sdks.all? { |sdk| sdk.server_side? || sdk.api? }
-
-    # Coming soon SDKs should be server_side only
-    assert coming_soon_sdks.all?(&:server_side?)
+    assert_equal SdkRegistry.all.count, sdks.count
   end
 
   # Sdk struct tests

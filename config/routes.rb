@@ -40,22 +40,25 @@ Rails.application.routes.draw do
   post "contact", to: "contacts#create"
   get "contact/thank-you", to: "contacts#show", as: :contact_thank_you
 
-  # Waitlist
-  resources :waitlist, only: [ :new, :create, :show ]
-  get "signup", to: redirect("/waitlist/new")
-  get "register", to: redirect("/waitlist/new"), as: :new_registration
+  # Signup
+  get "signup", to: "signup#new", as: :signup
+  post "signup", to: "signup#create"
+  get "register", to: redirect("/signup"), as: :new_registration
 
   # Onboarding (authenticated)
   get "onboarding", to: "onboarding#show", as: :onboarding
   post "onboarding/persona", to: "onboarding#persona", as: :onboarding_persona
   get "onboarding/setup", to: "onboarding#setup", as: :onboarding_setup
+  post "onboarding/regenerate_api_key", to: "onboarding#regenerate_api_key", as: :onboarding_regenerate_api_key
   post "onboarding/select_sdk", to: "onboarding#select_sdk", as: :onboarding_select_sdk
+  post "onboarding/waitlist_sdk", to: "onboarding#waitlist_sdk", as: :onboarding_waitlist_sdk
   get "onboarding/install", to: "onboarding#install", as: :onboarding_install
   get "onboarding/verify", to: "onboarding#verify", as: :onboarding_verify
   get "onboarding/event_status", to: "onboarding#event_status", as: :onboarding_event_status
   get "onboarding/conversion", to: "onboarding#conversion", as: :onboarding_conversion
   get "onboarding/attribution", to: "onboarding#attribution", as: :onboarding_attribution
   get "onboarding/complete", to: "onboarding#complete", as: :onboarding_complete
+  post "onboarding/skip", to: "onboarding#skip", as: :onboarding_skip
 
   # Documentation routes
   get "docs", to: redirect("/docs/getting-started"), as: :docs_index

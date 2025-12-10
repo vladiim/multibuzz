@@ -10,10 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_10_042009) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_10_085316) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
-  # enable_extension "timescaledb" - skipped for test env compatibility
+  enable_extension "timescaledb"
 
   create_table "account_memberships", force: :cascade do |t|
     t.bigint "user_id", null: false
@@ -67,6 +67,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_10_042009) do
     t.datetime "onboarding_started_at"
     t.datetime "onboarding_completed_at"
     t.datetime "activated_at"
+    t.datetime "onboarding_skipped_at"
     t.index ["billing_status"], name: "index_accounts_on_billing_status"
     t.index ["free_until"], name: "index_accounts_on_free_until"
     t.index ["payment_failed_at"], name: "index_accounts_on_payment_failed_at"

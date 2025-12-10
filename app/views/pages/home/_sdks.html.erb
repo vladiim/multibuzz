@@ -5,8 +5,8 @@
       Server-side integration in minutes. No client-side scripts to block.
     </p>
 
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
-      <% SdkRegistry.all.reject(&:platform?).each do |sdk| %>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <% SdkRegistry.for_homepage.each do |sdk| %>
         <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm scroll-animate" data-controller="scroll-reveal">
           <div class="w-12 h-12 mx-auto mb-4 flex items-center justify-center">
             <%= sdk_icon_for(sdk) %>

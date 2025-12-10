@@ -67,7 +67,11 @@ class SdkRegistry
     end
 
     def for_onboarding
-      (server_side + api).select(&:live?) + server_side.select(&:coming_soon?)
+      all
+    end
+
+    def for_homepage
+      all
     end
 
     private

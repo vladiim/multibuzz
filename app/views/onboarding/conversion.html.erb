@@ -4,7 +4,10 @@
     <div class="mb-8">
       <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
         <span>Step 5 of 5</span>
-        <span><%= current_account.onboarding_percentage %>% complete</span>
+        <div class="flex items-center gap-4">
+          <span><%= current_account.onboarding_percentage %>% complete</span>
+          <%= button_to "Skip setup →", onboarding_skip_path, method: :post, class: "text-indigo-600 hover:text-indigo-800 font-medium" %>
+        </div>
       </div>
       <div class="h-2 bg-gray-200 rounded-full">
         <div class="h-2 bg-indigo-600 rounded-full" style="width: <%= current_account.onboarding_percentage %>%"></div>
@@ -37,5 +40,7 @@
         <%= link_to "View Attribution →", onboarding_attribution_path, class: "px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700" %>
       </div>
     </div>
+
+    <%= render "onboarding/skip_banner" %>
   </div>
 </div>
