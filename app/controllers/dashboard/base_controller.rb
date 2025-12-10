@@ -1,10 +1,7 @@
 module Dashboard
   class BaseController < ApplicationController
     before_action :require_login
-    helper_method :view_mode, :test_mode?
 
-    VALID_VIEW_MODES = %w[production test].freeze
-    DEFAULT_VIEW_MODE = "production"
     PRESET_DATE_RANGES = %w[7d 30d 90d].freeze
     DEFAULT_DATE_RANGE = "30d"
     VALID_METRICS = %w[conversions revenue aov avg_days avg_channels avg_visits].freeze
@@ -76,7 +73,8 @@ module Dashboard
         metric: metric_param,
         funnel: funnel_param,
         conversion_filters: conversion_filters_param,
-        breakdown_dimension: breakdown_dimension_param
+        breakdown_dimension: breakdown_dimension_param,
+        test_mode: test_mode?
       }
     end
 
@@ -121,15 +119,6 @@ module Dashboard
 
     def breakdown_dimension_param
       params[:breakdown_dimension].presence || "conversion_type"
-    end
-
-    # View mode toggle (like Stripe's test/live mode)
-    def view_mode
-      session[:view_mode].presence_in(VALID_VIEW_MODES) || DEFAULT_VIEW_MODE
-    end
-
-    def test_mode?
-      view_mode == "test"
     end
 
     def environment_scope

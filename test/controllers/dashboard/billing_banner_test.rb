@@ -2,6 +2,8 @@ require "test_helper"
 
 class Dashboard::BillingBannerTest < ActionDispatch::IntegrationTest
   setup do
+    # Complete onboarding so default view mode is production (no test mode banner)
+    accounts(:one).update!(onboarding_progress: (1 << Account::Onboarding::ONBOARDING_STEPS.size) - 1)
     sign_in_as users(:one)
   end
 
