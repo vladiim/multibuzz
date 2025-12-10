@@ -1,6 +1,6 @@
 # Onboarding Specification
 
-**Status**: In Progress (Phase 2 Complete)
+**Status**: In Progress (Phase 4 Complete)
 **Last Updated**: 2025-12-11
 **Epic**: E1S4 - Homepage & Onboarding
 
@@ -1048,19 +1048,19 @@ When user switches to Live Mode but has no live data:
 - [x] Conversion tracking step
 - [x] Step completion guards (redirect if already done)
 
-### Phase 3: Test/Live Mode (NEW)
-- [ ] Connect `test_mode?` to dashboard data queries
-- [ ] Add Test/Live toggle in navbar
-- [ ] Add test mode banner
-- [ ] Default to test mode for incomplete onboarding
-- [ ] Update cache keys to include test_mode
+### Phase 3: Test/Live Mode (DONE)
+- [x] Connect `test_mode?` to dashboard data queries
+- [x] Add Test/Live toggle in navbar (Stripe-style)
+- [x] Add test mode banner
+- [x] Default to test mode for incomplete onboarding
+- [x] Update cache keys to include test_mode
 
-### Phase 4: Go Live Flow (NEW)
-- [ ] Go Live checklist component
-- [ ] "Generate Live Key" flow
-- [ ] First live event detection
-- [ ] Empty state for no live data
-- [ ] API Keys page with test/live sections
+### Phase 4: Go Live Flow (DONE)
+- [x] Setup guidance banners (API key → events → conversions → users)
+- [x] "Generate Live Key" flow with show-once modal
+- [x] Setup modals with SDK code examples
+- [x] Fixed clipboard controller for API key copy
+- [x] Docs URLs use Rails route helpers
 
 ### Phase 5: Supporting Features
 - [ ] Onboarding checklist widget (dashboard sidebar)
