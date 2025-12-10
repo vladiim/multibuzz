@@ -1,7 +1,7 @@
 # Onboarding Specification
 
-**Status**: Draft
-**Last Updated**: 2025-12-10
+**Status**: In Progress (Phase 2 Complete)
+**Last Updated**: 2025-12-11
 **Epic**: E1S4 - Homepage & Onboarding
 
 ---
@@ -822,6 +822,256 @@ Create internal dashboard showing:
 | Onboarding completion | > 60% |
 | Email open rate | > 40% |
 | Setup support tickets | < 10% of signups |
+
+---
+
+## 11. Test/Live Mode Dashboard
+
+### 11.1 Purpose
+
+Like Stripe, users need to see their test data during onboarding before they're ready to go live. The dashboard should clearly distinguish between test and production environments.
+
+### 11.2 Key Insight
+
+**Infrastructure already exists but is NOT connected:**
+- All models have `is_test` boolean column (events, conversions, sessions, visitors, attribution_credits)
+- Scopes exist: `scope :production, -> { where(is_test: false) }` and `scope :test_data, -> { where(is_test: true) }`
+- `Dashboard::BaseController` has `view_mode`, `test_mode?`, `environment_scope` methods
+- **Problem**: `test_mode?` is NOT passed to `ConversionsDataService` or scope builders
+
+### 11.3 Test/Live Mode Toggle
+
+**Location**: Dashboard navbar (near account dropdown)
+
+**UI Design**:
+```
+┌─────────────────────────────────────────────────────────────┐
+│ mbuzz    [Conversions] [Funnel] [Events]    [🔘 Test Mode ▼] │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Toggle States**:
+| State | Visual | Badge Color | Data Shown |
+|-------|--------|-------------|------------|
+| Test Mode | "Test Mode" badge | Yellow/Amber | `is_test: true` |
+| Live Mode | "Live" badge (or nothing) | Gray/Green | `is_test: false` |
+
+**Implementation**:
+- Form POST to `/dashboard/view_mode` with `mode` param
+- Store in `session[:view_mode]` ("test" or "production")
+- Reload dashboard with filtered data
+
+### 11.4 Test Mode Banner
+
+When in test mode, show prominent banner:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ ⚠️ You're viewing test data. Use sk_test_* keys for testing. │
+│                                    [Switch to Live Mode →]  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Styling**: Yellow/amber background, dismissable but reappears on page load
+
+### 11.5 Default Mode Logic
+
+| Account State | Default Mode |
+|---------------|--------------|
+| `!onboarding_complete?` | Test |
+| `onboarding_complete? && !has_live_data?` | Test |
+| `has_live_data?` | Production |
+
+### 11.6 Implementation Checklist
+
+- [ ] Pass `test_mode: test_mode?` from `BaseController.filter_params` to services
+- [ ] Update `ConversionsDataService` to pass `test_mode` to scope builders
+- [ ] Update cache keys to include `test_mode`
+- [ ] Add Test/Live toggle button to navbar
+- [ ] Add test mode banner partial
+- [ ] Default to test mode for incomplete onboarding
+- [ ] Add "Switch to Live Mode" in empty production state
+
+---
+
+## 12. Post-Onboarding "Go Live" Flow
+
+### 12.1 Purpose
+
+After users complete SDK setup with test data, guide them to deploy to production. This is the critical transition from "trying" to "using" the product.
+
+### 12.2 Go Live Checklist
+
+Show in dashboard for accounts where `test_mode_has_data? && !live_mode_has_data?`:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Ready to Go Live?                                    [X]   │
+│                                                             │
+│  ✅ SDK installed (Ruby)                                    │
+│  ✅ First event tracked                                     │
+│  ✅ First conversion tracked                                │
+│  ⬜ Generate live API key                                   │
+│  ⬜ Deploy to production                                    │
+│                                                             │
+│  [Generate Live API Key]  [View Go-Live Guide]              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 12.3 Go Live Steps
+
+#### Step 1: Generate Live API Key
+
+**Trigger**: Click "Generate Live API Key" button
+
+**UI**: Modal or inline expansion showing:
+```
+Your Live API Key (save this - shown once):
+
+  sk_live_abc123def456...                    [Copy]
+
+Replace sk_test_* with sk_live_* in your production environment.
+```
+
+**Action**: Creates API key with `environment: :live`
+
+#### Step 2: Environment Variable Guide
+
+```
+Production Deployment Checklist:
+
+1. Set environment variable:
+   MBUZZ_API_KEY=sk_live_your_key_here
+
+2. Verify middleware is active in production:
+   # config/environments/production.rb
+   config.middleware.use Mbuzz::Middleware::Tracking
+
+3. Deploy and verify events are coming through
+```
+
+#### Step 3: First Live Event Detection
+
+After live API key is generated, show:
+```
+⏳ Waiting for first live event...
+
+Once you deploy, you'll see live data here.
+You're currently viewing: [Test Data ▼]
+```
+
+When first live event received:
+```
+🎉 Live data is flowing!
+
+Your production environment is now tracking events.
+[Switch to Live Mode →]
+```
+
+### 12.4 API Key Management
+
+**Location**: Account Settings → API Keys
+
+**UI Design**:
+```
+┌─────────────────────────────────────────────────────────────┐
+│  API Keys                                                   │
+│                                                             │
+│  Test Keys                                                  │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ sk_test_••••••••••••7a3f   Created Dec 10  [Revoke] │   │
+│  └─────────────────────────────────────────────────────┘   │
+│  [+ Generate Test Key]                                      │
+│                                                             │
+│  Live Keys                                                  │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ No live keys yet                                     │   │
+│  │ Generate a live key when you're ready for production │   │
+│  └─────────────────────────────────────────────────────┘   │
+│  [+ Generate Live Key]                                      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 12.5 Empty State: No Live Data
+
+When user switches to Live Mode but has no live data:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│              📊 No live data yet                            │
+│                                                             │
+│  You're viewing production data, but no events have been    │
+│  tracked with a live API key yet.                           │
+│                                                             │
+│  [Generate Live Key]  [View Test Data]  [Go-Live Guide]     │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 12.6 Onboarding Completion States
+
+| State | Banner/UI | CTA |
+|-------|-----------|-----|
+| No events (test or live) | Onboarding checklist | Continue Setup |
+| Test events only | Go Live checklist | Generate Live Key |
+| Live events, no conversions | Conversion prompt | Add conversion tracking |
+| Live conversions | None (fully activated) | - |
+
+### 12.7 Implementation Checklist
+
+- [ ] Add `has_test_data?` and `has_live_data?` methods to Account
+- [ ] Create Go Live checklist partial
+- [ ] Add "Generate Live Key" button/flow
+- [ ] Create empty state for no live data
+- [ ] Detect first live event and show celebration
+- [ ] Update API Keys page with test/live sections
+- [ ] Add Go-Live documentation page
+
+---
+
+## 13. Updated Implementation Plan
+
+### Phase 1: Foundation (DONE)
+- [x] Onboarding columns migration
+- [x] `Account::Onboarding` concern
+- [x] SDK_REGISTRY data structure
+- [x] SignupController with test API key generation
+
+### Phase 2: Onboarding Flow (DONE)
+- [x] OnboardingController with all steps
+- [x] Persona selection
+- [x] API key display with copy
+- [x] SDK selection grid
+- [x] SDK-specific installation guides
+- [x] Real-time event verification (Hotwire)
+- [x] Conversion tracking step
+- [x] Step completion guards (redirect if already done)
+
+### Phase 3: Test/Live Mode (NEW)
+- [ ] Connect `test_mode?` to dashboard data queries
+- [ ] Add Test/Live toggle in navbar
+- [ ] Add test mode banner
+- [ ] Default to test mode for incomplete onboarding
+- [ ] Update cache keys to include test_mode
+
+### Phase 4: Go Live Flow (NEW)
+- [ ] Go Live checklist component
+- [ ] "Generate Live Key" flow
+- [ ] First live event detection
+- [ ] Empty state for no live data
+- [ ] API Keys page with test/live sections
+
+### Phase 5: Supporting Features
+- [ ] Onboarding checklist widget (dashboard sidebar)
+- [ ] Empty state partials
+- [ ] OnboardingMailer with templates
+- [ ] Email scheduling jobs
+
+### Phase 6: Analytics
+- [ ] Onboarding event tracking (dogfood)
+- [ ] Internal funnel dashboard
+- [ ] Alerts setup
 
 ---
 

@@ -1,6 +1,6 @@
 <div class="mt-8 bg-gray-100 rounded-lg p-4 text-center">
   <p class="text-gray-600 text-sm mb-2">Already have tracking set up elsewhere?</p>
-  <%= button_to onboarding_skip_path, method: :post, class: "text-indigo-600 hover:text-indigo-800 font-medium text-sm" do %>
+  <%= button_to onboarding_skip_path, method: :post, data: { turbo_frame: "_top" }, class: "text-indigo-600 hover:text-indigo-800 font-medium text-sm" do %>
     Skip setup and go to dashboard →
   <% end %>
 </div>
