@@ -235,6 +235,16 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_select "[data-verification]"
   end
 
+  test "verify redirects to conversion if first_event_received already completed" do
+    sign_in
+    account.update!(selected_sdk: "ruby")
+    account.complete_onboarding_step!(:first_event_received)
+
+    get onboarding_verify_path
+
+    assert_redirected_to onboarding_conversion_path
+  end
+
   # --- Event Status (polling endpoint) ---
 
   test "event_status returns received false when no events" do
@@ -273,6 +283,16 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "pre", /conversion/
+  end
+
+  test "conversion redirects to attribution if first_conversion already completed" do
+    sign_in
+    account.update!(selected_sdk: "ruby")
+    account.complete_onboarding_step!(:first_conversion)
+
+    get onboarding_conversion_path
+
+    assert_redirected_to onboarding_attribution_path
   end
 
   # --- Attribution (aha moment) ---

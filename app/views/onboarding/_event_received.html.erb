@@ -1,0 +1,19 @@
+<%= turbo_frame_tag "verification_status" do %>
+  <div class="bg-white rounded-lg shadow p-8 text-center" data-verification>
+    <div class="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-6">
+      <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+      </svg>
+    </div>
+
+    <h2 class="text-2xl font-semibold text-gray-900 mb-2">Event received!</h2>
+    <p class="text-gray-600 mb-6">Your first event has been tracked successfully.</p>
+
+    <%= link_to onboarding_conversion_path, data: { turbo_frame: "_top" }, class: "inline-flex items-center px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg transition-colors" do %>
+      Continue to conversions
+      <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+      </svg>
+    <% end %>
+  </div>
+<% end %>

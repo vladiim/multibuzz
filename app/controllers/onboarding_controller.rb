@@ -32,7 +32,7 @@ class OnboardingController < ApplicationController
       email: current_user.email,
       sdk_key: waitlisted_sdk&.key,
       sdk_name: waitlisted_sdk&.display_name,
-      account_id: current_account.id,
+      account_id: current_account.prefix_id,
       ip_address: request.remote_ip,
       user_agent: request.user_agent
     )
@@ -54,6 +54,7 @@ class OnboardingController < ApplicationController
   end
 
   def verify
+    redirect_to onboarding_conversion_path if first_event_completed?
   end
 
   def event_status
@@ -63,6 +64,7 @@ class OnboardingController < ApplicationController
   end
 
   def conversion
+    redirect_to onboarding_attribution_path if first_conversion_completed?
   end
 
   def attribution
@@ -90,6 +92,10 @@ class OnboardingController < ApplicationController
 
   def first_event_completed?
     current_account.onboarding_step_completed?(:first_event_received)
+  end
+
+  def first_conversion_completed?
+    current_account.onboarding_step_completed?(:first_conversion)
   end
 
   def has_events?

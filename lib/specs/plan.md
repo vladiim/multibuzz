@@ -3,6 +3,7 @@
 * Onboarding
 * Coming soon for features (e.g. export - track how many people are waiting)
 * Dogfood - tracking via mbuzz
+    * Dashboard for people moving through: sign up, test data, live data, customer
 * Live (sign up, ruby gems)
 * All contact forms - emailed to me
 * Add USD to pricing
