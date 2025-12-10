@@ -124,16 +124,6 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "rejected", rejected["status"]
   end
 
-  # Rate limiting disabled for MVP - re-enable tests when billing-based limits implemented
-  test "should set rate limit headers" do
-    skip "Rate limiting disabled for MVP"
-  end
-
-  # Rate limiting disabled for MVP - re-enable tests when billing-based limits implemented
-  test "should return 429 when rate limit exceeded" do
-    skip "Rate limiting disabled for MVP"
-  end
-
   test "should return 401 with suspended account" do
     post api_v1_events_path, params: events_payload, headers: suspended_auth_headers, as: :json
 
