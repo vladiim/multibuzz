@@ -26,6 +26,10 @@ Rails.application.routes.draw do
     end
   end
 
+  # Demo (public, no auth required)
+  get "demo", to: "demo#show"
+  get "demo/attribution", to: "demo#attribution", as: :demo_attribution
+
   # Public pages
   get "home", to: "pages#home"
   get "about", to: "pages#about"
@@ -40,6 +44,18 @@ Rails.application.routes.draw do
   resources :waitlist, only: [ :new, :create, :show ]
   get "signup", to: redirect("/waitlist/new")
   get "register", to: redirect("/waitlist/new"), as: :new_registration
+
+  # Onboarding (authenticated)
+  get "onboarding", to: "onboarding#show", as: :onboarding
+  post "onboarding/persona", to: "onboarding#persona", as: :onboarding_persona
+  get "onboarding/setup", to: "onboarding#setup", as: :onboarding_setup
+  post "onboarding/select_sdk", to: "onboarding#select_sdk", as: :onboarding_select_sdk
+  get "onboarding/install", to: "onboarding#install", as: :onboarding_install
+  get "onboarding/verify", to: "onboarding#verify", as: :onboarding_verify
+  get "onboarding/event_status", to: "onboarding#event_status", as: :onboarding_event_status
+  get "onboarding/conversion", to: "onboarding#conversion", as: :onboarding_conversion
+  get "onboarding/attribution", to: "onboarding#attribution", as: :onboarding_attribution
+  get "onboarding/complete", to: "onboarding#complete", as: :onboarding_complete
 
   # Documentation routes
   get "docs", to: redirect("/docs/getting-started"), as: :docs_index

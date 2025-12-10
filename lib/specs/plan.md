@@ -1,11 +1,11 @@
 # Product
 
-* Invite users
 * Onboarding
 * Coming soon for features (e.g. export - track how many people are waiting)
 * Dogfood - tracking via mbuzz
 * Live (sign up, ruby gems)
 * All contact forms - emailed to me
+* Add USD to pricing
 * Rollout SDKs: python, php, shopify, magento etc
     1. Launch everywhere (Hacker News, Product Hunt, Reddit, X, LinkedIn, YouTube etc.). Spend a week giving your MVP its best shot.
     2. (if #1 didn't take off) — Rebrand. New name, new logo, new design, new landing page, new headline. Same product. Repeat #1
@@ -20,17 +20,11 @@
 * integrate with ads to get payback period
 * change bigger defaults e.g. customer storage for 2 years etc
 
-## Homepage Update (E1S4)
-
-See `lib/specs/homepage_visualization_spec.md`
-
-- [ ] SDK showcase section (live SDKs + coming soon badges)
-- [ ] Attribution flow animation (events → touchpoints → conversion → credit distribution)
-- [ ] Dashboard preview/screenshots
-- [ ] Social proof section (testimonials, logos when available)
-- [ ] Clear CTA flow: View Demo → Try Free → Get Started
-
 ***
+
+## Notes
+
+https://app.burnerapp.com -> for phone number (607) 236-8693
 
 # Mappings
 
@@ -56,6 +50,7 @@ See `lib/specs/homepage_visualization_spec.md`
 * Product Hunt (once several SDKs are live)
 *  Reddit value bombs (Post in r/marketing, r/bigquery: "My no-frills MTA setup—free AST template." Story + screenshots, link in comments post-engagement. Reply to all.)
 * Get publised in https://www.mi-3.com.au/ or international versions
+* Sign up email series - introing (send based on engagement - don't do if customer is paid with data)
 
 ***
 

@@ -1,0 +1,59 @@
+<div class="min-h-screen bg-gray-50 py-12">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Success Banner -->
+    <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-6 mb-8 text-center">
+      <h2 class="text-2xl font-bold text-indigo-900 mb-2">You're all set!</h2>
+      <p class="text-indigo-700">mbuzz is now tracking your customer journeys.</p>
+    </div>
+
+    <!-- Attribution Preview -->
+    <div class="bg-white rounded-lg shadow p-6 mb-8" data-model-switcher>
+      <h3 class="text-lg font-medium text-gray-900 mb-4">Attribution Models</h3>
+      <p class="text-gray-600 mb-6">
+        See how different models distribute credit across your marketing channels.
+        As you collect more data, these insights will help you optimize spend.
+      </p>
+
+      <% if latest_conversion %>
+        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+          <div class="text-sm text-gray-500 mb-1">Latest Conversion</div>
+          <div class="flex items-center justify-between">
+            <span class="text-lg font-semibold text-gray-900"><%= latest_conversion.conversion_type.titleize %></span>
+            <span class="text-lg font-semibold text-green-600">$<%= number_with_delimiter(latest_conversion.revenue || 0) %></span>
+          </div>
+        </div>
+      <% else %>
+        <div class="bg-yellow-50 rounded-lg p-4 mb-6 text-yellow-800">
+          No conversions tracked yet. Once you track a conversion, you'll see attribution data here.
+        </div>
+      <% end %>
+
+      <%= link_to "Explore Dashboard", dashboard_path, class: "inline-block px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium" %>
+    </div>
+
+    <!-- Next Steps -->
+    <div class="bg-white rounded-lg shadow p-6">
+      <h3 class="text-lg font-medium text-gray-900 mb-4">Next Steps</h3>
+      <ul class="space-y-3">
+        <li class="flex items-start">
+          <svg class="w-5 h-5 text-indigo-600 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span class="text-gray-700">Add event tracking to key pages</span>
+        </li>
+        <li class="flex items-start">
+          <svg class="w-5 h-5 text-indigo-600 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span class="text-gray-700">Track conversions at purchase/signup points</span>
+        </li>
+        <li class="flex items-start">
+          <svg class="w-5 h-5 text-gray-300 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span class="text-gray-500">Link anonymous visitors to known users with identify()</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>

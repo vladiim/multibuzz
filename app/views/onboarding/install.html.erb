@@ -1,0 +1,55 @@
+<div class="min-h-screen bg-gray-50 py-12">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Progress -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
+        <span>Step 3 of 5</span>
+        <span><%= current_account.onboarding_percentage %>% complete</span>
+      </div>
+      <div class="h-2 bg-gray-200 rounded-full">
+        <div class="h-2 bg-indigo-600 rounded-full" style="width: <%= current_account.onboarding_percentage %>%"></div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-8">
+      <h2 class="text-2xl font-semibold text-gray-900 mb-2">Install the <%= current_sdk.display_name %> SDK</h2>
+      <p class="text-gray-600 mb-6">Follow these steps to start tracking events.</p>
+
+      <!-- Step 1: Install -->
+      <div class="mb-8">
+        <h3 class="text-lg font-medium text-gray-900 mb-3">1. Install the package</h3>
+        <% if current_sdk.install_command.present? %>
+          <div class="bg-gray-900 rounded-lg p-4">
+            <code class="text-green-400"><%= current_sdk.install_command %></code>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- Step 2: Initialize -->
+      <div class="mb-8">
+        <h3 class="text-lg font-medium text-gray-900 mb-3">2. Initialize the SDK</h3>
+        <% if current_sdk.init_code.present? %>
+          <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+            <pre class="text-green-400 text-sm"><%= current_sdk.init_code %></pre>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- Step 3: Track an event -->
+      <div class="mb-8">
+        <h3 class="text-lg font-medium text-gray-900 mb-3">3. Track your first event</h3>
+        <% if current_sdk.event_code.present? %>
+          <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+            <pre class="text-green-400 text-sm"><%= current_sdk.event_code %></pre>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- Next Step -->
+      <div class="pt-6 border-t border-gray-200 flex justify-between">
+        <%= link_to "← Back", onboarding_setup_path, class: "text-gray-600 hover:text-gray-900" %>
+        <%= link_to "I've added the code →", onboarding_verify_path, class: "px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700" %>
+      </div>
+    </div>
+  </div>
+</div>
