@@ -1,0 +1,216 @@
+---
+ruby:
+  key: ruby
+  name: Ruby
+  display_name: Ruby / Rails
+  icon: ruby
+  package_name: mbuzz
+  package_manager: RubyGems
+  package_url: https://rubygems.org/gems/mbuzz
+  github_url: https://github.com/multibuzz/mbuzz-ruby
+  docs_url: /docs/sdks/ruby
+  status: live
+  released_at: '2025-11-01'
+  category: server_side
+  sort_order: 1
+  install_command: gem 'mbuzz'
+  init_code: |
+    # config/initializers/mbuzz.rb
+    Mbuzz.init(api_key: ENV['MBUZZ_API_KEY'])
+  event_code: |
+    Mbuzz.event('page_view', url: request.url)
+  conversion_code: |
+    Mbuzz.conversion('purchase',
+      revenue: order.total,
+      order_id: order.id
+    )
+  identify_code: |
+    Mbuzz.identify(current_user.id,
+      email: current_user.email,
+      name: current_user.name
+    )
+  middleware_code: |
+    # config/application.rb
+    config.middleware.use Mbuzz::Middleware::Tracking
+  verification_command: "Mbuzz.event('test', url: 'https://test.com')"
+
+python:
+  key: python
+  name: Python
+  display_name: Python / Django / Flask
+  icon: python
+  package_name: mbuzz
+  package_manager: PyPI
+  package_url: null
+  github_url: https://github.com/multibuzz/mbuzz-python
+  docs_url: /docs/sdks/python
+  status: coming_soon
+  released_at: null
+  category: server_side
+  sort_order: 2
+  install_command: pip install mbuzz
+  init_code: |
+    # settings.py or app initialization
+    import mbuzz
+    mbuzz.init(api_key=os.environ['MBUZZ_API_KEY'])
+  event_code: |
+    mbuzz.event('page_view', url=request.url)
+  conversion_code: |
+    mbuzz.conversion('purchase',
+      revenue=order.total,
+      order_id=order.id
+    )
+  identify_code: |
+    mbuzz.identify(current_user.id,
+      email=current_user.email,
+      name=current_user.name
+    )
+  middleware_code: null
+  verification_command: "mbuzz.event('test', url='https://test.com')"
+
+php:
+  key: php
+  name: PHP
+  display_name: PHP / Laravel
+  icon: php
+  package_name: mbuzz/mbuzz-php
+  package_manager: Composer
+  package_url: null
+  github_url: https://github.com/multibuzz/mbuzz-php
+  docs_url: /docs/sdks/php
+  status: coming_soon
+  released_at: null
+  category: server_side
+  sort_order: 3
+  install_command: composer require mbuzz/mbuzz-php
+  init_code: |
+    // config/services.php or bootstrap
+    Mbuzz::init(['api_key' => env('MBUZZ_API_KEY')]);
+  event_code: |
+    Mbuzz::event('page_view', ['url' => $request->url()]);
+  conversion_code: |
+    Mbuzz::conversion('purchase', [
+      'revenue' => $order->total,
+      'order_id' => $order->id
+    ]);
+  identify_code: |
+    Mbuzz::identify($user->id, [
+      'email' => $user->email,
+      'name' => $user->name
+    ]);
+  middleware_code: null
+  verification_command: "Mbuzz::event('test', ['url' => 'https://test.com']);"
+
+nodejs:
+  key: nodejs
+  name: Node.js
+  display_name: Node.js / Express
+  icon: nodejs
+  package_name: mbuzz
+  package_manager: npm
+  package_url: null
+  github_url: https://github.com/multibuzz/mbuzz-node
+  docs_url: /docs/sdks/nodejs
+  status: coming_soon
+  released_at: null
+  category: server_side
+  sort_order: 4
+  install_command: npm install mbuzz
+  init_code: |
+    // app.js or initialization file
+    const mbuzz = require('mbuzz');
+    mbuzz.init({ apiKey: process.env.MBUZZ_API_KEY });
+  event_code: |
+    mbuzz.event('page_view', { url: req.url });
+  conversion_code: |
+    mbuzz.conversion('purchase', {
+      revenue: order.total,
+      orderId: order.id
+    });
+  identify_code: |
+    mbuzz.identify(user.id, {
+      email: user.email,
+      name: user.name
+    });
+  middleware_code: null
+  verification_command: "mbuzz.event('test', { url: 'https://test.com' });"
+
+shopify:
+  key: shopify
+  name: Shopify
+  display_name: Shopify
+  icon: shopify
+  package_name: null
+  package_manager: Shopify App Store
+  package_url: null
+  github_url: null
+  docs_url: /docs/platforms/shopify
+  status: coming_soon
+  released_at: null
+  category: platform
+  sort_order: 10
+  install_command: null
+  init_code: null
+  event_code: null
+  conversion_code: null
+  identify_code: null
+  middleware_code: null
+  verification_command: null
+
+magento:
+  key: magento
+  name: Magento
+  display_name: Magento / Adobe Commerce
+  icon: magento
+  package_name: null
+  package_manager: Magento Marketplace
+  package_url: null
+  github_url: null
+  docs_url: /docs/platforms/magento
+  status: coming_soon
+  released_at: null
+  category: platform
+  sort_order: 11
+  install_command: null
+  init_code: null
+  event_code: null
+  conversion_code: null
+  identify_code: null
+  middleware_code: null
+  verification_command: null
+
+rest_api:
+  key: rest_api
+  name: REST API
+  display_name: REST API (Any Language)
+  icon: api
+  package_name: null
+  package_manager: null
+  package_url: null
+  github_url: null
+  docs_url: /docs/api-reference
+  status: live
+  released_at: '2025-10-01'
+  category: api
+  sort_order: 99
+  install_command: null
+  init_code: |
+    # Set your API key as an environment variable
+    export MBUZZ_API_KEY=sk_live_your_key_here
+  event_code: |
+    curl -X POST https://mbuzz.co/api/v1/events \
+      -H "Authorization: Bearer $MBUZZ_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{"events": [{"event_type": "page_view", "visitor_id": "abc123", "session_id": "xyz789", "properties": {"url": "https://example.com"}}]}'
+  conversion_code: |
+    curl -X POST https://mbuzz.co/api/v1/conversions \
+      -H "Authorization: Bearer $MBUZZ_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{"conversion": {"conversion_type": "purchase", "visitor_id": "abc123", "revenue": 99.99}}'
+  identify_code: |
+    curl -X POST https://mbuzz.co/api/v1/identify \
+      -H "Authorization: Bearer $MBUZZ_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{"user_id": "user_123", "visitor_id": "abc123", "traits": {"email": "user@example.com"}}'
+  middleware_code: null
+  verification_command: null

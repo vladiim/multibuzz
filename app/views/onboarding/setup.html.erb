@@ -1,0 +1,65 @@
+<div class="min-h-screen bg-gray-50 py-12">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Progress -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
+        <span>Step 2 of 5</span>
+        <span><%= current_account.onboarding_percentage %>% complete</span>
+      </div>
+      <div class="h-2 bg-gray-200 rounded-full">
+        <div class="h-2 bg-indigo-600 rounded-full" style="width: <%= current_account.onboarding_percentage %>%"></div>
+      </div>
+    </div>
+
+    <!-- API Key Section -->
+    <div class="bg-white rounded-lg shadow p-6 mb-8" data-api-key>
+      <h2 class="text-xl font-semibold text-gray-900 mb-4">Your API Key</h2>
+      <p class="text-gray-600 mb-4">Use this test key during development. You'll switch to a live key when ready for production.</p>
+
+      <% if test_api_key %>
+        <div class="bg-gray-100 rounded-lg p-4 font-mono text-sm flex items-center justify-between">
+          <code class="text-gray-800"><%= test_api_key.display_key %></code>
+          <button
+            onclick="navigator.clipboard.writeText('<%= test_api_key.raw_key %>')"
+            class="ml-4 px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700"
+          >
+            Copy
+          </button>
+        </div>
+        <p class="mt-2 text-sm text-gray-500">Test keys start with <code>sk_test_</code></p>
+      <% else %>
+        <p class="text-yellow-600">No test API key found. Please contact support.</p>
+      <% end %>
+    </div>
+
+    <!-- SDK Selection -->
+    <div class="bg-white rounded-lg shadow p-6" data-sdk-grid>
+      <h2 class="text-xl font-semibold text-gray-900 mb-4">Choose Your SDK</h2>
+      <p class="text-gray-600 mb-6">Select the language or platform you're using.</p>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <% available_sdks.each do |sdk| %>
+          <div data-sdk-card>
+            <% if sdk.live? %>
+              <%= button_to onboarding_select_sdk_path, params: { sdk: sdk.key }, method: :post, class: "w-full p-4 rounded-lg border-2 border-gray-200 hover:border-indigo-500 hover:bg-indigo-50 transition-colors text-center" do %>
+                <div class="text-2xl mb-2"><%= sdk_icon_for(sdk) %></div>
+                <div class="font-medium text-gray-900"><%= sdk.display_name %></div>
+                <span class="inline-block mt-2 px-2 py-0.5 text-xs font-medium rounded-full <%= sdk_status_badge_class(sdk.status) %>">
+                  <%= sdk.status_badge %>
+                </span>
+              <% end %>
+            <% else %>
+              <div class="w-full p-4 rounded-lg border-2 border-gray-100 bg-gray-50 text-center opacity-75">
+                <div class="text-2xl mb-2"><%= sdk_icon_for(sdk) %></div>
+                <div class="font-medium text-gray-500"><%= sdk.display_name %></div>
+                <span class="inline-block mt-2 px-2 py-0.5 text-xs font-medium rounded-full <%= sdk_status_badge_class(sdk.status) %>">
+                  <%= sdk.status_badge %>
+                </span>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
