@@ -76,6 +76,40 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_select "[data-sdk-grid]"
   end
 
+  test "setup creates API key if none exists" do
+    sign_in_as_new_user
+
+    assert_difference -> { @test_account.api_keys.count }, 1 do
+      get onboarding_setup_path
+    end
+
+    assert @test_account.api_keys.test.exists?
+  end
+
+  test "setup shows plaintext key only on first view then clears it" do
+    sign_in_as_new_user
+
+    # First view - plaintext shown (dark bg, green text)
+    get onboarding_setup_path
+    assert_nil session[:plaintext_api_key], "Session should be cleared after first view"
+    assert_select "code.text-green-400", /sk_test_/
+
+    # Second view - masked key shown (gray bg)
+    get onboarding_setup_path
+    assert_select "code.text-gray-500", /sk_test_.*••••/
+  end
+
+  test "setup does not regenerate key for existing key" do
+    sign_in
+
+    assert_no_difference -> { account.api_keys.count } do
+      get onboarding_setup_path
+    end
+
+    # Shows masked key (gray bg) because key already existed
+    assert_select "code.text-gray-500", /sk_test_.*••••/
+  end
+
   test "setup displays live and coming_soon SDKs" do
     sign_in
     account.update!(onboarding_persona: :developer)
@@ -83,6 +117,26 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     get onboarding_setup_path
 
     assert_select "[data-sdk-card]", minimum: 2
+  end
+
+  # --- Regenerate API Key ---
+
+  test "regenerate_api_key revokes old key and creates new one" do
+    sign_in
+    old_key = account.api_keys.test.active.first
+
+    post onboarding_regenerate_api_key_path
+
+    assert_redirected_to onboarding_setup_path
+    assert old_key.reload.revoked?
+    assert session[:plaintext_api_key].present?
+    assert session[:plaintext_api_key].start_with?("sk_test_")
+  end
+
+  test "regenerate_api_key requires authentication" do
+    post onboarding_regenerate_api_key_path
+
+    assert_redirected_to login_path
   end
 
   # --- SDK Selection ---
@@ -104,13 +158,37 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to onboarding_install_path
   end
 
-  test "select_sdk with coming_soon SDK shows waitlist modal" do
-    sign_in
+  test "select_sdk with coming_soon SDK still saves selection" do
+    sign_in_as_new_user
 
     post onboarding_select_sdk_path, params: { sdk: "python" }
 
-    # Should redirect to waitlist signup for coming soon SDKs
-    assert_response :redirect
+    @test_account.reload
+    assert_equal "python", @test_account.selected_sdk
+    assert_redirected_to onboarding_install_path
+  end
+
+  # --- Waitlist SDK ---
+
+  test "waitlist_sdk requires authentication" do
+    post onboarding_waitlist_sdk_path, params: { sdk: "python" }
+
+    assert_redirected_to login_path
+  end
+
+  test "waitlist_sdk creates submission and redirects back with notice" do
+    sign_in
+
+    assert_difference "SdkWaitlistSubmission.count", 1 do
+      post onboarding_waitlist_sdk_path, params: { sdk: "python" }
+    end
+
+    assert_redirected_to onboarding_setup_path
+    assert flash[:notice].include?("waitlist")
+
+    submission = SdkWaitlistSubmission.last
+    assert_equal "python", submission.sdk_key
+    assert_equal user.email, submission.email
   end
 
   # --- Install ---

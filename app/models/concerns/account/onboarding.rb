@@ -53,6 +53,21 @@ module Account::Onboarding
       onboarding_step_completed?(:attribution_viewed)
   end
 
+  def onboarding_skipped?
+    onboarding_skipped_at.present?
+  end
+
+  def should_show_onboarding_banner?
+    return false if onboarding_complete?
+    return false unless onboarding_skipped?
+
+    !events.exists?
+  end
+
+  def resume_onboarding!
+    update!(onboarding_skipped_at: nil)
+  end
+
   private
 
   def just_activated?

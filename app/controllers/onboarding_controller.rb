@@ -14,18 +14,40 @@ class OnboardingController < ApplicationController
   end
 
   def setup
+    ensure_api_key_exists
+    # Read and clear - plaintext shown only once
+    @plaintext_api_key = session.delete(:plaintext_api_key)
     current_account.complete_onboarding_step!(:api_key_viewed)
   end
 
   def select_sdk
-    if selected_sdk&.coming_soon?
-      redirect_to onboarding_setup_path, alert: "#{selected_sdk.display_name} is coming soon. Join the waitlist for early access."
-      return
-    end
-
+    session.delete(:plaintext_api_key)
     current_account.update!(selected_sdk: params[:sdk])
     current_account.complete_onboarding_step!(:sdk_selected)
     redirect_to onboarding_install_path
+  end
+
+  def waitlist_sdk
+    SdkWaitlistSubmission.create!(
+      email: current_user.email,
+      sdk_key: waitlisted_sdk&.key,
+      sdk_name: waitlisted_sdk&.display_name,
+      account_id: current_account.id,
+      ip_address: request.remote_ip,
+      user_agent: request.user_agent
+    )
+    redirect_to onboarding_setup_path, notice: "You've been added to the #{waitlisted_sdk&.display_name} waitlist. We'll notify you when it's ready!"
+  end
+
+  def regenerate_api_key
+    # Revoke existing test keys
+    current_account.api_keys.test.active.find_each(&:revoke!)
+
+    # Generate new key
+    result = ApiKeys::GenerationService.new(current_account, environment: :test).call
+    session[:plaintext_api_key] = result[:plaintext_key] if result[:success]
+
+    redirect_to onboarding_setup_path
   end
 
   def install
@@ -51,6 +73,11 @@ class OnboardingController < ApplicationController
     redirect_to dashboard_path
   end
 
+  def skip
+    current_account.update!(onboarding_skipped_at: Time.current)
+    redirect_to dashboard_path
+  end
+
   private
 
   def ensure_sdk_selected
@@ -73,12 +100,20 @@ class OnboardingController < ApplicationController
     @selected_sdk ||= SdkRegistry.find(params[:sdk])
   end
 
+  def waitlisted_sdk
+    @waitlisted_sdk ||= SdkRegistry.find(params[:sdk])
+  end
+
   def current_sdk
     @current_sdk ||= SdkRegistry.find(current_account.selected_sdk)
   end
 
   def test_api_key
-    @test_api_key ||= current_account.api_keys.test.first
+    @test_api_key ||= current_account.api_keys.test.order(created_at: :desc).first
+  end
+
+  def plaintext_api_key
+    session[:plaintext_api_key]
   end
 
   def available_sdks
@@ -89,5 +124,13 @@ class OnboardingController < ApplicationController
     @latest_conversion ||= current_account.conversions.order(created_at: :desc).first
   end
 
-  helper_method :current_sdk, :test_api_key, :available_sdks, :latest_conversion
+  def ensure_api_key_exists
+    return if test_api_key.present?
+
+    # Only generate if no key exists - plaintext comes from signup flow
+    result = ApiKeys::GenerationService.new(current_account, environment: :test).call
+    session[:plaintext_api_key] = result[:plaintext_key] if result[:success]
+  end
+
+  helper_method :current_sdk, :test_api_key, :plaintext_api_key, :available_sdks, :latest_conversion
 end
