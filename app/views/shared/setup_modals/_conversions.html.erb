@@ -23,14 +23,11 @@
               label: 'Ruby',
               syntax: 'ruby',
               code: <<~CODE
-                Mbuzz.conversion(
-                  user_id: current_user.id,
-                  conversion_type: 'purchase',
-                  value: order.total_cents / 100.0,
-                  properties: {
-                    order_id: order.id,
-                    product: order.product_name
-                  }
+                # Record purchase conversion with revenue
+                Mbuzz.conversion("purchase",
+                  revenue: order.total,
+                  order_id: order.id,
+                  product: order.product_name
                 )
               CODE
             },
@@ -42,12 +39,13 @@
                   -H "Authorization: Bearer $MBUZZ_API_KEY" \\
                   -H "Content-Type: application/json" \\
                   -d '{
-                    "user_id": "123",
-                    "conversion_type": "purchase",
-                    "value": 99.00,
-                    "properties": {
-                      "order_id": "ord_abc123",
-                      "product": "Pro Plan"
+                    "conversion": {
+                      "visitor_id": "abc123...",
+                      "conversion_type": "purchase",
+                      "revenue": 99.00,
+                      "properties": {
+                        "order_id": "ord_abc123"
+                      }
                     }
                   }'
               CODE
@@ -66,8 +64,7 @@
         </div>
       </div>
       <div class="px-6 py-4 border-t border-gray-200 flex justify-between items-center">
-        <%= link_to "View full documentation", "https://docs.mbuzz.co/tracking/conversions",
-          target: "_blank",
+        <%= link_to "View full documentation", docs_path(page: "getting-started"),
           class: "text-sm text-indigo-600 hover:text-indigo-900" %>
         <button type="button" data-action="click->modal#close"
           class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md">

@@ -255,9 +255,10 @@ MD
 
   ```ruby
   # config/initializers/mbuzz.rb
-  Mbuzz.configure do |config|
-    config.enabled = false
-  end
+  Mbuzz.init(
+    api_key: ENV['MBUZZ_API_KEY'],
+    skip_paths: ["/health", "/admin"]  # Skip specific paths
+  )
   ```
 
   ---
