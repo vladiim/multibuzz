@@ -5,6 +5,8 @@ require "test_helper"
 module Dashboard
   class ConversionsControllerTest < ActionDispatch::IntegrationTest
     setup do
+      # Complete onboarding so default view mode is production
+      accounts(:one).update!(onboarding_progress: (1 << Account::Onboarding::ONBOARDING_STEPS.size) - 1)
       sign_in_as users(:one)
       AttributionCredit.delete_all
       Conversion.where(account: account).delete_all

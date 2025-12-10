@@ -43,7 +43,8 @@ module Dashboard
         date_range: filter_params[:date_range],
         channels: filter_params[:channels].sort,
         conversion_filters: conversion_filters,
-        breakdown_dimension: breakdown_dimension
+        breakdown_dimension: breakdown_dimension,
+        test_mode: test_mode
       }
     end
 
@@ -102,7 +103,8 @@ module Dashboard
         models: filter_params[:models],
         date_range: range,
         channels: filter_params[:channels],
-        conversion_filters: conversion_filters
+        conversion_filters: conversion_filters,
+        test_mode: test_mode
       ).call
     end
 
@@ -110,8 +112,13 @@ module Dashboard
       Scopes::SessionsScope.new(
         account: account,
         date_range: range,
-        channels: filter_params[:channels]
+        channels: filter_params[:channels],
+        test_mode: test_mode
       ).call
+    end
+
+    def test_mode
+      @test_mode ||= filter_params[:test_mode] || false
     end
 
     def date_range
