@@ -1,6 +1,6 @@
 # Onboarding Specification
 
-**Status**: In Progress (Phase 4 Complete)
+**Status**: Complete
 **Last Updated**: 2025-12-11
 **Epic**: E1S4 - Homepage & Onboarding
 
@@ -1062,16 +1062,16 @@ When user switches to Live Mode but has no live data:
 - [x] Fixed clipboard controller for API key copy
 - [x] Docs URLs use Rails route helpers
 
-### Phase 5: Supporting Features
-- [ ] Onboarding checklist widget (dashboard sidebar)
-- [ ] Empty state partials
-- [ ] OnboardingMailer with templates
-- [ ] Email scheduling jobs
+### Phase 5: Supporting Features (Deferred)
+- Onboarding checklist widget (dashboard sidebar)
+- Empty state partials
+- OnboardingMailer with templates
+- Email scheduling jobs
 
-### Phase 6: Analytics
-- [ ] Onboarding event tracking (dogfood)
-- [ ] Internal funnel dashboard
-- [ ] Alerts setup
+### Phase 6: Analytics (Deferred)
+- Onboarding event tracking (dogfood)
+- Internal funnel dashboard
+- Alerts setup
 
 ---
 
