@@ -6,7 +6,9 @@ module Sessions
 
     # UTM medium patterns mapped to channels
     UTM_MEDIUM_PATTERNS = {
-      /^(cpc|ppc|paid)$/i => Channels::PAID_SEARCH,
+      /^paid_social$/i => Channels::PAID_SOCIAL,
+      /^paid$/i => ->(service) { service.paid_channel },
+      /^(cpc|ppc)$/i => Channels::PAID_SEARCH,
       /^social$/i => ->(service) { service.social_channel },
       /^(email|e-mail)$/i => Channels::EMAIL,
       /^(display|banner)$/i => Channels::DISPLAY,
@@ -33,27 +35,33 @@ module Sessions
       ReferrerSources::Mediums::NEWS => Channels::REFERRAL
     }.freeze
 
-    def initialize(utm_data, referrer)
+    def initialize(utm_data, referrer, click_ids = {})
       @utm_data = utm_data || {}
       @referrer = referrer
+      @click_ids = click_ids || {}
     end
 
     def call
       return channel_from_utm_or_fallback if utm_medium.present?
       return channel_from_utm_source if utm_source.present?
+      return channel_from_click_ids if click_ids.any?
       return channel_from_referrer if referrer_domain.present?
 
       Channels::DIRECT
     end
 
-    # Public method for lambda callback in UTM_MEDIUM_PATTERNS
+    # Public methods for lambda callbacks in UTM_MEDIUM_PATTERNS
     def social_channel
-      paid_social? ? Channels::PAID_SOCIAL : Channels::ORGANIC_SOCIAL
+      social_source? ? Channels::PAID_SOCIAL : Channels::ORGANIC_SOCIAL
+    end
+
+    def paid_channel
+      social_source? ? Channels::PAID_SOCIAL : Channels::PAID_SEARCH
     end
 
     private
 
-    attr_reader :utm_data, :referrer
+    attr_reader :utm_data, :referrer, :click_ids
 
     def channel_from_utm_or_fallback
       match = UTM_MEDIUM_PATTERNS.find { |pattern, _| utm_medium.match?(pattern) }
@@ -78,8 +86,12 @@ module Sessions
       value.respond_to?(:call) ? value.call(self) : value
     end
 
-    def paid_social?
+    def social_source?
       utm_source&.match?(Channels::SOCIAL_NETWORKS)
+    end
+
+    def channel_from_click_ids
+      ClickIdCaptureService.infer_channel(click_ids) || Channels::OTHER
     end
 
     def utm_medium

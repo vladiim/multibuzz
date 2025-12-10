@@ -137,6 +137,56 @@ class Sessions::ChannelAttributionServiceTest < ActiveSupport::TestCase
   end
 
   # ==========================================
+  # Paid Social Detection Tests
+  # ==========================================
+
+  test "returns paid_social for utm_medium=paid_social" do
+    utm_data = { utm_medium: "paid_social", utm_source: "facebook" }
+
+    assert_equal Channels::PAID_SOCIAL, service(utm_data).call
+  end
+
+  test "returns paid_social for utm_medium=paid with social source" do
+    utm_data = { utm_medium: "paid", utm_source: "facebook" }
+
+    assert_equal Channels::PAID_SOCIAL, service(utm_data).call
+  end
+
+  test "returns paid_search for utm_medium=paid with non-social source" do
+    utm_data = { utm_medium: "paid", utm_source: "google" }
+
+    assert_equal Channels::PAID_SEARCH, service(utm_data).call
+  end
+
+  # ==========================================
+  # Click ID Attribution Tests
+  # ==========================================
+
+  test "returns paid_search for gclid presence" do
+    assert_equal Channels::PAID_SEARCH, service({}, nil, { gclid: "abc123" }).call
+  end
+
+  test "returns paid_social for fbclid presence" do
+    assert_equal Channels::PAID_SOCIAL, service({}, nil, { fbclid: "abc123" }).call
+  end
+
+  test "returns display for dclid presence" do
+    assert_equal Channels::DISPLAY, service({}, nil, { dclid: "abc123" }).call
+  end
+
+  test "click_id takes priority over referrer" do
+    # gclid says paid_search, referrer says social
+    assert_equal Channels::PAID_SEARCH, service({}, "https://facebook.com", { gclid: "abc" }).call
+  end
+
+  test "utm takes priority over click_id" do
+    # utm says email, click_id says paid_search
+    utm_data = { utm_medium: "email" }
+
+    assert_equal Channels::EMAIL, service(utm_data, nil, { gclid: "abc" }).call
+  end
+
+  # ==========================================
   # Database lookup integration tests
   # ==========================================
 
@@ -171,7 +221,7 @@ class Sessions::ChannelAttributionServiceTest < ActiveSupport::TestCase
 
   private
 
-  def service(utm_data = {}, referrer = nil)
-    Sessions::ChannelAttributionService.new(utm_data, referrer)
+  def service(utm_data = {}, referrer = nil, click_ids = {})
+    Sessions::ChannelAttributionService.new(utm_data, referrer, click_ids)
   end
 end
