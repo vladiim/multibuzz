@@ -27,13 +27,21 @@ module Billing
   CENTS_PER_DOLLAR = 100
   EVENTS_PER_MILLION = 1_000_000
   EVENTS_PER_THOUSAND = 1_000
-  OVERAGE_UNIT_SIZE = 10_000  # price is per 10K events
 
   # --- Plan Limits ---
-  FREE_EVENT_LIMIT = 10_000
-  STARTER_EVENT_LIMIT = 50_000
-  GROWTH_EVENT_LIMIT = 250_000
-  PRO_EVENT_LIMIT = 1_000_000
+  FREE_EVENT_LIMIT = 50_000
+  STARTER_EVENT_LIMIT = 1_000_000
+  GROWTH_EVENT_LIMIT = 5_000_000
+  PRO_EVENT_LIMIT = 25_000_000
+
+  # --- Overage Block Sizes ---
+  # Each tier has a different block size for overage billing
+  STARTER_OVERAGE_BLOCK_SIZE = 250_000
+  GROWTH_OVERAGE_BLOCK_SIZE = 1_000_000
+  PRO_OVERAGE_BLOCK_SIZE = 5_000_000
+
+  # Legacy constant for backwards compatibility
+  OVERAGE_UNIT_SIZE = 10_000  # deprecated, use tier-specific block sizes
 
   # --- Custom Attribution Model Limits ---
   CUSTOM_MODEL_LIMITS = {
@@ -45,17 +53,20 @@ module Billing
 
   # --- Attribution Rerun Limits (matches event limits) ---
   RERUN_LIMITS = {
-    PLAN_FREE => 10_000,
-    PLAN_STARTER => 50_000,
-    PLAN_GROWTH => 250_000,
-    PLAN_PRO => 1_000_000
+    PLAN_FREE => 50_000,
+    PLAN_STARTER => 1_000_000,
+    PLAN_GROWTH => 5_000_000,
+    PLAN_PRO => 25_000_000
   }.freeze
 
-  # --- Rerun Overage (event_overage / 7, in cents per 10K) ---
+  # --- Rerun Overage (event_overage / 7, in cents per block) ---
+  # Starter: $5/250K block / 7 = ~$0.71
+  # Growth: $15/1M block / 7 = ~$2.14
+  # Pro: $50/5M block / 7 = ~$7.14
   RERUN_OVERAGE_CENTS = {
-    PLAN_STARTER => 83,   # $5.80 / 7
-    PLAN_GROWTH => 57,    # $3.96 / 7
-    PLAN_PRO => 43        # $2.99 / 7
+    PLAN_STARTER => 71,
+    PLAN_GROWTH => 214,
+    PLAN_PRO => 714
   }.freeze
 
   # --- Plan Prices (cents) ---
@@ -71,10 +82,26 @@ module Billing
   PRO_SORT_ORDER = 3
   ENTERPRISE_SORT_ORDER = 4
 
-  # --- Overage Prices (cents per 10K) ---
-  STARTER_OVERAGE_CENTS = 580
-  GROWTH_OVERAGE_CENTS = 396
-  PRO_OVERAGE_CENTS = 299
+  # --- Overage Prices (cents per block) ---
+  # Starter: $5 per 250K block
+  # Growth: $15 per 1M block
+  # Pro: $50 per 5M block
+  STARTER_OVERAGE_CENTS = 500
+  GROWTH_OVERAGE_CENTS = 1500
+  PRO_OVERAGE_CENTS = 5000
+
+  # Overage block sizes by plan (for convenience)
+  OVERAGE_BLOCK_SIZES = {
+    PLAN_STARTER => STARTER_OVERAGE_BLOCK_SIZE,
+    PLAN_GROWTH => GROWTH_OVERAGE_BLOCK_SIZE,
+    PLAN_PRO => PRO_OVERAGE_BLOCK_SIZE
+  }.freeze
+
+  OVERAGE_PRICES_CENTS = {
+    PLAN_STARTER => STARTER_OVERAGE_CENTS,
+    PLAN_GROWTH => GROWTH_OVERAGE_CENTS,
+    PLAN_PRO => PRO_OVERAGE_CENTS
+  }.freeze
 
   # --- Time Periods ---
   GRACE_PERIOD_DAYS = 3

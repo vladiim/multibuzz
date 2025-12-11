@@ -232,19 +232,24 @@ module Account::Billing
     ::Billing::RERUN_OVERAGE_CENTS.fetch(plan_slug, 0)
   end
 
+  def rerun_overage_block_size
+    plan_slug = plan&.slug || ::Billing::PLAN_FREE
+    ::Billing::OVERAGE_BLOCK_SIZES.fetch(plan_slug, ::Billing::STARTER_OVERAGE_BLOCK_SIZE)
+  end
+
   def can_rerun_without_overage?(count)
     count <= reruns_remaining
   end
 
   def calculate_rerun_overage(count)
-    return { covered: count, overage: 0, blocks: 0, cost_cents: 0 } if count <= reruns_remaining
+    return { covered: count, overage: 0, blocks: 0, cost_cents: 0, block_size: rerun_overage_block_size } if count <= reruns_remaining
 
     covered = reruns_remaining
     overage = count - covered
-    blocks = (overage.to_f / ::Billing::OVERAGE_UNIT_SIZE).ceil
+    blocks = (overage.to_f / rerun_overage_block_size).ceil
     cost_cents = blocks * rerun_overage_cents
 
-    { covered: covered, overage: overage, blocks: blocks, cost_cents: cost_cents }
+    { covered: covered, overage: overage, blocks: blocks, cost_cents: cost_cents, block_size: rerun_overage_block_size }
   end
 
   def increment_reruns_used!(count)

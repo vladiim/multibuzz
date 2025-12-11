@@ -422,7 +422,8 @@ class Accounts::AttributionModelsControllerTest < ActionDispatch::IntegrationTes
   end
 
   test "rerun shows confirmation when overage required" do
-    account.update!(plan: starter_plan, reruns_used_this_period: 50_000)
+    # Starter has 1M rerun limit, so set usage near limit to trigger overage
+    account.update!(plan: starter_plan, reruns_used_this_period: Billing::RERUN_LIMITS[Billing::PLAN_STARTER])
     sign_in
     model = create_model_with_stale_credits
 
@@ -437,7 +438,7 @@ class Accounts::AttributionModelsControllerTest < ActionDispatch::IntegrationTes
       plan: starter_plan,
       billing_status: :active,
       stripe_subscription_id: "sub_123",
-      reruns_used_this_period: 50_000
+      reruns_used_this_period: Billing::RERUN_LIMITS[Billing::PLAN_STARTER]
     )
     sign_in
     model = create_model_with_stale_credits

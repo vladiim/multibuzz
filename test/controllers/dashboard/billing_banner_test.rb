@@ -36,7 +36,7 @@ class Dashboard::BillingBannerTest < ActionDispatch::IntegrationTest
 
   test "shows usage_limit banner when at 100%" do
     account.update!(billing_status: :free_forever, plan: plans(:free))
-    Rails.cache.write(account.usage_cache_key, 10_000)
+    Rails.cache.write(account.usage_cache_key, Billing::FREE_EVENT_LIMIT)
 
     get dashboard_path
 
@@ -47,7 +47,7 @@ class Dashboard::BillingBannerTest < ActionDispatch::IntegrationTest
 
   test "shows usage_warning banner when at 80%" do
     account.update!(billing_status: :free_forever, plan: plans(:free))
-    Rails.cache.write(account.usage_cache_key, 8000)
+    Rails.cache.write(account.usage_cache_key, (Billing::FREE_EVENT_LIMIT * 0.8).to_i)
 
     get dashboard_path
 
@@ -75,7 +75,7 @@ class Dashboard::BillingBannerTest < ActionDispatch::IntegrationTest
       grace_period_ends_at: 2.days.ago,
       plan: plans(:free)
     )
-    Rails.cache.write(account.usage_cache_key, 10_000)
+    Rails.cache.write(account.usage_cache_key, Billing::FREE_EVENT_LIMIT)
 
     get dashboard_path
 

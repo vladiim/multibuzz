@@ -26,7 +26,7 @@ class Account::BillingTest < ActiveSupport::TestCase
 
   test "can_ingest_events? returns false for free_forever at limit" do
     account.update!(billing_status: :free_forever, plan: free_plan)
-    Rails.cache.write(account.usage_cache_key, 10_000)
+    Rails.cache.write(account.usage_cache_key, Billing::FREE_EVENT_LIMIT)
 
     assert_not account.can_ingest_events?
   end
@@ -166,28 +166,31 @@ class Account::BillingTest < ActiveSupport::TestCase
 
   test "usage_percentage calculates correctly" do
     account.update!(plan: free_plan)
-    Rails.cache.write(account.usage_cache_key, 8000)
+    limit = Billing::FREE_EVENT_LIMIT
+    Rails.cache.write(account.usage_cache_key, (limit * 0.8).to_i)
 
     assert_equal 80, account.usage_percentage
   end
 
   test "approaching_limit? returns true at 80%" do
     account.update!(plan: free_plan)
-    Rails.cache.write(account.usage_cache_key, 8000)
+    limit = Billing::FREE_EVENT_LIMIT
+    Rails.cache.write(account.usage_cache_key, (limit * 0.8).to_i)
 
     assert account.approaching_limit?
   end
 
   test "approaching_limit? returns false below 80%" do
     account.update!(plan: free_plan)
-    Rails.cache.write(account.usage_cache_key, 7000)
+    limit = Billing::FREE_EVENT_LIMIT
+    Rails.cache.write(account.usage_cache_key, (limit * 0.7).to_i)
 
     assert_not account.approaching_limit?
   end
 
   test "at_limit? returns true at 100%" do
     account.update!(plan: free_plan)
-    Rails.cache.write(account.usage_cache_key, 10_000)
+    Rails.cache.write(account.usage_cache_key, Billing::FREE_EVENT_LIMIT)
 
     assert account.at_limit?
   end
@@ -321,14 +324,15 @@ class Account::BillingTest < ActiveSupport::TestCase
 
   test "billing_banner_type returns :usage_limit at 100%" do
     account.update!(billing_status: :free_forever, plan: free_plan)
-    Rails.cache.write(account.usage_cache_key, 10_000)
+    Rails.cache.write(account.usage_cache_key, Billing::FREE_EVENT_LIMIT)
 
     assert_equal ::Billing::BANNER_USAGE_LIMIT, account.billing_banner_type
   end
 
   test "billing_banner_type returns :usage_warning at 80%" do
     account.update!(billing_status: :free_forever, plan: free_plan)
-    Rails.cache.write(account.usage_cache_key, 8000)
+    limit = Billing::FREE_EVENT_LIMIT
+    Rails.cache.write(account.usage_cache_key, (limit * 0.8).to_i)
 
     assert_equal ::Billing::BANNER_USAGE_WARNING, account.billing_banner_type
   end

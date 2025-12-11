@@ -38,7 +38,7 @@
             </div>
             <div class="bg-gray-50 px-4 py-3 rounded-lg">
               <dt class="text-sm font-medium text-gray-500">Overage blocks</dt>
-              <dd class="mt-1 text-lg font-semibold text-gray-900"><%= @overage[:blocks] %> x 10,000</dd>
+              <dd class="mt-1 text-lg font-semibold text-gray-900"><%= @overage[:blocks] %> x <%= number_with_delimiter(@overage[:block_size]) %></dd>
             </div>
             <div class="bg-gray-50 px-4 py-3 rounded-lg">
               <dt class="text-sm font-medium text-gray-500">Additional cost</dt>
