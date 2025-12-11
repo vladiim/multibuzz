@@ -53,6 +53,22 @@ module DashboardHelper
     end
   end
 
+  def cohort_cell_class(ltv, cohorts)
+    return "" if ltv.nil?
+
+    max_ltv = cohorts.flat_map { |c| c[:months].map { |m| m[:cumulative_ltv] } }.compact.max || 0
+    return "" if max_ltv.zero?
+
+    intensity = (ltv.to_f / max_ltv * 100).round
+    case intensity
+    when 80..100 then "bg-emerald-100 text-emerald-800"
+    when 60..79 then "bg-emerald-50 text-emerald-700"
+    when 40..59 then "bg-gray-50 text-gray-700"
+    when 20..39 then "bg-amber-50 text-amber-700"
+    else "bg-red-50 text-red-700"
+    end
+  end
+
   def hidden_filter_params(except: [])
     params_to_preserve = @filter_params.except(*Array(except))
 

@@ -121,6 +121,7 @@ Rails.application.routes.draw do
 
   namespace :dashboard do
     patch "view_mode", to: "view_mode#update"
+    patch "clv_mode", to: "clv_mode#update"
 
     # Turbo Frame endpoints for dashboard sections
     get "filters", to: "filters#show"

@@ -4,10 +4,13 @@ class ApplicationController < ActionController::Base
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   allow_browser versions: :modern
 
-  helper_method :view_mode, :test_mode?
+  helper_method :view_mode, :test_mode?, :clv_mode, :clv_mode?
 
   VALID_VIEW_MODES = %w[production test].freeze
   DEFAULT_VIEW_MODE = "production"
+
+  VALID_CLV_MODES = %w[transactions clv].freeze
+  DEFAULT_CLV_MODE = "transactions"
 
   private
 
@@ -27,5 +30,16 @@ class ApplicationController < ActionController::Base
 
   def test_mode?
     view_mode == "test"
+  end
+
+  # CLV mode toggle (transactions vs customer lifetime value)
+  def clv_mode
+    return DEFAULT_CLV_MODE unless current_user
+
+    session[:clv_mode].presence_in(VALID_CLV_MODES) || DEFAULT_CLV_MODE
+  end
+
+  def clv_mode?
+    clv_mode == "clv"
   end
 end

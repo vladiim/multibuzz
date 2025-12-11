@@ -1,0 +1,43 @@
+<% return if cohorts.blank? %>
+
+<div class="overflow-x-auto">
+  <table class="min-w-full divide-y divide-gray-200">
+    <thead>
+      <tr>
+        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+          Cohort
+        </th>
+        <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+          Customers
+        </th>
+        <% (0..12).each do |month| %>
+          <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+            M<%= month %>
+          </th>
+        <% end %>
+      </tr>
+    </thead>
+    <tbody class="bg-white divide-y divide-gray-200">
+      <% cohorts.each do |cohort| %>
+        <tr>
+          <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+            <%= cohort[:cohort].strftime("%b %Y") %>
+          </td>
+          <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500 text-center">
+            <%= cohort[:customers] %>
+          </td>
+          <% cohort[:months].each do |month_data| %>
+            <% ltv = month_data[:cumulative_ltv] %>
+            <td class="px-3 py-2 whitespace-nowrap text-sm text-center <%= cohort_cell_class(ltv, cohorts) %>">
+              <% if ltv.nil? %>
+                <span class="text-gray-300">—</span>
+              <% else %>
+                <%= number_to_currency(ltv, precision: 0) %>
+              <% end %>
+            </td>
+          <% end %>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
