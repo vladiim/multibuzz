@@ -1,0 +1,252 @@
+/*
+ * Leaderboard Component
+ *
+ * Interactive leaderboard for LTV comparison on homepage
+ */
+
+/* Tab buttons */
+.leaderboard-tab {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  background: rgb(31, 41, 55); /* gray-800 */
+  color: rgb(209, 213, 219); /* gray-300 */
+  border: none;
+  cursor: pointer;
+}
+
+.leaderboard-tab:hover {
+  background: rgb(55, 65, 81); /* gray-700 */
+}
+
+.leaderboard-tab.active {
+  background: white;
+  color: rgb(17, 24, 39); /* gray-900 */
+}
+
+/* Content container with fade animation */
+.leaderboard-content {
+  transition: opacity 0.3s ease-in-out;
+}
+
+.leaderboard-content.hidden {
+  display: none;
+}
+
+.leaderboard-content:not(.hidden) {
+  animation: leaderboard-fade-in 0.4s ease-out;
+}
+
+@keyframes leaderboard-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Main container */
+.leaderboard-container {
+  background: rgba(31, 41, 55, 0.5); /* gray-800/50 */
+  border-radius: 1rem;
+  padding: 1.5rem;
+  border: 1px solid rgb(55, 65, 81); /* gray-700 */
+}
+
+@media (min-width: 768px) {
+  .leaderboard-container {
+    padding: 2rem;
+  }
+}
+
+/* Header */
+.leaderboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgb(55, 65, 81); /* gray-700 */
+}
+
+.leaderboard-header__label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgb(156, 163, 175); /* gray-400 */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.leaderboard-header__note {
+  font-size: 0.75rem;
+  color: rgb(107, 114, 128); /* gray-500 */
+}
+
+/* Rows container */
+.leaderboard-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Individual row */
+.leaderboard-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background: rgba(31, 41, 55, 0.5); /* gray-800/50 */
+  border: 1px solid rgba(55, 65, 81, 0.5); /* gray-700/50 */
+  transition: all 0.3s ease-out;
+}
+
+.leaderboard-row--highlight {
+  background: rgba(6, 78, 59, 0.2); /* emerald-900/20 */
+  border-color: rgba(4, 120, 87, 0.3); /* emerald-700/30 */
+}
+
+.leaderboard-row--dimmed {
+  opacity: 0.6;
+}
+
+.leaderboard-row__left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.leaderboard-row__right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Rank badge */
+.leaderboard-rank {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 700;
+  background: rgb(55, 65, 81); /* gray-700 */
+  color: rgb(156, 163, 175); /* gray-400 */
+  flex-shrink: 0;
+}
+
+.leaderboard-rank--gold {
+  background: rgba(234, 179, 8, 0.2); /* yellow-500/20 */
+  color: rgb(250, 204, 21); /* yellow-400 */
+}
+
+.leaderboard-rank--silver {
+  background: rgba(156, 163, 175, 0.2); /* gray-400/20 */
+  color: rgb(209, 213, 219); /* gray-300 */
+}
+
+.leaderboard-rank--bronze {
+  background: rgba(217, 119, 6, 0.2); /* amber-600/20 */
+  color: rgb(245, 158, 11); /* amber-500 */
+}
+
+/* Channel icon */
+.leaderboard-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.leaderboard-icon svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.leaderboard-icon--facebook {
+  background: rgba(37, 99, 235, 0.2); /* blue-600/20 */
+  color: rgb(96, 165, 250); /* blue-400 */
+}
+
+.leaderboard-icon--google {
+  background: rgba(255, 255, 255, 0.1); /* white/10 */
+  color: white;
+}
+
+.leaderboard-icon--linkedin {
+  background: rgba(2, 132, 199, 0.2); /* sky-600/20 */
+  color: rgb(56, 189, 248); /* sky-400 */
+}
+
+.leaderboard-icon--organic {
+  background: rgba(22, 163, 74, 0.2); /* green-600/20 */
+  color: rgb(74, 222, 128); /* green-400 */
+}
+
+.leaderboard-icon--referral {
+  background: rgba(147, 51, 234, 0.2); /* purple-600/20 */
+  color: rgb(192, 132, 252); /* purple-400 */
+}
+
+/* Channel name */
+.leaderboard-channel {
+  color: white;
+  font-weight: 500;
+}
+
+/* Revenue display */
+.leaderboard-revenue {
+  color: white;
+  font-weight: 700;
+  font-size: 1.125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Rank change indicator */
+.leaderboard-change {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+}
+
+.leaderboard-change svg {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.leaderboard-change--up {
+  background: rgba(16, 185, 129, 0.2); /* emerald-500/20 */
+  color: rgb(52, 211, 153); /* emerald-400 */
+}
+
+.leaderboard-change--down {
+  background: rgba(239, 68, 68, 0.2); /* red-500/20 */
+  color: rgb(248, 113, 113); /* red-400 */
+}
+
+.leaderboard-change--same {
+  color: rgb(107, 114, 128); /* gray-500 */
+}
+
+/* Footer */
+.leaderboard-footer {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgb(55, 65, 81); /* gray-700 */
+  text-align: center;
+  font-size: 0.875rem;
+}
