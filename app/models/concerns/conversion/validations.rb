@@ -9,5 +9,15 @@ module Conversion::Validations
     validates :revenue,
       numericality: { greater_than: 0 },
       allow_nil: true
+
+    validate :identity_required_for_acquisition
+  end
+
+  private
+
+  def identity_required_for_acquisition
+    return unless is_acquisition? && identity_id.blank?
+
+    errors.add(:identity, "is required when marking as acquisition")
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_11_071232) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_12_005938) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -184,11 +184,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_11_071232) do
     t.boolean "is_test", default: false, null: false
     t.string "funnel"
     t.string "currency", default: "USD"
+    t.boolean "is_acquisition", default: false, null: false
+    t.bigint "identity_id"
     t.index ["account_id", "converted_at"], name: "index_conversions_on_account_id_and_converted_at"
     t.index ["account_id", "funnel"], name: "index_conversions_on_account_funnel"
+    t.index ["account_id", "identity_id", "is_acquisition"], name: "index_conversions_on_acquisition_lookup"
     t.index ["account_id"], name: "index_conversions_on_account_id"
     t.index ["conversion_type"], name: "index_conversions_on_conversion_type"
     t.index ["converted_at"], name: "index_conversions_on_converted_at"
+    t.index ["identity_id"], name: "index_conversions_on_identity_id"
     t.index ["is_test"], name: "index_conversions_on_is_test"
     t.index ["visitor_id", "converted_at"], name: "index_conversions_on_visitor_id_and_converted_at"
     t.index ["visitor_id"], name: "index_conversions_on_visitor_id"
@@ -378,6 +382,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_11_071232) do
   add_foreign_key "billing_events", "accounts"
   add_foreign_key "conversion_property_keys", "accounts"
   add_foreign_key "conversions", "accounts"
+  add_foreign_key "conversions", "identities"
   add_foreign_key "conversions", "visitors"
   add_foreign_key "events", "accounts"
   add_foreign_key "events", "visitors"
@@ -389,11 +394,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_11_071232) do
   add_foreign_key "visitors", "accounts"
   add_foreign_key "visitors", "identities"
 
-  # TimescaleDB hypertables and continuous aggregates are excluded from schema.rb
-  # because they don't work in test environment (triggers disabled for fixtures).
-  # Production uses db:migrate which runs the TimescaleDB migrations directly.
-  # See: db/migrate/20251119030317_convert_events_to_hypertable.rb
-  # See: db/migrate/20251119030319_convert_sessions_to_hypertable.rb
-  # See: db/migrate/20251119032705_create_channel_attribution_daily_cagg.rb
-  # See: db/migrate/20251119032739_create_source_attribution_daily_cagg.rb
+  # NOTE: TimescaleDB features excluded from schema.rb (hypertables, continuous aggregates, compression)
+  # These are created via migrations in production but skipped in test environment.
+  # See: db/migrate/*_convert_events_to_hypertable.rb, *_convert_sessions_to_hypertable.rb,
+  #      *_create_channel_attribution_daily_cagg.rb, *_create_source_attribution_daily_cagg.rb
 end
