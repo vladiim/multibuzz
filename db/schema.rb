@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_10_085316) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_11_071232) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -325,9 +325,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_10_085316) do
     t.string "initial_referrer"
     t.string "channel"
     t.boolean "is_test", default: false, null: false
+    t.jsonb "click_ids", default: {}, null: false
     t.index ["account_id", "session_id", "started_at"], name: "index_sessions_on_account_id_and_session_id", unique: true
     t.index ["account_id"], name: "index_sessions_on_account_id"
     t.index ["channel"], name: "index_sessions_on_channel"
+    t.index ["click_ids"], name: "index_sessions_on_click_ids", using: :gin
     t.index ["ended_at"], name: "index_sessions_on_ended_at"
     t.index ["id", "started_at"], name: "index_sessions_on_id_unique", unique: true
     t.index ["initial_utm"], name: "index_sessions_on_initial_utm", using: :gin
@@ -387,10 +389,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_10_085316) do
   add_foreign_key "visitors", "accounts"
   add_foreign_key "visitors", "identities"
 
-  # TimescaleDB features excluded from schema.rb (see CLAUDE.md):
-  # - create_hypertable for events and sessions
-  # - channel_attribution_daily continuous aggregate
-  # - source_attribution_daily continuous aggregate
-  # - compression policies
-  # These are applied via migrations in production (db:migrate)
+  # TimescaleDB hypertables and continuous aggregates are excluded from schema.rb
+  # because they don't work in test environment (triggers disabled for fixtures).
+  # Production uses db:migrate which runs the TimescaleDB migrations directly.
+  # See: db/migrate/20251119030317_convert_events_to_hypertable.rb
+  # See: db/migrate/20251119030319_convert_sessions_to_hypertable.rb
+  # See: db/migrate/20251119032705_create_channel_attribution_daily_cagg.rb
+  # See: db/migrate/20251119032739_create_source_attribution_daily_cagg.rb
 end
