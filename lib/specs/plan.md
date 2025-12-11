@@ -1,10 +1,12 @@
 # Product
 
 * Data wrong
+[] channel classification
+[] visit count / channel count
+
 * Coming soon for features (e.g. export - track how many people are waiting)
 * Dogfood - tracking via mbuzz
     * Dashboard for people moving through: sign up, test data, live data, customer
-* Update pricing https://grok.com/c/99864d6f-f0bf-49d6-90c4-f336f84de1f7?rid=a25b8bdf-fda1-4c70-b63a-dfe3c391b55e
 * Live (sign up, ruby gems)
 * All contact forms - emailed to me
 * Add USD to pricing
