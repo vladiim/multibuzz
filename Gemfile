@@ -33,6 +33,9 @@ gem "stripe"
 # Postmark for transactional emails [https://github.com/ActiveCampaign/postmark-rails]
 gem "postmark-rails"
 
+# Mbuzz SDK for dogfooding [https://rubygems.org/gems/mbuzz]
+gem "mbuzz"
+
 # Use prefixed IDs for customer-facing identifiers [https://github.com/excid3/prefixed_ids]
 gem "prefixed_ids"
 
