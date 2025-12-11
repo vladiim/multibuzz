@@ -252,6 +252,41 @@ When the account cannot accept events due to billing issues (exceeded quota, pay
 - `revenue` (Number) - Conversion value
 - `currency` (String) - Currency code (default: USD)
 - `properties` (Object) - Custom metadata
+- `user_id` (String) - Links conversion to an Identity (required for acquisition features)
+- `is_acquisition` (Boolean) - Mark this as the acquisition conversion for this user (default: false)
+- `inherit_acquisition` (Boolean) - Inherit attribution from user's acquisition conversion (default: false)
+
+**Recurring Revenue Attribution**:
+
+For SaaS/subscription businesses, use `is_acquisition` and `inherit_acquisition` to link recurring payments back to original customer acquisition:
+
+```json
+// Step 1: Mark signup as acquisition conversion
+{
+  "conversion": {
+    "user_id": "user_123",
+    "conversion_type": "signup",
+    "is_acquisition": true
+  }
+}
+
+// Step 2: Track payment with inherited attribution
+{
+  "conversion": {
+    "user_id": "user_123",
+    "conversion_type": "payment",
+    "revenue": 49.00,
+    "inherit_acquisition": true
+  }
+}
+```
+
+When `inherit_acquisition: true`:
+1. Finds the user's acquisition conversion (where `is_acquisition: true`)
+2. Copies attribution credits from that conversion
+3. Recalculates `revenue_credit` based on THIS conversion's revenue
+
+This enables LTV by acquisition channel, CAC payback analysis, and retention by source reporting.
 
 **Success Response** (201 Created):
 ```json
