@@ -153,7 +153,138 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
     assert_equal sdk_session_id, created_event.session.session_id
   end
 
+  # Cookie handling tests - visitor persistence
+
+  test "should set visitor cookie in response" do
+    payload = { events: [event_without_ids] }
+
+    post api_v1_events_path, params: payload, headers: auth_headers, as: :json
+
+    assert_response :accepted
+    assert response.headers["Set-Cookie"].present?
+    assert_match(/_mbuzz_vid=/, response.headers["Set-Cookie"])
+  end
+
+  test "should set session cookie in response" do
+    payload = { events: [event_without_ids] }
+
+    post api_v1_events_path, params: payload, headers: auth_headers, as: :json
+
+    assert_response :accepted
+    assert_match(/_mbuzz_sid=/, response.headers["Set-Cookie"])
+  end
+
+  test "should generate visitor_id when not provided and no cookie" do
+    payload = { events: [event_without_ids] }
+
+    post api_v1_events_path, params: payload, headers: auth_headers, as: :json
+
+    assert_response :accepted
+
+    created_event = account.events.unscoped.where(account: account).test_data.last
+    assert created_event.visitor.visitor_id.present?
+    assert_equal 64, created_event.visitor.visitor_id.length
+  end
+
+  test "should reuse visitor_id from cookie on subsequent requests" do
+    first_payload = { events: [event_without_ids] }
+
+    post api_v1_events_path, params: first_payload, headers: auth_headers, as: :json
+    assert_response :accepted
+
+    first_visitor_id = extract_cookie_value("_mbuzz_vid")
+    assert first_visitor_id.present?
+
+    second_payload = { events: [event_without_ids.merge("event_type" => "button_click")] }
+
+    post api_v1_events_path,
+      params: second_payload,
+      headers: auth_headers.merge("Cookie" => "_mbuzz_vid=#{first_visitor_id}"),
+      as: :json
+
+    assert_response :accepted
+
+    events = account.events.unscoped.where(account: account).test_data.order(created_at: :asc).last(2)
+    assert_equal events.first.visitor_id, events.last.visitor_id
+  end
+
+  test "should create different visitors for requests without cookies" do
+    # Simulate two different browser sessions by clearing cookies between requests
+    first_payload = { events: [event_without_ids] }
+    post api_v1_events_path, params: first_payload, headers: auth_headers, as: :json
+    assert_response :accepted
+
+    first_visitor_id = account.events.unscoped.where(account: account).test_data.last.visitor.visitor_id
+
+    # Clear the cookie jar to simulate a new browser/user
+    cookies.delete("_mbuzz_vid")
+    cookies.delete("_mbuzz_sid")
+
+    second_payload = { events: [event_without_ids.merge("event_type" => "button_click")] }
+    post api_v1_events_path, params: second_payload, headers: auth_headers, as: :json
+    assert_response :accepted
+
+    second_visitor_id = account.events.unscoped.where(account: account).test_data.last.visitor.visitor_id
+
+    refute_equal first_visitor_id, second_visitor_id,
+      "Requests without cookies should create different visitors"
+  end
+
+  test "should set HttpOnly flag on visitor cookie" do
+    payload = { events: [event_without_ids] }
+
+    post api_v1_events_path, params: payload, headers: auth_headers, as: :json
+
+    assert_match(/HttpOnly/i, response.headers["Set-Cookie"])
+  end
+
+  test "should set SameSite=Lax on visitor cookie" do
+    payload = { events: [event_without_ids] }
+
+    post api_v1_events_path, params: payload, headers: auth_headers, as: :json
+
+    assert_match(/SameSite=Lax/i, response.headers["Set-Cookie"])
+  end
+
+  test "should use visitor_id from payload even when cookie present" do
+    sdk_visitor_id = "sdk_explicit_visitor_#{SecureRandom.hex(16)}"
+    cookie_visitor_id = "cookie_visitor_#{SecureRandom.hex(16)}"
+
+    payload = {
+      events: [event_without_ids.merge("visitor_id" => sdk_visitor_id)]
+    }
+
+    post api_v1_events_path,
+      params: payload,
+      headers: auth_headers.merge("Cookie" => "_mbuzz_vid=#{cookie_visitor_id}"),
+      as: :json
+
+    assert_response :accepted
+
+    created_event = account.events.unscoped.where(account: account).test_data.last
+    assert_equal sdk_visitor_id, created_event.visitor.visitor_id,
+      "Explicit visitor_id in payload should take precedence over cookie"
+  end
+
   private
+
+  def extract_cookie_value(cookie_name)
+    cookie_header = response.headers["Set-Cookie"]
+    return nil unless cookie_header
+
+    match = cookie_header.match(/#{cookie_name}=([^;]+)/)
+    match ? match[1] : nil
+  end
+
+  def event_without_ids
+    {
+      "event_type" => "page_view",
+      "timestamp" => Time.current.utc.iso8601,
+      "properties" => {
+        "url" => "https://example.com/page"
+      }
+    }
+  end
 
   def json_response
     JSON.parse(response.body)
