@@ -40,6 +40,9 @@ Rails.application.routes.draw do
   post "contact", to: "contacts#create"
   get "contact/thank-you", to: "contacts#show", as: :contact_thank_you
 
+  # Feature waitlist
+  post "feature_waitlist", to: "feature_waitlist#create"
+
   # Signup
   get "signup", to: "signup#new", as: :signup
   post "signup", to: "signup#create"
@@ -82,6 +85,7 @@ Rails.application.routes.draw do
   namespace :admin do
     get "billing", to: "billing#show", as: :billing
     resources :accounts, only: [:show, :update]
+    resources :submissions, only: [:index, :show]
   end
 
   # Account settings

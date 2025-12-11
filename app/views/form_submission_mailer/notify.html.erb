@@ -1,0 +1,41 @@
+<h2>New <%= @submission.class.name.titleize.gsub("Submission", "").strip %> Submission</h2>
+
+<p><strong>Email:</strong> <%= @submission.email %></p>
+<p><strong>Submitted:</strong> <%= @submission.created_at&.strftime("%B %d, %Y at %I:%M %p") || "Just now" %></p>
+
+<% case @submission %>
+<% when ContactSubmission %>
+  <hr>
+  <p><strong>Name:</strong> <%= @submission.name %></p>
+  <p><strong>Subject:</strong> <%= @submission.subject %></p>
+  <p><strong>Message:</strong></p>
+  <blockquote><%= @submission.message %></blockquote>
+
+<% when WaitlistSubmission %>
+  <hr>
+  <p><strong>Role:</strong> <%= @submission.role %></p>
+  <p><strong>Framework:</strong> <%= @submission.framework %></p>
+  <% if @submission.framework_other.present? %>
+    <p><strong>Framework (Other):</strong> <%= @submission.framework_other %></p>
+  <% end %>
+
+<% when SdkWaitlistSubmission %>
+  <hr>
+  <p><strong>SDK:</strong> <%= @submission.sdk_name %> (<%= @submission.sdk_key %>)</p>
+  <% if @submission.account_id.present? %>
+    <p><strong>Account ID:</strong> <%= @submission.account_id %></p>
+  <% end %>
+
+<% when FeatureWaitlistSubmission %>
+  <hr>
+  <p><strong>Feature:</strong> <%= @submission.feature_name %> (<%= @submission.feature_key %>)</p>
+  <% if @submission.context.present? %>
+    <p><strong>Context:</strong> <%= @submission.context %></p>
+  <% end %>
+<% end %>
+
+<hr>
+<p style="color: #666; font-size: 12px;">
+  <strong>IP Address:</strong> <%= @submission.ip_address || "N/A" %><br>
+  <strong>User Agent:</strong> <%= @submission.user_agent || "N/A" %>
+</p>

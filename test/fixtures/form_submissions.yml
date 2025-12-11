@@ -52,3 +52,25 @@ contact_support:
   status: 0
   ip_address: 192.168.1.11
   user_agent: Mozilla/5.0
+
+feature_waitlist_data_export:
+  type: FeatureWaitlistSubmission
+  email: export@example.com
+  data:
+    feature_key: data_export
+    feature_name: Data Export
+    context: dashboard_export
+  status: 0
+  ip_address: 192.168.1.20
+  user_agent: Mozilla/5.0
+
+feature_waitlist_csv:
+  type: FeatureWaitlistSubmission
+  email: csv@example.com
+  data:
+    feature_key: csv_export
+    feature_name: CSV Export
+    context: null
+  status: 0
+  ip_address: 192.168.1.21
+  user_agent: Mozilla/5.0
