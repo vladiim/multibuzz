@@ -47,11 +47,15 @@ module AML
       end
 
       # Block dangerous methods inherited from Object
+      # Suppress warnings for intentional redefinition (sandbox security)
+      original_verbose = $VERBOSE
+      $VERBOSE = nil
       FORBIDDEN_METHODS.each do |method_name|
         define_method(method_name) do |*args, &block|
           raise ::AML::SecurityError.new("Method not allowed on touchpoint: #{method_name}")
         end
       end
+      $VERBOSE = original_verbose
     end
 
     class SafeHash

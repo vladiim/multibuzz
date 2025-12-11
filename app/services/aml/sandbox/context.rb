@@ -68,11 +68,15 @@ module AML
         method __method__
       ].freeze
 
+      # Suppress warnings for intentional redefinition of dangerous methods (sandbox security)
+      original_verbose = $VERBOSE
+      $VERBOSE = nil
       BLOCKED_METHODS.each do |method_name|
         define_method(method_name) do |*args, &block|
           raise ::AML::SecurityError.new("Method not allowed: #{method_name}")
         end
       end
+      $VERBOSE = original_verbose
 
       private
 
