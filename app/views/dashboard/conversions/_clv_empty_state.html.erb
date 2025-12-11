@@ -1,0 +1,65 @@
+<div data-testid="clv-empty-state" class="bg-white rounded-lg shadow p-8 text-center">
+  <div class="mx-auto w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
+    <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+    </svg>
+  </div>
+
+  <h3 class="text-lg font-semibold text-gray-900 mb-2">Enable Customer Lifetime Value Tracking</h3>
+  <p class="text-gray-600 mb-6 max-w-md mx-auto">
+    CLV analytics require identifying customers and marking acquisition events. Here's how to set it up:
+  </p>
+
+  <div class="text-left max-w-lg mx-auto space-y-6">
+    <!-- Step 1 -->
+    <div>
+      <div class="flex items-center gap-2 mb-2">
+        <span class="flex-shrink-0 w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-sm font-medium">1</span>
+        <span class="font-medium text-gray-900">Identify your users on signup/login</span>
+      </div>
+      <div class="ml-8 bg-gray-50 rounded p-3">
+        <code class="text-sm text-gray-700">
+          mbuzz.identify(user_id: "user_123", visitor_id: vid)
+        </code>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div>
+      <div class="flex items-center gap-2 mb-2">
+        <span class="flex-shrink-0 w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-sm font-medium">2</span>
+        <span class="font-medium text-gray-900">Mark signups as acquisition conversions</span>
+      </div>
+      <div class="ml-8 bg-gray-50 rounded p-3">
+        <pre class="text-sm text-gray-700 whitespace-pre-wrap">mbuzz.conversion(
+  user_id: "user_123",
+  conversion_type: "signup",
+  <code>is_acquisition: true</code>
+)</pre>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div>
+      <div class="flex items-center gap-2 mb-2">
+        <span class="flex-shrink-0 w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-sm font-medium">3</span>
+        <span class="font-medium text-gray-900">Track payments with inherited attribution</span>
+      </div>
+      <div class="ml-8 bg-gray-50 rounded p-3">
+        <pre class="text-sm text-gray-700 whitespace-pre-wrap">mbuzz.conversion(
+  user_id: "user_123",
+  conversion_type: "payment",
+  revenue: 49.00,
+  <code>inherit_acquisition: true</code>
+)</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-8">
+    <%= link_to "View Documentation", docs_path(page: "getting-started"), class: "inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium" %>
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+    </svg>
+  </div>
+</div>
