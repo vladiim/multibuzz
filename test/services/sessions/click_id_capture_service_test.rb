@@ -64,6 +64,53 @@ class Sessions::ClickIdCaptureServiceTest < ActiveSupport::TestCase
     assert_equal "snap123", result[:sclid]
   end
 
+  test "captures ScCid (mixed case snapchat) from url" do
+    result = capture(url: "https://example.com?ScCid=snap456")
+    assert_equal "snap456", result[:ScCid]
+  end
+
+  # === Google Ads Source Indicator ===
+
+  test "captures gclsrc from url" do
+    result = capture(url: "https://example.com?gclsrc=aw.ds")
+    assert_equal "aw.ds", result[:gclsrc]
+  end
+
+  # === Reddit Click ID ===
+
+  test "captures rdt_cid from url" do
+    result = capture(url: "https://example.com?rdt_cid=reddit123")
+    assert_equal "reddit123", result[:rdt_cid]
+  end
+
+  # === Quora Click ID ===
+
+  test "captures qclid from url" do
+    result = capture(url: "https://example.com?qclid=quora123")
+    assert_equal "quora123", result[:qclid]
+  end
+
+  # === Yahoo Click ID ===
+
+  test "captures vmcid from url" do
+    result = capture(url: "https://example.com?vmcid=yahoo123")
+    assert_equal "yahoo123", result[:vmcid]
+  end
+
+  # === Yandex Click ID ===
+
+  test "captures yclid from url" do
+    result = capture(url: "https://example.com?yclid=yandex123")
+    assert_equal "yandex123", result[:yclid]
+  end
+
+  # === Seznam Click ID ===
+
+  test "captures sznclid from url" do
+    result = capture(url: "https://example.com?sznclid=seznam123")
+    assert_equal "seznam123", result[:sznclid]
+  end
+
   # === Multiple Click IDs ===
 
   test "captures multiple click ids from same url" do
@@ -112,20 +159,54 @@ class Sessions::ClickIdCaptureServiceTest < ActiveSupport::TestCase
 
   test "infers source from click id" do
     assert_equal "google", infer_source(gclid: "abc")
+    assert_equal "google", infer_source(gclsrc: "aw.ds")
     assert_equal "facebook", infer_source(fbclid: "abc")
     assert_equal "microsoft", infer_source(msclkid: "abc")
+    assert_equal "reddit", infer_source(rdt_cid: "abc")
+    assert_equal "quora", infer_source(qclid: "abc")
+    assert_equal "yahoo", infer_source(vmcid: "abc")
+    assert_equal "yandex", infer_source(yclid: "abc")
+    assert_equal "seznam", infer_source(sznclid: "abc")
+    assert_equal "snapchat", infer_source(ScCid: "abc")
   end
 
   test "infers channel from click id" do
     assert_equal Channels::PAID_SEARCH, infer_channel(gclid: "abc")
+    assert_equal Channels::PAID_SEARCH, infer_channel(gclsrc: "aw.ds")
     assert_equal Channels::PAID_SOCIAL, infer_channel(fbclid: "abc")
     assert_equal Channels::DISPLAY, infer_channel(dclid: "abc")
+    assert_equal Channels::PAID_SOCIAL, infer_channel(rdt_cid: "abc")
+    assert_equal Channels::PAID_SOCIAL, infer_channel(qclid: "abc")
+    assert_equal Channels::PAID_SEARCH, infer_channel(vmcid: "abc")
+    assert_equal Channels::PAID_SEARCH, infer_channel(yclid: "abc")
+    assert_equal Channels::PAID_SEARCH, infer_channel(sznclid: "abc")
   end
 
   test "first click id wins for inference" do
     # gclid comes first in ALL array
     assert_equal "google", infer_source(fbclid: "fb", gclid: "g")
     assert_equal Channels::PAID_SEARCH, infer_channel(fbclid: "fb", gclid: "g")
+  end
+
+  # === Google Places Click ID (plcid in utm_term) ===
+
+  test "detects plcid pattern in utm_term" do
+    assert ClickIdentifiers.plcid?("plcid_8067905893793481977")
+    assert ClickIdentifiers.plcid?("plcid_123456")
+  end
+
+  test "rejects invalid plcid patterns" do
+    refute ClickIdentifiers.plcid?("plcid_")
+    refute ClickIdentifiers.plcid?("plcid_abc")
+    refute ClickIdentifiers.plcid?("some_plcid_123")
+    refute ClickIdentifiers.plcid?("keyword")
+    refute ClickIdentifiers.plcid?(nil)
+    refute ClickIdentifiers.plcid?("")
+  end
+
+  test "extracts plcid from utm_term" do
+    assert_equal "plcid_8067905893793481977", ClickIdentifiers.plcid_from_utm_term("plcid_8067905893793481977")
+    assert_nil ClickIdentifiers.plcid_from_utm_term("some_keyword")
   end
 
   private

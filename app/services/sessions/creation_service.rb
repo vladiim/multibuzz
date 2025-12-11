@@ -96,8 +96,9 @@ module Sessions
       {
         initial_utm: normalized_utm,
         initial_referrer: referrer,
-        channel: channel
-      }.merge(click_ids).compact
+        channel: channel,
+        click_ids: click_ids
+      }.compact
     end
 
     def raw_utm_data
