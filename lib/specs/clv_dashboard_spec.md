@@ -354,37 +354,40 @@ app/services/dashboard/queries/
 
 ## Implementation Checklist
 
-### Phase 1: Backend
+### Phase 1: Backend ✅
 
-- [ ] Create `Dashboard::ClvDataService`
-- [ ] Create `ClvTotalsQuery` - aggregate CLV metrics
-- [ ] Create `ClvByChannelQuery` - CLV grouped by acquisition channel
-- [ ] Create `SmilingCurveQuery` - avg revenue per customer by lifecycle month by channel
-- [ ] Create `CohortAnalysisQuery` - cohort x month matrix
-- [ ] Add `clv_mode` to filter params in `Dashboard::BaseController`
-- [ ] Add route `PATCH /dashboard/clv_mode` (follow `view_mode` pattern)
-- [ ] Write tests for all queries
+- [x] Create `Dashboard::ClvDataService`
+- [x] Create `ClvTotalsQuery` - aggregate CLV metrics
+- [x] Create `ClvByChannelQuery` - CLV grouped by acquisition channel
+- [x] Create `SmilingCurveQuery` - avg revenue per customer by lifecycle month by channel
+- [x] Create `CohortAnalysisQuery` - cohort x month matrix
+- [x] Add `clv_mode` helper methods in `ApplicationController`
+- [x] Add route `PATCH /dashboard/clv_mode` (follow `view_mode` pattern)
+- [x] Create `Dashboard::ClvModeController`
+- [x] Write tests for all queries (16 service tests)
+- [x] Write controller tests (15 tests)
 
-### Phase 2: Frontend
+### Phase 2: Frontend ✅
 
-- [ ] Add CLV/Transactions toggle switch to conversions header
-- [ ] Create `_clv_dashboard.html.erb` partial
-- [ ] Create `_clv_kpi_cards.html.erb` partial (6 metrics)
-- [ ] Update date range label to "Acquisition Period" in CLV mode
-- [ ] Add coverage indicator ("89% of conversions identified")
-- [ ] Create empty state partial with setup instructions
+- [x] Add CLV/Transactions toggle switch to conversions header
+- [x] Create `_clv_dashboard.html.erb` partial
+- [x] Create `_clv_kpi_cards.html.erb` partial (6 metrics)
+- [x] Update date range label to "Acquisition Period" in CLV mode
+- [x] Add coverage indicator ("X% of conversions identified")
+- [x] Create empty state partial with setup instructions
+- [x] Create `_cohort_table.html.erb` partial with heatmap coloring
 
-### Phase 3: Charts
+### Phase 3: Charts ✅
 
-- [ ] Create smiling curve chart (Highcharts multi-line)
-- [ ] Create cohort analysis heatmap (Highcharts heatmap or HTML table)
-- [ ] Update CLV by channel bar chart
-- [ ] Add appropriate tooltips and legends
+- [x] Create smiling curve chart container (Highcharts multi-line)
+- [x] Create cohort analysis heatmap (HTML table with color coding)
+- [x] Create CLV by channel bar chart container
+- [x] Add tooltips explaining each chart
 
 ### Phase 4: Polish
 
+- [x] Implement caching (5-minute TTL, same pattern as conversions)
 - [ ] Add loading states for CLV data
-- [ ] Implement caching (5-minute TTL, same pattern as conversions)
 - [ ] Add Turbo frame for CLV view switching
 - [ ] Test with real data scenarios
 - [ ] Update API documentation
