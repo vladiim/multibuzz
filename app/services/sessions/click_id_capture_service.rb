@@ -25,7 +25,7 @@ module Sessions
       private
 
       def first_click_id(click_ids)
-        ClickIdentifiers::ALL.find { |id| click_ids[id.to_sym].present? }
+        ClickIdentifiers::ALL.find { |id| click_ids[id.to_sym].present? || click_ids[id].present? }
       end
     end
 
