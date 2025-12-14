@@ -18,6 +18,9 @@
       <% if current_user %>
         <!-- Signed In: Account & User Dropdowns -->
         <div class="flex items-center gap-3">
+          <!-- Test/Live Mode Toggle -->
+          <%= render "layouts/view_mode_toggle" %>
+
           <!-- Account Dropdown -->
           <div data-controller="toggle" data-toggle-close-on-click-outside-value="true" class="relative">
             <button type="button" data-action="click->toggle#toggle" class="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:text-gray-900 rounded-md hover:bg-gray-50">
@@ -29,32 +32,51 @@
             <div data-toggle-target="content" class="hidden absolute right-0 mt-1 w-56 bg-white border border-gray-200 rounded-md shadow-lg z-20">
               <!-- Account List -->
               <div class="py-1">
-                <% current_user.active_accounts.each do |account| %>
-                  <% is_current = account.prefix_id == current_account.prefix_id %>
-                  <%= link_to dashboard_path(account_id: account.prefix_id),
-                    class: "flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 #{is_current ? 'bg-gray-50' : ''}" do %>
-                    <% if is_current %>
-                      <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <% current_user.active_memberships.each do |membership| %>
+                  <%= link_to dashboard_path(account_id: membership.account.prefix_id),
+                    class: "flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 #{current_account?(membership.account) ? 'bg-gray-50' : ''}" do %>
+                    <% if current_account?(membership.account) %>
+                      <svg class="w-4 h-4 text-indigo-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                       </svg>
                     <% else %>
-                      <span class="w-4"></span>
+                      <span class="w-4 flex-shrink-0"></span>
                     <% end %>
-                    <span class="<%= is_current ? 'font-medium text-gray-900' : '' %>"><%= account.name %></span>
+                    <span class="flex-1 truncate <%= current_account?(membership.account) ? 'font-medium text-gray-900' : '' %>"><%= membership.account.name %></span>
+                    <%= render_compact_role_badge(membership.role) %>
                   <% end %>
                 <% end %>
               </div>
 
+              <% if current_user.pending_invitations.any? %>
+                <div class="border-t border-gray-100"></div>
+
+                <!-- Pending Invitations -->
+                <div class="py-1">
+                  <div class="px-4 py-1 text-xs font-medium text-gray-500 uppercase tracking-wider">Pending Invitations</div>
+                  <% current_user.pending_invitations.each do |invitation| %>
+                    <%= button_to accept_pending_invitation_path(invitation.prefix_id),
+                      class: "w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-yellow-50" do %>
+                      <svg class="w-4 h-4 text-yellow-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      <span class="flex-1 truncate text-left"><%= invitation.account.name %></span>
+                      <span class="inline-flex items-center px-2 py-0.5 rounded text-xs bg-yellow-100 text-yellow-700">Accept</span>
+                    <% end %>
+                  <% end %>
+                </div>
+              <% end %>
+
               <div class="border-t border-gray-100"></div>
 
-              <!-- Create Account (disabled for now) -->
+              <!-- Create Account -->
               <div class="py-1">
-                <span class="flex items-center gap-2 px-4 py-2 text-sm text-gray-400 cursor-not-allowed">
+                <%= link_to new_account_path, class: "flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" do %>
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                   </svg>
                   Create Account
-                </span>
+                <% end %>
               </div>
 
               <div class="border-t border-gray-100"></div>
@@ -92,7 +114,7 @@
         <div class="flex items-center gap-6">
           <%= link_to "Docs", docs_path('getting-started'), class: "hidden md:block text-sm text-gray-600 hover:text-gray-900 transition-colors" %>
           <%= link_to "Login", login_path, class: "text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors" %>
-          <%= link_to "Get Started", new_waitlist_path, class: "text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-md transition-all" %>
+          <%= link_to "Get Started", signup_path, class: "text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-md transition-all" %>
         </div>
       <% end %>
     </div>

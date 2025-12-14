@@ -6,6 +6,7 @@ module Conversion::Relationships
   included do
     belongs_to :account
     belongs_to :visitor
+    belongs_to :identity, optional: true
     # No foreign key due to TimescaleDB composite PK
     # belongs_to :session
     # belongs_to :event

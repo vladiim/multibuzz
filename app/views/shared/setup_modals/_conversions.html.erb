@@ -1,0 +1,76 @@
+<div id="setup-conversions-modal" class="hidden fixed inset-0 z-50" data-controller="modal">
+  <div class="fixed inset-0 bg-black bg-opacity-25" data-action="click->modal#close"></div>
+  <div class="fixed inset-0 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white">
+        <h3 class="text-lg font-medium text-gray-900">Track conversions</h3>
+        <button type="button" data-action="click->modal#close" class="text-gray-400 hover:text-gray-500">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="px-6 py-4 space-y-4">
+        <p class="text-sm text-gray-600">
+          Conversions are the key moments that matter to your business - signups, purchases, subscriptions.
+          When you track a conversion, mbuzz automatically attributes it to the marketing channels that influenced it.
+        </p>
+
+        <div class="bg-gray-50 rounded-lg p-4">
+          <h4 class="text-sm font-medium text-gray-900 mb-3">Example: Track a purchase conversion</h4>
+          <%= code_tabs({
+            ruby: {
+              label: 'Ruby',
+              syntax: 'ruby',
+              code: <<~CODE
+                # Record purchase conversion with revenue
+                Mbuzz.conversion("purchase",
+                  revenue: order.total,
+                  order_id: order.id,
+                  product: order.product_name
+                )
+              CODE
+            },
+            curl: {
+              label: 'REST API',
+              syntax: 'bash',
+              code: <<~CODE
+                curl -X POST https://mbuzz.co/api/v1/conversions \\
+                  -H "Authorization: Bearer $MBUZZ_API_KEY" \\
+                  -H "Content-Type: application/json" \\
+                  -d '{
+                    "conversion": {
+                      "visitor_id": "abc123...",
+                      "conversion_type": "purchase",
+                      "revenue": 99.00,
+                      "properties": {
+                        "order_id": "ord_abc123"
+                      }
+                    }
+                  }'
+              CODE
+            }
+          }, default: :ruby) %>
+        </div>
+
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h4 class="text-sm font-medium text-blue-900 mb-1">Common conversion types</h4>
+          <ul class="text-sm text-blue-700 list-disc list-inside space-y-1">
+            <li><strong>signup</strong> - User creates an account</li>
+            <li><strong>purchase</strong> - User completes a purchase</li>
+            <li><strong>subscription</strong> - User subscribes to a plan</li>
+            <li><strong>lead</strong> - User submits a contact form</li>
+          </ul>
+        </div>
+      </div>
+      <div class="px-6 py-4 border-t border-gray-200 flex justify-between items-center">
+        <%= link_to "View full documentation", docs_path(page: "getting-started"),
+          class: "text-sm text-indigo-600 hover:text-indigo-900" %>
+        <button type="button" data-action="click->modal#close"
+          class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md">
+          Got it
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

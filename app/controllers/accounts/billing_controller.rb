@@ -1,5 +1,7 @@
 module Accounts
   class BillingController < BaseController
+    include RequireAdmin
+
     def show
       @plans = Plan.active.paid.sorted
     end

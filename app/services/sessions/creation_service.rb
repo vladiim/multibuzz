@@ -94,18 +94,27 @@ module Sessions
 
     def session_attributes
       {
-        initial_utm: utm_data,
+        initial_utm: normalized_utm,
         initial_referrer: referrer,
-        channel: channel
+        channel: channel,
+        click_ids: click_ids
       }.compact
     end
 
-    def utm_data
-      @utm_data ||= Sessions::UtmCaptureService.new(url).call
+    def raw_utm_data
+      @raw_utm_data ||= Sessions::UtmCaptureService.new(url).call
+    end
+
+    def normalized_utm
+      @normalized_utm ||= Sessions::UtmNormalizationService.new(raw_utm_data).call
+    end
+
+    def click_ids
+      @click_ids ||= Sessions::ClickIdCaptureService.new(url: url).call
     end
 
     def channel
-      @channel ||= Sessions::ChannelAttributionService.new(utm_data, referrer).call
+      @channel ||= Sessions::ChannelAttributionService.new(normalized_utm, referrer, click_ids).call
     end
   end
 end

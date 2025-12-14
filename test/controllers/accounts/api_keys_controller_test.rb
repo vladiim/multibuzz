@@ -40,6 +40,48 @@ class Accounts::ApiKeysControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to login_path
   end
 
+  # --- Authorization ---
+
+  test "member cannot access index" do
+    sign_in_as_member
+
+    get account_api_keys_path
+
+    assert_response :forbidden
+  end
+
+  test "member cannot create api key" do
+    sign_in_as_member
+
+    post account_api_keys_path, params: { api_key: { environment: "test" } }
+
+    assert_response :forbidden
+  end
+
+  test "member cannot destroy api key" do
+    sign_in_as_member
+
+    delete account_api_key_path(api_key)
+
+    assert_response :forbidden
+  end
+
+  test "admin can access index" do
+    sign_in_as_admin
+
+    get account_api_keys_path
+
+    assert_response :success
+  end
+
+  test "admin can create api key" do
+    sign_in_as_admin
+
+    assert_difference "ApiKey.count", 1 do
+      post account_api_keys_path, params: { api_key: { environment: "test" } }
+    end
+  end
+
   private
 
   def sign_in
@@ -56,5 +98,21 @@ class Accounts::ApiKeysControllerTest < ActionDispatch::IntegrationTest
 
   def api_key
     @api_key ||= api_keys(:one)
+  end
+
+  def sign_in_as_member
+    post login_path, params: { email: member_user.email, password: "password123" }
+  end
+
+  def sign_in_as_admin
+    post login_path, params: { email: admin_user.email, password: "password123" }
+  end
+
+  def member_user
+    @member_user ||= users(:four)
+  end
+
+  def admin_user
+    @admin_user ||= users(:three)
   end
 end

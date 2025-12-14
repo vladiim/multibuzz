@@ -9,7 +9,6 @@ module AttributionModel::AlgorithmMapping
     linear: Attribution::Algorithms::Linear,
     time_decay: Attribution::Algorithms::TimeDecay,
     u_shaped: Attribution::Algorithms::UShaped,
-    w_shaped: Attribution::Algorithms::WShaped,
     participation: Attribution::Algorithms::Participation
   }.freeze
 

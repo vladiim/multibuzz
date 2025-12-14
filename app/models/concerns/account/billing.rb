@@ -195,4 +195,68 @@ module Account::Billing
 
     ((free_until - Time.current) / 1.day).ceil
   end
+
+  # --- Attribution Model Limits ---
+
+  def custom_model_limit
+    plan_slug = plan&.slug || ::Billing::PLAN_FREE
+    ::Billing::CUSTOM_MODEL_LIMITS.fetch(plan_slug, 0)
+  end
+
+  def custom_models_count
+    attribution_models.custom.count
+  end
+
+  def can_create_custom_model?
+    custom_models_count < custom_model_limit
+  end
+
+  def can_edit_full_aml?
+    plan_slug = plan&.slug || ::Billing::PLAN_FREE
+    ::Billing::PAID_PLANS.include?(plan_slug)
+  end
+
+  # --- Attribution Rerun Limits ---
+
+  def rerun_limit
+    plan_slug = plan&.slug || ::Billing::PLAN_FREE
+    ::Billing::RERUN_LIMITS.fetch(plan_slug, ::Billing::RERUN_LIMITS[::Billing::PLAN_FREE])
+  end
+
+  def reruns_remaining
+    [rerun_limit - reruns_used_this_period, 0].max
+  end
+
+  def rerun_overage_cents
+    plan_slug = plan&.slug || ::Billing::PLAN_FREE
+    ::Billing::RERUN_OVERAGE_CENTS.fetch(plan_slug, 0)
+  end
+
+  def rerun_overage_block_size
+    plan_slug = plan&.slug || ::Billing::PLAN_FREE
+    ::Billing::OVERAGE_BLOCK_SIZES.fetch(plan_slug, ::Billing::STARTER_OVERAGE_BLOCK_SIZE)
+  end
+
+  def can_rerun_without_overage?(count)
+    count <= reruns_remaining
+  end
+
+  def calculate_rerun_overage(count)
+    return { covered: count, overage: 0, blocks: 0, cost_cents: 0, block_size: rerun_overage_block_size } if count <= reruns_remaining
+
+    covered = reruns_remaining
+    overage = count - covered
+    blocks = (overage.to_f / rerun_overage_block_size).ceil
+    cost_cents = blocks * rerun_overage_cents
+
+    { covered: covered, overage: overage, blocks: blocks, cost_cents: cost_cents, block_size: rerun_overage_block_size }
+  end
+
+  def increment_reruns_used!(count)
+    increment!(:reruns_used_this_period, count)
+  end
+
+  def reset_reruns_used!
+    update!(reruns_used_this_period: 0)
+  end
 end

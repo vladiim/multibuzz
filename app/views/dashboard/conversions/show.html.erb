@@ -1,8 +1,13 @@
 <%= turbo_frame_tag "conversions_#{current_account.prefix_id}" do %>
   <div class="dashboard-section">
-    <% if @comparison_mode %>
+    <% if @clv_mode %>
+      <!-- CLV Mode -->
+      <div data-testid="clv-dashboard">
+        <%= render "dashboard/conversions/clv_dashboard" %>
+      </div>
+    <% elsif @comparison_mode %>
       <!-- Side-by-side comparison mode -->
-      <div class="grid grid-cols-2 gap-6">
+      <div data-testid="transactions-dashboard" class="grid grid-cols-2 gap-6">
         <% @results.each_with_index do |item, index| %>
           <% if item[:result][:success] %>
             <%= render "dashboard/conversions/dashboard_panel",
@@ -19,16 +24,18 @@
       </div>
     <% else %>
       <!-- Single model view -->
-      <% item = @results.first %>
-      <% if item[:result][:success] %>
-        <%= render "dashboard/conversions/full_dashboard",
-          result: item[:result],
-          model: item[:model] %>
-      <% else %>
-        <div class="bg-red-50 p-4 rounded-lg">
-          <p class="text-red-700">Error loading conversions data: <%= item[:result][:errors].join(', ') %></p>
-        </div>
-      <% end %>
+      <div data-testid="transactions-dashboard">
+        <% item = @results.first %>
+        <% if item[:result][:success] %>
+          <%= render "dashboard/conversions/full_dashboard",
+            result: item[:result],
+            model: item[:model] %>
+        <% else %>
+          <div class="bg-red-50 p-4 rounded-lg">
+            <p class="text-red-700">Error loading conversions data: <%= item[:result][:errors].join(', ') %></p>
+          </div>
+        <% end %>
+      </div>
     <% end %>
   </div>
 <% end %>

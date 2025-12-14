@@ -232,7 +232,117 @@ module Conversions
       assert_equal "USD", result[:conversion].currency
     end
 
+    # ==========================================
+    # Acquisition attribution tests
+    # ==========================================
+
+    test "links conversion to identity when user_id provided" do
+      result = build_service(
+        event_id: event.prefix_id,
+        user_id: identity.external_id
+      ).call
+
+      assert result[:success]
+      assert_equal identity.id, result[:conversion].identity_id
+    end
+
+    test "conversion has nil identity_id when user_id not provided" do
+      result = build_service(event_id: event.prefix_id).call
+
+      assert result[:success]
+      assert_nil result[:conversion].identity_id
+    end
+
+    test "conversion has nil identity_id when user_id does not exist" do
+      result = build_service(
+        event_id: event.prefix_id,
+        user_id: "nonexistent_user_id"
+      ).call
+
+      assert result[:success]
+      assert_nil result[:conversion].identity_id
+    end
+
+    test "conversion has nil identity_id when user_id belongs to different account" do
+      other_identity = identities(:other_account_identity)
+      result = build_service(
+        event_id: event.prefix_id,
+        user_id: other_identity.external_id
+      ).call
+
+      assert result[:success]
+      assert_nil result[:conversion].identity_id
+    end
+
+    test "sets is_acquisition flag when provided" do
+      result = build_service(
+        event_id: event.prefix_id,
+        user_id: identity.external_id,
+        is_acquisition: true
+      ).call
+
+      assert result[:success]
+      assert_equal true, result[:conversion].is_acquisition
+    end
+
+    test "is_acquisition defaults to false" do
+      result = build_service(
+        event_id: event.prefix_id,
+        user_id: identity.external_id
+      ).call
+
+      assert result[:success]
+      assert_equal false, result[:conversion].is_acquisition
+    end
+
+    test "sets inherit_acquisition transient attribute when provided" do
+      result = build_service(
+        event_id: event.prefix_id,
+        user_id: identity.external_id,
+        inherit_acquisition: true
+      ).call
+
+      assert result[:success]
+      assert_equal true, result[:conversion].inherit_acquisition?
+    end
+
+    test "inherit_acquisition defaults to false" do
+      result = build_service(
+        event_id: event.prefix_id,
+        user_id: identity.external_id
+      ).call
+
+      assert result[:success]
+      assert_equal false, result[:conversion].inherit_acquisition?
+    end
+
+    test "returns error when is_acquisition true but no valid user_id" do
+      result = build_service(
+        event_id: event.prefix_id,
+        is_acquisition: true
+      ).call
+
+      assert_not result[:success]
+      assert_includes result[:errors].join.downcase, "identity"
+    end
+
+    test "creates conversion with both is_acquisition and identity" do
+      result = build_service(
+        event_id: event.prefix_id,
+        user_id: identity.external_id,
+        is_acquisition: true
+      ).call
+
+      assert result[:success]
+      assert_equal identity.id, result[:conversion].identity_id
+      assert_equal true, result[:conversion].is_acquisition
+    end
+
     private
+
+    def identity
+      @identity ||= identities(:one)
+    end
 
     def build_service(
       event_id: nil,
@@ -240,7 +350,10 @@ module Conversions
       conversion_type: "signup",
       revenue: nil,
       currency: nil,
-      properties: {}
+      properties: {},
+      user_id: nil,
+      is_acquisition: nil,
+      inherit_acquisition: nil
     )
       Conversions::TrackingService.new(
         account,
@@ -250,8 +363,11 @@ module Conversions
           conversion_type: conversion_type,
           revenue: revenue,
           currency: currency,
-          properties: properties
-        }
+          properties: properties,
+          user_id: user_id,
+          is_acquisition: is_acquisition,
+          inherit_acquisition: inherit_acquisition
+        }.compact
       )
     end
 

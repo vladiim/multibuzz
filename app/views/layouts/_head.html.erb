@@ -8,5 +8,9 @@
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/icon.png">
 
-<%= stylesheet_link_tag "tailwind", "inter-font", "data-turbo-track": "reload" %>
+<%= stylesheet_link_tag "tailwind", "inter-font",
+  "components/cards", "components/features", "components/icons", "components/code", "components/leaderboard",
+  "utilities/animations", "utilities/backgrounds",
+  "pages/home",
+  "data-turbo-track": "reload" %>
 <%= javascript_importmap_tags %>

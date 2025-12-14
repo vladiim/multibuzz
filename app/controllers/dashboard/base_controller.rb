@@ -1,10 +1,7 @@
 module Dashboard
   class BaseController < ApplicationController
     before_action :require_login
-    helper_method :view_mode, :test_mode?
 
-    VALID_VIEW_MODES = %w[production test].freeze
-    DEFAULT_VIEW_MODE = "production"
     PRESET_DATE_RANGES = %w[7d 30d 90d].freeze
     DEFAULT_DATE_RANGE = "30d"
     VALID_METRICS = %w[conversions revenue aov avg_days avg_channels avg_visits].freeze
@@ -74,7 +71,10 @@ module Dashboard
         channels: channels_param,
         journey_position: journey_position_param,
         metric: metric_param,
-        funnel: funnel_param
+        funnel: funnel_param,
+        conversion_filters: conversion_filters_param,
+        breakdown_dimension: breakdown_dimension_param,
+        test_mode: test_mode?
       }
     end
 
@@ -82,13 +82,43 @@ module Dashboard
       params[:funnel].presence
     end
 
-    # View mode toggle (like Stripe's test/live mode)
-    def view_mode
-      session[:view_mode].presence_in(VALID_VIEW_MODES) || DEFAULT_VIEW_MODE
+    def conversion_filters_param
+      @conversion_filters_param ||= parse_conversion_filters
     end
 
-    def test_mode?
-      view_mode == "test"
+    def parse_conversion_filters
+      return [] unless params[:conversion_filters].present?
+
+      raw_filters.map do |filter|
+        {
+          field: filter[:field].to_s,
+          operator: filter[:operator].to_s,
+          values: Array(filter[:values]).map(&:to_s)
+        }
+      end.select { |f| f[:field].present? && f[:values].any? }
+    end
+
+    def raw_filters
+      conversion_filters
+        .then { |cf| normalize_conversion_filters(cf) }
+        .select { |f| f.respond_to?(:to_h) && !f.is_a?(String) }
+    end
+
+    def conversion_filters
+      params[:conversion_filters]
+    end
+
+    def normalize_conversion_filters(filters)
+      return [] if filters.blank?
+      return filters.to_unsafe_h.values if filters.is_a?(ActionController::Parameters)
+      return filters.values if filters.is_a?(Hash)
+      return filters if filters.is_a?(Array)
+
+      []
+    end
+
+    def breakdown_dimension_param
+      params[:breakdown_dimension].presence || "conversion_type"
     end
 
     def environment_scope

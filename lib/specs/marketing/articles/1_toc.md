@@ -220,13 +220,11 @@ Soft pitch / demo offer
 | 2.3 | **Linear Attribution: Giving Equal Credit to Every Touchpoint** | "linear attribution model" | P1 | Planned |
 | 2.4 | **Time-Decay Attribution: Weighting Recency in the Journey** | "time decay attribution" | P1 | Planned |
 | 2.5 | **Position-Based (U-Shaped) Attribution: First and Last Get More** | "position based attribution" | P1 | Planned |
-| 2.6 | **W-Shaped Attribution: Adding the Lead Creation Moment** | "w-shaped attribution" | P2 | Planned |
-| 2.7 | **Full-Path Attribution: Every Stage Gets Credit** | "full path attribution" | P2 | Planned |
-| 2.8 | **Data-Driven Attribution: How Machine Learning Assigns Credit** | "data driven attribution" | P1 | Planned |
-| 2.9 | **Custom Attribution Models: When Off-the-Shelf Doesn't Fit** | "custom attribution model" | P2 | Planned |
-| 2.10 | **How to Choose the Right Attribution Model for Your Business** | "choose attribution model" | P0 | Planned |
-| 2.11 | **Comparing Attribution Models: A Side-by-Side Analysis** | "attribution model comparison" | P1 | Planned |
-| 2.12 | **Why GA4 Removed Most Attribution Models (And What to Do)** | "GA4 attribution models removed" | P0 | Planned |
+| 2.6 | **Data-Driven Attribution: How Machine Learning Assigns Credit** | "data driven attribution" | P1 | Planned |
+| 2.7 | **Custom Attribution Models: When Off-the-Shelf Doesn't Fit** | "custom attribution model" | P2 | Planned |
+| 2.8 | **How to Choose the Right Attribution Model for Your Business** | "choose attribution model" | P0 | Planned |
+| 2.9 | **Comparing Attribution Models: A Side-by-Side Analysis** | "attribution model comparison" | P1 | Planned |
+| 2.10 | **Why GA4 Removed Most Attribution Models (And What to Do)** | "GA4 attribution models removed" | P0 | Planned |
 
 **Multibuzz POV for Category 2:**
 - No single model is "correct" — use multiple and compare
@@ -412,8 +410,7 @@ Soft pitch / demo offer
 | 10.7 | Linear Attribution | "linear attribution definition" | P2 |
 | 10.8 | Time Decay | "time decay attribution definition" | P2 |
 | 10.9 | U-Shaped / Position-Based | "position based attribution definition" | P2 |
-| 10.10 | W-Shaped | "w-shaped attribution definition" | P2 |
-| 10.11 | Cross-Device Tracking | "cross device tracking definition" | P1 |
+| 10.10 | Cross-Device Tracking | "cross device tracking definition" | P1 |
 | 10.12 | Identity Resolution | "identity resolution marketing" | P2 |
 | 10.13 | Session | "session analytics definition" | P2 |
 | 10.14 | Visitor vs User | "visitor vs user analytics" | P2 |
