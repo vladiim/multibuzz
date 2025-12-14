@@ -78,6 +78,30 @@ class ReferrerSources::LookupServiceTest < ActiveSupport::TestCase
     assert_nil result
   end
 
+  test "returns nil for domains with invalid TLDs" do
+    # PublicSuffix may raise errors for invalid TLDs
+    # Service should return nil gracefully, not an error hash
+    result = service("https://test.invalidtld/page").call
+
+    # Should be nil or a valid result, never an error hash like {success: false, ...}
+    assert(result.nil? || result.is_a?(Hash) && result.key?(:source_name),
+      "Expected nil or valid result hash, got: #{result.inspect}")
+  end
+
+  test "never returns ApplicationService error hash format" do
+    # LookupService is a utility class that should return nil on failure
+    # not {success: false, errors: [...]} like ApplicationService
+    result = service("https://unknown-domain-xyz.com/page").call
+
+    # If result is a hash, it should have :source_name (valid result), not :success/:errors
+    if result.is_a?(Hash)
+      assert result.key?(:source_name), "Result hash should have :source_name, not ApplicationService format"
+      assert_not result.key?(:success), "Should not return ApplicationService error format"
+    else
+      assert_nil result
+    end
+  end
+
   test "handles subdomain lookups" do
     result = service("https://m.facebook.com/post").call
 
