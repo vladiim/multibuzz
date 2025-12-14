@@ -25,6 +25,7 @@ module SetCurrentAttributes
   def set_current_attributes
     Current.user = find_current_user
     Current.account = find_current_account
+    update_last_accessed_at
   end
 
   def find_current_user
@@ -57,5 +58,11 @@ module SetCurrentAttributes
     return if logged_in?
 
     redirect_to login_path, alert: "Please log in to continue"
+  end
+
+  def update_last_accessed_at
+    return unless Current.user && Current.account
+
+    Current.user.membership_for(Current.account)&.touch(:last_accessed_at)
   end
 end

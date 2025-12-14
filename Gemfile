@@ -33,12 +33,18 @@ gem "stripe"
 # Postmark for transactional emails [https://github.com/ActiveCampaign/postmark-rails]
 gem "postmark-rails"
 
+# Mbuzz SDK for dogfooding [https://rubygems.org/gems/mbuzz]
+gem "mbuzz"
+
 # Use prefixed IDs for customer-facing identifiers [https://github.com/excid3/prefixed_ids]
 gem "prefixed_ids"
 
 # Markdown rendering for documentation [https://github.com/vmg/redcarpet]
 gem "redcarpet"
 gem "rouge"
+
+# Ruby AST parser for AML DSL validation [https://github.com/whitequark/parser]
+gem "parser"
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]

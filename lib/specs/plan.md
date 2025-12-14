@@ -1,37 +1,32 @@
 # Product
 
-* AST for attribution models
-  - Create new / edit (up to 20 models applied)
-  - New / updates can back calculate at a fixed one-time cost (10k free then $x per 10k)
-* Invite users
+* Data wrong
+[] channel classification
+[] visit count / channel count
+
+* Dogfood - tracking via mbuzz
+    * Dashboard for people moving through: sign up, test data, live data, customer
 * Live (sign up, ruby gems)
-* export data (csv - simple + api - with property queries)
-* Filter dash funnel by dimension (properties)
-* Cancel conversion (via id)
-* are complex models like w-shaped ok out the box? do they need more? e.g. conversion_stage: [0, 1,2 etc]
+* All contact forms - emailed to me
+* Add USD to pricing
 * Rollout SDKs: python, php, shopify, magento etc
+    1. Launch everywhere (Hacker News, Product Hunt, Reddit, X, LinkedIn, YouTube etc.). Spend a week giving your MVP its best shot.
+    2. (if #1 didn't take off) — Rebrand. New name, new logo, new design, new landing page, new headline. Same product. Repeat #1
+    3. (if #2 didn't take off) — Target new market segment experiencing the same problem your product solves. Repeat #1. Repeat #2.
+* export data (csv - simple + api - with property queries)
+* Cancel conversion (via id)
+* For complex B2B funnels, use multiple conversion types (MQL, SQL, Opportunity, etc.)
 * CLV (doesn't work the same as new customer acquisition - think it through)
 * Other channels: phone, email
 * Push conversions to server-side ads (with rules on attribution)
 * integrate with ads to get payback period
 * change bigger defaults e.g. customer storage for 2 years etc
 
-## Homepage Update (E1S4)
-
-See `lib/specs/homepage_visualization_spec.md`
-
-- [ ] SDK showcase section (live SDKs + coming soon badges)
-- [ ] Attribution flow animation (events → touchpoints → conversion → credit distribution)
-- [ ] Dashboard preview/screenshots
-- [ ] Social proof section (testimonials, logos when available)
-- [ ] Clear CTA flow: View Demo → Try Free → Get Started
-
 ***
 
-# Mappings
+## Notes
 
-*  utm_term: "plcid_* -> Google Places
-* Capture all ad pixels / process if poss
+https://app.burnerapp.com -> for phone number (607) 236-8693
 
 ***
 
@@ -52,6 +47,7 @@ See `lib/specs/homepage_visualization_spec.md`
 * Product Hunt (once several SDKs are live)
 *  Reddit value bombs (Post in r/marketing, r/bigquery: "My no-frills MTA setup—free AST template." Story + screenshots, link in comments post-engagement. Reply to all.)
 * Get publised in https://www.mi-3.com.au/ or international versions
+* Sign up email series - introing (send based on engagement - don't do if customer is paid with data)
 
 ***
 
@@ -152,7 +148,7 @@ Create `/glossary` with SEO-optimized definitions:
 - First touch / Last touch
 - Linear attribution
 - Time decay
-- U-shaped / W-shaped
+- U-shaped
 - Cross-device tracking
 - Identity resolution
 - Session

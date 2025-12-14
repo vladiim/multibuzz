@@ -65,7 +65,85 @@ class ConversionTest < ActiveSupport::TestCase
     assert_equal [1, 2, 3], conversion.journey_session_ids
   end
 
+  # ==========================================
+  # Acquisition attribution tests
+  # ==========================================
+
+  test "should optionally belong to identity" do
+    assert_respond_to conversion, :identity
+    assert_nil conversion.identity
+
+    conversion.identity = identity
+    assert conversion.valid?
+    assert_equal identity, conversion.identity
+  end
+
+  test "should have is_acquisition boolean defaulting to false" do
+    new_conversion = Conversion.new(
+      account: account,
+      visitor: visitor,
+      conversion_type: "signup",
+      converted_at: Time.current
+    )
+    assert_equal false, new_conversion.is_acquisition
+  end
+
+  test "inherit_acquisition? returns false by default" do
+    assert_equal false, conversion.inherit_acquisition?
+  end
+
+  test "inherit_acquisition? returns true when set to true" do
+    conversion.inherit_acquisition = true
+    assert_equal true, conversion.inherit_acquisition?
+  end
+
+  test "inherit_acquisition? returns true when set to string true" do
+    conversion.inherit_acquisition = "true"
+    assert_equal true, conversion.inherit_acquisition?
+  end
+
+  test "inherit_acquisition? returns false when set to false" do
+    conversion.inherit_acquisition = false
+    assert_equal false, conversion.inherit_acquisition?
+  end
+
+  test "inherit_acquisition? returns false when set to nil" do
+    conversion.inherit_acquisition = nil
+    assert_equal false, conversion.inherit_acquisition?
+  end
+
+  test "is_acquisition requires identity when true" do
+    conversion.is_acquisition = true
+    conversion.identity = nil
+    assert_not conversion.valid?
+    assert_includes conversion.errors[:identity], "is required when marking as acquisition"
+  end
+
+  test "is_acquisition allowed without identity when false" do
+    conversion.is_acquisition = false
+    conversion.identity = nil
+    assert conversion.valid?
+  end
+
+  test "is_acquisition valid with identity when true" do
+    conversion.is_acquisition = true
+    conversion.identity = identity
+    assert conversion.valid?
+  end
+
   private
+
+  def identity
+    @identity ||= identities(:one)
+  end
+
+  def account
+    @account ||= accounts(:one)
+  end
+
+  def visitor
+    @visitor ||= visitors(:one)
+  end
 
   def conversion
     @conversion ||= conversions(:signup)

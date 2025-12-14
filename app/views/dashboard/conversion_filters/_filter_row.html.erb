@@ -1,0 +1,37 @@
+<%
+  filter ||= {}
+  selected_field = filter[:field]
+  selected_operator = filter[:operator] || "equals"
+  selected_value = filter[:values]&.first || ""
+%>
+<div data-filter-row class="flex items-center gap-2">
+  <select name="conversion_filters[<%= index %>][field]"
+    class="w-36 px-2 py-1.5 text-sm border border-gray-300 rounded bg-white">
+    <option value="">Field...</option>
+    <% dimensions.each do |dim| %>
+      <option value="<%= dim[:key] %>" <%= "selected" if selected_field == dim[:key] %>><%= dim[:label] %></option>
+    <% end %>
+  </select>
+
+  <select name="conversion_filters[<%= index %>][operator]"
+    class="w-24 px-2 py-1.5 text-sm border border-gray-300 rounded bg-white">
+    <option value="equals" <%= "selected" if selected_operator == "equals" %>>equals</option>
+    <option value="not_equals" <%= "selected" if selected_operator == "not_equals" %>>not equals</option>
+    <option value="contains" <%= "selected" if selected_operator == "contains" %>>contains</option>
+    <option value="greater_than" <%= "selected" if selected_operator == "greater_than" %>>greater than</option>
+    <option value="less_than" <%= "selected" if selected_operator == "less_than" %>>less than</option>
+  </select>
+
+  <input type="text"
+    name="conversion_filters[<%= index %>][values][]"
+    value="<%= selected_value %>"
+    placeholder="Value"
+    class="flex-1 min-w-24 px-2 py-1.5 text-sm border border-gray-300 rounded">
+
+  <button type="button" data-action="click->conversion-filters#remove"
+    class="p-1 text-gray-400 hover:text-red-600">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  </button>
+</div>

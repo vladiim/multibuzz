@@ -45,7 +45,7 @@ module Conversions
     end
 
     def calculator_credits(model)
-      CrossDeviceCalculator.new(
+      Attribution::CrossDeviceCalculator.new(
         conversion: conversion,
         identity: identity,
         attribution_model: model

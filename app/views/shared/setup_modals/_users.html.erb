@@ -1,0 +1,76 @@
+<div id="setup-users-modal" class="hidden fixed inset-0 z-50" data-controller="modal">
+  <div class="fixed inset-0 bg-black bg-opacity-25" data-action="click->modal#close"></div>
+  <div class="fixed inset-0 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white">
+        <h3 class="text-lg font-medium text-gray-900">Identify users</h3>
+        <button type="button" data-action="click->modal#close" class="text-gray-400 hover:text-gray-500">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="px-6 py-4 space-y-4">
+        <p class="text-sm text-gray-600">
+          Link anonymous visitors to known users when they log in or sign up. This enables cross-device attribution
+          and helps you understand the full customer journey from first touch to conversion.
+        </p>
+
+        <div class="bg-gray-50 rounded-lg p-4">
+          <h4 class="text-sm font-medium text-gray-900 mb-3">Example: Identify a user after login</h4>
+          <%= code_tabs({
+            ruby: {
+              label: 'Ruby',
+              syntax: 'ruby',
+              code: <<~CODE
+                # Call on signup or login - links visitor automatically
+                Mbuzz.identify(current_user.id,
+                  traits: {
+                    email: current_user.email,
+                    name: current_user.name,
+                    plan: current_user.plan
+                  }
+                )
+              CODE
+            },
+            curl: {
+              label: 'REST API',
+              syntax: 'bash',
+              code: <<~CODE
+                curl -X POST https://mbuzz.co/api/v1/identify \\
+                  -H "Authorization: Bearer $MBUZZ_API_KEY" \\
+                  -H "Content-Type: application/json" \\
+                  -d '{
+                    "user_id": "user_123",
+                    "visitor_id": "abc123...",
+                    "traits": {
+                      "email": "jane@example.com",
+                      "name": "Jane Doe",
+                      "plan": "pro"
+                    }
+                  }'
+              CODE
+            }
+          }, default: :ruby) %>
+        </div>
+
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h4 class="text-sm font-medium text-blue-900 mb-1">When to call identify</h4>
+          <ul class="text-sm text-blue-700 list-disc list-inside space-y-1">
+            <li>After a user logs in</li>
+            <li>After a user signs up</li>
+            <li>When user traits change (plan upgrade, profile update)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="px-6 py-4 border-t border-gray-200 flex justify-between items-center">
+        <%= link_to "View full documentation", docs_path(page: "getting-started"),
+          class: "text-sm text-indigo-600 hover:text-indigo-900" %>
+        <button type="button" data-action="click->modal#close"
+          class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md">
+          Got it
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

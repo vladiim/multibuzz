@@ -1,0 +1,196 @@
+<div class="min-h-screen bg-gray-100">
+  <%= render "layouts/nav" %>
+
+  <div class="py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex gap-8">
+        <%= render "layouts/account_nav" %>
+
+        <div class="flex-1">
+          <div class="mb-6">
+            <%= link_to account_attribution_models_path, class: "inline-flex items-center text-sm text-gray-500 hover:text-gray-700" do %>
+              <svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+              </svg>
+              Back to Attribution Models
+            <% end %>
+          </div>
+
+          <div class="bg-white shadow rounded-lg overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h1 class="text-xl font-semibold text-gray-900">
+                    <%= @attribution_model.preset? ? "Edit #{@attribution_model.name}" : "Edit Custom Model" %>
+                  </h1>
+                  <p class="mt-1 text-sm text-gray-500">
+                    <% if current_account.can_edit_full_aml? %>
+                      Customize the attribution logic
+                    <% else %>
+                      Configure the lookback window
+                    <% end %>
+                  </p>
+                </div>
+                <% if @attribution_model.preset? && @attribution_model.dsl_code.present? %>
+                  <%= button_to reset_account_attribution_model_path(@attribution_model),
+                    method: :post,
+                    class: "inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50",
+                    form: { data: { turbo_confirm: "Reset to default template?" } } do %>
+                    Reset to Default
+                  <% end %>
+                <% end %>
+              </div>
+            </div>
+
+            <%= form_with model: @attribution_model, url: account_attribution_model_path(@attribution_model), method: :patch, class: "divide-y divide-gray-200" do |f| %>
+              <% if @attribution_model.errors.any? %>
+                <div class="px-6 py-4 bg-red-50">
+                  <div class="flex">
+                    <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                    </svg>
+                    <div class="ml-3">
+                      <h3 class="text-sm font-medium text-red-800">There were errors with your submission</h3>
+                      <ul class="mt-2 text-sm text-red-700 list-disc list-inside">
+                        <% @attribution_model.errors.full_messages.each do |error| %>
+                          <li><%= error %></li>
+                        <% end %>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+
+              <div class="px-6 py-4 space-y-4">
+                <% if @attribution_model.custom? %>
+                  <div>
+                    <label for="attribution_model_name" class="block text-sm font-medium text-gray-700">Model Name</label>
+                    <%= f.text_field :name,
+                      class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+                  </div>
+                <% end %>
+
+                <div>
+                  <label for="attribution_model_lookback_days" class="block text-sm font-medium text-gray-700">Lookback Window</label>
+                  <div class="mt-1 flex items-center gap-2">
+                    <%= f.number_field :lookback_days,
+                      min: 1,
+                      max: 365,
+                      class: "block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+                    <span class="text-sm text-gray-500">days</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="px-6 py-4">
+                <div class="flex items-center justify-between mb-2">
+                  <label class="block text-sm font-medium text-gray-700">AML Code</label>
+                  <% unless current_account.can_edit_full_aml? %>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
+                      Upgrade to edit
+                    </span>
+                  <% end %>
+                </div>
+
+                <% if current_account.can_edit_full_aml? %>
+                  <div class="code-editor relative rounded-md border border-gray-300 bg-gray-900 overflow-hidden"
+                    data-controller="code-editor">
+                    <pre class="code-editor-highlight absolute inset-0 p-4 m-0 overflow-auto pointer-events-none font-mono text-sm leading-relaxed text-gray-100 whitespace-pre-wrap break-words"
+                      aria-hidden="true"
+                      data-code-editor-target="highlight"></pre>
+                    <%= f.text_area :dsl_code,
+                      value: @effective_code,
+                      rows: 12,
+                      data: { code_editor_target: "textarea", action: "input->code-editor#syncHighlight scroll->code-editor#syncScroll" },
+                      class: "relative w-full h-full p-4 m-0 font-mono text-sm leading-relaxed bg-transparent text-transparent caret-white resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-inset",
+                      spellcheck: false,
+                      autocomplete: "off",
+                      autocorrect: "off",
+                      autocapitalize: "off" %>
+                  </div>
+                <% else %>
+                  <div class="border border-gray-200 rounded-md bg-gray-50 p-4">
+                    <pre class="text-sm text-gray-600 font-mono whitespace-pre-wrap"><%= @effective_code %></pre>
+                  </div>
+                  <div class="mt-4 p-4 bg-indigo-50 rounded-md">
+                    <p class="text-sm text-indigo-700">
+                      <%= link_to "Upgrade", account_billing_path, class: "font-medium underline" %> to customize this model's AML code.
+                    </p>
+                  </div>
+                <% end %>
+              </div>
+
+              <div class="px-6 py-4 bg-gray-50 flex items-center justify-between">
+                <div>
+                  <% if @attribution_model.custom? %>
+                    <%= button_to account_attribution_model_path(@attribution_model),
+                      method: :delete,
+                      class: "inline-flex items-center px-3 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50",
+                      form: { data: { turbo_confirm: "Delete this model?" } } do %>
+                      Delete Model
+                    <% end %>
+                  <% end %>
+                </div>
+                <div class="flex items-center gap-3">
+                  <%= link_to "Cancel", account_attribution_models_path,
+                    class: "px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900" %>
+                  <%= f.submit "Save Changes",
+                    class: "px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 cursor-pointer" %>
+                </div>
+              </div>
+            <% end %>
+
+            <!-- Test Panel (outside form to avoid nested forms) -->
+            <div class="mt-6 bg-white shadow rounded-lg overflow-hidden">
+              <div class="px-6 py-4">
+                <details class="group">
+                  <summary class="flex items-center justify-between cursor-pointer list-none">
+                    <h3 class="text-sm font-medium text-gray-900">Test Your Model</h3>
+                    <svg class="w-5 h-5 text-gray-500 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                  </summary>
+
+                  <div class="mt-4 space-y-4">
+                    <p class="text-sm text-gray-500">
+                      Test how your model distributes credit across a sample customer journey.
+                    </p>
+
+                    <%= form_with url: test_account_attribution_model_path(@attribution_model),
+                      method: :post,
+                      data: { turbo_frame: "test-results" },
+                      class: "space-y-4" do %>
+
+                      <%= hidden_field_tag :dsl_code, @effective_code, id: "test_dsl_code" %>
+
+                      <div>
+                        <label for="journey_type" class="block text-sm font-medium text-gray-700">Sample Journey</label>
+                        <select name="journey_type" id="journey_type"
+                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                          <option value="four_touch">4 touchpoints: Organic → Email → Paid → Direct</option>
+                          <option value="two_touch">2 touchpoints: Paid Social → Email</option>
+                          <option value="single_touch">1 touchpoint: Organic Search</option>
+                        </select>
+                      </div>
+
+                      <button type="submit"
+                        class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Run Test
+                      </button>
+                    <% end %>
+
+                    <%= turbo_frame_tag "test-results" do %>
+                      <div class="p-4 bg-gray-50 rounded-md text-sm text-gray-500 text-center">
+                        Click "Run Test" to see credit distribution
+                      </div>
+                    <% end %>
+                  </div>
+                </details>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

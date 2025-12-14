@@ -31,12 +31,10 @@ module DocsHelper
         syntax: 'ruby',
         code: <<~CODE
           # config/initializers/mbuzz.rb
-          Mbuzz.configure do |config|
-            config.api_key = ENV['MBUZZ_API_KEY']
-            config.api_url = 'https://mbuzz.co/api/v1'
-            config.enabled = !Rails.env.test?
-            config.debug = Rails.env.development?
-          end
+          Mbuzz.init(
+            api_key: ENV['MBUZZ_API_KEY'],
+            debug: Rails.env.development?
+          )
         CODE
       },
       curl: {
@@ -61,9 +59,7 @@ module DocsHelper
         syntax: 'ruby',
         code: <<~CODE
           # Automatically handled by gem
-          Mbuzz.configure do |config|
-            config.api_key = ENV['MBUZZ_API_KEY']
-          end
+          Mbuzz.init(api_key: ENV['MBUZZ_API_KEY'])
 
           # Gem adds header to all requests:
           # Authorization: Bearer sk_test_...
@@ -76,7 +72,7 @@ module DocsHelper
           curl -X POST #{api_v1_events_url} \\
             -H "Authorization: Bearer sk_test_your_key_here" \\
             -H "Content-Type: application/json" \\
-            -d '{"event_type": "Test", "user_id": "123"}'
+            -d '{"event_type": "page_view", "visitor_id": "abc123..."}'
         CODE
       }
     }, default: :curl)
@@ -88,14 +84,9 @@ module DocsHelper
         label: 'Ruby',
         syntax: 'ruby',
         code: <<~CODE
-          Mbuzz.track(
-            user_id: current_user.id,
-            event: 'Signup',
-            properties: {
-              plan: 'pro',
-              trial_days: 14
-            }
-          )
+          # Track user interactions
+          Mbuzz.event("page_view", url: "/pricing")
+          Mbuzz.event("add_to_cart", product_id: "SKU-123", price: 49.99)
         CODE
       },
       curl: {
@@ -106,12 +97,11 @@ module DocsHelper
             -H "Authorization: Bearer $MBUZZ_API_KEY" \\
             -H "Content-Type: application/json" \\
             -d '{
-              "user_id": "123",
-              "event_type": "Signup",
-              "properties": {
-                "plan": "pro",
-                "trial_days": 14
-              }
+              "events": [{
+                "event_type": "page_view",
+                "visitor_id": "abc123...",
+                "properties": { "url": "/pricing" }
+              }]
             }'
         CODE
       }

@@ -2,7 +2,7 @@ free:
   name: "Free"
   slug: "free"
   monthly_price_cents: 0
-  events_included: 10000
+  events_included: 50000
   overage_price_cents: null
   stripe_price_id: null
   is_active: true
@@ -12,8 +12,8 @@ starter:
   name: "Starter"
   slug: "starter"
   monthly_price_cents: 2900
-  events_included: 50000
-  overage_price_cents: 580
+  events_included: 1000000
+  overage_price_cents: 500
   stripe_price_id: "price_starter_test"
   is_active: true
   sort_order: 1
@@ -22,8 +22,8 @@ growth:
   name: "Growth"
   slug: "growth"
   monthly_price_cents: 9900
-  events_included: 250000
-  overage_price_cents: 396
+  events_included: 5000000
+  overage_price_cents: 1500
   stripe_price_id: "price_growth_test"
   is_active: true
   sort_order: 2
@@ -32,8 +32,8 @@ pro:
   name: "Pro"
   slug: "pro"
   monthly_price_cents: 29900
-  events_included: 1000000
-  overage_price_cents: 299
+  events_included: 25000000
+  overage_price_cents: 5000
   stripe_price_id: "price_pro_test"
   is_active: true
   sort_order: 3

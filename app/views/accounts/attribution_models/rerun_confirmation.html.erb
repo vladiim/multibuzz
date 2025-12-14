@@ -1,0 +1,62 @@
+<div class="min-h-screen bg-gray-100">
+  <%= render "layouts/nav" %>
+
+  <div class="py-10">
+    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="bg-white shadow rounded-lg overflow-hidden">
+        <div class="px-6 py-5 border-b border-gray-200">
+          <h2 class="text-lg font-medium text-gray-900">Confirm Attribution Rerun</h2>
+          <p class="mt-1 text-sm text-gray-500">
+            Rerunning attribution for <%= @attribution_model.name %>
+          </p>
+        </div>
+
+        <div class="px-6 py-5 space-y-4">
+          <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+              </div>
+              <div class="ml-3">
+                <p class="text-sm text-yellow-700">
+                  This rerun exceeds your plan's included limit and will incur additional charges.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <dl class="grid grid-cols-2 gap-4">
+            <div class="bg-gray-50 px-4 py-3 rounded-lg">
+              <dt class="text-sm font-medium text-gray-500">Covered by plan</dt>
+              <dd class="mt-1 text-lg font-semibold text-gray-900"><%= number_with_delimiter(@overage[:covered]) %></dd>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 rounded-lg">
+              <dt class="text-sm font-medium text-gray-500">Overage</dt>
+              <dd class="mt-1 text-lg font-semibold text-orange-600"><%= number_with_delimiter(@overage[:overage]) %></dd>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 rounded-lg">
+              <dt class="text-sm font-medium text-gray-500">Overage blocks</dt>
+              <dd class="mt-1 text-lg font-semibold text-gray-900"><%= @overage[:blocks] %> x <%= number_with_delimiter(@overage[:block_size]) %></dd>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 rounded-lg">
+              <dt class="text-sm font-medium text-gray-500">Additional cost</dt>
+              <dd class="mt-1 text-lg font-semibold text-gray-900"><%= number_to_currency(@overage[:cost_cents] / 100.0) %></dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="px-6 py-4 bg-gray-50 flex justify-end gap-3">
+          <%= link_to "Cancel", account_attribution_models_path,
+            class: "px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" %>
+          <%= button_to rerun_account_attribution_model_path(@attribution_model, confirm_overage: true),
+            method: :post,
+            class: "px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700" do %>
+            Confirm Rerun
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
