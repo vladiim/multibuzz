@@ -188,6 +188,18 @@ class Sessions::ClickIdCaptureServiceTest < ActiveSupport::TestCase
     assert_equal Channels::PAID_SEARCH, infer_channel(fbclid: "fb", gclid: "g")
   end
 
+  test "infers channel from string keys (JSON parsed data)" do
+    # Production data from JSON columns has string keys, not symbols
+    assert_equal Channels::PAID_SEARCH, infer_channel({ "gclid" => "abc123" })
+    assert_equal Channels::PAID_SOCIAL, infer_channel({ "fbclid" => "abc123" })
+    assert_equal Channels::DISPLAY, infer_channel({ "dclid" => "abc123" })
+  end
+
+  test "infers source from string keys (JSON parsed data)" do
+    assert_equal "google", infer_source({ "gclid" => "abc123" })
+    assert_equal "facebook", infer_source({ "fbclid" => "abc123" })
+  end
+
   # === Google Places Click ID (plcid in utm_term) ===
 
   test "detects plcid pattern in utm_term" do
