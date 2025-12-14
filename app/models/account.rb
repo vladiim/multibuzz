@@ -4,6 +4,7 @@ class Account < ApplicationRecord
   include Account::StatusManagement
   include Account::Billing
   include Account::Callbacks
+  include Account::Onboarding
 
   has_prefix_id :acct
 

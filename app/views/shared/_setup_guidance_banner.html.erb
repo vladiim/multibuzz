@@ -1,0 +1,7 @@
+<%# Setup guidance banners - only shown in production mode %>
+<%# Shows one banner at a time based on setup progress %>
+<% unless test_mode? %>
+  <% if (step = setup_guidance_banner(account)) %>
+    <%= render "shared/setup_banners/#{step}", account: account %>
+  <% end %>
+<% end %>

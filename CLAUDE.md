@@ -19,6 +19,52 @@ This document contains conventions, patterns, and best practices specific to thi
 
 **Important**: We use the **Solid Stack** (Solid Cache, Solid Queue, Solid Cable) - all database-backed. Do NOT suggest Redis-based solutions.
 
+### TimescaleDB in Tests
+
+TimescaleDB features (hypertables, continuous aggregates, compression) don't work in the test environment because:
+- Hypertables don't support disabling triggers (required for fixture loading)
+- Test databases don't have the TimescaleDB extension enabled
+
+**Always skip TimescaleDB operations in test environment:**
+
+```ruby
+class CreateContinuousAggregate < ActiveRecord::Migration[8.0]
+  def up
+    return if Rails.env.test?  # Skip in test environment
+
+    execute <<-SQL
+      SELECT create_hypertable('events', 'occurred_at', ...);
+    SQL
+  end
+
+  def down
+    return if Rails.env.test?  # Skip in test environment
+
+    # TimescaleDB-specific teardown
+  end
+end
+```
+
+This applies to:
+- `create_hypertable` calls
+- Continuous aggregate creation
+- Compression policy setup
+- Any TimescaleDB-specific SQL
+
+**Important**: Also remove TimescaleDB calls from `db/schema.rb` after running `db:schema:dump`. The schema.rb is used by `db:schema:load` for test environments, so it should NOT include hypertables or continuous aggregates. Add a comment in schema.rb documenting what's excluded. Production uses `db:migrate` which runs the migrations with the TimescaleDB calls.
+
+---
+
+## Production Environment
+
+| Setting | Value |
+|---------|-------|
+| Domain | **mbuzz.co** |
+| Server | 68.183.173.51 |
+| Registry | ghcr.io/vladiim/multibuzz |
+
+**IMPORTANT**: Never guess URLs. The production domain is `mbuzz.co` - check `config/deploy.yml` for deployment details.
+
 ---
 
 ## Production Environment
@@ -1356,6 +1402,23 @@ presence: true,
 uniqueness: true
 ```
 
+### ERB View Rules
+
+**Extract conditionals to partials.** If/else statements in views should use partials for cleaner code:
+
+```erb
+# ✅ GOOD - Use partials for conditional sections
+<%= render "admin_controls" if @can_manage %>
+<%= render "owner_section" if @is_owner %>
+
+# ❌ BAD - Inline conditionals with lots of HTML
+<% if @can_manage %>
+  <div class="admin-panel">
+    <!-- 50 lines of HTML -->
+  </div>
+<% end %>
+```
+
 ### ERB/HTML Indentation
 
 **Use 2-space indentation for nested elements. Each nested level adds 2 spaces.**
@@ -1482,6 +1545,8 @@ feat(auth): add API key generation service
 
 Closes #5
 ```
+
+**Important**: Do NOT include any Claude/AI attribution in commit messages (no "Generated with Claude", no "Co-Authored-By: Claude", etc.).
 
 ---
 

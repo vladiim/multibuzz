@@ -1,7 +1,10 @@
 module Accounts
   class ApiKeysController < BaseController
+    include RequireAdmin
+
     def index
       @api_keys = current_account.api_keys.order(created_at: :desc)
+      load_newly_created_key
     end
 
     def create
@@ -32,8 +35,20 @@ module Accounts
     def create_success
       @plaintext_key = generation_result[:plaintext_key]
       @api_key = generation_result[:api_key]
-      flash.now[:notice] = t(".success")
-      render :show_key
+
+      if during_onboarding?
+        session[:plaintext_api_key] = @plaintext_key
+        redirect_to onboarding_setup_path, notice: t(".success")
+      else
+        # Store key in session so we can show it after redirect
+        session[:plaintext_api_key] = @plaintext_key
+        session[:new_api_key_id] = @api_key.id
+        redirect_to account_api_keys_path, notice: t(".success")
+      end
+    end
+
+    def during_onboarding?
+      !current_account.onboarding_complete? && !current_account.onboarding_skipped?
     end
 
     def create_failure
@@ -48,6 +63,14 @@ module Accounts
 
     def api_key_params
       params.require(:api_key).permit(:environment, :name)
+    end
+
+    def load_newly_created_key
+      return unless session[:plaintext_api_key] && session[:new_api_key_id]
+
+      @new_api_key = current_account.api_keys.find_by(id: session[:new_api_key_id])
+      @plaintext_key = session.delete(:plaintext_api_key)
+      session.delete(:new_api_key_id)
     end
   end
 end

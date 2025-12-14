@@ -1,0 +1,50 @@
+<% if plaintext_key && api_key %>
+  <div class="fixed inset-0 z-50" data-controller="modal">
+    <div class="fixed inset-0 bg-black bg-opacity-25" data-action="click->modal#close"></div>
+    <div class="fixed inset-0 flex items-center justify-center p-4">
+      <div class="bg-white rounded-lg shadow-xl max-w-lg w-full">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-medium text-gray-900">API Key Created</h3>
+        </div>
+        <div class="px-6 py-4">
+          <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+            <div class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <div>
+                <p class="text-sm font-medium text-yellow-800">Copy this key now</p>
+                <p class="text-sm text-yellow-700">You won't be able to see it again after closing this dialog.</p>
+              </div>
+            </div>
+          </div>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-sm font-medium text-gray-500 mb-1">Environment</label>
+              <span class="px-2 py-1 text-sm font-medium rounded <%= api_key.live? ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' %>">
+                <%= api_key.environment.capitalize %>
+              </span>
+            </div>
+            <div data-controller="clipboard">
+              <label class="block text-sm font-medium text-gray-500 mb-1">API Key</label>
+              <div class="flex items-center gap-2">
+                <code class="flex-1 px-3 py-2 bg-gray-100 rounded-md text-sm font-mono break-all" data-clipboard-target="source"><%= plaintext_key %></code>
+                <button type="button"
+                  data-clipboard-target="button"
+                  data-action="click->clipboard#copy"
+                  class="px-3 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-500 border border-indigo-200 rounded-md">
+                  <span data-clipboard-target="label">Copy</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="px-6 py-4 border-t border-gray-200 flex justify-end">
+          <button type="button" data-action="click->modal#close" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md">
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

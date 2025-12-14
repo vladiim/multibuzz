@@ -23,7 +23,13 @@ class SessionsController < ApplicationController
 
   def login_success
     session[:user_id] = user.id
+    track_login
     redirect_to dashboard_path, notice: "Logged in successfully"
+  end
+
+  def track_login
+    Mbuzz.identify(user.prefix_id, traits: { email: user.email })
+    Mbuzz.event("login")
   end
 
   def login_failure

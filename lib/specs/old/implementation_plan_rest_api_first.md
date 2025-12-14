@@ -892,9 +892,8 @@ The implementation matches all specifications from `feature_1_utm_tracking_spec.
 3. **Linear** (aka Participation) - Equal credit to all channels
 4. **Time Decay** - Exponential decay (7-day half-life)
 5. **U-Shaped** (Position-Based) - 40% first, 40% last, 20% middle
-6. **W-Shaped** - 30% first, 30% last, 30% opportunity (MQL event), 10% other
-7. **Z-Shaped** (B2B Full Path) - 22.5% each: first, MQL, SQL, last + 10% other
-8. **Custom** - User-defined via declarative language
+6. **Participation** - 100% credit to each participating channel
+7. **Custom** - User-defined via declarative language (AML)
 
 **Data-Driven Models** (3 - Phase 3+):
 9. **Algorithmic** - Machine learning based on conversion patterns
@@ -987,8 +986,7 @@ app/services/attribution/
 │   ├── linear_service.rb
 │   ├── time_decay_service.rb
 │   ├── u_shaped_service.rb
-│   ├── w_shaped_service.rb
-│   └── z_shaped_service.rb
+│   └── participation_service.rb
 ├── custom_service.rb            # Executes user-defined DSL
 └── factory.rb                   # Returns correct service
 

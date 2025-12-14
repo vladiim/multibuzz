@@ -1,0 +1,120 @@
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="mb-6">
+    <%= link_to "← Back to Submissions", admin_submissions_path, class: "text-indigo-600 hover:text-indigo-800 text-sm" %>
+  </div>
+
+  <div class="bg-white shadow rounded-lg overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+      <h1 class="text-xl font-semibold text-gray-900">
+        <%= submission_type_label(@submission) %> Submission
+      </h1>
+      <%= submission_type_badge(@submission) %>
+    </div>
+
+    <div class="px-6 py-4 space-y-6">
+      <!-- Core Info -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <dt class="text-sm font-medium text-gray-500">Email</dt>
+          <dd class="mt-1 text-sm text-gray-900"><%= @submission.email %></dd>
+        </div>
+        <div>
+          <dt class="text-sm font-medium text-gray-500">Status</dt>
+          <dd class="mt-1"><%= submission_status_badge(@submission.status) %></dd>
+        </div>
+        <div>
+          <dt class="text-sm font-medium text-gray-500">Created</dt>
+          <dd class="mt-1 text-sm text-gray-900"><%= @submission.created_at.strftime("%B %d, %Y at %I:%M %p") %></dd>
+        </div>
+      </div>
+
+      <hr class="border-gray-200">
+
+      <!-- Type-Specific Fields -->
+      <% case @submission %>
+      <% when ContactSubmission %>
+        <div class="space-y-4">
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Name</dt>
+            <dd class="mt-1 text-sm text-gray-900"><%= @submission.name %></dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Subject</dt>
+            <dd class="mt-1 text-sm text-gray-900"><%= @submission.subject %></dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Message</dt>
+            <dd class="mt-1 text-sm text-gray-900 bg-gray-50 p-4 rounded-lg whitespace-pre-wrap"><%= @submission.message %></dd>
+          </div>
+        </div>
+
+      <% when WaitlistSubmission %>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Role</dt>
+            <dd class="mt-1 text-sm text-gray-900"><%= @submission.role %></dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Framework</dt>
+            <dd class="mt-1 text-sm text-gray-900"><%= @submission.framework %></dd>
+          </div>
+          <% if @submission.framework_other.present? %>
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Framework (Other)</dt>
+              <dd class="mt-1 text-sm text-gray-900"><%= @submission.framework_other %></dd>
+            </div>
+          <% end %>
+        </div>
+
+      <% when SdkWaitlistSubmission %>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <dt class="text-sm font-medium text-gray-500">SDK</dt>
+            <dd class="mt-1 text-sm text-gray-900"><%= @submission.sdk_name %> (<%= @submission.sdk_key %>)</dd>
+          </div>
+          <% if @submission.account_id.present? %>
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Account ID</dt>
+              <dd class="mt-1 text-sm text-gray-900"><%= @submission.account_id %></dd>
+            </div>
+          <% end %>
+        </div>
+
+      <% when FeatureWaitlistSubmission %>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Feature</dt>
+            <dd class="mt-1 text-sm text-gray-900"><%= @submission.feature_name %></dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Feature Key</dt>
+            <dd class="mt-1 text-sm text-gray-900 font-mono"><%= @submission.feature_key %></dd>
+          </div>
+          <% if @submission.context.present? %>
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Context</dt>
+              <dd class="mt-1 text-sm text-gray-900"><%= @submission.context %></dd>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+
+      <hr class="border-gray-200">
+
+      <!-- Metadata -->
+      <div class="bg-gray-50 -mx-6 -mb-4 px-6 py-4">
+        <h3 class="text-sm font-medium text-gray-500 mb-3">Metadata</h3>
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <dt class="text-gray-500">IP Address</dt>
+            <dd class="text-gray-900 font-mono"><%= @submission.ip_address || "N/A" %></dd>
+          </div>
+          <div>
+            <dt class="text-gray-500">User Agent</dt>
+            <dd class="text-gray-900 truncate" title="<%= @submission.user_agent %>"><%= @submission.user_agent || "N/A" %></dd>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

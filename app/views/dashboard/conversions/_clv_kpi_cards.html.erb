@@ -1,0 +1,57 @@
+<!-- Coverage indicator -->
+<div class="mb-4 flex items-center justify-between">
+  <div class="flex items-center gap-2">
+    <span class="text-sm font-medium text-gray-500">Acquisition Period:</span>
+    <span class="text-sm text-gray-700"><%= @filter_params[:date_range].is_a?(String) ? @filter_params[:date_range].gsub('d', ' days') : 'Custom' %></span>
+  </div>
+  <div class="flex items-center gap-2">
+    <span class="text-sm text-gray-500"><%= totals[:customers] %> customers acquired</span>
+    <span class="text-gray-300">·</span>
+    <span class="text-sm text-gray-500"><%= coverage[:percentage] %>% of conversions identified</span>
+  </div>
+</div>
+
+<!-- KPI Cards -->
+<div data-testid="clv-kpi-cards" class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+  <!-- CLV -->
+  <div class="bg-white p-4 rounded-lg shadow">
+    <div class="text-sm font-medium text-gray-500 mb-1">Avg CLV</div>
+    <div class="text-2xl font-bold text-gray-900"><%= number_to_currency(totals[:clv], precision: 0) %></div>
+    <div class="text-xs text-gray-400 mt-1">lifetime value per customer</div>
+  </div>
+
+  <!-- Customers -->
+  <div class="bg-white p-4 rounded-lg shadow">
+    <div class="text-sm font-medium text-gray-500 mb-1">Customers</div>
+    <div class="text-2xl font-bold text-gray-900"><%= number_with_delimiter(totals[:customers]) %></div>
+    <div class="text-xs text-gray-400 mt-1">acquired in period</div>
+  </div>
+
+  <!-- Purchases -->
+  <div class="bg-white p-4 rounded-lg shadow">
+    <div class="text-sm font-medium text-gray-500 mb-1">Purchases</div>
+    <div class="text-2xl font-bold text-gray-900"><%= number_with_delimiter(totals[:purchases]) %></div>
+    <div class="text-xs text-gray-400 mt-1">total conversions</div>
+  </div>
+
+  <!-- Revenue -->
+  <div class="bg-white p-4 rounded-lg shadow">
+    <div class="text-sm font-medium text-gray-500 mb-1">Total Revenue</div>
+    <div class="text-2xl font-bold text-gray-900"><%= number_to_currency(totals[:revenue], precision: 0) %></div>
+    <div class="text-xs text-gray-400 mt-1">lifetime revenue</div>
+  </div>
+
+  <!-- Avg Duration -->
+  <div class="bg-white p-4 rounded-lg shadow">
+    <div class="text-sm font-medium text-gray-500 mb-1">Avg Lifespan</div>
+    <div class="text-2xl font-bold text-gray-900"><%= totals[:avg_duration] %> days</div>
+    <div class="text-xs text-gray-400 mt-1">first to last conversion</div>
+  </div>
+
+  <!-- Repurchase Frequency -->
+  <div class="bg-white p-4 rounded-lg shadow">
+    <div class="text-sm font-medium text-gray-500 mb-1">Repurchase Freq</div>
+    <div class="text-2xl font-bold text-gray-900"><%= totals[:repurchase_frequency] %>x</div>
+    <div class="text-xs text-gray-400 mt-1">purchases per customer</div>
+  </div>
+</div>
