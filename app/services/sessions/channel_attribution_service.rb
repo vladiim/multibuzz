@@ -44,6 +44,7 @@ module Sessions
     def call
       return channel_from_utm_or_fallback if utm_medium.present?
       return channel_from_utm_source if utm_source.present?
+      return Channels::ORGANIC_SEARCH if plcid_present?
       return channel_from_click_ids if click_ids.any?
       return channel_from_referrer if referrer_domain.present?
 
@@ -102,6 +103,14 @@ module Sessions
       utm_data[UTM_SOURCE_KEY] || utm_data[UTM_SOURCE_KEY.to_s]
     end
 
+    def utm_term
+      utm_data[:utm_term] || utm_data["utm_term"]
+    end
+
+    def plcid_present?
+      ClickIdentifiers.plcid?(utm_term)
+    end
+
     def channel_from_referrer
       channel_from_lookup || channel_from_patterns
     end
@@ -126,7 +135,13 @@ module Sessions
     def referrer_domain
       return nil if referrer.blank?
 
-      @referrer_domain ||= URI.parse(referrer).host
+      @referrer_domain ||= extract_domain_from_referrer
+    end
+
+    def extract_domain_from_referrer
+      # Handle URLs without protocol (e.g., "google.com" or "www.google.com")
+      url = referrer.include?("://") ? referrer : "https://#{referrer}"
+      URI.parse(url).host
     rescue URI::InvalidURIError
       nil
     end

@@ -219,6 +219,145 @@ class Sessions::ChannelAttributionServiceTest < ActiveSupport::TestCase
     assert_equal Channels::ORGANIC_SEARCH, service({}, "https://google.com/search").call
   end
 
+  # ==========================================
+  # Google Places (plcid) Detection Tests
+  # ==========================================
+
+  test "returns organic_search for plcid in utm_term" do
+    utm_data = { utm_term: "plcid_8067905893793481977" }
+
+    assert_equal Channels::ORGANIC_SEARCH, service(utm_data).call
+  end
+
+  test "returns organic_search for plcid with google referrer" do
+    utm_data = { utm_term: "plcid_123456789" }
+
+    assert_equal Channels::ORGANIC_SEARCH, service(utm_data, "https://www.google.com/").call
+  end
+
+  test "utm_medium takes priority over plcid" do
+    # If someone explicitly set utm_medium, respect that
+    utm_data = { utm_medium: "email", utm_term: "plcid_123456789" }
+
+    assert_equal Channels::EMAIL, service(utm_data).call
+  end
+
+  test "plcid takes priority over referrer" do
+    # plcid indicates Google Places, even if referrer is something else
+    utm_data = { utm_term: "plcid_123456789" }
+
+    assert_equal Channels::ORGANIC_SEARCH, service(utm_data, "https://example.com/").call
+  end
+
+  test "non-plcid utm_term does not trigger organic_search" do
+    # Regular utm_term keywords should not be treated as plcid
+    utm_data = { utm_term: "dog boarding melbourne" }
+
+    assert_equal Channels::DIRECT, service(utm_data).call
+  end
+
+  # ==========================================
+  # Comprehensive Click ID → Channel Tests
+  # ==========================================
+
+  # Google Ecosystem
+  test "returns paid_search for gclid" do
+    assert_equal Channels::PAID_SEARCH, service({}, nil, { gclid: "abc123" }).call
+  end
+
+  test "returns paid_search for gbraid (iOS app)" do
+    assert_equal Channels::PAID_SEARCH, service({}, nil, { gbraid: "abc123" }).call
+  end
+
+  test "returns paid_search for wbraid (web-to-app)" do
+    assert_equal Channels::PAID_SEARCH, service({}, nil, { wbraid: "abc123" }).call
+  end
+
+  test "returns paid_search for gclsrc" do
+    assert_equal Channels::PAID_SEARCH, service({}, nil, { gclsrc: "aw.ds" }).call
+  end
+
+  # Microsoft
+  test "returns paid_search for msclkid" do
+    assert_equal Channels::PAID_SEARCH, service({}, nil, { msclkid: "abc123" }).call
+  end
+
+  # Meta (Facebook/Instagram)
+  test "returns paid_social for fbclid" do
+    assert_equal Channels::PAID_SOCIAL, service({}, nil, { fbclid: "abc123" }).call
+  end
+
+  # TikTok
+  test "returns paid_social for ttclid" do
+    assert_equal Channels::PAID_SOCIAL, service({}, nil, { ttclid: "abc123" }).call
+  end
+
+  # LinkedIn
+  test "returns paid_social for li_fat_id" do
+    assert_equal Channels::PAID_SOCIAL, service({}, nil, { li_fat_id: "abc123" }).call
+  end
+
+  # Twitter/X
+  test "returns paid_social for twclid" do
+    assert_equal Channels::PAID_SOCIAL, service({}, nil, { twclid: "abc123" }).call
+  end
+
+  # Pinterest
+  test "returns paid_social for epik" do
+    assert_equal Channels::PAID_SOCIAL, service({}, nil, { epik: "abc123" }).call
+  end
+
+  # Snapchat
+  test "returns paid_social for sclid (snapchat lowercase)" do
+    assert_equal Channels::PAID_SOCIAL, service({}, nil, { sclid: "abc123" }).call
+  end
+
+  test "returns paid_social for ScCid (snapchat mixed case)" do
+    assert_equal Channels::PAID_SOCIAL, service({}, nil, { ScCid: "abc123" }).call
+  end
+
+  # Reddit
+  test "returns paid_social for rdt_cid" do
+    assert_equal Channels::PAID_SOCIAL, service({}, nil, { rdt_cid: "abc123" }).call
+  end
+
+  # Quora
+  test "returns paid_social for qclid" do
+    assert_equal Channels::PAID_SOCIAL, service({}, nil, { qclid: "abc123" }).call
+  end
+
+  # Yahoo
+  test "returns paid_search for vmcid (yahoo)" do
+    assert_equal Channels::PAID_SEARCH, service({}, nil, { vmcid: "abc123" }).call
+  end
+
+  # Yandex
+  test "returns paid_search for yclid (yandex)" do
+    assert_equal Channels::PAID_SEARCH, service({}, nil, { yclid: "abc123" }).call
+  end
+
+  # Seznam (Czech)
+  test "returns paid_search for sznclid (seznam)" do
+    assert_equal Channels::PAID_SEARCH, service({}, nil, { sznclid: "abc123" }).call
+  end
+
+  # ==========================================
+  # Referrer URL Normalization Tests
+  # ==========================================
+
+  test "handles referrer without protocol" do
+    # Some referrers may be stored without https://
+    assert_equal Channels::ORGANIC_SEARCH, service({}, "www.google.com").call
+  end
+
+  test "handles referrer without protocol or www" do
+    assert_equal Channels::ORGANIC_SEARCH, service({}, "google.com").call
+  end
+
+  test "handles referrer with just domain for social" do
+    assert_equal Channels::ORGANIC_SOCIAL, service({}, "facebook.com").call
+  end
+
   private
 
   def service(utm_data = {}, referrer = nil, click_ids = {})
