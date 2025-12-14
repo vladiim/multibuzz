@@ -1,0 +1,9 @@
+<% unless membership.owner? %>
+  <% if membership.pending? %>
+    <%= button_to "Resend", account_team_invitations_path(resend: membership.prefix_id), method: :post,
+      class: "text-indigo-600 hover:text-indigo-900 mr-3" %>
+  <% end %>
+  <%= button_to "Remove", account_team_membership_path(membership.prefix_id), method: :delete,
+    data: { confirm: "Remove #{membership.user&.email} from the team?" },
+    class: "text-red-600 hover:text-red-900" %>
+<% end %>

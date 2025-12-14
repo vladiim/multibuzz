@@ -1,0 +1,42 @@
+<div class="filter-group"
+  data-controller="toggle conversion-filters"
+  data-toggle-close-on-click-outside-value="true">
+  <label class="block text-sm font-medium text-gray-700 mb-1">Conversion Filters</label>
+  <div class="relative">
+    <button type="button"
+      data-action="click->toggle#toggle"
+      class="w-44 px-3 py-2 text-sm text-left border border-gray-300 rounded bg-white flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      <span data-conversion-filters-target="label"><%= conversion_filters_label(filters) %></span>
+      <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+      </svg>
+    </button>
+
+    <div data-toggle-target="content" class="hidden absolute z-10 mt-1 min-w-[480px] bg-white border border-gray-300 rounded shadow-lg">
+      <div class="p-3 space-y-2" data-conversion-filters-target="container">
+        <% if filters.present? %>
+          <% filters.each_with_index do |filter, index| %>
+            <%= render "dashboard/conversion_filters/filter_row", dimensions: dimensions, index: index, filter: filter %>
+          <% end %>
+        <% else %>
+          <p data-conversion-filters-target="empty" class="text-sm text-gray-500 py-2">No filters applied</p>
+        <% end %>
+      </div>
+
+      <div class="border-t border-gray-200 px-3 py-2">
+        <button type="button" data-action="click->conversion-filters#add"
+          class="text-sm text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Add filter
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Template for new filter rows -->
+  <template data-conversion-filters-target="template">
+    <%= render "dashboard/conversion_filters/filter_row", dimensions: dimensions, index: "INDEX", filter: {} %>
+  </template>
+</div>

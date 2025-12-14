@@ -27,7 +27,15 @@ module User::AccountAccess
       .where(account_memberships: { user_id: id, status: :accepted, deleted_at: nil })
   end
 
+  def active_memberships
+    account_memberships.active.includes(:account).order(last_accessed_at: :desc, role: :desc)
+  end
+
+  def pending_invitations
+    account_memberships.pending.not_deleted.includes(:account).order(created_at: :desc)
+  end
+
   def primary_account
-    account_memberships.active.order(role: :desc, created_at: :asc).first&.account
+    account_memberships.active.order(last_accessed_at: :desc, role: :desc).first&.account
   end
 end

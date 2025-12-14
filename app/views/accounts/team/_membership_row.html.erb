@@ -1,0 +1,28 @@
+<tr>
+  <td class="px-6 py-4 whitespace-nowrap">
+    <div class="flex items-center">
+      <div class="flex-shrink-0 h-10 w-10">
+        <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-500">
+          <span class="text-sm font-medium leading-none text-white"><%= membership.user&.email&.first&.upcase || "?" %></span>
+        </span>
+      </div>
+      <div class="ml-4">
+        <div class="text-sm font-medium text-gray-900"><%= membership.user&.email || "Invited user" %></div>
+      </div>
+    </div>
+  </td>
+  <td class="px-6 py-4 whitespace-nowrap">
+    <%= render "accounts/team/membership_role_cell", membership: membership %>
+  </td>
+  <td class="px-6 py-4 whitespace-nowrap">
+    <%= render_status_badge(membership.status) %>
+  </td>
+  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+    <%= render "accounts/team/membership_joined_cell", membership: membership %>
+  </td>
+  <% if @can_manage %>
+    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+      <%= render "accounts/team/membership_actions_cell", membership: membership %>
+    </td>
+  <% end %>
+</tr>

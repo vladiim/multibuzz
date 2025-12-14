@@ -1,21 +1,29 @@
 module ReferrerSources
-  class LookupService < ApplicationService
+  # Utility class for looking up referrer sources.
+  # Returns nil on any error (not ApplicationService format).
+  # This is intentionally NOT inheriting from ApplicationService
+  # as it's an extractor/lookup class, not a mutation service.
+  class LookupService
     CACHE_TTL = 24.hours
 
     def initialize(referrer)
       @referrer = referrer
     end
 
-    private
-
-    attr_reader :referrer
-
-    def run
+    def call
       return nil if referrer.blank?
       return nil unless domain
 
       cached_lookup || database_lookup
+    rescue StandardError
+      # Return nil on any error - this is a lookup service
+      # and failures should fall through to pattern matching
+      nil
     end
+
+    private
+
+    attr_reader :referrer
 
     def cached_lookup
       Rails.cache.read(cache_key)

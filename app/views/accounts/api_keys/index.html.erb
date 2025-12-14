@@ -88,6 +88,8 @@
   </div>
 </div>
 
+<%= render "new_key_modal", plaintext_key: @plaintext_key, api_key: @new_api_key %>
+
 <!-- API Key Generation Modal -->
 <div id="api-key-modal" class="hidden fixed inset-0 z-50" data-controller="modal">
   <div class="fixed inset-0 bg-black bg-opacity-25" data-action="click->modal#close"></div>
@@ -96,7 +98,7 @@
       <div class="px-6 py-4 border-b border-gray-200">
         <h3 class="text-lg font-medium text-gray-900">Generate API Key</h3>
       </div>
-      <%= form_with url: account_api_keys_path, method: :post, class: "px-6 py-4" do |f| %>
+      <%= form_with url: account_api_keys_path, method: :post, class: "px-6 py-4", data: { turbo: false } do |f| %>
         <div class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-gray-700">Environment</label>

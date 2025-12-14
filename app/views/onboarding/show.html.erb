@@ -1,0 +1,38 @@
+<div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+  <div class="sm:mx-auto sm:w-full sm:max-w-2xl">
+    <h2 class="text-center text-3xl font-extrabold text-gray-900">
+      Welcome to mbuzz! 👋
+    </h2>
+    <p class="mt-2 text-center text-lg text-gray-600">
+      What best describes you?
+    </p>
+  </div>
+
+  <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-2xl" data-onboarding-persona>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 px-4">
+      <!-- Developer Card -->
+      <%= button_to onboarding_persona_path, params: { persona: "developer" }, method: :post, class: "bg-white p-8 rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer border-2 border-transparent hover:border-indigo-500 text-left" do %>
+        <div class="text-4xl mb-4">👨‍💻</div>
+        <h3 class="text-xl font-semibold text-gray-900 mb-2">Developer</h3>
+        <p class="text-gray-600">I'll be integrating the SDK into our codebase.</p>
+      <% end %>
+
+      <!-- Marketer Card -->
+      <%= button_to onboarding_persona_path, params: { persona: "marketer" }, method: :post, class: "bg-white p-8 rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer border-2 border-transparent hover:border-indigo-500 text-left" do %>
+        <div class="text-4xl mb-4">📊</div>
+        <h3 class="text-xl font-semibold text-gray-900 mb-2">Marketer</h3>
+        <p class="text-gray-600">I'll be analyzing the attribution data.</p>
+      <% end %>
+    </div>
+
+    <div class="mt-6 text-center">
+      <%= button_to onboarding_persona_path, params: { persona: "both" }, method: :post, class: "text-indigo-600 hover:text-indigo-800 font-medium" do %>
+        Both / I'm not sure
+      <% end %>
+    </div>
+
+    <div class="mt-8 text-center">
+      <%= button_to "Skip setup and go to dashboard", onboarding_skip_path, method: :post, class: "text-sm text-gray-400 hover:text-gray-600" %>
+    </div>
+  </div>
+</div>

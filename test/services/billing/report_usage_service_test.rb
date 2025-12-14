@@ -52,15 +52,17 @@ class Billing::ReportUsageServiceTest < ActiveSupport::TestCase
       billing_status: :active,
       stripe_customer_id: "cus_123",
       stripe_subscription_id: "sub_123",
-      plan: starter_plan  # 50K events included
+      plan: starter_plan
     )
-    Rails.cache.write(account.usage_cache_key, 75_000)
+    starter_limit = Billing::STARTER_EVENT_LIMIT
+    overage_amount = 250_000
+    Rails.cache.write(account.usage_cache_key, starter_limit + overage_amount)
 
     result = service.call
 
     assert result[:success]
-    assert_equal 75_000, result[:usage_reported]
-    assert_equal 25_000, result[:overage_events]
+    assert_equal starter_limit + overage_amount, result[:usage_reported]
+    assert_equal overage_amount, result[:overage_events]
   end
 
   test "no overage when under plan limit" do
@@ -68,9 +70,9 @@ class Billing::ReportUsageServiceTest < ActiveSupport::TestCase
       billing_status: :active,
       stripe_customer_id: "cus_123",
       stripe_subscription_id: "sub_123",
-      plan: starter_plan  # 50K events included
+      plan: starter_plan
     )
-    Rails.cache.write(account.usage_cache_key, 30_000)
+    Rails.cache.write(account.usage_cache_key, (Billing::STARTER_EVENT_LIMIT * 0.3).to_i)
 
     result = service.call
 

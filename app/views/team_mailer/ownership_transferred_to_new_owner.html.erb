@@ -1,0 +1,17 @@
+<h1>You are now the owner of <%= @account.name %></h1>
+
+<p><%= @previous_owner.email %> has transferred ownership of <%= @account.name %> to you.</p>
+
+<p>As the owner, you now have full control over the account including:</p>
+
+<ul>
+  <li>Managing team members and roles</li>
+  <li>Billing and subscription management</li>
+  <li>API key management</li>
+  <li>Attribution model configuration</li>
+  <li>Transferring ownership to another team member</li>
+</ul>
+
+<p>
+  <%= link_to "Go to Dashboard", dashboard_url %>
+</p>

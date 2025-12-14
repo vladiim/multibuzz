@@ -1,0 +1,11 @@
+<% if @can_manage && !membership.owner? %>
+  <%= form_with url: account_team_membership_path(membership.prefix_id), method: :patch, class: "inline" do |f| %>
+    <select name="role" onchange="this.form.submit()"
+      class="rounded-md border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+      <option value="member" <%= "selected" if membership.member? %>>Member</option>
+      <option value="admin" <%= "selected" if membership.admin? %>>Admin</option>
+    </select>
+  <% end %>
+<% else %>
+  <%= render_role_badge(membership.role) %>
+<% end %>

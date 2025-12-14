@@ -42,21 +42,21 @@ class Billing::UsageCounterTest < ActiveSupport::TestCase
 
   test "within_limit? returns true when under limit" do
     account.update!(plan: free_plan)
-    Rails.cache.write(cache_key, 5000)
+    Rails.cache.write(cache_key, free_limit / 2)
 
     assert counter.within_limit?
   end
 
   test "within_limit? returns false when at limit" do
     account.update!(plan: free_plan)
-    Rails.cache.write(cache_key, 10_000)
+    Rails.cache.write(cache_key, free_limit)
 
     assert_not counter.within_limit?
   end
 
   test "within_limit? returns false when over limit" do
     account.update!(plan: free_plan)
-    Rails.cache.write(cache_key, 15_000)
+    Rails.cache.write(cache_key, free_limit + 10_000)
 
     assert_not counter.within_limit?
   end
@@ -65,14 +65,14 @@ class Billing::UsageCounterTest < ActiveSupport::TestCase
 
   test "usage_percentage calculates correctly" do
     account.update!(plan: free_plan)
-    Rails.cache.write(cache_key, 8000)
+    Rails.cache.write(cache_key, (free_limit * 0.8).to_i)
 
     assert_equal 80, counter.usage_percentage
   end
 
   test "usage_percentage caps at 100" do
     account.update!(plan: free_plan)
-    Rails.cache.write(cache_key, 15_000)
+    Rails.cache.write(cache_key, free_limit + 10_000)
 
     assert_equal 100, counter.usage_percentage
   end
@@ -87,28 +87,28 @@ class Billing::UsageCounterTest < ActiveSupport::TestCase
 
   test "approaching_limit? returns true at 80%" do
     account.update!(plan: free_plan)
-    Rails.cache.write(cache_key, 8000)
+    Rails.cache.write(cache_key, (free_limit * 0.8).to_i)
 
     assert counter.approaching_limit?
   end
 
   test "approaching_limit? returns false below 80%" do
     account.update!(plan: free_plan)
-    Rails.cache.write(cache_key, 7000)
+    Rails.cache.write(cache_key, (free_limit * 0.7).to_i)
 
     assert_not counter.approaching_limit?
   end
 
   test "at_limit? returns true at 100%" do
     account.update!(plan: free_plan)
-    Rails.cache.write(cache_key, 10_000)
+    Rails.cache.write(cache_key, free_limit)
 
     assert counter.at_limit?
   end
 
   test "at_limit? returns false below 100%" do
     account.update!(plan: free_plan)
-    Rails.cache.write(cache_key, 9000)
+    Rails.cache.write(cache_key, (free_limit * 0.9).to_i)
 
     assert_not counter.at_limit?
   end
@@ -118,7 +118,7 @@ class Billing::UsageCounterTest < ActiveSupport::TestCase
   test "event_limit returns plan events_included" do
     account.update!(plan: starter_plan)
 
-    assert_equal 50_000, counter.event_limit
+    assert_equal Billing::STARTER_EVENT_LIMIT, counter.event_limit
   end
 
   test "event_limit defaults to FREE_EVENT_LIMIT when no plan" do
@@ -141,14 +141,15 @@ class Billing::UsageCounterTest < ActiveSupport::TestCase
 
   test "remaining_events calculates correctly" do
     account.update!(plan: free_plan)
-    Rails.cache.write(cache_key, 3000)
+    used = (free_limit * 0.2).to_i
+    Rails.cache.write(cache_key, used)
 
-    assert_equal 7000, counter.remaining_events
+    assert_equal free_limit - used, counter.remaining_events
   end
 
   test "remaining_events returns 0 when over limit" do
     account.update!(plan: free_plan)
-    Rails.cache.write(cache_key, 15_000)
+    Rails.cache.write(cache_key, free_limit + 10_000)
 
     assert_equal 0, counter.remaining_events
   end
@@ -169,6 +170,10 @@ class Billing::UsageCounterTest < ActiveSupport::TestCase
 
   def starter_plan
     @starter_plan ||= plans(:starter)
+  end
+
+  def free_limit
+    Billing::FREE_EVENT_LIMIT
   end
 
   def cache_key

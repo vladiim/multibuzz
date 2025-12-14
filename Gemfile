@@ -8,6 +8,8 @@ gem "propshaft"
 gem "pg", "~> 1.1"
 # TimescaleDB for time-series optimization [https://github.com/jonatas/timescaledb]
 gem "timescaledb", "~> 0.2.0"
+# OpenStruct is required by timescaledb gem but not included in Ruby 3.x by default
+gem "ostruct"
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
 # Use JavaScript with ESM import maps [https://github.com/rails/importmap-rails]
@@ -31,12 +33,18 @@ gem "stripe"
 # Postmark for transactional emails [https://github.com/ActiveCampaign/postmark-rails]
 gem "postmark-rails"
 
+# Mbuzz SDK for dogfooding [https://rubygems.org/gems/mbuzz]
+gem "mbuzz"
+
 # Use prefixed IDs for customer-facing identifiers [https://github.com/excid3/prefixed_ids]
 gem "prefixed_ids"
 
 # Markdown rendering for documentation [https://github.com/vmg/redcarpet]
 gem "redcarpet"
 gem "rouge"
+
+# Ruby AST parser for AML DSL validation [https://github.com/whitequark/parser]
+gem "parser"
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]

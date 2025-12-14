@@ -9,7 +9,6 @@ module AttributionAlgorithms
   LINEAR = "linear"
   TIME_DECAY = "time_decay"
   U_SHAPED = "u_shaped"
-  W_SHAPED = "w_shaped"
   PARTICIPATION = "participation"
 
   # Journey position (for funnel segmentation)
@@ -25,7 +24,6 @@ module AttributionAlgorithms
     LINEAR,
     TIME_DECAY,
     U_SHAPED,
-    W_SHAPED,
     PARTICIPATION
   ].freeze
 
@@ -36,7 +34,6 @@ module AttributionAlgorithms
     LINEAR,
     TIME_DECAY,
     U_SHAPED,
-    W_SHAPED,
     PARTICIPATION
   ].freeze
 

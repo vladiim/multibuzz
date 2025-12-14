@@ -126,7 +126,7 @@ class Events::IngestionServiceTest < ActiveSupport::TestCase
 
   test "should reject events when free tier at limit" do
     account.update!(billing_status: :free_forever, plan: plans(:free))
-    Rails.cache.write(account.usage_cache_key, 10_000)
+    Rails.cache.write(account.usage_cache_key, Billing::FREE_EVENT_LIMIT)
     @events_data = [valid_event_data]
 
     assert_no_difference -> { Event.count } do

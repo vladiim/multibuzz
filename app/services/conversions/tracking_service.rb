@@ -12,11 +12,15 @@ module Conversions
       @funnel = params[:funnel]
       @properties = params[:properties] || {}
       @is_test = is_test
+      @user_id = params[:user_id]
+      @is_acquisition = params[:is_acquisition] || false
+      @inherit_acquisition = params[:inherit_acquisition] || false
     end
 
     private
 
-    attr_reader :account, :event_id, :visitor_id_param, :conversion_type, :revenue, :currency, :funnel, :properties, :is_test
+    attr_reader :account, :event_id, :visitor_id_param, :conversion_type, :revenue, :currency,
+      :funnel, :properties, :is_test, :user_id, :is_acquisition, :inherit_acquisition
 
     def run
       return validation_error if validation_error
@@ -74,11 +78,31 @@ module Conversions
         revenue: normalized_revenue,
         currency: currency.presence || "USD",
         funnel: funnel,
-        properties: properties,
+        properties: normalized_properties,
         converted_at: conversion_timestamp,
         journey_session_ids: [],
-        is_test: is_test
-      )
+        is_test: is_test,
+        identity_id: resolved_identity&.id,
+        is_acquisition: is_acquisition
+      ).tap { |c| c.inherit_acquisition = inherit_acquisition }
+    end
+
+    def resolved_identity
+      return nil unless user_id.present?
+
+      @resolved_identity ||= account.identities.find_by(external_id: user_id)
+    end
+
+    # Flatten nested "properties" key if present
+    # Input:  { "url" => "...", "properties" => { "location" => "Sydney" } }
+    # Output: { "url" => "...", "location" => "Sydney" }
+    def normalized_properties
+      return properties unless properties.is_a?(Hash)
+
+      nested = properties["properties"] || properties[:properties]
+      return properties unless nested.is_a?(Hash)
+
+      properties.except("properties", :properties).merge(nested)
     end
 
     def conversion_timestamp

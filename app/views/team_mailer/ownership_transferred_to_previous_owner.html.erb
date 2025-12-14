@@ -1,0 +1,18 @@
+<h1>Ownership of <%= @account.name %> has been transferred</h1>
+
+<p>You have transferred ownership of <%= @account.name %> to <%= @new_owner.email %>.</p>
+
+<p>Your role has been changed to Admin. You still have access to:</p>
+
+<ul>
+  <li>Managing team members (except the owner)</li>
+  <li>Billing and subscription management</li>
+  <li>API key management</li>
+  <li>Attribution model configuration</li>
+</ul>
+
+<p>If you did not initiate this transfer, please contact support immediately.</p>
+
+<p>
+  <%= link_to "Go to Dashboard", dashboard_url %>
+</p>

@@ -1,6 +1,9 @@
 <div class="min-h-screen bg-gray-100">
   <%= render "layouts/nav" %>
   <%= render "shared/billing_banner", account: current_account %>
+  <%= render "shared/onboarding_banner", account: current_account %>
+  <%= render "shared/test_mode_banner" %>
+  <%= render "shared/setup_guidance_banner", account: current_account %>
 
   <div class="py-6">
     <main>
@@ -51,17 +54,31 @@
                   </svg>
                   Filters
                 </button>
-                <!-- Export Dropdown -->
+                <!-- Export Dropdown (Coming Soon) -->
                 <div data-controller="toggle" data-toggle-close-on-click-outside-value="true" class="relative">
                   <button type="button" data-action="click->toggle#toggle" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                     </svg>
                     Export
+                    <span class="ml-1 px-1.5 py-0.5 text-xs bg-amber-100 text-amber-700 rounded">Soon</span>
                   </button>
-                  <div data-toggle-target="content" class="hidden absolute right-0 mt-1 w-36 bg-white border border-gray-200 rounded-md shadow-lg z-10">
-                    <%= link_to "Export CSV", dashboard_conversions_path(format: :csv), class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" %>
-                    <%= link_to "Export PDF", dashboard_conversions_path(format: :pdf), class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" %>
+                  <div data-toggle-target="content" class="hidden absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10 p-2">
+                    <p class="px-2 py-1 text-xs text-gray-500 mb-2">Coming soon! Join the waitlist:</p>
+                    <%= waitlist_button(
+                      feature_key: "csv_export",
+                      feature_name: "CSV Export",
+                      context: "dashboard_export",
+                      label: "CSV Export",
+                      class: "block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded"
+                    ) %>
+                    <%= waitlist_button(
+                      feature_key: "api_extract",
+                      feature_name: "API Extract",
+                      context: "dashboard_export",
+                      label: "API Extract",
+                      class: "block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded"
+                    ) %>
                   </div>
                 </div>
               </div>
@@ -88,6 +105,25 @@
           <div class="mt-6">
             <!-- Conversions Tab -->
             <div data-toggle-target="content" data-value="conversions">
+              <!-- CLV Mode Toggle -->
+              <div data-testid="clv-mode-toggle" class="flex items-center gap-2 mb-4">
+                <span class="text-sm font-medium text-gray-500">View:</span>
+                <div class="inline-flex rounded-lg p-1 bg-gray-100">
+                  <%= form_with url: dashboard_clv_mode_path, method: :patch, data: { turbo_frame: "_top" } do %>
+                    <input type="hidden" name="mode" value="transactions">
+                    <button type="submit" class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors <%= clv_mode? ? 'text-gray-600 hover:bg-gray-200' : 'bg-white text-gray-900 shadow-sm' %>">
+                      Transactions
+                    </button>
+                  <% end %>
+                  <%= form_with url: dashboard_clv_mode_path, method: :patch, data: { turbo_frame: "_top" } do %>
+                    <input type="hidden" name="mode" value="clv">
+                    <button type="submit" class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors <%= clv_mode? ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:bg-gray-200' %>">
+                      Customer LTV
+                    </button>
+                  <% end %>
+                </div>
+              </div>
+
               <%= turbo_frame_tag "conversions_#{current_account.prefix_id}",
                 src: dashboard_conversions_path(request.query_parameters),
                 loading: :lazy do %>
