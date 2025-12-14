@@ -195,6 +195,14 @@ class Sessions::ClickIdCaptureServiceTest < ActiveSupport::TestCase
     assert ClickIdentifiers.plcid?("plcid_123456")
   end
 
+  test "detects plcid with path suffix" do
+    # Real-world patterns from Google Business Profile
+    assert ClickIdentifiers.plcid?("plcid_788967457395580423/contact")
+    assert ClickIdentifiers.plcid?("plcid_788967457395580423/contact-us")
+    assert ClickIdentifiers.plcid?("plcid_788967457395580423/about-us.html")
+    assert ClickIdentifiers.plcid?("plcid_123456/info")
+  end
+
   test "rejects invalid plcid patterns" do
     refute ClickIdentifiers.plcid?("plcid_")
     refute ClickIdentifiers.plcid?("plcid_abc")
@@ -207,6 +215,27 @@ class Sessions::ClickIdCaptureServiceTest < ActiveSupport::TestCase
   test "extracts plcid from utm_term" do
     assert_equal "plcid_8067905893793481977", ClickIdentifiers.plcid_from_utm_term("plcid_8067905893793481977")
     assert_nil ClickIdentifiers.plcid_from_utm_term("some_keyword")
+  end
+
+  test "extracts plcid from utm_term with path suffix" do
+    assert_equal "plcid_788967457395580423", ClickIdentifiers.plcid_from_utm_term("plcid_788967457395580423/contact")
+    assert_equal "plcid_123456", ClickIdentifiers.plcid_from_utm_term("plcid_123456/about-us.html")
+  end
+
+  # === Click ID Detection in UTM Values ===
+
+  test "detects click ids in utm values" do
+    assert_equal "gclid", ClickIdentifiers.detect_click_id_in_utm("gclid_abc123")
+    assert_equal "fbclid", ClickIdentifiers.detect_click_id_in_utm("fbclid=xyz789")
+    assert_equal "msclkid", ClickIdentifiers.detect_click_id_in_utm("msclkid_test")
+    assert_equal "rdt_cid", ClickIdentifiers.detect_click_id_in_utm("rdt_cid=reddit123")
+  end
+
+  test "returns nil for non-click-id utm values" do
+    assert_nil ClickIdentifiers.detect_click_id_in_utm("brand_campaign")
+    assert_nil ClickIdentifiers.detect_click_id_in_utm("keyword")
+    assert_nil ClickIdentifiers.detect_click_id_in_utm(nil)
+    assert_nil ClickIdentifiers.detect_click_id_in_utm("")
   end
 
   private

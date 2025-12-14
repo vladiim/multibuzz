@@ -174,8 +174,9 @@ module ClickIdentifiers
   # =============================================================================
   # Google Places Click ID (Special Case)
   # Appears in utm_term as "plcid_NNNN" for Google Business Profile / Maps traffic
+  # May have path suffix like "plcid_123456/contact" or "plcid_123456/about-us"
   # =============================================================================
-  PLCID_PATTERN = /\Aplcid_\d+\z/.freeze
+  PLCID_PATTERN = /\Aplcid_\d+/.freeze
 
   def self.plcid_from_utm_term(utm_term)
     return nil if utm_term.blank?
@@ -185,5 +186,54 @@ module ClickIdentifiers
 
   def self.plcid?(utm_term)
     plcid_from_utm_term(utm_term).present?
+  end
+
+  # =============================================================================
+  # Generic Click ID Detection in UTM Parameters
+  # Some click IDs may appear in utm_content, utm_term, etc. with suffixes
+  # =============================================================================
+
+  # Patterns for click IDs that may appear in UTM values (not just URL params)
+  # These are more relaxed - just check if the value starts with the click ID pattern
+  UTM_CLICK_ID_PATTERNS = {
+    # Google
+    /\Agclid[_=]?/i => GCLID,
+    /\Agbraid[_=]?/i => GBRAID,
+    /\Awbraid[_=]?/i => WBRAID,
+    /\Adclid[_=]?/i => DCLID,
+    # Microsoft
+    /\Amsclkid[_=]?/i => MSCLKID,
+    # Meta
+    /\Afbclid[_=]?/i => FBCLID,
+    # TikTok
+    /\Attclid[_=]?/i => TTCLID,
+    # LinkedIn
+    /\Ali_fat_id[_=]?/i => LI_FAT_ID,
+    # Twitter
+    /\Atwclid[_=]?/i => TWCLID,
+    # Pinterest
+    /\Aepik[_=]?/i => EPIK,
+    # Snapchat
+    /\Asclid[_=]?/i => SCLID,
+    /\AScCid[_=]?/i => SCCLID,
+    # Reddit
+    /\Ardt_cid[_=]?/i => RDT_CID,
+    # Quora
+    /\Aqclid[_=]?/i => QCLID,
+    # Yahoo
+    /\Avmcid[_=]?/i => VMCID,
+    # Yandex
+    /\Ayclid[_=]?/i => YCLID,
+    # Seznam
+    /\Asznclid[_=]?/i => SZNCLID
+  }.freeze
+
+  def self.detect_click_id_in_utm(utm_value)
+    return nil if utm_value.blank?
+
+    UTM_CLICK_ID_PATTERNS.each do |pattern, click_id|
+      return click_id if utm_value.match?(pattern)
+    end
+    nil
   end
 end
