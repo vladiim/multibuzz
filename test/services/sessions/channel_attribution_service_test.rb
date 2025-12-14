@@ -235,6 +235,23 @@ class Sessions::ChannelAttributionServiceTest < ActiveSupport::TestCase
     assert_equal Channels::ORGANIC_SEARCH, service(utm_data, "https://www.google.com/").call
   end
 
+  test "returns organic_search for plcid with path suffix" do
+    # Real-world patterns from Google Business Profile
+    utm_data = { utm_term: "plcid_788967457395580423/contact" }
+
+    assert_equal Channels::ORGANIC_SEARCH, service(utm_data).call
+  end
+
+  test "returns organic_search for plcid with various path suffixes" do
+    suffixes = ["/contact-us", "/about", "/info", "/contact.html", "/contact.php"]
+
+    suffixes.each do |suffix|
+      utm_data = { utm_term: "plcid_123456789#{suffix}" }
+      assert_equal Channels::ORGANIC_SEARCH, service(utm_data).call,
+        "Expected organic_search for plcid with suffix #{suffix}"
+    end
+  end
+
   test "utm_medium takes priority over plcid" do
     # If someone explicitly set utm_medium, respect that
     utm_data = { utm_medium: "email", utm_term: "plcid_123456789" }
