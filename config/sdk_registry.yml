@@ -8,7 +8,7 @@ ruby:
   package_manager: RubyGems
   package_url: https://rubygems.org/gems/mbuzz
   github_url: https://github.com/mbuzzco/mbuzz-ruby
-  docs_url: /docs/sdks/ruby
+  docs_url: /docs/getting-started
   status: live
   released_at: '2025-11-01'
   category: server_side
@@ -43,7 +43,7 @@ python:
   package_manager: PyPI
   package_url: null
   github_url: https://github.com/multibuzz/mbuzz-python
-  docs_url: /docs/sdks/python
+  docs_url: /docs/getting-started
   status: coming_soon
   released_at: null
   category: server_side
@@ -110,9 +110,9 @@ nodejs:
   package_manager: npm
   package_url: null
   github_url: https://github.com/multibuzz/mbuzz-node
-  docs_url: /docs/sdks/nodejs
-  status: coming_soon
-  released_at: null
+  docs_url: /docs/getting-started
+  status: live
+  released_at: '2025-12-15'
   category: server_side
   sort_order: 2
   install_command: npm install mbuzz
