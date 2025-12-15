@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_12_005938) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_17_035849) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -68,10 +68,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_12_005938) do
     t.datetime "onboarding_completed_at"
     t.datetime "activated_at"
     t.datetime "onboarding_skipped_at"
+    t.string "shopify_domain"
+    t.string "shopify_webhook_secret"
     t.index ["billing_status"], name: "index_accounts_on_billing_status"
     t.index ["free_until"], name: "index_accounts_on_free_until"
     t.index ["payment_failed_at"], name: "index_accounts_on_payment_failed_at"
     t.index ["plan_id"], name: "index_accounts_on_plan_id"
+    t.index ["shopify_domain"], name: "index_accounts_on_shopify_domain", unique: true, where: "(shopify_domain IS NOT NULL)"
     t.index ["slug"], name: "index_accounts_on_slug", unique: true
     t.index ["status"], name: "index_accounts_on_status"
     t.index ["stripe_customer_id"], name: "index_accounts_on_stripe_customer_id", unique: true
@@ -394,8 +397,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_12_005938) do
   add_foreign_key "visitors", "accounts"
   add_foreign_key "visitors", "identities"
 
-  # NOTE: TimescaleDB features excluded from schema.rb (hypertables, continuous aggregates, compression)
-  # These are created via migrations in production but skipped in test environment.
-  # See: db/migrate/*_convert_events_to_hypertable.rb, *_convert_sessions_to_hypertable.rb,
-  #      *_create_channel_attribution_daily_cagg.rb, *_create_source_attribution_daily_cagg.rb
+  # NOTE: TimescaleDB hypertables and continuous aggregates are excluded from schema.rb
+  # They are created via migrations which skip in test environment.
+  # Production uses db:migrate which runs the TimescaleDB migrations.
+  # See: create_hypertable for events and sessions
+  # See: create_continuous_aggregate for channel_attribution_daily, source_attribution_daily
 end

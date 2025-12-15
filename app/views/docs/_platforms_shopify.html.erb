@@ -1,0 +1,196 @@
+<%= render_markdown <<~MD
+  # Shopify Integration
+
+  Multi-touch attribution for Shopify stores. Track the complete customer journey from first click to purchase.
+
+  ---
+
+  ## How It Works
+
+  The Shopify integration consists of two parts:
+
+  1. **Theme App Extension** - Client-side JavaScript that tracks visitors and stores attribution data in Shopify's cart
+  2. **Webhook Receiver** - Server-side endpoint that receives order webhooks and creates conversions with attribution
+
+  ### Attribution Flow
+
+  ```
+  1. Visitor lands on store (UTM captured, visitor_id set)
+  2. Visitor browses pages (session tracked)
+  3. Visitor adds to cart (visitor_id stored in cart attributes)
+  4. Visitor completes checkout (cart attributes persist)
+  5. Shopify sends orders/paid webhook (visitor_id in payload)
+  6. mbuzz creates conversion with full attribution
+  ```
+
+  ---
+
+  ## Installation
+
+  ### 1. Install the Shopify App
+
+  Install the mbuzz Shopify app from the Shopify App Store:
+
+  [Install mbuzz for Shopify →](https://apps.shopify.com/mbuzz)
+
+  ### 2. Configure API Key
+
+  After installation:
+
+  1. Open the mbuzz app in your Shopify admin
+  2. Enter your mbuzz API key (from [your dashboard](#{dashboard_path}))
+  3. Click **Save**
+
+  ### 3. Enable Theme Extension
+
+  1. Go to **Online Store** → **Themes** → **Customize**
+  2. Click **App embeds** (left sidebar)
+  3. Enable **mbuzz Attribution**
+  4. Save
+
+  ---
+
+  ## What Gets Tracked
+
+  ### Automatic Tracking
+
+  The Theme App Extension automatically tracks:
+
+  | Event | Trigger | Data Captured |
+  |-------|---------|---------------|
+  | Session start | Page load | UTM parameters, referrer, landing page |
+  | Page view | Each page | URL, timestamp |
+  | Add to cart | Product added | Product ID, variant, price |
+  | Checkout start | Begin checkout | Cart total |
+
+  ### Webhook Events
+
+  | Webhook | Trigger | mbuzz Action |
+  |---------|---------|--------------|
+  | `orders/paid` | Order completed | Create purchase conversion with attribution |
+  | `customers/create` | Account created | Link visitor to customer identity |
+
+  ---
+
+  ## Visitor Identification
+
+  ### How Visitors Are Tracked
+
+  The integration uses cookies to track visitors:
+
+  - `_mbuzz_vid` - Visitor ID (2 year expiry)
+  - `_mbuzz_sid` - Session ID (30 minute expiry)
+
+  These IDs are automatically stored in Shopify's cart `note_attributes`, which persist through checkout and appear in webhooks.
+
+  ### Cross-Device Attribution
+
+  When a customer:
+  1. Browses on mobile (visitor A created)
+  2. Returns on desktop (visitor B created)
+  3. Creates account on desktop → `identify()` links visitor B
+  4. Logs in on mobile → `identify()` links visitor A
+  5. Purchases → Full attribution across both devices
+
+  ---
+
+  ## Manual Tracking
+
+  For custom events beyond automatic tracking:
+
+  ```javascript
+  // Track custom event
+  mbuzz.event('viewed_pricing', { plan: 'enterprise' });
+
+  // Track custom conversion (non-purchase)
+  mbuzz.conversion('demo_request', { revenue: 0 });
+
+  // Manual identify (if not using Shopify customer accounts)
+  mbuzz.identify(customerId, { email: 'customer@example.com' });
+  ```
+
+  ---
+
+  ## Configuration Options
+
+  Configure the Theme Extension in your theme customizer:
+
+  | Option | Default | Description |
+  |--------|---------|-------------|
+  | API Key | (required) | Your mbuzz API key |
+  | Auto Track Page Views | `true` | Track page views automatically |
+  | Auto Track Add to Cart | `true` | Track add to cart events |
+  | Auto Identify | `true` | Identify customers at checkout |
+
+  ---
+
+  ## Backend Configuration
+
+  ### Add Shopify Domain to Account
+
+  In your mbuzz dashboard, configure:
+
+  1. **Shopify Domain** - Your `xxx.myshopify.com` domain
+  2. **Webhook Secret** - From Shopify Admin → Settings → Notifications → Webhooks
+
+  The webhook secret is used to verify incoming webhooks are genuinely from Shopify.
+
+  ---
+
+  ## Testing
+
+  ### Verify Installation
+
+  1. Visit your store in an incognito window
+  2. Open browser DevTools → Application → Cookies
+  3. Confirm `_mbuzz_vid` and `_mbuzz_sid` cookies are set
+
+  ### Test Webhook Flow
+
+  1. Create a test order (use Shopify's test gateway)
+  2. Check mbuzz dashboard for the conversion
+  3. Verify attribution data matches the visitor's sessions
+
+  ---
+
+  ## Troubleshooting
+
+  ### No Conversions Appearing
+
+  - **Check webhook secret** - Must match exactly (no spaces)
+  - **Check Shopify domain** - Must be your `.myshopify.com` domain
+  - **Check visitor exists** - Visitor must have browsed with mbuzz cookies set
+
+  ### Attribution Shows "Direct" Only
+
+  - Ensure visitor landed with UTM parameters or referrer
+  - Check that `_mbuzz_vid` cookie persisted through checkout
+  - Verify cart attributes contain `_mbuzz_visitor_id`
+
+  ### Webhook Not Received
+
+  1. Go to Shopify Admin → Settings → Notifications → Webhooks
+  2. Check webhook delivery logs for errors
+  3. Verify webhook URL is `https://mbuzz.co/webhooks/shopify`
+
+  ---
+
+  ## Privacy & Data
+
+  ### Data Collected
+
+  - Visitor ID (anonymous, randomly generated)
+  - Session data (UTM, referrer, pages viewed)
+  - Order data (ID, total, customer email if provided)
+
+  ### Data NOT Collected
+
+  - Credit card information
+  - Customer passwords
+  - Full order line items
+
+  ### Cookie Consent
+
+  The mbuzz cookies are first-party and used for analytics. They may require consent under GDPR/CCPA. Consult your legal team for compliance requirements.
+MD
+%>

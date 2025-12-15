@@ -116,15 +116,15 @@ python:
 php:
   key: php
   name: PHP
-  display_name: PHP / Laravel
+  display_name: PHP / Laravel / Symfony
   icon: php
   package_name: mbuzz/mbuzz-php
   package_manager: Composer
   package_url: https://packagist.org/packages/mbuzz/mbuzz-php
   github_url: https://github.com/mbuzzco/mbuzz-php
   docs_url: /docs/getting-started
-  status: development
-  released_at: null
+  status: live
+  released_at: '2025-12-16'
   category: server_side
   sort_order: 4
   install_command: composer require mbuzz/mbuzz-php
@@ -175,6 +175,12 @@ php:
         // ...
         LaravelMiddleware::class,
     ];
+
+    // Symfony - register the EventSubscriber
+    // In config/services.yaml:
+    services:
+        Mbuzz\Adapter\SymfonySubscriber:
+            tags: ['kernel.event_subscriber']
 
     // Or for plain PHP:
     use Mbuzz\Mbuzz;
