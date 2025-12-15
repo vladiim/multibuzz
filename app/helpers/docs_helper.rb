@@ -25,7 +25,7 @@ module DocsHelper
 
   # Common code examples for documentation
   def api_key_configuration_example
-    code_tabs({
+    code_tabs(filter_live_examples({
       ruby: {
         label: 'Ruby',
         syntax: 'ruby',
@@ -35,6 +35,19 @@ module DocsHelper
             api_key: ENV['MBUZZ_API_KEY'],
             debug: Rails.env.development?
           )
+        CODE
+      },
+      nodejs: {
+        label: 'Node.js',
+        syntax: 'javascript',
+        code: <<~CODE
+          // app.js or server.js
+          const mbuzz = require('mbuzz');
+
+          mbuzz.init({
+            apiKey: process.env.MBUZZ_API_KEY,
+            debug: process.env.NODE_ENV === 'development'
+          });
         CODE
       },
       curl: {
@@ -49,11 +62,11 @@ module DocsHelper
                https://mbuzz.co/api/v1/events
         CODE
       }
-    })
+    }))
   end
 
   def api_key_usage_example
-    code_tabs({
+    code_tabs(filter_live_examples({
       ruby: {
         label: 'Ruby',
         syntax: 'ruby',
@@ -63,6 +76,18 @@ module DocsHelper
 
           # Gem adds header to all requests:
           # Authorization: Bearer sk_test_...
+        CODE
+      },
+      nodejs: {
+        label: 'Node.js',
+        syntax: 'javascript',
+        code: <<~CODE
+          // Automatically handled by SDK
+          const mbuzz = require('mbuzz');
+          mbuzz.init({ apiKey: process.env.MBUZZ_API_KEY });
+
+          // SDK adds header to all requests:
+          // Authorization: Bearer sk_test_...
         CODE
       },
       curl: {
@@ -75,11 +100,11 @@ module DocsHelper
             -d '{"event_type": "page_view", "visitor_id": "abc123..."}'
         CODE
       }
-    }, default: :curl)
+    }), default: :curl)
   end
 
   def track_event_example
-    code_tabs({
+    code_tabs(filter_live_examples({
       ruby: {
         label: 'Ruby',
         syntax: 'ruby',
@@ -87,6 +112,15 @@ module DocsHelper
           # Track user interactions
           Mbuzz.event("page_view", url: "/pricing")
           Mbuzz.event("add_to_cart", product_id: "SKU-123", price: 49.99)
+        CODE
+      },
+      nodejs: {
+        label: 'Node.js',
+        syntax: 'javascript',
+        code: <<~CODE
+          // Track user interactions
+          mbuzz.event('page_view', { url: '/pricing' });
+          mbuzz.event('add_to_cart', { productId: 'SKU-123', price: 49.99 });
         CODE
       },
       curl: {
@@ -105,10 +139,36 @@ module DocsHelper
             }'
         CODE
       }
-    }, default: :ruby)
+    }), default: :ruby)
   end
 
   private
+
+  # Filter code examples to only include live SDKs
+  # Maps example keys to SDK registry keys
+  SDK_KEY_MAP = {
+    ruby: :ruby,
+    nodejs: :nodejs,
+    python: :python,
+    php: :php,
+    curl: :rest_api
+  }.freeze
+
+  # Always show these regardless of SDK status (API reference)
+  ALWAYS_SHOW = %i[curl].freeze
+
+  def filter_live_examples(examples)
+    examples.select do |key, _|
+      ALWAYS_SHOW.include?(key) || sdk_live?(SDK_KEY_MAP[key])
+    end
+  end
+
+  def sdk_live?(sdk_key)
+    return true if sdk_key.nil?
+
+    sdk = SdkRegistry.find(sdk_key.to_s)
+    sdk&.live?
+  end
 
   def markdown_renderer
     @markdown_renderer ||= Redcarpet::Markdown.new(

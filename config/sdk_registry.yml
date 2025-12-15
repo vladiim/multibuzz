@@ -114,25 +114,58 @@ nodejs:
   status: coming_soon
   released_at: null
   category: server_side
-  sort_order: 5
+  sort_order: 2
   install_command: npm install mbuzz
   init_code: |
-    // app.js or initialization file
+    // app.js or server.js
     const mbuzz = require('mbuzz');
-    mbuzz.init({ apiKey: process.env.MBUZZ_API_KEY });
+
+    mbuzz.init({
+      apiKey: process.env.MBUZZ_API_KEY,
+      debug: process.env.NODE_ENV === 'development'
+    });
   event_code: |
+    // Track user interactions
     mbuzz.event('page_view', { url: req.url });
+    mbuzz.event('add_to_cart', { productId: 'SKU-123', price: 49.99 });
+
+    // Group events into funnels
+    mbuzz.event('signup_start', { funnel: 'signup', source: 'homepage' });
   conversion_code: |
+    // Track conversions with revenue
     mbuzz.conversion('purchase', {
       revenue: order.total,
       orderId: order.id
     });
-  identify_code: |
-    mbuzz.identify(user.id, {
-      email: user.email,
-      name: user.name
+
+    // Acquisition conversion (marks signup as THE acquisition moment)
+    mbuzz.conversion('signup', {
+      userId: user.id,
+      isAcquisition: true
     });
-  middleware_code: null
+
+    // Recurring revenue (inherits attribution from acquisition)
+    mbuzz.conversion('payment', {
+      userId: user.id,
+      revenue: 49.00,
+      inheritAcquisition: true
+    });
+  identify_code: |
+    // On signup or login - links visitor to user
+    mbuzz.identify(user.id, {
+      traits: {
+        email: user.email,
+        name: user.name,
+        plan: user.plan
+      }
+    });
+  middleware_code: |
+    // Express middleware - handles cookies and session tracking
+    const express = require('express');
+    const mbuzz = require('mbuzz');
+
+    const app = express();
+    app.use(mbuzz.middleware());
   verification_command: "mbuzz.event('test', { url: 'https://test.com' });"
 
 shopify:
@@ -214,7 +247,7 @@ rest_api:
   status: live
   released_at: '2025-10-01'
   category: api
-  sort_order: 2
+  sort_order: 10
   install_command: null
   init_code: |
     # Set your API key as an environment variable
