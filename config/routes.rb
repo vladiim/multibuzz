@@ -23,6 +23,14 @@ Rails.application.routes.draw do
       post "identify", to: "identify#create"
       get "validate", to: "validate#show"
       get "health", to: "health#show"
+
+      # Test endpoints (test/dev environments only)
+      if Rails.env.test? || Rails.env.development?
+        namespace :test do
+          resource :setup, only: [ :create, :destroy ]
+          resource :verification, only: [ :show, :destroy ]
+        end
+      end
     end
   end
 
