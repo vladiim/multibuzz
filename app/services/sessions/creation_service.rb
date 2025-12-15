@@ -114,7 +114,18 @@ module Sessions
     end
 
     def channel
-      @channel ||= Sessions::ChannelAttributionService.new(normalized_utm, referrer, click_ids).call
+      @channel ||= Sessions::ChannelAttributionService.new(
+        normalized_utm,
+        referrer,
+        click_ids,
+        page_host: page_host
+      ).call
+    end
+
+    def page_host
+      @page_host ||= URI.parse(url).host
+    rescue URI::InvalidURIError
+      nil
     end
   end
 end
