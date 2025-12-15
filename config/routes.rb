@@ -12,6 +12,7 @@ Rails.application.routes.draw do
   # Webhooks (before API routes for clarity)
   namespace :webhooks do
     post "stripe", to: "stripe#create"
+    post "shopify", to: "shopify#create"
   end
 
   # API routes
