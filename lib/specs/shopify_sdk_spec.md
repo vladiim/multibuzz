@@ -1,6 +1,6 @@
 # Shopify Integration Specification
 
-**Status**: Planning
+**Status**: In Progress
 **Last Updated**: 2025-12-17
 **Target**: Shopify App Store Distribution
 
@@ -93,13 +93,10 @@ Merchants can customize default behavior and track custom events.
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `autoInit` | boolean | `true` | Track init event on page load |
-| `autoIdentify` | boolean | `true` | Auto-identify at checkout/registration |
+| `autoPageView` | boolean | `true` | Track page view on load |
+| `autoIdentify` | boolean | `true` | Auto-identify logged in customers |
 | `autoAddToCart` | boolean | `true` | Track add to cart events |
-| `autoCheckout` | boolean | `true` | Track checkout start |
-| `initEventName` | string | `"init"` | Customize init event name |
-| `addToCartEventName` | string | `"add_to_cart"` | Customize event name |
-| `checkoutEventName` | string | `"checkout"` | Customize event name |
+| `debug` | boolean | `false` | Log to console |
 
 ### Custom Events
 
@@ -123,108 +120,86 @@ mbuzz.identify(customerId, { email: 'customer@example.com' });
 
 ## Shopify App Structure
 
-New repository: `mbuzz-shopify`
+Repository: `/Users/vlad/code/mbuzz-shopify` (created 2025-12-17)
 
 ```
 mbuzz-shopify/
-├── shopify.app.toml              # App manifest
+├── shopify.app.toml              # App manifest (webhooks → mbuzz.co)
 ├── package.json
 ├── app/                          # Remix app
-│   ├── routes/
-│   │   ├── app._index.tsx        # Settings page
-│   │   └── auth.$.tsx            # OAuth
-│   └── shopify.server.ts
+│   ├── root.tsx
+│   ├── shopify.server.ts         # Shopify API client + Prisma
+│   └── routes/
+│       ├── app._index.tsx        # Settings page (API key config)
+│       ├── app.tsx               # App layout with Polaris
+│       ├── auth.$.tsx            # OAuth callback
+│       └── webhooks.tsx          # Webhook handler (fallback)
 ├── extensions/
-│   ├── mbuzz-tracking/           # Theme App Extension
-│   │   ├── assets/
-│   │   │   └── mbuzz-shopify.js
-│   │   ├── blocks/
-│   │   │   └── tracking.liquid
-│   │   └── shopify.extension.toml
-│   └── mbuzz-pixel/              # Web Pixel
-│       ├── src/index.js
+│   └── mbuzz-tracking/           # Theme App Extension
+│       ├── assets/
+│       │   └── mbuzz-shopify.js  # Client tracking (340 lines)
+│       ├── blocks/
+│       │   └── tracking.liquid   # Theme block with settings
 │       └── shopify.extension.toml
-└── prisma/
-    └── schema.prisma
+├── prisma/
+│   └── schema.prisma             # Session + ShopSettings storage
+├── tsconfig.json
+├── vite.config.ts
+└── README.md
 ```
 
 ---
 
 ## Backend: Webhook Receiver
 
-### Files to Create
+### Files Created ✅
 
-| File | Purpose |
-|------|---------|
-| `app/controllers/webhooks/shopify_controller.rb` | Receive and verify webhooks |
-| `app/services/shopify/webhook_handler.rb` | Route to topic handlers |
-| `app/services/shopify/webhook_verifier.rb` | HMAC-SHA256 verification |
-| `app/services/shopify/handlers/base.rb` | Base handler class |
-| `app/services/shopify/handlers/order_paid.rb` | Create purchase conversion |
-| `app/services/shopify/handlers/customer_created.rb` | Create identity record |
-| `app/models/shopify_event.rb` | Idempotency tracking |
+| File | Purpose | Status |
+|------|---------|--------|
+| `app/constants/shopify.rb` | Centralized constants | ✅ Done |
+| `app/controllers/webhooks/shopify_controller.rb` | Receive and verify webhooks | ✅ Done |
+| `app/services/shopify/webhook_handler.rb` | Route to topic handlers | ✅ Done |
+| `app/services/shopify/webhook_verifier.rb` | HMAC-SHA256 verification | ✅ Done |
+| `app/services/shopify/handlers/base.rb` | Base handler class | ✅ Done |
+| `app/services/shopify/handlers/order_paid.rb` | Create purchase conversion | ✅ Done |
+| `app/services/shopify/handlers/customer_created.rb` | Link visitor to identity | ✅ Done |
 
-### Migrations
+### Migrations ✅
 
-| Migration | Purpose |
-|-----------|---------|
-| `add_shopify_fields_to_accounts` | Add `shopify_domain`, `shopify_webhook_secret` |
-| `create_shopify_events` | Idempotency table for webhook deduplication |
+| Migration | Purpose | Status |
+|-----------|---------|--------|
+| `add_shopify_fields_to_accounts` | Add `shopify_domain`, `shopify_webhook_secret` | ✅ Done |
+
+**Note:** Idempotency uses conversion properties (`shopify_order_id`) instead of separate table.
 
 ### Webhook Topics
 
 | Topic | Handler | Action |
 |-------|---------|--------|
 | `orders/paid` | `OrderPaid` | Create purchase conversion with attribution |
-| `customers/create` | `CustomerCreated` | Create identity record |
+| `customers/create` | `CustomerCreated` | Link visitor to identity |
 
-### Signature Verification
+### Test Coverage ✅
 
-Follow Stripe webhook pattern:
-1. Extract `X-Shopify-Hmac-SHA256` header
-2. Compute HMAC-SHA256 of raw body with webhook secret
-3. Compare with constant-time comparison
-4. Reject if mismatch
+| Test File | Tests | Status |
+|-----------|-------|--------|
+| `test/controllers/webhooks/shopify_controller_test.rb` | 7 tests | ✅ Passing |
+| `test/services/shopify/webhook_verifier_test.rb` | 6 tests | ✅ Passing |
+| `test/services/shopify/handlers/order_paid_test.rb` | 5 tests | ✅ Passing |
+| `test/services/shopify/handlers/customer_created_test.rb` | 5 tests | ✅ Passing |
 
-### Extracting Visitor ID
-
-Parse `note_attributes` array from webhook payload:
-```json
-{
-  "note_attributes": [
-    { "name": "_mbuzz_visitor_id", "value": "abc123..." },
-    { "name": "_mbuzz_session_id", "value": "xyz789..." }
-  ]
-}
-```
-
-### Idempotency
-
-Use `ShopifyEvent` model to track processed webhook IDs:
-- `shopify_event_id` (unique index)
-- `topic`
-- `processed_at`
+**Total: 23 tests, all passing**
 
 ---
 
-## Documentation Page
+## Documentation Page ✅
 
-Create documentation at `mbuzz.co/docs/platforms/shopify`.
+Created at `mbuzz.co/docs/platforms-shopify`.
 
-### Files to Modify
-
-| File | Change |
+| File | Status |
 |------|--------|
-| `app/controllers/docs_controller.rb` | Add "platforms-shopify" to ALLOWED_PAGES |
-| `app/views/docs/_platforms_shopify.html.erb` | Create documentation content |
-
-### Documentation Sections
-
-1. **Installation** - Install from Shopify App Store
-2. **Configuration** - Enter API key from mbuzz dashboard
-3. **Tracked Events** - init, identify, add_to_cart, checkout, order
-4. **JavaScript API** - Custom events and configuration
-5. **Troubleshooting** - Common issues and solutions
+| `app/controllers/docs_controller.rb` | ✅ Updated (added "platforms-shopify") |
+| `app/views/docs/_platforms_shopify.html.erb` | ✅ Created |
 
 ---
 
@@ -248,35 +223,34 @@ Follow existing SDK cookie spec from `lib/specs/sdk_rollout.md`:
 
 ## Implementation Phases
 
-### Phase 1: Webhook Receiver (Backend)
+### Phase 1: Webhook Receiver (Backend) ✅ COMPLETE
 
-- [ ] Create `Shopify::WebhookVerifier` service
-- [ ] Create `Shopify::WebhookHandler` router
-- [ ] Create `Shopify::Handlers::OrderPaid` handler
-- [ ] Create `Shopify::Handlers::CustomerCreated` handler
-- [ ] Create `ShopifyEvent` model for idempotency
-- [ ] Add migrations
-- [ ] Create `Webhooks::ShopifyController`
-- [ ] Add route
-- [ ] Write unit tests
+- [x] Create `Shopify::WebhookVerifier` service
+- [x] Create `Shopify::WebhookHandler` router
+- [x] Create `Shopify::Handlers::OrderPaid` handler
+- [x] Create `Shopify::Handlers::CustomerCreated` handler
+- [x] Add migrations (shopify_domain, shopify_webhook_secret)
+- [x] Create `Webhooks::ShopifyController`
+- [x] Add route (`POST /webhooks/shopify`)
+- [x] Write unit tests (23 tests passing)
 
-### Phase 2: Documentation Page
+### Phase 2: Documentation Page ✅ COMPLETE
 
-- [ ] Add "platforms-shopify" to DocsController ALLOWED_PAGES
-- [ ] Create `_platforms_shopify.html.erb` partial
-- [ ] Document installation, configuration, events, JS API
+- [x] Add "platforms-shopify" to DocsController ALLOWED_PAGES
+- [x] Create `_platforms_shopify.html.erb` partial
 
-### Phase 3: Theme App Extension (mbuzz-shopify repo)
+### Phase 3: Theme App Extension (mbuzz-shopify repo) ✅ SCAFFOLDED
 
-- [ ] Scaffold app with Shopify CLI
-- [ ] Generate theme extension
-- [ ] Implement cookie management
-- [ ] Implement cart attribute storage
-- [ ] Implement init event (UTM capture)
-- [ ] Implement add_to_cart tracking
-- [ ] Implement checkout tracking
-- [ ] Implement form interception for auto-identify
-- [ ] Create Liquid block with settings
+- [x] Create app structure (Remix + Shopify)
+- [x] Create theme extension structure
+- [x] Implement cookie management (`_mbuzz_vid`, `_mbuzz_sid`)
+- [x] Implement cart attribute storage
+- [x] Implement session tracking (UTM capture)
+- [x] Implement page view tracking
+- [x] Implement add_to_cart tracking (fetch intercept + form submit)
+- [x] Implement auto-identify for logged in customers
+- [x] Create Liquid block with settings UI
+- [ ] **NEXT: Authenticate with Shopify CLI**
 - [ ] Test with development store
 
 ### Phase 4: Web Pixel
@@ -286,19 +260,18 @@ Follow existing SDK cookie spec from `lib/specs/sdk_rollout.md`:
 - [ ] Implement identify call from pixel
 - [ ] Test checkout flow end-to-end
 
-### Phase 5: App Settings Page
+### Phase 5: App Settings Page ✅ SCAFFOLDED
 
-- [ ] Create settings route in Remix app
-- [ ] Build API key input UI
-- [ ] Implement connection test
-- [ ] Deploy
+- [x] Create settings route in Remix app
+- [x] Build API key input UI (Polaris)
+- [x] Prisma model for ShopSettings
+- [ ] Deploy to Fly.io
 
 ### Phase 6: End-to-End Testing
 
 - [ ] Install on real test store
-- [ ] Verify init event with UTM
+- [ ] Verify session tracking with UTM
 - [ ] Verify add_to_cart tracking
-- [ ] Verify checkout tracking
 - [ ] Verify auto-identify at checkout
 - [ ] Verify purchase webhook creates conversion
 - [ ] Verify attribution appears in dashboard
@@ -312,45 +285,65 @@ Follow existing SDK cookie spec from `lib/specs/sdk_rollout.md`:
 
 ---
 
+## Next Steps (Morning Session)
+
+1. **Authenticate Shopify CLI**
+   ```bash
+   cd /Users/vlad/code/mbuzz-shopify
+   npm install
+   npm run dev  # Will prompt for Shopify auth
+   ```
+
+2. **Select development store** when prompted
+
+3. **Test theme extension**
+   - Enable in theme customizer
+   - Enter mbuzz API key
+   - Verify cookies set
+   - Verify cart attributes stored
+
+4. **Make test purchase** and verify conversion in mbuzz dashboard
+
+---
+
 ## Edge Cases
 
 | Scenario | Behavior |
 |----------|----------|
-| No visitor_id in cart | Log warning, create conversion without attribution |
-| Webhook replay | Skip via idempotency table |
+| No visitor_id in cart | Return warning, skip conversion |
+| Webhook replay | Idempotency via `shopify_order_id` in conversion properties |
 | JavaScript blocked | Webhook still fires but no attribution |
 | Cross-device purchase | Use identify at login to link |
-| Guest checkout | Auto-identify from checkout email |
+| Guest checkout | Auto-identify from checkout email (Web Pixel) |
 | Cart abandoned then recovered | visitor_id persists in cart attributes |
 
 ---
 
 ## Testing Checklist
 
-### Webhook Handler Tests
+### Webhook Handler Tests ✅
 
-- [ ] Signature validation rejects invalid signatures
-- [ ] Signature validation accepts valid signatures
-- [ ] Idempotency prevents duplicate processing
-- [ ] OrderPaid creates conversion with correct revenue
-- [ ] OrderPaid extracts visitor_id from note_attributes
-- [ ] CustomerCreated creates identity record
-- [ ] Missing visitor_id handles gracefully
+- [x] Signature validation rejects invalid signatures
+- [x] Signature validation accepts valid signatures
+- [x] Idempotency prevents duplicate processing
+- [x] OrderPaid creates conversion with correct revenue
+- [x] OrderPaid extracts visitor_id from note_attributes
+- [x] CustomerCreated links visitor to identity
+- [x] Missing visitor_id handles gracefully (returns warning)
 
-### Client-Side Tests (Manual)
+### Client-Side Tests (Manual) - PENDING
 
 - [ ] Fresh visit sets visitor cookie
-- [ ] Fresh visit fires init event with UTM
+- [ ] Fresh visit fires session event with UTM
 - [ ] Return visit uses existing visitor cookie
 - [ ] Session cookie expires after 30 min inactivity
 - [ ] Session cookie extends on activity
 - [ ] Cart attributes updated on page load
 - [ ] Add to cart fires event with product details
-- [ ] Checkout fires event
 - [ ] Form submit triggers identify
-- [ ] Checkout email triggers identify
+- [ ] Checkout email triggers identify (Web Pixel)
 
-### End-to-End Tests
+### End-to-End Tests - PENDING
 
 - [ ] UTM click → browse → add to cart → checkout → purchase → conversion with attribution
 - [ ] Guest checkout with auto-identify
