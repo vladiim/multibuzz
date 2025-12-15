@@ -1,26 +1,20 @@
 # Product
 
-* Data wrong
-[] channel classification
-[] visit count / channel count
-
-* Dogfood - tracking via mbuzz
-    * Dashboard for people moving through: sign up, test data, live data, customer
-* Live (sign up, ruby gems)
-* All contact forms - emailed to me
 * Add USD to pricing
 * Rollout SDKs: python, php, shopify, magento etc
     1. Launch everywhere (Hacker News, Product Hunt, Reddit, X, LinkedIn, YouTube etc.). Spend a week giving your MVP its best shot.
     2. (if #1 didn't take off) — Rebrand. New name, new logo, new design, new landing page, new headline. Same product. Repeat #1
     3. (if #2 didn't take off) — Target new market segment experiencing the same problem your product solves. Repeat #1. Repeat #2.
 * export data (csv - simple + api - with property queries)
+* Channel mapping rules e.g. placeid = 'Local', url = 'x' = 'Internal Referral'
 * Cancel conversion (via id)
-* For complex B2B funnels, use multiple conversion types (MQL, SQL, Opportunity, etc.)
 * CLV (doesn't work the same as new customer acquisition - think it through)
 * Other channels: phone, email
 * Push conversions to server-side ads (with rules on attribution)
+  - Also map to spend for CAC, payback period, ROAS etc.
 * integrate with ads to get payback period
 * change bigger defaults e.g. customer storage for 2 years etc
+
 
 ***
 
