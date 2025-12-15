@@ -16,6 +16,9 @@ import { Controller } from "@hotwired/stimulus"
 //     <div data-toggle-target="content" data-value="python">Python code</div>
 //   </div>
 //
+// Global sync: All toggle controllers with the same persist key sync together.
+// When you select "Python" in one code block, all others switch to Python too.
+//
 export default class extends Controller {
   static targets = ["content", "trigger", "input", "filters"]
   static classes = ["hidden", "active", "inactive", "activeTab", "inactiveTab"]
@@ -39,12 +42,38 @@ export default class extends Controller {
       this.boundCloseOnClickOutside = this.closeOnClickOutside.bind(this)
       document.addEventListener("click", this.boundCloseOnClickOutside)
     }
+
+    // Listen for global sync events (same persist key = sync together)
+    if (this.hasPersistValue) {
+      this.boundHandleGlobalSync = this.handleGlobalSync.bind(this)
+      document.addEventListener("toggle:sync", this.boundHandleGlobalSync)
+    }
   }
 
   disconnect() {
     if (this.boundCloseOnClickOutside) {
       document.removeEventListener("click", this.boundCloseOnClickOutside)
     }
+    if (this.boundHandleGlobalSync) {
+      document.removeEventListener("toggle:sync", this.boundHandleGlobalSync)
+    }
+  }
+
+  // Handle sync events from other toggle controllers
+  handleGlobalSync(event) {
+    const { persistKey, value, source } = event.detail
+    // Only sync if same persist key and not the source element
+    if (persistKey === this.persistValue && source !== this.element) {
+      // Only switch if this controller has that value available
+      if (this.hasValueOption(value)) {
+        this.switchTo(value)
+      }
+    }
+  }
+
+  // Check if this toggle has a specific value option
+  hasValueOption(value) {
+    return this.triggerTargets.some(trigger => trigger.dataset.value === value)
   }
 
   closeOnClickOutside(event) {
@@ -92,6 +121,20 @@ export default class extends Controller {
     const value = event.currentTarget.dataset.value
     this.switchTo(value)
     this.savePreference(value)
+    this.broadcastSync(value)
+  }
+
+  // Broadcast selection to all other toggle controllers with same persist key
+  broadcastSync(value) {
+    if (!this.hasPersistValue) return
+
+    document.dispatchEvent(new CustomEvent("toggle:sync", {
+      detail: {
+        persistKey: this.persistValue,
+        value: value,
+        source: this.element
+      }
+    }))
   }
 
   switchTo(value) {
