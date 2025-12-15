@@ -13,6 +13,10 @@ module Dashboard
         @avg_visits_by_channel ||= compute_averages(visits_per_conversion)
       end
 
+      def avg_days_by_channel
+        @avg_days_by_channel ||= compute_averages(days_per_conversion)
+      end
+
       private
 
       attr_reader :scope
@@ -42,6 +46,32 @@ module Dashboard
         @visits_per_conversion ||= scope
           .group(:conversion_id)
           .count
+      end
+
+      def days_per_conversion
+        @days_per_conversion ||= calculate_days_per_conversion
+      end
+
+      def calculate_days_per_conversion
+        conversion_ids = scope.distinct.pluck(:conversion_id)
+        return {} if conversion_ids.empty?
+
+        Conversion
+          .where(id: conversion_ids)
+          .where.not(journey_session_ids: [])
+          .joins(
+            "INNER JOIN LATERAL (
+              SELECT MIN(s.started_at) as first_session_at
+              FROM sessions s
+              WHERE s.id = ANY(conversions.journey_session_ids)
+            ) first_session ON true"
+          )
+          .pluck(
+            :id,
+            Arel.sql("EXTRACT(EPOCH FROM (conversions.converted_at - first_session.first_session_at)) / 86400.0")
+          )
+          .to_h
+          .transform_values(&:to_f)
       end
     end
   end

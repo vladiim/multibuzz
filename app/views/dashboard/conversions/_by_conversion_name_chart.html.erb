@@ -3,11 +3,30 @@
   breakdown_dimension = @filter_params[:breakdown_dimension] || "conversion_type"
   dimensions = Dashboard::ConversionDimensionsService.new(current_account).call[:dimensions]
   current_dimension = dimensions.find { |d| d[:key] == breakdown_dimension } || dimensions.first
+  selected_metric = @filter_params[:metric]
+
+  chart_metric = case selected_metric
+    when "revenue", "aov" then "revenue"
+    when "avg_channels" then "avg_channels"
+    when "avg_visits" then "avg_visits"
+    when "avg_days" then "avg_days"
+    else "credits"
+    end
+
+  chart_titles = {
+    "conversions" => "Conversions",
+    "revenue" => "Revenue",
+    "aov" => "Revenue",
+    "avg_channels" => "Avg Channels",
+    "avg_visits" => "Avg Visits",
+    "avg_days" => "Avg Days"
+  }
+  chart_title = chart_titles[selected_metric] || "Conversions"
 %>
 <div class="bg-white p-6 rounded-lg shadow mb-6">
   <div class="flex items-center justify-between mb-4">
     <div class="flex items-center gap-3">
-      <h3 class="text-lg font-medium text-gray-900">Conversions by</h3>
+      <h3 class="text-lg font-medium text-gray-900"><%= chart_title %> by</h3>
       <form action="<%= dashboard_path %>" method="get" data-turbo-frame="_top">
         <%= hidden_filter_params(except: :breakdown_dimension) %>
         <select name="breakdown_dimension"
@@ -35,7 +54,7 @@
     <div id="conversion-name-chart"
       data-controller="chart"
       data-chart-type-value="bar"
-      data-chart-metric-value="credits"
+      data-chart-metric-value="<%= chart_metric %>"
       data-chart-data-value="<%= by_conversion_name.to_json %>"
       class="h-64">
     </div>
