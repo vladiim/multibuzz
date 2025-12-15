@@ -142,8 +142,6 @@ module DocsHelper
     }), default: :ruby)
   end
 
-  private
-
   # Filter code examples to only include live SDKs
   # Maps example keys to SDK registry keys
   SDK_KEY_MAP = {
@@ -162,6 +160,8 @@ module DocsHelper
       ALWAYS_SHOW.include?(key) || sdk_live?(SDK_KEY_MAP[key])
     end
   end
+
+  private
 
   def sdk_live?(sdk_key)
     return true if sdk_key.nil?

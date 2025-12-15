@@ -214,7 +214,7 @@ MD
   - **Permanent**: Persists beyond cookies
   - **Your ID**: Use your application's user identifier
 
-  Link visitors to users with `Mbuzz.identify()` or `Mbuzz.alias()`.
+  Link visitors to users with the `identify()` method.
 
   ### Events
 
@@ -242,25 +242,67 @@ MD
   - Filter dashboard to specific customer journeys
 
   **Example funnels**:
-  ```ruby
-  # Signup funnel
-  Mbuzz.event("pricing_view", funnel: "signup")
-  Mbuzz.event("signup_start", funnel: "signup")
-  Mbuzz.event("signup_complete", funnel: "signup")
+MD
+%>
 
-  # Purchase funnel
-  Mbuzz.event("add_to_cart", funnel: "purchase")
-  Mbuzz.event("checkout_started", funnel: "purchase")
-  Mbuzz.event("purchase_complete", funnel: "purchase")
-  ```
+<%= code_tabs(filter_live_examples({
+  ruby: {
+    label: 'Ruby',
+    syntax: 'ruby',
+    code: <<~CODE
+      # Signup funnel
+      Mbuzz.event("pricing_view", funnel: "signup")
+      Mbuzz.event("signup_start", funnel: "signup")
+      Mbuzz.event("signup_complete", funnel: "signup")
 
+      # Purchase funnel
+      Mbuzz.event("add_to_cart", funnel: "purchase")
+      Mbuzz.event("checkout_started", funnel: "purchase")
+      Mbuzz.event("purchase_complete", funnel: "purchase")
+    CODE
+  },
+  nodejs: {
+    label: 'Node.js',
+    syntax: 'javascript',
+    code: <<~CODE
+      // Signup funnel
+      mbuzz.event('pricing_view', { funnel: 'signup' });
+      mbuzz.event('signup_start', { funnel: 'signup' });
+      mbuzz.event('signup_complete', { funnel: 'signup' });
+
+      // Purchase funnel
+      mbuzz.event('add_to_cart', { funnel: 'purchase' });
+      mbuzz.event('checkout_started', { funnel: 'purchase' });
+      mbuzz.event('purchase_complete', { funnel: 'purchase' });
+    CODE
+  },
+  curl: {
+    label: 'REST API',
+    syntax: 'bash',
+    code: <<~CODE
+      # Include funnel in event properties
+      curl -X POST https://mbuzz.co/api/v1/events \\
+        -H "Authorization: Bearer $MBUZZ_API_KEY" \\
+        -H "Content-Type: application/json" \\
+        -d '{
+          "events": [{
+            "event_type": "signup_start",
+            "visitor_id": "abc123...",
+            "funnel": "signup"
+          }]
+        }'
+    CODE
+  }
+}), default: :ruby) %>
+
+<%= render_markdown <<~MD
   **Dashboard filtering**: Use the funnel dropdown to view specific funnels. "All Funnels" shows everything.
 
   ---
 
   ## Automatic Session Tracking
 
-  The Ruby gem includes Rack middleware that automatically creates sessions when visitors land on your site.
+  The SDK includes middleware that automatically creates sessions when visitors land on your site.
 
   **What happens on each request**:
   1. SDK checks for existing visitor cookie (`_mbuzz_vid`)
@@ -288,15 +330,43 @@ MD
   **Important**: Session POSTs are async and non-blocking. Your page render is not slowed.
 
   **Disable if needed**:
+MD
+%>
 
-  ```ruby
-  # config/initializers/mbuzz.rb
-  Mbuzz.init(
-    api_key: ENV['MBUZZ_API_KEY'],
-    skip_paths: ["/health", "/admin"]  # Skip specific paths
-  )
-  ```
+<%= code_tabs(filter_live_examples({
+  ruby: {
+    label: 'Ruby',
+    syntax: 'ruby',
+    code: <<~CODE
+      # config/initializers/mbuzz.rb
+      Mbuzz.init(
+        api_key: ENV['MBUZZ_API_KEY'],
+        skip_paths: ["/health", "/admin"]  # Skip specific paths
+      )
+    CODE
+  },
+  nodejs: {
+    label: 'Node.js',
+    syntax: 'javascript',
+    code: <<~CODE
+      // app.js or server.js
+      mbuzz.init({
+        apiKey: process.env.MBUZZ_API_KEY,
+        skipPaths: ['/health', '/admin']  // Skip specific paths
+      });
+    CODE
+  },
+  curl: {
+    label: 'REST API',
+    syntax: 'text',
+    code: <<~CODE
+      N/A - Session tracking is SDK-only.
+      REST API users manage their own sessions.
+    CODE
+  }
+}), default: :ruby) %>
 
+<%= render_markdown <<~MD
   ---
 
   ## User Identification (identify)
@@ -745,20 +815,58 @@ MD
   **Why**: Tracking failures should never break your application.
 
   **Debugging**:
+MD
+%>
 
-  ```ruby
-  # Enable debug mode in initializer
-  Mbuzz.init(api_key: ENV['MBUZZ_API_KEY'], debug: true)
+<%= code_tabs(filter_live_examples({
+  ruby: {
+    label: 'Ruby',
+    syntax: 'ruby',
+    code: <<~CODE
+      # Enable debug mode in initializer
+      Mbuzz.init(api_key: ENV['MBUZZ_API_KEY'], debug: true)
 
-  # Check return values
-  result = Mbuzz.event("test_event", foo: "bar")
-  if result
-    puts "Tracking succeeded"
-  else
-    puts "Tracking failed (check logs)"
-  end
-  ```
+      # Check return values
+      result = Mbuzz.event("test_event", foo: "bar")
+      if result
+        puts "Tracking succeeded"
+      else
+        puts "Tracking failed (check logs)"
+      end
+    CODE
+  },
+  nodejs: {
+    label: 'Node.js',
+    syntax: 'javascript',
+    code: <<~CODE
+      // Enable debug mode in initializer
+      mbuzz.init({ apiKey: process.env.MBUZZ_API_KEY, debug: true });
 
+      // Check return values
+      const result = await mbuzz.event('test_event', { foo: 'bar' });
+      if (result) {
+        console.log('Tracking succeeded');
+      } else {
+        console.log('Tracking failed (check logs)');
+      }
+    CODE
+  },
+  curl: {
+    label: 'REST API',
+    syntax: 'bash',
+    code: <<~CODE
+      # Check HTTP response codes
+      curl -v -X POST https://mbuzz.co/api/v1/events \\
+        -H "Authorization: Bearer $MBUZZ_API_KEY" \\
+        -H "Content-Type: application/json" \\
+        -d '{"events": [{"event_type": "test", "visitor_id": "abc123"}]}'
+
+      # 2xx = success, 4xx/5xx = failure
+    CODE
+  }
+}), default: :ruby) %>
+
+<%= render_markdown <<~MD
   ---
 
   ## Testing
@@ -807,10 +915,10 @@ MD
 
   Now that you understand the 4-call model:
 
-  1. **Initialize** - Set up `Mbuzz.init()` in your app
-  2. **Track events** - Call `Mbuzz.event()` for user interactions
-  3. **Record conversions** - Call `Mbuzz.conversion()` for revenue events
-  4. **Identify users** - Call `Mbuzz.identify()` on signup/login (enables cross-device)
+  1. **Initialize** - Set up `init()` in your app
+  2. **Track events** - Call `event()` for user interactions
+  3. **Record conversions** - Call `conversion()` for revenue events
+  4. **Identify users** - Call `identify()` on signup/login (enables cross-device)
   5. **View attribution** - Check [your dashboard](#{dashboard_path}) for attribution data
 
   **Need help?** Check out:
