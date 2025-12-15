@@ -35,10 +35,11 @@ module Sessions
       ReferrerSources::Mediums::NEWS => Channels::REFERRAL
     }.freeze
 
-    def initialize(utm_data, referrer, click_ids = {})
+    def initialize(utm_data, referrer, click_ids = {}, page_host: nil)
       @utm_data = utm_data || {}
       @referrer = referrer
       @click_ids = click_ids || {}
+      @page_host = page_host
     end
 
     def call
@@ -46,6 +47,7 @@ module Sessions
       return channel_from_utm_source if utm_source.present?
       return Channels::ORGANIC_SEARCH if plcid_present?
       return channel_from_click_ids if click_ids.any?
+      return Channels::DIRECT if internal_referrer?
       return channel_from_referrer if referrer_domain.present?
 
       Channels::DIRECT
@@ -62,7 +64,7 @@ module Sessions
 
     private
 
-    attr_reader :utm_data, :referrer, :click_ids
+    attr_reader :utm_data, :referrer, :click_ids, :page_host
 
     def channel_from_utm_or_fallback
       match = UTM_MEDIUM_PATTERNS.find { |pattern, _| utm_medium.match?(pattern) }
@@ -144,6 +146,17 @@ module Sessions
       URI.parse(url).host
     rescue URI::InvalidURIError
       nil
+    end
+
+    def internal_referrer?
+      return false unless page_host.present?
+      return false unless referrer_domain.present?
+
+      normalize_host(referrer_domain) == normalize_host(page_host)
+    end
+
+    def normalize_host(host)
+      host.to_s.downcase.sub(/^www\./, "").sub(/:\d+$/, "")
     end
   end
 end

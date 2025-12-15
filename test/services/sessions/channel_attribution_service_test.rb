@@ -375,9 +375,76 @@ class Sessions::ChannelAttributionServiceTest < ActiveSupport::TestCase
     assert_equal Channels::ORGANIC_SOCIAL, service({}, "facebook.com").call
   end
 
+  # ==========================================
+  # Internal Referrer Detection Tests
+  # Same-host referrers should be treated as direct
+  # ==========================================
+
+  test "returns direct when referrer host matches page host" do
+    result = service({}, "https://example.com/page1", {}, page_host: "example.com").call
+
+    assert_equal Channels::DIRECT, result
+  end
+
+  test "returns direct when referrer host matches page host with www" do
+    result = service({}, "https://www.example.com/page1", {}, page_host: "example.com").call
+
+    assert_equal Channels::DIRECT, result
+  end
+
+  test "returns direct when page host has www and referrer does not" do
+    result = service({}, "https://example.com/page1", {}, page_host: "www.example.com").call
+
+    assert_equal Channels::DIRECT, result
+  end
+
+  test "returns referral when referrer host differs from page host" do
+    result = service({}, "https://other-site.com/page", {}, page_host: "example.com").call
+
+    assert_equal Channels::REFERRAL, result
+  end
+
+  test "returns organic_search when referrer is google even with page_host" do
+    result = service({}, "https://google.com/search", {}, page_host: "example.com").call
+
+    assert_equal Channels::ORGANIC_SEARCH, result
+  end
+
+  test "utm takes priority over internal referrer detection" do
+    utm_data = { utm_medium: "email" }
+    result = service(utm_data, "https://example.com/page", {}, page_host: "example.com").call
+
+    assert_equal Channels::EMAIL, result
+  end
+
+  test "internal referrer detection handles port numbers in referrer" do
+    result = service({}, "https://example.com:443/page", {}, page_host: "example.com").call
+
+    assert_equal Channels::DIRECT, result
+  end
+
+  test "internal referrer detection is case insensitive" do
+    result = service({}, "https://EXAMPLE.COM/page", {}, page_host: "example.com").call
+
+    assert_equal Channels::DIRECT, result
+  end
+
+  test "internal referrer detection handles nil page_host gracefully" do
+    result = service({}, "https://example.com/page", {}, page_host: nil).call
+
+    assert_equal Channels::REFERRAL, result
+  end
+
+  test "internal referrer detection handles subdomains correctly" do
+    # subdomain.example.com referring to example.com should be referral (different hosts)
+    result = service({}, "https://blog.example.com/post", {}, page_host: "example.com").call
+
+    assert_equal Channels::REFERRAL, result
+  end
+
   private
 
-  def service(utm_data = {}, referrer = nil, click_ids = {})
-    Sessions::ChannelAttributionService.new(utm_data, referrer, click_ids)
+  def service(utm_data = {}, referrer = nil, click_ids = {}, page_host: nil)
+    Sessions::ChannelAttributionService.new(utm_data, referrer, click_ids, page_host: page_host)
   end
 end
