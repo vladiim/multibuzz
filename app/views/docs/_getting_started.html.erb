@@ -36,7 +36,7 @@
 MD
 %>
 
-<%= code_tabs({
+<%= code_tabs(filter_live_examples({
   ruby: {
     label: 'Ruby',
     syntax: 'ruby',
@@ -48,6 +48,15 @@ MD
       bundle install
     CODE
   },
+  nodejs: {
+    label: 'Node.js',
+    syntax: 'bash',
+    code: <<~CODE
+      npm install mbuzz
+      # or
+      yarn add mbuzz
+    CODE
+  },
   curl: {
     label: 'REST API',
     syntax: 'text',
@@ -56,7 +65,7 @@ MD
       Use any HTTP client.
     CODE
   }
-}, default: :ruby) %>
+}), default: :ruby) %>
 
 <%= render_markdown <<~MD
   ---
@@ -65,7 +74,7 @@ MD
 MD
 %>
 
-<%= code_tabs({
+<%= code_tabs(filter_live_examples({
   ruby: {
     label: 'Ruby',
     syntax: 'ruby',
@@ -75,6 +84,19 @@ MD
         api_key: ENV['MBUZZ_API_KEY'],
         debug: Rails.env.development?
       )
+    CODE
+  },
+  nodejs: {
+    label: 'Node.js',
+    syntax: 'javascript',
+    code: <<~CODE
+      // app.js or server.js
+      const mbuzz = require('mbuzz');
+
+      mbuzz.init({
+        apiKey: process.env.MBUZZ_API_KEY,
+        debug: process.env.NODE_ENV === 'development'
+      });
     CODE
   },
   curl: {
@@ -89,7 +111,7 @@ MD
            https://mbuzz.co/api/v1/events
     CODE
   }
-}, default: :ruby) %>
+}), default: :ruby) %>
 
 <%= render_markdown <<~MD
   **⚠️ Security**: Never commit API keys to git. Use environment variables.
@@ -102,7 +124,7 @@ MD
 MD
 %>
 
-<%= code_tabs({
+<%= code_tabs(filter_live_examples({
   ruby: {
     label: 'Ruby',
     syntax: 'ruby',
@@ -115,6 +137,20 @@ MD
       # Group events into funnels for focused analysis
       Mbuzz.event("signup_start", funnel: "signup", source: "homepage")
       Mbuzz.event("signup_complete", funnel: "signup")
+    CODE
+  },
+  nodejs: {
+    label: 'Node.js',
+    syntax: 'javascript',
+    code: <<~CODE
+      // Track user interactions
+      mbuzz.event('page_view', { url: '/pricing' });
+      mbuzz.event('add_to_cart', { productId: 'SKU-123', price: 49.99 });
+      mbuzz.event('checkout_started', { cartTotal: 99.99 });
+
+      // Group events into funnels for focused analysis
+      mbuzz.event('signup_start', { funnel: 'signup', source: 'homepage' });
+      mbuzz.event('signup_complete', { funnel: 'signup' });
     CODE
   },
   curl: {
@@ -135,7 +171,7 @@ MD
         }'
     CODE
   }
-}, default: :ruby) %>
+}), default: :ruby) %>
 
 <%= render_markdown <<~MD
   ---
@@ -269,7 +305,7 @@ MD
 MD
 %>
 
-<%= code_tabs({
+<%= code_tabs(filter_live_examples({
   ruby: {
     label: 'Ruby',
     syntax: 'ruby',
@@ -282,6 +318,20 @@ MD
           plan: current_user.plan
         }
       )
+    CODE
+  },
+  nodejs: {
+    label: 'Node.js',
+    syntax: 'javascript',
+    code: <<~CODE
+      // On signup or login - links visitor automatically
+      mbuzz.identify(user.id, {
+        traits: {
+          email: user.email,
+          name: user.name,
+          plan: user.plan
+        }
+      });
     CODE
   },
   curl: {
@@ -302,7 +352,7 @@ MD
         }'
     CODE
   }
-}, default: :ruby) %>
+}), default: :ruby) %>
 
 <%= render_markdown <<~MD
   **When to call**:
@@ -376,7 +426,7 @@ MD
 MD
 %>
 
-<%= code_tabs({
+<%= code_tabs(filter_live_examples({
   ruby: {
     label: 'Ruby',
     syntax: 'ruby',
@@ -405,6 +455,31 @@ MD
       end
     CODE
   },
+  nodejs: {
+    label: 'Node.js',
+    syntax: 'javascript',
+    code: <<~CODE
+      // First track the conversion event
+      const result = await mbuzz.event('checkout_completed', {
+        orderId: order.id
+      });
+
+      // Then create the conversion linked to that event
+      if (result.success) {
+        const conversion = await mbuzz.conversion('purchase', {
+          eventId: result.eventId,
+          revenue: order.total
+        });
+
+        // Access attribution data
+        if (conversion.success) {
+          for (const [model, credits] of Object.entries(conversion.attribution.models)) {
+            console.log(`${model}: ${credits.map(c => c.channel).join(', ')}`);
+          }
+        }
+      }
+    CODE
+  },
   curl: {
     label: 'REST API',
     syntax: 'bash',
@@ -422,14 +497,14 @@ MD
         }'
     CODE
   }
-}, default: :ruby) %>
+}), default: :ruby) %>
 
 <%= render_markdown <<~MD
   **Option B: Visitor-based** (simpler, for direct conversions)
 MD
 %>
 
-<%= code_tabs({
+<%= code_tabs(filter_live_examples({
   ruby: {
     label: 'Ruby',
     syntax: 'ruby',
@@ -443,6 +518,20 @@ MD
         funnel: 'purchase',  # Optional: group into funnel
         properties: { plan: 'pro' }
       )
+    CODE
+  },
+  nodejs: {
+    label: 'Node.js',
+    syntax: 'javascript',
+    code: <<~CODE
+      // Create conversion directly from visitor ID
+      // (uses visitor's most recent session)
+      const conversion = await mbuzz.conversion('purchase', {
+        visitorId: mbuzzVisitorId,
+        revenue: order.total,
+        funnel: 'purchase',  // Optional: group into funnel
+        properties: { plan: 'pro' }
+      });
     CODE
   },
   curl: {
@@ -463,7 +552,7 @@ MD
         }'
     CODE
   }
-}, default: :ruby) %>
+}), default: :ruby) %>
 
 <%= render_markdown <<~MD
   ### Conversion Response
@@ -510,7 +599,7 @@ MD
 MD
 %>
 
-<%= code_tabs({
+<%= code_tabs(filter_live_examples({
   ruby: {
     label: 'Ruby',
     syntax: 'ruby',
@@ -533,6 +622,26 @@ MD
       end
     CODE
   },
+  nodejs: {
+    label: 'Node.js',
+    syntax: 'javascript',
+    code: <<~CODE
+      app.post('/orders', async (req, res) => {
+        const order = await Order.create(req.body);
+
+        // Track the event
+        mbuzz.event('checkout_completed', { orderId: order.id });
+
+        // Record the conversion with revenue
+        mbuzz.conversion('purchase', {
+          revenue: order.total,
+          orderId: order.id
+        });
+
+        res.redirect(`/orders/${order.id}`);
+      });
+    CODE
+  },
   curl: {
     label: 'REST API',
     syntax: 'bash',
@@ -552,14 +661,14 @@ MD
         }'
     CODE
   }
-}, default: :ruby) %>
+}), default: :ruby) %>
 
 <%= render_markdown <<~MD
   ### SaaS Subscription Tracking
 MD
 %>
 
-<%= code_tabs({
+<%= code_tabs(filter_live_examples({
   ruby: {
     label: 'Ruby',
     syntax: 'ruby',
@@ -582,6 +691,26 @@ MD
       end
     CODE
   },
+  nodejs: {
+    label: 'Node.js',
+    syntax: 'javascript',
+    code: <<~CODE
+      app.post('/subscriptions', async (req, res) => {
+        const subscription = await user.createSubscription({
+          plan: req.body.plan
+        });
+
+        // Record as conversion with MRR
+        mbuzz.conversion('subscription', {
+          revenue: subscription.monthlyRevenue,
+          plan: subscription.plan,
+          billingCycle: subscription.billingCycle
+        });
+
+        res.redirect('/dashboard');
+      });
+    CODE
+  },
   curl: {
     label: 'REST API',
     syntax: 'bash',
@@ -600,7 +729,7 @@ MD
         }'
     CODE
   }
-}, default: :ruby) %>
+}), default: :ruby) %>
 
 <%= render_markdown <<~MD
   ---
@@ -638,7 +767,7 @@ MD
 MD
 %>
 
-<%= code_tabs({
+<%= code_tabs(filter_live_examples({
   ruby: {
     label: 'Ruby',
     syntax: 'ruby',
@@ -650,6 +779,17 @@ MD
       )
     CODE
   },
+  nodejs: {
+    label: 'Node.js',
+    syntax: 'javascript',
+    code: <<~CODE
+      // app.js or server.js
+      mbuzz.init({
+        apiKey: process.env.MBUZZ_API_KEY,
+        enabled: process.env.NODE_ENV !== 'test'
+      });
+    CODE
+  },
   curl: {
     label: 'REST API',
     syntax: 'bash',
@@ -658,7 +798,7 @@ MD
       export MBUZZ_API_KEY=sk_test_your_key_here
     CODE
   }
-}, default: :ruby) %>
+}), default: :ruby) %>
 
 <%= render_markdown <<~MD
   ---
