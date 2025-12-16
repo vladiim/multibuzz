@@ -224,7 +224,7 @@ bin/rails test:controllers       # Controller tests only
 
 ### SDK Integration Tests
 
-End-to-end tests for mbuzz SDKs (Ruby, Node.js) live in `test/sdk_integration/`. These tests:
+End-to-end tests for mbuzz SDKs (Ruby, Node.js) live in `sdk_integration_tests/` (isolated from Rails test runner). These tests:
 - Automatically create test accounts/API keys for each run
 - Run minimal test apps with each SDK
 - Use Capybara + Playwright for browser automation
@@ -232,7 +232,7 @@ End-to-end tests for mbuzz SDKs (Ruby, Node.js) live in `test/sdk_integration/`.
 
 **Quick start:**
 ```bash
-cd test/sdk_integration
+cd sdk_integration_tests
 bundle install
 rake sdk:setup:all  # Install all dependencies
 ```
@@ -244,7 +244,7 @@ rake sdk:ruby      # Ruby SDK only
 rake sdk:node      # Node SDK only
 ```
 
-See [test/sdk_integration/README.md](test/sdk_integration/README.md) for detailed setup.
+See [sdk_integration_tests/README.md](sdk_integration_tests/README.md) for detailed setup.
 
 ---
 

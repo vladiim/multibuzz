@@ -7,7 +7,7 @@ End-to-end integration tests for mbuzz SDKs (Ruby, Node.js) using **Capybara + P
 **Key features:**
 - Ruby test files using Capybara DSL (familiar to Rails devs)
 - Playwright driver for reliable browser automation
-- Lives in `test/sdk_integration/` (isolated from minitest)
+- Lives in `sdk_integration_tests/` at project root (completely isolated from Rails test runner)
 - Can test all SDKs or one at a time
 
 ---
@@ -16,18 +16,22 @@ End-to-end integration tests for mbuzz SDKs (Ruby, Node.js) using **Capybara + P
 
 **This infrastructure MUST NOT impact the main app in ANY way:**
 
-- [ ] **Separate Gemfile**: `test/sdk_integration/Gemfile` - NOT added to main `Gemfile`
-- [ ] **Separate bundle**: Run `bundle install` inside `test/sdk_integration/` only
-- [ ] **Separate node_modules**: Each test app has its own `package.json` and `node_modules/`
-- [ ] **No main app dependencies**: capybara-playwright-driver is NOT in the main Gemfile
-- [ ] **Verification endpoint**: Only controller added to main app (one file, gated to test keys)
-- [ ] **No gems installed globally**: All gems isolated to `test/sdk_integration/`
+- [x] **Separate directory**: `sdk_integration_tests/` at project root (NOT inside `test/`)
+- [x] **Separate Gemfile**: `sdk_integration_tests/Gemfile` - NOT added to main `Gemfile`
+- [x] **Separate bundle**: Run `bundle install` inside `sdk_integration_tests/` only
+- [x] **Separate node_modules**: Each test app has its own `package.json` and `node_modules/`
+- [x] **No main app dependencies**: capybara-playwright-driver is NOT in the main Gemfile
+- [x] **Verification endpoint**: Only controller added to main app (one file, gated to test keys)
+- [x] **No gems installed globally**: All gems isolated to `sdk_integration_tests/`
+- [x] **Rails test isolation**: `rails test` does NOT load SDK integration tests
 
 **The only change to the main multibuzz app:**
 1. `app/controllers/api/v1/test_verification_controller.rb` (new file)
 2. One line in `config/routes.rb` (add test namespace route)
 
-**Everything else is completely isolated in `test/sdk_integration/`.**
+**Everything else is completely isolated in `sdk_integration_tests/`.**
+
+**Why outside `test/`?** Rails' test runner automatically loads all `*_test.rb` files under `test/`. By placing SDK integration tests at the project root, we ensure `rails test` never tries to load them (which would fail due to missing gems like capybara-playwright-driver).
 
 ---
 
@@ -35,35 +39,34 @@ End-to-end integration tests for mbuzz SDKs (Ruby, Node.js) using **Capybara + P
 
 ```
 /Users/vlad/code/multibuzz/
-  test/
-    sdk_integration/
-      README.md
-      Gemfile                    # capybara, capybara-playwright-driver
-      test_helper.rb             # Base class, Capybara setup
+  sdk_integration_tests/        # NOTE: At project root, NOT inside test/
+    README.md
+    Gemfile                    # capybara, capybara-playwright-driver
+    test_helper.rb             # Base class, Capybara setup
 
-      scenarios/                  # Shared test scenarios (Ruby)
-        first_visit_test.rb
-        returning_visit_test.rb
-        event_tracking_test.rb
-        identify_test.rb
-        conversion_test.rb
-        utm_capture_test.rb
-        concurrent_test.rb
+    scenarios/                  # Shared test scenarios (Ruby)
+      first_visit_test.rb
+      returning_visit_test.rb
+      event_tracking_test.rb
+      identify_test.rb
+      conversion_test.rb
+      utm_capture_test.rb
+      concurrent_test.rb
 
-      helpers/
-        verification_helper.rb   # Query verification endpoint
-        test_config.rb           # Env vars, URLs, ports
+    helpers/
+      verification_helper.rb   # Query verification endpoint
+      test_config.rb           # Env vars, URLs, ports
 
-      apps/
-        mbuzz_ruby_testapp/      # Sinatra + mbuzz-ruby (port 4001)
-          Gemfile
-          config.ru
-          app.rb
-          views/index.erb
+    apps/
+      mbuzz_ruby_testapp/      # Sinatra + mbuzz-ruby (port 4001)
+        Gemfile
+        config.ru
+        app.rb
+        views/index.erb
 
-        mbuzz_node_testapp/      # Express + mbuzz-node (port 4002)
-          package.json
-          server.ts
+      mbuzz_node_testapp/      # Express + mbuzz-node (port 4002)
+        package.json
+        server.ts
 ```
 
 **Naming convention:** `mbuzz_{sdk}_testapp`
@@ -80,7 +83,7 @@ End-to-end integration tests for mbuzz SDKs (Ruby, Node.js) using **Capybara + P
 
 ## Test Setup (Capybara + Playwright)
 
-**File:** `test/sdk_integration/Gemfile`
+**File:** `sdk_integration_tests/Gemfile`
 
 ```ruby
 source "https://rubygems.org"
@@ -91,7 +94,7 @@ gem "capybara-playwright-driver"
 gem "rake"
 ```
 
-**File:** `test/sdk_integration/test_helper.rb`
+**File:** `sdk_integration_tests/test_helper.rb`
 
 ```ruby
 require "minitest/autorun"
@@ -148,7 +151,7 @@ end
 
 ### mbuzz_ruby_testapp (Sinatra, port 4001)
 
-**Location:** `test/sdk_integration/apps/mbuzz_ruby_testapp/`
+**Location:** `sdk_integration_tests/apps/mbuzz_ruby_testapp/`
 
 **Gemfile:**
 ```ruby
@@ -173,7 +176,7 @@ run MbuzzRubyTestapp
 
 ### mbuzz_node_testapp (Express, port 4002)
 
-**Location:** `test/sdk_integration/apps/mbuzz_node_testapp/`
+**Location:** `sdk_integration_tests/apps/mbuzz_node_testapp/`
 
 **package.json:**
 ```json
@@ -218,7 +221,7 @@ end
 
 ## Test Scenarios (Ruby/Capybara)
 
-**Example:** `test/sdk_integration/scenarios/first_visit_test.rb`
+**Example:** `sdk_integration_tests/scenarios/first_visit_test.rb`
 
 ```ruby
 require_relative "../test_helper"
@@ -261,7 +264,7 @@ end
 
 ## Running Tests
 
-**File:** `test/sdk_integration/Rakefile`
+**File:** `sdk_integration_tests/Rakefile`
 
 ```ruby
 require "rake/testtask"
@@ -316,7 +319,7 @@ export MBUZZ_API_KEY=sk_test_your_key
 export MBUZZ_API_URL=http://localhost:3000/api/v1
 
 # One-time setup
-cd test/sdk_integration
+cd sdk_integration_tests
 bundle install
 cd apps/mbuzz_ruby_testapp && bundle install
 cd ../mbuzz_node_testapp && npm install
@@ -351,7 +354,7 @@ rake sdk:node
 - [ ] Test endpoint with curl
 
 ### Phase 2: Test Infrastructure
-- [ ] Create `test/sdk_integration/` directory
+- [ ] Create `sdk_integration_tests/` directory
 - [ ] Create Gemfile with capybara-playwright-driver
 - [ ] Create test_helper.rb with Capybara/Playwright setup
 - [ ] Create verification_helper.rb
@@ -377,12 +380,12 @@ rake sdk:node
 - [ ] concurrent_test.rb
 
 ### Phase 6: Documentation
-- [ ] `test/sdk_integration/README.md` with setup instructions
+- [ ] `sdk_integration_tests/README.md` with setup instructions
 - [ ] Troubleshooting guide
 
 ### Phase 7: Update Global README
 - [ ] Add section to main `README.md` about SDK integration testing
-- [ ] Brief description and link to `test/sdk_integration/README.md`
+- [ ] Brief description and link to `sdk_integration_tests/README.md`
 
 ---
 
@@ -393,16 +396,16 @@ Add to `/Users/vlad/code/multibuzz/README.md`:
 ```markdown
 ## SDK Integration Testing
 
-End-to-end tests for mbuzz SDKs live in `test/sdk_integration/`. These tests:
+End-to-end tests for mbuzz SDKs live in `sdk_integration_tests/`. These tests:
 - Run minimal test apps with each SDK (Ruby, Node.js)
 - Use Capybara + Playwright for browser automation
 - Verify data is correctly stored in the server
 
 **Quick start:**
 ```bash
-cd test/sdk_integration
+cd sdk_integration_tests
 bundle install
-# See test/sdk_integration/README.md for full setup
+# See sdk_integration_tests/README.md for full setup
 ```
 
 **Run tests:**
@@ -412,7 +415,7 @@ rake sdk:ruby      # Ruby SDK only
 rake sdk:node      # Node SDK only
 ```
 
-See [test/sdk_integration/README.md](test/sdk_integration/README.md) for detailed setup and troubleshooting.
+See [sdk_integration_tests/README.md](sdk_integration_tests/README.md) for detailed setup and troubleshooting.
 ```
 
 ---
@@ -424,27 +427,27 @@ See [test/sdk_integration/README.md](test/sdk_integration/README.md) for detaile
 - `config/routes.rb` (add test namespace)
 
 **Test infrastructure (to create):**
-- `test/sdk_integration/Gemfile`
-- `test/sdk_integration/test_helper.rb`
-- `test/sdk_integration/Rakefile`
-- `test/sdk_integration/helpers/verification_helper.rb`
-- `test/sdk_integration/helpers/test_config.rb`
+- `sdk_integration_tests/Gemfile`
+- `sdk_integration_tests/test_helper.rb`
+- `sdk_integration_tests/Rakefile`
+- `sdk_integration_tests/helpers/verification_helper.rb`
+- `sdk_integration_tests/helpers/test_config.rb`
 
 **Test apps (to create):**
-- `test/sdk_integration/apps/mbuzz_ruby_testapp/app.rb`
-- `test/sdk_integration/apps/mbuzz_ruby_testapp/Gemfile`
-- `test/sdk_integration/apps/mbuzz_ruby_testapp/config.ru`
-- `test/sdk_integration/apps/mbuzz_node_testapp/server.ts`
-- `test/sdk_integration/apps/mbuzz_node_testapp/package.json`
+- `sdk_integration_tests/apps/mbuzz_ruby_testapp/app.rb`
+- `sdk_integration_tests/apps/mbuzz_ruby_testapp/Gemfile`
+- `sdk_integration_tests/apps/mbuzz_ruby_testapp/config.ru`
+- `sdk_integration_tests/apps/mbuzz_node_testapp/server.ts`
+- `sdk_integration_tests/apps/mbuzz_node_testapp/package.json`
 
 **Test scenarios (to create):**
-- `test/sdk_integration/scenarios/first_visit_test.rb`
-- `test/sdk_integration/scenarios/event_tracking_test.rb`
-- `test/sdk_integration/scenarios/identify_test.rb`
-- `test/sdk_integration/scenarios/conversion_test.rb`
-- `test/sdk_integration/scenarios/utm_capture_test.rb`
-- `test/sdk_integration/scenarios/returning_visit_test.rb`
-- `test/sdk_integration/scenarios/concurrent_test.rb`
+- `sdk_integration_tests/scenarios/first_visit_test.rb`
+- `sdk_integration_tests/scenarios/event_tracking_test.rb`
+- `sdk_integration_tests/scenarios/identify_test.rb`
+- `sdk_integration_tests/scenarios/conversion_test.rb`
+- `sdk_integration_tests/scenarios/utm_capture_test.rb`
+- `sdk_integration_tests/scenarios/returning_visit_test.rb`
+- `sdk_integration_tests/scenarios/concurrent_test.rb`
 
 **SDKs (reference only):**
 - `../mbuzz-ruby/lib/mbuzz/middleware/tracking.rb`
