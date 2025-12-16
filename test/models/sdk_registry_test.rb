@@ -77,7 +77,7 @@ class SdkRegistryTest < ActiveSupport::TestCase
   end
 
   test "Sdk#coming_soon? returns true for coming_soon status" do
-    sdk = SdkRegistry.find(:python)
+    sdk = SdkRegistry.coming_soon.first
 
     assert sdk.coming_soon?
     assert_not sdk.live?
@@ -106,8 +106,8 @@ class SdkRegistryTest < ActiveSupport::TestCase
   end
 
   test "Sdk#status_badge returns human-readable badge" do
-    live_sdk = SdkRegistry.find(:ruby)
-    coming_soon_sdk = SdkRegistry.find(:python)
+    live_sdk = SdkRegistry.live.first
+    coming_soon_sdk = SdkRegistry.coming_soon.first
 
     assert_equal "Live", live_sdk.status_badge
     assert_equal "Coming Soon", coming_soon_sdk.status_badge

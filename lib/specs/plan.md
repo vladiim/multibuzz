@@ -5,6 +5,7 @@
     1. Launch everywhere (Hacker News, Product Hunt, Reddit, X, LinkedIn, YouTube etc.). Spend a week giving your MVP its best shot.
     2. (if #1 didn't take off) — Rebrand. New name, new logo, new design, new landing page, new headline. Same product. Repeat #1
     3. (if #2 didn't take off) — Target new market segment experiencing the same problem your product solves. Repeat #1. Repeat #2.
+* early customers (dan SME (not free), cody, mike, boris)
 * export data (csv - simple + api - with property queries)
 * Channel mapping rules e.g. placeid = 'Local', url = 'x' = 'Internal Referral'
 * Cancel conversion (via id)
