@@ -246,6 +246,69 @@ MD
 
   ---
 
+  ### Nested Windows (Recency Segments)
+MD
+%>
+
+<%= code_tabs({
+  aml: {
+    label: 'AML',
+    syntax: 'ruby',
+    code: <<~CODE
+      within_window 90.days do
+        within_window 30.days, weight: 0.6 do
+          time_decay half_life: 7.days
+        end
+        within_window 30.days..60.days, weight: 0.4 do
+          time_decay half_life: 14.days
+        end
+      end
+    CODE
+  }
+}, default: :aml) %>
+
+<%= render_markdown <<~MD
+  Creates time-based segments with different attribution rules:
+  - **Last 30 days**: 60% of credit with fast decay (7-day half-life)
+  - **31-60 days**: 40% of credit with slower decay (14-day half-life)
+
+  **Key features**:
+  - `weight:` parameter allocates portion of total credit (must sum to 1.0)
+  - Ranges like `30.days..60.days` define segment boundaries
+  - Each segment can use different algorithms (time_decay, apply, etc.)
+  - Empty segments automatically redistribute their weight
+
+  ---
+
+  ### Three-Segment Model
+MD
+%>
+
+<%= code_tabs({
+  aml: {
+    label: 'AML',
+    syntax: 'ruby',
+    code: <<~CODE
+      within_window 90.days do
+        within_window 30.days, weight: 0.6 do
+          time_decay half_life: 7.days
+        end
+        within_window 30.days..60.days, weight: 0.3 do
+          time_decay half_life: 14.days
+        end
+        within_window 60.days..90.days, weight: 0.1 do
+          apply 1.0, to: touchpoints, distribute: :equal
+        end
+      end
+    CODE
+  }
+}, default: :aml) %>
+
+<%= render_markdown <<~MD
+  Fine-grained recency weighting across three time periods.
+
+  ---
+
   ### High-Value Last Touch
 MD
 %>
@@ -281,12 +344,43 @@ MD
   **Required first line**. Defines the lookback period for attribution.
 
   ```ruby
-  within_window 30.days    # 30-day lookback
-  within_window 7.days     # 7-day lookback
-  within_window 90.days    # 90-day lookback
+  within_window 30.days do   # 30-day lookback
+    apply 1.0, to: touchpoints.first
+  end
   ```
 
   **Allowed durations**: `1.day`, `7.days`, `30.days`, `60.days`, `90.days`, `180.days`, `365.days`
+
+  ---
+
+  ### Nested Windows (Segments)
+
+  Create time-based segments with different attribution rules:
+
+  ```ruby
+  within_window 90.days do
+    # Segment 1: Last 30 days (60% of credit)
+    within_window 30.days, weight: 0.6 do
+      time_decay half_life: 7.days
+    end
+
+    # Segment 2: 31-60 days ago (40% of credit)
+    within_window 30.days..60.days, weight: 0.4 do
+      time_decay half_life: 14.days
+    end
+  end
+  ```
+
+  **Segment syntax**:
+  - `within_window 30.days, weight: 0.6` — from 0 to 30 days, 60% of credit
+  - `within_window 30.days..60.days, weight: 0.4` — from 30 to 60 days, 40% of credit
+
+  **Rules**:
+  - Segment weights **must sum to 1.0**
+  - Segments **cannot overlap** (e.g., `0..30` and `20..50` is invalid)
+  - Segments **must be within outer window**
+  - Maximum **2 levels deep** (outer window + one segment level)
+  - Empty segments **redistribute weight** automatically to non-empty segments
 
   ---
 
@@ -727,6 +821,10 @@ MD
   | Forbidden operation | Tried to use blocked method | Use only whitelisted methods |
   | Execution timeout | Model too complex | Simplify logic |
   | Division by zero | Empty touchpoint array | Add edge case handling |
+  | Segment weights don't sum to 1.0 | Nested window weights wrong | Adjust weights to equal 1.0 |
+  | Segments overlap | Overlapping time ranges | Use disjoint ranges (e.g., `0..30`, `30..60`) |
+  | Segment outside outer window | Segment exceeds lookback | Keep segments within outer window |
+  | Nesting too deep | More than 2 levels | Use only one level of nested windows |
 
   ---
 
@@ -936,6 +1034,30 @@ MD
   ### What's the maximum lookback window?
 
   **365 days** (1 year). Longer windows can be requested for Enterprise plans.
+
+  ---
+
+  ### How deep can I nest windows?
+
+  **2 levels maximum.** You can have an outer window with one level of segments inside:
+
+  ```ruby
+  within_window 90.days do           # Level 1 (outer)
+    within_window 30.days, weight: 0.6 do  # Level 2 (segment)
+      time_decay half_life: 7.days
+    end
+  end
+  ```
+
+  Deeper nesting (segment inside segment) is not allowed.
+
+  ---
+
+  ### What happens if a segment has no touchpoints?
+
+  **Weight is redistributed.** If a segment contains no touchpoints, its weight is automatically distributed proportionally to segments that do have touchpoints.
+
+  Example: If you have two segments (60%/40%) and only the first has touchpoints, the first segment gets 100% of the credit.
 
   ---
 
