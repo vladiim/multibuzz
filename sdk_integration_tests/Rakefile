@@ -57,6 +57,17 @@ namespace :sdk do
     end
   end
 
+  desc "Run SDK integration tests for PHP SDK only"
+  task :php do
+    begin
+      TestSetupHelper.setup!
+      ENV["SDK"] = "php"
+      Rake::Task["sdk:test:scenarios"].invoke
+    ensure
+      TestSetupHelper.teardown!
+    end
+  end
+
   namespace :test do
     Rake::TestTask.new(:scenarios) do |t|
       t.libs << "."
@@ -90,6 +101,15 @@ namespace :sdk do
     puts "Note: Set MBUZZ_API_KEY and MBUZZ_API_URL environment variables"
     Dir.chdir("apps/mbuzz_python_testapp") do
       sh "venv/bin/python app.py"
+    end
+  end
+
+  desc "Start PHP test app (port 4004)"
+  task :app_php do
+    puts "Starting PHP test app on http://localhost:4004"
+    puts "Note: Set MBUZZ_API_KEY and MBUZZ_API_URL environment variables"
+    Dir.chdir("apps/mbuzz_php_testapp") do
+      sh "php -S localhost:4004 -t public"
     end
   end
 
@@ -145,13 +165,20 @@ namespace :sdk do
       end
     end
 
+    desc "Install dependencies for PHP test app"
+    task :php_app do
+      Dir.chdir("apps/mbuzz_php_testapp") do
+        sh "composer install"
+      end
+    end
+
     desc "Install Playwright browser"
     task :playwright do
       sh "npx playwright install chromium"
     end
 
     desc "Install all dependencies"
-    task all: [:ruby_app, :node_app, :python_app, :playwright]
+    task all: [:ruby_app, :node_app, :python_app, :php_app, :playwright]
   end
 end
 

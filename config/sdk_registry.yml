@@ -120,30 +120,66 @@ php:
   icon: php
   package_name: mbuzz/mbuzz-php
   package_manager: Composer
-  package_url: null
+  package_url: https://packagist.org/packages/mbuzz/mbuzz-php
   github_url: https://github.com/mbuzzco/mbuzz-php
-  docs_url: /docs/sdks/php
-  status: coming_soon
+  docs_url: /docs/getting-started
+  status: development
   released_at: null
   category: server_side
   sort_order: 4
   install_command: composer require mbuzz/mbuzz-php
   init_code: |
     // config/services.php or bootstrap
-    Mbuzz::init(['api_key' => env('MBUZZ_API_KEY')]);
+    use Mbuzz\Mbuzz;
+
+    Mbuzz::init(['api_key' => $_ENV['MBUZZ_API_KEY']]);
   event_code: |
+    // Track user interactions
     Mbuzz::event('page_view', ['url' => $request->url()]);
+    Mbuzz::event('add_to_cart', ['product_id' => 'SKU-123', 'price' => 49.99]);
+
+    // Group events into funnels
+    Mbuzz::event('signup_start', ['funnel' => 'signup', 'source' => 'homepage']);
   conversion_code: |
+    // Track conversions with revenue
     Mbuzz::conversion('purchase', [
       'revenue' => $order->total,
-      'order_id' => $order->id
+      'properties' => ['order_id' => $order->id]
+    ]);
+
+    // Acquisition conversion (marks signup as THE acquisition moment)
+    Mbuzz::conversion('signup', [
+      'user_id' => $user->id,
+      'is_acquisition' => true
+    ]);
+
+    // Recurring revenue (inherits attribution from acquisition)
+    Mbuzz::conversion('payment', [
+      'user_id' => $user->id,
+      'revenue' => 49.00,
+      'inherit_acquisition' => true
     ]);
   identify_code: |
+    // On signup or login - links visitor to user
     Mbuzz::identify($user->id, [
       'email' => $user->email,
-      'name' => $user->name
+      'name' => $user->name,
+      'plan' => $user->plan
     ]);
-  middleware_code: null
+  middleware_code: |
+    // Laravel middleware - handles cookies and session tracking
+    // Add to app/Http/Kernel.php
+    use Mbuzz\Adapter\LaravelMiddleware;
+
+    protected $middleware = [
+        // ...
+        LaravelMiddleware::class,
+    ];
+
+    // Or for plain PHP:
+    use Mbuzz\Mbuzz;
+    Mbuzz::init(['api_key' => $_ENV['MBUZZ_API_KEY']]);
+    Mbuzz::initFromRequest();
   verification_command: "Mbuzz::event('test', ['url' => 'https://test.com']);"
 
 nodejs:
