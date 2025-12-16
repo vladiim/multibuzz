@@ -6,14 +6,17 @@ module Account::Relationships
     has_many :members, through: :account_memberships, source: :user
     has_many :users, through: :account_memberships
     has_many :api_keys, dependent: :destroy
-    has_many :identities, dependent: :destroy
-    has_many :visitors, dependent: :destroy
-    has_many :sessions, dependent: :destroy
-    has_many :events, dependent: :destroy
-    has_many :conversions, dependent: :destroy
-    has_many :attribution_models, dependent: :destroy
-    has_many :attribution_credits, dependent: :destroy
+
+    # Order matters for dependent: :destroy (foreign key constraints)
+    # Most dependent tables first, then their parents
     has_many :rerun_jobs, dependent: :destroy
     has_many :conversion_property_keys, dependent: :destroy
+    has_many :attribution_credits, dependent: :destroy  # depends on conversions
+    has_many :conversions, dependent: :destroy          # depends on visitors
+    has_many :events, dependent: :destroy               # depends on visitors
+    has_many :sessions, dependent: :destroy             # depends on visitors
+    has_many :visitors, dependent: :destroy             # depends on identities
+    has_many :identities, dependent: :destroy
+    has_many :attribution_models, dependent: :destroy
   end
 end
