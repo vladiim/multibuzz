@@ -5,7 +5,8 @@ module TestConfig
     "ruby" => 4001,
     "node" => 4002,
     "python" => 4003,
-    "php" => 4004
+    "php" => 4004,
+    "symfony" => 4005
   }.freeze
 
   class << self
