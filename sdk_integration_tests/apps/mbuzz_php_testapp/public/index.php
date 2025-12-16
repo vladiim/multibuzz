@@ -7,7 +7,8 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use Mbuzz\Mbuzz;
 
 // Load test env file if it exists
-$testEnvFile = __DIR__ . '/../../.test_env';
+// Path: public -> mbuzz_php_testapp -> apps -> sdk_integration_tests (3 levels up)
+$testEnvFile = __DIR__ . '/../../../.test_env';
 $envVars = [];
 if (file_exists($testEnvFile)) {
     foreach (file($testEnvFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
