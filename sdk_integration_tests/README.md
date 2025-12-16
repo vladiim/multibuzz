@@ -19,7 +19,7 @@ This test suite:
 ## Directory Structure
 
 ```
-test/sdk_integration/
+sdk_integration_tests/
 ├── Gemfile                    # Test framework dependencies
 ├── Rakefile                   # Test runner tasks
 ├── test_helper.rb             # Base test class
@@ -40,12 +40,14 @@ test/sdk_integration/
     └── mbuzz_node_testapp/    # Express test app (port 4002)
 ```
 
+**Note**: This directory lives at the project root (not inside `test/`) to ensure complete isolation from the Rails test runner.
+
 ## Quick Start
 
 ### 1. Install Dependencies
 
 ```bash
-cd test/sdk_integration
+cd sdk_integration_tests
 bundle install
 
 # Ruby test app
@@ -72,7 +74,7 @@ In separate terminals:
 
 ```bash
 # First, create a test account
-cd test/sdk_integration
+cd sdk_integration_tests
 rake sdk:setup:create
 # Note the API key output
 
@@ -90,7 +92,7 @@ rake sdk:app_node
 ### 4. Run Tests
 
 ```bash
-cd test/sdk_integration
+cd sdk_integration_tests
 
 # Run ALL SDK tests (Ruby and Node)
 # Automatically creates/tears down test account
