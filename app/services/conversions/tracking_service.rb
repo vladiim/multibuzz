@@ -97,12 +97,14 @@ module Conversions
     # Input:  { "url" => "...", "properties" => { "location" => "Sydney" } }
     # Output: { "url" => "...", "location" => "Sydney" }
     def normalized_properties
-      return properties unless properties.is_a?(Hash)
+      props = properties.respond_to?(:to_unsafe_h) ? properties.to_unsafe_h : properties.to_h
+      return props unless props.is_a?(Hash)
 
-      nested = properties["properties"] || properties[:properties]
-      return properties unless nested.is_a?(Hash)
+      nested = props["properties"] || props[:properties]
+      return props unless nested.respond_to?(:to_h)
 
-      properties.except("properties", :properties).merge(nested)
+      nested_hash = nested.respond_to?(:to_unsafe_h) ? nested.to_unsafe_h : nested.to_h
+      props.except("properties", :properties).merge(nested_hash)
     end
 
     def conversion_timestamp

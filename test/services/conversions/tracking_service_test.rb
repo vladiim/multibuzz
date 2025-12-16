@@ -158,6 +158,24 @@ module Conversions
       assert_equal "SAVE20", result[:conversion].properties["coupon"]
     end
 
+    test "flattens nested properties from ActionController::Parameters" do
+      # Simulates what happens when SDK sends { properties: { properties: { location: "Sydney" } } }
+      params = ActionController::Parameters.new({
+        url: "https://example.com",
+        referrer: "https://google.com",
+        properties: { location: "Sydney", plan: "pro" }
+      })
+      permitted = params.permit(:url, :referrer, properties: {})
+      nested_properties = permitted
+
+      result = build_service(event_id: event.prefix_id, properties: nested_properties).call
+
+      assert result[:success]
+      assert_equal "Sydney", result[:conversion].properties["location"]
+      assert_equal "pro", result[:conversion].properties["plan"]
+      assert_nil result[:conversion].properties["properties"], "nested 'properties' key should be flattened"
+    end
+
     test "attribution job enqueued via model callback" do
       # Job is enqueued by Conversion::Callbacks, not the service
       result = build_service(event_id: event.prefix_id).call
