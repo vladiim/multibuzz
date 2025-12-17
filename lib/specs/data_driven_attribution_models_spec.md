@@ -683,13 +683,14 @@ Gradient Boosting v2025.01.15
 
 ### Phase 1: Foundation
 - Add model tier fields to AttributionModel
-- Create DataReadinessChecker service
+- ✅ Create DataReadinessChecker service
+- ✅ Add data readiness API endpoint
 - Update model selector UI
 - Add imbalanced data detection + warnings
 
 ### Phase 2: Probabilistic Models
-- Implement Markov Chain in Ruby
-- Implement Shapley Value in Ruby
+- ✅ Implement Markov Chain in Ruby
+- ✅ Implement Shapley Value in Ruby
 - Implement Bayesian Network (Ruby or Python)
 - Add AML `apply_model()` function
 - Add validation metrics calculation

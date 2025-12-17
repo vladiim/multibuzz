@@ -117,6 +117,7 @@ Rails.application.routes.draw do
       resources :attribution_models, except: [:show] do
         collection do
           post :validate
+          get :data_readiness
         end
         member do
           post :reset
