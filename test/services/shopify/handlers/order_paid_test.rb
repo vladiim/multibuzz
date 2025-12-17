@@ -32,7 +32,44 @@ module Shopify
         result = handler(visitor_id: "nonexistent").call
 
         refute result[:success]
-        assert_equal "Visitor not found", result[:error]
+        assert_includes result[:error], "Visitor not found for visitor_id"
+      end
+
+      test "falls back to email-based visitor lookup when no note_attributes" do
+        identity = account.identities.create!(
+          external_id: "shopify_user",
+          traits: { "email" => "customer@example.com" },
+          first_identified_at: 1.day.ago,
+          last_identified_at: 1.hour.ago
+        )
+        email_visitor = account.visitors.create!(
+          visitor_id: SecureRandom.hex(32),
+          identity: identity,
+          first_seen_at: 1.day.ago,
+          last_seen_at: 1.hour.ago
+        )
+        email_session = email_visitor.sessions.create!(
+          account: account,
+          session_id: SecureRandom.hex(32),
+          started_at: 1.hour.ago,
+          initial_utm: {},
+          initial_referrer: nil
+        )
+
+        payload_without_note = {
+          id: 12345,
+          order_number: 1001,
+          total_price: "99.99",
+          currency: "USD",
+          customer: { email: "customer@example.com" },
+          note_attributes: []
+        }
+
+        result = Handlers::OrderPaid.new(account, payload_without_note).call
+
+        assert result[:success]
+        assert_equal email_visitor.id, conversion.visitor_id
+        assert_equal email_session.id, conversion.session_id
       end
 
       test "uses latest session for conversion" do
