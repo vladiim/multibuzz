@@ -603,4 +603,109 @@ class Accounts::AttributionModelsControllerTest < ActionDispatch::IntegrationTes
   def admin_user
     @admin_user ||= users(:three)
   end
+
+  # --- Data Readiness ---
+
+  test "data_readiness returns model availability status" do
+    sign_in
+
+    get data_readiness_account_attribution_models_path, as: :json
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert json.key?("models")
+    assert json["models"].key?("markov_chain")
+    assert json["models"].key?("shapley_value")
+  end
+
+  test "data_readiness shows ready when account has enough data" do
+    create_conversions(500)
+    sign_in
+
+    get data_readiness_account_attribution_models_path, as: :json
+
+    json = JSON.parse(response.body)
+    assert json["models"]["markov_chain"]["ready"]
+    assert json["models"]["shapley_value"]["ready"]
+  end
+
+  test "data_readiness shows not ready with progress when insufficient data" do
+    create_conversions(100)
+    sign_in
+
+    get data_readiness_account_attribution_models_path, as: :json
+
+    json = JSON.parse(response.body)
+    assert_not json["models"]["markov_chain"]["ready"]
+    assert_equal 100, json["models"]["markov_chain"]["current_conversions"]
+    assert_equal 500, json["models"]["markov_chain"]["required_conversions"]
+    assert_equal 400, json["models"]["markov_chain"]["conversions_needed"]
+  end
+
+  test "data_readiness shows channel count requirement" do
+    create_conversions_with_channels(500, channel_count: 3)
+    sign_in
+
+    get data_readiness_account_attribution_models_path, as: :json
+
+    json = JSON.parse(response.body)
+    assert_not json["models"]["markov_chain"]["ready"]
+    assert_equal 3, json["models"]["markov_chain"]["current_channels"]
+    assert_equal 5, json["models"]["markov_chain"]["required_channels"]
+  end
+
+  test "data_readiness requires authentication" do
+    get data_readiness_account_attribution_models_path, as: :json
+
+    assert_redirected_to login_path
+  end
+
+  def create_conversions(count)
+    clear_existing_data
+    visitor = account.visitors.first || account.visitors.create!(visitor_id: SecureRandom.hex(16))
+    channels = %w[organic_search paid_search email referral direct]
+
+    count.times do |i|
+      session = account.sessions.create!(
+        visitor: visitor,
+        session_id: SecureRandom.hex(16),
+        started_at: i.hours.ago,
+        channel: channels[i % channels.size]
+      )
+      account.conversions.create!(
+        visitor: visitor,
+        session_id: session.id,
+        conversion_type: "purchase",
+        converted_at: i.hours.ago,
+        journey_session_ids: [session.id]
+      )
+    end
+  end
+
+  def create_conversions_with_channels(count, channel_count:)
+    clear_existing_data
+    visitor = account.visitors.first || account.visitors.create!(visitor_id: SecureRandom.hex(16))
+    channels = %w[organic_search paid_search email referral direct].first(channel_count)
+
+    count.times do |i|
+      session = account.sessions.create!(
+        visitor: visitor,
+        session_id: SecureRandom.hex(16),
+        started_at: i.hours.ago,
+        channel: channels[i % channels.size]
+      )
+      account.conversions.create!(
+        visitor: visitor,
+        session_id: session.id,
+        conversion_type: "purchase",
+        converted_at: i.hours.ago,
+        journey_session_ids: [session.id]
+      )
+    end
+  end
+
+  def clear_existing_data
+    account.conversions.destroy_all
+    account.sessions.destroy_all
+  end
 end

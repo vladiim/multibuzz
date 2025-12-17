@@ -580,6 +580,12 @@ Data-driven models (no ML training required):
 
 **Data requirements**: 500+ conversions, 5+ channels recommended.
 
+### Supporting Services
+
+| Service | Purpose | Status |
+|---------|---------|--------|
+| DataReadinessChecker | Check if account has enough data for probabilistic models | ✅ Complete |
+
 ### File Locations
 
 ```
@@ -596,6 +602,9 @@ app/services/attribution/algorithms/
 app/services/attribution/markov/
 ├── conversion_paths_query.rb
 └── removal_effect_calculator.rb
+
+app/services/attribution/
+└── data_readiness_checker.rb
 ```
 
 ### Not Yet Implemented
@@ -606,6 +615,12 @@ app/services/attribution/markov/
 ---
 
 ## 13. Version History
+
+- **v1.4** (2025-12-18): Added DataReadinessChecker
+  - Service checks if account has enough data for probabilistic models
+  - API endpoint at `/account/attribution_models/data_readiness`
+  - Returns readiness status, conversion/channel counts, progress percentage
+  - Tests: 18 service tests, 5 controller tests
 
 - **v1.3** (2025-12-17): Added probabilistic models (Tier 2)
   - Implemented Markov Chain attribution (removal effect algorithm)
