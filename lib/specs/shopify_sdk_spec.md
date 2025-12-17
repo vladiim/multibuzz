@@ -1,7 +1,7 @@
 # Shopify Integration Specification
 
-**Status**: In Progress
-**Last Updated**: 2025-12-17
+**Status**: Ready for UAT
+**Last Updated**: 2025-12-18
 **Target**: Shopify App Store Distribution
 
 ---
@@ -135,11 +135,15 @@ mbuzz-shopify/
 │       ├── auth.$.tsx            # OAuth callback
 │       └── webhooks.tsx          # Webhook handler (fallback)
 ├── extensions/
-│   └── mbuzz-tracking/           # Theme App Extension
-│       ├── assets/
-│       │   └── mbuzz-shopify.js  # Client tracking (340 lines)
-│       ├── blocks/
-│       │   └── tracking.liquid   # Theme block with settings
+│   ├── mbuzz-tracking/           # Theme App Extension
+│   │   ├── assets/
+│   │   │   └── mbuzz-shopify.js  # Client tracking (~390 lines)
+│   │   ├── blocks/
+│   │   │   └── tracking.liquid   # Theme block with settings
+│   │   └── shopify.extension.toml
+│   └── mbuzz-pixel/              # Web Pixel Extension
+│       ├── src/
+│       │   └── index.js          # Checkout identify (~100 lines)
 │       └── shopify.extension.toml
 ├── prisma/
 │   └── schema.prisma             # Session + ShopSettings storage
@@ -253,11 +257,12 @@ Follow existing SDK cookie spec from `lib/specs/sdk_rollout.md`:
 - [ ] **NEXT: Authenticate with Shopify CLI**
 - [ ] Test with development store
 
-### Phase 4: Web Pixel
+### Phase 4: Web Pixel ✅ COMPLETE
 
-- [ ] Generate Web Pixel extension
-- [ ] Subscribe to `checkout_contact_info_submitted`
-- [ ] Implement identify call from pixel
+- [x] Generate Web Pixel extension
+- [x] Subscribe to `checkout_contact_info_submitted`
+- [x] Subscribe to `checkout_completed` (backup)
+- [x] Implement identify call from pixel
 - [ ] Test checkout flow end-to-end
 
 ### Phase 5: App Settings Page ✅ SCAFFOLDED
@@ -285,7 +290,18 @@ Follow existing SDK cookie spec from `lib/specs/sdk_rollout.md`:
 
 ---
 
-## Next Steps (Morning Session)
+## Next Steps: UAT
+
+### Prerequisites
+
+1. **Create Shopify Partner Account** (if not already done)
+   - Go to https://partners.shopify.com
+   - Sign up (free)
+
+2. **Create Development Store**
+   - In Partners Dashboard → Stores → Add store → Development store
+
+### Setup Steps
 
 1. **Authenticate Shopify CLI**
    ```bash
@@ -296,13 +312,30 @@ Follow existing SDK cookie spec from `lib/specs/sdk_rollout.md`:
 
 2. **Select development store** when prompted
 
-3. **Test theme extension**
-   - Enable in theme customizer
-   - Enter mbuzz API key
-   - Verify cookies set
-   - Verify cart attributes stored
+3. **Configure Extensions**
+   - Theme Extension: Enable in theme customizer, enter mbuzz API key
+   - Web Pixel: Configure in app settings with API key
 
-4. **Make test purchase** and verify conversion in mbuzz dashboard
+### UAT Checklist
+
+1. **Test theme extension**
+   - Verify `_mbuzz_vid` and `_mbuzz_sid` cookies set
+   - Verify cart attributes contain visitor/session IDs
+   - Verify page_view events sent to mbuzz
+
+2. **Test add to cart**
+   - Add product to cart
+   - Verify add_to_cart event in mbuzz dashboard
+
+3. **Test checkout flow**
+   - Complete checkout with email
+   - Verify Web Pixel sends identify call
+   - Verify webhook creates conversion in mbuzz
+
+4. **Verify attribution**
+   - Start with UTM params: `?utm_source=test&utm_medium=cpc`
+   - Complete full funnel
+   - Check mbuzz dashboard shows conversion with attribution
 
 ---
 
@@ -333,6 +366,7 @@ Follow existing SDK cookie spec from `lib/specs/sdk_rollout.md`:
 
 ### Client-Side Tests (Manual) - PENDING
 
+**Theme Extension:**
 - [ ] Fresh visit sets visitor cookie
 - [ ] Fresh visit fires session event with UTM
 - [ ] Return visit uses existing visitor cookie
@@ -340,8 +374,11 @@ Follow existing SDK cookie spec from `lib/specs/sdk_rollout.md`:
 - [ ] Session cookie extends on activity
 - [ ] Cart attributes updated on page load
 - [ ] Add to cart fires event with product details
-- [ ] Form submit triggers identify
-- [ ] Checkout email triggers identify (Web Pixel)
+- [ ] Auto-identify fires for logged-in customer
+
+**Web Pixel:**
+- [ ] Checkout email triggers identify (`checkout_contact_info_submitted`)
+- [ ] Checkout completion triggers identify backup (`checkout_completed`)
 
 ### End-to-End Tests - PENDING
 
