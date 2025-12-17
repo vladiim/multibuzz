@@ -1,7 +1,7 @@
 # Multi-Touch Attribution Methodology
 
 **Status**: Design Standard - MUST follow for all attribution features
-**Last Updated**: 2025-11-27
+**Last Updated**: 2025-12-17
 **Research Sources**: GA4, Amplitude, Mixpanel, Adobe Analytics, Google Research (2024)
 
 ---
@@ -107,7 +107,7 @@ Total Journey: 3 touchpoints [Google Organic, Facebook Ad, Google Organic]
 
 ### 2.1 Model Categories
 
-**Preset Models** (6 standard models):
+**Tier 1: Heuristic Models** (6 rule-based models):
 1. **First Touch**: 100% credit to first touchpoint
 2. **Last Touch**: 100% credit to last touchpoint
 3. **Linear**: Equal credit to all touchpoints (1/n each)
@@ -115,7 +115,11 @@ Total Journey: 3 touchpoints [Google Organic, Facebook Ad, Google Organic]
 5. **U-Shaped**: 40% first, 40% last, 20% middle (equally distributed)
 6. **Participation**: 100% credit to all unique channels (sum > 1.0)
 
-**Custom Models** (Phase 2C):
+**Tier 2: Probabilistic Models** (data-driven, no ML training):
+7. **Markov Chain**: Credit based on channel removal effects from historical paths
+8. **Shapley Value**: Game-theoretic fair allocation based on marginal contributions
+
+**Custom Models** (AML):
 - Defined via declarative DSL
 - Validated to ensure credits sum to 1.0 (except Participation)
 - Compiled to AST for execution
@@ -173,6 +177,33 @@ credit = 1.0 for each unique channel
 - Deduplicates by channel (not session)
 - Sum CAN exceed 1.0 (by design)
 - Uses first session_id for each channel
+
+**Markov Chain** (removal effect):
+```
+For each channel c:
+  paths_without_c = count of paths not containing c
+  removal_effect(c) = 1 - (paths_without_c / total_paths)
+
+credit(c) = removal_effect(c) / sum_of_all_removal_effects
+```
+- Channels appearing in ALL paths get highest credit
+- Requires historical conversion paths (500+ conversions recommended)
+- Falls back to equal distribution if no historical data
+
+**Shapley Value** (marginal contribution):
+```
+For each channel c:
+  For each subset S not containing c:
+    marginal(c, S) = v(S ∪ {c}) - v(S)
+  shapley(c) = average of all marginal contributions
+
+credit(c) = shapley(c) / sum_of_all_shapley_values
+
+where v(S) = proportion of paths completable with channels in S
+```
+- O(2^n) complexity, practical limit ~15 channels
+- Game-theoretic "fair" allocation
+- Falls back to equal distribution if no historical data
 
 ### 2.3 Multi-Model Execution
 
@@ -525,9 +556,9 @@ Journey Construction:
 
 ## 12. Implementation Status
 
-### Implemented Algorithms
+### Tier 1: Heuristic Models
 
-All 6 preset models are fully implemented:
+All 6 heuristic models are fully implemented:
 
 | Model | Class | Status |
 |-------|-------|--------|
@@ -538,6 +569,17 @@ All 6 preset models are fully implemented:
 | U-Shaped | `Attribution::Algorithms::UShaped` | ✅ Complete |
 | Participation | `Attribution::Algorithms::Participation` | ✅ Complete |
 
+### Tier 2: Probabilistic Models
+
+Data-driven models (no ML training required):
+
+| Model | Class | Status |
+|-------|-------|--------|
+| Markov Chain | `Attribution::Algorithms::MarkovChain` | ✅ Complete |
+| Shapley Value | `Attribution::Algorithms::ShapleyValue` | ✅ Complete |
+
+**Data requirements**: 500+ conversions, 5+ channels recommended.
+
 ### File Locations
 
 ```
@@ -547,17 +589,30 @@ app/services/attribution/algorithms/
 ├── linear.rb
 ├── time_decay.rb
 ├── u_shaped.rb
-└── participation.rb
+├── participation.rb
+├── markov_chain.rb
+└── shapley_value.rb
+
+app/services/attribution/markov/
+├── conversion_paths_query.rb
+└── removal_effect_calculator.rb
 ```
 
 ### Not Yet Implemented
 
-- **Custom Models (DSL)**: Phase 2C - see `lib/specs/attribution_dsl_design.md`
-- **Data-Driven Models**: Markov chains, Shapley values (requires ML infrastructure)
+- **Ordered Shapley**: Position-weighted Shapley values
+- **ML Models (Tier 3)**: Logistic Regression, Gradient Boosting (requires Python sidecar)
 
 ---
 
 ## 13. Version History
+
+- **v1.3** (2025-12-17): Added probabilistic models (Tier 2)
+  - Implemented Markov Chain attribution (removal effect algorithm)
+  - Implemented Shapley Value attribution (game-theoretic marginal contributions)
+  - Both use historical conversion paths, no ML training required
+  - Integrated into Calculator with automatic path fetching
+  - Updated to 8 total models (6 heuristic + 2 probabilistic)
 
 - **v1.2** (2025-12-08): Removed W-Shaped model
   - W-Shaped requires "lead creation" touchpoint that conflicts with visitor-based tracking
