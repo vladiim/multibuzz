@@ -9,7 +9,8 @@ module AttributionModel::AlgorithmMapping
     linear: Attribution::Algorithms::Linear,
     time_decay: Attribution::Algorithms::TimeDecay,
     u_shaped: Attribution::Algorithms::UShaped,
-    participation: Attribution::Algorithms::Participation
+    participation: Attribution::Algorithms::Participation,
+    markov_chain: Attribution::Algorithms::MarkovChain
   }.freeze
 
   def algorithm_class

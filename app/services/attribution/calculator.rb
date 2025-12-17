@@ -55,7 +55,28 @@ module Attribution
     end
 
     def algorithm
-      @algorithm ||= attribution_model.algorithm_class.new(touchpoints)
+      @algorithm ||= build_algorithm
+    end
+
+    def build_algorithm
+      return build_markov_chain if attribution_model.markov_chain?
+
+      attribution_model.algorithm_class.new(touchpoints)
+    end
+
+    def build_markov_chain
+      Attribution::Algorithms::MarkovChain.new(
+        touchpoints,
+        conversion_paths: conversion_paths
+      )
+    end
+
+    def conversion_paths
+      @conversion_paths ||= Markov::ConversionPathsQuery.new(account).call
+    end
+
+    def account
+      conversion.account
     end
 
     def enrich_with_session_data(credit)
