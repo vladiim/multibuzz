@@ -1,11 +1,12 @@
 # Product
 
-* Add USD to pricing
 * Rollout SDKs: python, php, shopify, magento etc
     1. Launch everywhere (Hacker News, Product Hunt, Reddit, X, LinkedIn, YouTube etc.). Spend a week giving your MVP its best shot.
     2. (if #1 didn't take off) — Rebrand. New name, new logo, new design, new landing page, new headline. Same product. Repeat #1
     3. (if #2 didn't take off) — Target new market segment experiencing the same problem your product solves. Repeat #1. Repeat #2.
 * early customers (dan SME (not free), cody, mike, boris)
+* later conversion - do it with a user trait e.g. email or id -> big mouth
+* models: rollout markov, think through amount of data for bayesian and data-driven? -> experimental, request feature?
 * export data (csv - simple + api - with property queries)
 * Channel mapping rules e.g. placeid = 'Local', url = 'x' = 'Internal Referral'
 * Cancel conversion (via id)
@@ -27,6 +28,7 @@ https://app.burnerapp.com -> for phone number (607) 236-8693
 
 # Marketing
 
+* Econsultancy guys, mumberella etc
 * Sales - find people like those in https://page.funnel.io/2026-marketing-intelligence-report#access-report; reach out for advice - thoughts on MTA - soft sell
 * Launch SDK listings + associated newsletters (first being rubygems) - research the best way to get traction in the specific SDK community are there people to engage with?
 * CA, Rebel etc (grant), boris clients, audi, others?
