@@ -12,7 +12,8 @@ module AttributionModel::Enums
       linear: 2,
       time_decay: 3,
       u_shaped: 4,
-      participation: 6
+      participation: 6,
+      markov_chain: 7
     }
   end
 end
