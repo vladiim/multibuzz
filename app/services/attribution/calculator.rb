@@ -59,13 +59,17 @@ module Attribution
     end
 
     def build_algorithm
-      return build_markov_chain if attribution_model.markov_chain?
+      return build_probabilistic_model if probabilistic_model?
 
       attribution_model.algorithm_class.new(touchpoints)
     end
 
-    def build_markov_chain
-      Attribution::Algorithms::MarkovChain.new(
+    def probabilistic_model?
+      attribution_model.markov_chain? || attribution_model.shapley_value?
+    end
+
+    def build_probabilistic_model
+      attribution_model.algorithm_class.new(
         touchpoints,
         conversion_paths: conversion_paths
       )

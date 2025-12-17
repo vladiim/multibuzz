@@ -196,6 +196,35 @@ module Attribution
       assert_equal "newsletter", credits[1][:utm_source]
     end
 
+    # Shapley Value integration tests
+    test "should calculate credits using Shapley Value with historical conversion paths" do
+      create_historical_conversion(%w[organic_search paid_search])
+      create_historical_conversion(%w[email paid_search])
+      create_historical_conversion(%w[paid_search])
+
+      session_one
+      session_two
+
+      shapley_service = build_service(model: shapley_value_model)
+      credits = shapley_service.call
+
+      assert_equal 2, credits.size
+      assert_in_delta 1.0, credits.sum { |c| c[:credit] }, 0.0001
+    end
+
+    test "should handle Shapley Value with no historical conversions gracefully" do
+      session_one
+      session_two
+
+      shapley_service = build_service(model: shapley_value_model)
+      credits = shapley_service.call
+
+      assert_equal 2, credits.size
+      credits.each do |credit|
+        assert_in_delta 0.5, credit[:credit], 0.0001
+      end
+    end
+
     private
 
     def create_historical_conversion(channels)
@@ -270,6 +299,17 @@ module Attribution
         name: "Markov Chain",
         model_type: :preset,
         algorithm: :markov_chain,
+        lookback_days: 30,
+        is_active: true
+      )
+    end
+
+    def shapley_value_model
+      @shapley_value_model ||= AttributionModel.create!(
+        account: default_visitor.account,
+        name: "Shapley Value",
+        model_type: :preset,
+        algorithm: :shapley_value,
         lookback_days: 30,
         is_active: true
       )
