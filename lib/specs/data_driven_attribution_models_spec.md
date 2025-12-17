@@ -2,16 +2,16 @@
 
 ## 1. Model Classification
 
-### Tier 1: Heuristic (Implemented)
+### Tier 1: Heuristic (Implemented ✅)
 First Touch, Last Touch, Linear, Time Decay, U-Shaped, Participation
 
 ### Tier 2: Probabilistic (No Training Required)
-| Model | Algorithm | Min Data |
-|-------|-----------|----------|
-| Markov Chain | 1st-order transition matrix + removal effect | 500 conversions, 5+ channels |
-| Shapley Value | Marginal contribution averaging | 500 conversions, 5-15 channels |
-| Ordered Shapley | Position-weighted Shapley | 1,000 conversions |
-| Bayesian Network | Augmented naive Bayes + negative observation propagation | 500 conversions, 5+ channels |
+| Model | Algorithm | Min Data | Status |
+|-------|-----------|----------|--------|
+| Markov Chain | Removal effect calculation | 500 conversions, 5+ channels | ✅ Implemented |
+| Shapley Value | Marginal contribution averaging | 500 conversions, 5-15 channels | ✅ Implemented |
+| Ordered Shapley | Position-weighted Shapley | 1,000 conversions | Pending |
+| Bayesian Network | Augmented naive Bayes | 500 conversions, 5+ channels | Pending |
 
 ### Tier 3: Machine Learning (Training Required)
 | Model | Algorithm | Min Data |
