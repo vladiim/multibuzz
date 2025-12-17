@@ -4,13 +4,23 @@ module Shopify
   module Handlers
     class OrderPaid < Base
       def call
-        return { success: false, error: "Visitor not found" } unless visitor
+        return { success: false, error: visitor_not_found_error } unless visitor
 
         conversion = create_conversion
         { success: true, conversion_id: conversion.prefix_id }
       end
 
       private
+
+      def visitor_not_found_error
+        if visitor_id_from_note.blank? && customer_email.blank?
+          "No visitor_id in cart attributes and no customer email for fallback lookup"
+        elsif visitor_id_from_note.blank?
+          "No visitor_id in cart attributes; no identity found for email: #{customer_email}"
+        else
+          "Visitor not found for visitor_id: #{visitor_id_from_note}"
+        end
+      end
 
       def create_conversion
         Conversion.create!(
@@ -47,10 +57,6 @@ module Shopify
 
       def currency
         payload[:currency] || "USD"
-      end
-
-      def customer_email
-        payload.dig(:customer, :email)
       end
     end
   end

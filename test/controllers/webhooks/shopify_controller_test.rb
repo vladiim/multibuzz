@@ -88,7 +88,45 @@ class WebhooksShopifyControllerTest < ActionDispatch::IntegrationTest
       headers: headers_with_valid_signature(payload, topic: "orders/paid")
 
     assert_response :ok
-    assert_equal({ "received" => true, "warning" => "No visitor_id found" }, response.parsed_body)
+    assert response.parsed_body["warning"].present?
+    assert_includes response.parsed_body["warning"], "no identity found for email"
+  end
+
+  test "creates conversion using email fallback when no note_attributes" do
+    # Create identity with matching email and linked visitor
+    identity = account.identities.create!(
+      external_id: "shopify_67890",
+      traits: { "email" => "customer@example.com" },
+      first_identified_at: 1.day.ago,
+      last_identified_at: 1.hour.ago
+    )
+    v = account.visitors.create!(
+      visitor_id: SecureRandom.hex(32),
+      identity: identity,
+      first_seen_at: 1.day.ago,
+      last_seen_at: 1.hour.ago
+    )
+    v.sessions.create!(
+      account: account,
+      session_id: SecureRandom.hex(32),
+      started_at: 1.hour.ago,
+      initial_utm: { "utm_source" => "google" },
+      initial_referrer: nil
+    )
+
+    payload = order_paid_payload.merge(note_attributes: [])
+
+    assert_difference "Conversion.count", 1 do
+      post webhooks_shopify_path,
+        params: payload.to_json,
+        headers: headers_with_valid_signature(payload, topic: "orders/paid")
+    end
+
+    assert_response :ok
+    assert_equal({ "received" => true }, response.parsed_body)
+
+    conversion = Conversion.last
+    assert_equal v.id, conversion.visitor_id
   end
 
   test "returns 200 for unknown webhook topics" do

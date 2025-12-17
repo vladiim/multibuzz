@@ -7,11 +7,10 @@ module Webhooks
     def create
       return render_error(Shopify::ERROR_UNKNOWN_SHOP, :unauthorized) unless account
       return render_error(Shopify::ERROR_INVALID_SIGNATURE, :unauthorized) unless valid_signature?
-      return render_warning(Shopify::WARNING_NO_VISITOR) unless visitor_id.present?
       return render_success if already_processed?
 
-      Shopify::WebhookHandler.new(account, topic, payload).call
-      render_success
+      result = Shopify::WebhookHandler.new(account, topic, payload).call
+      result[:success] ? render_success : render_warning(result[:error])
     end
 
     private
@@ -30,15 +29,6 @@ module Webhooks
 
     def payload
       @payload ||= JSON.parse(request.raw_post).deep_symbolize_keys
-    end
-
-    def visitor_id
-      @visitor_id ||= extract_note_attribute(Shopify::NOTE_ATTR_VISITOR_ID)
-    end
-
-    def extract_note_attribute(name)
-      note_attributes = payload[:note_attributes] || []
-      note_attributes.find { |attr| attr[:name] == name }&.dig(:value)
     end
 
     def already_processed?
