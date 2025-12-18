@@ -86,17 +86,17 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert @test_account.api_keys.test.exists?
   end
 
-  test "setup shows plaintext key only on first view then clears it" do
+  test "setup keeps plaintext key in session for install step" do
     sign_in_as_new_user
 
     # First view - plaintext shown (dark bg, green text)
     get onboarding_setup_path
-    assert_nil session[:plaintext_api_key], "Session should be cleared after first view"
+    assert_not_nil session[:plaintext_api_key], "Session should keep key for install step"
     assert_select "code.text-green-400", /sk_test_/
 
-    # Second view - masked key shown (gray bg)
+    # Key remains available for install page (needed for Shopify)
     get onboarding_setup_path
-    assert_select "code.text-gray-500", /sk_test_.*••••/
+    assert_select "code.text-green-400", /sk_test_/
   end
 
   test "setup does not regenerate key for existing key" do
@@ -215,6 +215,29 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     get onboarding_install_path
 
     assert_redirected_to onboarding_setup_path
+  end
+
+  test "install shows plaintext API key for Shopify when available" do
+    sign_in_as_new_user
+    # Visit setup first to create API key and store in session
+    get onboarding_setup_path
+    @test_account.update!(selected_sdk: "shopify")
+
+    get onboarding_install_path
+
+    assert_response :success
+    assert_select "code.text-green-400", /sk_test_/
+  end
+
+  test "install shows regenerate option for Shopify when key not in session" do
+    sign_in
+    account.update!(selected_sdk: "shopify")
+    # Don't visit setup, so no plaintext key in session
+
+    get onboarding_install_path
+
+    assert_response :success
+    assert_select "button", text: "Regenerate API Key"
   end
 
   # --- Verify ---

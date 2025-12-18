@@ -200,7 +200,7 @@ module DocsHelper
   # Custom renderer with Rouge syntax highlighting
   class SyntaxHighlightRenderer < Redcarpet::Render::HTML
     def block_code(code, language)
-      language ||= 'text'
+      language ||= 'ruby'
 
       # Use Rouge for syntax highlighting
       lexer = Rouge::Lexer.find_fancy(language, code) || Rouge::Lexers::PlainText.new
