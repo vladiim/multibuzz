@@ -54,7 +54,7 @@ module AttributionModels
         name: algorithm.titleize,
         algorithm: algorithm,
         model_type: :preset,
-        is_active: false
+        is_active: true
       )
     end
   end

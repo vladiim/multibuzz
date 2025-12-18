@@ -31,12 +31,12 @@ module AttributionModels
       assert_equal 1, account_one.attribution_models.where(algorithm: :markov_chain).count
     end
 
-    test "sets is_active to false for newly added models" do
+    test "sets is_active to true for newly added models" do
       result = SyncService.new(:markov_chain).call
 
       assert result[:success]
       model = account_one.attribution_models.find_by(algorithm: :markov_chain)
-      assert_not model.is_active
+      assert model.is_active
     end
 
     test "sets model_type to preset" do
