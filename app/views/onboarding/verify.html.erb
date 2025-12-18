@@ -26,11 +26,23 @@
         </div>
 
         <h2 class="text-2xl font-semibold text-gray-900 mb-2">Waiting for your first event</h2>
-        <p class="text-gray-600 mb-6">Run the code below in your application.</p>
 
-        <div class="bg-slate-900 rounded-lg p-4 font-mono text-sm text-left">
-          <code class="hljs" data-controller="code-highlight" data-code-highlight-language-value="ruby"><%= current_sdk.verification_command || current_sdk.event_code&.split("\n")&.first %></code>
-        </div>
+        <% if current_sdk.platform? %>
+          <p class="text-gray-600 mb-6">Events will appear once visitors interact with your store.</p>
+          <div class="bg-gray-50 rounded-lg p-4 text-left text-sm text-gray-700">
+            <p class="font-medium mb-2">To trigger a test event:</p>
+            <ol class="list-decimal list-inside space-y-1">
+              <li>Visit your storefront in a new browser/incognito window</li>
+              <li>Add an item to cart and begin checkout</li>
+              <li>Events will appear here within a few seconds</li>
+            </ol>
+          </div>
+        <% else %>
+          <p class="text-gray-600 mb-6">Run the code below in your application.</p>
+          <div class="bg-slate-900 rounded-lg p-4 font-mono text-sm text-left">
+            <code class="hljs" data-controller="code-highlight" data-code-highlight-language-value="<%= syntax_language_for(current_sdk) %>"><%= current_sdk.verification_command || current_sdk.event_code&.split("\n")&.first %></code>
+          </div>
+        <% end %>
       </div>
     <% end %>
 

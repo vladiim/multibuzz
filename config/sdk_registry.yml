@@ -264,9 +264,9 @@ shopify:
   package_manager: Shopify App Store
   package_url: null
   github_url: null
-  docs_url: /docs/platforms/shopify
-  status: coming_soon
-  released_at: null
+  docs_url: /docs/platforms-shopify
+  status: live
+  released_at: '2025-12-19'
   category: platform
   sort_order: 6
   install_command: null

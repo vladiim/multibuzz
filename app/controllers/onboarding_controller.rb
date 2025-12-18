@@ -15,16 +15,14 @@ class OnboardingController < ApplicationController
 
   def setup
     ensure_api_key_exists
-    # Read and clear - plaintext shown only once
-    @plaintext_api_key = session.delete(:plaintext_api_key)
+    @plaintext_api_key = session[:plaintext_api_key]
     current_account.complete_onboarding_step!(:api_key_viewed)
   end
 
   def select_sdk
-    session.delete(:plaintext_api_key)
     current_account.update!(selected_sdk: params[:sdk])
     current_account.complete_onboarding_step!(:sdk_selected)
-    redirect_to onboarding_install_path
+    redirect_to sdk_onboarding_path
   end
 
   def waitlist_sdk
@@ -47,10 +45,11 @@ class OnboardingController < ApplicationController
     result = ApiKeys::GenerationService.new(current_account, environment: :test).call
     session[:plaintext_api_key] = result[:plaintext_key] if result[:success]
 
-    redirect_to onboarding_setup_path
+    redirect_back fallback_location: onboarding_setup_path
   end
 
   def install
+    @plaintext_api_key = session[:plaintext_api_key]
   end
 
   def verify
@@ -104,6 +103,10 @@ class OnboardingController < ApplicationController
 
   def selected_sdk
     @selected_sdk ||= SdkRegistry.find(params[:sdk])
+  end
+
+  def sdk_onboarding_path
+    onboarding_install_path
   end
 
   def waitlisted_sdk

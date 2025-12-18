@@ -1,9 +1,9 @@
 # Shopify Onboarding & Documentation Spec
 
-**Status**: In Progress
+**Status**: UAT PASSED ✅
 **Created**: 2025-12-18
-**Updated**: 2025-12-18
-**Priority**: High (blocking UAT completion)
+**Updated**: 2025-12-19
+**Priority**: Documentation remaining
 
 ---
 
@@ -11,20 +11,208 @@
 
 ### Completed (2025-12-18)
 - [x] Email-based visitor lookup fallback in webhook handler (for "Buy it now" flows)
-- [x] Theme extension updated to store visitor_id in localStorage (checkout pixel can access)
-- [x] Custom pixel code created with checkout_started, add_to_cart, checkout events
-- [x] Pixel reads visitor_id from localStorage instead of cookies
+- [x] Theme extension stores visitor_id in cookies, localStorage, AND cart attributes
 - [x] Theme extension deployed (v3)
-- [x] Identity creation working via pixel (verified in production)
+- [x] Webhook configured in Shopify admin (orders/paid → mbuzz.co/webhooks/shopify)
 
-### Blocking Issues
-- [ ] **Webhook not configured**: Need to create `orders/paid` webhook in Shopify admin pointing to `https://mbuzz.co/webhooks/shopify`
-- [ ] **End-to-end test**: Full purchase flow not yet verified (blocked by webhook)
+### Completed (2025-12-19)
+- [x] **Root cause identified**: Pixel was reading from localStorage (cross-origin blocked on checkout)
+- [x] **Fix**: Pixel now reads visitor_id from `checkout.attributes` (cart note attributes)
+- [x] Pixel code updated with ES5-compatible syntax (no arrow functions, template literals, spread operators)
+- [x] `checkout` event appearing in production
+- [x] **Test identify call**: Email captured at checkout, identity created ✅
+- [x] **Test webhook**: orders/paid webhook received and processed ✅
+- [x] **Verify conversion**: Conversion created with full attribution (visitor_id, session_id, revenue) ✅
+- [x] **UAT PASSED** (Order #YXPUGG7T5, $749.95, visitor_id: 96375, session_id: 119962)
 
-### Next Session
-1. Configure webhook in Shopify admin (Settings → Notifications → Webhooks)
-2. Test full purchase flow with webhook
-3. Build dashboard settings UI for Shopify configuration
+### Remaining Documentation Tasks
+- [ ] Capture screenshots for documentation (store in `/public/images/docs/shopify/`)
+- [ ] Write step-by-step setup guide
+- [ ] Update `app/views/docs/_platforms_shopify.html.erb` with guide + screenshots
+- [ ] Add Shopify to onboarding flow (if applicable)
+- [ ] Build dashboard settings UI for Shopify configuration
+- [ ] Add "Known Limitations" section to public docs
+
+### Known Shopify Limitations
+
+1. **Test orders don't trigger webhooks**: The `orders/paid` webhook only fires for real transactions. See [Shopify Community](https://community.shopify.dev/t/webhook-orders-paid-not-triggered-with-bogus-gateway/5770).
+   - **Workaround**: Create a draft order in Shopify Admin and manually mark it as paid.
+
+2. **"Buy it Now" creates fresh cart without attributes**: This is a [known Shopify bug](https://community.shopify.dev/t/bug-cart-attributes-are-not-passed-to-functions-when-buy-it-now-button-is-used/1895) (unsolved as of Dec 2025).
+   - **Why**: "Buy it Now" bypasses the existing cart and creates a fresh cart without note_attributes.
+   - Cart attributes (our only reliable method to pass data to checkout) are empty.
+
+3. **Cross-origin checkout isolation**: The checkout runs in a [sandboxed iframe](https://www.simoahava.com/analytics/cookie-access-with-shopify-checkout-sgtm/) on a different origin.
+   - Web Pixels cannot access storefront cookies or localStorage
+   - Checkout UI Extensions cannot read storefront cookies either
+   - The `useStorage()` hook uses [isolated namespaced storage](https://community.shopify.com/c/extensions/pass-data-from-browser-cookie-or-localstorage-to-shopify/td-p/2441280)
+   - **Community solution**: "Set cart attributes on the online store... then retrieve with checkout extensions"
+
+4. **Attribution coverage by flow**:
+   | Flow | Attribution | Notes |
+   |------|-------------|-------|
+   | Add to Cart → Checkout | ✅ Full | Cart attributes pass visitor_id |
+   | Buy it Now (returning customer) | ✅ Full | Email fallback finds linked identity |
+   | Buy it Now (new customer) | ❌ None | No visitor_id, no prior identity link |
+
+---
+
+## Deep Research: Deterministic Visitor Tracking
+
+### The Core Problem
+
+For MTA to work, we need to deterministically link:
+```
+UTM Click → Page Views → Add to Cart → Checkout → Purchase
+```
+
+The visitor_id must flow through the entire funnel. The problem:
+
+1. **Storefront** (your-store.myshopify.com): Our theme extension has full access to cookies/localStorage
+2. **Checkout** (shop.app or checkout.shopify.com): Sandboxed, cross-origin, no access to storefront data
+3. **Webhook**: Server-side, no browser context at all
+
+### How Attribution Platforms Solve This
+
+| Platform | Approach | Notes |
+|----------|----------|-------|
+| [Triple Whale](https://kb.triplewhale.com/en/articles/5960325-how-the-triple-pixel-works) | First-party pixel on ALL pages + order confirmation | Builds anonymous visitor identity, tracks all clicks |
+| [Northbeam](https://www.headwestguide.com/triple-whale-vs-northbeam) | DNS-level tracking + platform API integrations | Fingerprints visitors across sessions |
+| [Elevar](https://analyzify.com/guidebooks/server-side-tracking-for-shopify/foundations) | Server-side tracking + enhanced data sharing | 95-98% accuracy via first-party data |
+
+Key insight: These platforms combine:
+- **Client-side**: First-party cookie/ID on storefront
+- **Checkout linking**: `checkout_token` matching (pixel → order)
+- **Server-side**: Platform API integrations + email matching
+
+### Available Shopify Mechanisms
+
+| Mechanism | Works for Cart | Works for Buy it Now | Notes |
+|-----------|---------------|---------------------|-------|
+| Cart note_attributes | ✅ Yes | ❌ No | [Documented approach](https://www.snowcatcloud.com/docs/integrations/shopify/) |
+| Storefront API cartCreate | ✅ Yes | ✅ Possible | Requires custom button |
+| Checkout UI Extension + applyAttributeChange | ✅ Yes | ✅ Yes | [Shopify Plus only](https://shopify.dev/docs/api/checkout-ui-extensions/latest/apis/attributes), can't get visitor_id |
+| checkout_token matching | ✅ Yes | ✅ Yes | [Links pixel to order](https://shopify.dev/docs/api/checkout-ui-extensions/2025-07/apis/checkout-token) |
+| Web Pixel analytics.visitor | ✅ Email only | ✅ Email only | [Email/phone capture](https://shopify.dev/docs/api/web-pixels-api/emitting-data) |
+
+### Proposed Solutions (Ranked)
+
+#### Solution 1: Custom "Buy it Now" Button (Deterministic) ⭐
+
+Replace Shopify's native "Buy it Now" button with a custom implementation:
+
+1. Theme extension adds custom "Buy Now" button
+2. On click: Create cart via [Storefront API cartCreate](https://shopify.dev/docs/storefronts/headless/building-with-the-storefront-api/cart/manage) with attributes
+3. Redirect to `checkoutUrl` from response
+
+**Pros**: Fully deterministic, works for all flows
+**Cons**: Requires theme modification, may break accelerated checkout (Apple Pay, Shop Pay)
+
+```javascript
+// Theme extension: Custom Buy Now
+async function customBuyNow(variantId) {
+  const response = await fetch('/api/2024-01/graphql.json', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      query: `mutation { cartCreate(input: {
+        lines: [{ merchandiseId: "${variantId}", quantity: 1 }],
+        attributes: [
+          { key: "_mbuzz_visitor_id", value: "${getVisitorId()}" },
+          { key: "_mbuzz_session_id", value: "${getSessionId()}" }
+        ]
+      }) { cart { checkoutUrl } } }`
+    })
+  });
+  const { data } = await response.json();
+  window.location.href = data.cartCreate.cart.checkoutUrl;
+}
+```
+
+#### Solution 2: Checkout Token Linking (Semi-Deterministic)
+
+Use `checkout_token` to link pixel events to orders:
+
+1. **Storefront**: Track visitor activity (page_view, add_to_cart) with visitor_id
+2. **Pixel**: On `checkout_started`, capture `checkout.token` + any available IDs
+3. **Backend**: Store `checkout_token → last_known_visitor_id` mapping
+4. **Webhook**: Order has `checkout_token`, look up visitor from mapping
+
+**Problem**: For "Buy it Now" without cart attributes, we still don't have visitor_id at checkout.
+
+**Partial solution**: Store mapping of `checkout_token → email` when identify fires, then use email to find visitor.
+
+#### Solution 3: Email-First Attribution (Current Approach)
+
+Accept that "Buy it Now" guest checkouts may have limited attribution:
+
+1. **Cart flows**: Full attribution via cart attributes
+2. **Returning customers**: Email lookup finds previously linked identity
+3. **New guest + Buy it Now**: Conversion recorded but attribution incomplete
+
+**How to improve current approach**:
+
+The issue is `identity.visitors` returns nil because the identify call at checkout has no visitor_id to link.
+
+**Fix**: When webhook fires with email, if identity exists but has no visitors, link to the most recent visitor that:
+- Was active within a reasonable time window (e.g., 30 minutes)
+- Has sessions from the same account
+
+This is probabilistic but better than no attribution. Mark these conversions with an "inferred" flag.
+
+#### Solution 4: Pre-Identify on Storefront (Requires User Action)
+
+If the user enters their email BEFORE clicking "Buy it Now":
+- Newsletter signup
+- Account creation
+- Login
+
+Then the identity already has a linked visitor when the webhook fires.
+
+**Implementation**: Encourage early identification via:
+- Exit-intent popups with email capture
+- Newsletter signup incentives
+- Account creation benefits
+
+---
+
+### Decision: Accept Limitation (2025-12-19)
+
+**Chosen approach**: Document limitation clearly, optimize for cart flows.
+
+**Rationale**:
+- ~70-80% of Shopify purchases use cart flow (full attribution works)
+- Custom "Buy it Now" solution is 6-11 hours with risk of breaking accelerated checkout
+- Revisit when customer demand justifies the investment
+
+**Current coverage**:
+| Flow | Attribution | % of Purchases |
+|------|-------------|----------------|
+| Add to Cart → Checkout | ✅ Full | ~70-80% |
+| Buy it Now (returning customer) | ✅ Full | ~10-15% |
+| Buy it Now (new guest) | ❌ None | ~5-15% |
+
+**Future phases (when needed)**:
+1. Custom "Buy it Now" button with Storefront API
+2. Checkout token linking
+3. Real-time session sync
+
+---
+
+### Technical References
+
+- [Shopify Cart Attributes Guide](https://ecomposer.io/blogs/shopify-knowledge/shopify-cart-attributes)
+- [Web Pixels on Steroids (Nebulab)](https://nebulab.com/blog/shopify-web-pixels)
+- [Cookie Access with Shopify Checkout (Simo Ahava)](https://www.simoahava.com/analytics/cookie-access-with-shopify-checkout-sgtm/)
+- [Checkout Token API](https://shopify.dev/docs/api/checkout-ui-extensions/2025-07/apis/checkout-token)
+- [Display Custom Data at Checkout](https://shopify.dev/docs/apps/build/checkout/display-custom-data)
+- [Add Field to Checkout](https://shopify.dev/docs/apps/build/checkout/fields-banners/add-field)
+
+### Next Steps
+1. Update pixel code in Shopify admin (Settings → Customer events → mbuzz pixel)
+2. Test checkout flow - verify `checkout` event appears in mbuzz
+3. Test webhook by manually marking a draft order as paid
+4. Build dashboard settings UI for Shopify configuration
 
 ---
 
@@ -140,22 +328,195 @@ Update `/docs/platforms-shopify` with comprehensive setup guide.
        - Paste the following code:
 
        ```javascript
-       // =============================================
-       // CONFIGURATION - Replace with your API key
-       // Get your API key from: https://mbuzz.co/dashboard/api-keys
-       // =============================================
-       const API_KEY = "YOUR_MBUZZ_API_KEY";
+// CONFIGURATION
+const API_KEY = "YOUR_MBUZZ_API_KEY";
+const DEBUG = true;
 
-       // =============================================
-       // DO NOT EDIT BELOW THIS LINE
-       // =============================================
-       const API_URL="https://mbuzz.co/api/v1",VISITOR_KEY="_mbuzz_vid",SESSION_KEY="_mbuzz_sid";async function getVisitorId(){try{return await browser.localStorage.getItem(VISITOR_KEY)||null}catch(x){return null}}async function getSessionId(){try{return await browser.localStorage.getItem(SESSION_KEY)||null}catch(x){return null}}async function trackEvent(type,props={}){const vid=await getVisitorId(),sid=await getSessionId();if(!vid)return;try{await fetch(`${API_URL}/events`,{method:"POST",headers:{Authorization:`Bearer ${API_KEY}`,"Content-Type":"application/json"},body:JSON.stringify({events:[{event_type:type,visitor_id:vid,session_id:sid,timestamp:new Date().toISOString(),properties:props}]})})}catch(x){}}async function identify(email,traits={}){const vid=await getVisitorId();try{await fetch(`${API_URL}/identify`,{method:"POST",headers:{Authorization:`Bearer ${API_KEY}`,"Content-Type":"application/json"},body:JSON.stringify({user_id:email,visitor_id:vid,traits:{email,...traits}})})}catch(x){}}analytics.subscribe("checkout_started",async(evt)=>{const c=evt.data?.checkout,items=c?.lineItems||[];if(items.length>0){const i=items[0];await trackEvent("add_to_cart",{product_id:i.variant?.product?.id,product_title:i.title,price:i.variant?.price?.amount,quantity:i.quantity})}await trackEvent("checkout",{total:c?.totalPrice?.amount,currency:c?.currencyCode,item_count:items.length})});analytics.subscribe("checkout_contact_info_submitted",async(evt)=>{const em=evt.data?.checkout?.email;if(em)await identify(em,{source:"shopify_checkout"})});analytics.subscribe("checkout_completed",async(evt)=>{const em=evt.data?.checkout?.email;if(em)await identify(em,{source:"shopify_checkout_completed"})});
+// DO NOT EDIT BELOW
+const API_URL = "https://mbuzz.co/api/v1";
+const VID_ATTR = "_mbuzz_visitor_id";
+const SID_ATTR = "_mbuzz_session_id";
+
+function log(msg, data) {
+  if (DEBUG) console.log("[mbuzz] " + msg, data || "");
+}
+
+// Store IDs in sessionStorage to persist across page navigations
+function cacheIds(vid, sid) {
+  if (vid) {
+    browser.sessionStorage.setItem("_mbuzz_cached_vid", vid);
+    browser.sessionStorage.setItem("_mbuzz_cached_sid", sid || "");
+    log("cacheIds: stored", { vid: vid, sid: sid });
+  }
+}
+
+function getIds(checkout) {
+  var attrs = (checkout && checkout.attributes) || [];
+  var vid = null;
+  var sid = null;
+  for (var i = 0; i < attrs.length; i++) {
+    if (attrs[i].key === VID_ATTR) vid = attrs[i].value;
+    if (attrs[i].key === SID_ATTR) sid = attrs[i].value;
+  }
+  // Cache IDs when found
+  if (vid) { cacheIds(vid, sid); }
+  log("getIds from attrs", { vid: vid || "(not found)", sid: sid || "(not found)" });
+  return { vid: vid, sid: sid };
+}
+
+// Try to get IDs from localStorage (theme extension) - async version for checkout_started
+function getIdsWithLocalStorage(checkout, callback) {
+  var ids = getIds(checkout);
+  if (ids.vid) {
+    callback(ids);
+    return;
+  }
+  // Fall back to localStorage (theme extension stores there)
+  Promise.all([
+    browser.localStorage.getItem("_mbuzz_vid"),
+    browser.localStorage.getItem("_mbuzz_sid")
+  ]).then(function(results) {
+    var vid = results[0];
+    var sid = results[1];
+    if (vid) { cacheIds(vid, sid); }
+    log("getIds from localStorage", { vid: vid || "(not found)", sid: sid || "(not found)" });
+    callback({ vid: vid, sid: sid });
+  }).catch(function(e) {
+    log("localStorage error", e.message);
+    callback({ vid: null, sid: null });
+  });
+}
+
+function getCachedIds(callback) {
+  // Try sessionStorage first (cached from checkout_started), then localStorage (from theme extension)
+  Promise.all([
+    browser.sessionStorage.getItem("_mbuzz_cached_vid"),
+    browser.sessionStorage.getItem("_mbuzz_cached_sid"),
+    browser.localStorage.getItem("_mbuzz_vid"),
+    browser.localStorage.getItem("_mbuzz_sid")
+  ]).then(function(results) {
+    var vid = results[0] || results[2];  // sessionStorage or localStorage
+    var sid = results[1] || results[3];
+    log("getCachedIds", { vid: vid || "(not found)", sid: sid || "(not found)", fromSession: !!results[0], fromLocal: !!results[2] });
+    callback({ vid: vid, sid: sid });
+  }).catch(function(e) {
+    log("getCachedIds error", e.message);
+    callback({ vid: null, sid: null });
+  });
+}
+
+function trackEvent(checkout, eventType, props) {
+  var ids = getIds(checkout);
+  if (!ids.vid) { log("SKIP - no visitor_id:", eventType); return; }
+  trackEventWithIds(ids, eventType, props);
+}
+
+function trackEventWithIds(ids, eventType, props) {
+  if (!ids.vid) { log("SKIP - no visitor_id:", eventType); return; }
+  var payload = {
+    events: [{
+      event_type: eventType,
+      visitor_id: ids.vid,
+      session_id: ids.sid,
+      timestamp: new Date().toISOString(),
+      properties: props || {}
+    }]
+  };
+  log("trackEvent: " + eventType, payload);
+  fetch(API_URL + "/events", {
+    method: "POST",
+    headers: { "Authorization": "Bearer " + API_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  }).catch(function(e) { log("err", e.message); });
+}
+
+function identify(checkout, email, source) {
+  // First try to get IDs from checkout attributes
+  var ids = getIds(checkout);
+  if (ids.vid) {
+    sendIdentify(email, ids.vid, source);
+  } else {
+    // Fall back to cached IDs from sessionStorage
+    getCachedIds(function(cached) {
+      sendIdentify(email, cached.vid, source);
+    });
+  }
+}
+
+function sendIdentify(email, vid, source) {
+  var payload = {
+    user_id: email,
+    visitor_id: vid,
+    traits: { email: email, source: source }
+  };
+  log("identify: " + email, payload);
+  fetch(API_URL + "/identify", {
+    method: "POST",
+    headers: { "Authorization": "Bearer " + API_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  }).catch(function(e) { log("err", e.message); });
+}
+
+analytics.subscribe("checkout_started", function(evt) {
+  log("checkout_started", evt);
+  var checkout = evt.data && evt.data.checkout;
+  var items = (checkout && checkout.lineItems) || [];
+
+  // Use async version to check localStorage if cart attrs are empty
+  getIdsWithLocalStorage(checkout, function(ids) {
+    if (!ids.vid) { log("SKIP checkout_started - no visitor_id found anywhere"); return; }
+
+    if (items.length > 0) {
+      var item = items[0];
+      var variant = item.variant || {};
+      var product = variant.product || {};
+      var price = variant.price || {};
+      trackEventWithIds(ids, "add_to_cart", {
+        product_id: product.id,
+        product_title: item.title,
+        price: price.amount,
+        quantity: item.quantity,
+        source: "checkout_pixel"
+      });
+    }
+    var total = checkout && checkout.totalPrice || {};
+    trackEventWithIds(ids, "checkout", {
+      total: total.amount,
+      currency: checkout && checkout.currencyCode,
+      item_count: items.length,
+      source: "checkout_pixel"
+    });
+  });
+});
+
+analytics.subscribe("checkout_contact_info_submitted", function(evt) {
+  log("checkout_contact_info_submitted", evt);
+  var checkout = evt.data && evt.data.checkout;
+  var email = checkout && checkout.email;
+  if (email) identify(checkout, email, "shopify_checkout");
+});
+
+analytics.subscribe("checkout_completed", function(evt) {
+  log("checkout_completed", evt);
+  var checkout = evt.data && evt.data.checkout;
+  var email = checkout && checkout.email;
+  if (email) identify(checkout, email, "shopify_checkout_completed");
+});
+
+log("mbuzz pixel initialized");
+
+// OPTIONAL EVENTS: https://shopify.dev/docs/api/web-pixels-api/standard-events
+// analytics.subscribe("product_viewed", function(evt) { log("product_viewed", evt); });
+// analytics.subscribe("collection_viewed", function(evt) { log("collection_viewed", evt); });
+// analytics.subscribe("search_submitted", function(evt) { log("search_submitted", evt); });
        ```
 
        **What this pixel tracks:**
-       - `checkout_started`: Creates "add_to_cart" + "checkout" events (for "Buy it now" flows)
+       - `checkout_started`: Creates "add_to_cart" + "checkout" events (covers "Buy it now" flows)
        - `checkout_contact_info_submitted`: Links visitor to email identity
        - `checkout_completed`: Backup identity link on order completion
+
+       **Custom events (optional):** See commented section above. Full list at [Shopify Standard Events](https://shopify.dev/docs/api/web-pixels-api/standard-events).
 
    5.5 Save and Connect
        - Click "Add pixel"
