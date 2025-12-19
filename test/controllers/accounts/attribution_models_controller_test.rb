@@ -395,7 +395,8 @@ class Accounts::AttributionModelsControllerTest < ActionDispatch::IntegrationTes
 
   # --- Rerun ---
 
-  test "rerun redirects when no stale conversions" do
+  test "rerun redirects when no pending conversions" do
+    clear_existing_data
     sign_in
     model = account.attribution_models.create!(
       name: "Rerun Test #{SecureRandom.hex(4)}",
@@ -406,12 +407,25 @@ class Accounts::AttributionModelsControllerTest < ActionDispatch::IntegrationTes
     post rerun_account_attribution_model_path(model)
 
     assert_redirected_to account_attribution_models_path
-    assert_match(/no.*conversion/i, flash[:alert])
+    assert_match(/no.*pending.*conversion/i, flash[:alert])
   end
 
   test "rerun creates job when stale conversions exist within limit" do
     sign_in
     model = create_model_with_stale_credits
+
+    assert_difference "::RerunJob.count", 1 do
+      post rerun_account_attribution_model_path(model)
+    end
+
+    assert_redirected_to account_attribution_models_path
+    assert_match(/rerun started/i, flash[:notice])
+  end
+
+  test "rerun creates job when unattributed conversions exist (backfill)" do
+    clear_existing_data
+    sign_in
+    model = create_model_with_unattributed_conversion
 
     assert_difference "::RerunJob.count", 1 do
       post rerun_account_attribution_model_path(model)
@@ -567,6 +581,39 @@ class Accounts::AttributionModelsControllerTest < ActionDispatch::IntegrationTes
       channel: "direct",
       credit: 1.0,
       model_version: 1
+    )
+
+    model
+  end
+
+  def create_model_with_unattributed_conversion
+    model = account.attribution_models.create!(
+      name: "Backfill Model #{SecureRandom.hex(4)}",
+      model_type: :custom,
+      algorithm: :first_touch,
+      dsl_code: "test"
+    )
+
+    identity = account.identities.create!(
+      external_id: "user-#{SecureRandom.hex(4)}",
+      first_identified_at: Time.current,
+      last_identified_at: Time.current
+    )
+    visitor = account.visitors.create!(
+      visitor_id: "backfill-#{SecureRandom.hex(4)}",
+      identity: identity
+    )
+    session = account.sessions.create!(
+      visitor: visitor,
+      session_id: "backfill-sess-#{SecureRandom.hex(4)}",
+      started_at: 1.day.ago,
+      channel: "direct"
+    )
+    account.conversions.create!(
+      visitor: visitor,
+      session_id: session.id,
+      conversion_type: "test",
+      converted_at: Time.current
     )
 
     model

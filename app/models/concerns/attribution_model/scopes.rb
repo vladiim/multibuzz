@@ -27,4 +27,29 @@ module AttributionModel::Scopes
       .distinct
       .count
   end
+
+  def unattributed_conversions
+    account.conversions
+      .where.not(id: attribution_credits.select(:conversion_id))
+  end
+
+  def unattributed_conversions_count
+    unattributed_conversions.count
+  end
+
+  def has_unattributed_conversions?
+    unattributed_conversions.exists?
+  end
+
+  def pending_conversions_count
+    stale_conversions_count + unattributed_conversions_count
+  end
+
+  def needs_backfill?
+    has_unattributed_conversions?
+  end
+
+  def needs_rerun?
+    has_stale_credits? || has_unattributed_conversions?
+  end
 end

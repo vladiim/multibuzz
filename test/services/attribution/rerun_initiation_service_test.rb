@@ -5,11 +5,11 @@ require "test_helper"
 module Attribution
   class RerunInitiationServiceTest < ActiveSupport::TestCase
     include ActiveJob::TestHelper
-    test "returns error when no stale conversions" do
+    test "returns error when no pending conversions" do
       result = service.call
 
       assert_not result[:success]
-      assert_includes result[:errors].first, "No stale conversions"
+      assert_includes result[:errors].first, "No pending conversions"
     end
 
     test "creates rerun job when stale conversions within limit" do
@@ -64,6 +64,37 @@ module Attribution
       end
     end
 
+    # --- Backfill (unattributed conversions) ---
+
+    test "creates rerun job when unattributed conversions exist (backfill)" do
+      create_unattributed_conversion
+
+      assert_difference "::RerunJob.count", 1 do
+        result = service.call
+        assert result[:success], "Expected success but got: #{result.inspect}"
+      end
+    end
+
+    test "sets from_version to 0 for new model backfill" do
+      create_unattributed_conversion
+
+      result = service.call
+
+      job = result[:rerun_job]
+      assert_equal 0, job.from_version
+      assert_equal 2, job.to_version
+    end
+
+    test "counts both stale and unattributed conversions" do
+      create_stale_credit
+      create_unattributed_conversion
+
+      result = service.call
+
+      job = result[:rerun_job]
+      assert_equal 2, job.total_conversions
+    end
+
     private
 
     def service
@@ -110,8 +141,40 @@ module Attribution
       )
     end
 
+    def create_unattributed_conversion
+      unattributed_visitor = account.visitors.create!(
+        visitor_id: "unattributed-#{SecureRandom.hex(4)}",
+        identity: identity
+      )
+
+      unattributed_session = account.sessions.create!(
+        visitor: unattributed_visitor,
+        session_id: "unattributed-sess-#{SecureRandom.hex(4)}",
+        started_at: 1.day.ago,
+        channel: "direct"
+      )
+
+      account.conversions.create!(
+        visitor: unattributed_visitor,
+        session_id: unattributed_session.id,
+        conversion_type: "test",
+        converted_at: Time.current
+      )
+    end
+
+    def identity
+      @identity ||= account.identities.create!(
+        external_id: "user-#{SecureRandom.hex(4)}",
+        first_identified_at: Time.current,
+        last_identified_at: Time.current
+      )
+    end
+
     def visitor
-      @visitor ||= account.visitors.create!(visitor_id: "test-#{SecureRandom.hex(4)}")
+      @visitor ||= account.visitors.create!(
+        visitor_id: "test-#{SecureRandom.hex(4)}",
+        identity: identity
+      )
     end
 
     def session
@@ -124,7 +187,10 @@ module Attribution
     end
 
     def account
-      @account ||= accounts(:one)
+      @account ||= Account.create!(
+        name: "Rerun Test Account",
+        slug: "rerun-test-#{SecureRandom.hex(4)}"
+      )
     end
   end
 end
