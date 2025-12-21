@@ -5,6 +5,8 @@
     2. (if #1 didn't take off) — Rebrand. New name, new logo, new design, new landing page, new headline. Same product. Repeat #1
     3. (if #2 didn't take off) — Target new market segment experiencing the same problem your product solves. Repeat #1. Repeat #2.
 * early customers (dan SME (not free), cody, mike, boris)
+* Backfill changed attribution: have status x of y completed 
+* Get approval of terms for data driven model: we may review your data to achieve model performance 
 * later conversion - do it with a user trait e.g. email or id -> big mouth
 * models: rollout markov, think through amount of data for bayesian and data-driven? -> experimental, request feature?
 * export data (csv - simple + api - with property queries)
@@ -16,6 +18,8 @@
   - Also map to spend for CAC, payback period, ROAS etc.
 * integrate with ads to get payback period
 * change bigger defaults e.g. customer storage for 2 years etc
+* Pre built re categorisation eg local search for place id
+* Forecasting- longer term with reconciliation 
 
 
 ***
