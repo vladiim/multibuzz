@@ -218,37 +218,38 @@ module Dashboard
     end
 
     def create_multi_visit_conversion
+      # Create 3 sessions for the journey
+      s1 = account.sessions.create!(
+        visitor: visitors(:one),
+        session_id: "sess_101",
+        started_at: 10.days.ago
+      )
+      s2 = account.sessions.create!(
+        visitor: visitors(:one),
+        session_id: "sess_102",
+        started_at: 7.days.ago
+      )
+      s3 = account.sessions.create!(
+        visitor: visitors(:one),
+        session_id: "sess_103",
+        started_at: 5.days.ago
+      )
+
+      # Create conversion with 3 sessions in journey
       conversion = account.conversions.create!(
         visitor: visitors(:one),
         conversion_type: "purchase",
-        converted_at: 5.days.ago
+        converted_at: 5.days.ago,
+        journey_session_ids: [s1.id, s2.id, s3.id]
       )
 
-      # 3 visits for this conversion
+      # Create credit (only 1 needed for first touch)
       account.attribution_credits.create!(
         conversion: conversion,
         attribution_model: first_touch_model,
-        session_id: 101,
+        session_id: s1.id,
         channel: Channels::PAID_SEARCH,
-        credit: 0.33,
-        is_test: false
-      )
-
-      account.attribution_credits.create!(
-        conversion: conversion,
-        attribution_model: first_touch_model,
-        session_id: 102,
-        channel: Channels::PAID_SEARCH,
-        credit: 0.33,
-        is_test: false
-      )
-
-      account.attribution_credits.create!(
-        conversion: conversion,
-        attribution_model: first_touch_model,
-        session_id: 103,
-        channel: Channels::PAID_SEARCH,
-        credit: 0.34,
+        credit: 1.0,
         is_test: false
       )
     end

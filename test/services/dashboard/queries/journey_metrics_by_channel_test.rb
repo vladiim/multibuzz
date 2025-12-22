@@ -28,20 +28,20 @@ module Dashboard
         assert_equal 2.0, result[Channels::EMAIL]
       end
 
-      test "returns avg_visits per channel" do
-        # Conversion 1: 3 visits via paid_search
-        conv1 = create_conversion
-        create_credit(conv1, channel: Channels::PAID_SEARCH, session_id: 1)
-        create_credit(conv1, channel: Channels::PAID_SEARCH, session_id: 2)
-        create_credit(conv1, channel: Channels::PAID_SEARCH, session_id: 3)
+      test "returns avg_visits per channel based on journey_session_ids" do
+        # Conversion 1: 3 visits in journey, via paid_search
+        s1, s2, s3 = create_sessions(3)
+        conv1 = create_conversion(journey_session_ids: [s1.id, s2.id, s3.id])
+        create_credit(conv1, channel: Channels::PAID_SEARCH, session_id: s1.id)
 
-        # Conversion 2: 1 visit via paid_search
-        conv2 = create_conversion
-        create_credit(conv2, channel: Channels::PAID_SEARCH, session_id: 4)
+        # Conversion 2: 1 visit in journey, via paid_search
+        s4 = create_session
+        conv2 = create_conversion(journey_session_ids: [s4.id])
+        create_credit(conv2, channel: Channels::PAID_SEARCH, session_id: s4.id)
 
         result = query.avg_visits_by_channel
 
-        # paid_search: (3 + 1) / 2 = 2.0
+        # paid_search: (3 + 1) / 2 = 2.0 (journey lengths, not credit counts)
         assert_equal 2.0, result[Channels::PAID_SEARCH]
       end
 
@@ -52,16 +52,15 @@ module Dashboard
       end
 
       test "handles multiple channels with different journey lengths" do
-        # Conversion 1: paid_search (1 visit)
-        conv1 = create_conversion
-        create_credit(conv1, channel: Channels::PAID_SEARCH, session_id: 1)
+        # Conversion 1: paid_search (1 visit in journey)
+        s1 = create_session
+        conv1 = create_conversion(journey_session_ids: [s1.id])
+        create_credit(conv1, channel: Channels::PAID_SEARCH, session_id: s1.id)
 
-        # Conversion 2: email with 4 visits
-        conv2 = create_conversion
-        create_credit(conv2, channel: Channels::EMAIL, session_id: 2)
-        create_credit(conv2, channel: Channels::EMAIL, session_id: 3)
-        create_credit(conv2, channel: Channels::EMAIL, session_id: 4)
-        create_credit(conv2, channel: Channels::EMAIL, session_id: 5)
+        # Conversion 2: email with 4 visits in journey
+        s2, s3, s4, s5 = create_sessions(4)
+        conv2 = create_conversion(journey_session_ids: [s2.id, s3.id, s4.id, s5.id])
+        create_credit(conv2, channel: Channels::EMAIL, session_id: s2.id)
 
         result = query.avg_visits_by_channel
 
@@ -96,11 +95,12 @@ module Dashboard
         @attribution_model ||= attribution_models(:first_touch)
       end
 
-      def create_conversion
+      def create_conversion(journey_session_ids: [])
         account.conversions.create!(
           visitor: visitors(:one),
           conversion_type: "purchase",
-          converted_at: 1.day.ago
+          converted_at: 1.day.ago,
+          journey_session_ids: journey_session_ids
         )
       end
 
@@ -113,6 +113,18 @@ module Dashboard
           credit: 0.5,
           is_test: false
         )
+      end
+
+      def create_session
+        account.sessions.create!(
+          visitor: visitors(:one),
+          session_id: "sess_#{SecureRandom.hex(8)}",
+          started_at: rand(1..30).days.ago
+        )
+      end
+
+      def create_sessions(count)
+        count.times.map { create_session }
       end
     end
   end

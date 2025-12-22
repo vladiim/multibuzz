@@ -268,9 +268,80 @@ export default class extends Controller {
   }
 
   renderStackedBarChart() {
-    const stages = this.parseData()
-    if (!Array.isArray(stages) || stages.length === 0) return
+    const data = this.parseData()
+    if (!Array.isArray(data) || data.length === 0) return
 
+    // Check if data has by_channel breakdown (conversion dimension chart)
+    const hasChannelBreakdown = data[0]?.by_channel !== undefined
+
+    if (hasChannelBreakdown) {
+      this.renderConversionsByChannelChart(data)
+    } else {
+      this.renderFunnelStackedChart(data)
+    }
+  }
+
+  renderConversionsByChannelChart(data) {
+    const categories = data.map(d => d.channel) // conversion name/type
+
+    // Get all unique channels across all rows
+    const allChannels = [...new Set(
+      data.flatMap(d => (d.by_channel || []).map(c => c.channel))
+    )]
+
+    // Build series for each channel
+    const series = allChannels.map(channel => ({
+      name: this.formatChannelName(channel),
+      color: CHANNEL_COLORS[channel] || CHANNEL_COLORS.other,
+      data: data.map(d => {
+        const channelData = (d.by_channel || []).find(c => c.channel === channel)
+        return channelData ? channelData.credits : 0
+      })
+    }))
+
+    this.chart = Highcharts.chart(this.chartElement, {
+      chart: { type: "bar" },
+      title: { text: null },
+      xAxis: {
+        categories: categories,
+        labels: { style: { fontSize: "12px" } }
+      },
+      yAxis: {
+        min: 0,
+        title: { text: "Conversions" },
+        stackLabels: {
+          enabled: true,
+          format: "{total:.1f}"
+        }
+      },
+      legend: {
+        align: "center",
+        verticalAlign: "top",
+        layout: "horizontal",
+        itemStyle: { fontSize: "11px" }
+      },
+      tooltip: {
+        formatter: function() {
+          let html = `<b>${this.x}</b><br/>`
+          let total = 0
+          this.points.forEach(point => {
+            total += point.y
+            html += `<span style="color:${point.color}">●</span> ${point.series.name}: ${Highcharts.numberFormat(point.y, 1)}<br/>`
+          })
+          html += `<b>Total: ${Highcharts.numberFormat(total, 1)}</b>`
+          return html
+        },
+        shared: true
+      },
+      plotOptions: {
+        series: { stacking: "normal" }
+      },
+      series: series,
+      credits: { enabled: false }
+    })
+  }
+
+  renderFunnelStackedChart(stages) {
     const categories = stages.map(s => s.stage)
 
     // Get all channels from first stage

@@ -64,6 +64,17 @@ class DashboardHelperTest < ActionView::TestCase
     assert_equal "1,234", format_metric(1234, type: :unknown)
   end
 
+  test "format_metric rounds floats to one decimal place" do
+    assert_equal "503.1", format_metric(503.0774)
+    assert_equal "1,234.6", format_metric(1234.5678)
+    assert_equal "0.3", format_metric(0.3333)
+  end
+
+  test "format_metric preserves integers without decimal" do
+    assert_equal "503", format_metric(503)
+    assert_equal "1,234", format_metric(1234)
+  end
+
   # attribution_model_description tests
   test "attribution_model_description returns correct description" do
     assert_equal "100% credit to the first marketing touchpoint", attribution_model_description("first_touch")

@@ -82,9 +82,11 @@ module Dashboard
 
       def avg_visits_to_convert
         return nil if conversion_count.zero?
-        return nil if visits_per_conversion.empty?
 
-        (visits_per_conversion.values.sum.to_f / visits_per_conversion.size).round(1)
+        visits = journey_visits_per_conversion
+        return nil if visits.empty?
+
+        (visits.values.sum.to_f / visits.size).round(1)
       end
 
       def channels_per_conversion
@@ -98,6 +100,21 @@ module Dashboard
         @visits_per_conversion ||= scope
           .group(:conversion_id)
           .count
+      end
+
+      def journey_visits_per_conversion
+        @journey_visits_per_conversion ||= calculate_journey_visits
+      end
+
+      def calculate_journey_visits
+        conversion_ids = scope.distinct.pluck(:conversion_id)
+        return {} if conversion_ids.empty?
+
+        Conversion
+          .where(id: conversion_ids)
+          .where.not(journey_session_ids: [])
+          .pluck(:id, Arel.sql("ARRAY_LENGTH(journey_session_ids, 1)"))
+          .to_h
       end
 
       def conversion_count

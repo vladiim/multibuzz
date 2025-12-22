@@ -48,20 +48,59 @@ module Dashboard
         assert_equal 2.5, result[:avg_channels_to_convert]
       end
 
-      test "returns avg_visits_to_convert" do
-        # Conversion 1: 2 visits (sessions)
-        conv1 = create_conversion
-        create_credit_for_conversion(conv1, session_id: 101)
-        create_credit_for_conversion(conv1, session_id: 102)
+      test "returns avg_visits_to_convert based on journey_session_ids count" do
+        # Conversion 1: 2 sessions in journey
+        s1, s2 = create_sessions(2)
+        conv1 = create_conversion_with_journey(
+          converted_at: Time.current,
+          journey_session_ids: [s1.id, s2.id]
+        )
+        create_credit_for_conversion(conv1)
 
-        # Conversion 2: 4 visits
-        conv2 = create_conversion
-        create_credit_for_conversion(conv2, session_id: 201)
-        create_credit_for_conversion(conv2, session_id: 202)
-        create_credit_for_conversion(conv2, session_id: 203)
-        create_credit_for_conversion(conv2, session_id: 204)
+        # Conversion 2: 4 sessions in journey
+        s3, s4, s5, s6 = create_sessions(4)
+        conv2 = create_conversion_with_journey(
+          converted_at: Time.current,
+          journey_session_ids: [s3.id, s4.id, s5.id, s6.id]
+        )
+        create_credit_for_conversion(conv2)
 
-        # Average: (2 + 4) / 2 = 3.0
+        # Average: (2 + 4) / 2 = 3.0 based on journey length, NOT credit count
+        assert_equal 3.0, result[:avg_visits_to_convert]
+      end
+
+      test "avg_visits is independent of attribution model credit count" do
+        # Create a conversion with 5 sessions in journey
+        sessions = create_sessions(5)
+        conversion = create_conversion_with_journey(
+          converted_at: Time.current,
+          journey_session_ids: sessions.map(&:id)
+        )
+
+        # First Touch creates 1 credit, but journey has 5 sessions
+        create_credit_for_conversion(conversion)
+
+        # Should return 5.0 (journey length), not 1.0 (credit count)
+        assert_equal 5.0, result[:avg_visits_to_convert]
+      end
+
+      test "avg_visits skips conversions with empty journey" do
+        # Conversion 1: 3 sessions
+        sessions = create_sessions(3)
+        conv1 = create_conversion_with_journey(
+          converted_at: Time.current,
+          journey_session_ids: sessions.map(&:id)
+        )
+        create_credit_for_conversion(conv1)
+
+        # Conversion 2: empty journey (should be skipped)
+        conv2 = create_conversion_with_journey(
+          converted_at: Time.current,
+          journey_session_ids: []
+        )
+        create_credit_for_conversion(conv2)
+
+        # Should return 3.0 (only conv1 counted)
         assert_equal 3.0, result[:avg_visits_to_convert]
       end
 
@@ -230,6 +269,12 @@ module Dashboard
           session_id: "sess_#{SecureRandom.hex(8)}",
           started_at: started_at
         )
+      end
+
+      def create_sessions(count)
+        count.times.map do
+          create_session(started_at: rand(1..30).days.ago)
+        end
       end
     end
   end

@@ -76,12 +76,38 @@ module Dashboard
           percentage: percentage(row.total_credits),
           avg_channels: calculate_avg_channels(conversion_ids),
           avg_visits: calculate_avg_visits(conversion_ids),
-          avg_days: calculate_avg_days(conversion_ids)
+          avg_days: calculate_avg_days(conversion_ids),
+          by_channel: channel_breakdown_for(dimension_value)
         }
       end
 
       def percentage(credits)
         ((credits.to_f / total_credits) * 100).round(1)
+      end
+
+      def channel_breakdown_for(dimension_value)
+        channel_breakdown[dimension_value] || []
+      end
+
+      def channel_breakdown
+        @channel_breakdown ||= build_channel_breakdown
+      end
+
+      def build_channel_breakdown
+        scope
+          .joins(:conversion)
+          .group(group_expression, :channel)
+          .select(
+            "#{group_expression} as dimension_value",
+            :channel,
+            "SUM(credit) as total_credits"
+          )
+          .each_with_object({}) do |row, result|
+            dim_value = row.dimension_value || "(not set)"
+            result[dim_value] ||= []
+            result[dim_value] << { channel: row.channel, credits: row.total_credits.to_f }
+          end
+          .transform_values { |channels| channels.sort_by { |c| -c[:credits] } }
       end
 
       def total_credits
@@ -117,9 +143,18 @@ module Dashboard
       end
 
       def visits_per_conversion
-        @visits_per_conversion ||= scope
-          .group(:conversion_id)
-          .count
+        @visits_per_conversion ||= calculate_journey_visits
+      end
+
+      def calculate_journey_visits
+        conversion_ids = scope.distinct.pluck(:conversion_id)
+        return {} if conversion_ids.empty?
+
+        Conversion
+          .where(id: conversion_ids)
+          .where.not(journey_session_ids: [])
+          .pluck(:id, Arel.sql("ARRAY_LENGTH(journey_session_ids, 1)"))
+          .to_h
       end
 
       def days_per_conversion

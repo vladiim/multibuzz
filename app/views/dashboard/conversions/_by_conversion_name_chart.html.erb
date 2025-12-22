@@ -53,7 +53,7 @@
   <%= chart_or_empty(data: by_conversion_name, empty_message: "No conversion data for the selected period") do %>
     <div id="conversion-name-chart"
       data-controller="chart"
-      data-chart-type-value="bar"
+      data-chart-type-value="stacked-bar"
       data-chart-metric-value="<%= chart_metric %>"
       data-chart-data-value="<%= by_conversion_name.to_json %>"
       class="h-64">

@@ -196,6 +196,44 @@ module Dashboard
         assert_equal [], result
       end
 
+      # ==========================================
+      # Channel breakdown tests
+      # ==========================================
+
+      test "includes by_channel breakdown for each row" do
+        conversion1 = create_conversion(conversion_type: "signup")
+        create_credit(conversion: conversion1, credit: 0.5, channel: Channels::PAID_SEARCH)
+        create_credit(conversion: conversion1, credit: 0.5, channel: Channels::DIRECT)
+
+        conversion2 = create_conversion(conversion_type: "signup")
+        create_credit(conversion: conversion2, credit: 1.0, channel: Channels::PAID_SEARCH)
+
+        result = query(dimension: "conversion_type").call
+        signup = result.find { |r| r[:channel] == "signup" }
+
+        assert_not_nil signup[:by_channel]
+        assert_equal 2, signup[:by_channel].size
+
+        paid_search = signup[:by_channel].find { |c| c[:channel] == Channels::PAID_SEARCH }
+        direct = signup[:by_channel].find { |c| c[:channel] == Channels::DIRECT }
+
+        assert_equal 1.5, paid_search[:credits]
+        assert_equal 0.5, direct[:credits]
+      end
+
+      test "by_channel is sorted by credits descending" do
+        conversion = create_conversion(conversion_type: "signup")
+        create_credit(conversion: conversion, credit: 0.2, channel: Channels::EMAIL)
+        create_credit(conversion: conversion, credit: 0.5, channel: Channels::PAID_SEARCH)
+        create_credit(conversion: conversion, credit: 0.3, channel: Channels::DIRECT)
+
+        result = query(dimension: "conversion_type").call
+        signup = result.find { |r| r[:channel] == "signup" }
+
+        channels = signup[:by_channel].map { |c| c[:channel] }
+        assert_equal [Channels::PAID_SEARCH, Channels::DIRECT, Channels::EMAIL], channels
+      end
+
       private
 
       def query(dimension: "conversion_type", limit: 10)
@@ -225,12 +263,12 @@ module Dashboard
         )
       end
 
-      def create_credit(conversion:, credit: 1.0, revenue_credit: 0)
+      def create_credit(conversion:, credit: 1.0, revenue_credit: 0, channel: Channels::DIRECT)
         account.attribution_credits.create!(
           conversion: conversion,
           attribution_model: attribution_model,
           session_id: rand(100..999),
-          channel: Channels::DIRECT,
+          channel: channel,
           credit: credit,
           revenue_credit: revenue_credit,
           is_test: false

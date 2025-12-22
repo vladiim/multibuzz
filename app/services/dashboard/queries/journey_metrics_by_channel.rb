@@ -43,9 +43,18 @@ module Dashboard
       end
 
       def visits_per_conversion
-        @visits_per_conversion ||= scope
-          .group(:conversion_id)
-          .count
+        @visits_per_conversion ||= calculate_journey_visits
+      end
+
+      def calculate_journey_visits
+        conversion_ids = scope.distinct.pluck(:conversion_id)
+        return {} if conversion_ids.empty?
+
+        Conversion
+          .where(id: conversion_ids)
+          .where.not(journey_session_ids: [])
+          .pluck(:id, Arel.sql("ARRAY_LENGTH(journey_session_ids, 1)"))
+          .to_h
       end
 
       def days_per_conversion

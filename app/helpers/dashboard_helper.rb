@@ -13,7 +13,10 @@ module DashboardHelper
   METRIC_FORMATTERS = {
     currency: ->(v, h) { h.number_to_currency(v, precision: 0) },
     percentage: ->(v, _) { "#{v}%" },
-    number: ->(v, h) { h.number_with_delimiter(v) }
+    number: ->(v, h) {
+      formatted = v.is_a?(Float) ? v.round(1) : v
+      h.number_with_delimiter(formatted)
+    }
   }.freeze
 
   def attribution_model_description(algorithm)
