@@ -30,7 +30,8 @@ module Dashboard
           revenue: row.total_revenue.to_f,
           percentage: percentage(row.total_credits),
           avg_channels: journey_metrics.avg_channels_by_channel[row.channel],
-          avg_visits: journey_metrics.avg_visits_by_channel[row.channel]
+          avg_visits: journey_metrics.avg_visits_by_channel[row.channel],
+          avg_days: journey_metrics.avg_days_by_channel[row.channel]
         }
       end
 

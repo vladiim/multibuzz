@@ -63,6 +63,16 @@ module AML
             apply 1.0, to: touchpoints, distribute: :equal
           end
         AML
+      },
+
+      markov_chain: {
+        name: "Markov Chain",
+        description: "Data-driven attribution using transition probabilities between channels",
+        code: <<~AML
+          within_window %{lookback_days}.days do
+            markov_chain removal_effect: true
+          end
+        AML
       }
     }.freeze
 

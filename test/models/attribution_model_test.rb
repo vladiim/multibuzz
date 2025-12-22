@@ -85,6 +85,98 @@ class AttributionModelTest < ActiveSupport::TestCase
     assert last_touch_model.is_default?
   end
 
+  # --- Backfill Detection ---
+
+  test "unattributed_conversions returns conversions without credits for this model" do
+    test_model = create_test_model
+    conversion = create_conversion_for(test_model.account)
+
+    assert_includes test_model.unattributed_conversions, conversion
+  end
+
+  test "unattributed_conversions excludes conversions that have credits" do
+    test_model = create_test_model
+    conversion = create_conversion_for(test_model.account)
+    create_credit_for(test_model, conversion)
+
+    assert_not_includes test_model.unattributed_conversions, conversion
+  end
+
+  test "unattributed_conversions_count returns count of unattributed conversions" do
+    test_model = create_test_model
+    create_conversion_for(test_model.account)
+    create_conversion_for(test_model.account)
+
+    assert_equal 2, test_model.unattributed_conversions_count
+  end
+
+  test "has_unattributed_conversions? returns true when conversions exist without credits" do
+    test_model = create_test_model
+    create_conversion_for(test_model.account)
+
+    assert test_model.has_unattributed_conversions?
+  end
+
+  test "has_unattributed_conversions? returns false when all conversions have credits" do
+    test_model = create_test_model
+    conversion = create_conversion_for(test_model.account)
+    create_credit_for(test_model, conversion)
+
+    assert_not test_model.has_unattributed_conversions?
+  end
+
+  test "needs_backfill? returns true when unattributed conversions exist" do
+    test_model = create_test_model
+    create_conversion_for(test_model.account)
+
+    assert test_model.needs_backfill?
+  end
+
+  test "needs_backfill? returns false when no unattributed conversions" do
+    test_model = create_test_model
+    # No conversions at all
+    assert_not test_model.needs_backfill?
+  end
+
+  test "pending_conversions_count includes both stale and unattributed" do
+    test_model = create_test_model
+
+    # Create unattributed conversion
+    create_conversion_for(test_model.account)
+
+    # Create stale credit (old version)
+    stale_conversion = create_conversion_for(test_model.account)
+    create_credit_for(test_model, stale_conversion, model_version: 0)
+    test_model.update!(version: 2)
+
+    # Should count both
+    assert_equal 2, test_model.pending_conversions_count
+  end
+
+  test "needs_rerun? returns true when stale credits exist" do
+    test_model = create_test_model
+    conversion = create_conversion_for(test_model.account)
+    create_credit_for(test_model, conversion, model_version: 0)
+    test_model.update!(version: 2)
+
+    assert test_model.needs_rerun?
+  end
+
+  test "needs_rerun? returns true when unattributed conversions exist" do
+    test_model = create_test_model
+    create_conversion_for(test_model.account)
+
+    assert test_model.needs_rerun?
+  end
+
+  test "needs_rerun? returns false when fully attributed and up to date" do
+    test_model = create_test_model
+    conversion = create_conversion_for(test_model.account)
+    create_credit_for(test_model, conversion, model_version: test_model.version)
+
+    assert_not test_model.needs_rerun?
+  end
+
   private
 
   def model
@@ -93,5 +185,45 @@ class AttributionModelTest < ActiveSupport::TestCase
 
   def last_touch_model
     @last_touch_model ||= attribution_models(:last_touch)
+  end
+
+  def account
+    @account ||= accounts(:one)
+  end
+
+  def create_test_model
+    test_account = Account.create!(name: "Test Account #{SecureRandom.hex(4)}", slug: "test-#{SecureRandom.hex(4)}")
+    AttributionModel.create!(
+      account: test_account,
+      name: "Test Model",
+      model_type: :preset,
+      algorithm: :first_touch,
+      is_active: true,
+      lookback_days: 30,
+      version: 1
+    )
+  end
+
+  def create_conversion_for(account)
+    visitor = account.visitors.create!(visitor_id: SecureRandom.uuid)
+    account.conversions.create!(
+      visitor: visitor,
+      conversion_type: "purchase",
+      revenue: 100.0,
+      converted_at: Time.current
+    )
+  end
+
+  def create_credit_for(attribution_model, conversion, model_version: nil)
+    AttributionCredit.create!(
+      account: attribution_model.account,
+      attribution_model: attribution_model,
+      conversion: conversion,
+      session_id: SecureRandom.uuid,
+      channel: "direct",
+      credit: 1.0,
+      revenue_credit: conversion.revenue,
+      model_version: model_version || attribution_model.version
+    )
   end
 end

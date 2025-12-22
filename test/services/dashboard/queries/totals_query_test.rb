@@ -15,8 +15,6 @@ module Dashboard
         create_credit(credit: 0.3)
         create_credit(credit: 0.2)
 
-        result = query.call
-
         assert_equal 1.0, result[:conversions]
       end
 
@@ -24,16 +22,12 @@ module Dashboard
         create_credit(credit: 0.5, revenue_credit: 50.0)
         create_credit(credit: 0.5, revenue_credit: 100.0)
 
-        result = query.call
-
         assert_equal 150.0, result[:revenue]
       end
 
       test "returns aov as revenue divided by conversions" do
         create_credit(credit: 0.5, revenue_credit: 50.0)
         create_credit(credit: 0.5, revenue_credit: 50.0)
-
-        result = query.call
 
         assert_equal 100.0, result[:aov]
       end
@@ -49,8 +43,6 @@ module Dashboard
         create_credit_for_conversion(conv2, channel: Channels::PAID_SEARCH)
         create_credit_for_conversion(conv2, channel: Channels::EMAIL)
         create_credit_for_conversion(conv2, channel: Channels::DIRECT)
-
-        result = query.call
 
         # Average: (2 + 3) / 2 = 2.5
         assert_equal 2.5, result[:avg_channels_to_convert]
@@ -69,23 +61,105 @@ module Dashboard
         create_credit_for_conversion(conv2, session_id: 203)
         create_credit_for_conversion(conv2, session_id: 204)
 
-        result = query.call
-
         # Average: (2 + 4) / 2 = 3.0
         assert_equal 3.0, result[:avg_visits_to_convert]
       end
 
       test "handles empty data gracefully" do
-        result = query.call
-
         assert_equal 0, result[:conversions]
         assert_equal 0, result[:revenue]
         assert_nil result[:aov]
         assert_nil result[:avg_channels_to_convert]
         assert_nil result[:avg_visits_to_convert]
+        assert_nil result[:avg_days_to_convert]
+      end
+
+      test "returns avg_days_to_convert for single conversion" do
+        # Session started 5 days before conversion
+        session = create_session(started_at: 5.days.ago)
+        conversion = create_conversion_with_journey(
+          converted_at: Time.current,
+          journey_session_ids: [session.id]
+        )
+        create_credit_for_conversion(conversion)
+
+        assert_in_delta 5.0, result[:avg_days_to_convert], 0.1
+      end
+
+      test "returns avg_days_to_convert averaged across multiple conversions" do
+        # Conversion 1: 3 days to convert
+        session1 = create_session(started_at: 3.days.ago)
+        conv1 = create_conversion_with_journey(
+          converted_at: Time.current,
+          journey_session_ids: [session1.id]
+        )
+        create_credit_for_conversion(conv1)
+
+        # Conversion 2: 7 days to convert
+        session2 = create_session(started_at: 7.days.ago)
+        conv2 = create_conversion_with_journey(
+          converted_at: Time.current,
+          journey_session_ids: [session2.id]
+        )
+        create_credit_for_conversion(conv2)
+
+        # Average: (3 + 7) / 2 = 5.0
+        assert_in_delta 5.0, result[:avg_days_to_convert], 0.1
+      end
+
+      test "uses earliest session for multi-session journey" do
+        # Journey: session 10 days ago, then 5 days ago, then 1 day ago
+        session_first = create_session(started_at: 10.days.ago)
+        session_second = create_session(started_at: 5.days.ago)
+        session_third = create_session(started_at: 1.day.ago)
+
+        conversion = create_conversion_with_journey(
+          converted_at: Time.current,
+          journey_session_ids: [session_first.id, session_second.id, session_third.id]
+        )
+        create_credit_for_conversion(conversion)
+
+        # Should use first session (10 days ago)
+        assert_in_delta 10.0, result[:avg_days_to_convert], 0.1
+      end
+
+      test "returns zero for same-session conversion" do
+        now = Time.current
+        session = create_session(started_at: now)
+        conversion = create_conversion_with_journey(
+          converted_at: now,
+          journey_session_ids: [session.id]
+        )
+        create_credit_for_conversion(conversion)
+
+        assert_in_delta 0.0, result[:avg_days_to_convert], 0.01
+      end
+
+      test "skips conversions with empty journey_session_ids" do
+        # Conversion 1: Has valid journey (5 days)
+        session = create_session(started_at: 5.days.ago)
+        conv1 = create_conversion_with_journey(
+          converted_at: Time.current,
+          journey_session_ids: [session.id]
+        )
+        create_credit_for_conversion(conv1)
+
+        # Conversion 2: Empty journey (should be skipped)
+        conv2 = create_conversion_with_journey(
+          converted_at: Time.current,
+          journey_session_ids: []
+        )
+        create_credit_for_conversion(conv2)
+
+        # Should only use conversion 1
+        assert_in_delta 5.0, result[:avg_days_to_convert], 0.1
       end
 
       private
+
+      def result
+        query.call
+      end
 
       def query
         TotalsQuery.new(build_scope)
@@ -106,6 +180,10 @@ module Dashboard
 
       def account
         @account ||= accounts(:one)
+      end
+
+      def visitor
+        @visitor ||= visitors(:one)
       end
 
       def attribution_model
@@ -131,9 +209,26 @@ module Dashboard
 
       def create_conversion
         account.conversions.create!(
-          visitor: visitors(:one),
+          visitor: visitor,
           conversion_type: "purchase",
           converted_at: 1.day.ago
+        )
+      end
+
+      def create_conversion_with_journey(converted_at:, journey_session_ids:)
+        account.conversions.create!(
+          visitor: visitor,
+          conversion_type: "purchase",
+          converted_at: converted_at,
+          journey_session_ids: journey_session_ids
+        )
+      end
+
+      def create_session(started_at:)
+        account.sessions.create!(
+          visitor: visitor,
+          session_id: "sess_#{SecureRandom.hex(8)}",
+          started_at: started_at
         )
       end
     end

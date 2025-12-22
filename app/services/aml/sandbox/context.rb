@@ -9,19 +9,23 @@ module AML
         @touchpoints = TouchpointCollection.new(touchpoints)
         @conversion_time = conversion_time
         @conversion_value = conversion_value
+        @segments = []
+        @segment_blocks = []
       end
 
       def execute(&block)
         safe_eval(&block)
+        finalize_segments if segments_defined?
         credit_ledger.validate!
         credit_ledger.to_a
       end
 
       # DSL Methods
 
-      def within_window(duration, &block)
-        @lookback_window = duration
-        safe_eval(&block) if block_given?
+      def within_window(duration_or_range, weight: nil, &block)
+        return create_outer_window(duration_or_range, &block) unless lookback_window
+
+        create_segment(duration_or_range, weight, &block)
       end
 
       def apply(credit = nil, to: nil, distribute: nil, &block)
@@ -105,6 +109,60 @@ module AML
           "within_window must be called before apply",
           suggestion: "Add 'within_window 30.days do' at the start of your model"
         )
+      end
+
+      def create_outer_window(duration, &block)
+        @lookback_window = duration
+        safe_eval(&block) if block_given?
+      end
+
+      def create_segment(duration_or_range, weight, &block)
+        segment = SegmentBuilder.new(
+          range_or_duration: duration_or_range,
+          weight: weight || 1.0,
+          parent_touchpoints: touchpoints,
+          conversion_time: conversion_time
+        ).call
+
+        @segments << segment
+        @segment_blocks << block
+      end
+
+      def segments_defined?
+        @segments.any?
+      end
+
+      def finalize_segments
+        validate_segments
+        execute_segments
+        merge_segment_credits
+      end
+
+      def validate_segments
+        SegmentValidator.new(
+          segments: @segments,
+          outer_window: lookback_window
+        ).call
+      end
+
+      def execute_segments
+        @segment_credits = @segments.zip(@segment_blocks).map do |segment, block|
+          SegmentExecutor.new(
+            segment: segment,
+            conversion_time: conversion_time,
+            conversion_value: conversion_value
+          ).call(&block)
+        end
+      end
+
+      def merge_segment_credits
+        merged = SegmentCreditMerger.new(
+          segments: @segments,
+          segment_credits: @segment_credits,
+          ledger_size: touchpoints.length
+        ).call
+
+        credit_ledger.replace(merged)
       end
     end
   end

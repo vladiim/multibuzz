@@ -5,6 +5,18 @@
 
   ---
 
+  ## Platform Integrations
+
+  Using a supported platform? Follow the dedicated guide:
+
+  | Platform | Integration Type | Guide |
+  |----------|------------------|-------|
+  | **Shopify** | Zero-code (App + Pixel) | [Shopify Integration →](#{docs_path('platforms-shopify')}) |
+
+  For custom applications, continue with the SDK integration below.
+
+  ---
+
   ## The 4-Call Model
 
   Multibuzz uses a simple 4-call SDK model:
@@ -36,7 +48,7 @@
 MD
 %>
 
-<%= code_tabs({
+<%= code_tabs(filter_live_examples({
   ruby: {
     label: 'Ruby',
     syntax: 'ruby',
@@ -48,6 +60,24 @@ MD
       bundle install
     CODE
   },
+  nodejs: {
+    label: 'Node.js',
+    syntax: 'bash',
+    code: <<~CODE
+      npm install mbuzz
+      # or
+      yarn add mbuzz
+    CODE
+  },
+  python: {
+    label: 'Python',
+    syntax: 'bash',
+    code: <<~CODE
+      pip install mbuzz
+      # or
+      uv pip install mbuzz
+    CODE
+  },
   curl: {
     label: 'REST API',
     syntax: 'text',
@@ -56,7 +86,7 @@ MD
       Use any HTTP client.
     CODE
   }
-}, default: :ruby) %>
+}), default: :ruby) %>
 
 <%= render_markdown <<~MD
   ---
@@ -65,7 +95,7 @@ MD
 MD
 %>
 
-<%= code_tabs({
+<%= code_tabs(filter_live_examples({
   ruby: {
     label: 'Ruby',
     syntax: 'ruby',
@@ -74,6 +104,33 @@ MD
       Mbuzz.init(
         api_key: ENV['MBUZZ_API_KEY'],
         debug: Rails.env.development?
+      )
+    CODE
+  },
+  nodejs: {
+    label: 'Node.js',
+    syntax: 'javascript',
+    code: <<~CODE
+      // app.js or server.js
+      const mbuzz = require('mbuzz');
+
+      mbuzz.init({
+        apiKey: process.env.MBUZZ_API_KEY,
+        debug: process.env.NODE_ENV === 'development'
+      });
+    CODE
+  },
+  python: {
+    label: 'Python',
+    syntax: 'python',
+    code: <<~CODE
+      # app.py or settings.py
+      import os
+      import mbuzz
+
+      mbuzz.init(
+          api_key=os.environ['MBUZZ_API_KEY'],
+          debug=os.environ.get('FLASK_ENV') == 'development'
       )
     CODE
   },
@@ -89,7 +146,7 @@ MD
            https://mbuzz.co/api/v1/events
     CODE
   }
-}, default: :ruby) %>
+}), default: :ruby) %>
 
 <%= render_markdown <<~MD
   **⚠️ Security**: Never commit API keys to git. Use environment variables.
@@ -102,7 +159,7 @@ MD
 MD
 %>
 
-<%= code_tabs({
+<%= code_tabs(filter_live_examples({
   ruby: {
     label: 'Ruby',
     syntax: 'ruby',
@@ -115,6 +172,34 @@ MD
       # Group events into funnels for focused analysis
       Mbuzz.event("signup_start", funnel: "signup", source: "homepage")
       Mbuzz.event("signup_complete", funnel: "signup")
+    CODE
+  },
+  nodejs: {
+    label: 'Node.js',
+    syntax: 'javascript',
+    code: <<~CODE
+      // Track user interactions
+      mbuzz.event('page_view', { url: '/pricing' });
+      mbuzz.event('add_to_cart', { productId: 'SKU-123', price: 49.99 });
+      mbuzz.event('checkout_started', { cartTotal: 99.99 });
+
+      // Group events into funnels for focused analysis
+      mbuzz.event('signup_start', { funnel: 'signup', source: 'homepage' });
+      mbuzz.event('signup_complete', { funnel: 'signup' });
+    CODE
+  },
+  python: {
+    label: 'Python',
+    syntax: 'python',
+    code: <<~CODE
+      # Track user interactions
+      mbuzz.event('page_view', url='/pricing')
+      mbuzz.event('add_to_cart', product_id='SKU-123', price=49.99)
+      mbuzz.event('checkout_started', cart_total=99.99)
+
+      # Group events into funnels for focused analysis
+      mbuzz.event('signup_start', funnel='signup', source='homepage')
+      mbuzz.event('signup_complete', funnel='signup')
     CODE
   },
   curl: {
@@ -135,7 +220,7 @@ MD
         }'
     CODE
   }
-}, default: :ruby) %>
+}), default: :ruby) %>
 
 <%= render_markdown <<~MD
   ---
@@ -178,7 +263,7 @@ MD
   - **Permanent**: Persists beyond cookies
   - **Your ID**: Use your application's user identifier
 
-  Link visitors to users with `Mbuzz.identify()` or `Mbuzz.alias()`.
+  Link visitors to users with the `identify()` method.
 
   ### Events
 
@@ -206,25 +291,82 @@ MD
   - Filter dashboard to specific customer journeys
 
   **Example funnels**:
-  ```ruby
-  # Signup funnel
-  Mbuzz.event("pricing_view", funnel: "signup")
-  Mbuzz.event("signup_start", funnel: "signup")
-  Mbuzz.event("signup_complete", funnel: "signup")
+MD
+%>
 
-  # Purchase funnel
-  Mbuzz.event("add_to_cart", funnel: "purchase")
-  Mbuzz.event("checkout_started", funnel: "purchase")
-  Mbuzz.event("purchase_complete", funnel: "purchase")
-  ```
+<%= code_tabs(filter_live_examples({
+  ruby: {
+    label: 'Ruby',
+    syntax: 'ruby',
+    code: <<~CODE
+      # Signup funnel
+      Mbuzz.event("pricing_view", funnel: "signup")
+      Mbuzz.event("signup_start", funnel: "signup")
+      Mbuzz.event("signup_complete", funnel: "signup")
 
+      # Purchase funnel
+      Mbuzz.event("add_to_cart", funnel: "purchase")
+      Mbuzz.event("checkout_started", funnel: "purchase")
+      Mbuzz.event("purchase_complete", funnel: "purchase")
+    CODE
+  },
+  nodejs: {
+    label: 'Node.js',
+    syntax: 'javascript',
+    code: <<~CODE
+      // Signup funnel
+      mbuzz.event('pricing_view', { funnel: 'signup' });
+      mbuzz.event('signup_start', { funnel: 'signup' });
+      mbuzz.event('signup_complete', { funnel: 'signup' });
+
+      // Purchase funnel
+      mbuzz.event('add_to_cart', { funnel: 'purchase' });
+      mbuzz.event('checkout_started', { funnel: 'purchase' });
+      mbuzz.event('purchase_complete', { funnel: 'purchase' });
+    CODE
+  },
+  python: {
+    label: 'Python',
+    syntax: 'python',
+    code: <<~CODE
+      # Signup funnel
+      mbuzz.event('pricing_view', funnel='signup')
+      mbuzz.event('signup_start', funnel='signup')
+      mbuzz.event('signup_complete', funnel='signup')
+
+      # Purchase funnel
+      mbuzz.event('add_to_cart', funnel='purchase')
+      mbuzz.event('checkout_started', funnel='purchase')
+      mbuzz.event('purchase_complete', funnel='purchase')
+    CODE
+  },
+  curl: {
+    label: 'REST API',
+    syntax: 'bash',
+    code: <<~CODE
+      # Include funnel in event properties
+      curl -X POST https://mbuzz.co/api/v1/events \\
+        -H "Authorization: Bearer $MBUZZ_API_KEY" \\
+        -H "Content-Type: application/json" \\
+        -d '{
+          "events": [{
+            "event_type": "signup_start",
+            "visitor_id": "abc123...",
+            "funnel": "signup"
+          }]
+        }'
+    CODE
+  }
+}), default: :ruby) %>
+
+<%= render_markdown <<~MD
   **Dashboard filtering**: Use the funnel dropdown to view specific funnels. "All Funnels" shows everything.
 
   ---
 
   ## Automatic Session Tracking
 
-  The Ruby gem includes Rack middleware that automatically creates sessions when visitors land on your site.
+  The SDK includes middleware that automatically creates sessions when visitors land on your site.
 
   **What happens on each request**:
   1. SDK checks for existing visitor cookie (`_mbuzz_vid`)
@@ -252,15 +394,54 @@ MD
   **Important**: Session POSTs are async and non-blocking. Your page render is not slowed.
 
   **Disable if needed**:
+MD
+%>
 
-  ```ruby
-  # config/initializers/mbuzz.rb
-  Mbuzz.init(
-    api_key: ENV['MBUZZ_API_KEY'],
-    skip_paths: ["/health", "/admin"]  # Skip specific paths
-  )
-  ```
+<%= code_tabs(filter_live_examples({
+  ruby: {
+    label: 'Ruby',
+    syntax: 'ruby',
+    code: <<~CODE
+      # config/initializers/mbuzz.rb
+      Mbuzz.init(
+        api_key: ENV['MBUZZ_API_KEY'],
+        skip_paths: ["/health", "/admin"]  # Skip specific paths
+      )
+    CODE
+  },
+  nodejs: {
+    label: 'Node.js',
+    syntax: 'javascript',
+    code: <<~CODE
+      // app.js or server.js
+      mbuzz.init({
+        apiKey: process.env.MBUZZ_API_KEY,
+        skipPaths: ['/health', '/admin']  // Skip specific paths
+      });
+    CODE
+  },
+  python: {
+    label: 'Python',
+    syntax: 'python',
+    code: <<~CODE
+      # app.py
+      mbuzz.init(
+          api_key=os.environ['MBUZZ_API_KEY'],
+          skip_paths=['/health', '/admin']  # Skip specific paths
+      )
+    CODE
+  },
+  curl: {
+    label: 'REST API',
+    syntax: 'text',
+    code: <<~CODE
+      N/A - Session tracking is SDK-only.
+      REST API users manage their own sessions.
+    CODE
+  }
+}), default: :ruby) %>
 
+<%= render_markdown <<~MD
   ---
 
   ## User Identification (identify)
@@ -269,7 +450,7 @@ MD
 MD
 %>
 
-<%= code_tabs({
+<%= code_tabs(filter_live_examples({
   ruby: {
     label: 'Ruby',
     syntax: 'ruby',
@@ -282,6 +463,32 @@ MD
           plan: current_user.plan
         }
       )
+    CODE
+  },
+  nodejs: {
+    label: 'Node.js',
+    syntax: 'javascript',
+    code: <<~CODE
+      // On signup or login - links visitor automatically
+      mbuzz.identify(user.id, {
+        traits: {
+          email: user.email,
+          name: user.name,
+          plan: user.plan
+        }
+      });
+    CODE
+  },
+  python: {
+    label: 'Python',
+    syntax: 'python',
+    code: <<~CODE
+      # On signup or login - links visitor automatically
+      mbuzz.identify(user.id, traits={
+          'email': user.email,
+          'name': user.name,
+          'plan': user.plan
+      })
     CODE
   },
   curl: {
@@ -302,7 +509,7 @@ MD
         }'
     CODE
   }
-}, default: :ruby) %>
+}), default: :ruby) %>
 
 <%= render_markdown <<~MD
   **When to call**:
@@ -376,7 +583,7 @@ MD
 MD
 %>
 
-<%= code_tabs({
+<%= code_tabs(filter_live_examples({
   ruby: {
     label: 'Ruby',
     syntax: 'ruby',
@@ -405,6 +612,52 @@ MD
       end
     CODE
   },
+  nodejs: {
+    label: 'Node.js',
+    syntax: 'javascript',
+    code: <<~CODE
+      // First track the conversion event
+      const result = await mbuzz.event('checkout_completed', {
+        orderId: order.id
+      });
+
+      // Then create the conversion linked to that event
+      if (result.success) {
+        const conversion = await mbuzz.conversion('purchase', {
+          eventId: result.eventId,
+          revenue: order.total
+        });
+
+        // Access attribution data
+        if (conversion.success) {
+          for (const [model, credits] of Object.entries(conversion.attribution.models)) {
+            console.log(`${model}: ${credits.map(c => c.channel).join(', ')}`);
+          }
+        }
+      }
+    CODE
+  },
+  python: {
+    label: 'Python',
+    syntax: 'python',
+    code: <<~CODE
+      # First track the conversion event
+      result = mbuzz.event('checkout_completed', order_id=order.id)
+
+      # Then create the conversion linked to that event
+      if result.success:
+          conversion = mbuzz.conversion('purchase',
+              event_id=result.event_id,
+              revenue=order.total
+          )
+
+          # Access attribution data
+          if conversion.success:
+              for model, credits in conversion.attribution['models'].items():
+                  channels = ', '.join(c['channel'] for c in credits)
+                  print(f"{model}: {channels}")
+    CODE
+  },
   curl: {
     label: 'REST API',
     syntax: 'bash',
@@ -422,14 +675,14 @@ MD
         }'
     CODE
   }
-}, default: :ruby) %>
+}), default: :ruby) %>
 
 <%= render_markdown <<~MD
   **Option B: Visitor-based** (simpler, for direct conversions)
 MD
 %>
 
-<%= code_tabs({
+<%= code_tabs(filter_live_examples({
   ruby: {
     label: 'Ruby',
     syntax: 'ruby',
@@ -442,6 +695,33 @@ MD
         revenue: order.total,
         funnel: 'purchase',  # Optional: group into funnel
         properties: { plan: 'pro' }
+      )
+    CODE
+  },
+  nodejs: {
+    label: 'Node.js',
+    syntax: 'javascript',
+    code: <<~CODE
+      // Create conversion directly from visitor ID
+      // (uses visitor's most recent session)
+      const conversion = await mbuzz.conversion('purchase', {
+        visitorId: mbuzzVisitorId,
+        revenue: order.total,
+        funnel: 'purchase',  // Optional: group into funnel
+        properties: { plan: 'pro' }
+      });
+    CODE
+  },
+  python: {
+    label: 'Python',
+    syntax: 'python',
+    code: <<~CODE
+      # Create conversion directly from visitor ID
+      # (uses visitor's most recent session)
+      conversion = mbuzz.conversion('purchase',
+          revenue=order.total,
+          funnel='purchase',  # Optional: group into funnel
+          properties={'plan': 'pro'}
       )
     CODE
   },
@@ -463,7 +743,7 @@ MD
         }'
     CODE
   }
-}, default: :ruby) %>
+}), default: :ruby) %>
 
 <%= render_markdown <<~MD
   ### Conversion Response
@@ -502,6 +782,98 @@ MD
   | **Event-based** (`event_id`) | Tie conversion to specific action (checkout button click, form submit) |
   | **Visitor-based** (`visitor_id`) | Direct conversions, offline imports, webhook integrations |
 
+  ### Acquisition vs Recurring Revenue
+
+  For SaaS and subscription businesses, you need to distinguish between:
+  - **Acquisition**: The first conversion (signup, first purchase) - this gets full attribution
+  - **Recurring Revenue**: Subsequent payments - these inherit attribution from acquisition
+
+  **Why this matters**: You want to know which channels drive new customers, not just which channels happened to be active when a subscription renewed.
+MD
+%>
+
+<%= code_tabs(filter_live_examples({
+  ruby: {
+    label: 'Ruby',
+    syntax: 'ruby',
+    code: <<~CODE
+      # 1. Mark signup as the acquisition moment
+      Mbuzz.conversion('signup',
+        user_id: user.id,
+        is_acquisition: true
+      )
+
+      # 2. Monthly subscription payments inherit acquisition attribution
+      Mbuzz.conversion('payment',
+        user_id: user.id,
+        revenue: 49.00,
+        inherit_acquisition: true
+      )
+    CODE
+  },
+  nodejs: {
+    label: 'Node.js',
+    syntax: 'javascript',
+    code: <<~CODE
+      // 1. Mark signup as the acquisition moment
+      mbuzz.conversion('signup', {
+        userId: user.id,
+        isAcquisition: true
+      });
+
+      // 2. Monthly subscription payments inherit acquisition attribution
+      mbuzz.conversion('payment', {
+        userId: user.id,
+        revenue: 49.00,
+        inheritAcquisition: true
+      });
+    CODE
+  },
+  python: {
+    label: 'Python',
+    syntax: 'python',
+    code: <<~CODE
+      # 1. Mark signup as the acquisition moment
+      mbuzz.conversion('signup',
+          user_id=user.id,
+          is_acquisition=True
+      )
+
+      # 2. Monthly subscription payments inherit acquisition attribution
+      mbuzz.conversion('payment',
+          user_id=user.id,
+          revenue=49.00,
+          inherit_acquisition=True
+      )
+    CODE
+  },
+  curl: {
+    label: 'REST API',
+    syntax: 'bash',
+    code: <<~CODE
+      # 1. Acquisition conversion
+      curl -X POST https://mbuzz.co/api/v1/conversions \\
+        -H "Authorization: Bearer $MBUZZ_API_KEY" \\
+        -d '{"conversion": {"conversion_type": "signup", "user_id": "123", "is_acquisition": true}}'
+
+      # 2. Recurring revenue
+      curl -X POST https://mbuzz.co/api/v1/conversions \\
+        -H "Authorization: Bearer $MBUZZ_API_KEY" \\
+        -d '{"conversion": {"conversion_type": "payment", "user_id": "123", "revenue": 49.00, "inherit_acquisition": true}}'
+    CODE
+  }
+}), default: :ruby) %>
+
+<%= render_markdown <<~MD
+  **How it works**:
+  1. User signs up → `is_acquisition: true` stores the attribution (channels that drove signup)
+  2. User pays monthly → `inherit_acquisition: true` copies attribution from signup
+  3. All revenue credited to the channels that acquired the customer
+
+  **When to use**:
+  - `is_acquisition: true` - First meaningful conversion (signup, first purchase, trial start)
+  - `inherit_acquisition: true` - All subsequent revenue from that customer
+
   ---
 
   ## Common Use Cases
@@ -510,7 +882,7 @@ MD
 MD
 %>
 
-<%= code_tabs({
+<%= code_tabs(filter_live_examples({
   ruby: {
     label: 'Ruby',
     syntax: 'ruby',
@@ -533,6 +905,46 @@ MD
       end
     CODE
   },
+  nodejs: {
+    label: 'Node.js',
+    syntax: 'javascript',
+    code: <<~CODE
+      app.post('/orders', async (req, res) => {
+        const order = await Order.create(req.body);
+
+        // Track the event
+        mbuzz.event('checkout_completed', { orderId: order.id });
+
+        // Record the conversion with revenue
+        mbuzz.conversion('purchase', {
+          revenue: order.total,
+          orderId: order.id
+        });
+
+        res.redirect(`/orders/${order.id}`);
+      });
+    CODE
+  },
+  python: {
+    label: 'Python',
+    syntax: 'python',
+    code: <<~CODE
+      @app.route('/orders', methods=['POST'])
+      def create_order():
+          order = Order.create(**request.form)
+
+          # Track the event
+          mbuzz.event('checkout_completed', order_id=order.id)
+
+          # Record the conversion with revenue
+          mbuzz.conversion('purchase',
+              revenue=order.total,
+              properties={'order_id': order.id}
+          )
+
+          return redirect(url_for('order', id=order.id))
+    CODE
+  },
   curl: {
     label: 'REST API',
     syntax: 'bash',
@@ -552,14 +964,14 @@ MD
         }'
     CODE
   }
-}, default: :ruby) %>
+}), default: :ruby) %>
 
 <%= render_markdown <<~MD
   ### SaaS Subscription Tracking
 MD
 %>
 
-<%= code_tabs({
+<%= code_tabs(filter_live_examples({
   ruby: {
     label: 'Ruby',
     syntax: 'ruby',
@@ -582,6 +994,48 @@ MD
       end
     CODE
   },
+  nodejs: {
+    label: 'Node.js',
+    syntax: 'javascript',
+    code: <<~CODE
+      app.post('/subscriptions', async (req, res) => {
+        const subscription = await user.createSubscription({
+          plan: req.body.plan
+        });
+
+        // Record as conversion with MRR
+        mbuzz.conversion('subscription', {
+          revenue: subscription.monthlyRevenue,
+          plan: subscription.plan,
+          billingCycle: subscription.billingCycle
+        });
+
+        res.redirect('/dashboard');
+      });
+    CODE
+  },
+  python: {
+    label: 'Python',
+    syntax: 'python',
+    code: <<~CODE
+      @app.route('/subscriptions', methods=['POST'])
+      def create_subscription():
+          subscription = current_user.create_subscription(
+              plan=request.form['plan']
+          )
+
+          # Record as conversion with MRR
+          mbuzz.conversion('subscription',
+              revenue=subscription.monthly_revenue,
+              properties={
+                  'plan': subscription.plan,
+                  'billing_cycle': subscription.billing_cycle
+              }
+          )
+
+          return redirect(url_for('dashboard'))
+    CODE
+  },
   curl: {
     label: 'REST API',
     syntax: 'bash',
@@ -600,7 +1054,7 @@ MD
         }'
     CODE
   }
-}, default: :ruby) %>
+}), default: :ruby) %>
 
 <%= render_markdown <<~MD
   ---
@@ -616,20 +1070,73 @@ MD
   **Why**: Tracking failures should never break your application.
 
   **Debugging**:
+MD
+%>
 
-  ```ruby
-  # Enable debug mode in initializer
-  Mbuzz.init(api_key: ENV['MBUZZ_API_KEY'], debug: true)
+<%= code_tabs(filter_live_examples({
+  ruby: {
+    label: 'Ruby',
+    syntax: 'ruby',
+    code: <<~CODE
+      # Enable debug mode in initializer
+      Mbuzz.init(api_key: ENV['MBUZZ_API_KEY'], debug: true)
 
-  # Check return values
-  result = Mbuzz.event("test_event", foo: "bar")
-  if result
-    puts "Tracking succeeded"
-  else
-    puts "Tracking failed (check logs)"
-  end
-  ```
+      # Check return values
+      result = Mbuzz.event("test_event", foo: "bar")
+      if result
+        puts "Tracking succeeded"
+      else
+        puts "Tracking failed (check logs)"
+      end
+    CODE
+  },
+  nodejs: {
+    label: 'Node.js',
+    syntax: 'javascript',
+    code: <<~CODE
+      // Enable debug mode in initializer
+      mbuzz.init({ apiKey: process.env.MBUZZ_API_KEY, debug: true });
 
+      // Check return values
+      const result = await mbuzz.event('test_event', { foo: 'bar' });
+      if (result) {
+        console.log('Tracking succeeded');
+      } else {
+        console.log('Tracking failed (check logs)');
+      }
+    CODE
+  },
+  python: {
+    label: 'Python',
+    syntax: 'python',
+    code: <<~CODE
+      # Enable debug mode in initializer
+      mbuzz.init(api_key=os.environ['MBUZZ_API_KEY'], debug=True)
+
+      # Check return values
+      result = mbuzz.event('test_event', foo='bar')
+      if result.success:
+          print('Tracking succeeded')
+      else:
+          print('Tracking failed (check logs)')
+    CODE
+  },
+  curl: {
+    label: 'REST API',
+    syntax: 'bash',
+    code: <<~CODE
+      # Check HTTP response codes
+      curl -v -X POST https://mbuzz.co/api/v1/events \\
+        -H "Authorization: Bearer $MBUZZ_API_KEY" \\
+        -H "Content-Type: application/json" \\
+        -d '{"events": [{"event_type": "test", "visitor_id": "abc123"}]}'
+
+      # 2xx = success, 4xx/5xx = failure
+    CODE
+  }
+}), default: :ruby) %>
+
+<%= render_markdown <<~MD
   ---
 
   ## Testing
@@ -638,7 +1145,7 @@ MD
 MD
 %>
 
-<%= code_tabs({
+<%= code_tabs(filter_live_examples({
   ruby: {
     label: 'Ruby',
     syntax: 'ruby',
@@ -650,6 +1157,28 @@ MD
       )
     CODE
   },
+  nodejs: {
+    label: 'Node.js',
+    syntax: 'javascript',
+    code: <<~CODE
+      // app.js or server.js
+      mbuzz.init({
+        apiKey: process.env.MBUZZ_API_KEY,
+        enabled: process.env.NODE_ENV !== 'test'
+      });
+    CODE
+  },
+  python: {
+    label: 'Python',
+    syntax: 'python',
+    code: <<~CODE
+      # app.py or settings.py
+      mbuzz.init(
+          api_key=os.environ['MBUZZ_API_KEY'],
+          enabled=os.environ.get('FLASK_ENV') != 'testing'
+      )
+    CODE
+  },
   curl: {
     label: 'REST API',
     syntax: 'bash',
@@ -658,7 +1187,7 @@ MD
       export MBUZZ_API_KEY=sk_test_your_key_here
     CODE
   }
-}, default: :ruby) %>
+}), default: :ruby) %>
 
 <%= render_markdown <<~MD
   ---
@@ -667,10 +1196,10 @@ MD
 
   Now that you understand the 4-call model:
 
-  1. **Initialize** - Set up `Mbuzz.init()` in your app
-  2. **Track events** - Call `Mbuzz.event()` for user interactions
-  3. **Record conversions** - Call `Mbuzz.conversion()` for revenue events
-  4. **Identify users** - Call `Mbuzz.identify()` on signup/login (enables cross-device)
+  1. **Initialize** - Set up `init()` in your app
+  2. **Track events** - Call `event()` for user interactions
+  3. **Record conversions** - Call `conversion()` for revenue events
+  4. **Identify users** - Call `identify()` on signup/login (enables cross-device)
   5. **View attribution** - Check [your dashboard](#{dashboard_path}) for attribution data
 
   **Need help?** Check out:

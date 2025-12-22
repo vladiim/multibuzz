@@ -222,6 +222,30 @@ bin/rails test:controllers       # Controller tests only
 - Multi-tenancy isolation tests required
 - Follow doc-driven development (spec → test → code)
 
+### SDK Integration Tests
+
+End-to-end tests for mbuzz SDKs (Ruby, Node.js) live in `sdk_integration_tests/` (isolated from Rails test runner). These tests:
+- Automatically create test accounts/API keys for each run
+- Run minimal test apps with each SDK
+- Use Capybara + Playwright for browser automation
+- Verify data is correctly stored in the server
+
+**Quick start:**
+```bash
+cd sdk_integration_tests
+bundle install
+rake sdk:setup:all  # Install all dependencies
+```
+
+**Run tests:**
+```bash
+rake sdk:test      # All SDKs (Ruby + Node)
+rake sdk:ruby      # Ruby SDK only
+rake sdk:node      # Node SDK only
+```
+
+See [sdk_integration_tests/README.md](sdk_integration_tests/README.md) for detailed setup.
+
 ---
 
 ## Development Workflow

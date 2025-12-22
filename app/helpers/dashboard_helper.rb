@@ -5,7 +5,9 @@ module DashboardHelper
     "linear" => "Equal credit distributed across all touchpoints",
     "time_decay" => "More credit to touchpoints closer to conversion",
     "u_shaped" => "40% to first, 40% to last, 20% split among middle",
-    "participation" => "100% credit to every touchpoint (totals > 100%)"
+    "participation" => "100% credit to every touchpoint (totals > 100%)",
+    "markov_chain" => "Data-driven credit based on channel removal effects",
+    "shapley_value" => "Fair credit based on each channel's marginal contribution"
   }.freeze
 
   METRIC_FORMATTERS = {

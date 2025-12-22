@@ -8,7 +8,7 @@ ruby:
   package_manager: RubyGems
   package_url: https://rubygems.org/gems/mbuzz
   github_url: https://github.com/mbuzzco/mbuzz-ruby
-  docs_url: /docs/sdks/ruby
+  docs_url: /docs/getting-started
   status: live
   released_at: '2025-11-01'
   category: server_side
@@ -20,9 +20,23 @@ ruby:
   event_code: |
     Mbuzz.event('page_view', url: request.url)
   conversion_code: |
+    # Track conversions with revenue
     Mbuzz.conversion('purchase',
       revenue: order.total,
       order_id: order.id
+    )
+
+    # Acquisition conversion (marks signup as THE acquisition moment)
+    Mbuzz.conversion('signup',
+      user_id: user.id,
+      is_acquisition: true
+    )
+
+    # Recurring revenue (inherits attribution from acquisition)
+    Mbuzz.conversion('payment',
+      user_id: user.id,
+      revenue: 49.00,
+      inherit_acquisition: true
     )
   identify_code: |
     Mbuzz.identify(current_user.id,
@@ -41,64 +55,137 @@ python:
   icon: python
   package_name: mbuzz
   package_manager: PyPI
-  package_url: null
-  github_url: https://github.com/multibuzz/mbuzz-python
-  docs_url: /docs/sdks/python
-  status: coming_soon
-  released_at: null
+  package_url: https://pypi.org/project/mbuzz
+  github_url: https://github.com/mbuzzco/mbuzz-python
+  docs_url: /docs/getting-started
+  status: live
+  released_at: '2025-12-15'
   category: server_side
   sort_order: 3
   install_command: pip install mbuzz
   init_code: |
-    # settings.py or app initialization
+    # app.py or settings.py
     import mbuzz
+    from mbuzz.middleware.flask import init_app
+
     mbuzz.init(api_key=os.environ['MBUZZ_API_KEY'])
   event_code: |
+    # Track user interactions
     mbuzz.event('page_view', url=request.url)
+    mbuzz.event('add_to_cart', product_id='SKU-123', price=49.99)
+
+    # Group events into funnels
+    mbuzz.event('signup_start', funnel='signup', source='homepage')
   conversion_code: |
+    # Track conversions with revenue
     mbuzz.conversion('purchase',
       revenue=order.total,
-      order_id=order.id
+      properties={'order_id': order.id}
+    )
+
+    # Acquisition conversion (marks signup as THE acquisition moment)
+    mbuzz.conversion('signup',
+      user_id=user.id,
+      is_acquisition=True
+    )
+
+    # Recurring revenue (inherits attribution from acquisition)
+    mbuzz.conversion('payment',
+      user_id=user.id,
+      revenue=49.00,
+      inherit_acquisition=True
     )
   identify_code: |
-    mbuzz.identify(current_user.id,
-      email=current_user.email,
-      name=current_user.name
-    )
-  middleware_code: null
+    # On signup or login - links visitor to user
+    mbuzz.identify(user.id, traits={
+      'email': user.email,
+      'name': user.name,
+      'plan': user.plan
+    })
+  middleware_code: |
+    # Flask middleware - handles cookies and session tracking
+    from flask import Flask
+    import mbuzz
+    from mbuzz.middleware.flask import init_app
+
+    app = Flask(__name__)
+    mbuzz.init(api_key=os.environ['MBUZZ_API_KEY'])
+    init_app(app)
   verification_command: "mbuzz.event('test', url='https://test.com')"
 
 php:
   key: php
   name: PHP
-  display_name: PHP / Laravel
+  display_name: PHP / Laravel / Symfony
   icon: php
   package_name: mbuzz/mbuzz-php
   package_manager: Composer
-  package_url: null
-  github_url: https://github.com/multibuzz/mbuzz-php
-  docs_url: /docs/sdks/php
-  status: coming_soon
-  released_at: null
+  package_url: https://packagist.org/packages/mbuzz/mbuzz-php
+  github_url: https://github.com/mbuzzco/mbuzz-php
+  docs_url: /docs/getting-started
+  status: live
+  released_at: '2025-12-16'
   category: server_side
   sort_order: 4
   install_command: composer require mbuzz/mbuzz-php
   init_code: |
     // config/services.php or bootstrap
-    Mbuzz::init(['api_key' => env('MBUZZ_API_KEY')]);
+    use Mbuzz\Mbuzz;
+
+    Mbuzz::init(['api_key' => $_ENV['MBUZZ_API_KEY']]);
   event_code: |
+    // Track user interactions
     Mbuzz::event('page_view', ['url' => $request->url()]);
+    Mbuzz::event('add_to_cart', ['product_id' => 'SKU-123', 'price' => 49.99]);
+
+    // Group events into funnels
+    Mbuzz::event('signup_start', ['funnel' => 'signup', 'source' => 'homepage']);
   conversion_code: |
+    // Track conversions with revenue
     Mbuzz::conversion('purchase', [
       'revenue' => $order->total,
-      'order_id' => $order->id
+      'properties' => ['order_id' => $order->id]
+    ]);
+
+    // Acquisition conversion (marks signup as THE acquisition moment)
+    Mbuzz::conversion('signup', [
+      'user_id' => $user->id,
+      'is_acquisition' => true
+    ]);
+
+    // Recurring revenue (inherits attribution from acquisition)
+    Mbuzz::conversion('payment', [
+      'user_id' => $user->id,
+      'revenue' => 49.00,
+      'inherit_acquisition' => true
     ]);
   identify_code: |
+    // On signup or login - links visitor to user
     Mbuzz::identify($user->id, [
       'email' => $user->email,
-      'name' => $user->name
+      'name' => $user->name,
+      'plan' => $user->plan
     ]);
-  middleware_code: null
+  middleware_code: |
+    // Laravel middleware - handles cookies and session tracking
+    // Add to app/Http/Kernel.php
+    use Mbuzz\Adapter\LaravelMiddleware;
+
+    protected $middleware = [
+        // ...
+        LaravelMiddleware::class,
+    ];
+
+    // Symfony - register the EventSubscriber
+    // In config/services.yaml:
+    services:
+        Mbuzz\Adapter\SymfonySubscriber:
+            tags: ['kernel.event_subscriber']
+
+    // Or for plain PHP:
+    use Mbuzz\Mbuzz;
+    Mbuzz::init(['api_key' => $_ENV['MBUZZ_API_KEY']]);
+    Mbuzz::initFromRequest();
   verification_command: "Mbuzz::event('test', ['url' => 'https://test.com']);"
 
 nodejs:
@@ -109,30 +196,63 @@ nodejs:
   package_name: mbuzz
   package_manager: npm
   package_url: null
-  github_url: https://github.com/multibuzz/mbuzz-node
-  docs_url: /docs/sdks/nodejs
-  status: coming_soon
-  released_at: null
+  github_url: https://github.com/mbuzzco/mbuzz-node
+  docs_url: /docs/getting-started
+  status: live
+  released_at: '2025-12-15'
   category: server_side
-  sort_order: 5
+  sort_order: 2
   install_command: npm install mbuzz
   init_code: |
-    // app.js or initialization file
+    // app.js or server.js
     const mbuzz = require('mbuzz');
-    mbuzz.init({ apiKey: process.env.MBUZZ_API_KEY });
+
+    mbuzz.init({
+      apiKey: process.env.MBUZZ_API_KEY,
+      debug: process.env.NODE_ENV === 'development'
+    });
   event_code: |
+    // Track user interactions
     mbuzz.event('page_view', { url: req.url });
+    mbuzz.event('add_to_cart', { productId: 'SKU-123', price: 49.99 });
+
+    // Group events into funnels
+    mbuzz.event('signup_start', { funnel: 'signup', source: 'homepage' });
   conversion_code: |
+    // Track conversions with revenue
     mbuzz.conversion('purchase', {
       revenue: order.total,
       orderId: order.id
     });
-  identify_code: |
-    mbuzz.identify(user.id, {
-      email: user.email,
-      name: user.name
+
+    // Acquisition conversion (marks signup as THE acquisition moment)
+    mbuzz.conversion('signup', {
+      userId: user.id,
+      isAcquisition: true
     });
-  middleware_code: null
+
+    // Recurring revenue (inherits attribution from acquisition)
+    mbuzz.conversion('payment', {
+      userId: user.id,
+      revenue: 49.00,
+      inheritAcquisition: true
+    });
+  identify_code: |
+    // On signup or login - links visitor to user
+    mbuzz.identify(user.id, {
+      traits: {
+        email: user.email,
+        name: user.name,
+        plan: user.plan
+      }
+    });
+  middleware_code: |
+    // Express middleware - handles cookies and session tracking
+    const express = require('express');
+    const mbuzz = require('mbuzz');
+
+    const app = express();
+    app.use(mbuzz.middleware());
   verification_command: "mbuzz.event('test', { url: 'https://test.com' });"
 
 shopify:
@@ -144,9 +264,9 @@ shopify:
   package_manager: Shopify App Store
   package_url: null
   github_url: null
-  docs_url: /docs/platforms/shopify
-  status: coming_soon
-  released_at: null
+  docs_url: /docs/platforms-shopify
+  status: live
+  released_at: '2025-12-19'
   category: platform
   sort_order: 6
   install_command: null
@@ -214,7 +334,7 @@ rest_api:
   status: live
   released_at: '2025-10-01'
   category: api
-  sort_order: 2
+  sort_order: 10
   install_command: null
   init_code: |
     # Set your API key as an environment variable
