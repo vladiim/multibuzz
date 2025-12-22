@@ -1,0 +1,126 @@
+<div class="space-y-8">
+  <!-- Step 1: Webhooks -->
+  <div class="border border-gray-200 rounded-lg p-6">
+    <div class="flex items-start gap-4">
+      <div class="flex-shrink-0 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-semibold">1</div>
+      <div class="flex-1">
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Configure Webhooks</h3>
+        <p class="text-gray-600 mb-4">Webhooks notify mbuzz when orders are placed so we can record conversions.</p>
+
+        <ol class="list-decimal list-inside space-y-2 text-gray-700 mb-4">
+          <li>Go to <strong>Settings</strong> → <strong>Notifications</strong> → scroll to <strong>Webhooks</strong></li>
+          <li>Click <strong>Create webhook</strong></li>
+          <li>Create two webhooks with these settings:</li>
+        </ol>
+
+        <div class="bg-gray-50 rounded-lg p-4 mb-4">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-gray-200">
+                <th class="text-left py-2 font-medium text-gray-700">Event</th>
+                <th class="text-left py-2 font-medium text-gray-700">URL</th>
+                <th class="text-left py-2 font-medium text-gray-700">Format</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b border-gray-100">
+                <td class="py-2">Order payment</td>
+                <td class="py-2 font-mono text-xs">https://mbuzz.co/webhooks/shopify</td>
+                <td class="py-2">JSON</td>
+              </tr>
+              <tr>
+                <td class="py-2">Customer creation</td>
+                <td class="py-2 font-mono text-xs">https://mbuzz.co/webhooks/shopify</td>
+                <td class="py-2">JSON</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <details class="group">
+          <summary class="cursor-pointer text-indigo-600 hover:text-indigo-800 text-sm font-medium">View screenshot</summary>
+          <div class="mt-3">
+            <%= image_tag "/images/docs/shopify/02-create-webhook.png", alt: "Create webhook modal", class: "rounded-lg border border-gray-200 shadow-sm" %>
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: Theme Extension -->
+  <div class="border border-gray-200 rounded-lg p-6">
+    <div class="flex items-start gap-4">
+      <div class="flex-shrink-0 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-semibold">2</div>
+      <div class="flex-1">
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Enable Theme Extension</h3>
+        <p class="text-gray-600 mb-4">The theme extension tracks visitor sessions and stores attribution data in cart attributes.</p>
+
+        <ol class="list-decimal list-inside space-y-2 text-gray-700 mb-4">
+          <li>Go to <strong>Online Store</strong> → <strong>Themes</strong></li>
+          <li>Click <strong>Edit theme</strong> on your current theme</li>
+          <li>Click the <strong>App embeds</strong> icon (puzzle piece) in the left sidebar</li>
+          <li>Toggle on <strong>mbuzz Attribution</strong></li>
+          <li>Enter your API key:</li>
+        </ol>
+
+        <% if @plaintext_api_key.present? %>
+          <div class="bg-slate-900 rounded-lg p-4 mb-4" data-controller="clipboard">
+            <div class="flex items-center justify-between">
+              <code class="text-green-400 text-sm font-mono break-all" data-clipboard-target="source"><%= @plaintext_api_key %></code>
+              <button type="button" data-action="click->clipboard#copy" data-clipboard-target="button" class="ml-3 px-3 py-1 bg-slate-700 hover:bg-slate-600 text-white text-xs rounded">
+                <span data-clipboard-target="label">Copy</span>
+              </button>
+            </div>
+          </div>
+        <% else %>
+          <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
+            <p class="text-amber-800 text-sm mb-2">Your API key is hidden for security. Regenerate to see the full key.</p>
+            <%= button_to "Regenerate API Key", onboarding_regenerate_api_key_path, method: :post, class: "px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium rounded" %>
+          </div>
+        <% end %>
+
+        <details class="group">
+          <summary class="cursor-pointer text-indigo-600 hover:text-indigo-800 text-sm font-medium">View screenshot</summary>
+          <div class="mt-3">
+            <%= image_tag "/images/docs/shopify/05-app-embeds.png", alt: "App embeds panel", class: "rounded-lg border border-gray-200 shadow-sm" %>
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: Checkout Pixel -->
+  <div class="border border-gray-200 rounded-lg p-6">
+    <div class="flex items-start gap-4">
+      <div class="flex-shrink-0 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-semibold">3</div>
+      <div class="flex-1">
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Add Checkout Pixel</h3>
+        <p class="text-gray-600 mb-4">The checkout pixel captures customer email for attribution during checkout.</p>
+
+        <ol class="list-decimal list-inside space-y-2 text-gray-700 mb-4">
+          <li>Go to <strong>Settings</strong> → <strong>Customer events</strong></li>
+          <li>Click <strong>Add custom pixel</strong></li>
+          <li>Name it <code class="bg-gray-100 px-1 rounded">mbuzz</code> and click <strong>Add pixel</strong></li>
+          <li>Set permissions to <strong>Required</strong> with <strong>Marketing</strong> and <strong>Analytics</strong> checked</li>
+          <li>Paste the pixel code below and click <strong>Save</strong></li>
+        </ol>
+
+        <div class="relative">
+          <div class="bg-slate-900 rounded-lg p-4 mb-4 max-h-64 overflow-y-auto" data-controller="clipboard">
+            <button type="button" data-action="click->clipboard#copy" data-clipboard-target="button" class="absolute top-2 right-2 px-3 py-1 bg-slate-700 hover:bg-slate-600 text-white text-xs rounded">
+              <span data-clipboard-target="label">Copy</span>
+            </button>
+            <pre class="text-green-400 text-xs font-mono whitespace-pre-wrap" data-clipboard-target="source"><%= pixel_code_for_onboarding %></pre>
+          </div>
+        </div>
+
+        <details class="group">
+          <summary class="cursor-pointer text-indigo-600 hover:text-indigo-800 text-sm font-medium">View screenshot</summary>
+          <div class="mt-3">
+            <%= image_tag "/images/docs/shopify/08-pixel-code.png", alt: "Pixel code editor", class: "rounded-lg border border-gray-200 shadow-sm" %>
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+</div>

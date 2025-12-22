@@ -24,22 +24,32 @@ module Attribution
     end
 
     def process_stale_conversions
-      stale_conversions.find_each do |conversion|
+      pending_conversions.find_each do |conversion|
         process_conversion(conversion)
         rerun_job.increment_processed!
       end
     end
 
-    def stale_conversions
-      account.conversions.where(id: stale_conversion_ids)
+    def pending_conversions
+      account.conversions.where(id: pending_conversion_ids)
+    end
+
+    def pending_conversion_ids
+      @pending_conversion_ids ||= (stale_conversion_ids + unattributed_conversion_ids).uniq
     end
 
     def stale_conversion_ids
-      @stale_conversion_ids ||= attribution_model
+      attribution_model
         .stale_credits
         .select(:conversion_id)
         .distinct
         .pluck(:conversion_id)
+    end
+
+    def unattributed_conversion_ids
+      attribution_model
+        .unattributed_conversions
+        .pluck(:id)
     end
 
     def process_conversion(conversion)

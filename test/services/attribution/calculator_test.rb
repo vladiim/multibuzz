@@ -128,7 +128,134 @@ module Attribution
       assert_empty credits
     end
 
+    # Markov Chain integration tests
+    test "should calculate credits using Markov Chain with historical conversion paths" do
+      # Create historical conversions to establish channel patterns
+      # paid_search appears in all paths = highest removal effect
+      create_historical_conversion(%w[organic_search paid_search])
+      create_historical_conversion(%w[email paid_search])
+      create_historical_conversion(%w[paid_search])
+
+      # Create journey for current conversion
+      session_one
+      session_two
+
+      markov_service = build_service(model: markov_chain_model)
+      credits = markov_service.call
+
+      assert_equal 2, credits.size
+      assert_in_delta 1.0, credits.sum { |c| c[:credit] }, 0.0001
+    end
+
+    test "should give higher credit to channels with higher removal effect" do
+      # paid_search appears in all 3 historical paths = essential = high removal effect
+      # organic_search appears in 1 of 3 paths = lower removal effect
+      create_historical_conversion(%w[organic_search paid_search])
+      create_historical_conversion(%w[email paid_search])
+      create_historical_conversion(%w[paid_search])
+
+      # Journey has organic_search and paid_search
+      organic_session = build_session(days_ago: 5, channel: "organic_search")
+      paid_session = build_session(days_ago: 1, channel: "paid_search")
+
+      markov_service = build_service(model: markov_chain_model)
+      credits = markov_service.call
+
+      organic_credit = credits.find { |c| c[:channel] == "organic_search" }[:credit]
+      paid_credit = credits.find { |c| c[:channel] == "paid_search" }[:credit]
+
+      assert paid_credit > organic_credit,
+        "paid_search (in all paths) should get more credit than organic_search (in 1 path)"
+    end
+
+    test "should handle Markov Chain with no historical conversions gracefully" do
+      # No historical conversions = equal distribution (fallback)
+      session_one
+      session_two
+
+      markov_service = build_service(model: markov_chain_model)
+      credits = markov_service.call
+
+      assert_equal 2, credits.size
+      # With no removal effects, should fall back to equal distribution
+      credits.each do |credit|
+        assert_in_delta 0.5, credit[:credit], 0.0001
+      end
+    end
+
+    test "should enrich Markov Chain credits with UTM data" do
+      create_historical_conversion(%w[organic_search paid_search])
+
+      session_one
+      session_two
+
+      markov_service = build_service(model: markov_chain_model)
+      credits = markov_service.call
+
+      assert_equal "google", credits[0][:utm_source]
+      assert_equal "newsletter", credits[1][:utm_source]
+    end
+
+    # Shapley Value integration tests
+    test "should calculate credits using Shapley Value with historical conversion paths" do
+      create_historical_conversion(%w[organic_search paid_search])
+      create_historical_conversion(%w[email paid_search])
+      create_historical_conversion(%w[paid_search])
+
+      session_one
+      session_two
+
+      shapley_service = build_service(model: shapley_value_model)
+      credits = shapley_service.call
+
+      assert_equal 2, credits.size
+      assert_in_delta 1.0, credits.sum { |c| c[:credit] }, 0.0001
+    end
+
+    test "should handle Shapley Value with no historical conversions gracefully" do
+      session_one
+      session_two
+
+      shapley_service = build_service(model: shapley_value_model)
+      credits = shapley_service.call
+
+      assert_equal 2, credits.size
+      credits.each do |credit|
+        assert_in_delta 0.5, credit[:credit], 0.0001
+      end
+    end
+
     private
+
+    def create_historical_conversion(channels)
+      historical_visitor = create_historical_visitor
+      sessions = channels.each_with_index.map do |channel, index|
+        Session.create!(
+          account: default_visitor.account,
+          visitor: historical_visitor,
+          session_id: SecureRandom.hex(16),
+          started_at: (channels.size - index).days.ago,
+          channel: channel
+        )
+      end
+
+      Conversion.create!(
+        account: default_visitor.account,
+        visitor: historical_visitor,
+        session_id: sessions.last.id,
+        event_id: 1,
+        conversion_type: "purchase",
+        converted_at: 1.day.ago,
+        journey_session_ids: sessions.map(&:id)
+      )
+    end
+
+    def create_historical_visitor
+      Visitor.create!(
+        account: default_visitor.account,
+        visitor_id: SecureRandom.hex(16)
+      )
+    end
 
     def service
       @service ||= build_service
@@ -164,6 +291,28 @@ module Attribution
 
     def first_touch_model
       @first_touch_model ||= attribution_models(:first_touch)
+    end
+
+    def markov_chain_model
+      @markov_chain_model ||= AttributionModel.create!(
+        account: default_visitor.account,
+        name: "Markov Chain",
+        model_type: :preset,
+        algorithm: :markov_chain,
+        lookback_days: 30,
+        is_active: true
+      )
+    end
+
+    def shapley_value_model
+      @shapley_value_model ||= AttributionModel.create!(
+        account: default_visitor.account,
+        name: "Shapley Value",
+        model_type: :preset,
+        algorithm: :shapley_value,
+        lookback_days: 30,
+        is_active: true
+      )
     end
 
     def build_model(lookback_days:)

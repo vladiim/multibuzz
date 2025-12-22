@@ -39,7 +39,38 @@ module Dashboard
       end
 
       def avg_days_to_convert
-        nil # TODO: implement when we have journey timing data
+        return nil if conversion_count.zero?
+
+        days = days_per_conversion
+        return nil if days.empty?
+
+        (days.sum / days.size).round(1)
+      end
+
+      def days_per_conversion
+        @days_per_conversion ||= calculate_days_per_conversion
+      end
+
+      def calculate_days_per_conversion
+        conversion_ids = scope.distinct.pluck(:conversion_id)
+        return [] if conversion_ids.empty?
+
+        # Query conversions with their journey timing
+        Conversion
+          .where(id: conversion_ids)
+          .where.not(journey_session_ids: [])
+          .joins(
+            "INNER JOIN LATERAL (
+              SELECT MIN(s.started_at) as first_session_at
+              FROM sessions s
+              WHERE s.id = ANY(conversions.journey_session_ids)
+            ) first_session ON true"
+          )
+          .pluck(Arel.sql(
+            "EXTRACT(EPOCH FROM (conversions.converted_at - first_session.first_session_at)) / 86400.0"
+          ))
+          .compact
+          .map(&:to_f)
       end
 
       def avg_channels_to_convert

@@ -12,6 +12,7 @@ Rails.application.routes.draw do
   # Webhooks (before API routes for clarity)
   namespace :webhooks do
     post "stripe", to: "stripe#create"
+    post "shopify", to: "shopify#create"
   end
 
   # API routes
@@ -23,6 +24,14 @@ Rails.application.routes.draw do
       post "identify", to: "identify#create"
       get "validate", to: "validate#show"
       get "health", to: "health#show"
+
+      # Test endpoints (test/dev environments only)
+      if Rails.env.test? || Rails.env.development?
+        namespace :test do
+          resource :setup, only: [ :create, :destroy ]
+          resource :verification, only: [ :show, :destroy ]
+        end
+      end
     end
   end
 
@@ -108,6 +117,7 @@ Rails.application.routes.draw do
       resources :attribution_models, except: [:show] do
         collection do
           post :validate
+          get :data_readiness
         end
         member do
           post :reset

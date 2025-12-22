@@ -6,10 +6,7 @@ module Dashboard
     def update
       session[:clv_mode] = valid_mode
 
-      respond_to do |format|
-        format.html { redirect_back(fallback_location: dashboard_conversions_path) }
-        format.turbo_stream { head :ok }
-      end
+      redirect_to dashboard_path
     end
 
     private

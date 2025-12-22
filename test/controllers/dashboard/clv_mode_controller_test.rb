@@ -23,7 +23,7 @@ module Dashboard
     test "should update clv mode to clv" do
       patch dashboard_clv_mode_path, params: { mode: "clv" }
 
-      assert_redirected_to dashboard_conversions_path
+      assert_redirected_to dashboard_path
       follow_redirect!
       assert_equal "clv", session[:clv_mode]
     end
@@ -36,7 +36,7 @@ module Dashboard
       # Then switch back to transactions
       patch dashboard_clv_mode_path, params: { mode: "transactions" }
 
-      assert_redirected_to dashboard_conversions_path
+      assert_redirected_to dashboard_path
       follow_redirect!
       assert_equal "transactions", session[:clv_mode]
     end
@@ -44,7 +44,7 @@ module Dashboard
     test "should reject invalid clv mode" do
       patch dashboard_clv_mode_path, params: { mode: "invalid" }
 
-      assert_redirected_to dashboard_conversions_path
+      assert_redirected_to dashboard_path
       follow_redirect!
       assert_equal "transactions", session[:clv_mode]
     end
@@ -52,7 +52,7 @@ module Dashboard
     test "should default to transactions when mode is blank" do
       patch dashboard_clv_mode_path, params: { mode: "" }
 
-      assert_redirected_to dashboard_conversions_path
+      assert_redirected_to dashboard_path
       follow_redirect!
       assert_equal "transactions", session[:clv_mode]
     end
@@ -111,6 +111,8 @@ module Dashboard
       patch dashboard_clv_mode_path, params: { mode: "clv" }
       follow_redirect!
 
+      get dashboard_conversions_path
+
       assert_select "[data-testid='clv-dashboard']"
       assert_select "[data-testid='transactions-dashboard']", count: 0
     end
@@ -129,6 +131,7 @@ module Dashboard
 
       patch dashboard_clv_mode_path, params: { mode: "clv" }
       follow_redirect!
+      get dashboard_conversions_path
 
       assert_select "[data-testid='clv-empty-state']"
     end
@@ -138,6 +141,7 @@ module Dashboard
 
       patch dashboard_clv_mode_path, params: { mode: "clv" }
       follow_redirect!
+      get dashboard_conversions_path
 
       assert_select "[data-testid='clv-empty-state']" do
         assert_select "code", /is_acquisition/
@@ -153,6 +157,7 @@ module Dashboard
       create_clv_test_data
       patch dashboard_clv_mode_path, params: { mode: "clv" }
       follow_redirect!
+      get dashboard_conversions_path
 
       clv_data = controller.instance_variable_get(:@clv_data)
 
@@ -168,6 +173,7 @@ module Dashboard
       create_clv_test_data
       patch dashboard_clv_mode_path, params: { mode: "clv" }
       follow_redirect!
+      get dashboard_conversions_path
 
       clv_data = controller.instance_variable_get(:@clv_data)
 
@@ -179,6 +185,7 @@ module Dashboard
       create_clv_test_data
       patch dashboard_clv_mode_path, params: { mode: "clv" }
       follow_redirect!
+      get dashboard_conversions_path
 
       clv_data = controller.instance_variable_get(:@clv_data)
 

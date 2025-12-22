@@ -46,6 +46,19 @@ end`
   apply 0.4, to: touchpoints.last
   apply 0.2, to: touchpoints[1..-2], distribute: :equal
 end`
+  },
+  custom: {
+    name: "Custom: Recency Segments",
+    description: "60% credit to last 30 days with fast decay, 40% to 31-60 days with slower decay. Nested windows let you create sophisticated, segment-based models.",
+    bestFor: "Best for: Complex customer journeys, recency-weighted attribution, enterprise use cases.",
+    code: `within_window 90.days do
+  within_window 30.days, weight: 0.6 do
+    time_decay half_life: 7.days
+  end
+  within_window 30.days..60.days, weight: 0.4 do
+    time_decay half_life: 14.days
+  end
+end`
   }
 }
 

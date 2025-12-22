@@ -1,0 +1,213 @@
+# frozen_string_literal: true
+
+require "rake/testtask"
+require_relative "helpers/test_config"
+require_relative "helpers/test_setup_helper"
+
+namespace :sdk do
+  desc "Run all SDK integration tests for all SDKs"
+  task :test do
+    begin
+      TestSetupHelper.setup!
+
+      %w[ruby node].each do |sdk|
+        puts "\n#{'=' * 50}"
+        puts "Testing #{sdk.upcase} SDK"
+        puts "=" * 50
+
+        ENV["SDK"] = sdk
+        Rake::Task["sdk:test:scenarios"].execute
+        Rake::Task["sdk:test:scenarios"].reenable
+      end
+    ensure
+      TestSetupHelper.teardown!
+    end
+  end
+
+  desc "Run SDK integration tests for Ruby SDK only"
+  task :ruby do
+    begin
+      TestSetupHelper.setup!
+      ENV["SDK"] = "ruby"
+      Rake::Task["sdk:test:scenarios"].invoke
+    ensure
+      TestSetupHelper.teardown!
+    end
+  end
+
+  desc "Run SDK integration tests for Node SDK only"
+  task :node do
+    begin
+      TestSetupHelper.setup!
+      ENV["SDK"] = "node"
+      Rake::Task["sdk:test:scenarios"].invoke
+    ensure
+      TestSetupHelper.teardown!
+    end
+  end
+
+  desc "Run SDK integration tests for Python SDK only"
+  task :python do
+    begin
+      TestSetupHelper.setup!
+      ENV["SDK"] = "python"
+      Rake::Task["sdk:test:scenarios"].invoke
+    ensure
+      TestSetupHelper.teardown!
+    end
+  end
+
+  desc "Run SDK integration tests for PHP SDK only"
+  task :php do
+    begin
+      TestSetupHelper.setup!
+      ENV["SDK"] = "php"
+      Rake::Task["sdk:test:scenarios"].invoke
+    ensure
+      TestSetupHelper.teardown!
+    end
+  end
+
+  desc "Run SDK integration tests for Symfony SDK only"
+  task :symfony do
+    begin
+      TestSetupHelper.setup!
+      ENV["SDK"] = "symfony"
+      Rake::Task["sdk:test:scenarios"].invoke
+    ensure
+      TestSetupHelper.teardown!
+    end
+  end
+
+  namespace :test do
+    Rake::TestTask.new(:scenarios) do |t|
+      t.libs << "."
+      t.test_files = FileList["scenarios/*_test.rb"]
+      t.verbose = true
+      t.warning = false
+    end
+  end
+
+  desc "Start Ruby test app (port 4001)"
+  task :app_ruby do
+    puts "Starting Ruby test app on http://localhost:4001"
+    puts "Note: Set MBUZZ_API_KEY and MBUZZ_API_URL environment variables"
+    Dir.chdir("apps/mbuzz_ruby_testapp") do
+      sh "bundle exec rackup -p 4001"
+    end
+  end
+
+  desc "Start Node test app (port 4002)"
+  task :app_node do
+    puts "Starting Node test app on http://localhost:4002"
+    puts "Note: Set MBUZZ_API_KEY and MBUZZ_API_URL environment variables"
+    Dir.chdir("apps/mbuzz_node_testapp") do
+      sh "npx tsx server.ts"
+    end
+  end
+
+  desc "Start Python test app (port 4003)"
+  task :app_python do
+    puts "Starting Python test app on http://localhost:4003"
+    puts "Note: Set MBUZZ_API_KEY and MBUZZ_API_URL environment variables"
+    Dir.chdir("apps/mbuzz_python_testapp") do
+      sh "venv/bin/python app.py"
+    end
+  end
+
+  desc "Start PHP test app (port 4004)"
+  task :app_php do
+    puts "Starting PHP test app on http://localhost:4004"
+    puts "Note: Set MBUZZ_API_KEY and MBUZZ_API_URL environment variables"
+    Dir.chdir("apps/mbuzz_php_testapp") do
+      sh "php -S localhost:4004 -t public"
+    end
+  end
+
+  desc "Start Symfony test app (port 4005)"
+  task :app_symfony do
+    puts "Starting Symfony test app on http://localhost:4005"
+    puts "Note: Set MBUZZ_API_KEY and MBUZZ_API_URL environment variables"
+    Dir.chdir("apps/mbuzz_symfony_testapp") do
+      sh "php -S localhost:4005 -t public"
+    end
+  end
+
+  namespace :setup do
+    desc "Create test account and API key"
+    task :create do
+      api_key = TestSetupHelper.setup!
+      puts "\nTo use this key with test apps:"
+      puts "  export MBUZZ_API_KEY=#{api_key}"
+      puts "  export MBUZZ_API_URL=#{TestConfig.api_url}"
+    end
+
+    desc "Tear down test account"
+    task :destroy do
+      # Load from env file if exists
+      env_file = File.expand_path("../.test_env", __FILE__)
+      if File.exist?(env_file)
+        File.readlines(env_file).each do |line|
+          key, value = line.strip.split("=", 2)
+          ENV[key] = value if key && value
+        end
+      end
+
+      slug = ENV["MBUZZ_ACCOUNT_SLUG"]
+      if slug
+        TestConfig.account_slug = slug
+        TestSetupHelper.teardown!
+      else
+        puts "No account slug found. Nothing to tear down."
+      end
+    end
+
+    desc "Install dependencies for Ruby test app"
+    task :ruby_app do
+      Dir.chdir("apps/mbuzz_ruby_testapp") do
+        sh "bundle install"
+      end
+    end
+
+    desc "Install dependencies for Node test app"
+    task :node_app do
+      Dir.chdir("apps/mbuzz_node_testapp") do
+        sh "npm install"
+      end
+    end
+
+    desc "Install dependencies for Python test app"
+    task :python_app do
+      sdk_path = File.expand_path("../../../../mbuzz-python", __dir__)
+      Dir.chdir("apps/mbuzz_python_testapp") do
+        sh "python3 -m venv venv"
+        sh "venv/bin/pip install -e #{sdk_path} flask gunicorn --quiet"
+      end
+    end
+
+    desc "Install dependencies for PHP test app"
+    task :php_app do
+      Dir.chdir("apps/mbuzz_php_testapp") do
+        sh "composer install"
+      end
+    end
+
+    desc "Install dependencies for Symfony test app"
+    task :symfony_app do
+      Dir.chdir("apps/mbuzz_symfony_testapp") do
+        sh "composer install"
+      end
+    end
+
+    desc "Install Playwright browser"
+    task :playwright do
+      sh "npx playwright install chromium"
+    end
+
+    desc "Install all dependencies"
+    task all: [:ruby_app, :node_app, :python_app, :php_app, :symfony_app, :playwright]
+  end
+end
+
+# Default task
+task default: "sdk:test"

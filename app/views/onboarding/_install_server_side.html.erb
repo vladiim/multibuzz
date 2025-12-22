@@ -1,0 +1,29 @@
+<!-- Step 1: Install -->
+<div class="mb-8">
+  <h3 class="text-lg font-medium text-gray-900 mb-3">1. Install the package</h3>
+  <% if current_sdk.install_command.present? %>
+    <div class="bg-slate-900 rounded-lg p-4">
+      <code class="hljs text-sm" data-controller="code-highlight" data-code-highlight-language-value="bash"><%= current_sdk.install_command %></code>
+    </div>
+  <% end %>
+</div>
+
+<!-- Step 2: Initialize -->
+<div class="mb-8">
+  <h3 class="text-lg font-medium text-gray-900 mb-3">2. Initialize the SDK</h3>
+  <% if current_sdk.init_code.present? %>
+    <div class="bg-slate-900 rounded-lg p-4 overflow-x-auto">
+      <pre class="hljs text-sm leading-relaxed" data-controller="code-highlight" data-code-highlight-language-value="<%= syntax_language_for(current_sdk) %>"><%= current_sdk.init_code %></pre>
+    </div>
+  <% end %>
+</div>
+
+<!-- Step 3: Track an event -->
+<div class="mb-8">
+  <h3 class="text-lg font-medium text-gray-900 mb-3">3. Track your first event</h3>
+  <% if current_sdk.event_code.present? %>
+    <div class="bg-slate-900 rounded-lg p-4 overflow-x-auto">
+      <pre class="hljs text-sm leading-relaxed" data-controller="code-highlight" data-code-highlight-language-value="<%= syntax_language_for(current_sdk) %>"><%= current_sdk.event_code %></pre>
+    </div>
+  <% end %>
+</div>

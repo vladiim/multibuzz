@@ -5,12 +5,12 @@ require "test_helper"
 module AML
   class TemplatesTest < ActiveSupport::TestCase
     # Template definitions
-    test "defines 6 default templates" do
-      assert_equal 6, AML::Templates::DEFINITIONS.length
+    test "defines 7 default templates" do
+      assert_equal 7, AML::Templates::DEFINITIONS.length
     end
 
     test "includes all expected algorithms" do
-      expected = %i[first_touch last_touch linear time_decay u_shaped participation]
+      expected = %i[first_touch last_touch linear time_decay u_shaped participation markov_chain]
       assert_equal expected.sort, AML::Templates::DEFINITIONS.keys.sort
     end
 
@@ -46,7 +46,7 @@ module AML
     test "all returns list of template hashes" do
       templates = AML::Templates.all
 
-      assert_equal 6, templates.length
+      assert_equal 7, templates.length
       assert templates.all? { |t| t[:key].present? }
       assert templates.all? { |t| t[:name].present? }
     end

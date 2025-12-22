@@ -12,18 +12,18 @@ module Attribution
     attr_reader :attribution_model, :confirm_overage
 
     def run
-      return error_result(["No stale conversions to rerun"]) unless stale_count.positive?
+      return error_result(["No pending conversions to rerun"]) unless pending_count.positive?
       return overage_required_result unless can_proceed?
 
       create_and_enqueue_job
     end
 
-    def stale_count
-      @stale_count ||= attribution_model.stale_conversions_count
+    def pending_count
+      @pending_count ||= attribution_model.pending_conversions_count
     end
 
     def overage_calculation
-      @overage_calculation ||= account.calculate_rerun_overage(stale_count)
+      @overage_calculation ||= account.calculate_rerun_overage(pending_count)
     end
 
     def requires_overage?
@@ -58,7 +58,7 @@ module Attribution
       RerunJob.create!(
         account: account,
         attribution_model: attribution_model,
-        total_conversions: stale_count,
+        total_conversions: pending_count,
         from_version: current_credit_version,
         to_version: attribution_model.version,
         overage_blocks: overage_calculation[:blocks]

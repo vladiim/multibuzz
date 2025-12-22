@@ -40,6 +40,10 @@ module Accounts
       render json: AttributionModels::ValidationService.new(params[:dsl_code]).call
     end
 
+    def data_readiness
+      render json: { models: Attribution::DataReadinessChecker.new(current_account).call }
+    end
+
     def reset
       @attribution_model.update(dsl_code: nil)
       redirect_to edit_account_attribution_model_path(@attribution_model), notice: t(".success")
