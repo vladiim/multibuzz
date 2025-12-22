@@ -154,6 +154,43 @@ module Conversions
       # Should calculate fresh attribution since no acquisition exists
     end
 
+    # ==========================================
+    # Journey session IDs population tests
+    # ==========================================
+
+    test "populates journey_session_ids after fresh attribution calculation" do
+      conv = build_conversion
+      assert_equal [], conv.journey_session_ids
+
+      result = build_service(conv).call
+
+      assert result[:success]
+      conv.reload
+      assert_not_empty conv.journey_session_ids
+      assert_equal 2, conv.journey_session_ids.size  # 2 sessions created
+    end
+
+    test "journey_session_ids contains unique session IDs from credits" do
+      conv = build_conversion
+      result = build_service(conv).call
+
+      assert result[:success]
+      conv.reload
+
+      # Should match the session IDs in the credits
+      credit_session_ids = conv.attribution_credits.pluck(:session_id).uniq.sort
+      assert_equal credit_session_ids, conv.journey_session_ids.sort
+    end
+
+    test "journey_session_ids remains empty when no sessions exist" do
+      empty_conversion = build_conversion(visitor: visitors(:other_account_visitor))
+      result = build_service(empty_conversion).call
+
+      assert result[:success]
+      empty_conversion.reload
+      assert_equal [], empty_conversion.journey_session_ids
+    end
+
     test "inherited attribution works with multiple attribution models" do
       acquisition_conversion = build_acquisition_conversion
       calculate_attribution(acquisition_conversion)

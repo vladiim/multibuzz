@@ -74,6 +74,13 @@ module Conversions
       @credits_by_model = active_models.each_with_object({}) do |model, hash|
         hash[model.name] = calculate_and_persist_credits(model)
       end
+
+      update_journey_session_ids
+    end
+
+    def update_journey_session_ids
+      session_ids = @credits_by_model.values.flatten.map { |c| c[:session_id] }.compact.uniq
+      conversion.update_column(:journey_session_ids, session_ids) if session_ids.any?
     end
 
     def credits_by_model
