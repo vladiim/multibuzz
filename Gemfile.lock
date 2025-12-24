@@ -155,7 +155,7 @@ GEM
       net-smtp
     marcel (1.1.0)
     matrix (0.4.3)
-    mbuzz (0.6.2)
+    mbuzz (0.6.3)
       rack (>= 2.0)
     mini_mime (1.1.5)
     minitest (5.26.1)
