@@ -17,6 +17,7 @@
 * Push conversions to server-side ads (with rules on attribution)
   - Also map to spend for CAC, payback period, ROAS etc.
 * integrate with ads to get payback period
+  - research if we can feed ad impression into models e.g. facebook impressions?!
 * change bigger defaults e.g. customer storage for 2 years etc
 * Pre built re categorisation eg local search for place id
 * Forecasting- longer term with reconciliation 
