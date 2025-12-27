@@ -86,10 +86,41 @@ If any of these resonate, here are your best options.
 
 **Why consider mbuzz:** HockeyStack tells you what it thinks drove pipeline. mbuzz proves it with incrementality testing.
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: mbuzz B2B Features</p>
-  <p class="text-yellow-700 text-sm">Add mbuzz B2B-specific capabilities: account-based attribution, Salesforce integration, long sales cycle handling, and incrementality methodology for B2B.</p>
-</div>
+### What mbuzz Offers
+
+**Server-side tracking built for B2B complexity.** While HockeyStack relies on client-side tracking, mbuzz captures events on your backend—no ad blockers, no missing touches. Essential for B2B where buyer journeys span months and multiple devices.
+
+**8 attribution models for long sales cycles.** Compare first-touch (who opened the door?), last-touch (who closed?), linear, time-decay, U-shaped, W-shaped, Markov Chain, and Shapley Value side-by-side. See how each model credits the same deal differently.
+
+**Custom attribution rules via DSL.** Weight touchpoints by stage, channel, or engagement depth:
+
+```ruby
+# B2B-optimized: Heavy credit to first and opportunity-stage touches
+model "b2b_pipeline_weighted" do
+  if position == :first
+    weight 0.35
+  elsif stage == "opportunity_created"
+    weight 0.30
+  elsif channel == "direct_sales"
+    weight 0.20
+  else
+    weight :remaining
+  end
+end
+```
+
+**LTV attribution for recurring revenue.** Your best first-month CAC channel might be your worst LTV channel. mbuzz tracks every renewal, upsell, and expansion back to original acquisition source—see which campaigns drive customers who renew at 130% NDR vs 80%.
+
+**Transparent pricing, not $2,200+/month:**
+
+| Tier | Events/Month | Price |
+|------|-------------|-------|
+| Free | Up to 50K | $0 |
+| Starter | Up to 1M | $29/mo |
+| Growth | Up to 5M | $99/mo |
+| Pro | Up to 25M | $299/mo |
+
+**10-minute setup** with native SDKs for Rails, Django, Laravel, and Node.js. Export raw data anytime—your pipeline data, no lock-in.
 
 ### mbuzz vs HockeyStack
 

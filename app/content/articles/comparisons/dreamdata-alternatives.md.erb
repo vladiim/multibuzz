@@ -85,10 +85,39 @@ If any of these resonate, here are your best options.
 
 **Why consider mbuzz:** Dreamdata shows attribution. mbuzz proves it with incrementality testing.
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: mbuzz B2B Features</p>
-  <p class="text-yellow-700 text-sm">Add mbuzz B2B capabilities and differentiation from Dreamdata's journey-visualization focus.</p>
-</div>
+### What mbuzz Offers
+
+**Server-side tracking that Dreamdata can't match.** Dreamdata relies on client-side JavaScript that ad blockers defeat. mbuzz tracks on your backend—capture 95%+ of touchpoints across the entire B2B buying journey.
+
+**8 attribution models with side-by-side comparison.** See how the same deal gets credited under First Touch, Last Touch, Linear, Time Decay, U-Shaped, W-Shaped, Markov Chain, and Shapley Value. Dreamdata shows journeys; mbuzz shows how different models interpret those journeys.
+
+**Custom attribution rules in minutes.** Don't wait for feature requests—define your own logic:
+
+```ruby
+# Credit content downloads heavily, weight branded search lower
+model "content_led_growth" do
+  if event_type == "content_download" && content_gated?
+    weight 0.35
+  elsif channel == "paid_search" && query.branded?
+    weight 0.10
+  else
+    weight :time_decay
+  end
+end
+```
+
+**LTV attribution for SaaS.** Track expansion, renewals, and churn back to original acquisition source. That enterprise campaign might have high CAC but 140% NDR—mbuzz shows the full picture.
+
+**Transparent, affordable pricing:**
+
+| Tier | Events/Month | Price |
+|------|-------------|-------|
+| Free | Up to 50K | $0 |
+| Starter | Up to 1M | $29/mo |
+| Growth | Up to 5M | $99/mo |
+| Pro | Up to 25M | $299/mo |
+
+**10-minute setup** with native SDKs for Rails, Django, Laravel, and Node.js. No 4-8 week implementation projects.
 
 ### mbuzz vs Dreamdata
 

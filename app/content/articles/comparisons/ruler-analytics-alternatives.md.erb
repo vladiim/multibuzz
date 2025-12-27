@@ -85,10 +85,41 @@ If any of these resonate, here are your best options.
 
 **Why consider mbuzz:** Ruler Analytics shows attribution. mbuzz proves it with incrementality testing.
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: mbuzz Lead Generation Features</p>
-  <p class="text-yellow-700 text-sm">Add mbuzz capabilities for service businesses, call tracking integration approach, and how incrementality works for lead gen businesses.</p>
-</div>
+### What mbuzz Offers
+
+**Server-side tracking for lead generation.** While Ruler Analytics focuses on call + web tracking with client-side methods, mbuzz tracks on your backend—capturing 95%+ of form submissions and web events that ad blockers hide.
+
+**8 attribution models for multi-touch lead gen.** Compare First Touch (who found you?), Last Touch (what converted them?), Linear, Time Decay, U-Shaped, W-Shaped, plus data-driven Markov Chain and Shapley Value. See which model best reflects your lead-to-customer journey.
+
+**Custom attribution rules for service businesses.** Weight touchpoints by lead quality, service type, or conversion value:
+
+```ruby
+# Service business: Weight high-value service inquiries
+model "lead_quality_weighted" do
+  if conversion_type == "consultation_request"
+    weight 1.5
+  elsif channel == "referral"
+    weight 1.25
+  elsif channel == "paid_search" && keyword.service_related?
+    weight 1.0
+  else
+    weight :time_decay
+  end
+end
+```
+
+**Closed-loop revenue attribution.** Track beyond the lead—connect to your CRM to attribute actual revenue, not just form fills. See which campaigns drive clients who pay, stay, and refer.
+
+**Pricing without the £349/mo entry:**
+
+| Tier | Events/Month | Price |
+|------|-------------|-------|
+| Free | Up to 50K | $0 |
+| Starter | Up to 1M | $29/mo |
+| Growth | Up to 5M | $99/mo |
+| Pro | Up to 25M | $299/mo |
+
+**10-minute setup** with native SDKs for Rails, Django, Laravel, and Node.js. Integrate with call tracking tools like CallRail for complete lead attribution.
 
 ### mbuzz vs Ruler Analytics
 

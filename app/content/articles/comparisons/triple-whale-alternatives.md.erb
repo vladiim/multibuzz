@@ -86,10 +86,39 @@ If any of these apply, here are your best options.
 
 **Why consider mbuzz:** Most attribution tools tell you what they think happened. mbuzz proves it with incrementality testing.
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: mbuzz Overview</p>
-  <p class="text-yellow-700 text-sm">Add mbuzz key features, pricing, and primary differentiators. Include specific capabilities that address Triple Whale's limitations.</p>
-</div>
+### What mbuzz Offers
+
+**Server-side attribution that ad blockers can't touch.** While Triple Whale relies on client-side tracking that misses 30% of visitors, mbuzz tracks events on your backend—capturing 95%+ of customer journeys.
+
+**8 attribution models, not 3.** Compare first-touch, last-touch, linear, time-decay, U-shaped, W-shaped, plus data-driven Markov Chain and Shapley Value models side-by-side. See how credit shifts between channels under different models.
+
+**Custom models via simple DSL.** Don't wait for feature requests—write your own attribution logic in minutes:
+
+```ruby
+# Weight branded search lower, boost first organic touch
+model "my_custom_model" do
+  if channel == "organic" && position == :first
+    weight 1.5
+  elsif channel == "paid_search" && query.branded?
+    weight 0.25
+  else
+    weight :linear
+  end
+end
+```
+
+**LTV attribution built-in.** mbuzz tracks every recurring payment back to its original acquisition source. That Facebook campaign might look great at first purchase but terrible at 12-month LTV—you'll know the difference.
+
+**Pricing that makes sense:**
+
+| Tier | Events/Month | Price |
+|------|-------------|-------|
+| Free | Up to 50K | $0 |
+| Starter | Up to 1M | $29/mo |
+| Growth | Up to 5M | $99/mo |
+| Pro | Up to 25M | $299/mo |
+
+**10-minute setup** with native SDKs for Rails, Django, Laravel, and Node.js. No tag managers, no JavaScript debugging.
 
 ### mbuzz vs Triple Whale
 
