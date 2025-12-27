@@ -4,7 +4,7 @@ class Article
 
   CONTENT_PATH = Rails.root.join("app/content/articles")
 
-  SECTIONS = %w[fundamentals models integration funnel-forecasting implementation advanced mbuzz].freeze
+  SECTIONS = %w[fundamentals models integration funnel-forecasting implementation advanced comparisons mbuzz].freeze
   STATUSES = %w[draft review published].freeze
   PRIORITIES = %w[P0 P1 P2 P3].freeze
 
