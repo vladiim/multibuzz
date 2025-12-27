@@ -76,6 +76,12 @@ Rails.application.routes.draw do
   get "docs", to: redirect("/docs/getting-started"), as: :docs_index
   get "docs/:page", to: "docs#show", as: :docs, constraints: { page: /[\w-]+/ }
 
+  # Articles / Academy routes
+  get "academy", to: "articles#index", as: :academy
+  get "academy/:section", to: "articles#section", as: :academy_section,
+    constraints: { section: Regexp.new(Article::SECTIONS.join("|")) }
+  get "articles/:slug", to: "articles#show", as: :article
+
   # Dashboard routes
   get "login", to: "sessions#new"
   post "login", to: "sessions#create"

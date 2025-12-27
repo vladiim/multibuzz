@@ -109,6 +109,7 @@ GEM
     erubi (1.13.1)
     et-orbi (1.4.0)
       tzinfo
+    front_matter_parser (1.0.1)
     fugit (1.12.1)
       et-orbi (~> 1.4)
       raabro (~> 1.4)
@@ -400,6 +401,7 @@ DEPENDENCIES
   brakeman
   capybara
   debug
+  front_matter_parser
   importmap-rails
   jbuilder
   kamal

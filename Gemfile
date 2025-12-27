@@ -46,6 +46,9 @@ gem "prefixed_ids"
 gem "redcarpet"
 gem "rouge"
 
+# Frontmatter parsing for articles [https://github.com/waiting-for-dev/front_matter_parser]
+gem "front_matter_parser"
+
 # Ruby AST parser for AML DSL validation [https://github.com/whitequark/parser]
 gem "parser"
 

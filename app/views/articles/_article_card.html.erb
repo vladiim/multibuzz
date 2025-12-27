@@ -1,0 +1,13 @@
+<%= link_to article_path(article), class: "block p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-sm transition", data: { testid: "article-card" } do %>
+  <h3 class="font-semibold text-gray-900 mb-2"><%= article.title %></h3>
+  <p class="text-sm text-gray-600 line-clamp-2"><%= article.description %></p>
+  <div class="mt-3 flex items-center gap-3 text-xs text-gray-500">
+    <span><%= article.reading_time %> min read</span>
+    <% if article.has_code_examples %>
+      <span class="bg-gray-100 px-2 py-0.5 rounded">Code</span>
+    <% end %>
+    <% if article.has_download %>
+      <span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded">Download</span>
+    <% end %>
+  </div>
+<% end %>
