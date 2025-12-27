@@ -1,0 +1,371 @@
+---
+title: "Why Your Platform Reports Don't Match (And What to Trust)"
+slug: "platform-reports-dont-match"
+description: "Google says one thing, Meta says another, your email tool claims the rest. Learn why platform attribution data conflicts, how to reconcile the differences, and how to build a single source of truth."
+published_at:
+section: fundamentals
+section_order: 5
+status: draft
+priority: P0
+category: "Attribution Fundamentals"
+tags:
+  - platform attribution
+  - Google Ads
+  - Meta Ads
+  - data reconciliation
+  - attribution conflicts
+  - marketing measurement
+related_articles:
+  - what-is-multi-touch-attribution
+  - last-touch-attribution
+  - how-to-choose-attribution-model
+  - ga4-attribution-models-removed
+seo:
+  title: "Why Google and Meta Attribution Don't Match: How to Reconcile"
+aeo:
+  target_query: "why google and facebook attribution different"
+  tldr: "Platform reports conflict because each platform uses different attribution windows, takes credit for the same conversion, and can only see its own touchpoints. Google Ads uses 30-day click; Meta uses 7-day click, 1-day view. Both claim credit for overlapping journeys. The solution: use a neutral third-party attribution tool as your single source of truth, and treat platform data as directional for within-platform optimization only."
+  key_takeaways:
+    - "Platforms use different attribution windows (Google 30-day, Meta 7-day)"
+    - "Each platform only sees its own touchpoints—they can't see the full journey"
+    - "Adding up platform-reported conversions always exceeds actual conversions"
+    - "Use third-party attribution for cross-channel decisions; platform data for within-channel optimization"
+  faq:
+    - q: "Why does Google Ads show more conversions than I actually have?"
+      a: "Google Ads uses 30-day click attribution and may count view-through conversions. If someone clicked an ad 25 days ago then converted, Google claims it. If they also clicked a Meta ad 5 days ago, Meta claims the same conversion. Both report it, but it's one actual sale."
+    - q: "Should I trust Google Analytics or Google Ads data?"
+      a: "They measure differently. Google Ads uses campaign-centric attribution optimized for bidding. GA4 uses session-based attribution across all channels. For cross-channel decisions, GA4 is less biased. For Google Ads optimization, use Google Ads data. For unbiased measurement, use neither—use a third-party tool."
+    - q: "How do I know which platform actually drove the conversion?"
+      a: "You often can't know with certainty from platform data alone. The customer likely saw multiple touchpoints. Use multi-touch attribution to distribute credit fairly, or run incrementality tests to measure each platform's true causal impact."
+    - q: "Why do my total conversions from all platforms exceed my actual sales?"
+      a: "Because platforms double-count. If a customer clicked Google, then Meta, then converted—both platforms claim 100% credit. Summing platform data always overcounts. This is why you need a deduplicated source of truth."
+    - q: "Can I just pick one platform as my source of truth?"
+      a: "Not recommended. Each platform is biased toward crediting itself. GA4 is less biased but still limited. The best approach is a neutral third-party tool that sees all touchpoints and applies consistent attribution logic."
+schema:
+  type: Article
+  author: "mbuzz Team"
+has_code_examples: false
+has_calculator: false
+has_download: false
+---
+
+<%= render_tldr(@article.tldr) %>
+
+## The Problem: One Conversion, Three Claims
+
+Here's a scenario every marketer has experienced:
+
+```
+Your Actual Sales: 100 conversions
+
+Platform Reports:
+├── Google Ads:     85 conversions
+├── Meta Ads:       45 conversions
+├── Email:          35 conversions
+├── Organic Search: 25 conversions
+└── Total Claimed:  190 conversions  ← 90% overcounting!
+```
+
+You sold 100 products, but your platforms claim responsibility for 190. Someone is lying—or more accurately, everyone is telling their version of the truth.
+
+This isn't a bug. It's how platform attribution works by design.
+
+## Why Platforms Disagree
+
+### 1. Different Attribution Windows
+
+Each platform uses different time windows to claim credit:
+
+| Platform | Click Window | View Window | Total Window |
+|----------|-------------|-------------|--------------|
+| **Google Ads** | 30 days | 1 day (optional) | Up to 90 days |
+| **Meta Ads** | 7 days | 1 day | 7 days |
+| **TikTok Ads** | 7 days | 1 day | 7 days |
+| **LinkedIn Ads** | 30 days | 7 days | 30 days |
+| **Email (typical)** | 30-90 days | N/A | Varies |
+| **GA4** | Up to 90 days | N/A | Configurable |
+
+Consider this journey:
+
+```
+Day 1:  Customer clicks Google Ad
+Day 15: Customer clicks Meta Ad
+Day 20: Customer converts
+
+Who gets credit?
+├── Google Ads: ✓ (within 30-day click window)
+├── Meta Ads:   ✓ (within 7-day click window)
+└── Reality:    Both touched the customer, one conversion occurred
+```
+
+Both platforms legitimately claim this conversion under their own rules. Neither is wrong—they're just using different definitions.
+
+### 2. Platforms Only See Their Own Touchpoints
+
+Google can't see your Meta ads. Meta can't see your email campaigns. Each platform operates in a silo:
+
+```
+What Google Sees:
+[Google Ad] → [???] → [???] → [Conversion]
+     ↑
+"We drove this conversion!"
+
+What Meta Sees:
+[???] → [Meta Ad] → [???] → [Conversion]
+              ↑
+"We drove this conversion!"
+
+What Actually Happened:
+[Google Ad] → [Meta Ad] → [Email] → [Conversion]
+```
+
+Platforms can only credit what they can see. The result is each claiming more credit than they deserve.
+
+### 3. Self-Serving Attribution Logic
+
+Platforms aren't neutral observers—they're selling you ads. Their attribution is designed to make their platform look effective:
+
+| Platform Behavior | Effect |
+|------------------|--------|
+| **Google favors Google** | GA4 over-attributes to Google Ads in same-session scenarios |
+| **Meta credits views** | 1-day view attribution claims credit for ads users merely saw |
+| **Email claims last-touch** | Email platforms default to last-click, taking credit from earlier touches |
+| **Each maximizes their number** | No platform has incentive to share credit fairly |
+
+This isn't conspiracy—it's incentives. Platforms that show better ROAS get more ad spend.
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Platform Bias Analysis</p>
+  <p class="text-yellow-700 text-sm">Add mbuzz analysis comparing platform-reported conversions vs mbuzz multi-touch attribution for same campaigns. Show typical overcounting rate (e.g., "Platforms collectively over-report by 40-80%"). This is powerful proof of the problem.</p>
+</div>
+
+## The Real-World Impact
+
+### Budget Misallocation
+
+When you optimize budget based on platform data:
+
+```
+Platform-Reported ROAS:
+├── Google Ads:  4.2x  → "Increase budget!"
+├── Meta Ads:    3.1x  → "Maintain"
+├── Display:     0.8x  → "Cut this!"
+
+Multi-Touch Reality:
+├── Google Ads:  2.8x  (overcredited by 50%)
+├── Meta Ads:    2.2x  (overcredited by 40%)
+├── Display:     1.9x  (undercredited by 140%!)
+
+Result: You cut Display, which was actually introducing
+customers that Google and Meta later converted.
+```
+
+### The Attribution Arms Race
+
+Platforms continuously adjust attribution to maintain perceived performance:
+
+- Meta shortened their window from 28 days to 7 days (post-ATT) partly because shorter windows showed more immediate impact
+- Google extended conversion windows and added data-driven attribution that favors Google touchpoints
+- Each platform adds "modeled conversions" that estimate untracked activity—conveniently in their favor
+
+You're not measuring marketing performance. You're measuring each platform's attribution marketing.
+
+<%= render_warning_box do %>
+  <strong>The 80% problem:</strong> Industry research shows 80% of marketers are concerned about bias in AdTech reporting. They're right to be concerned—platform data is inherently biased toward the platform reporting it.
+<% end %>
+
+## How to Build a Single Source of Truth
+
+### Option 1: Third-Party Attribution Tool (Recommended)
+
+Use a neutral tool that sees all touchpoints and applies consistent logic:
+
+**How it works:**
+1. Track all touchpoints (ads, email, organic, direct) in one system
+2. Apply a single attribution model across all channels
+3. Deduplicate conversions—each sale counts once
+4. Report consistent metrics across channels
+
+**Benefits:**
+- Unbiased cross-channel comparison
+- Deduplicated conversion counts
+- Consistent attribution windows
+- Full journey visibility
+
+**Limitations:**
+- Additional cost
+- Implementation required
+- May not match platform optimization signals
+
+### Option 2: Incrementality Testing
+
+Measure true causal impact through experiments:
+
+```
+Incrementality Test Design:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Test: "Does Meta actually drive incremental revenue?"
+
+Control:    50% of geos → No Meta ads
+Treatment:  50% of geos → Normal Meta spend
+
+After 4 weeks:
+├── Treatment revenue: $500,000
+├── Control revenue:   $420,000
+├── Incremental lift:  $80,000 (19%)
+├── Meta spend:        $50,000
+├── True iROAS:        1.6x
+
+Compare to:
+├── Meta-reported ROAS: 3.1x  ← Overcredited by 94%!
+```
+
+Incrementality tests reveal what each platform actually causes, not just what it touches.
+
+### Option 3: Marketing Mix Modeling (MMM)
+
+Use aggregate data and econometrics to estimate channel contribution:
+
+**Best for:**
+- High spend ($500K+/year)
+- Mix of online and offline channels
+- Strategic planning (not tactical)
+
+**How it helps reconciliation:**
+- Estimates total channel impact independent of platform reporting
+- Accounts for brand effects, seasonality, competition
+- Provides calibration factors for platform data
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Reconciliation Framework</p>
+  <p class="text-yellow-700 text-sm">Add mbuzz diagram showing: Platform Data (biased) → Third-Party Attribution (deduplicated) → Incrementality Validation (causal) → Confident Budget Decisions. This becomes a signature mbuzz framework.</p>
+</div>
+
+## Practical Reconciliation Workflow
+
+### Step 1: Establish Baseline Discrepancy
+
+Document how much platforms over-report:
+
+```sql
+-- Compare platform-reported vs actual conversions
+SELECT
+  date_trunc('week', conversion_date) as week,
+  SUM(google_reported) as google_claims,
+  SUM(meta_reported) as meta_claims,
+  SUM(email_reported) as email_claims,
+  SUM(actual_conversions) as actual,
+  (SUM(google_reported) + SUM(meta_reported) + SUM(email_reported))
+    / NULLIF(SUM(actual_conversions), 0) as overcount_ratio
+FROM conversion_reconciliation
+GROUP BY 1
+ORDER BY 1 DESC;
+```
+
+Typical result: 1.4x to 2.0x overcounting.
+
+### Step 2: Apply Discount Factors
+
+Create platform-specific discount factors based on historical overcounting:
+
+| Platform | Typical Overcredit | Discount Factor |
+|----------|-------------------|-----------------|
+| Google Ads | 30-50% | 0.70 |
+| Meta Ads | 40-60% | 0.60 |
+| Email | 50-70% | 0.50 |
+| Display | -50% (undercredited) | 1.50 |
+
+**Warning:** These are rough averages. Your actual factors depend on your funnel, customer behavior, and channel mix. Calculate your own from historical data.
+
+### Step 3: Use Each Data Source Appropriately
+
+| Decision Type | Data Source | Why |
+|--------------|-------------|-----|
+| **Cross-channel budget allocation** | Third-party MTA | Unbiased, deduplicated |
+| **Google Ads bid optimization** | Google Ads | Platform-specific signals |
+| **Meta creative testing** | Meta Ads | Platform-specific signals |
+| **Executive reporting** | Third-party MTA | Defensible, consistent |
+| **Quarterly planning** | MMM + Incrementality | Strategic, causal |
+
+Don't try to make platforms agree. Use each data source for what it's good at.
+
+### Step 4: Validate with Holdout Tests
+
+Quarterly, validate your reconciliation with incrementality tests:
+
+```
+Validation Test (Quarterly):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Pick one channel. Run geo-holdout test.
+
+Results:
+├── Platform-reported contribution: 25%
+├── MTA-calculated contribution:    18%
+├── Incrementality-measured:        15%
+
+Conclusion: MTA is closer to truth than platform data.
+Adjust discount factors accordingly.
+```
+
+## What NOT to Do
+
+### Don't Sum Platform Numbers
+
+```
+❌ Wrong: "Google (85) + Meta (45) + Email (35) = 165 conversions"
+
+✓ Right: "We had 100 conversions. MTA credits Google 35%,
+          Meta 28%, Email 22%, Organic 15%."
+```
+
+### Don't Pick the Highest Number
+
+Some teams use "whichever platform claims the conversion." This systematically over-credits bottom-funnel and always distorts the picture.
+
+### Don't Ignore the Problem
+
+Using platform data "because it's what we have" leads to systematic misallocation. The effort to build a single source of truth pays back in better decisions.
+
+### Don't Expect Platforms to Agree
+
+They have different incentives, different windows, different visibility. Reconciliation isn't about making them match—it's about building your own truth.
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Case Study</p>
+  <p class="text-yellow-700 text-sm">Add mbuzz customer example: "Company X was allocating budget based on platform ROAS. After implementing mbuzz as their single source of truth, they discovered Display was 2x more effective than platform data suggested. Reallocating 20% of budget to Display increased overall ROAS by 15%."</p>
+</div>
+
+## Summary
+
+Platform attribution data conflicts because:
+
+1. **Different windows** — Google uses 30 days, Meta uses 7 days
+2. **Siloed visibility** — Each platform only sees its own touchpoints
+3. **Self-serving logic** — Platforms are incentivized to maximize their claimed value
+
+**What to do:**
+
+| Action | Purpose |
+|--------|---------|
+| Use third-party MTA | Unbiased, deduplicated cross-channel view |
+| Calculate discount factors | Adjust platform data for overcounting |
+| Run incrementality tests | Validate true causal impact |
+| Match data source to decision | Platform data for within-platform; MTA for cross-channel |
+
+**Never sum platform-reported conversions.** They're each telling their version of the truth, and those versions overlap.
+
+## Further Reading
+
+**On Building Your Source of Truth:**
+- [What is Multi-Touch Attribution?](/articles/what-is-multi-touch-attribution) — The cross-channel solution
+- [MTA vs MMM](/articles/mta-vs-mmm) — Complementary measurement approaches
+
+**On Platform-Specific Issues:**
+- [Why Did GA4 Remove Attribution Models?](/articles/ga4-attribution-models-removed) — Google's attribution changes
+- [Last-Touch Attribution](/articles/last-touch-attribution) — Why platform defaults mislead
+
+<%= render_key_takeaways(@article.key_takeaways) %>
+
+<%= render_faq(@article.faq) %>

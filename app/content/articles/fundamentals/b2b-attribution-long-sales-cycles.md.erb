@@ -1,0 +1,561 @@
+---
+title: "Attribution for B2B: Long Sales Cycles and Multiple Decision-Makers"
+slug: "b2b-attribution-long-sales-cycles"
+description: "B2B attribution breaks when sales cycles stretch 60-180 days and 6-10 stakeholders influence the deal. Learn how to adapt attribution for enterprise sales: account-based models, marketing-sourced vs influenced, and connecting marketing to pipeline."
+published_at:
+section: fundamentals
+section_order: 7
+status: draft
+priority: P0
+category: "Attribution Fundamentals"
+tags:
+  - B2B attribution
+  - enterprise sales
+  - account-based attribution
+  - long sales cycles
+  - marketing pipeline
+  - demand generation
+related_articles:
+  - what-is-multi-touch-attribution
+  - first-touch-attribution
+  - funnel-stage-attribution
+  - attribution-lookback-window
+seo:
+  title: "B2B Attribution: How to Measure Long Sales Cycles & Buying Committees"
+aeo:
+  target_query: "B2B marketing attribution"
+  tldr: "B2B attribution fails when you apply B2C models to enterprise sales. B2B requires: (1) Account-based attribution that credits touchpoints across all stakeholders, not individuals; (2) Extended lookback windows of 90-180 days matching actual sales cycles; (3) Separation of 'marketing-sourced' (first-touch) from 'marketing-influenced' (any-touch) pipeline; (4) Connection to sales stages (MQL → SQL → Opportunity → Closed) not just conversions."
+  key_takeaways:
+    - "Standard attribution assumes one buyer—B2B has 6-10 stakeholders per deal"
+    - "Use account-based attribution: credit touchpoints across the buying committee"
+    - "Extend lookback windows to 90-180 days for enterprise sales cycles"
+    - "Track both 'sourced' (first-touch) and 'influenced' (any-touch) pipeline"
+  faq:
+    - q: "Why doesn't standard attribution work for B2B?"
+      a: "Standard attribution tracks individual user journeys to conversion. In B2B, 6-10 stakeholders research independently before a single 'conversion' (demo request, deal close). If marketing touched 5 people at an account but only 1 filled out a form, standard attribution misses 80% of marketing's contribution."
+    - q: "What's the difference between 'sourced' and 'influenced' pipeline?"
+      a: "Sourced (first-touch): The first marketing touch that brought any stakeholder from an account. 'Marketing sourced this $100K deal.' Influenced (any-touch): Any marketing touch to any stakeholder before close. 'Marketing influenced this deal by reaching 5 stakeholders.' Both are valid metrics with different purposes."
+    - q: "How long should my lookback window be for B2B?"
+      a: "Match your sales cycle. If average time from first touch to closed-won is 120 days, your lookback window should be at least 120 days—probably 150-180 to capture early awareness. B2C windows of 7-30 days dramatically undercount B2B marketing influence."
+    - q: "How do I attribute when the buyer and user are different people?"
+      a: "Account-based attribution. When a VP sees an ad, a manager attends a webinar, and an analyst requests a demo—all touchpoints credit to the account, not individuals. The 'conversion' is the deal, and all account touchpoints contributed."
+    - q: "Should I use first-touch or multi-touch for B2B?"
+      a: "Both, for different purposes. First-touch for pipeline sourcing reports ('Marketing brought in $5M of new pipeline'). Multi-touch for influence reports ('Marketing touched 80% of closed-won revenue'). Different stakeholders care about different questions."
+schema:
+  type: Article
+  author: "mbuzz Team"
+has_code_examples: true
+has_calculator: false
+has_download: false
+---
+
+<%= render_tldr(@article.tldr) %>
+
+## Why Standard Attribution Breaks in B2B
+
+Standard attribution models were built for B2C: one person, one device, one session, one purchase. B2B buying is fundamentally different.
+
+### The B2C Model Attribution Assumes
+
+```
+B2C Journey (Simple):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+One Person, One Purchase:
+
+  [Ad] → [Site Visit] → [Cart] → [Purchase]
+    │
+    └── Attribution credits the touchpoints this ONE person saw
+```
+
+### What B2B Actually Looks Like
+
+```
+B2B Journey (Complex):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+6-10 People, One Deal:
+
+Person A (VP): [LinkedIn Ad] → [Whitepaper] → (tells team to look into it)
+Person B (Dir): [Google Search] → [Blog] → [Webinar]
+Person C (Mgr): [Colleague mention] → [G2 Reviews] → [Demo Request]
+Person D (User): [Product Hunt] → [Free Trial]
+Person E (IT): [Security page visit]
+Person F (Legal): [Pricing page] → [Terms review]
+                                            │
+                                            ▼
+                                    [Deal Closed: $50,000]
+
+Standard attribution: "Demo Request gets 100% credit"
+Reality: 6 people, 15+ touchpoints, one deal
+```
+
+Standard attribution credits the form fill. It misses the VP who started the conversation, the manager who brought it to the team, and the 4 other stakeholders marketing influenced.
+
+## The Four B2B Attribution Challenges
+
+### Challenge 1: Multiple Stakeholders
+
+B2B buying committees average 6-10 people. Each researches independently:
+
+| Role | Typical Journey | Attribution Sees |
+|------|-----------------|------------------|
+| **Executive Sponsor** | LinkedIn ad → Quick scan | Nothing (no conversion) |
+| **Budget Holder** | Colleague email → ROI calculator | Nothing (no conversion) |
+| **Champion** | Webinar → Blog series → Demo request | Everything (the "converter") |
+| **End Users** | Free trial → Documentation | Some activity |
+| **IT/Security** | Security docs → Integration guide | Nothing (research only) |
+| **Procurement** | Pricing page → Proposal review | Nothing (late stage) |
+
+Standard attribution makes the Champion look like the only person marketing reached. The executive who initiated the search? Invisible.
+
+### Challenge 2: Long Sales Cycles
+
+Enterprise deals take 60-180+ days. Standard lookback windows miss early touches:
+
+| Lookback Window | What You Miss |
+|-----------------|---------------|
+| **7 days** | 95% of B2B marketing influence |
+| **30 days** | 70% of B2B marketing influence |
+| **60 days** | 40% of B2B marketing influence |
+| **90 days** | 20% of B2B marketing influence |
+| **180 days** | Most of the journey (appropriate for enterprise) |
+
+If your average sales cycle is 120 days and your lookback window is 30 days, you're systematically undercounting marketing's contribution by 75%+.
+
+### Challenge 3: Marketing-to-Sales Handoff
+
+In B2B, marketing creates leads that sales closes. Attribution typically ends at "demo request"—missing the full picture:
+
+```
+The B2B Funnel (With Revenue Attribution):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Marketing-Owned:
+[Visitor] → [Lead/MQL] → [SQL]
+     ↓           ↓          ↓
+   Traffic    Lead Gen   Qualification
+
+                           │ ← Handoff to Sales
+                           ▼
+Sales-Owned:
+[Opportunity] → [Proposal] → [Closed Won]
+       ↓             ↓             ↓
+    Pipeline      Negotiation   Revenue
+
+Question: Does marketing get credit for the revenue?
+├── If yes: How much?
+├── If no: How do you justify marketing spend?
+└── Answer: It depends on your attribution model
+```
+
+### Challenge 4: Buyer ≠ User
+
+The person who buys isn't always the person who uses:
+
+| Who Buys | Who Uses | Attribution Challenge |
+|----------|----------|----------------------|
+| VP of Marketing | Marketing Analysts | VP saw the ads, analysts requested demo |
+| IT Director | Development team | IT approved, developers evaluated |
+| CEO | Entire company | CEO saw conference booth, employees search later |
+
+If you track user-level attribution, you miss the buyers. If you track buyers, you miss the users who validated.
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: B2B Journey Heatmap</p>
+  <p class="text-yellow-700 text-sm">Add mbuzz visualization showing typical B2B account journey: number of people involved, touchpoints per person, timeline, and which touchpoints standard attribution sees vs misses. This quantifies the B2B attribution gap.</p>
+</div>
+
+## The Solution: Account-Based Attribution
+
+### From Individual to Account
+
+Instead of crediting touchpoints to people, credit them to accounts:
+
+```ruby
+# Individual Attribution (B2C-style)
+class IndividualAttribution
+  def attribute(conversion)
+    # Find touchpoints for this ONE user
+    touchpoints = conversion.user.touchpoints
+    distribute_credit(touchpoints)
+  end
+end
+
+# Account-Based Attribution (B2B-style)
+class AccountAttribution
+  def attribute(deal)
+    # Find touchpoints for ALL users at this account
+    account = deal.account
+    all_stakeholders = account.contacts
+
+    touchpoints = all_stakeholders.flat_map(&:touchpoints)
+    distribute_credit(touchpoints, deal_value: deal.amount)
+  end
+end
+```
+
+### How Account-Based Attribution Works
+
+```
+Account-Based Attribution Example
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Account: Acme Corp
+Deal Value: $100,000
+
+Stakeholder Touchpoints:
+├── VP (Sarah):    LinkedIn Ad → Whitepaper download
+├── Director (Mike): Webinar → 3 blog posts
+├── Manager (Lisa): Demo request → Trial signup
+├── User (Tom):    Documentation → Support chat
+└── IT (James):    Security page → Integration docs
+
+Total: 5 people, 12 touchpoints
+
+Account-Based Linear Attribution:
+├── LinkedIn Ads:   $8,333 (1/12 of credit)
+├── Content (WP):   $8,333
+├── Webinar:        $8,333
+├── Blog:           $25,000 (3 posts × $8,333)
+├── Demo/Trial:     $16,667 (2 touches)
+├── Docs/Support:   $25,000 (3 touches)
+└── Security/Integ: $8,333
+
+Standard Individual Attribution Would Show:
+├── Demo Request:   $100,000 (Lisa only)
+├── Everything else: $0
+```
+
+Account-based attribution sees that LinkedIn reached the VP who started the buying process. Standard attribution sees only Lisa's demo request.
+
+## Marketing-Sourced vs Marketing-Influenced
+
+B2B teams need two attribution views:
+
+### Marketing-Sourced (First-Touch)
+
+**Question:** "How much pipeline did marketing originate?"
+
+```sql
+-- Marketing-sourced pipeline
+SELECT
+  first_touch_channel,
+  COUNT(*) as opportunities,
+  SUM(opportunity_value) as pipeline_value
+FROM opportunities
+WHERE first_touch_source = 'marketing'  -- Any marketing touchpoint was first
+  AND created_date >= CURRENT_DATE - 90
+GROUP BY first_touch_channel
+ORDER BY pipeline_value DESC;
+```
+
+**Use for:**
+- Proving marketing creates demand
+- Justifying demand gen budget
+- Pipeline forecasting
+
+### Marketing-Influenced (Any-Touch)
+
+**Question:** "How much revenue did marketing touch?"
+
+```sql
+-- Marketing-influenced revenue
+SELECT
+  o.opportunity_id,
+  o.closed_amount,
+  COUNT(DISTINCT mt.channel) as marketing_channels_touched,
+  COUNT(DISTINCT mt.contact_id) as stakeholders_reached
+FROM opportunities o
+JOIN marketing_touchpoints mt ON o.account_id = mt.account_id
+WHERE o.stage = 'Closed Won'
+  AND mt.touchpoint_date < o.close_date
+GROUP BY o.opportunity_id, o.closed_amount;
+```
+
+**Use for:**
+- Demonstrating marketing's total impact
+- Understanding which content influences deals
+- Identifying high-value touchpoints
+
+### Reporting Both
+
+| Metric | Q4 Example | What It Means |
+|--------|-----------|---------------|
+| **Sourced Pipeline** | $2.5M | Marketing originated this pipeline |
+| **Influenced Pipeline** | $8.2M | Marketing touched stakeholders on these deals |
+| **Sourced Revenue** | $800K | Deals where marketing was first touch |
+| **Influenced Revenue** | $3.1M | Deals where marketing touched any stakeholder |
+
+Both metrics are valid. Use "Sourced" for demand gen ROI; use "Influenced" for total marketing impact.
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Sourced vs Influenced Dashboard</p>
+  <p class="text-yellow-700 text-sm">Add mbuzz screenshot showing side-by-side Sourced and Influenced pipeline by channel. Include the typical ratio (e.g., "Influenced is typically 3-4x Sourced").</p>
+</div>
+
+## Extending Lookback Windows for B2B
+
+### Calculate Your Actual Sales Cycle
+
+```sql
+-- Determine appropriate lookback window
+SELECT
+  PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY days_to_close) AS median_cycle,
+  PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY days_to_close) AS p75_cycle,
+  PERCENTILE_CONT(0.90) WITHIN GROUP (ORDER BY days_to_close) AS p90_cycle
+FROM (
+  SELECT
+    opportunity_id,
+    EXTRACT(DAY FROM close_date - first_marketing_touch) AS days_to_close
+  FROM opportunities
+  WHERE stage = 'Closed Won'
+    AND first_marketing_touch IS NOT NULL
+) t;
+
+-- Example output:
+-- median_cycle: 68 days
+-- p75_cycle: 112 days
+-- p90_cycle: 156 days
+-- Recommendation: Use 120-150 day window
+```
+
+### Window Recommendations by Deal Size
+
+| Deal Size | Typical Cycle | Recommended Window |
+|-----------|---------------|-------------------|
+| **< $10K ARR** | 14-30 days | 60 days |
+| **$10K-50K ARR** | 30-60 days | 90 days |
+| **$50K-100K ARR** | 60-120 days | 120 days |
+| **$100K-500K ARR** | 90-180 days | 180 days |
+| **$500K+ ARR** | 180-365 days | 365 days |
+
+### Tiered Windows for B2B
+
+Apply different windows to different funnel stages:
+
+| Stage | Window | Rationale |
+|-------|--------|-----------|
+| **First Touch → MQL** | 90-180 days | Awareness can happen early |
+| **MQL → SQL** | 60-90 days | Active qualification period |
+| **SQL → Opportunity** | 30-60 days | Deal acceleration |
+| **Opportunity → Close** | 14-30 days | Final touches before signature |
+
+## Connecting Marketing to Revenue
+
+### The Attribution Chain
+
+```
+B2B Attribution Chain:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Marketing Touchpoints
+        │
+        ▼
+┌───────────────────┐
+│   Lead (MQL)      │ ← Marketing-created
+│   Value: $0       │
+└───────────────────┘
+        │ Qualification (SDR)
+        ▼
+┌───────────────────┐
+│   SQL             │ ← Marketing + Sales
+│   Value: $0       │
+└───────────────────┘
+        │ Discovery (AE)
+        ▼
+┌───────────────────┐
+│   Opportunity     │ ← Has pipeline value
+│   Value: $50,000  │
+└───────────────────┘
+        │ Sales cycle
+        ▼
+┌───────────────────┐
+│   Closed Won      │ ← Has revenue value
+│   Value: $50,000  │
+└───────────────────┘
+
+Attribution question: How do we credit the $50K back to marketing?
+```
+
+### Revenue Attribution Models for B2B
+
+**Option 1: First-Touch Revenue Attribution**
+
+Credit all revenue to the first marketing touchpoint:
+
+```
+Deal: $50,000
+First marketing touch: LinkedIn Ad to VP
+Attribution: LinkedIn Ads = $50,000
+```
+
+**Best for:** Proving marketing sources revenue, demand gen reporting
+
+**Option 2: Multi-Touch Revenue Attribution**
+
+Distribute revenue credit across all marketing touchpoints:
+
+```
+Deal: $50,000
+Touchpoints: LinkedIn (1), Blog (3), Webinar (1), Demo (1)
+Attribution (Linear): Each touch = $8,333
+LinkedIn = $8,333, Blog = $25,000, Webinar = $8,333, Demo = $8,333
+```
+
+**Best for:** Understanding which content/channels influence deals
+
+**Option 3: W-Shaped Attribution**
+
+Weight first touch, lead creation touch, and opportunity creation:
+
+```
+Deal: $50,000
+First touch: LinkedIn Ad (30% = $15,000)
+Lead creation: Webinar signup (30% = $15,000)
+Opportunity creation: Demo request (30% = $15,000)
+All other touches: Share 10% ($5,000)
+```
+
+**Best for:** B2B with distinct funnel stages, crediting key conversion moments
+
+<%= render_info_box do %>
+  <strong>B2B recommendation:</strong> Report both first-touch (sourced) and multi-touch (influenced) revenue. First-touch for pipeline sourcing; multi-touch for understanding content effectiveness. Don't pick one—use both.
+<% end %>
+
+## Implementation Checklist
+
+### Step 1: Unify Account Data
+
+Connect all stakeholder touchpoints to accounts:
+
+```sql
+-- Create account-level touchpoint view
+CREATE VIEW account_touchpoints AS
+SELECT
+  accounts.id AS account_id,
+  accounts.name AS account_name,
+  contacts.id AS contact_id,
+  contacts.title AS contact_title,
+  touchpoints.channel,
+  touchpoints.source,
+  touchpoints.campaign,
+  touchpoints.occurred_at
+FROM accounts
+JOIN contacts ON contacts.account_id = accounts.id
+JOIN touchpoints ON touchpoints.contact_id = contacts.id;
+```
+
+### Step 2: Extend Lookback Windows
+
+Configure attribution to match your sales cycle:
+
+```ruby
+# B2B attribution configuration
+class B2BAttributionConfig
+  WINDOWS = {
+    smb: 60,        # <$10K deals
+    mid_market: 90, # $10K-100K deals
+    enterprise: 180 # $100K+ deals
+  }.freeze
+
+  def self.window_for(deal)
+    case deal.annual_value
+    when 0..10_000 then WINDOWS[:smb]
+    when 10_000..100_000 then WINDOWS[:mid_market]
+    else WINDOWS[:enterprise]
+    end
+  end
+end
+```
+
+### Step 3: Track Both Sourced and Influenced
+
+Create separate pipelines for each metric:
+
+| Report | Attribution Model | Question Answered |
+|--------|------------------|-------------------|
+| **Pipeline Sourcing** | First-touch by account | "What did marketing originate?" |
+| **Pipeline Influence** | Any-touch by account | "What did marketing touch?" |
+| **Content Influence** | Multi-touch by asset | "Which content influences deals?" |
+| **Channel Efficiency** | Multi-touch by channel | "Which channels reach buyers?" |
+
+### Step 4: Connect to CRM Stages
+
+Map marketing touchpoints to opportunity stages:
+
+```
+Touchpoints Before Stage → Credit to That Stage
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+MQL Created:      Touchpoints before MQL → Credit to "MQL"
+SQL Created:      Touchpoints between MQL-SQL → Credit to "SQL"
+Opp Created:      Touchpoints between SQL-Opp → Credit to "Pipeline"
+Closed Won:       All touchpoints → Credit to "Revenue"
+
+This shows which channels work at which funnel stage.
+```
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Salesforce Integration Example</p>
+  <p class="text-yellow-700 text-sm">Add mbuzz screenshot or diagram showing how touchpoint data connects to Salesforce opportunities, with account-level attribution visible in CRM. This is the #1 ask from B2B teams.</p>
+</div>
+
+## Common B2B Attribution Mistakes
+
+### Mistake 1: Using B2C Attribution Windows
+
+30-day windows miss 70%+ of B2B marketing influence. Extend to match your sales cycle.
+
+### Mistake 2: Tracking Only the Form-Filler
+
+Standard lead attribution credits whoever filled out the form. In reality, 5 other people influenced that decision. Use account-based attribution.
+
+### Mistake 3: Stopping at MQL
+
+Marketing's job isn't done at lead creation. Track marketing influence through to closed-won revenue to prove full impact.
+
+### Mistake 4: Ignoring Sales-Owned Touches
+
+After SQL, sales takes over—but marketing content (case studies, ROI tools, objection handlers) still influences the deal. Track marketing touchpoints through the sales cycle.
+
+### Mistake 5: Only Reporting First-Touch OR Multi-Touch
+
+Both are valid. First-touch for sourcing credit; multi-touch for influence credit. Report both to different stakeholders.
+
+## Summary
+
+B2B attribution requires different approaches than B2C:
+
+| B2C Approach | B2B Adaptation |
+|-------------|----------------|
+| Individual attribution | Account-based attribution |
+| 7-30 day windows | 90-180 day windows |
+| Single conversion event | MQL → SQL → Opp → Close funnel |
+| One buyer | 6-10 stakeholder buying committee |
+| First-touch OR last-touch | First-touch (sourced) AND multi-touch (influenced) |
+
+**Implementation priorities:**
+1. Unify stakeholder touchpoints to account level
+2. Extend lookback windows to match sales cycle
+3. Track both sourced and influenced pipeline
+4. Connect marketing touchpoints to CRM stages
+
+## Further Reading
+
+**On B2B Measurement:**
+- [First-Touch Attribution](/articles/first-touch-attribution) — For sourcing reports
+- [How to Use Attribution Models by Funnel Stage](/articles/funnel-stage-attribution) — Tiered approach
+
+**On Configuration:**
+- [How to Change Your Attribution Lookback Window](/articles/attribution-lookback-window) — Window setup
+- [How to Choose the Right Attribution Model](/articles/how-to-choose-attribution-model) — Model selection
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: B2B Marketing Leader Quote</p>
+  <p class="text-yellow-700 text-sm">Add quote from B2B marketing leader on account-based attribution challenges. <strong>Outreach targets:</strong> Demand gen leaders at B2B SaaS companies, marketing ops professionals, CMOs who've implemented ABM.</p>
+</div>
+
+<%= render_key_takeaways(@article.key_takeaways) %>
+
+<%= render_faq(@article.faq) %>

@@ -166,11 +166,13 @@ Every piece of content must pass the **"AI Can't Generate This"** test:
 | 4.4 | **How to Build a Bottom-Up Revenue Forecast with MTA** | "bottom up revenue forecast" "channel revenue forecast" | 90 | Workflow summary | Complete Excel template; worked example | P0 |
 | 4.5 | **How to Set Lookback Windows by Funnel Stage** | "lookback window by funnel" | 10 | Recommendation table by stage | Original research: optimal windows ToFU/MoFU/BoFU | P1 |
 | 4.6 | **How to Validate Forecasts with Attribution Insights** | "validate marketing forecast" | 30 | Validation checklist | Before/after case study with real metrics | P2 |
+| 4.7 | **Bottom-Up Forecast Templates by Business Model** | "saas revenue forecast template" "ecommerce forecast model" | 200+ | Template comparison table | Downloadable templates: SaaS, E-commerce, Marketplace, B2B Lead Gen; each with different funnel stages, metrics, attribution models | P0 |
 
 **Section 4 SEO Cluster:**
 - Pillar: "How to Build a Bottom-Up Revenue Forecast with MTA"
 - Unique value: Only comprehensive guide on this topic
 - Target: Own "attribution forecasting" and "funnel attribution" long-tail
+- **Downloadable assets**: Excel/Sheets templates for each business model (SaaS, E-commerce, Marketplace, B2B Lead Gen)
 
 ---
 

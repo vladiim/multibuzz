@@ -1,0 +1,556 @@
+---
+title: "Bottom-Up Forecast Templates by Business Model"
+slug: "forecast-templates-business-model"
+description: "Downloadable revenue forecasting templates for SaaS, E-commerce, Marketplace, and B2B Lead Gen. Each template includes appropriate funnel stages, metrics, attribution models, and calculation examples tailored to that business model."
+published_at:
+section: forecasting
+section_order: 7
+status: draft
+priority: P0
+category: "Funnel Forecasting"
+tags:
+  - revenue forecasting
+  - saas forecast
+  - ecommerce forecast
+  - marketplace forecast
+  - b2b forecast
+  - attribution templates
+related_articles:
+  - bottom-up-revenue-forecast
+  - funnel-stage-attribution
+  - last-touch-funnel-forecasting-problem
+seo:
+  title: "Revenue Forecast Templates: SaaS, E-commerce, Marketplace, B2B"
+aeo:
+  target_query: "saas revenue forecast template"
+  tldr: "Different business models need different forecasting approaches. SaaS uses trial/activation/conversion stages with cohort-based MRR projections. E-commerce uses visit/cart/purchase stages with AOV and purchase frequency. Marketplaces track both supply and demand funnels separately. B2B Lead Gen uses MQL/SQL/Opportunity stages with sales cycle adjustments. Each template includes the right attribution model for each stage and appropriate conversion rate benchmarks."
+  key_takeaways:
+    - "SaaS: Trial→Activation→Paid conversion with MRR/LTV focus"
+    - "E-commerce: Visit→Cart→Purchase with AOV and frequency metrics"
+    - "Marketplace: Dual funnels for supply (sellers) and demand (buyers)"
+    - "B2B Lead Gen: MQL→SQL→Opportunity→Closed with long cycle adjustments"
+  faq:
+    - q: "Which template should I use for a subscription e-commerce (DTC) business?"
+      a: "Use a hybrid of E-commerce and SaaS templates. Apply e-commerce funnel stages (visit→cart→subscribe) but incorporate SaaS retention metrics (MRR, churn, LTV). Weight first-purchase acquisition heavily but also track subscription retention rate by acquisition channel."
+    - q: "What if my business doesn't fit any of these models?"
+      a: "Start with the closest template and customize. All templates share the same core logic: (1) Define your funnel stages, (2) Calculate stage conversion rates, (3) Project forward with attribution, (4) Validate against actuals. Adapt the specific metrics and stage definitions to your business."
+    - q: "How do I handle multiple products with different funnels?"
+      a: "Build separate forecasts per product line, then sum for total revenue. If products share marketing channels, track which channels source which products at the ToFU stage. MoFU and BoFU may differ by product type."
+    - q: "Should I include existing customers in my forecast?"
+      a: "Yes, but separately. New customer acquisition uses the full funnel. Existing customer revenue (upsells, renewals, repeat purchases) uses a retention/expansion model. Sum both for total revenue forecast."
+    - q: "What conversion rate benchmarks should I use?"
+      a: "See the benchmark tables in each template section. These are medians—your business may be higher or lower. Always calculate your own rates from historical data rather than relying solely on benchmarks."
+schema:
+  type: Article
+  author: "mbuzz Team"
+has_code_examples: true
+has_calculator: false
+has_download: true
+download:
+  title: "Business Model Forecast Templates Bundle"
+  description: "Excel workbooks for SaaS, E-commerce, Marketplace, and B2B Lead Gen"
+  format: "ZIP (4 Excel files)"
+---
+
+<%= render_tldr(@article.tldr) %>
+
+## Why Business Model Matters
+
+Different business models have fundamentally different funnels, metrics, and attribution needs:
+
+| Business Model | Primary Metric | Funnel Complexity | Key Challenge |
+|---------------|----------------|-------------------|---------------|
+| **SaaS** | MRR/ARR | Medium (trial-based) | Activation + retention |
+| **E-commerce** | Revenue/AOV | Simple (purchase-based) | Repeat purchases |
+| **Marketplace** | GMV | High (dual-sided) | Balancing supply + demand |
+| **B2B Lead Gen** | Pipeline/Closed Won | Complex (sales-assisted) | Long cycles, handoffs |
+
+Using the wrong template leads to:
+- Misaligned funnel stages
+- Wrong conversion rate expectations
+- Inappropriate attribution models
+- Inaccurate forecasts
+
+## Template 1: SaaS (Subscription Software)
+
+### Funnel Structure
+
+```
+SaaS Funnel
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Stage 1: VISITOR (ToFU)
+├── Definition: First website visit
+├── Attribution: First-touch
+└── Key metric: Unique visitors by channel
+
+        ↓ [Signup Rate: 2-5%]
+
+Stage 2: SIGNUP / FREE TRIAL (MoFU)
+├── Definition: Creates account or starts trial
+├── Attribution: Linear (multiple touches drive signup)
+└── Key metric: Trial starts, signups by channel
+
+        ↓ [Activation Rate: 30-60%]
+
+Stage 3: ACTIVATED USER (MoFU)
+├── Definition: Completes key activation milestone
+├── Attribution: Participation (which channels touched activated users)
+└── Key metric: Activated trials by source channel
+
+        ↓ [Conversion Rate: 15-40%]
+
+Stage 4: PAID CUSTOMER (BoFU)
+├── Definition: Starts paid subscription
+├── Attribution: Last-touch (closing channel)
+└── Key metric: New MRR by channel
+```
+
+### SaaS Metrics to Track
+
+| Metric | Definition | Attribution Model |
+|--------|------------|-------------------|
+| **CAC by channel** | Cost per acquired customer | Full-funnel weighted |
+| **Trial-to-Paid** | % of trials converting | Last-touch |
+| **Activation rate** | % completing key milestone | Participation |
+| **LTV:CAC ratio** | Lifetime value vs acquisition cost | First-touch (sourcing) |
+| **Payback period** | Months to recover CAC | First-touch |
+
+### SaaS Forecast Formula
+
+```ruby
+# SaaS Monthly Revenue Forecast
+def saas_monthly_forecast(channel)
+  visitors = project_visitors(channel)               # From ToFU
+  signups = visitors * signup_rate(channel)          # 2-5%
+  activated = signups * activation_rate(channel)     # 30-60%
+  converted = activated * conversion_rate(channel)   # 15-40%
+  new_mrr = converted * average_plan_value           # New MRR
+
+  # Add expansion and subtract churn for total MRR
+  total_mrr = existing_mrr + new_mrr + expansion_mrr - churned_mrr
+
+  {
+    new_customers: converted,
+    new_mrr: new_mrr,
+    total_mrr: total_mrr
+  }
+end
+```
+
+### SaaS Benchmark Rates
+
+| Stage Transition | Low | Median | High |
+|-----------------|-----|--------|------|
+| Visitor → Signup | 1% | 3% | 8% |
+| Signup → Activated | 20% | 40% | 70% |
+| Activated → Paid | 10% | 25% | 50% |
+| **Overall Visitor → Paid** | 0.02% | 0.3% | 2.8% |
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: SaaS Template Download</p>
+  <p class="text-yellow-700 text-sm">Add download link for SaaS forecast Excel template with: (1) Visitor→Trial→Activation→Paid funnel, (2) MRR cohort model, (3) Churn and expansion layers, (4) LTV:CAC calculator, (5) Channel-level attribution.</p>
+</div>
+
+---
+
+## Template 2: E-commerce (Direct Product Sales)
+
+### Funnel Structure
+
+```
+E-commerce Funnel
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Stage 1: VISITOR (ToFU)
+├── Definition: First product page view
+├── Attribution: First-touch
+└── Key metric: Sessions by channel
+
+        ↓ [Browse Rate: 40-70%]
+
+Stage 2: PRODUCT ENGAGED (MoFU)
+├── Definition: Views multiple products, reads reviews
+├── Attribution: Linear
+└── Key metric: Engaged sessions by channel
+
+        ↓ [Add-to-Cart Rate: 8-15%]
+
+Stage 3: CART (MoFU/BoFU transition)
+├── Definition: Adds item to cart
+├── Attribution: Time-decay (recency matters)
+└── Key metric: Cart additions by channel
+
+        ↓ [Cart Conversion: 30-70%]
+
+Stage 4: PURCHASE (BoFU)
+├── Definition: Completes checkout
+├── Attribution: Last-touch
+└── Key metric: Revenue, orders by channel
+```
+
+### E-commerce Metrics to Track
+
+| Metric | Definition | Attribution Model |
+|--------|------------|-------------------|
+| **AOV** | Average order value | Last-touch |
+| **Conversion rate** | Sessions → Purchases | Last-touch |
+| **ROAS by channel** | Revenue / Ad spend | Full-funnel weighted |
+| **New vs Repeat** | First purchase vs returning | First-touch (new), none (repeat) |
+| **Purchase frequency** | Orders per customer/year | First-touch (sourcing) |
+
+### E-commerce Forecast Formula
+
+```ruby
+# E-commerce Monthly Revenue Forecast
+def ecommerce_monthly_forecast(channel)
+  visitors = project_visitors(channel)               # From ToFU
+  engaged = visitors * browse_rate(channel)          # 40-70%
+  carts = engaged * add_to_cart_rate(channel)        # 8-15%
+  purchases = carts * cart_conversion_rate(channel)  # 30-70%
+  revenue = purchases * average_order_value          # AOV
+
+  # Separate new vs repeat
+  new_customers = purchases * new_customer_rate(channel)
+  repeat_purchases = project_repeat_purchases        # From retention model
+
+  {
+    orders: purchases + repeat_purchases,
+    new_customers: new_customers,
+    revenue: revenue + (repeat_purchases * repeat_aov)
+  }
+end
+```
+
+### E-commerce Benchmark Rates
+
+| Stage Transition | Low | Median | High |
+|-----------------|-----|--------|------|
+| Visitor → Engaged | 30% | 50% | 75% |
+| Engaged → Cart | 5% | 10% | 20% |
+| Cart → Purchase | 25% | 50% | 75% |
+| **Overall Conversion** | 0.4% | 2.5% | 10% |
+
+### E-commerce-Specific Considerations
+
+**Repeat Purchase Layer:**
+
+```ruby
+# Layer repeat purchases on top of new customer forecast
+def total_ecommerce_revenue(channel_forecasts)
+  new_customer_revenue = channel_forecasts.sum { |c| c[:revenue] }
+
+  # Repeat purchases from existing customers (not channel-attributed)
+  repeat_revenue = existing_customers * repeat_rate * repeat_aov
+
+  new_customer_revenue + repeat_revenue
+end
+```
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: E-commerce Template Download</p>
+  <p class="text-yellow-700 text-sm">Add download link for E-commerce forecast Excel template with: (1) Session→Cart→Purchase funnel, (2) AOV and frequency inputs, (3) New vs repeat customer split, (4) Seasonality adjustment layer, (5) ROAS by channel calculator.</p>
+</div>
+
+---
+
+## Template 3: Marketplace (Two-Sided Platform)
+
+### Dual Funnel Structure
+
+Marketplaces must forecast **both sides** of the platform:
+
+```
+Marketplace Dual Funnel
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SUPPLY SIDE (Sellers/Providers)          DEMAND SIDE (Buyers/Consumers)
+═══════════════════════════════          ═══════════════════════════════
+
+Stage 1: VISITOR (ToFU)                  Stage 1: VISITOR (ToFU)
+├── Seller landing page                  ├── Buyer landing page
+├── First-touch attribution              ├── First-touch attribution
+└── Metric: Seller leads                 └── Metric: Buyer sessions
+
+        ↓ [Signup: 5-15%]                        ↓ [Browse: 50-80%]
+
+Stage 2: REGISTERED (MoFU)               Stage 2: ENGAGED (MoFU)
+├── Creates seller account               ├── Views listings, searches
+├── Linear attribution                   ├── Linear attribution
+└── Metric: Registered sellers           └── Metric: Engaged buyers
+
+        ↓ [List: 30-60%]                         ↓ [Intent: 10-25%]
+
+Stage 3: ACTIVE SELLER (MoFU)            Stage 3: CART/BOOK (BoFU)
+├── Lists first product/service          ├── Adds to cart or books
+├── Participation attribution            ├── Time-decay attribution
+└── Metric: Active listings              └── Metric: Cart adds/bookings
+
+        ↓ [First Sale: 20-50%]                   ↓ [Convert: 40-70%]
+
+Stage 4: TRANSACTING (BoFU)              Stage 4: PURCHASE (BoFU)
+├── Completes first transaction          ├── Completes transaction
+├── Last-touch attribution               ├── Last-touch attribution
+└── Metric: GMV, take rate               └── Metric: GMV, orders
+```
+
+### Marketplace Metrics to Track
+
+| Metric | Side | Attribution Model |
+|--------|------|-------------------|
+| **GMV** | Both | Split by demand-side last-touch |
+| **Take rate** | Platform | N/A (business metric) |
+| **Seller activation** | Supply | First-touch (sourcing) |
+| **Liquidity** | Both | Ratio of supply/demand |
+| **Repeat transaction rate** | Demand | First-touch |
+
+### Marketplace Forecast Formula
+
+```ruby
+# Marketplace Forecast (must balance supply and demand)
+def marketplace_forecast
+  # Supply-side forecast
+  seller_leads = project_seller_leads_by_channel
+  registered = seller_leads * seller_signup_rate        # 5-15%
+  active_sellers = registered * listing_rate            # 30-60%
+  transacting = active_sellers * first_sale_rate        # 20-50%
+
+  total_supply_capacity = transacting * avg_listings_per_seller
+
+  # Demand-side forecast
+  buyer_sessions = project_buyer_sessions_by_channel
+  engaged = buyer_sessions * browse_rate                # 50-80%
+  intent = engaged * intent_rate                        # 10-25%
+  purchases = intent * conversion_rate                  # 40-70%
+
+  # GMV limited by whichever side is constrained
+  potential_gmv = purchases * average_order_value
+  supply_limited_gmv = total_supply_capacity * avg_item_price
+
+  actual_gmv = [potential_gmv, supply_limited_gmv].min
+  platform_revenue = actual_gmv * take_rate
+
+  {
+    gmv: actual_gmv,
+    revenue: platform_revenue,
+    supply_utilization: actual_gmv / supply_limited_gmv,
+    demand_conversion: purchases / buyer_sessions
+  }
+end
+```
+
+### Marketplace-Specific Considerations
+
+**Supply-Demand Balance:**
+
+| Ratio | Situation | Action |
+|-------|-----------|--------|
+| Supply >> Demand | Sellers underutilized | Invest in demand acquisition |
+| Demand >> Supply | Buyers can't find inventory | Invest in seller acquisition |
+| Balanced | Optimal state | Grow both proportionally |
+
+**Attribution Complexity:**
+
+- Demand-side revenue: Attribute normally (first/last/linear)
+- Supply-side contribution: Harder to attribute—sellers enable transactions
+- Recommendation: Attribute GMV to demand channels, but track seller sourcing separately
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Marketplace Template Download</p>
+  <p class="text-yellow-700 text-sm">Add download link for Marketplace forecast Excel template with: (1) Dual supply/demand funnels, (2) Liquidity balance calculator, (3) GMV and take-rate projections, (4) Supply constraint modeling, (5) Channel attribution by side.</p>
+</div>
+
+---
+
+## Template 4: B2B Lead Generation (Sales-Assisted)
+
+### Funnel Structure
+
+```
+B2B Lead Gen Funnel
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Stage 1: VISITOR (ToFU)
+├── Definition: First website visit
+├── Attribution: First-touch
+├── Lookback: 60-90 days
+└── Key metric: Traffic by channel
+
+        ↓ [Lead Rate: 1-5%]
+
+Stage 2: LEAD / MQL (MoFU)
+├── Definition: Form fill, content download, demo request
+├── Attribution: Linear
+├── Lookback: 30-60 days
+└── Key metric: MQLs by channel
+
+        ↓ [Qualification Rate: 20-40%]
+
+Stage 3: SQL / OPPORTUNITY (MoFU)
+├── Definition: Sales-accepted, opportunity created
+├── Attribution: Participation (all influences)
+├── Lookback: 30 days
+└── Key metric: SQLs, pipeline value
+
+        ↓ [Win Rate: 15-35%]
+
+Stage 4: CLOSED WON (BoFU)
+├── Definition: Contract signed
+├── Attribution: Last marketing touch (before sales)
+├── Lookback: 14-30 days
+└── Key metric: Closed revenue, deal count
+```
+
+### B2B Metrics to Track
+
+| Metric | Definition | Attribution Model |
+|--------|------------|-------------------|
+| **Pipeline** | Total SQL value | First-touch (sourcing) |
+| **Velocity** | Average days to close | By channel |
+| **Win rate** | SQLs → Closed Won | Last marketing touch |
+| **CAC** | Cost per closed deal | Full-funnel weighted |
+| **ACV** | Average contract value | Last-touch |
+
+### B2B Forecast Formula
+
+```ruby
+# B2B Lead Gen Forecast
+def b2b_monthly_forecast(channel)
+  visitors = project_visitors(channel)               # From ToFU
+  mqls = visitors * lead_rate(channel)               # 1-5%
+  sqls = mqls * qualification_rate(channel)          # 20-40%
+  opportunities = sqls * opportunity_rate(channel)   # 60-80%
+  closed = opportunities * win_rate(channel)         # 15-35%
+  revenue = closed * average_contract_value          # ACV
+
+  # Pipeline = opportunities not yet closed
+  pipeline_value = opportunities * avg_deal_size
+
+  {
+    mqls: mqls,
+    sqls: sqls,
+    pipeline: pipeline_value,
+    closed_deals: closed,
+    revenue: revenue
+  }
+end
+```
+
+### B2B Benchmark Rates
+
+| Stage Transition | Low | Median | High |
+|-----------------|-----|--------|------|
+| Visitor → MQL | 0.5% | 2% | 7% |
+| MQL → SQL | 15% | 30% | 50% |
+| SQL → Opportunity | 50% | 70% | 85% |
+| Opportunity → Closed | 10% | 25% | 45% |
+| **Overall Visitor → Closed** | 0.004% | 0.1% | 1.3% |
+
+### B2B-Specific Considerations
+
+**Sales Cycle Adjustment:**
+
+```ruby
+# B2B forecasts must account for pipeline timing
+def b2b_forecast_with_timing(channel, forecast_month)
+  # SQLs from 60-90 days ago will close this month
+  sqls_closing = sqls_from_days_ago(channel, 60, 90)
+  closes_this_month = sqls_closing * win_rate(channel)
+
+  # SQLs generated this month will close in 2-3 months
+  new_sqls = generate_new_sqls(channel, forecast_month)
+  future_pipeline = new_sqls * avg_deal_size
+
+  {
+    this_month_revenue: closes_this_month * acv,
+    pipeline_created: future_pipeline,
+    expected_close_month: forecast_month + avg_sales_cycle_months
+  }
+end
+```
+
+**Marketing vs Sales Attribution:**
+
+| Stage | Attributed To |
+|-------|--------------|
+| Visitor → MQL | Marketing (full credit) |
+| MQL → SQL | Marketing + SDR (shared) |
+| SQL → Opportunity | Sales (primary) |
+| Opportunity → Closed | Sales (primary), marketing influence |
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: B2B Lead Gen Template Download</p>
+  <p class="text-yellow-700 text-sm">Add download link for B2B Lead Gen forecast Excel template with: (1) MQL→SQL→Opp→Closed funnel, (2) Sales cycle timing model, (3) Pipeline aging report, (4) Win rate by channel, (5) Marketing-sourced vs influenced split.</p>
+</div>
+
+---
+
+## Choosing the Right Template
+
+### Decision Matrix
+
+| If your business... | Use Template |
+|---------------------|--------------|
+| Sells subscription software | SaaS |
+| Sells products online (one-time or subscription box) | E-commerce |
+| Connects buyers and sellers/providers | Marketplace |
+| Generates leads for sales team | B2B Lead Gen |
+| Is a hybrid (DTC subscription) | E-commerce + SaaS retention layer |
+| Has multiple models | Build separate forecasts, then combine |
+
+### Customization Tips
+
+**All templates share core logic:**
+
+1. Define your funnel stages (3-5 stages)
+2. Identify stage transition events
+3. Calculate conversion rates per stage
+4. Apply appropriate attribution model per stage
+5. Project forward with growth assumptions
+6. Validate against historical actuals
+
+**Customization areas:**
+
+| Element | What to Customize |
+|---------|-------------------|
+| **Funnel stages** | Match your actual customer journey |
+| **Conversion rates** | Use YOUR data, not just benchmarks |
+| **Attribution models** | Adjust lookback windows for your cycle |
+| **Metrics** | Add business-specific KPIs |
+| **Timing** | Adjust for seasonality and sales cycle |
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Template Comparison Table</p>
+  <p class="text-yellow-700 text-sm">Add comprehensive comparison table showing all four templates side-by-side: funnel stages, key metrics, attribution models, typical conversion rates, and best practices for each business model.</p>
+</div>
+
+## Summary
+
+Each business model needs a tailored forecasting approach:
+
+| Model | Key Funnel | Primary Metric | Attribution Focus |
+|-------|-----------|----------------|-------------------|
+| **SaaS** | Trial→Activation→Paid | MRR/ARR | First-touch for CAC, cohort for retention |
+| **E-commerce** | Visit→Cart→Purchase | Revenue, AOV | Full-funnel for ROAS, repeat purchase layer |
+| **Marketplace** | Dual supply + demand | GMV, take rate | Demand channels for revenue, supply for capacity |
+| **B2B Lead Gen** | MQL→SQL→Opp→Closed | Pipeline, closed revenue | Marketing sourced vs influenced |
+
+**Using the templates:**
+1. Download the template matching your business model
+2. Input your historical data
+3. Calculate your actual conversion rates
+4. Project forward with growth assumptions
+5. Validate against actuals and adjust
+
+## Further Reading
+
+**On Building Forecasts:**
+- [How to Build a Bottom-Up Revenue Forecast with MTA](/articles/bottom-up-revenue-forecast) — The core methodology
+- [How to Use Different Attribution Models by Funnel Stage](/articles/funnel-stage-attribution) — Tiered attribution framework
+
+**On Validation:**
+- [How to Run an Incrementality Test](/articles/incrementality-testing) — Validating attribution assumptions
+
+<%= render_key_takeaways(@article.key_takeaways) %>
+
+<%= render_faq(@article.faq) %>

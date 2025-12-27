@@ -1,0 +1,448 @@
+---
+title: "How to Change Your Attribution Lookback Window"
+slug: "attribution-lookback-window"
+description: "Learn how to configure attribution lookback windows for your business. Includes recommended windows by industry, A/B testing methodology, and common mistakes to avoid."
+published_at:
+section: implementation
+section_order: 1
+status: draft
+priority: P0
+category: "Implementation"
+tags:
+  - lookback window
+  - attribution window
+  - attribution configuration
+  - conversion window
+  - marketing measurement
+related_articles:
+  - how-to-choose-attribution-model
+  - funnel-stage-attribution
+  - budget-reallocation-attribution
+seo:
+  title: "Attribution Lookback Windows: How to Configure Them Right"
+aeo:
+  target_query: "attribution lookback window"
+  tldr: "A lookback window defines how far back in time you search for touchpoints to credit for a conversion. Set it based on your sales cycle: 7 days for impulse e-commerce, 30 days for considered purchases, 60-90 days for B2B SaaS, and 90+ days for enterprise. Too short misses early touchpoints; too long dilutes credit across noise. Test window changes with A/B experiments before committing."
+  key_takeaways:
+    - "Match lookback window to your average time-to-conversion"
+    - "Short windows (7-14 days) favor bottom-funnel; long windows favor top-funnel"
+    - "Use different windows for different funnel stages"
+    - "Test window changes with holdout experiments"
+  faq:
+    - q: "What's the default attribution window in GA4?"
+      a: "GA4 uses a 90-day lookback window for most reports, though you can configure this in the attribution settings. Google Ads uses 30-day click, 1-day view by default. Meta uses 7-day click, 1-day view."
+    - q: "Should my lookback window match my sales cycle?"
+      a: "Yes, approximately. Your window should capture 85-95% of conversions based on time from first touch. If 90% of customers convert within 30 days of first touch, a 30-day window is appropriate. Going much longer dilutes signal with noise."
+    - q: "What happens if my lookback window is too short?"
+      a: "You'll miss early-funnel touchpoints and over-credit bottom-funnel channels. First-touch will often fall outside the window, making paid social and content look ineffective while email and branded search look great."
+    - q: "What happens if my lookback window is too long?"
+      a: "You'll credit touchpoints that weren't actually influential—a blog visit 6 months ago might not relate to today's purchase. Long windows also include more 'noise' touchpoints, diluting the signal of actually influential touches."
+    - q: "Can I use different windows for different channels?"
+      a: "Some tools support this, and it can be appropriate. Display and paid social might warrant longer windows (awareness takes time); email might use shorter windows (timely triggers). However, this adds complexity—only do it if you have clear evidence for different timing."
+schema:
+  type: HowTo
+  author: "mbuzz Team"
+has_code_examples: true
+has_calculator: false
+has_download: false
+---
+
+<%= render_tldr(@article.tldr) %>
+
+## What Lookback Windows Do
+
+A lookback window defines **how far back in time** your attribution model searches for touchpoints to credit.
+
+```
+Lookback Window Example (30 days)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                   ┌─── 30-day lookback window ───┐
+                   │                              │
+Timeline:   ─────────────────────────────────────────────────►
+                   │                              │
+            Day -45   Day -30   Day -15   Day 0 (conversion)
+               │         │         │         │
+               ▼         ▼         ▼         ▼
+            Blog      Email    Retarg    Purchase
+            (excluded) (in window) (in window)
+
+Result: Email and Retargeting get credit. Blog visit is excluded.
+```
+
+The window determines which touchpoints are "in scope" for attribution. Touchpoints outside the window get zero credit—they're treated as if they never happened.
+
+## Recommended Windows by Business Type
+
+| Business Type | Typical Sales Cycle | Recommended Window |
+|--------------|--------------------|--------------------|
+| **Impulse E-commerce** | 1-3 days | 7 days |
+| **Considered E-commerce** | 7-14 days | 30 days |
+| **DTC/Subscription** | 14-30 days | 30-45 days |
+| **Low-ticket SaaS** | 7-21 days | 30 days |
+| **Mid-market SaaS** | 30-60 days | 60 days |
+| **Enterprise SaaS/B2B** | 60-180 days | 90 days |
+| **Enterprise Sales** | 180+ days | 90-180 days |
+
+**Rule of thumb:** Set your window to capture 90% of conversions based on time from first touchpoint.
+
+## How to Analyze Your Conversion Timing
+
+### Step 1: Calculate Time-to-Conversion Distribution
+
+```sql
+-- Time from first touchpoint to conversion
+SELECT
+  NTILE(100) OVER (ORDER BY days_to_convert) AS percentile,
+  days_to_convert
+FROM (
+  SELECT
+    conversion_id,
+    EXTRACT(DAY FROM conversion_at - first_touchpoint_at) AS days_to_convert
+  FROM conversions
+  WHERE conversion_at >= CURRENT_DATE - INTERVAL '90 days'
+) t;
+```
+
+### Example Distribution
+
+```
+Time-to-Conversion Distribution
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Percentile │ Days │ Cumulative % │ Recommendation
+───────────┼──────┼──────────────┼─────────────────────────
+50th       │ 3    │ 50%          │ Minimum: 7 days
+75th       │ 12   │ 75%          │ Conservative: 14 days
+85th       │ 21   │ 85%          │ Recommended: 21-30 days
+90th       │ 28   │ 90%          │ Extended: 30 days
+95th       │ 45   │ 95%          │ Maximum: 45 days
+99th       │ 72   │ 99%          │ Edge case only
+
+Recommendation: 30-day window captures 90%+ of conversions
+```
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Time-to-Conversion Histogram</p>
+  <p class="text-yellow-700 text-sm">Add mbuzz visualization showing typical time-to-conversion distribution with vertical line at recommended window cutoff. Users can upload their data to see their own distribution.</p>
+</div>
+
+### Step 2: Compare Credit Distribution at Different Windows
+
+See how channel credit changes with different windows:
+
+```sql
+-- Compare attribution at 7, 30, 60 day windows
+WITH conversions AS (
+  SELECT * FROM conversions WHERE conversion_at >= CURRENT_DATE - 90
+)
+SELECT
+  channel,
+  SUM(CASE WHEN touchpoint_age_days <= 7 THEN credit ELSE 0 END) AS window_7d,
+  SUM(CASE WHEN touchpoint_age_days <= 30 THEN credit ELSE 0 END) AS window_30d,
+  SUM(CASE WHEN touchpoint_age_days <= 60 THEN credit ELSE 0 END) AS window_60d
+FROM attribution_details
+JOIN conversions USING (conversion_id)
+GROUP BY channel;
+```
+
+### Example Comparison
+
+```
+Credit by Lookback Window
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Channel         │ 7-day  │ 30-day │ 60-day │ Change (7→30)
+────────────────┼────────┼────────┼────────┼──────────────
+Email           │ 38%    │ 28%    │ 24%    │ -10% (loses share)
+Branded Search  │ 25%    │ 20%    │ 17%    │ -5%  (loses share)
+Paid Social     │ 12%    │ 22%    │ 27%    │ +10% (gains share)
+Organic Search  │ 15%    │ 18%    │ 20%    │ +3%  (gains share)
+Display         │ 10%    │ 12%    │ 12%    │ +2%  (gains share)
+
+Insight: Short windows over-credit closers (email, brand search).
+Longer windows give more credit to introducers (paid social, display).
+```
+
+## The Trade-off: Short vs Long Windows
+
+### Short Windows (7-14 days)
+
+**Pros:**
+- Credit is concentrated on immediately relevant touchpoints
+- Less noise from old, potentially irrelevant touches
+- Matches platform defaults (easier to reconcile)
+- Good for fast-cycle businesses
+
+**Cons:**
+- Misses early-funnel touchpoints
+- Over-credits closers, under-credits introducers
+- May not reflect true customer journey length
+- First-touch data becomes unreliable
+
+**Best for:** Impulse purchases, short sales cycles, within-channel optimization
+
+### Long Windows (60-90+ days)
+
+**Pros:**
+- Captures full customer journey
+- Fair credit to early-funnel channels
+- Better for B2B with long cycles
+- First-touch data is accurate
+
+**Cons:**
+- May credit irrelevant old touchpoints
+- Signal gets diluted across many touches
+- Harder to act on (touches from 3 months ago)
+- More complexity to analyze
+
+**Best for:** B2B, enterprise sales, high-consideration purchases
+
+<%= render_info_box do %>
+  <strong>The Goldilocks principle:</strong> Your window should be long enough to capture your sales cycle but short enough that credited touchpoints were actually influential. For most businesses, this means 2-3x your median time-to-conversion.
+<% end %>
+
+## Different Windows for Different Purposes
+
+### By Funnel Stage
+
+| Stage | Recommended Window | Rationale |
+|-------|-------------------|-----------|
+| **ToFU (First-touch)** | 60-90 days | Discovery can happen early |
+| **MoFU (Linear)** | 30-60 days | Active consideration period |
+| **BoFU (Last-touch)** | 14-30 days | Final decision is recent |
+
+This is the tiered approach from [funnel stage attribution](/articles/funnel-stage-attribution).
+
+### By Channel
+
+Some tools support channel-specific windows:
+
+| Channel | Suggested Window | Why |
+|---------|-----------------|-----|
+| **Display** | 60+ days | Awareness → consideration takes time |
+| **Paid Social** | 30-60 days | Often first touch, needs longer window |
+| **Email** | 14-30 days | Timely triggers, shorter relevance |
+| **Retargeting** | 7-14 days | By definition, recent engagement |
+| **Branded Search** | 7 days | Intent is immediate |
+
+**Caveat:** Channel-specific windows add complexity. Only use if you have clear evidence that channels operate on different timelines.
+
+## How to Test Window Changes
+
+### A/B Testing Windows
+
+Don't change windows blindly—test first:
+
+```ruby
+# Window A/B test design
+def design_window_test
+  {
+    test_type: :holdout,
+    duration: "6-8 weeks",
+
+    treatment: {
+      name: "New 45-day window",
+      window_days: 45
+    },
+    control: {
+      name: "Current 30-day window",
+      window_days: 30
+    },
+
+    success_metrics: {
+      primary: "Forecast accuracy (predicted vs actual revenue)",
+      secondary: [
+        "Channel ROAS stability",
+        "Budget decision confidence"
+      ]
+    },
+
+    sample: "Split by conversion_id modulo",
+    analysis: "Compare attributed ROAS and forecast accuracy"
+  }
+end
+```
+
+### What to Compare
+
+When testing windows, measure:
+
+| Metric | What It Tells You |
+|--------|-------------------|
+| **Touchpoint coverage** | What % of conversions have touchpoints in window? |
+| **Average touchpoints** | How many touches per journey are captured? |
+| **Channel credit shift** | Which channels gain/lose credit? |
+| **Forecast accuracy** | Does longer window predict better? |
+| **Decision confidence** | Are insights more actionable? |
+
+```sql
+-- Compare touchpoint coverage by window
+SELECT
+  lookback_window,
+  COUNT(*) AS total_conversions,
+  SUM(CASE WHEN has_touchpoints THEN 1 ELSE 0 END) AS with_touchpoints,
+  ROUND(100.0 * SUM(CASE WHEN has_touchpoints THEN 1 ELSE 0 END) / COUNT(*), 1) AS coverage_pct,
+  ROUND(AVG(touchpoint_count), 1) AS avg_touchpoints
+FROM (
+  SELECT
+    c.conversion_id,
+    lw.days AS lookback_window,
+    COUNT(t.id) > 0 AS has_touchpoints,
+    COUNT(t.id) AS touchpoint_count
+  FROM conversions c
+  CROSS JOIN (VALUES (7), (30), (60), (90)) AS lw(days)
+  LEFT JOIN touchpoints t
+    ON c.visitor_id = t.visitor_id
+    AND t.occurred_at BETWEEN c.converted_at - INTERVAL '1 day' * lw.days AND c.converted_at
+  GROUP BY c.conversion_id, lw.days
+) t
+GROUP BY lookback_window
+ORDER BY lookback_window;
+```
+
+### Example Test Results
+
+```
+Window A/B Test Results (8 weeks)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                        │ 30-day   │ 45-day   │ Difference
+────────────────────────┼──────────┼──────────┼─────────────
+Touchpoint coverage     │ 82%      │ 91%      │ +9%
+Avg touchpoints/journey │ 3.2      │ 4.1      │ +0.9
+Paid Social credit      │ 18%      │ 24%      │ +6%
+Email credit            │ 28%      │ 23%      │ -5%
+Forecast accuracy       │ ±18%     │ ±12%     │ Better
+
+Recommendation: Extend to 45-day window
+├── Captures more first-touch data
+├── Better reflects true journey length
+└── Improves forecast accuracy
+```
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: mbuzz Window Comparison Tool</p>
+  <p class="text-yellow-700 text-sm">Add screenshot showing mbuzz's window comparison feature: side-by-side credit distribution at different windows, with recommendation based on user's conversion timing data.</p>
+</div>
+
+## Common Window Mistakes
+
+### Mistake 1: Using Platform Defaults Blindly
+
+Google Ads uses 30 days. Meta uses 7 days. Neither matches your actual customer journey—they're designed to favor their platform.
+
+**Fix:** Analyze your own time-to-conversion data and set windows based on your business.
+
+### Mistake 2: Same Window for All Purposes
+
+First-touch analysis needs longer windows than last-touch analysis.
+
+**Fix:** Use tiered windows: longer for ToFU, shorter for BoFU.
+
+### Mistake 3: Never Reviewing Window Settings
+
+Customer journeys change. New products, new channels, market shifts.
+
+**Fix:** Review window settings annually or when making major business changes.
+
+### Mistake 4: Changing Windows Without Comparison
+
+Switching from 30 to 60 days will drastically change your attribution data. If you don't compare side-by-side, you'll misinterpret the shift.
+
+**Fix:** Run both windows in parallel for 4-6 weeks before switching.
+
+### Mistake 5: Chasing Window Optimization
+
+Spending months finding the "perfect" 43-day window is not valuable. Windows are approximate—get in the right range and move on.
+
+**Fix:** Use your business category default, validate it's reasonable, and focus on more impactful work.
+
+## Implementation
+
+### Configuring in Common Tools
+
+| Tool | Where to Configure | Options |
+|------|-------------------|---------|
+| **GA4** | Admin → Attribution Settings | 30, 60, or 90 days |
+| **Google Ads** | Conversions → Settings | 1-90 days by conversion |
+| **Meta Ads** | Attribution Settings | 1, 7, 28 days click; 1 day view |
+| **mbuzz** | Settings → Attribution | Custom per model |
+
+### Code Example
+
+```ruby
+class Attribution::WindowConfiguration
+  DEFAULTS = {
+    impulse_ecommerce: 7,
+    considered_ecommerce: 30,
+    saas_mid_market: 60,
+    b2b_enterprise: 90
+  }.freeze
+
+  def initialize(business_type:, custom_window: nil)
+    @window_days = custom_window || DEFAULTS.fetch(business_type)
+  end
+
+  def filter_touchpoints(conversion)
+    conversion.touchpoints.where(
+      "occurred_at >= ?",
+      conversion.occurred_at - @window_days.days
+    )
+  end
+
+  # Test multiple windows on same data
+  def compare_windows(conversion, windows: [7, 30, 60, 90])
+    windows.map do |days|
+      touchpoints = conversion.touchpoints.where(
+        "occurred_at >= ?",
+        conversion.occurred_at - days.days
+      )
+
+      {
+        window_days: days,
+        touchpoint_count: touchpoints.count,
+        channels: touchpoints.pluck(:channel).uniq,
+        first_touch_captured: touchpoints.any? { |t|
+          t == conversion.touchpoints.order(:occurred_at).first
+        }
+      }
+    end
+  end
+end
+```
+
+## Summary
+
+Attribution lookback windows determine which touchpoints get credit:
+
+**Setting your window:**
+1. Analyze your time-to-conversion distribution
+2. Set window to capture 85-95% of conversions
+3. Use industry defaults as starting points
+4. Test changes with A/B experiments
+
+**Key principles:**
+- Match window to your sales cycle (2-3x median)
+- Short windows favor closers; long windows favor introducers
+- Consider different windows for different funnel stages
+- Review annually or when business changes
+
+**Common windows:**
+- E-commerce: 7-30 days
+- SaaS: 30-60 days
+- B2B: 60-90+ days
+
+## Further Reading
+
+**On Attribution Configuration:**
+- [How to Choose the Right Attribution Model](/articles/how-to-choose-attribution-model) — Model selection framework
+- [How to Use Different Attribution Models by Funnel Stage](/articles/funnel-stage-attribution) — Tiered windows approach
+
+**On Platform Settings:**
+- [Google: Attribution lookback windows](https://support.google.com/analytics/answer/10618975) — GA4 configuration
+- [Meta: About attribution settings](https://www.facebook.com/business/help/370704083280490) — Meta Ads configuration
+
+<%= render_key_takeaways(@article.key_takeaways) %>
+
+<%= render_faq(@article.faq) %>

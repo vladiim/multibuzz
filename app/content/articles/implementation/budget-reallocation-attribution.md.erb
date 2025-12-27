@@ -1,0 +1,505 @@
+---
+title: "How to Reallocate Marketing Budget Using Attribution"
+slug: "budget-reallocation-attribution"
+description: "A practical workflow for using multi-touch attribution data to reallocate marketing budget. Includes the 5-step reallocation process, sensitivity analysis, common pitfalls, and a downloadable budget template."
+published_at:
+section: implementation
+section_order: 2
+status: draft
+priority: P0
+category: "Implementation"
+tags:
+  - budget allocation
+  - marketing budget
+  - attribution implementation
+  - ROAS optimization
+  - channel optimization
+related_articles:
+  - bottom-up-revenue-forecast
+  - how-to-choose-attribution-model
+  - last-touch-funnel-forecasting-problem
+seo:
+  title: "How to Reallocate Marketing Budget Using Attribution Data"
+aeo:
+  target_query: "budget reallocation attribution"
+  tldr: "Reallocate budget using attribution in 5 steps: (1) Calculate current spend and attributed revenue per channel, (2) Compute marginal ROAS for each channel, (3) Identify over/under-invested channels, (4) Propose reallocation with sensitivity analysis, (5) Implement gradually and measure. Key principle: shift budget from channels with declining marginal returns to channels with higher marginal efficiency. Validate changes with incrementality tests before making large shifts."
+  key_takeaways:
+    - "Focus on marginal ROAS, not average ROAS, for reallocation decisions"
+    - "Never reallocate more than 20% of a channel's budget at once"
+    - "Validate with incrementality tests before major shifts"
+    - "Account for channel interdependence—cutting introducers affects closers"
+  faq:
+    - q: "How often should I reallocate budget based on attribution?"
+      a: "Quarterly for most businesses. Monthly reallocation can chase noise and doesn't allow enough time to see effects. Weekly reallocation is almost never appropriate—you need conversion cycles to complete. Exception: during major campaigns or seasonal peaks, you might adjust within-channel spend more frequently."
+    - q: "Should I use first-touch, last-touch, or multi-touch for budget decisions?"
+      a: "Multi-touch (linear or position-based) for cross-channel allocation. It provides the most balanced view of contribution. Use first-touch to understand pipeline sourcing and last-touch for conversion optimization, but neither alone is appropriate for budget allocation—they're too biased."
+    - q: "What if my attribution data conflicts with platform data?"
+      a: "Common situation. Platform data (Google, Meta) uses their own attribution, typically crediting themselves generously. Trust your multi-touch data for allocation decisions, but use platform data for within-platform optimization (bid strategies, audience targeting)."
+    - q: "How do I handle channels with no attribution data?"
+      a: "Channels like podcasts, billboards, or TV rarely have direct attribution. Use MMM (media mix modeling) or incrementality tests for these. Don't assume zero contribution—they may be driving unattributed conversions that show up as 'direct' or 'branded search.'"
+    - q: "What's the difference between reallocating budget and optimizing within a channel?"
+      a: "Reallocation moves budget between channels (Google → Facebook). Optimization adjusts within a channel (bid strategies, audiences, creative). Attribution data is good for reallocation; platform data is often better for within-channel optimization."
+schema:
+  type: HowTo
+  author: "mbuzz Team"
+has_code_examples: true
+has_calculator: true
+has_download: true
+download:
+  title: "Budget Reallocation Worksheet"
+  description: "Excel template with ROAS sensitivity analysis and reallocation scenarios"
+  format: "Excel"
+---
+
+<%= render_tldr(@article.tldr) %>
+
+## The 5-Step Reallocation Process
+
+```
+Budget Reallocation Workflow
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Step 1: Baseline Analysis
+├── Current spend per channel
+├── Attributed revenue per channel
+└── Calculate average ROAS
+
+Step 2: Marginal Analysis
+├── Estimate marginal ROAS curves
+├── Identify saturation points
+└── Find highest-opportunity channels
+
+Step 3: Reallocation Proposal
+├── Calculate optimal allocation
+├── Define max shift limits (20%)
+└── Build conservative/aggressive scenarios
+
+Step 4: Sensitivity Analysis
+├── Model revenue impact of shifts
+├── Identify interdependency risks
+└── Set success/failure thresholds
+
+Step 5: Implementation
+├── Execute in phases (2-4 weeks)
+├── Monitor leading indicators
+└── Validate with holdout tests
+```
+
+## Step 1: Baseline Analysis
+
+### Gather Current Data
+
+Pull the following for each channel over the last 90 days:
+
+```sql
+-- Baseline metrics by channel
+SELECT
+  channel,
+  SUM(spend) AS total_spend,
+  SUM(attributed_revenue) AS total_revenue,
+  SUM(attributed_revenue) / NULLIF(SUM(spend), 0) AS average_roas,
+  COUNT(DISTINCT conversion_id) AS conversions,
+  SUM(spend) / NULLIF(COUNT(DISTINCT conversion_id), 0) AS cpa
+FROM channel_performance
+WHERE date >= CURRENT_DATE - INTERVAL '90 days'
+GROUP BY channel
+ORDER BY total_spend DESC;
+```
+
+### Example Baseline
+
+```
+Baseline Analysis (Last 90 Days)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Channel         │ Spend      │ Revenue    │ Avg ROAS │ Conv │ CPA
+────────────────┼────────────┼────────────┼──────────┼──────┼──────
+Paid Search     │ $150,000   │ $525,000   │ 3.5x     │ 1,050│ $143
+Paid Social     │ $100,000   │ $280,000   │ 2.8x     │ 700  │ $143
+Email           │ $20,000    │ $240,000   │ 12.0x    │ 600  │ $33
+Display         │ $50,000    │ $75,000    │ 1.5x     │ 250  │ $200
+Retargeting     │ $30,000    │ $120,000   │ 4.0x     │ 300  │ $100
+────────────────┼────────────┼────────────┼──────────┼──────┼──────
+Total           │ $350,000   │ $1,240,000 │ 3.5x     │ 2,900│ $121
+```
+
+<%= render_warning_box do %>
+  <strong>Don't stop at average ROAS:</strong> Email looks amazing at 12.0x, but this is misleading. Email converts existing leads—it doesn't generate new demand. Reallocating budget TO email won't produce 12.0x returns. You need marginal analysis.
+<% end %>
+
+## Step 2: Marginal Analysis
+
+### Why Marginal ROAS Matters
+
+**Average ROAS** = Total revenue / Total spend
+**Marginal ROAS** = Additional revenue from additional spend
+
+These are very different:
+
+```
+Average vs Marginal ROAS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Paid Social Example:
+├── Current spend: $100,000
+├── Current revenue: $280,000
+├── Average ROAS: 2.8x
+│
+├── If we add $20,000:
+│   ├── Estimated additional revenue: $40,000
+│   ├── Marginal ROAS: 2.0x  (lower than average!)
+│
+└── Why? Diminishing returns—we've already captured high-intent audiences
+
+Email Example:
+├── Current spend: $20,000
+├── Current revenue: $240,000
+├── Average ROAS: 12.0x
+│
+├── If we add $20,000:
+│   ├── We can't "buy more email"—audience is fixed
+│   ├── More spend = more frequency = fatigue = worse performance
+│   ├── Marginal ROAS: 0.5x or worse
+│
+└── Why? Email doesn't scale with spend the same way paid does
+```
+
+### Estimating Marginal ROAS
+
+Methods to estimate marginal returns:
+
+| Method | How It Works | Best For |
+|--------|--------------|----------|
+| **Historical spend variation** | Compare ROAS at different spend levels | Channels with spend variance |
+| **Geo experiments** | Increase spend in test markets | Paid channels |
+| **Time-series analysis** | Regress ROAS against spend over time | Stable channels |
+| **Platform curves** | Use platform's marginal cost projections | Google, Meta |
+
+```ruby
+# Estimate marginal ROAS from historical data
+def estimate_marginal_roas(channel, spend_increase_pct: 0.20)
+  historical = get_historical_performance(channel, months: 12)
+
+  # Fit diminishing returns curve: Revenue = a * Spend^b (b < 1)
+  model = fit_power_curve(historical[:spend], historical[:revenue])
+
+  current_spend = historical[:spend].last
+  proposed_spend = current_spend * (1 + spend_increase_pct)
+
+  current_revenue = model.predict(current_spend)
+  proposed_revenue = model.predict(proposed_spend)
+
+  marginal_revenue = proposed_revenue - current_revenue
+  marginal_spend = proposed_spend - current_spend
+
+  {
+    current_roas: current_revenue / current_spend,
+    marginal_roas: marginal_revenue / marginal_spend,
+    saturation_point: model.find_inflection_point
+  }
+end
+```
+
+### Marginal ROAS by Channel
+
+```
+Marginal ROAS Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Channel         │ Avg ROAS │ Marginal ROAS │ Status
+                │          │ (at +20%)     │
+────────────────┼──────────┼───────────────┼──────────────────
+Paid Search     │ 3.5x     │ 2.5x          │ Room to grow
+Paid Social     │ 2.8x     │ 2.0x          │ Room to grow
+Email           │ 12.0x    │ 0.5x          │ Can't scale with $
+Display         │ 1.5x     │ 1.8x          │ Underinvested!
+Retargeting     │ 4.0x     │ 1.2x          │ Near saturation
+
+Insight: Display has HIGHER marginal ROAS than average—
+we're underinvesting in display relative to opportunity.
+```
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Marginal ROAS Curve Visualization</p>
+  <p class="text-yellow-700 text-sm">Add chart showing diminishing returns curves for each channel. X-axis = spend, Y-axis = revenue. Show current position on each curve and the marginal slope at that point. Visual makes the concept immediately clear.</p>
+</div>
+
+## Step 3: Reallocation Proposal
+
+### Calculate Optimal Allocation
+
+In theory, optimal allocation equals marginal ROAS across all channels:
+
+```
+Optimal Allocation Principle:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Move budget until: Marginal ROAS (Channel A) = Marginal ROAS (Channel B)
+
+If Paid Social marginal ROAS (2.0x) > Display marginal ROAS (1.8x):
+→ Status quo is approximately optimal for these two
+
+If Display marginal ROAS (1.8x) > Retargeting marginal ROAS (1.2x):
+→ Shift budget from Retargeting → Display
+```
+
+### Build Reallocation Scenarios
+
+```
+Proposed Reallocation (Conservative)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Channel         │ Current   │ Proposed  │ Change    │ Rationale
+────────────────┼───────────┼───────────┼───────────┼─────────────────
+Paid Search     │ $150,000  │ $157,500  │ +$7,500   │ High marginal ROAS
+Paid Social     │ $100,000  │ $110,000  │ +$10,000  │ Good marginal, more room
+Email           │ $20,000   │ $18,000   │ -$2,000   │ Can't scale with spend
+Display         │ $50,000   │ $62,000   │ +$12,000  │ Underinvested (high marginal)
+Retargeting     │ $30,000   │ $2,500    │ -$27,500  │ Near saturation
+────────────────┼───────────┼───────────┼───────────┼─────────────────
+Total           │ $350,000  │ $350,000  │ $0        │ Budget neutral
+
+Maximum shift: 20% of any channel's budget (except Retargeting reduction is larger
+because marginal ROAS is below acceptable threshold)
+```
+
+### Set Shift Limits
+
+<%= render_info_box do %>
+  <strong>The 20% rule:</strong> Never reallocate more than 20% of a channel's budget in a single cycle. Larger shifts are too risky—you can't easily reverse if performance drops. Exception: channels below break-even marginal ROAS can be cut more aggressively.
+<% end %>
+
+### Account for Interdependence
+
+Before finalizing, check for channel dependencies:
+
+| If You Cut... | Watch For... |
+|---------------|--------------|
+| Paid Social | Email list growth slowing |
+| Display | Branded search volume dropping |
+| Retargeting | Longer conversion windows |
+| Content/SEO | Fewer MQLs entering pipeline |
+
+```ruby
+def check_interdependence(proposed_cuts)
+  risks = []
+
+  proposed_cuts.each do |channel, cut_amount|
+    dependent_channels = get_dependent_channels(channel)
+
+    dependent_channels.each do |dep|
+      impact = estimate_downstream_impact(channel, dep, cut_amount)
+
+      if impact[:revenue_loss] > cut_amount * 0.3
+        risks << {
+          cut_channel: channel,
+          affected_channel: dep,
+          estimated_loss: impact[:revenue_loss],
+          recommendation: "Reduce cut amount or test with holdout"
+        }
+      end
+    end
+  end
+
+  risks
+end
+```
+
+## Step 4: Sensitivity Analysis
+
+### Model Revenue Impact
+
+Calculate expected revenue change from reallocation:
+
+```ruby
+def calculate_reallocation_impact(current, proposed)
+  total_impact = 0
+
+  proposed.each do |channel, new_spend|
+    old_spend = current[channel]
+    spend_change = new_spend - old_spend
+
+    if spend_change > 0
+      # Increasing spend: use marginal ROAS
+      revenue_change = spend_change * marginal_roas(channel, direction: :increase)
+    else
+      # Decreasing spend: revenue loss at marginal rate
+      revenue_change = spend_change * marginal_roas(channel, direction: :decrease)
+    end
+
+    total_impact += revenue_change
+  end
+
+  total_impact
+end
+```
+
+### Scenario Table
+
+```
+Sensitivity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Scenario            │ Budget │ Expected │ Expected  │ Risk
+                    │ Shift  │ Revenue  │ ROAS      │ Level
+────────────────────┼────────┼──────────┼───────────┼────────
+Status Quo          │ $0     │ $1.24M   │ 3.5x      │ —
+Conservative (+5%)  │ $7,500 │ $1.27M   │ 3.6x      │ Low
+Moderate (+10%)     │ $15,000│ $1.29M   │ 3.7x      │ Medium
+Aggressive (+15%)   │ $22,500│ $1.31M   │ 3.7x      │ High
+
+Note: Aggressive scenario has diminishing returns—
+extra $7,500 shift only adds $20K revenue vs $30K in moderate
+```
+
+### Set Success/Failure Thresholds
+
+Define in advance what would trigger reversal:
+
+| Metric | Success | Acceptable | Failure (Reverse) |
+|--------|---------|------------|-------------------|
+| **Overall ROAS** | +5% | ±3% | -5% |
+| **Increased channels** | +10% ROAS | Flat | -10% ROAS |
+| **Decreased channels** | N/A | ROAS stable | Other channels drop |
+| **Leading indicators** | On trend | Slightly down | Significant decline |
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Sensitivity Analysis Calculator</p>
+  <p class="text-yellow-700 text-sm">Embed interactive calculator where users can: (1) Input current channel spend and ROAS, (2) Adjust proposed allocation, (3) See projected revenue impact with confidence ranges, (4) Download scenario comparison.</p>
+</div>
+
+## Step 5: Implementation
+
+### Phase the Rollout
+
+Don't make all changes at once:
+
+```
+Implementation Timeline (8-Week Example)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Week 1-2: Phase 1 (50% of total shift)
+├── Paid Search: +$3,750
+├── Paid Social: +$5,000
+├── Display: +$6,000
+├── Retargeting: -$13,750
+└── Monitor: Daily spend, weekly performance
+
+Week 3-4: Evaluation Period
+├── Compare ROAS vs baseline
+├── Check leading indicators (CTR, CPM, CVR)
+├── Assess interdependence effects
+└── Decision: Proceed / Pause / Reverse
+
+Week 5-6: Phase 2 (remaining 50%)
+├── Complete remaining shifts
+├── Adjust based on Phase 1 learnings
+└── Begin holdout test in one geo
+
+Week 7-8: Validation
+├── Full performance comparison
+├── Holdout test results
+├── Document learnings
+└── Plan next reallocation cycle
+```
+
+### Monitor Leading Indicators
+
+Don't wait for conversions—watch early signals:
+
+| Indicator | Healthy | Warning | Action If Warning |
+|-----------|---------|---------|-------------------|
+| **CPM** | Stable or down | Up >20% | Audience saturation—slow increase |
+| **CTR** | Stable or up | Down >15% | Creative fatigue—test new creative |
+| **CPC** | Stable | Up >25% | Competition or quality—review targeting |
+| **CVR** | Stable or up | Down >10% | Traffic quality issue—check sources |
+
+### Validate with Holdouts
+
+Run a geo-holdout or randomized experiment to validate:
+
+```ruby
+def design_reallocation_validation_test
+  {
+    test_type: :geo_holdout,
+    duration: "4 weeks",
+    treatment_geos: ["California", "New York", "Texas"],  # 40% of traffic
+    control_geos: ["All other states"],                   # 60% of traffic
+
+    treatment: "New allocation (proposed)",
+    control: "Old allocation (status quo)",
+
+    success_metric: :attributed_revenue,
+    minimum_detectable_effect: 0.05,  # 5% lift
+
+    analysis_plan: {
+      primary: "Compare ROAS between test and control geos",
+      secondary: "Compare by channel within test geos",
+      validation: "Check for geo selection bias"
+    }
+  }
+end
+```
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Reallocation Case Study</p>
+  <p class="text-yellow-700 text-sm">Add mbuzz customer example: "Company X identified Display as underinvested (1.8x marginal vs 1.2x Retargeting). They shifted $15K/month from Retargeting to Display. After 8 weeks, overall ROAS improved 8% with no decline in Retargeting-attributed conversions—they had hit saturation."</p>
+</div>
+
+## Common Reallocation Mistakes
+
+### Mistake 1: Chasing Average ROAS
+
+Email might show 10x ROAS, but you can't "buy more email subscribers" by increasing spend. Always use marginal ROAS for allocation decisions.
+
+### Mistake 2: Ignoring Interdependence
+
+Cutting paid social by 50% might cause email ROAS to drop 20% a month later—fewer people entering the list. Model dependencies before cutting.
+
+### Mistake 3: Moving Too Fast
+
+Large, rapid shifts make it impossible to diagnose what worked. Phase changes over 4-8 weeks.
+
+### Mistake 4: Not Setting Failure Criteria
+
+Without pre-defined reversal triggers, teams let bad allocations persist too long. Define "failure" before implementing.
+
+### Mistake 5: Reallocating Based on Platform Data
+
+Google says Google is great. Meta says Meta is great. Both are biased. Use your own multi-touch data for allocation decisions.
+
+## Summary
+
+Reallocate budget using this 5-step process:
+
+1. **Baseline Analysis** — Current spend, revenue, average ROAS by channel
+2. **Marginal Analysis** — Estimate diminishing returns curves, find highest opportunity
+3. **Reallocation Proposal** — Build scenarios with 20% max shift limits
+4. **Sensitivity Analysis** — Model revenue impact, set success/failure thresholds
+5. **Implementation** — Phase over 4-8 weeks, monitor leading indicators, validate with holdouts
+
+**Key principles:**
+- Use marginal ROAS, not average ROAS
+- Account for channel interdependence
+- Never shift more than 20% at once
+- Validate with incrementality tests
+- Quarterly cycles, not monthly
+
+## Further Reading
+
+**On Attribution for Budgeting:**
+- [How to Build a Bottom-Up Revenue Forecast with MTA](/articles/bottom-up-revenue-forecast) — Using attribution for planning
+- [How to Choose the Right Attribution Model](/articles/how-to-choose-attribution-model) — Model selection for budget decisions
+
+**On Validation:**
+- [How to Run an Incrementality Test](/articles/incrementality-testing) — Testing allocation changes
+- [How to Calibrate MTA with Lift Studies](/articles/calibrating-mta-with-lift) — Using test data
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Downloadable Budget Template</p>
+  <p class="text-yellow-700 text-sm">Add download link for Excel workbook with: (1) Current allocation input sheet, (2) Marginal ROAS estimator, (3) Reallocation scenario builder, (4) Sensitivity analysis with charts, (5) Implementation timeline template.</p>
+</div>
+
+<%= render_key_takeaways(@article.key_takeaways) %>
+
+<%= render_faq(@article.faq) %>

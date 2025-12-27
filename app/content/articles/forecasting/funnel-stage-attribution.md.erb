@@ -1,0 +1,617 @@
+---
+title: "How to Use Different Attribution Models by Funnel Stage"
+slug: "funnel-stage-attribution"
+description: "Learn the tiered attribution approach: first-touch for awareness, linear/participation for consideration, last-touch for conversion. This framework produces more accurate funnel forecasts than any single attribution model."
+published_at:
+section: forecasting
+section_order: 2
+status: draft
+priority: P0
+category: "Funnel Forecasting"
+tags:
+  - funnel attribution
+  - tiered attribution
+  - tofu mofu bofu
+  - attribution models
+  - marketing measurement
+related_articles:
+  - last-touch-funnel-forecasting-problem
+  - bottom-up-revenue-forecast
+  - first-touch-attribution
+  - last-touch-attribution
+  - linear-attribution
+seo:
+  title: "Tiered Attribution by Funnel Stage: ToFU, MoFU, BoFU Framework"
+aeo:
+  target_query: "funnel stage attribution"
+  tldr: "Use different attribution models for different funnel stages: First-touch for top-of-funnel (shows who introduces prospects), Linear or Participation for mid-funnel (shows what nurtures them), and Last-touch for bottom-funnel (shows what closes them). This tiered approach captures the true contribution of each channel at each stage, producing more accurate forecasts than using any single model across the entire journey."
+  key_takeaways:
+    - "First-touch for ToFU: credits discovery channels (paid social, content, display)"
+    - "Linear/Participation for MoFU: shows nurturing contribution and channel overlap"
+    - "Last-touch for BoFU: credits closing channels (email, branded search, retargeting)"
+    - "Full-funnel view combines all three for accurate budget allocation"
+  faq:
+    - q: "What's the difference between Linear and Participation for mid-funnel?"
+      a: "Linear divides 100% credit equally among touchpoints (e.g., 5 touches = 20% each). Participation gives 100% credit to each channel that participated (sum exceeds 100%). Participation reveals channel overlap and interdependence—if your sum is 180%, journeys average 1.8 channels working together."
+    - q: "Should I use the same lookback window for all funnel stages?"
+      a: "No. ToFU typically uses longer windows (30-60 days) since discovery can precede engagement. MoFU uses medium windows (14-30 days) for active consideration. BoFU uses shorter windows (7-14 days) for final decision. Match windows to your actual funnel timing."
+    - q: "How do I know where ToFU ends and MoFU begins?"
+      a: "Define transition events: ToFU ends when a visitor becomes a known lead (email signup, account creation). MoFU ends at a high-intent action (demo request, add-to-cart, pricing page). These boundaries vary by business—map your actual funnel stages first."
+    - q: "What if my business has a 2-day purchase cycle?"
+      a: "You still likely have ToFU/BoFU stages, just compressed. A Facebook ad (ToFU) → Google search (BoFU) journey in 48 hours still benefits from tiered attribution. You may skip MoFU or merge it with BoFU for short cycles."
+    - q: "Can I use tiered attribution in Google Analytics?"
+      a: "Not natively—GA4 only offers last-click and data-driven. You'd need to export data to BigQuery and build tiered attribution yourself, or use a third-party tool like mbuzz that supports tiered views."
+schema:
+  type: Article
+  author: "mbuzz Team"
+has_code_examples: true
+has_calculator: false
+has_download: true
+download:
+  title: "Tiered Attribution Worksheet"
+  description: "Excel template for mapping your funnel stages and attribution models"
+  format: "Excel"
+---
+
+<%= render_tldr(@article.tldr) %>
+
+## The Tiered Attribution Framework
+
+Different funnel stages answer different questions—and different questions need different attribution models.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                   TIERED ATTRIBUTION FRAMEWORK                   │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │  TOP OF FUNNEL (Awareness)                                │   │
+│  │  ├── Question: "What brings new prospects?"               │   │
+│  │  ├── Model: FIRST-TOUCH                                   │   │
+│  │  ├── Credits: Discovery channels                          │   │
+│  │  └── Metrics: New visitors, first touches by channel      │   │
+│  └──────────────────────────────────────────────────────────┘   │
+│                            │                                     │
+│                            ▼                                     │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │  MIDDLE OF FUNNEL (Consideration)                         │   │
+│  │  ├── Question: "What keeps them engaged?"                 │   │
+│  │  ├── Model: LINEAR or PARTICIPATION                       │   │
+│  │  ├── Credits: All nurturing touchpoints                   │   │
+│  │  └── Metrics: Engagement depth, channel overlap           │   │
+│  └──────────────────────────────────────────────────────────┘   │
+│                            │                                     │
+│                            ▼                                     │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │  BOTTOM OF FUNNEL (Conversion)                            │   │
+│  │  ├── Question: "What closes the deal?"                    │   │
+│  │  ├── Model: LAST-TOUCH                                    │   │
+│  │  ├── Credits: Closing channels                            │   │
+│  │  └── Metrics: Conversions, revenue by closing channel     │   │
+│  └──────────────────────────────────────────────────────────┘   │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Key insight:** Each model is correct for its question. First-touch answers "who introduced?" Last-touch answers "who closed?" Neither alone answers "what drove this revenue?"
+
+## Stage 1: Top of Funnel (First-Touch)
+
+### What It Measures
+
+First-touch attribution credits the channel that **introduced** a prospect to your business—their first recorded interaction.
+
+```
+ToFU Attribution:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Journey: LinkedIn → Blog → Webinar → Email → Demo → Purchase
+            │
+            ▼
+         100% credit to LinkedIn (first touch)
+```
+
+### Which Channels Win at ToFU
+
+| Channel | Typical ToFU Share | Why |
+|---------|-------------------|-----|
+| **Paid Social** | 30-45% | Excellent for cold audience targeting |
+| **Organic Search** | 20-30% | Problem-aware searchers find content |
+| **Display/Programmatic** | 10-20% | Broad awareness reach |
+| **Content Marketing** | 10-15% | Attracts via valuable information |
+| **Direct** | 5-15% | Word-of-mouth, brand recall |
+
+Channels that rarely win ToFU:
+- Email (requires existing relationship)
+- Retargeting (requires prior visit)
+- Branded search (requires brand awareness)
+
+### ToFU Metrics to Track
+
+| Metric | What It Tells You |
+|--------|-------------------|
+| **First touches by channel** | Volume of new prospects per channel |
+| **ToFU → MoFU conversion rate** | Quality of channel's prospects |
+| **Cost per first touch** | Efficiency of awareness spend |
+| **New visitor composition** | Mix of discovery channels |
+
+### Implementation
+
+```ruby
+class TofuAttribution
+  def initialize(journey, lookback_days: 60)
+    @journey = journey
+    @lookback_days = lookback_days
+  end
+
+  def attribute
+    first_touchpoint = relevant_touchpoints.first
+    return nil unless first_touchpoint
+
+    {
+      stage: :tofu,
+      channel: first_touchpoint.channel,
+      source: first_touchpoint.source,
+      medium: first_touchpoint.medium,
+      campaign: first_touchpoint.campaign,
+      credit: 1.0,
+      touchpoint_at: first_touchpoint.occurred_at
+    }
+  end
+
+  private
+
+  def relevant_touchpoints
+    @journey.touchpoints
+      .where("occurred_at >= ?", @journey.conversion_at - @lookback_days.days)
+      .order(:occurred_at)
+  end
+end
+```
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: ToFU Channel Distribution Chart</p>
+  <p class="text-yellow-700 text-sm">Add mbuzz pie chart showing typical first-touch channel distribution. Highlight how Paid Social/Organic dominate ToFU while Email/Branded Search are minimal.</p>
+</div>
+
+## Stage 2: Middle of Funnel (Linear or Participation)
+
+### Choosing Between Linear and Participation
+
+**Linear Attribution:** Divides 100% credit equally among all mid-funnel touchpoints.
+
+```
+Linear MoFU (4 touchpoints):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Journey: LinkedIn → Blog → Webinar → Email → Demo
+                      │       │        │
+                      ▼       ▼        ▼
+                    33.3%   33.3%    33.3%  (MoFU touches)
+
+Total: 100%
+```
+
+**Participation Attribution:** Gives 100% credit to each participating channel (total exceeds 100%).
+
+```
+Participation MoFU (4 touchpoints, 3 channels):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Journey: LinkedIn → Blog → Webinar → Email → Demo
+                      │       │        │
+                      ▼       ▼        ▼
+                    100%    100%     100%   (participation)
+
+By Channel:
+  Organic (Blog): 100%
+  Webinar: 100%
+  Email: 100%
+  ─────────────────
+  Total: 300%
+```
+
+### When to Use Each
+
+| Use Case | Linear | Participation |
+|----------|--------|---------------|
+| **Budget allocation** | ✓ Sums to 100% | ✗ Sums exceed 100% |
+| **Channel overlap analysis** | ✗ Hides overlap | ✓ Shows interdependence |
+| **Journey complexity assessment** | ✗ Normalized | ✓ Raw touch count |
+| **Simple reporting** | ✓ Intuitive | ✗ Requires explanation |
+
+**Recommendation:** Run both. Use Linear for budget math. Use Participation to understand how channels work together.
+
+### Interpreting Participation Totals
+
+The sum of participation credits tells you about journey complexity:
+
+| Participation Sum | Interpretation |
+|-------------------|----------------|
+| **100-120%** | Simple journeys, channels work independently |
+| **150-200%** | Moderate complexity, 1.5-2 channels per journey |
+| **200-300%** | Complex journeys, heavy channel interdependence |
+| **300%+** | Long nurturing cycles, channels deeply intertwined |
+
+**If participation sum is high:** Cutting any channel may hurt others—they're working together.
+
+**If participation sum is low:** Channels are more independent—isolated optimization is safer.
+
+### Implementation
+
+```ruby
+class MofuAttribution
+  def initialize(journey, model: :linear, lookback_days: 30)
+    @journey = journey
+    @model = model
+    @lookback_days = lookback_days
+  end
+
+  def attribute
+    mid_funnel_touchpoints = get_mid_funnel_touchpoints
+    return [] if mid_funnel_touchpoints.empty?
+
+    case @model
+    when :linear
+      linear_attribution(mid_funnel_touchpoints)
+    when :participation
+      participation_attribution(mid_funnel_touchpoints)
+    end
+  end
+
+  private
+
+  def get_mid_funnel_touchpoints
+    # All touchpoints between first and last
+    all_touchpoints = @journey.touchpoints.order(:occurred_at)
+    return [] if all_touchpoints.size <= 2
+
+    all_touchpoints[1..-2]  # Exclude first (ToFU) and last (BoFU)
+  end
+
+  def linear_attribution(touchpoints)
+    credit_per_touch = 1.0 / touchpoints.count
+
+    touchpoints.map do |tp|
+      {
+        stage: :mofu,
+        channel: tp.channel,
+        credit: credit_per_touch,
+        touchpoint_at: tp.occurred_at
+      }
+    end
+  end
+
+  def participation_attribution(touchpoints)
+    touchpoints.map do |tp|
+      {
+        stage: :mofu,
+        channel: tp.channel,
+        credit: 1.0,  # Full credit to each participant
+        touchpoint_at: tp.occurred_at
+      }
+    end
+  end
+end
+```
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Participation vs Linear Comparison</p>
+  <p class="text-yellow-700 text-sm">Add mbuzz comparison showing the same journey with Linear (sums to 100%) and Participation (sums to 180%). Visualize how participation reveals the overlap between email and content that linear hides.</p>
+</div>
+
+## Stage 3: Bottom of Funnel (Last-Touch)
+
+### What It Measures
+
+Last-touch attribution credits the final touchpoint before conversion—the channel that **closed** the deal.
+
+```
+BoFU Attribution:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Journey: LinkedIn → Blog → Webinar → Email → Demo → Purchase
+                                                        │
+                                                        ▼
+                              100% credit to Demo (last touch before conversion)
+```
+
+### Which Channels Win at BoFU
+
+| Channel | Typical BoFU Share | Why |
+|---------|-------------------|-----|
+| **Email** | 25-40% | Triggered sends drive action |
+| **Branded Search** | 15-25% | Ready-to-buy users search brand |
+| **Retargeting** | 10-20% | Reminder at decision moment |
+| **Direct** | 15-25% | Brand recall, returning visitors |
+| **Organic Search** | 10-15% | Product/comparison searches |
+
+Channels that rarely win BoFU:
+- Display (awareness, not conversion)
+- Paid Social (introduction, not closing)
+- Content (education, not action)
+
+### BoFU Metrics to Track
+
+| Metric | What It Tells You |
+|--------|-------------------|
+| **Conversions by closing channel** | Which channels convert |
+| **Revenue by closing channel** | Revenue contribution |
+| **BoFU conversion rate by channel** | Closing efficiency |
+| **Time from MoFU to conversion** | Decision window length |
+
+### Implementation
+
+```ruby
+class BofuAttribution
+  def initialize(journey, lookback_days: 14)
+    @journey = journey
+    @lookback_days = lookback_days
+  end
+
+  def attribute
+    last_touchpoint = relevant_touchpoints.last
+    return nil unless last_touchpoint
+
+    {
+      stage: :bofu,
+      channel: last_touchpoint.channel,
+      source: last_touchpoint.source,
+      medium: last_touchpoint.medium,
+      campaign: last_touchpoint.campaign,
+      credit: 1.0,
+      revenue: @journey.conversion_value,
+      touchpoint_at: last_touchpoint.occurred_at
+    }
+  end
+
+  private
+
+  def relevant_touchpoints
+    @journey.touchpoints
+      .where("occurred_at >= ?", @journey.conversion_at - @lookback_days.days)
+      .where("occurred_at <= ?", @journey.conversion_at)
+      .order(:occurred_at)
+  end
+end
+```
+
+<%= render_info_box do %>
+  <strong>When last-touch IS appropriate:</strong> BoFU is where last-touch shines. For understanding which channels close deals, it's the right model. The problem is using last-touch for the entire funnel—not using it for BoFU specifically.
+<% end %>
+
+## Combining All Three: Full-Funnel View
+
+### The Complete Picture
+
+```ruby
+class FullFunnelAttribution
+  def initialize(journey)
+    @journey = journey
+  end
+
+  def attribute
+    {
+      tofu: tofu_attribution.attribute,
+      mofu: mofu_attribution.attribute,
+      bofu: bofu_attribution.attribute,
+      journey_id: @journey.id,
+      conversion_value: @journey.conversion_value
+    }
+  end
+
+  def full_funnel_credit
+    # Combine stages for channel-level view
+    combine_stage_credits
+  end
+
+  private
+
+  def tofu_attribution
+    TofuAttribution.new(@journey)
+  end
+
+  def mofu_attribution
+    MofuAttribution.new(@journey, model: :linear)
+  end
+
+  def bofu_attribution
+    BofuAttribution.new(@journey)
+  end
+
+  def combine_stage_credits
+    credits = {}
+
+    # Weight each stage (customize based on your funnel value)
+    stage_weights = { tofu: 0.30, mofu: 0.30, bofu: 0.40 }
+
+    [tofu_attribution.attribute].flatten.compact.each do |credit|
+      channel = credit[:channel]
+      credits[channel] ||= { tofu: 0, mofu: 0, bofu: 0, total: 0 }
+      credits[channel][:tofu] += credit[:credit] * stage_weights[:tofu]
+      credits[channel][:total] += credit[:credit] * stage_weights[:tofu]
+    end
+
+    mofu_attribution.attribute.each do |credit|
+      channel = credit[:channel]
+      credits[channel] ||= { tofu: 0, mofu: 0, bofu: 0, total: 0 }
+      credits[channel][:mofu] += credit[:credit] * stage_weights[:mofu]
+      credits[channel][:total] += credit[:credit] * stage_weights[:mofu]
+    end
+
+    [bofu_attribution.attribute].flatten.compact.each do |credit|
+      channel = credit[:channel]
+      credits[channel] ||= { tofu: 0, mofu: 0, bofu: 0, total: 0 }
+      credits[channel][:bofu] += credit[:credit] * stage_weights[:bofu]
+      credits[channel][:total] += credit[:credit] * stage_weights[:bofu]
+    end
+
+    credits
+  end
+end
+```
+
+### Example: Full-Funnel Channel Analysis
+
+```
+Full-Funnel Attribution Example
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Journey: Facebook Ad → Blog → Webinar → Email (x2) → Demo Request
+         (Day 1)       (Day 5)  (Day 12)  (Day 18-20)  (Day 25)
+
+Stage Weights: ToFU 30% | MoFU 30% | BoFU 40%
+
+┌─────────────────┬──────────┬──────────┬──────────┬──────────┐
+│ Channel         │ ToFU     │ MoFU     │ BoFU     │ Total    │
+├─────────────────┼──────────┼──────────┼──────────┼──────────┤
+│ Paid Social     │ 30.0%    │ 0%       │ 0%       │ 30.0%    │
+│ Organic/Content │ 0%       │ 10.0%    │ 0%       │ 10.0%    │
+│ Webinar         │ 0%       │ 10.0%    │ 0%       │ 10.0%    │
+│ Email           │ 0%       │ 10.0%    │ 0%       │ 10.0%    │
+│ Demo            │ 0%       │ 0%       │ 40.0%    │ 40.0%    │
+├─────────────────┼──────────┼──────────┼──────────┼──────────┤
+│ Total           │ 30.0%    │ 30.0%    │ 40.0%    │ 100%     │
+└─────────────────┴──────────┴──────────┴──────────┴──────────┘
+
+Insights:
+• Paid Social gets 30% (all from ToFU) — introducer role
+• Demo gets 40% (all from BoFU) — closer role
+• Email gets 10% (all from MoFU) — nurturing role
+• Content + Webinar together = 20% — consideration drivers
+```
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: mbuzz Full-Funnel Dashboard</p>
+  <p class="text-yellow-700 text-sm">Add screenshot showing mbuzz's tiered attribution view with three columns (ToFU, MoFU, BoFU) and aggregated full-funnel credit. Include the stage weight configuration options.</p>
+</div>
+
+## Configuring Stage Weights
+
+### Default Stage Weights
+
+The weighting between stages should reflect your funnel's value creation:
+
+| Business Type | ToFU Weight | MoFU Weight | BoFU Weight |
+|--------------|-------------|-------------|-------------|
+| **E-commerce (impulse)** | 20% | 20% | 60% |
+| **E-commerce (considered)** | 30% | 25% | 45% |
+| **B2B SaaS** | 35% | 30% | 35% |
+| **B2B Enterprise** | 40% | 35% | 25% |
+| **DTC/Subscription** | 30% | 30% | 40% |
+
+### Adjusting Based on Your Data
+
+Test your weights by comparing forecasts to actuals:
+
+1. Set initial weights based on business type
+2. Run forecast for 90 days
+3. Compare predicted vs actual channel performance
+4. Adjust weights where predictions missed
+5. Validate with holdout tests
+
+```ruby
+# Example: Testing stage weight accuracy
+class StageWeightOptimizer
+  def initialize(historical_data, stage_weights)
+    @data = historical_data
+    @weights = stage_weights
+  end
+
+  def evaluate
+    predicted = calculate_predicted_contribution(@data, @weights)
+    actual = calculate_actual_performance(@data)
+
+    @data.channels.each do |channel|
+      error = (predicted[channel] - actual[channel]).abs
+      puts "#{channel}: Predicted #{predicted[channel]}%, Actual #{actual[channel]}%, Error #{error}%"
+    end
+  end
+
+  # Adjust weights to minimize prediction error
+  def optimize
+    # ... gradient descent or grid search over weight combinations
+  end
+end
+```
+
+## Common Mistakes
+
+### Mistake 1: Same Lookback Window for All Stages
+
+Each stage operates on different timeframes:
+
+| Stage | Default Window | Why |
+|-------|----------------|-----|
+| ToFU | 30-60 days | Discovery can happen well before engagement |
+| MoFU | 14-30 days | Active consideration period |
+| BoFU | 7-14 days | Final decision timeframe |
+
+Using 7-day windows for ToFU misses the actual first touch.
+
+### Mistake 2: Ignoring MoFU Entirely
+
+Some teams jump from first-touch to last-touch, skipping mid-funnel entirely. This hides:
+- How channels work together
+- Which content drives engagement
+- Where prospects get stuck
+
+MoFU attribution reveals your nurturing effectiveness.
+
+### Mistake 3: Not Defining Stage Boundaries
+
+Without clear definitions, you'll inconsistently categorize touchpoints:
+
+| Stage Transition | Good Definition | Bad Definition |
+|-----------------|-----------------|----------------|
+| ToFU → MoFU | "Second session" or "Email signup" | "When they're interested" |
+| MoFU → BoFU | "Pricing page visit" or "Demo request" | "When they're ready to buy" |
+
+Use concrete, trackable events as stage boundaries.
+
+### Mistake 4: Static Weights Forever
+
+Your funnel changes. New channels, new content, seasonal patterns. Review and adjust stage weights quarterly.
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Stage Boundary Configuration</p>
+  <p class="text-yellow-700 text-sm">Add mbuzz screenshot showing how to configure stage transition events (e.g., "ToFU ends at: Email signup, Account creation"). Include examples for different business types.</p>
+</div>
+
+## Summary
+
+Tiered attribution uses the right model for each funnel stage:
+
+| Stage | Model | Question | Credits |
+|-------|-------|----------|---------|
+| **ToFU** | First-touch | Who introduces? | Discovery channels |
+| **MoFU** | Linear/Participation | Who nurtures? | All mid-funnel touches |
+| **BoFU** | Last-touch | Who closes? | Conversion channels |
+
+**Key benefits:**
+- Accurate channel valuation at each stage
+- Reveals introducer vs closer vs nurturer roles
+- Enables better budget allocation
+- Produces more reliable forecasts
+
+**Implementation steps:**
+1. Define your stage boundaries (concrete events)
+2. Choose MoFU model (Linear for budgets, Participation for overlap)
+3. Set stage weights based on business type
+4. Configure lookback windows per stage
+5. Combine for full-funnel view
+
+## Further Reading
+
+**On Building Forecasts:**
+- [Why Doesn't Last-Touch Work for Funnel Forecasting?](/articles/last-touch-funnel-forecasting-problem) — The problem this solves
+- [How to Build a Bottom-Up Revenue Forecast with MTA](/articles/bottom-up-revenue-forecast) — Complete forecasting workflow
+
+**On Individual Models:**
+- [First-Touch Attribution](/articles/first-touch-attribution) — ToFU model deep dive
+- [Last-Touch Attribution](/articles/last-touch-attribution) — BoFU model deep dive
+- [Linear Attribution](/articles/linear-attribution) — MoFU model option
+
+<%= render_key_takeaways(@article.key_takeaways) %>
+
+<%= render_faq(@article.faq) %>

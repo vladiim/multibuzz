@@ -1,0 +1,395 @@
+---
+title: "When Should I Use Last-Touch Attribution?"
+slug: "last-touch-attribution"
+description: "Last-touch attribution credits the final interaction before conversion. Learn when last-touch is appropriate, why it's still the default in most tools, and how it misleads budget decisions when used alone."
+published_at:
+section: models
+section_order: 2
+status: draft
+priority: P0
+category: "Attribution Models"
+tags:
+  - last-touch attribution
+  - last-click attribution
+  - attribution models
+  - conversion optimization
+  - bottom of funnel
+related_articles:
+  - first-touch-attribution
+  - what-is-multi-touch-attribution
+  - linear-attribution
+  - how-to-choose-attribution-model
+seo:
+  title: "Last-Touch Attribution: When to Use It & Why It's Misleading"
+aeo:
+  target_query: "last touch attribution"
+  tldr: "Last-touch (or last-click) attribution gives 100% credit to the final marketing interaction before conversion. It's the default in most analytics tools because it's simple and directly tied to the conversion moment. However, it systematically over-credits bottom-funnel channels like email, branded search, and retargeting while ignoring everything that built awareness and interest. Use it for conversion optimization, but never for budget allocation."
+  key_takeaways:
+    - "Last-touch credits only the final interaction—everything before gets zero"
+    - "Over-credits closers (email, brand search), under-credits introducers (paid social, content)"
+    - "Still useful for conversion rate optimization and bottom-funnel analysis"
+    - "Using last-touch alone for budget decisions leads to the 'attribution death spiral'"
+  faq:
+    - q: "Why is last-touch the default in most analytics tools?"
+      a: "Simplicity and defensibility. Last-touch is easy to implement (just look at the referrer on conversion), easy to explain (this is what converted them), and hard to argue with (it was literally the last thing). It's also what advertisers demanded when digital measurement started."
+    - q: "Is last-click the same as last-touch?"
+      a: "Essentially yes. Last-click specifically refers to the last clicked ad or link, while last-touch can include non-click interactions like email opens or ad views. In practice, most implementations treat them the same—the last trackable interaction before conversion."
+    - q: "Did GA4 remove last-touch attribution?"
+      a: "No—last-click is one of only two models GA4 kept (along with data-driven). Google removed first-touch, linear, time-decay, and position-based. Last-click remains the default for most GA4 reports."
+    - q: "Should I use last-touch for my paid ads?"
+      a: "For optimizing ad creative and landing pages, yes—last-touch shows what directly converted. For budget allocation between channels, no—it will tell you to cut the awareness channels filling your funnel. Use multi-touch for budget decisions."
+    - q: "What's the 'attribution death spiral'?"
+      a: "A failure pattern from last-touch optimization: cut 'underperforming' awareness channels → funnel dries up → increase spend on closers → diminishing returns → CAC rises → revenue plateaus. You've starved the funnel by optimizing toward a misleading metric."
+schema:
+  type: Article
+  author: "mbuzz Team"
+has_code_examples: true
+has_calculator: false
+has_download: false
+---
+
+<%= render_tldr(@article.tldr) %>
+
+## What Last-Touch Attribution Measures
+
+Last-touch attribution answers: **"What was the final marketing interaction before this conversion?"**
+
+It gives 100% credit to whatever the user last engaged with before converting—completely ignoring everything that came before.
+
+```
+Customer Journey:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Facebook Ad    →    Blog Post    →    Email    →    Purchase
+     (Day 1)          (Day 5)         (Day 12)        (Day 14)
+                                          │
+                                          ▼
+                                     ┌────────┐
+                                     │  100%  │  ← Last-touch credits Email
+                                     └────────┘
+```
+
+The email that triggered the final conversion gets full credit. The Facebook ad that introduced them? Zero. The blog content that educated them? Zero.
+
+### Why Last-Touch Became the Default
+
+Last-touch isn't popular because it's accurate—it's popular because it's:
+
+1. **Simple to implement** — Look at the referrer or UTM on the conversion page
+2. **Easy to explain** — "This is what made them buy"
+3. **Hard to dispute** — It was literally the last touchpoint
+4. **What advertisers wanted** — Direct response ads need direct attribution
+
+When Google Analytics launched in 2005, last-click was the obvious choice. Twenty years later, it's still the default—even though marketing has become dramatically more complex.
+
+## The Problem with Last-Touch
+
+### It Over-Credits "Closers"
+
+Last-touch systematically over-credits channels that appear at the end of journeys:
+
+| Channel Type | Last-Touch Credit | Actual Contribution |
+|--------------|-------------------|---------------------|
+| **Email** | Over-credited | Nurtures, rarely introduces |
+| **Branded Search** | Over-credited | Captures demand, doesn't create it |
+| **Retargeting** | Over-credited | Re-engages existing interest |
+| **Direct** | Over-credited | Brand strength, not a channel |
+| **Paid Social** | Under-credited | Introduces, rarely closes |
+| **Content/SEO** | Under-credited | Educates in mid-funnel |
+| **Display** | Under-credited | Awareness, rarely last-touch |
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Channel Credit Comparison</p>
+  <p class="text-yellow-700 text-sm">Add mbuzz data showing last-touch vs multi-touch credit by channel. Example: "Paid Social gets 8% of last-touch credit but 34% of multi-touch credit—a 4x difference." This is a key proof point.</p>
+</div>
+
+### The Attribution Death Spiral
+
+Here's what happens when teams optimize budgets using only last-touch:
+
+```
+The Attribution Death Spiral
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Step 1: Review last-touch data
+        → Paid Social shows 0.8x ROAS
+        → Email shows 5.2x ROAS
+        → Decision: "Cut underperforming Social, invest in Email"
+
+Step 2: Cut Paid Social by 50%
+        → Fewer new users entering funnel
+        → Email list growth slows
+        → (Effect delayed 30-60 days)
+
+Step 3: Email performance drops
+        → Smaller audience to email
+        → Same users, more frequency = fatigue
+        → "Email ROAS declining—let's optimize creative"
+
+Step 4: Double down on "high performers"
+        → More branded search, more retargeting
+        → Diminishing returns (audience exhausted)
+        → CAC rises, revenue plateaus
+
+Step 5: Realize you starved the funnel
+        → Pipeline dried up months ago
+        → Recovery takes 6-12 months
+        → "Why isn't marketing working?"
+```
+
+This isn't hypothetical—it's one of the most common patterns in digital marketing. Teams optimize toward last-touch, kill their awareness channels, and wonder why growth stalled.
+
+<%= render_warning_box do %>
+  <strong>The core problem:</strong> Last-touch conflates "closing" with "causing." Just because email was the last touch doesn't mean it caused the conversion. The user was already 90% of the way there—email just tipped them over.
+<% end %>
+
+### It Creates Channel Conflict
+
+When multiple channels claim last-touch credit:
+
+- **Paid Search** says: "We closed 50% of revenue"
+- **Email** says: "We closed 35% of revenue"
+- **Retargeting** says: "We closed 25% of revenue"
+
+Total: 110% of revenue claimed. This happens because last-touch credits whoever touched last, regardless of how many touches preceded it.
+
+In reality, a single conversion might have touched all three:
+```
+Day 1:  Paid Search (introduction)
+Day 7:  Email (nurture)
+Day 14: Retargeting (reminder)
+Day 15: Email (conversion)  ← Gets 100% credit
+```
+
+The other channels contributed—they just lost the "last touch" race.
+
+## When Last-Touch Is Still Useful
+
+Despite its flaws, last-touch has legitimate uses:
+
+### 1. Conversion Rate Optimization
+
+When you're optimizing the final conversion moment—landing page, checkout flow, email CTA—last-touch tells you what's working:
+
+| Use Case | Last-Touch Helps Because |
+|----------|-------------------------|
+| Landing page A/B tests | Which page converts better (at the end) |
+| Email subject lines | Which email drove more final clicks |
+| Checkout optimization | Which flow completes more purchases |
+| Ad creative testing | Which creative closes better |
+
+For these narrow questions, last-touch is appropriate. You're optimizing the close, not the full journey.
+
+### 2. Short Sales Cycles
+
+If most conversions happen in a single session, last-touch ≈ only-touch:
+
+```
+Single-Session Conversion:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Google Ad → Landing Page → Purchase (same session)
+      │
+      ▼
+  First-touch = Last-touch = Only touch
+```
+
+For impulse purchases, low-consideration products, or simple transactions, multi-touch may be overkill.
+
+### 3. Baseline Comparison
+
+Last-touch provides a useful baseline to compare against other models:
+
+| Channel | Last-Touch | Linear | Difference | Interpretation |
+|---------|-----------|--------|------------|----------------|
+| Paid Social | 12% | 28% | +133% | Undervalued by LT |
+| Email | 35% | 18% | -49% | Overvalued by LT |
+| Organic | 25% | 24% | -4% | Fairly valued |
+
+The gap between last-touch and multi-touch credit reveals channel roles.
+
+### 4. Compliance with Platform Reporting
+
+Google Ads, Meta, and other platforms report last-touch by default. To compare apples-to-apples with platform dashboards, you need last-touch in your own reporting—even if you don't use it for decisions.
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Last-Touch Use Case Decision Tree</p>
+  <p class="text-yellow-700 text-sm">Add a visual decision tree: "Should I use last-touch?" with branches for sales cycle length, number of touchpoints, use case (optimization vs budget), etc.</p>
+</div>
+
+## How Last-Touch Works Technically
+
+### Basic Implementation
+
+Last-touch is straightforward to implement:
+
+```ruby
+class LastTouchAttribution
+  def attribute(conversion)
+    # Find the most recent touchpoint before conversion
+    last_touchpoint = conversion.user.touchpoints
+      .where("occurred_at < ?", conversion.occurred_at)
+      .order(occurred_at: :desc)
+      .first
+
+    return nil unless last_touchpoint
+
+    {
+      channel: last_touchpoint.channel,
+      source: last_touchpoint.source,
+      medium: last_touchpoint.medium,
+      campaign: last_touchpoint.campaign,
+      credit: 1.0,
+      touchpoint_at: last_touchpoint.occurred_at
+    }
+  end
+end
+```
+
+### Key Implementation Decisions
+
+| Decision | Options | Common Choice |
+|----------|---------|---------------|
+| **Lookback window** | Hours, days, weeks | 30 days typical |
+| **Include direct?** | Yes/No | Often yes (it's the "last touch") |
+| **Click vs view** | Click-through only or view-through too | Click-through default |
+| **Cross-device** | Single device or stitched | Depends on identity resolution |
+
+### The Direct Channel Problem
+
+A significant portion of last touches are "Direct":
+
+| Scenario | What You See | What Actually Happened |
+|----------|--------------|------------------------|
+| User bookmarked site | Direct | Prior marketing built awareness |
+| Email client stripped referrer | Direct | Email drove the visit |
+| User typed URL | Direct | Brand recall from prior ads |
+| HTTPS → HTTP referrer drop | Direct | External link (lost) |
+
+Options for handling:
+1. **Accept Direct** — It's a real signal of brand strength
+2. **Last Non-Direct Touch** — Find the previous marketing touch
+3. **Time-based fallback** — If marketing touch within 24h, use that
+
+Most sophisticated implementations use "last non-direct touch" for analysis while tracking Direct separately as a brand metric.
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Direct Traffic Analysis</p>
+  <p class="text-yellow-700 text-sm">Add mbuzz data on Direct traffic: "X% of last-touch conversions show as Direct. After analysis, Y% of these had a marketing touch within 24 hours." Show how to recover hidden attribution.</p>
+</div>
+
+## Comparing Last-Touch to Other Models
+
+### Last-Touch vs First-Touch
+
+| Aspect | Last-Touch | First-Touch |
+|--------|-----------|-------------|
+| **Credits** | Final interaction | Initial interaction |
+| **Favors** | Closers (email, retargeting) | Introducers (paid social, content) |
+| **Best for** | Conversion optimization | Demand gen measurement |
+| **Blind spot** | Ignores awareness | Ignores conversion |
+| **B2B fit** | Less useful (long cycles) | More useful (sources pipeline) |
+
+**Use both together** to see the full picture of channel roles.
+
+### Last-Touch vs Linear
+
+| Aspect | Last-Touch | Linear |
+|--------|-----------|--------|
+| **Credit distribution** | 100% to one | Equal to all |
+| **Complexity** | Very simple | Still simple |
+| **Bias** | Strong closer bias | No bias (but naive) |
+| **Best for** | CRO, simple funnels | Baseline, long journeys |
+
+Linear is often a better default than last-touch because it doesn't systematically distort channel value.
+
+### Last-Touch vs Data-Driven
+
+| Aspect | Last-Touch | Data-Driven |
+|--------|-----------|-------------|
+| **Credit distribution** | Fixed (100% last) | Algorithmic |
+| **Transparency** | Fully transparent | Black box |
+| **Data needs** | Minimal | Requires volume |
+| **Best for** | Simplicity | Scale with ML |
+
+Data-driven can improve on last-touch, but many implementations (like Google's) are opaque and may have platform bias.
+
+## Moving Beyond Last-Touch
+
+### Step 1: Add First-Touch Comparison
+
+Start by running first-touch alongside last-touch:
+
+```sql
+-- Compare first vs last touch by channel
+SELECT
+  channel,
+  SUM(first_touch_credit) as first_touch_revenue,
+  SUM(last_touch_credit) as last_touch_revenue,
+  SUM(first_touch_credit) / SUM(last_touch_credit) as ratio
+FROM attribution_results
+GROUP BY channel
+ORDER BY ratio DESC;
+```
+
+Channels with ratio > 1 are under-valued by last-touch.
+Channels with ratio < 1 are over-valued by last-touch.
+
+### Step 2: Implement Multi-Touch
+
+Graduate to linear attribution for a neutral baseline, then explore:
+- Time-decay (credits recency without ignoring history)
+- Position-based (emphasizes first and last)
+- Data-driven (if you have volume)
+
+### Step 3: Validate with Incrementality
+
+Any attribution model—including multi-touch—is still correlational. Use holdout tests to validate:
+
+1. Pick a channel you suspect is over/under-credited
+2. Run a geo-holdout or randomized pause test
+3. Measure incremental lift vs attributed lift
+4. Calibrate your attribution model to match
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Last-Touch Calibration Case Study</p>
+  <p class="text-yellow-700 text-sm">Add mbuzz customer example: "Company X was using last-touch and crediting email with 40% of revenue. After implementing linear attribution and running an incrementality test, email's true contribution was 18%. They reallocated 15% of budget to Paid Social, increasing overall ROAS by X%."</p>
+</div>
+
+## Summary
+
+Last-touch attribution is simple, universal, and systematically misleading for budget decisions.
+
+**Use last-touch when:**
+- Optimizing conversion rate and final-step creative
+- Sales cycles are single-session
+- Comparing against platform reporting
+- You need a simple baseline
+
+**Don't use last-touch alone because:**
+- It over-credits closers, under-credits awareness
+- It leads to the attribution death spiral
+- It conflates "last" with "causal"
+- It ignores 90% of most customer journeys
+
+**Best practice:** Run last-touch alongside first-touch and linear attribution. Use the gaps between models to understand channel roles. Graduate to multi-touch for budget decisions. Validate with incrementality tests.
+
+## Further Reading
+
+**On Attribution Model Selection:**
+- [First-Touch Attribution: When to Use It](/articles/first-touch-attribution) — The counterpart to last-touch
+- [How to Choose the Right Attribution Model](/articles/how-to-choose-attribution-model) — Framework for selection
+- [What is Multi-Touch Attribution?](/articles/what-is-multi-touch-attribution) — The alternative to single-touch
+
+**On the Attribution Death Spiral:**
+- [Rand Fishkin on Attribution](https://sparktoro.com/) — SparkToro's critique of last-click
+- [Kevin Hillstrom on Incrementality](https://blog.minethatdata.com/) — Why attribution alone isn't enough
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Industry Quote on Last-Touch</p>
+  <p class="text-yellow-700 text-sm">Add quote from a known marketing measurement voice on the limitations of last-touch. <strong>Outreach targets:</strong> Rand Fishkin (SparkToro), marketing analysts critical of simplistic attribution.</p>
+</div>
+
+<%= render_key_takeaways(@article.key_takeaways) %>
+
+<%= render_faq(@article.faq) %>

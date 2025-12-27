@@ -1,0 +1,441 @@
+---
+title: "How to Choose the Right Attribution Model"
+slug: "how-to-choose-attribution-model"
+description: "A practical framework for selecting the right attribution model based on your sales cycle, data volume, and business goals. Includes decision tree, model comparison, and common mistakes to avoid."
+published_at:
+section: models
+section_order: 9
+status: draft
+priority: P0
+category: "Attribution Models"
+tags:
+  - attribution models
+  - model selection
+  - linear attribution
+  - time decay
+  - data-driven attribution
+  - marketing measurement
+related_articles:
+  - first-touch-attribution
+  - last-touch-attribution
+  - what-is-multi-touch-attribution
+  - linear-attribution
+seo:
+  title: "How to Choose the Right Attribution Model: A Decision Framework"
+aeo:
+  target_query: "best attribution model"
+  tldr: "Choose your attribution model based on three factors: sales cycle length, conversion volume, and primary use case. For short cycles (<7 days), last-touch works fine. For long cycles with low volume, use linear or position-based. For high volume (5,000+ conversions/month), consider data-driven. Start simple, validate with incrementality tests, and evolve as your data matures."
+  key_takeaways:
+    - "No single model is 'best'—the right choice depends on your business context"
+    - "Start with linear attribution as a neutral baseline before adding complexity"
+    - "Data-driven models need 5,000+ monthly conversions to be reliable"
+    - "Use multiple models for different questions: first-touch for sourcing, last-touch for CRO"
+  faq:
+    - q: "What's the best attribution model for e-commerce?"
+      a: "For e-commerce with short purchase cycles, time-decay or linear works well. Time-decay credits recent touchpoints more, which matches typical e-commerce behavior. If you have high volume (5,000+ orders/month), data-driven can improve accuracy."
+    - q: "What's the best attribution model for B2B SaaS?"
+      a: "B2B SaaS with long sales cycles benefits from position-based (U-shaped or W-shaped) attribution. These models credit both the introduction and conversion touchpoints while acknowledging the nurturing middle. First-touch is also valuable for pipeline sourcing reports."
+    - q: "Should I use Google's data-driven attribution?"
+      a: "Google's DDA is convenient but has limitations: it's a black box, may favor Google properties, and only sees Google touchpoints. For unbiased measurement, use a third-party tool or build your own model. Google's DDA is fine for optimizing within Google Ads specifically."
+    - q: "How often should I change attribution models?"
+      a: "Rarely. Changing models makes historical comparison difficult. Instead, run multiple models in parallel and use each for its appropriate purpose. Only switch your 'primary' model if your business fundamentally changes (e.g., B2C to B2B, new channel mix)."
+    - q: "Can I use different models for different channels?"
+      a: "Yes, and many teams do. Common pattern: first-touch for demand gen reporting, last-touch for performance marketing, multi-touch for executive dashboards. Just be clear about which model you're using for each purpose."
+schema:
+  type: Article
+  author: "mbuzz Team"
+has_code_examples: false
+has_calculator: false
+has_download: true
+download:
+  title: "Attribution Model Selection Checklist"
+  description: "PDF checklist for evaluating which model fits your business"
+  format: "PDF"
+---
+
+<%= render_tldr(@article.tldr) %>
+
+## Why Model Selection Matters
+
+The attribution model you choose determines which channels get credit—and therefore budget. Choose wrong, and you'll systematically over-invest in some channels while starving others.
+
+Consider this example with the same conversion data:
+
+| Channel | Last-Touch | Linear | Time-Decay | Position-Based |
+|---------|-----------|--------|------------|----------------|
+| Paid Social | 8% | 28% | 18% | 32% |
+| Organic Search | 22% | 24% | 26% | 22% |
+| Email | 42% | 20% | 32% | 18% |
+| Paid Search | 28% | 28% | 24% | 28% |
+
+Same data, wildly different conclusions. Under last-touch, email dominates. Under position-based, paid social leads. Your budget decisions would be completely different.
+
+There's no "correct" answer—each model reflects different assumptions about how marketing works. The goal is choosing the model whose assumptions best match your business reality.
+
+## The Three Decision Factors
+
+Model selection comes down to three questions:
+
+### 1. How Long Is Your Sales Cycle?
+
+| Cycle Length | Typical Business | Model Implications |
+|--------------|------------------|-------------------|
+| **< 7 days** | E-commerce, impulse buys | Last-touch often sufficient |
+| **7-30 days** | Considered purchases, low-cost SaaS | Multi-touch adds value |
+| **30-90 days** | B2B SaaS, professional services | Multi-touch essential |
+| **90+ days** | Enterprise, high-ticket B2B | Position-based + first-touch |
+
+Short cycles have fewer touchpoints, so single-touch models lose less information. Long cycles require multi-touch to see the full picture.
+
+### 2. How Many Conversions Do You Have?
+
+| Monthly Conversions | Model Options |
+|--------------------|---------------|
+| **< 500** | Stick to rule-based (linear, position) |
+| **500-2,000** | Rule-based, maybe simple algorithmic |
+| **2,000-5,000** | Can try Markov chain |
+| **5,000+** | Data-driven becomes reliable |
+
+Data-driven models need volume to learn patterns. With limited data, they'll overfit to noise and give worse results than simple rule-based models.
+
+### 3. What's Your Primary Use Case?
+
+| Use Case | Best Model Type | Why |
+|----------|-----------------|-----|
+| **Pipeline sourcing** | First-touch | Shows where leads originated |
+| **Conversion optimization** | Last-touch | Shows what closed the deal |
+| **Budget allocation** | Multi-touch (linear, position) | Balanced view of contribution |
+| **Executive reporting** | Multi-touch | Complete picture, defensible |
+| **Channel role analysis** | First + Last comparison | Shows introducers vs closers |
+
+Different questions need different models. There's nothing wrong with using multiple models for different purposes.
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Model Selection Decision Tree</p>
+  <p class="text-yellow-700 text-sm">Create visual decision tree: Start with "What's your sales cycle?" → branches by length → "Monthly conversions?" → branches by volume → "Primary use case?" → final model recommendations. This becomes a signature mbuzz framework.</p>
+</div>
+
+## Model-by-Model Breakdown
+
+### Last-Touch (Last-Click)
+
+**How it works:** 100% credit to final touchpoint before conversion.
+
+**Best for:**
+- Short sales cycles (< 7 days)
+- Single-session conversions
+- Conversion rate optimization
+- Comparing against platform reporting
+
+**Avoid when:**
+- Allocating budgets across channels
+- Journeys span multiple sessions
+- You care about awareness channels
+
+**Bias:** Over-credits closers (email, retargeting, branded search).
+
+### First-Touch (First-Click)
+
+**How it works:** 100% credit to first touchpoint in the journey.
+
+**Best for:**
+- Measuring demand generation
+- B2B pipeline sourcing
+- Brand awareness campaigns
+- Understanding channel introduction roles
+
+**Avoid when:**
+- Optimizing conversion rate
+- Short cycles where first = last
+- Journeys start with untrackable touches
+
+**Bias:** Over-credits introducers, ignores nurturing and conversion.
+
+### Linear
+
+**How it works:** Equal credit to all touchpoints.
+
+```
+Journey: Social → Blog → Email → Search → Purchase
+Credit:   20%     20%    20%     20%     (conversion)
+```
+
+**Best for:**
+- Neutral baseline (no built-in bias)
+- Long consideration journeys
+- When you're unsure which model to use
+- First step beyond single-touch
+
+**Avoid when:**
+- Journeys have clearly more important touchpoints
+- You have enough data for smarter models
+
+**Bias:** None inherent—but may undervalue particularly important touchpoints.
+
+<%= render_info_box do %>
+  <strong>Our recommendation:</strong> If you're moving from single-touch to multi-touch, start with linear. It's transparent, unbiased, and provides a solid baseline to compare against more complex models.
+<% end %>
+
+### Time-Decay
+
+**How it works:** More credit to touchpoints closer to conversion. Credit decays based on a half-life (commonly 7 days).
+
+```
+Journey: Social → Blog → Email → Search → Purchase
+         Day 1    Day 7   Day 14   Day 20   Day 21
+Credit:   5%      10%     25%      60%     (conversion)
+```
+
+**Best for:**
+- E-commerce and retail
+- Short-to-medium sales cycles
+- When recent touches genuinely matter more
+- Products with urgency or decay (events, seasonal)
+
+**Avoid when:**
+- First-touch genuinely starts the journey (B2B)
+- You want to value awareness fairly
+- Sales cycles are very long (decay makes early touches invisible)
+
+**Bias:** Under-credits early-funnel, over-credits late-funnel (but less than last-touch).
+
+### Position-Based (U-Shaped)
+
+**How it works:** 40% to first touch, 40% to last touch, 20% split among middle.
+
+```
+Journey: Social → Blog → Email → Search → Purchase
+Credit:   40%      7%     6%      7%      40%
+```
+
+**Best for:**
+- B2B lead generation
+- When first and last touches are strategically important
+- Balancing awareness and conversion measurement
+- Teams where demand gen and performance marketing need shared credit
+
+**Avoid when:**
+- Single-session conversions (first = last)
+- Middle touches genuinely matter (content-heavy journeys)
+
+**Bias:** Under-credits middle-funnel nurturing.
+
+### W-Shaped
+
+**How it works:** 30% to first touch, 30% to lead creation touch, 30% to last touch, 10% split among others.
+
+**Best for:**
+- B2B with distinct lead capture moment
+- When marketing → sales handoff matters
+- Companies tracking MQLs as a key metric
+
+**Avoid when:**
+- No clear "lead creation" moment
+- B2C without distinct funnel stages
+- Simpler funnels that don't need the complexity
+
+**Bias:** Requires defining "lead creation" (can be arbitrary).
+
+### Markov Chain (Algorithmic)
+
+**How it works:** Calculates each channel's "removal effect"—how much would conversions drop if that channel didn't exist?
+
+**Best for:**
+- High-volume businesses (2,000+ conversions/month)
+- When you want data to determine credit
+- Sophisticated marketing teams with analytics resources
+
+**Avoid when:**
+- Low conversion volume (overfits)
+- You need to explain model to non-technical stakeholders
+- You want simple, transparent attribution
+
+**Bias:** None inherent, but sensitive to data quality and touchpoint definition.
+
+### Shapley Value (Algorithmic)
+
+**How it works:** Uses game theory to fairly distribute credit based on marginal contribution of each channel.
+
+**Best for:**
+- Very high volume (5,000+ conversions/month)
+- Academic rigor requirement
+- When fairness of credit is paramount
+
+**Avoid when:**
+- Low volume (computational complexity for nothing)
+- Practical speed matters (O(2^n) complexity)
+- Stakeholders won't trust a "game theory" model
+
+**Bias:** None inherent, but computationally expensive and opaque.
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Model Comparison Table</p>
+  <p class="text-yellow-700 text-sm">Add comprehensive table comparing all models across: data requirements, complexity, transparency, best industry fit, and mbuzz support. Include visual "radar charts" for each model's strengths.</p>
+</div>
+
+## The Model Selection Framework
+
+Here's a practical framework for choosing:
+
+### Step 1: Assess Your Data Maturity
+
+| Level | Characteristics | Recommended Models |
+|-------|-----------------|-------------------|
+| **Beginner** | <500 conversions, basic tracking | Last-touch or linear |
+| **Intermediate** | 500-5,000 conversions, multi-touch tracking | Linear, position-based, time-decay |
+| **Advanced** | 5,000+ conversions, identity resolution | Add algorithmic (Markov, Shapley) |
+| **Expert** | Incrementality testing, MMM integration | Calibrated multi-touch + experiments |
+
+Don't over-engineer. A simple model you trust beats a complex model you don't understand.
+
+### Step 2: Match Model to Business Type
+
+| Business Type | Primary Model | Secondary Model |
+|---------------|---------------|-----------------|
+| **E-commerce (low AOV)** | Time-decay | Last-touch for CRO |
+| **E-commerce (high AOV)** | Linear or position-based | First-touch for acquisition |
+| **B2B SaaS** | Position-based (U or W) | First-touch for sourcing |
+| **B2B Enterprise** | First-touch + linear | Last-touch for sales handoff |
+| **Subscription/DTC** | Linear | Time-decay for retention |
+| **Marketplace** | Linear (neutral baseline) | Test multiple |
+
+### Step 3: Define Primary vs Secondary Models
+
+Most mature teams use multiple models:
+
+| Purpose | Model | Audience |
+|---------|-------|----------|
+| **Budget allocation** | Linear or position-based | CMO, Finance |
+| **Demand gen reporting** | First-touch | Demand gen team |
+| **Performance optimization** | Last-touch | Performance marketing |
+| **Executive dashboard** | Linear (neutral) | Leadership |
+| **Experimentation** | Multiple comparison | Analytics team |
+
+Be explicit about which model you use for what. Document it. Stick to it.
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: mbuzz Model Configuration</p>
+  <p class="text-yellow-700 text-sm">Add screenshot showing mbuzz's model selection interface, with options to configure primary and secondary models, set parameters (lookback window, decay half-life), and compare results side-by-side.</p>
+</div>
+
+## Common Model Selection Mistakes
+
+### Mistake 1: Chasing "The Best" Model
+
+There's no universally best model. Teams waste months researching when they should start with linear and iterate.
+
+**Fix:** Choose a reasonable default (linear), ship it, learn from results, adjust.
+
+### Mistake 2: Using Data-Driven Too Early
+
+Data-driven models (Markov, Shapley, ML-based) need volume. Under 2,000 conversions/month, they'll overfit and mislead.
+
+**Fix:** Use rule-based models until you have sufficient data. Test algorithmic models against rule-based baselines.
+
+### Mistake 3: Never Validating
+
+All attribution is correlational. Without validation, you don't know if your model reflects reality.
+
+**Fix:** Run incrementality tests quarterly. Compare attributed lift to measured lift. Calibrate your model.
+
+### Mistake 4: Changing Models Frequently
+
+Every model change breaks historical comparison. Teams who switch quarterly can never track progress.
+
+**Fix:** Commit to a primary model for at least 12 months. Run new models in parallel before switching.
+
+### Mistake 5: Using One Model for Everything
+
+Last-touch for budget allocation starves awareness. First-touch for CRO ignores conversion.
+
+**Fix:** Use the right model for each use case. Document which model answers which question.
+
+## Validating Your Model Choice
+
+Attribution models are hypotheses about how marketing works. Validate them:
+
+### Compare Model Outputs
+
+Run multiple models on the same data:
+
+```
+Channel A: Last-touch says 5%, Linear says 20%, Position says 25%
+```
+
+If models wildly disagree, investigate why. The truth is probably between them.
+
+### Check Against Intuition
+
+Does the model output match business knowledge?
+
+- If brand search gets 50% of multi-touch credit, something's wrong
+- If email (to existing customers) gets sourcing credit, data is dirty
+- If display gets zero credit despite large spend, model may undervalue views
+
+### Run Incrementality Tests
+
+The gold standard. Pause a channel (geo-holdout or randomized) and measure actual impact:
+
+| Channel | Attributed Revenue | Incremental Revenue (Test) | Calibration Factor |
+|---------|-------------------|---------------------------|-------------------|
+| Paid Social | $100K | $150K | 1.5x |
+| Email | $200K | $80K | 0.4x |
+| Display | $30K | $45K | 1.5x |
+
+Use calibration factors to adjust your attribution model toward reality.
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Model Validation Case Study</p>
+  <p class="text-yellow-700 text-sm">Add mbuzz customer example: "Company X validated their linear attribution model with a Paid Social geo-holdout. Attributed revenue was $80K; incremental revenue was $120K. They applied a 1.5x calibration factor, resulting in more accurate budget allocation."</p>
+</div>
+
+## Summary: The Model Selection Checklist
+
+1. **Assess your context:**
+   - Sales cycle length?
+   - Monthly conversion volume?
+   - Primary use case?
+
+2. **Choose a primary model:**
+   - Short cycle, low volume → Last-touch or linear
+   - Medium cycle, medium volume → Linear or position-based
+   - Long cycle, high volume → Position-based, consider data-driven
+
+3. **Add secondary models for specific uses:**
+   - First-touch for demand gen
+   - Last-touch for CRO
+   - Multi-touch for budgets
+
+4. **Validate quarterly:**
+   - Compare multiple models
+   - Check against intuition
+   - Run incrementality tests
+
+5. **Iterate slowly:**
+   - Stick with primary model 12+ months
+   - Run new models in parallel first
+   - Document all changes
+
+## Further Reading
+
+**On Specific Models:**
+- [First-Touch Attribution](/articles/first-touch-attribution) — When to credit the introduction
+- [Last-Touch Attribution](/articles/last-touch-attribution) — When to credit the close
+- [Linear Attribution](/articles/linear-attribution) — The neutral baseline
+
+**On Validation:**
+- [How to Run an Incrementality Test](/articles/incrementality-testing) — Validating attribution with experiments
+- [Calibrating MTA with Lift Studies](/articles/calibrating-mta-with-lift) — Adjusting models with test data
+
+**Academic Resources:**
+- [Shapley, L.S. (1953)](https://www.rand.org/pubs/papers/P295.html) — Original Shapley value paper
+- [Abhishek et al. (2012)](https://faculty.som.yale.edu/ksudhir/papers/attribution.pdf) — Markov chain attribution in marketing
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Expert Quote on Model Selection</p>
+  <p class="text-yellow-700 text-sm">Add quote from attribution practitioner on the model selection journey. <strong>Outreach targets:</strong> Marketing analytics leaders, attribution vendors' DevRel, academics publishing on marketing attribution.</p>
+</div>
+
+<%= render_key_takeaways(@article.key_takeaways) %>
+
+<%= render_faq(@article.faq) %>

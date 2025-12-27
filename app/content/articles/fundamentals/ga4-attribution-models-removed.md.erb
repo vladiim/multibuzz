@@ -1,0 +1,437 @@
+---
+title: "Why Did GA4 Remove Most Attribution Models?"
+slug: "ga4-attribution-models-removed"
+description: "Google Analytics 4 removed first-touch, linear, time-decay, and position-based attribution—keeping only last-click and data-driven. Learn why Google made this change, how their Shapley-based algorithm works, and what your alternatives are."
+published_at:
+section: fundamentals
+section_order: 10
+status: draft
+priority: P0
+category: "Attribution Models"
+tags:
+  - GA4
+  - Google Analytics
+  - data-driven attribution
+  - Shapley value
+  - attribution models
+  - marketing measurement
+related_articles:
+  - how-to-choose-attribution-model
+  - what-is-multi-touch-attribution
+  - last-touch-attribution
+  - first-touch-attribution
+seo:
+  title: "Why Did GA4 Remove Attribution Models? What Changed & Your Options"
+aeo:
+  target_query: "GA4 attribution models removed"
+  tldr: "In late 2023, Google removed first-touch, linear, time-decay, and position-based attribution from GA4—leaving only last-click and data-driven. Google's reasoning: rule-based models are 'outdated' and data-driven (DDA) is superior. The reality is more nuanced. DDA uses Shapley values (game theory) and requires significant conversion volume to work well. If you need the removed models, you'll need a third-party tool or build your own in BigQuery."
+  key_takeaways:
+    - "GA4 removed 4 models: first-touch, linear, time-decay, position-based"
+    - "Only last-click and data-driven attribution remain"
+    - "Google's DDA uses Shapley values with time decay—not Markov chains"
+    - "DDA requires 400+ conversions per conversion type to function"
+    - "For removed models, use third-party tools or build in BigQuery"
+  faq:
+    - q: "When did GA4 remove the attribution models?"
+      a: "Google removed first-touch, linear, time-decay, and position-based models in late 2023 (around October-November). The change applied to all GA4 properties, with no option to keep the old models."
+    - q: "Can I still use first-touch attribution in GA4?"
+      a: "No, not natively in GA4. You can export raw data to BigQuery and build first-touch attribution yourself, or use a third-party attribution tool like mbuzz that supports all models."
+    - q: "What algorithm does GA4 data-driven attribution use?"
+      a: "GA4's DDA uses Shapley values—a game theory algorithm developed by Nobel laureate Lloyd Shapley. It calculates each channel's marginal contribution across all possible touchpoint combinations, with an added time-decay factor that weights recent interactions more heavily."
+    - q: "Why is GA4 data-driven attribution different from Markov chain attribution?"
+      a: "Shapley values (GA4) calculate credit by measuring marginal contribution across all permutations. Markov chains calculate credit by modeling state transitions and removal effects. Markov works with less data and is computationally faster—Shapley is more theoretically 'fair' but needs more conversions."
+    - q: "How many conversions does GA4 DDA need?"
+      a: "GA4 requires at least 400 conversions per conversion type over 28 days, with a path length of 2+ interactions. Below this threshold, GA4 falls back to last-click. Some sources cite 15,000 clicks and 600 conversions for optimal results."
+schema:
+  type: Article
+  author: "mbuzz Team"
+has_code_examples: true
+has_calculator: false
+has_download: false
+---
+
+<%= render_tldr(@article.tldr) %>
+
+## What Google Removed—And What's Left
+
+In late 2023, Google quietly removed four attribution models from GA4:
+
+| Removed Models | What They Did |
+|---------------|---------------|
+| **First-touch** | 100% credit to first interaction |
+| **Linear** | Equal credit to all touchpoints |
+| **Time-decay** | More credit to recent touchpoints |
+| **Position-based** | 40% first, 40% last, 20% middle |
+
+What remains:
+
+| Remaining Models | How They Work |
+|-----------------|---------------|
+| **Last-click** | 100% credit to final click before conversion |
+| **Data-driven (DDA)** | Algorithmic credit using Shapley values |
+
+This wasn't a subtle change. Google eliminated the models that marketing teams relied on for neutral baseline measurement (linear), demand gen attribution (first-touch), and e-commerce optimization (time-decay).
+
+### Google's Official Reasoning
+
+Google's explanation was straightforward: rule-based models are "outdated" and data-driven attribution provides more accurate, property-specific insights.
+
+The subtext: Google wants everyone using their machine learning-based approach.
+
+<%= render_warning_box do %>
+  <strong>The practical problem:</strong> Data-driven attribution requires significant conversion volume. If you're under 400 monthly conversions, DDA falls back to last-click—which means you effectively only have last-click available.
+<% end %>
+
+## How Google's Data-Driven Attribution Actually Works
+
+Google's DDA isn't a black box of pure machine learning. It's built on a specific algorithm with a Nobel Prize lineage.
+
+### The Shapley Value Foundation
+
+GA4's data-driven attribution uses **Shapley values**—a concept from cooperative game theory developed by economist Lloyd Shapley (Nobel Prize, 2012).
+
+The core idea: How do you fairly distribute the output of a team among its members?
+
+In attribution terms:
+- The "team" = marketing touchpoints in a journey
+- The "output" = the conversion
+- Shapley values = fair credit distribution
+
+```
+Shapley Value Concept:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For each touchpoint, calculate:
+1. Consider every possible subset of touchpoints
+2. For each subset, measure conversion rate WITH the touchpoint
+3. For each subset, measure conversion rate WITHOUT the touchpoint
+4. The touchpoint's "marginal contribution" = the difference
+5. Average across all possible subsets = Shapley value
+
+This ensures "fair" distribution based on actual contribution.
+```
+
+### What Makes It Different from Markov Chains
+
+You might hear "data-driven attribution" and think of Markov chain models—but Google doesn't use Markov chains for GA4 DDA.
+
+| Aspect | Shapley Values (Google) | Markov Chains |
+|--------|------------------------|---------------|
+| **Core concept** | Marginal contribution across all permutations | State transition probabilities |
+| **How credit is calculated** | Average contribution when added to any subset | "Removal effect"—what happens if channel is gone |
+| **Data requirements** | Higher—needs many conversions | Lower—can work with less data |
+| **Computational cost** | O(2^n)—expensive | O(n)—much faster |
+| **Best for** | High-volume properties | Lower volume, keyword-level analysis |
+
+**Why this matters:** If you have fewer conversions, Markov chains might give you better data-driven insights than Shapley values. But Google chose Shapley—so if you need Markov-based attribution, you'll need to build it yourself or use a third-party tool.
+
+### GA4's Implementation Details
+
+GA4's DDA adds some specific features on top of Shapley:
+
+1. **Time decay component:** Recent interactions get more weight
+2. **50-interaction window:** Considers up to 50 touchpoints (vs 4 in Universal Analytics)
+3. **90-day lookback:** Attribution window extends 90 days back
+4. **Property-specific:** Models are trained on YOUR data, not global averages
+
+```ruby
+# Simplified conceptual model of Shapley calculation
+class ShapleyAttribution
+  def calculate_credit(journey)
+    touchpoints = journey.touchpoints
+
+    touchpoints.map do |touchpoint|
+      # For each touchpoint, calculate marginal contribution
+      # across all possible subsets
+      subsets = all_possible_subsets(touchpoints)
+
+      contributions = subsets.map do |subset|
+        with_touchpoint = conversion_probability(subset + [touchpoint])
+        without_touchpoint = conversion_probability(subset)
+
+        with_touchpoint - without_touchpoint
+      end
+
+      {
+        channel: touchpoint.channel,
+        credit: contributions.sum / contributions.size  # Average marginal contribution
+      }
+    end
+  end
+end
+```
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Shapley Calculation Visualization</p>
+  <p class="text-yellow-700 text-sm">Create animated diagram showing how Shapley values are calculated: Start with journey A→B→C→Convert, show all possible subsets (A, B, C, AB, AC, BC, ABC, none), calculate marginal contribution for each channel by comparing WITH vs WITHOUT.</p>
+</div>
+
+## Why the Removal Matters
+
+### The Volume Threshold Problem
+
+GA4's DDA requires minimum thresholds to function:
+
+| Requirement | Threshold |
+|-------------|-----------|
+| **Minimum conversions** | 400 per conversion type |
+| **Minimum path length** | 2+ touchpoints |
+| **Time period** | 28 days |
+| **Optimal performance** | 15,000+ clicks, 600+ conversions |
+
+If you don't meet these thresholds, **GA4 falls back to last-click**.
+
+For many businesses, this means:
+- Startups and SMBs → effectively stuck on last-click
+- New products → no data-driven insights until volume builds
+- Multiple conversion types → each needs its own volume
+
+### What You Lose Without the Removed Models
+
+| Model | Use Case You Lose |
+|-------|-------------------|
+| **First-touch** | Demand gen reporting, pipeline sourcing, awareness measurement |
+| **Linear** | Neutral baseline, long consideration journeys, unbiased comparison |
+| **Time-decay** | E-commerce optimization, recency-weighted credit |
+| **Position-based** | B2B lead gen, balanced first/last crediting |
+
+If you used linear attribution as your neutral baseline—and many sophisticated teams did—you now have no simple way to replicate it in GA4.
+
+### The Google Ecosystem Lock-In Concern
+
+There's an elephant in the room: **Google's DDA is trained on Google's data, measured in Google's tool, and may favor Google channels.**
+
+While Google states DDA is unbiased, the algorithm is a black box. You can't:
+- Inspect the model weights
+- Verify the Shapley calculations
+- Check for channel bias
+- Customize the algorithm
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: GA4 DDA Bias Analysis</p>
+  <p class="text-yellow-700 text-sm">Add mbuzz analysis comparing Google's DDA credit allocation vs independent Shapley calculation on the same data. If there's systematic difference in how Google channels are credited, this is a significant finding.</p>
+</div>
+
+## Your Alternatives
+
+### Option 1: Build It Yourself in BigQuery
+
+GA4 exports raw event data to BigQuery. You can rebuild any attribution model from scratch.
+
+**First-touch in BigQuery:**
+
+```sql
+-- First-touch attribution from GA4 BigQuery export
+WITH journey_first_touch AS (
+  SELECT
+    user_pseudo_id,
+    traffic_source.source AS first_source,
+    traffic_source.medium AS first_medium,
+    traffic_source.name AS first_campaign,
+    MIN(event_timestamp) AS first_touch_time
+  FROM `your_project.analytics_12345678.events_*`
+  WHERE traffic_source.source IS NOT NULL
+  GROUP BY user_pseudo_id, traffic_source.source, traffic_source.medium, traffic_source.name
+)
+
+SELECT
+  j.first_source,
+  j.first_medium,
+  COUNT(DISTINCT c.user_pseudo_id) AS conversions,
+  SUM(c.conversion_value) AS revenue
+FROM journey_first_touch j
+JOIN conversions c ON j.user_pseudo_id = c.user_pseudo_id
+GROUP BY j.first_source, j.first_medium
+ORDER BY conversions DESC;
+```
+
+**Linear attribution in BigQuery:**
+
+```sql
+-- Linear attribution: equal credit to all touchpoints
+WITH touchpoints AS (
+  SELECT
+    user_pseudo_id,
+    traffic_source.source,
+    traffic_source.medium,
+    event_timestamp,
+    ROW_NUMBER() OVER (PARTITION BY user_pseudo_id ORDER BY event_timestamp) AS touch_order
+  FROM `your_project.analytics_12345678.events_*`
+  WHERE traffic_source.source IS NOT NULL
+),
+journey_length AS (
+  SELECT user_pseudo_id, MAX(touch_order) AS total_touches
+  FROM touchpoints
+  GROUP BY user_pseudo_id
+)
+
+SELECT
+  t.source,
+  t.medium,
+  SUM(1.0 / jl.total_touches) AS linear_credit,  -- Equal share per touchpoint
+  COUNT(DISTINCT t.user_pseudo_id) AS touched_users
+FROM touchpoints t
+JOIN journey_length jl ON t.user_pseudo_id = jl.user_pseudo_id
+GROUP BY t.source, t.medium
+ORDER BY linear_credit DESC;
+```
+
+**Pros:**
+- Full control over methodology
+- Access to all models
+- Can customize for your business
+
+**Cons:**
+- Requires SQL expertise
+- Must maintain the queries
+- No real-time reporting
+- Need BigQuery skills
+
+### Option 2: Third-Party Attribution Tools
+
+Several tools provide the attribution models GA4 removed:
+
+| Tool | Models Available | Pricing |
+|------|-----------------|---------|
+| **mbuzz** | All standard + custom Shapley/Markov | Usage-based |
+| **Segment** | All standard + custom | Enterprise |
+| **Supermetrics** | Rule-based reconstruction | Mid-market |
+| **Triple Whale** | DTC-focused, all models | E-commerce |
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: mbuzz Attribution Model Comparison</p>
+  <p class="text-yellow-700 text-sm">Add screenshot showing mbuzz's model selector with all available models (first-touch, linear, time-decay, position-based, Markov, Shapley). Show side-by-side comparison view and emphasize transparency of calculations.</p>
+</div>
+
+### Option 3: Run Multiple Tools in Parallel
+
+Many teams now run:
+- **GA4** for traffic analysis and last-click baseline
+- **Third-party tool** for multi-touch attribution
+- **Incrementality tests** to validate both
+
+This is more work but gives you the complete picture.
+
+## Making the Best of GA4's DDA
+
+If you're going to use GA4's data-driven attribution, here's how to get the most from it:
+
+### 1. Ensure You Meet Volume Thresholds
+
+Track whether you have enough conversions:
+
+| Conversion Type | Your Volume | Status |
+|----------------|-------------|--------|
+| Purchase | ? per month | Need 400+ |
+| Signup | ? per month | Need 400+ |
+| Lead form | ? per month | Need 400+ |
+
+If you're below threshold, DDA is actually last-click. Don't be fooled.
+
+### 2. Use DDA for Direction, Not Precision
+
+DDA tells you which channels are likely over/undervalued relative to last-click. Use it for:
+- Identifying channels that might deserve more investment
+- Flagging channels that may be over-credited
+- General budget allocation guidance
+
+Don't use it for:
+- Precise ROAS calculation
+- Exact channel comparisons
+- Replacing incrementality testing
+
+### 3. Compare DDA to Last-Click Regularly
+
+Run this comparison monthly:
+
+| Channel | DDA Credit | Last-Click Credit | Difference |
+|---------|-----------|-------------------|------------|
+| Paid Social | 28% | 8% | +250% (undervalued by LC) |
+| Email | 15% | 35% | -57% (overvalued by LC) |
+| Organic | 22% | 20% | +10% (fairly valued) |
+
+Large differences reveal channel role insights.
+
+### 4. Validate with Holdout Tests
+
+DDA is still correlational. Validate with incrementality:
+
+1. Pick a channel DDA says is valuable
+2. Run a geo-holdout test
+3. Compare attributed lift to incremental lift
+4. Calibrate your trust in DDA accordingly
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: DDA Validation Case Study</p>
+  <p class="text-yellow-700 text-sm">Add mbuzz customer example: "Company X validated GA4 DDA with a geo-holdout test on Paid Social. DDA attributed $150K in revenue; incrementality test showed $180K true lift. This 1.2x calibration factor informed their budget allocation."</p>
+</div>
+
+## What This Means for the Future
+
+Google's move signals a broader industry shift:
+
+### 1. ML-Based Attribution Becomes Default
+
+Expect all major platforms to push algorithmic attribution. The question isn't whether to use data-driven—it's which algorithm and whose implementation.
+
+### 2. First-Party Data Becomes More Critical
+
+As third-party cookies die, the properties with more first-party data will have better attribution. GA4's DDA will work better for larger sites.
+
+### 3. Incrementality Testing Rises
+
+As attribution becomes more opaque, incrementality testing becomes the ground truth. Teams that can run proper holdout tests will have unfair advantages.
+
+### 4. Tool Fragmentation Increases
+
+No single tool will do everything. Expect tech stacks to include:
+- Analytics tool (GA4, etc.)
+- Attribution tool (specialized)
+- MMM tool (for long-term planning)
+- Experimentation platform (for validation)
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Industry Expert Quote</p>
+  <p class="text-yellow-700 text-sm">Add quote from marketing measurement expert on Google's attribution model removal. <strong>Outreach targets:</strong> Simo Ahava (GA4 expert), Krista Seiden (former Google Analytics advocate), Kevin Hillstrom (MineThatData—critical of platform attribution).</p>
+</div>
+
+## Summary
+
+Google removed first-touch, linear, time-decay, and position-based attribution from GA4—leaving only last-click and data-driven.
+
+**Key facts:**
+- DDA uses Shapley values (game theory), not Markov chains
+- Requires 400+ conversions per conversion type to function
+- Falls back to last-click below threshold
+- Is a black box you can't inspect or customize
+
+**What to do:**
+1. Check if you meet DDA volume thresholds (many don't)
+2. For removed models, use BigQuery exports or third-party tools
+3. Treat DDA as directional guidance, not precise measurement
+4. Validate with incrementality testing
+
+**Bottom line:** The models Google removed were useful for specific purposes. If you need them, you now need to build them yourself or buy them elsewhere.
+
+## Further Reading
+
+**On GA4's Data-Driven Attribution:**
+- [GA4 DDA Complete Guide](https://www.webstarresearch.com/blog/ga4-data-driven-attribution-complete-guide-2024/) — Technical walkthrough of how DDA works
+- [Adswerve: Google's DDA Explained](https://adswerve.com/blog/googles-ga4-data-driven-attribution-model-explained) — Implementation details
+- [Arcalea: Understanding GA4 DDA](https://arcalea.com/blog/ga4-data-driven-attribution-0) — Practitioner perspective
+
+**On Shapley Values in Attribution:**
+- [Shapley, L.S. (1953)](https://www.rand.org/pubs/papers/P295.html) — Original paper on the Shapley value
+- [OWOX: Data-Driven Attribution](https://www.owox.com/blog/articles/data-driven-attribution) — Comparison of DDA approaches
+
+**On Building Your Own:**
+- [Stacktonic: Build DDA with BigQuery and Python](https://stacktonic.com/article/build-a-data-driven-attribution-model-using-google-analytics-4-big-query-and-python) — Technical tutorial
+
+**Related Articles:**
+- [How to Choose the Right Attribution Model](/articles/how-to-choose-attribution-model) — Framework for model selection
+- [First-Touch Attribution](/articles/first-touch-attribution) — Understanding what you lost
+- [Last-Touch Attribution](/articles/last-touch-attribution) — What's still available
+
+<%= render_key_takeaways(@article.key_takeaways) %>
+
+<%= render_faq(@article.faq) %>

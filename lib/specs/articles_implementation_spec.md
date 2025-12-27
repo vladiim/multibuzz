@@ -512,3 +512,207 @@ end
 13. [ ] Add Rake tasks
 14. [ ] Write first P0 article
 15. [ ] Configure analytics events
+
+---
+
+## Article Publishing Checklist
+
+Every article must pass this checklist before changing `status: draft` to `status: published`.
+
+### 1. Content Quality
+
+| Check | Requirement |
+|-------|-------------|
+| Word count | 1,500-2,500 words (pillar pages up to 3,000) |
+| TL;DR | 40-50 words for featured snippet capture |
+| FAQ answers | Each 40-60 words for AEO |
+| Headings | 10+ H2/H3 headings for structure |
+| Tables | At least 1 comparison/reference table |
+| Internal links | 3+ links to related mbuzz articles |
+
+### 2. Unique Content (Non-LLM)
+
+**Every article MUST include at least 3 of these unique content types that AI cannot generate:**
+
+| Type | Description | Example |
+|------|-------------|---------|
+| **mbuzz Data** | First-party benchmark data from customers | "Across 50K conversions, median journey = 4.2 touchpoints" |
+| **Customer Case Study** | Real anonymized customer story with metrics | "A DTC brand increased ROAS 23% after..." |
+| **Product Screenshots** | mbuzz dashboard/UI screenshots | Journey explorer, attribution report |
+| **Original Diagrams** | Custom visuals created for article | Pearl's Ladder applied to marketing |
+| **Proprietary Framework** | mbuzz-specific methodology or decision tree | "The mbuzz Model Selection Matrix" |
+| **Expert Quote** | Quote from team member or customer | "We built mbuzz because..." — Founder |
+| **Downloadable Tool** | Excel template, calculator, checklist | Budget reallocation spreadsheet |
+| **Video/Demo** | Loom or product walkthrough | "Watch: Setting up attribution in mbuzz" |
+
+**Use yellow placeholder boxes during drafting:**
+```erb
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: [Type]</p>
+  <p class="text-yellow-700 text-sm">[Description of what's needed]</p>
+</div>
+```
+
+### 3. External References (Outreach Targets)
+
+**Every article SHOULD cite 3-5 external experts/resources for outreach opportunities.**
+
+When citing, include:
+- Name and affiliation
+- Link to their work
+- Brief context for why they're cited
+
+**Outreach categories:**
+
+| Category | Examples | Outreach Value |
+|----------|----------|----------------|
+| **Academic Researchers** | Judea Pearl, researchers with published papers | Credibility, academic backlinks |
+| **Industry Thought Leaders** | Kevin Hillstrom, Cassie Kozyrkov, Rand Fishkin | Large followings, likely to share |
+| **Open-Source Maintainers** | Robyn team (Meta), Meridian team (Google) | Dev community reach |
+| **Authors** | Book authors we reference | Author platforms, newsletters |
+| **Tool Creators** | Analytics/attribution tool creators | Niche community reach |
+
+**Outreach process (post-publish):**
+1. Share article on Twitter/LinkedIn tagging cited people
+2. Send personalized email: "Featured your work in our guide on [topic]"
+3. Offer to update/expand the reference if they have feedback
+4. Track responses for relationship building
+
+### 4. SEO/AEO Requirements
+
+| Element | Requirement |
+|---------|-------------|
+| `seo.title` | Under 60 characters, includes primary keyword |
+| `description` | 150-160 characters, compelling CTA |
+| `aeo.target_query` | Exact search query we're targeting |
+| `aeo.tldr` | Direct answer to target query (40-50 words) |
+| `aeo.key_takeaways` | 4-5 bullet points, specific and quotable |
+| `aeo.faq` | 3-5 questions with concise answers |
+| `tags` | 3-7 relevant tags |
+| `related_articles` | 2-4 slugs of related content |
+
+### 5. Media Assets
+
+| Asset | Required | Specifications |
+|-------|----------|----------------|
+| `og_image` | Yes | 1200×630 PNG, article-specific |
+| `featured_image` | Recommended | Hero image with alt text |
+| Inline diagrams | If referenced | SVG preferred, PNG fallback |
+| Screenshots | If referenced | 1600×900 max, annotated |
+
+### 6. Pre-Publish Validation
+
+Run before publishing:
+
+```bash
+# Validate frontmatter
+rails articles:validate
+
+# Check for placeholder boxes (should be zero)
+grep -c "PLACEHOLDER:" app/content/articles/**/*.md.erb
+
+# Preview rendered output
+rails articles:render[slug]
+
+# Check word count
+rails runner 'puts Articles::Repository.find_by_slug("slug").word_count'
+```
+
+### 7. Post-Publish Actions
+
+| Action | Timeline | Owner |
+|--------|----------|-------|
+| Share on Twitter/LinkedIn | Day 0 | Marketing |
+| Tag cited experts on social | Day 0 | Marketing |
+| Send outreach emails to cited people | Day 0-1 | Marketing |
+| Submit to Google Search Console | Day 0 | Marketing |
+| Add to email newsletter | Next send | Marketing |
+| Monitor Search Console for impressions | Week 1-4 | Marketing |
+| Update based on performance data | Month 1 | Content |
+
+---
+
+## Article Template
+
+Use this as a starting point for new articles:
+
+```markdown
+---
+title: "[Question format title]"
+slug: "[url-safe-slug]"
+description: "[150-160 char description with value prop]"
+published_at:  # Set when ready to publish
+section: fundamentals  # One of: fundamentals, models, integration, funnel-forecasting, implementation, advanced, mbuzz
+section_order: 1
+status: draft  # draft → review → published
+priority: P0  # P0, P1, P2, P3
+category: "[Category Name]"
+tags:
+  - tag1
+  - tag2
+related_articles:
+  - related-slug-1
+  - related-slug-2
+seo:
+  title: "[SEO title under 60 chars]"
+aeo:
+  target_query: "[exact search query]"
+  tldr: "[40-50 word direct answer]"
+  key_takeaways:
+    - "[Specific takeaway 1]"
+    - "[Specific takeaway 2]"
+    - "[Specific takeaway 3]"
+    - "[Specific takeaway 4]"
+  faq:
+    - q: "[Question 1]"
+      a: "[40-60 word answer]"
+    - q: "[Question 2]"
+      a: "[40-60 word answer]"
+schema:
+  type: Article  # Article, HowTo, FAQPage
+  author: "mbuzz Team"
+has_code_examples: false
+has_calculator: false
+has_download: false
+---
+
+<%%= render_tldr(@article.tldr) %>
+
+## [First H2 - Core Concept]
+
+[Opening paragraph - direct answer to the title question]
+
+### [Subsection]
+
+[Content with comparison table]
+
+| Column 1 | Column 2 | Column 3 |
+|----------|----------|----------|
+| Data | Data | Data |
+
+[PLACEHOLDER for unique content]
+
+## [Second H2 - How It Works]
+
+[Detailed explanation]
+
+## [Third H2 - When to Use / When Not to Use]
+
+[Decision guidance]
+
+## [Fourth H2 - Common Mistakes / Pitfalls]
+
+[Practical advice]
+
+## [Fifth H2 - Getting Started / Next Steps]
+
+[Actionable conclusion]
+
+## Further Reading
+
+[External citations with outreach targets]
+
+<%%= render_key_takeaways(@article.key_takeaways) %>
+
+<%%= render_faq(@article.faq) %>
+```

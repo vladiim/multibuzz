@@ -1,0 +1,344 @@
+---
+title: "When Should I Use First-Touch Attribution?"
+slug: "first-touch-attribution"
+description: "First-touch attribution credits the first marketing interaction for a conversion. Learn when first-touch is the right model, its limitations, and how to combine it with other models for complete measurement."
+published_at:
+section: models
+section_order: 1
+status: draft
+priority: P0
+category: "Attribution Models"
+tags:
+  - first-touch attribution
+  - attribution models
+  - top of funnel
+  - demand generation
+  - brand awareness
+related_articles:
+  - last-touch-attribution
+  - what-is-multi-touch-attribution
+  - linear-attribution
+  - how-to-choose-attribution-model
+seo:
+  title: "First-Touch Attribution: When to Use It & How It Works"
+aeo:
+  target_query: "first touch attribution"
+  tldr: "First-touch attribution gives 100% credit to the first marketing interaction in a customer's journey. Use it when measuring top-of-funnel effectiveness, brand awareness campaigns, or demand generation. It's best for understanding which channels introduce new prospects, but it ignores everything that happens after—so pair it with other models for complete measurement."
+  key_takeaways:
+    - "First-touch credits the channel that introduced a prospect—nothing else"
+    - "Best for measuring brand awareness, demand gen, and top-of-funnel campaigns"
+    - "Undervalues nurturing, retargeting, and bottom-funnel conversion channels"
+    - "Use alongside last-touch or multi-touch for balanced attribution"
+  faq:
+    - q: "What's the difference between first-touch and first-click attribution?"
+      a: "They're the same thing—different terminology for crediting the first interaction. First-touch, first-click, and first-interaction attribution all mean 100% credit goes to the initial marketing touchpoint that started the customer journey."
+    - q: "Does Google Analytics 4 support first-touch attribution?"
+      a: "No. GA4 removed first-touch (and most other models) in late 2023, keeping only last-click and data-driven. To use first-touch attribution, you need a third-party tool or build your own model."
+    - q: "Should I use first-touch for B2B or B2C?"
+      a: "First-touch is valuable in both, but especially B2B where identifying the original lead source matters for long sales cycles. In B2C with shorter cycles, last-touch or multi-touch often provides more actionable insights."
+    - q: "How do I set a first-touch attribution window?"
+      a: "Unlike last-touch, first-touch looks backward from conversion to the earliest touchpoint. Your lookback window determines how far back to search—30 days for short cycles, 90+ days for B2B. The 'first touch' is the first interaction within that window."
+    - q: "Can first-touch work with anonymous visitors?"
+      a: "Yes, if you track anonymous sessions with cookies or device IDs. When a user converts, you look back at their entire tracked history to find the first touchpoint—even if it was anonymous at the time."
+schema:
+  type: Article
+  author: "mbuzz Team"
+has_code_examples: true
+has_calculator: false
+has_download: false
+---
+
+<%= render_tldr(@article.tldr) %>
+
+## What First-Touch Attribution Measures
+
+First-touch attribution answers one question: **"What channel introduced this customer to us?"**
+
+It gives 100% of the conversion credit to the very first marketing interaction, ignoring everything that happened afterward.
+
+```
+Customer Journey:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Facebook Ad    →    Blog Post    →    Email    →    Purchase
+     (Day 1)          (Day 5)         (Day 12)        (Day 14)
+       │
+       ▼
+   ┌────────┐
+   │  100%  │  ← First-touch credits Facebook
+   └────────┘
+```
+
+The Facebook ad that started the journey gets full credit. The blog content, email nurturing, and everything else? Zero credit.
+
+### The Logic Behind First-Touch
+
+First-touch proponents argue: without that initial introduction, the customer never would have entered your funnel. Everything else was just follow-up.
+
+This is particularly compelling for:
+- **Brand awareness campaigns** — Did the campaign introduce new people?
+- **Demand generation** — Which channels create pipeline?
+- **New market entry** — What's working to reach new audiences?
+
+## When First-Touch Is the Right Choice
+
+### 1. Measuring Top-of-Funnel Effectiveness
+
+If your goal is understanding which channels fill the top of your funnel, first-touch tells you exactly that.
+
+| Question | First-Touch Answers |
+|----------|-------------------|
+| Which channels bring new visitors? | Yes |
+| Which campaigns generate awareness? | Yes |
+| Where did this lead originally come from? | Yes |
+| Which channels close deals? | No |
+| What nurtures prospects to convert? | No |
+
+### 2. Long Sales Cycles with Multiple Teams
+
+In B2B with 90+ day sales cycles, marketing often hands off to sales after initial engagement. First-touch helps marketing prove its contribution:
+
+```
+Marketing-Sourced Journey:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ LinkedIn Ad → Webinar → Sales Demo → Proposal → Close
+   (Day 1)     (Day 14)    (Day 45)    (Day 75)   (Day 90)
+      │
+      ▼
+  Marketing gets credit for sourcing this deal
+```
+
+Without first-touch, this deal might be credited to the last marketing touch (webinar) or worse, not credited to marketing at all since sales closed it.
+
+### 3. Understanding Channel Roles
+
+First-touch reveals which channels are "introducers" vs "closers." When combined with last-touch data:
+
+| Channel | First-Touch Credit | Last-Touch Credit | Role |
+|---------|-------------------|-------------------|------|
+| Paid Social | 45% | 8% | Introducer |
+| Organic Search | 25% | 15% | Balanced |
+| Email | 5% | 40% | Closer |
+| Direct | 10% | 30% | Closer (brand strength) |
+| Paid Search (Brand) | 15% | 7% | Closer |
+
+This tells you: Paid Social introduces nearly half your customers but gets almost no last-touch credit. If you only looked at last-touch, you'd underinvest in the channel filling your funnel.
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: First-Touch vs Last-Touch Comparison</p>
+  <p class="text-yellow-700 text-sm">Add mbuzz customer data showing first-touch vs last-touch credit by channel. Example table showing the "introducer vs closer" pattern across real data. This becomes a key reference visual.</p>
+</div>
+
+## When First-Touch Is the Wrong Choice
+
+### 1. Optimizing Bottom-Funnel Campaigns
+
+If you're running retargeting, email sequences, or branded search—first-touch will never credit these channels. They touch users who already entered the funnel.
+
+### 2. Understanding the Full Journey
+
+First-touch ignores 90% of most customer journeys. A prospect might:
+- See 5 ads
+- Read 3 blog posts
+- Watch a webinar
+- Receive 8 emails
+- Visit pricing 4 times
+
+First-touch: "It was that first Facebook ad." This is technically true but operationally useless for understanding what moved them toward purchase.
+
+### 3. When Journeys Start Anonymously
+
+If users first interact anonymously and you can't connect their later identity back to that session, first-touch fails. The "first touch" you see might actually be their third visit.
+
+<%= render_warning_box do %>
+  <strong>The first-touch trap:</strong> Because first-touch over-credits top-of-funnel, teams using it exclusively often over-invest in awareness and under-invest in conversion. You'll fill a leaky bucket instead of fixing the leak.
+<% end %>
+
+## How to Implement First-Touch
+
+### Basic Logic
+
+First-touch attribution requires looking backward from conversion to find the earliest touchpoint:
+
+```ruby
+class FirstTouchAttribution
+  def initialize(lookback_days: 90)
+    @lookback_days = lookback_days
+  end
+
+  def attribute(conversion)
+    journey = conversion.user.touchpoints
+      .where("occurred_at >= ?", conversion.occurred_at - @lookback_days.days)
+      .where("occurred_at <= ?", conversion.occurred_at)
+      .order(:occurred_at)
+
+    first_touchpoint = journey.first
+    return nil unless first_touchpoint
+
+    {
+      channel: first_touchpoint.channel,
+      source: first_touchpoint.source,
+      medium: first_touchpoint.medium,
+      campaign: first_touchpoint.campaign,
+      credit: 1.0,
+      touchpoint_at: first_touchpoint.occurred_at
+    }
+  end
+end
+```
+
+### Key Implementation Decisions
+
+| Decision | Options | Recommendation |
+|----------|---------|----------------|
+| **Lookback window** | 7, 30, 60, 90+ days | Match your sales cycle |
+| **Include direct?** | Yes/No | Usually exclude—direct isn't a "marketing" touch |
+| **Session vs event** | First session or first event | First session (first page of first visit) |
+| **Anonymous stitching** | Required | Yes—connect anonymous to known users |
+
+### Handling the "Direct" Problem
+
+Many first touches appear as "Direct" because:
+- User typed URL directly (brand awareness working!)
+- Referrer was stripped (HTTPS → HTTP, email clients)
+- Tracking failed on first visit
+
+Options:
+1. **Credit Direct** — Accept that brand/word-of-mouth is a real channel
+2. **Exclude Direct** — Find the first *trackable* marketing touch
+3. **Override Direct** — If a marketing touch exists within 24 hours, use that instead
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: First-Touch Implementation Screenshot</p>
+  <p class="text-yellow-700 text-sm">Add mbuzz screenshot showing first-touch attribution report: channels ranked by first-touch credit, with comparison to other models. Show the "Direct" handling options in the UI.</p>
+</div>
+
+## Combining First-Touch with Other Models
+
+First-touch alone is incomplete. Here's how to use it alongside other models:
+
+### First + Last Touch (Position-Based Light)
+
+Run both models and compare:
+
+| Channel | First-Touch | Last-Touch | Insight |
+|---------|------------|------------|---------|
+| Paid Social | 40% | 5% | Strong introducer, weak closer |
+| Email | 3% | 35% | Weak introducer, strong closer |
+| Organic | 30% | 25% | Balanced performer |
+| Paid Search | 27% | 35% | Slight closer bias |
+
+This immediately shows channel roles without complex multi-touch modeling.
+
+### First-Touch for Sourcing, Multi-Touch for Credit
+
+A common B2B pattern:
+
+1. **Lead Source** (first-touch): "Marketing sourced this lead from LinkedIn"
+2. **Opportunity Credit** (multi-touch): "These 5 touchpoints influenced the deal"
+3. **Closed-Won Credit** (last-touch or weighted): "Final conversion channels"
+
+This lets marketing claim sourcing credit while still understanding the full journey.
+
+### The Marketing vs Finance View
+
+| Stakeholder | Model Preference | Why |
+|-------------|-----------------|-----|
+| **Demand Gen** | First-touch | Shows pipeline generation |
+| **Performance Marketing** | Last-touch | Shows conversion efficiency |
+| **Marketing Leadership** | Multi-touch | Shows full contribution |
+| **Finance** | First-touch + incrementality | Wants deduplicated credit |
+
+Having multiple models isn't a bug—it's a feature. Different questions need different answers.
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Multi-Model Dashboard</p>
+  <p class="text-yellow-700 text-sm">Add mbuzz screenshot showing side-by-side first-touch, last-touch, and linear attribution for the same conversion data. Highlight how channel rankings change between models.</p>
+</div>
+
+## Common First-Touch Mistakes
+
+### Mistake 1: Using Too Short a Lookback Window
+
+If your sales cycle is 60 days and your lookback is 30, you'll miss the actual first touch for half your conversions.
+
+**Fix:** Analyze time-to-conversion distribution. Set lookback to capture 90%+ of journeys.
+
+### Mistake 2: Not Handling Anonymous → Known Transitions
+
+User visits anonymously on Day 1, returns and converts on Day 30 with login. If you don't stitch these sessions, Day 30 looks like "first touch."
+
+**Fix:** Implement identity resolution. When users identify, look up their anonymous history.
+
+### Mistake 3: Crediting "Direct" as First Touch
+
+When first touch is "Direct," you've lost the actual marketing source. This often means:
+- Email client stripped referrer
+- User had prior brand awareness (good, but not actionable)
+- Tracking failed
+
+**Fix:** Use fallback logic—find first *marketing* touch within expanded window.
+
+### Mistake 4: Only Using First-Touch
+
+Teams who only see first-touch data make predictable mistakes:
+- Over-invest in awareness
+- Under-invest in conversion
+- Ignore nurturing's impact
+- Cut "non-performing" channels that actually close deals
+
+**Fix:** Always pair first-touch with at least last-touch comparison.
+
+## First-Touch in the GA4 Era
+
+Google Analytics 4 removed first-touch attribution in late 2023, along with most other models. You're left with:
+- Last-click (default)
+- Data-driven (algorithmic, black box)
+
+To use first-touch attribution now, you need:
+
+1. **Third-party attribution tools** (mbuzz, Segment, etc.)
+2. **Build your own** in your data warehouse
+3. **BigQuery export** from GA4 + custom SQL
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: GA4 Migration Guide</p>
+  <p class="text-yellow-700 text-sm">Link to article on "Why Did GA4 Remove Attribution Models?" and show how to replicate first-touch with mbuzz or BigQuery SQL. <strong>Outreach:</strong> GA4 migration content gets high search volume—optimize for frustrated GA4 users.</p>
+</div>
+
+## Summary
+
+First-touch attribution answers "who introduced this customer?"—a critical question for demand generation and top-of-funnel measurement.
+
+**Use first-touch when:**
+- Measuring brand awareness campaigns
+- Proving marketing's pipeline contribution
+- Understanding which channels introduce vs close
+- Analyzing lead source for long B2B cycles
+
+**Don't use first-touch alone because:**
+- It ignores 90% of the customer journey
+- It over-credits awareness, under-credits conversion
+- It can't optimize bottom-funnel campaigns
+
+**Best practice:** Use first-touch alongside last-touch and/or multi-touch models. Different models answer different questions—having multiple views is a strength, not a weakness.
+
+## Further Reading
+
+**On Attribution Model Selection:**
+- [How to Choose the Right Attribution Model](/articles/how-to-choose-attribution-model) — Decision framework for model selection
+- [Last-Touch Attribution: When to Use It](/articles/last-touch-attribution) — The counterpart to first-touch
+
+**On B2B Attribution:**
+- [Bizible's B2B Attribution Guide](https://business.adobe.com/products/marketo/bizible.html) — Adobe's take on B2B measurement
+- [Dreamdata's Attribution Resources](https://dreamdata.io/resources) — B2B-focused attribution content
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Expert Quote on First-Touch</p>
+  <p class="text-yellow-700 text-sm">Add quote from a B2B marketing leader on the value of first-touch for pipeline sourcing. <strong>Outreach targets:</strong> Demand gen leaders at B2B SaaS companies, marketing ops professionals on LinkedIn.</p>
+</div>
+
+<%= render_key_takeaways(@article.key_takeaways) %>
+
+<%= render_faq(@article.faq) %>

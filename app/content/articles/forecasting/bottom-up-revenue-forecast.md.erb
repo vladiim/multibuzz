@@ -1,0 +1,578 @@
+---
+title: "How to Build a Bottom-Up Revenue Forecast with MTA"
+slug: "bottom-up-revenue-forecast"
+description: "A complete workflow for building channel-level revenue forecasts using tiered multi-touch attribution. Includes step-by-step methodology, calculation examples, validation techniques, and downloadable templates."
+published_at:
+section: forecasting
+section_order: 4
+status: draft
+priority: P0
+category: "Funnel Forecasting"
+tags:
+  - revenue forecasting
+  - bottom-up forecast
+  - attribution forecasting
+  - marketing planning
+  - budget allocation
+related_articles:
+  - last-touch-funnel-forecasting-problem
+  - funnel-stage-attribution
+  - how-to-choose-attribution-model
+seo:
+  title: "Bottom-Up Revenue Forecasting with Multi-Touch Attribution"
+aeo:
+  target_query: "bottom up revenue forecast"
+  tldr: "Build bottom-up revenue forecasts using tiered attribution: (1) Calculate first-touch volume per channel (ToFU leads), (2) Apply ToFU→MoFU conversion rates to estimate engaged prospects, (3) Apply MoFU→BoFU rates to estimate conversions, (4) Multiply by AOV for revenue by channel. This approach accounts for channel roles at each funnel stage, producing more accurate forecasts than last-touch methods."
+  key_takeaways:
+    - "Start with first-touch data to forecast funnel input (new prospects)"
+    - "Apply stage conversion rates to flow prospects through the funnel"
+    - "Use participation data to adjust for channel interdependence"
+    - "Validate forecasts against actuals and adjust with incrementality tests"
+  faq:
+    - q: "What data do I need to build a bottom-up forecast?"
+      a: "You need: (1) Historical touchpoint data with channel attribution, (2) Conversion events at each funnel stage, (3) At least 90 days of data for stable rates, (4) Revenue/AOV by conversion type. Most attribution tools provide this; you can also export from GA4 to BigQuery."
+    - q: "How often should I update my forecast?"
+      a: "Monthly for most businesses. Update stage conversion rates quarterly unless you see significant changes. Recalculate completely when launching new channels, changing your product, or after major market shifts."
+    - q: "What if my forecast is off by more than 20%?"
+      a: "Check: (1) Are stage conversion rates current? (2) Did channel mix change significantly? (3) Are there new competitors or market factors? (4) Is there seasonality you didn't account for? Large errors usually mean your underlying rates need recalculation."
+    - q: "Can I use this approach for a new channel with no history?"
+      a: "For new channels, start with conservative estimates based on similar channels, then measure actual performance for 2-3 months before incorporating into forecasts. Don't guess—use data from comparable channels as proxies."
+    - q: "How does this differ from top-down forecasting?"
+      a: "Top-down starts with a revenue target and allocates backward to channels. Bottom-up starts with channel capacity and builds up to revenue. Bottom-up is more accurate for channel planning; top-down is useful for goal-setting. Best practice: build both and reconcile the gap."
+schema:
+  type: HowTo
+  author: "mbuzz Team"
+has_code_examples: true
+has_calculator: true
+has_download: true
+download:
+  title: "Bottom-Up Forecast Template"
+  description: "Excel workbook with all formulas and example data"
+  format: "Excel"
+---
+
+<%= render_tldr(@article.tldr) %>
+
+## The Bottom-Up Forecasting Workflow
+
+This methodology builds revenue forecasts from channel-level data up, using tiered attribution to properly credit each funnel stage.
+
+```
+Bottom-Up Forecast Workflow
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Step 1: Historical Analysis
+├── Extract first-touch data (ToFU volume by channel)
+├── Extract linear/participation data (MoFU engagement)
+├── Extract last-touch data (BoFU conversions)
+└── Calculate stage conversion rates
+
+Step 2: Funnel Flow Modeling
+├── Project ToFU leads by channel
+├── Apply ToFU → MoFU conversion rate
+├── Apply MoFU → BoFU conversion rate
+└── Apply channel overlap adjustment
+
+Step 3: Revenue Calculation
+├── Multiply conversions × AOV
+├── Sum channel revenue for total
+└── Compare against historical actuals
+
+Step 4: Validation & Adjustment
+├── Back-test against prior periods
+├── Adjust for seasonality
+├── Validate with incrementality data
+└── Document assumptions
+```
+
+## Step 1: Historical Analysis
+
+### Extract Attribution Data by Stage
+
+Pull data for each attribution model over a consistent time period (recommend 90+ days):
+
+```sql
+-- ToFU: First-touch by channel
+SELECT
+  first_touch_channel,
+  COUNT(DISTINCT visitor_id) AS tofu_leads,
+  DATE_TRUNC('month', first_touch_at) AS month
+FROM journeys
+WHERE first_touch_at >= CURRENT_DATE - INTERVAL '90 days'
+GROUP BY first_touch_channel, DATE_TRUNC('month', first_touch_at);
+
+-- MoFU: Linear credit by channel (engaged prospects)
+SELECT
+  channel,
+  SUM(linear_credit) AS mofu_credit,
+  COUNT(DISTINCT visitor_id) AS mofu_visitors
+FROM mofu_touchpoints
+WHERE touchpoint_at >= CURRENT_DATE - INTERVAL '90 days'
+GROUP BY channel;
+
+-- BoFU: Last-touch conversions and revenue
+SELECT
+  last_touch_channel,
+  COUNT(*) AS conversions,
+  SUM(revenue) AS revenue
+FROM conversions
+WHERE converted_at >= CURRENT_DATE - INTERVAL '90 days'
+GROUP BY last_touch_channel;
+```
+
+### Calculate Stage Conversion Rates
+
+For each channel, calculate how effectively it moves prospects through the funnel:
+
+```
+Stage Conversion Rate Formulas
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ToFU → MoFU Rate (per channel):
+  = Visitors with channel in MoFU / Visitors with channel as first-touch
+  = "Of the people this channel introduced, how many engaged further?"
+
+MoFU → BoFU Rate (per channel):
+  = Conversions with channel in BoFU / Visitors with channel in MoFU
+  = "Of the people this channel nurtured, how many converted?"
+
+Overall Funnel Rate (per channel):
+  = ToFU→MoFU Rate × MoFU→BoFU Rate
+  = "End-to-end conversion rate for prospects from this channel"
+```
+
+### Example: Historical Data Extraction
+
+```
+Historical Data (Last 90 Days)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Channel         │ ToFU Leads │ MoFU Engaged │ BoFU Converts │ Revenue
+────────────────┼────────────┼──────────────┼───────────────┼──────────
+Paid Social     │ 12,000     │ 2,400        │ 240           │ $48,000
+Organic Search  │ 8,000      │ 2,800        │ 420           │ $84,000
+Email           │ 500        │ 3,200        │ 640           │ $128,000
+Paid Search     │ 4,000      │ 1,600        │ 320           │ $64,000
+Retargeting     │ 1,000      │ 1,800        │ 180           │ $36,000
+────────────────┼────────────┼──────────────┼───────────────┼──────────
+Total           │ 25,500     │ 11,800       │ 1,800         │ $360,000
+
+Stage Conversion Rates:
+────────────────┼────────────┼──────────────
+Channel         │ ToFU→MoFU  │ MoFU→BoFU
+────────────────┼────────────┼──────────────
+Paid Social     │ 20%        │ 10%
+Organic Search  │ 35%        │ 15%
+Email           │ N/A*       │ 20%
+Paid Search     │ 40%        │ 20%
+Retargeting     │ N/A*       │ 10%
+
+* Email/Retargeting rarely first-touch, so ToFU→MoFU rate is not meaningful
+```
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: mbuzz Historical Analysis Dashboard</p>
+  <p class="text-yellow-700 text-sm">Add screenshot showing mbuzz's historical attribution analysis with ToFU/MoFU/BoFU columns and calculated conversion rates. Include date range selector and export options.</p>
+</div>
+
+## Step 2: Funnel Flow Modeling
+
+### Project ToFU Volume
+
+Start with forecasted ToFU leads per channel. Sources for projections:
+
+| Projection Method | When to Use |
+|-------------------|-------------|
+| **Historical trend** | Stable channels, no major changes |
+| **Spend-based** | Paid channels with known efficiency |
+| **Capacity-based** | Limited inventory (events, partnerships) |
+| **Growth target** | New channels with investment plans |
+
+```ruby
+# Example: Project ToFU leads
+def project_tofu_leads(channel, forecast_period)
+  historical = historical_tofu_leads(channel, lookback_days: 90)
+  monthly_average = historical / 3.0  # 90 days = 3 months
+
+  case projection_method(channel)
+  when :historical_trend
+    apply_trend(monthly_average, channel.growth_rate)
+  when :spend_based
+    channel.forecasted_spend / channel.cost_per_first_touch
+  when :growth_target
+    monthly_average * (1 + channel.target_growth)
+  end
+end
+```
+
+### Apply Stage Conversion Rates
+
+Flow projected leads through the funnel:
+
+```
+Funnel Flow Calculation
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For each channel:
+
+  Forecasted ToFU Leads
+  = Historical monthly average × (1 + expected_growth_rate)
+
+  Forecasted MoFU Engaged
+  = Forecasted ToFU Leads × ToFU→MoFU conversion rate
+
+  Forecasted BoFU Conversions
+  = Forecasted MoFU Engaged × MoFU→BoFU conversion rate
+
+  Forecasted Revenue
+  = Forecasted BoFU Conversions × Average Order Value
+```
+
+### Example: Funnel Flow Projection
+
+```
+Next Quarter Forecast (No Growth Assumption)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Channel         │ ToFU/mo │ ToFU→MoFU │ MoFU/mo │ MoFU→BoFU │ Conv/mo │ Rev/mo
+────────────────┼─────────┼───────────┼─────────┼───────────┼─────────┼────────
+Paid Social     │ 4,000   │ 20%       │ 800     │ 10%       │ 80      │ $16,000
+Organic Search  │ 2,667   │ 35%       │ 933     │ 15%       │ 140     │ $28,000
+Email           │ 167*    │ N/A       │ 1,067   │ 20%       │ 213     │ $42,600
+Paid Search     │ 1,333   │ 40%       │ 533     │ 20%       │ 107     │ $21,400
+Retargeting     │ 333*    │ N/A       │ 600     │ 10%       │ 60      │ $12,000
+────────────────┼─────────┼───────────┼─────────┼───────────┼─────────┼────────
+Monthly Total   │ 8,500   │           │ 3,933   │           │ 600     │ $120,000
+Quarterly Total │         │           │         │           │ 1,800   │ $360,000
+
+* Email/Retargeting MoFU sourced from other channels' ToFU
+```
+
+### Adjust for Channel Overlap
+
+If participation data shows high channel interdependence, adjust the forecast:
+
+```ruby
+def apply_overlap_adjustment(channel_forecasts, participation_data)
+  # If participation sum >> 100%, channels work together
+  # Isolated forecasts will overestimate total
+
+  participation_sum = participation_data.values.sum  # e.g., 180%
+  overlap_factor = 1.0 / (participation_sum / 100.0)  # e.g., 0.56
+
+  # Don't apply full adjustment—channels still have independent value
+  adjustment = 1 - ((1 - overlap_factor) * 0.5)  # e.g., 0.78
+
+  channel_forecasts.transform_values do |forecast|
+    forecast * adjustment
+  end
+end
+```
+
+<%= render_warning_box do %>
+  <strong>Overlap warning:</strong> If participation credits sum to 180%, your channels are heavily interdependent. Forecasts assuming channel independence will overpredict revenue. Apply an overlap adjustment of 10-25%.
+<% end %>
+
+## Step 3: Revenue Calculation
+
+### Sum Channel-Level Revenue
+
+```ruby
+def calculate_total_forecast(channel_forecasts)
+  channel_forecasts.sum do |channel, data|
+    data[:forecasted_conversions] * data[:aov]
+  end
+end
+
+# With confidence intervals
+def forecast_with_range(channel_forecasts, confidence: 0.80)
+  base = calculate_total_forecast(channel_forecasts)
+
+  # Historical variance determines range
+  historical_variance = calculate_historical_variance(channel_forecasts)
+
+  {
+    forecast: base,
+    low: base * (1 - historical_variance),
+    high: base * (1 + historical_variance),
+    confidence: confidence
+  }
+end
+```
+
+### Scenario Modeling
+
+Build three scenarios to present:
+
+```
+Scenario Analysis (Quarterly Forecast)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                      │ Conservative │ Base Case │ Optimistic
+──────────────────────┼──────────────┼───────────┼────────────
+Growth assumption     │ -10%         │ 0%        │ +15%
+Conversion rate adj   │ -5%          │ 0%        │ +5%
+──────────────────────┼──────────────┼───────────┼────────────
+Paid Social Revenue   │ $43,200      │ $48,000   │ $55,200
+Organic Revenue       │ $75,600      │ $84,000   │ $96,600
+Email Revenue         │ $115,200     │ $128,000  │ $147,200
+Paid Search Revenue   │ $57,600      │ $64,000   │ $73,600
+Retargeting Revenue   │ $32,400      │ $36,000   │ $41,400
+──────────────────────┼──────────────┼───────────┼────────────
+Total Revenue         │ $324,000     │ $360,000  │ $414,000
+vs Base               │ -10%         │ —         │ +15%
+```
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Interactive Forecast Calculator</p>
+  <p class="text-yellow-700 text-sm">Embed an interactive calculator where users can: (1) Input their channel metrics, (2) Adjust growth assumptions, (3) See forecasted revenue with confidence ranges. This becomes a signature mbuzz tool.</p>
+</div>
+
+## Step 4: Validation & Adjustment
+
+### Back-Test Against History
+
+Test your methodology on historical data before trusting it for forecasts:
+
+```ruby
+def backtest_forecast_accuracy(methodology, test_periods: 6)
+  results = []
+
+  test_periods.times do |i|
+    # Use period N-1 to forecast period N
+    training_end = Date.today - ((i + 1) * 30)
+    training_start = training_end - 90
+
+    forecast = methodology.forecast(
+      training_start: training_start,
+      training_end: training_end,
+      forecast_period: 30
+    )
+
+    # Compare to actual
+    actual = actual_revenue(
+      start_date: training_end,
+      end_date: training_end + 30
+    )
+
+    results << {
+      period: training_end,
+      forecast: forecast,
+      actual: actual,
+      error: ((forecast - actual).abs / actual * 100).round(1)
+    }
+  end
+
+  average_error = results.map { |r| r[:error] }.sum / results.size
+  { results: results, average_error: average_error }
+end
+```
+
+### Acceptable Error Ranges
+
+| Error Range | Assessment | Action |
+|-------------|------------|--------|
+| **< 10%** | Excellent | Model is well-calibrated |
+| **10-20%** | Good | Normal variance, monitor trends |
+| **20-30%** | Fair | Review assumptions, check for changes |
+| **> 30%** | Poor | Recalibrate model, investigate causes |
+
+### Calibrate with Incrementality Data
+
+If you have incrementality test results, use them to adjust forecast accuracy:
+
+```
+Incrementality Calibration
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Channel         │ Attributed  │ Incremental │ Calibration │ Adjusted
+                │ Revenue     │ (from test) │ Factor      │ Forecast
+────────────────┼─────────────┼─────────────┼─────────────┼──────────
+Paid Social     │ $48,000     │ $72,000     │ 1.5x        │ $72,000
+Email           │ $128,000    │ $64,000     │ 0.5x        │ $64,000
+Retargeting     │ $36,000     │ $28,800     │ 0.8x        │ $28,800
+
+Note: Incrementality calibration ensures your forecast reflects
+true causal impact, not just attributed correlation.
+```
+
+### Seasonality Adjustment
+
+Apply historical seasonal patterns:
+
+```ruby
+def apply_seasonality(base_forecast, target_month)
+  # Historical seasonal indices (1.0 = average)
+  seasonal_index = {
+    1 => 0.85,   # January: post-holiday dip
+    2 => 0.90,
+    3 => 0.95,
+    4 => 1.00,
+    5 => 1.05,
+    6 => 1.00,
+    7 => 0.95,
+    8 => 0.95,
+    9 => 1.00,
+    10 => 1.05,
+    11 => 1.15,  # November: pre-holiday surge
+    12 => 1.20   # December: peak
+  }
+
+  base_forecast * seasonal_index[target_month]
+end
+```
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Forecast Accuracy Dashboard</p>
+  <p class="text-yellow-700 text-sm">Add mbuzz screenshot showing forecast vs actual over time, with MAPE (Mean Absolute Percentage Error) metric and trend indicators.</p>
+</div>
+
+## Complete Worked Example
+
+### The Scenario
+
+**Company Profile:**
+- E-commerce, $200 AOV
+- 4 main channels
+- 90-day historical data available
+- Forecasting next quarter
+
+### Step 1: Historical Data
+
+```
+Historical Performance (Last 90 Days)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Channel         │ First-Touch │ MoFU Touches │ Last-Touch │ Revenue
+────────────────┼─────────────┼──────────────┼────────────┼──────────
+Facebook Ads    │ 15,000      │ 4,500        │ 750        │ $150,000
+Google Search   │ 9,000       │ 5,400        │ 2,700      │ $540,000
+Email           │ 600         │ 8,100        │ 3,600      │ $720,000
+Retargeting     │ 900         │ 2,700        │ 900        │ $180,000
+────────────────┼─────────────┼──────────────┼────────────┼──────────
+Total           │ 25,500      │ 20,700       │ 7,950      │ $1,590,000
+```
+
+### Step 2: Calculate Rates
+
+```
+Stage Conversion Rates
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                │ ToFU→MoFU Rate        │ MoFU→BoFU Rate
+Channel         │ (MoFU/ToFU)           │ (BoFU/MoFU)
+────────────────┼───────────────────────┼────────────────────
+Facebook Ads    │ 4,500/15,000 = 30%    │ 750/4,500 = 16.7%
+Google Search   │ 5,400/9,000 = 60%     │ 2,700/5,400 = 50%
+Email           │ N/A (not introducer)  │ 3,600/8,100 = 44.4%
+Retargeting     │ N/A (not introducer)  │ 900/2,700 = 33.3%
+```
+
+### Step 3: Project Forward
+
+```
+Quarterly Forecast (10% Growth Scenario)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Channel         │ ToFU/Qtr   │ → MoFU     │ → BoFU    │ Revenue
+────────────────┼────────────┼────────────┼───────────┼──────────
+Facebook Ads    │ 16,500     │ 4,950      │ 825       │ $165,000
+                │ (+10%)     │ (×30%)     │ (×16.7%)  │ (×$200)
+────────────────┼────────────┼────────────┼───────────┼──────────
+Google Search   │ 9,900      │ 5,940      │ 2,970     │ $594,000
+                │ (+10%)     │ (×60%)     │ (×50%)    │ (×$200)
+────────────────┼────────────┼────────────┼───────────┼──────────
+Email           │ —          │ 8,910      │ 3,960     │ $792,000
+                │            │ (+10%)     │ (×44.4%)  │ (×$200)
+────────────────┼────────────┼────────────┼───────────┼──────────
+Retargeting     │ —          │ 2,970      │ 990       │ $198,000
+                │            │ (+10%)     │ (×33.3%)  │ (×$200)
+────────────────┼────────────┼────────────┼───────────┼──────────
+Total           │ 26,400     │ 22,770     │ 8,745     │ $1,749,000
+
+Quarterly growth vs prior period: +10% ($1,590K → $1,749K)
+```
+
+### Step 4: Apply Overlap Adjustment
+
+```
+Participation data shows 165% total → Overlap factor = 0.91
+
+Adjusted Forecast: $1,749,000 × 0.91 = $1,591,590
+
+Final Quarterly Forecast: $1.59M (vs $1.59M prior = flat growth)
+
+Note: 10% ToFU growth nets to flat revenue due to channel overlap
+adjustment. This is more accurate than naive channel summation.
+```
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Downloadable Forecast Template</p>
+  <p class="text-yellow-700 text-sm">Embed download link for Excel workbook containing: (1) Historical data input sheet, (2) Conversion rate calculator, (3) Forecast model with scenarios, (4) Seasonality adjustments, (5) Back-test comparison chart.</p>
+</div>
+
+## Common Forecast Mistakes
+
+### Mistake 1: Using Last-Touch Only
+
+Produces systematically biased forecasts. See [Why Doesn't Last-Touch Work for Funnel Forecasting?](/articles/last-touch-funnel-forecasting-problem)
+
+### Mistake 2: Ignoring Channel Interdependence
+
+If channels work together (participation sum > 130%), summing individual forecasts overcounts.
+
+**Fix:** Apply overlap adjustment based on participation data.
+
+### Mistake 3: Static Conversion Rates
+
+Rates change with seasonality, competition, and funnel maturity.
+
+**Fix:** Recalculate rates quarterly or after major changes.
+
+### Mistake 4: No Confidence Ranges
+
+Single-point forecasts create false precision.
+
+**Fix:** Always provide ranges (conservative/base/optimistic or statistical intervals).
+
+### Mistake 5: Never Back-Testing
+
+Forecasts that aren't validated against history have unknown accuracy.
+
+**Fix:** Back-test on 3-6 prior periods before trusting forward projections.
+
+## Summary
+
+Bottom-up revenue forecasting with tiered attribution:
+
+1. **Extract historical data** — ToFU (first-touch), MoFU (linear), BoFU (last-touch)
+2. **Calculate conversion rates** — ToFU→MoFU and MoFU→BoFU by channel
+3. **Project forward** — Apply growth assumptions and flow through funnel
+4. **Adjust for overlap** — Use participation data to prevent overcounting
+5. **Build scenarios** — Conservative, base, optimistic ranges
+6. **Validate** — Back-test, calibrate with incrementality, adjust for seasonality
+
+**Key advantages over last-touch forecasting:**
+- Accounts for channel roles at each funnel stage
+- Credits introducers, not just closers
+- Reveals channel interdependence
+- Produces more accurate budget allocation
+
+## Further Reading
+
+**On Tiered Attribution:**
+- [Why Doesn't Last-Touch Work for Funnel Forecasting?](/articles/last-touch-funnel-forecasting-problem) — The problem this solves
+- [How to Use Different Attribution Models by Funnel Stage](/articles/funnel-stage-attribution) — The framework
+
+**On Validation:**
+- [How to Run an Incrementality Test](/articles/incrementality-testing) — Calibrating with experiments
+- [How to Calibrate MTA with Lift Studies](/articles/calibrating-mta-with-lift) — Using test data
+
+<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
+  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Customer Case Study</p>
+  <p class="text-yellow-700 text-sm">Add mbuzz customer example: "Company X switched from last-touch to tiered attribution forecasting. Their forecast accuracy improved from ±35% to ±12%, enabling more confident budget decisions. They reallocated 20% of spend from email to paid social based on first-touch data, resulting in 15% more pipeline."</p>
+</div>
+
+<%= render_key_takeaways(@article.key_takeaways) %>
+
+<%= render_faq(@article.faq) %>

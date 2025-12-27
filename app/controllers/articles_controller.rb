@@ -28,6 +28,8 @@ class ArticlesController < ApplicationController
   end
 
   def require_published
+    return if Rails.env.development?
+
     render_not_found unless @article.published?
   end
 
