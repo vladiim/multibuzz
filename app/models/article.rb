@@ -16,7 +16,7 @@ class Article
   SCHEMA_TYPE_HOW_TO = "HowTo".freeze
   SCHEMA_TYPE_FAQ_PAGE = "FAQPage".freeze
 
-  DEFAULT_AUTHOR = "mbuzz Team".freeze
+  DEFAULT_AUTHOR = Author::HOLLY_HENDERSON
   DEFAULT_READING_SPEED = 200 # words per minute
   DEFAULT_SECTION_ORDER = 99
   DEFAULT_STATUS = STATUS_DRAFT
@@ -102,6 +102,10 @@ class Article
     dig_value(schema, :author) || DEFAULT_AUTHOR
   end
 
+  def author_profile
+    Author.find(author) || Author.default
+  end
+
   def date_modified
     modified = dig_value(schema, :date_modified)
     return modified.to_date if modified.present?
@@ -144,7 +148,7 @@ class Article
       "@type": dig_value(schema, :type) || SCHEMA_TYPE_ARTICLE,
       headline: title,
       description: description,
-      author: { "@type": "Organization", name: author, url: PUBLISHER_URL },
+      author: author_profile&.schema_json_ld || { "@type": "Organization", name: author, url: PUBLISHER_URL },
       publisher: {
         "@type": "Organization",
         name: PUBLISHER_NAME,
