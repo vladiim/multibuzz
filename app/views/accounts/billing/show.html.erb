@@ -47,7 +47,7 @@
             <div class="px-6 py-5">
               <div class="flex items-center justify-between mb-2">
                 <span class="text-sm font-medium text-gray-700">
-                  <%= number_with_delimiter(current_account.current_period_usage) %> / <%= number_with_delimiter(current_account.free_event_limit) %> events
+                  <%= number_with_delimiter(current_account.current_period_usage) %> / <%= number_with_delimiter(current_account.free_event_limit) %> records
                 </span>
                 <span class="text-sm text-gray-500"><%= current_account.usage_percentage %>%</span>
               </div>
@@ -79,7 +79,7 @@
                       <p class="text-2xl font-bold text-gray-900 mt-2">
                         $<%= plan.monthly_price.to_i %><span class="text-sm font-normal text-gray-500">/mo</span>
                       </p>
-                      <p class="text-sm text-gray-500 mt-1"><%= plan.formatted_events %> events</p>
+                      <p class="text-sm text-gray-500 mt-1"><%= plan.formatted_events %> records</p>
                       <% if is_current %>
                         <span class="mt-4 inline-block w-full text-center py-2 px-4 text-sm font-medium text-indigo-700">
                           Current Plan

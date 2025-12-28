@@ -33,7 +33,7 @@ aeo:
     - q: "What's the cheapest multi-touch attribution tool?"
       a: "Several tools offer free tiers: Google Analytics 4 (limited MTA), Rockerbox (basic plan), HubSpot (within Marketing Hub), and Branch (for startups). Paid options start around $129/month (Triple Whale for small Shopify stores) or £349/month (Ruler Analytics)."
     - q: "Which MTA tool is best for Shopify?"
-      a: "Triple Whale is Shopify-exclusive and offers the tightest integration. Northbeam works with Shopify but also other platforms. For enterprise Shopify Plus stores, Rockerbox or Northbeam provide more sophisticated modeling."
+      a: "mbuzz offers a native Shopify SDK with server-side tracking (95%+ event capture) and incrementality testing at transparent pricing. Triple Whale is Shopify-exclusive with easy setup but click-through only. For enterprise Shopify Plus stores spending $500K+/month on paid media, Northbeam provides ML-powered modeling."
     - q: "Which MTA tool is best for B2B SaaS?"
       a: "HockeyStack and Dreamdata lead the B2B SaaS category. HockeyStack offers faster setup (~2 weeks) and built-in surveys. Dreamdata excels at customer journey visualization. For enterprise B2B in the Salesforce ecosystem, Bizible (Adobe Marketo Measure) is the standard."
     - q: "Do I need a separate mobile attribution tool?"
@@ -42,7 +42,7 @@ aeo:
       a: "Pure MTA tools (Triple Whale, Ruler Analytics) focus on touchpoint-level attribution. Unified platforms (Lifesight, Funnel, SegmentStream) combine MTA with MMM and incrementality testing for triangulated measurement. Unified platforms cost more but provide more reliable insights."
 schema:
   type: Article
-  author: "mbuzz Team"
+  author: "holly-henderson"
 has_code_examples: false
 has_calculator: false
 has_download: false
@@ -50,16 +50,11 @@ has_download: false
 
 <%= render_tldr(@article.tldr) %>
 
-<div class="bg-blue-50 border-l-4 border-blue-500 p-4 my-6 rounded-r-lg not-prose">
-  <p class="text-blue-900 font-medium mb-2">A note on transparency</p>
-  <p class="text-blue-800 text-sm">This guide is published by <strong>mbuzz</strong>—we're an MTA tool ourselves. We've tried to be objective, but you should know where we're coming from. We'll be upfront about where we think mbuzz excels (server-side tracking, transparent pricing, technical teams) and where competitors might be the better choice (Shopify-native, enterprise Salesforce, mobile apps).</p>
-</div>
-
 ## The MTA Landscape in 2026
 
 The multi-touch attribution market has exploded. There are now 50+ tools claiming to solve marketing measurement—from enterprise platforms costing $100K+/year to scrappy startups at $100/month.
 
-This guide cuts through the noise. We've categorized the major players, compared their features and pricing, and identified which tools work best for different business types.
+This guide cuts through the noise. We've categorized the major players, compared their features and pricing, and identified which tools work best for different business types. Full disclosure: mbuzz is one of the tools in this comparison. We'll be upfront about where we excel (server-side tracking, transparent pricing, technical teams) and where competitors are the better choice (Shopify-native, enterprise Salesforce, mobile apps).
 
 ### The 2x2: Where Each Tool Fits
 
@@ -446,13 +441,13 @@ These tools go beyond MTA to include MMM and incrementality—the triangulation 
 - Side-by-side model comparison shows how credit shifts between channels
 - LTV attribution tracks recurring revenue back to original acquisition
 - Incrementality testing validates whether attribution is actually accurate
-- Native SDKs for Rails, Django, Laravel, Node.js—no tag manager required
+- Native SDKs for Shopify, Rails, Django, Laravel, Node.js—no tag manager required
 - Transparent pricing, no sales calls, export everything anytime
 
 **Limitations:**
 - Newer player with less market presence than established tools
 - No built-in podcast/TV proxy tracking (digital-focused)
-- Requires server-side integration (not drop-in pixel)
+- Server-side approach requires SDK integration (platform SDKs take minutes; custom setups need developer involvement)
 
 **Best fit:** Technical teams who want validated attribution without black-box models or enterprise pricing. Especially strong for SaaS, e-commerce, and any business wanting to prove—not just model—channel impact.
 

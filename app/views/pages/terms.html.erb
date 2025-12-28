@@ -20,19 +20,19 @@
           <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
           </svg>
-          <span>Pay your plan fee upfront each month. If you go over your limit, we charge for extra 10K blocks automatically</span>
+          <span>Pay your plan fee upfront each month. If you go over your limit, we charge for overage blocks automatically</span>
         </li>
         <li class="flex items-start gap-2">
           <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
           </svg>
-          <span>If a payment fails, we stop storing new events until it's fixed. Events during that time are lost</span>
+          <span>If a payment fails, we stop storing new records until it's fixed. Records during that time are lost</span>
         </li>
         <li class="flex items-start gap-2">
           <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
           </svg>
-          <span>Free tier: 10K events/month, hard cap. Upgrade to continue beyond that</span>
+          <span>Free tier: 50K records/month, hard cap. Upgrade to continue beyond that</span>
         </li>
         <li class="flex items-start gap-2">
           <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -95,27 +95,27 @@
       </p>
       <ol>
         <li><strong>Base plan</strong>: You pay your monthly plan fee in advance at the start of each billing cycle</li>
-        <li><strong>Included events</strong>: Your plan includes a set number of events per month (e.g., 50K for Starter)</li>
-        <li><strong>Overage</strong>: If you exceed your limit, we automatically charge your card for additional 10K blocks</li>
+        <li><strong>Included records</strong>: Your plan includes a set number of records per month (e.g., 1M for Starter). Records include visitors, sessions, events, and conversions</li>
+        <li><strong>Overage</strong>: If you exceed your limit, we automatically charge your card for additional blocks (size varies by plan)</li>
       </ol>
 
       <h3>Overage Charges</h3>
       <p>
-        When you exceed your plan's event limit:
+        When you exceed your plan's record limit:
       </p>
       <ul>
-        <li>We charge your card <strong>immediately</strong> for one 10K block at your plan's overage rate</li>
-        <li>Charges are in full 10K blocks (no partial blocks)</li>
-        <li>Each additional 10K events triggers another charge</li>
+        <li>We charge your card <strong>immediately</strong> for one block at your plan's overage rate</li>
+        <li>Charges are in full blocks (no partial blocks)</li>
+        <li>Each additional block of records triggers another charge</li>
         <li>You can track your usage in real-time on the dashboard</li>
       </ul>
       <p>
         <strong>Current overage rates:</strong>
       </p>
       <ul>
-        <li>Starter: $5 per 250K events</li>
-        <li>Growth: $15 per 1M events</li>
-        <li>Pro: $50 per 5M events</li>
+        <li>Starter: $5 per 250K records</li>
+        <li>Growth: $15 per 1M records</li>
+        <li>Pro: $50 per 5M records</li>
       </ul>
       <p>
         We send email notifications at 80% and 100% of your plan limit, and for each overage charge.
@@ -123,13 +123,13 @@
 
       <h3>Free Tier</h3>
       <p>
-        The Free tier includes up to 50,000 events per month. This is a <strong>hard cap</strong>:
+        The Free tier includes up to 50,000 records per month. This is a <strong>hard cap</strong>:
       </p>
       <ul>
-        <li>When you reach 50K events, we stop storing new events</li>
+        <li>When you reach 50K records, we stop storing new records</li>
         <li>There are no overage charges on the Free tier (no payment method required)</li>
         <li>To continue tracking beyond 50K, you must upgrade to a paid plan</li>
-        <li>Your event counter resets at the start of each monthly cycle</li>
+        <li>Your record counter resets at the start of each monthly cycle</li>
       </ul>
 
       <h3>Payment Failures</h3>
@@ -137,18 +137,18 @@
         If a payment fails (overage charge or plan renewal):
       </p>
       <ul>
-        <li><strong>Immediately</strong>: We stop storing new events</li>
+        <li><strong>Immediately</strong>: We stop storing new records</li>
         <li>Your existing data remains accessible (read-only)</li>
         <li>We retry the payment: after 24 hours, 72 hours, and 7 days</li>
         <li>We send email notifications for each retry attempt</li>
       </ul>
       <p>
-        <strong>Important</strong>: Events that occur during a payment failure are <strong>not stored</strong>
-        and <strong>cannot be recovered</strong>. Once payment succeeds, event storage resumes, but lost
-        events are gone permanently.
+        <strong>Important</strong>: Records that occur during a payment failure are <strong>not stored</strong>
+        and <strong>cannot be recovered</strong>. Once payment succeeds, record storage resumes, but lost
+        records are gone permanently.
       </p>
       <p>
-        For plan renewals, we provide a 3-day grace period where events continue to be stored while
+        For plan renewals, we provide a 3-day grace period where records continue to be stored while
         we retry the payment.
       </p>
 
@@ -161,7 +161,7 @@
 
       <h3>Refunds</h3>
       <p>
-        We don't offer refunds for partial months or unused events. If you believe you were incorrectly
+        We don't offer refunds for partial months or unused records. If you believe you were incorrectly
         charged, <%= link_to "contact us", contact_path, class: "text-blue-600 hover:text-blue-500" %>.
       </p>
 
@@ -176,7 +176,7 @@
         <li>Collect sensitive personal data (health, financial, etc.) without appropriate safeguards</li>
         <li>Attempt to reverse-engineer, hack, or compromise our systems</li>
         <li>Resell mbuzz services without our written permission</li>
-        <li>Send events designed to artificially inflate your usage or test our rate limits</li>
+        <li>Send records designed to artificially inflate your usage or test our rate limits</li>
         <li>Use automated systems to circumvent usage limits</li>
       </ul>
       <p>
@@ -186,8 +186,8 @@
       <!-- Your Data -->
       <h2>Your Data</h2>
       <p>
-        You own your data. We don't claim any ownership of the events, sessions, or visitor data you
-        collect through mbuzz.
+        You own your data. We don't claim any ownership of the records (visitors, sessions, events, or conversions)
+        you collect through mbuzz.
       </p>
       <p>
         You can export your data at any time through the dashboard or API. If you cancel your account,

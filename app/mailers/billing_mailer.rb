@@ -12,12 +12,12 @@ class BillingMailer < ApplicationMailer
 
   def events_locked(account)
     @account = account
-    mail(to: recipient(account), subject: "Events locked - update payment to restore access")
+    mail(to: recipient(account), subject: "Records locked - update payment to restore access")
   end
 
   def events_unlocked(account)
     @account = account
-    mail(to: recipient(account), subject: "Events restored - your data is now accessible")
+    mail(to: recipient(account), subject: "Records restored - your data is now accessible")
   end
 
   def subscription_created(account)
@@ -52,12 +52,12 @@ class BillingMailer < ApplicationMailer
   def usage_warning(account, usage_percentage:)
     @account = account
     @usage_percentage = usage_percentage
-    mail(to: recipient(account), subject: "Approaching your event limit (#{usage_percentage}% used)")
+    mail(to: recipient(account), subject: "Approaching your record limit (#{usage_percentage}% used)")
   end
 
   def usage_limit_reached(account)
     @account = account
-    mail(to: recipient(account), subject: "Event limit reached - upgrade to continue tracking")
+    mail(to: recipient(account), subject: "Record limit reached - upgrade to continue tracking")
   end
 
   # Trial
