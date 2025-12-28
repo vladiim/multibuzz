@@ -21,24 +21,24 @@ class Author
       slug: HOLLY_HENDERSON,
       name: "Holly Henderson",
       title: "Co-Founder",
-      image: "authors/holly-henderson.jpg",
+      image: "authors/holly-henderson.jpeg",
       linkedin_url: "https://www.linkedin.com/in/hollymehakovic/",
-      credentials: ["Harvard Extension School", "Forebrite", "Avon"],
+      credentials: ["Harvard Extension School", "Forebrite", "Westpac", "Avon"],
       bio_short: "Holly Henderson is Co-Founder of mbuzz. With 10+ years in marketing " \
-                 "including roles at Avon and Forebrite, she's obsessed with making " \
+                 "including roles at Westpac, Avon, and Forebrite, she's obsessed with making " \
                  "measurement actually useful.",
       bio_medium: "Holly Henderson is Co-Founder of mbuzz, the attribution platform that " \
                   "validates marketing measurement with incrementality testing. After a decade " \
-                  "in brand marketing—including campaigns for Avon and content strategies for " \
-                  "IP Australia—she joined Forebrite, where she runs weekly client optimization " \
+                  "in brand marketing—including campaigns for Avon, Westpac, and content strategies " \
+                  "for IP Australia—she joined Forebrite, where she runs weekly client optimization " \
                   "sessions built on attribution-driven revenue forecasting. Sitting in those " \
                   "meetings—watching forecasts hit or miss, debugging why channels " \
                   "underperformed—showed her exactly where attribution breaks down. " \
                   "mbuzz was built to close that gap.",
       bio_long: "Holly Henderson is Co-Founder of mbuzz, where she leads marketing and content " \
                 "strategy. Her path to marketing measurement wasn't typical—she spent a decade " \
-                "as a brand marketer, running campaigns for companies like Avon and creating " \
-                "content strategies for IP Australia and Switzer.\n\n" \
+                "as a brand marketer, running campaigns for companies like Avon and Westpac, and " \
+                "creating content strategies for IP Australia and Switzer.\n\n" \
                 "The turning point came when she joined Forebrite as their inaugural marketing " \
                 "hire. Forebrite builds bottom-up revenue forecasts using multi-touch attribution, " \
                 "then runs weekly reconciliation meetings with clients. Holly's been in hundreds " \
