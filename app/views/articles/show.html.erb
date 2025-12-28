@@ -21,10 +21,12 @@
         <%= @article.title %>
       </h1>
       <div class="flex items-center gap-4 text-sm text-gray-500">
-        <time datetime="<%= @article.published_at&.iso8601 %>">
-          <%= @article.published_at&.strftime("%B %d, %Y") %>
-        </time>
-        <span>&middot;</span>
+        <% if @article.published_at %>
+          <time datetime="<%= @article.published_at.iso8601 %>">
+            <%= @article.published_at.strftime("%B %d, %Y") %>
+          </time>
+          <span>&middot;</span>
+        <% end %>
         <span><%= @article.reading_time %> min read</span>
         <% if @article.has_download %>
           <span>&middot;</span>
