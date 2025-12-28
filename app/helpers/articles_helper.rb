@@ -2,16 +2,7 @@ module ArticlesHelper
   include DocsHelper
 
   def render_article_content(article)
-    # Use ActionView's ERB handler to properly support block syntax like <%= helper do %>
-    # Plain ERB.new doesn't support this pattern
-    handler = ActionView::Template.handler_for_extension(:erb)
-    template = ActionView::Template.new(
-      article.content,
-      "article_content",
-      handler,
-      locals: []
-    )
-    markdown_content = template.render(self, {})
+    markdown_content = erb_template(article.content).render(self, {})
     render_markdown(markdown_content)
   end
 
@@ -89,5 +80,13 @@ module ArticlesHelper
 
   def chevron_icon
     "&#9660;".html_safe
+  end
+
+  def erb_template(content)
+    ActionView::Template.new(content, "article_content", erb_handler, locals: [])
+  end
+
+  def erb_handler
+    @erb_handler ||= ActionView::Template.handler_for_extension(:erb)
   end
 end

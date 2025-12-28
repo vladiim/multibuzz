@@ -1,4 +1,4 @@
-<nav class="max-w-4xl mx-auto px-6 py-4 text-sm text-gray-500">
+<nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-sm text-gray-500">
   <%= link_to "Academy", academy_path, class: "hover:text-gray-700" %>
   <span class="mx-2">/</span>
   <%= link_to @article.section.titleize, academy_section_path(@article.section), class: "hover:text-gray-700" %>
@@ -6,7 +6,7 @@
   <span class="text-gray-700"><%= @article.title %></span>
 </nav>
 
-<main class="max-w-4xl mx-auto px-6 pb-24">
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
   <article class="prose prose-lg prose-gray max-w-none
                  prose-headings:font-bold prose-headings:text-gray-900
                  prose-h1:text-4xl prose-h1:mb-4 prose-h1:tracking-tight
