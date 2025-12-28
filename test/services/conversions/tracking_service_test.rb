@@ -356,7 +356,27 @@ module Conversions
       assert_equal true, result[:conversion].is_acquisition
     end
 
+    # ==========================================
+    # Billing Usage tests
+    # ==========================================
+
+    test "increments usage counter when conversion is created" do
+      assert_difference -> { usage_counter.current_usage }, 1 do
+        build_service(event_id: event.prefix_id).call
+      end
+    end
+
+    test "does not increment usage counter when conversion fails validation" do
+      assert_no_difference -> { usage_counter.current_usage } do
+        build_service(event_id: nil, visitor_id: nil).call
+      end
+    end
+
     private
+
+    def usage_counter
+      @usage_counter ||= Billing::UsageCounter.new(account)
+    end
 
     def identity
       @identity ||= identities(:one)

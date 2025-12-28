@@ -15,14 +15,40 @@ module Sessions
       return error_result(["session_id is required"]) unless session_id.present?
       return error_result(["url is required"]) unless url.present?
 
-      create_or_update_visitor
-      create_or_update_session
+      process_visitor
+      process_session
 
       success_result(
         visitor_id: visitor_id,
         session_id: session_id,
         channel: session.channel
       )
+    end
+
+    def process_visitor
+      visitor # trigger find_or_create
+      increment_usage! if visitor_created?
+      visitor.update!(last_seen_at: started_at) unless visitor_created?
+    end
+
+    def process_session
+      session_created?.tap { |created| increment_usage! if created }
+    end
+
+    def visitor_created?
+      @visitor_created
+    end
+
+    def session_created?
+      return @session_created if defined?(@session_created)
+
+      was_new = !session.persisted?
+      create_or_update_session
+      @session_created = was_new
+    end
+
+    def increment_usage!
+      Billing::UsageCounter.new(account).increment!
     end
 
     def visitor_id
@@ -66,6 +92,7 @@ module Sessions
         v.first_seen_at = started_at
         v.last_seen_at = started_at
         v.is_test = is_test
+        @visitor_created = true
       end
     end
 

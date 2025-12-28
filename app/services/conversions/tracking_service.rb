@@ -25,7 +25,12 @@ module Conversions
     def run
       return validation_error if validation_error
 
+      increment_usage!
       success_result(conversion: conversion)
+    end
+
+    def increment_usage!
+      Billing::UsageCounter.new(account).increment!
     end
 
     def validation_error

@@ -39,7 +39,27 @@ class Visitors::LookupServiceTest < ActiveSupport::TestCase
     assert result[:errors].present?
   end
 
+  # --- Billing Usage ---
+
+  test "should increment usage counter when visitor is created" do
+    @existing_visitor_id = "vis_new_visitor_for_billing"
+
+    assert_difference -> { usage_counter.current_usage }, 1 do
+      result
+    end
+  end
+
+  test "should not increment usage counter when visitor already exists" do
+    assert_no_difference -> { usage_counter.current_usage } do
+      result
+    end
+  end
+
   private
+
+  def usage_counter
+    @usage_counter ||= Billing::UsageCounter.new(account)
+  end
 
   def result
     @result ||= service.call

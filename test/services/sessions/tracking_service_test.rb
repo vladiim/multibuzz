@@ -78,7 +78,27 @@ class Sessions::TrackingServiceTest < ActiveSupport::TestCase
     assert_in_delta Time.current.to_i, result[:session].started_at.to_i, 2
   end
 
+  # --- Billing Usage ---
+
+  test "should increment usage counter when session is created" do
+    @session_id = "sess_new_session_for_billing"
+
+    assert_difference -> { usage_counter.current_usage }, 1 do
+      result
+    end
+  end
+
+  test "should not increment usage counter when session already exists" do
+    assert_no_difference -> { usage_counter.current_usage } do
+      result
+    end
+  end
+
   private
+
+  def usage_counter
+    @usage_counter ||= Billing::UsageCounter.new(account)
+  end
 
   def result
     @result ||= service.call

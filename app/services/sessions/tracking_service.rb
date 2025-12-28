@@ -27,12 +27,17 @@ module Sessions
       end
 
       session.increment_page_views!
+      increment_usage! if created
 
       success_result(session: session, created: created)
     end
 
     def session
       @session ||= account.sessions.active.find_by(session_id: session_id, visitor: visitor)
+    end
+
+    def increment_usage!
+      Billing::UsageCounter.new(account).increment!
     end
   end
 end

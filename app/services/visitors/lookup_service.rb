@@ -20,12 +20,17 @@ module Visitors
       end
 
       visitor.touch_last_seen! unless created
+      increment_usage! if created
 
       success_result(visitor: visitor, created: created)
     end
 
     def visitor
       @visitor ||= account.visitors.find_by(visitor_id: visitor_id)
+    end
+
+    def increment_usage!
+      Billing::UsageCounter.new(account).increment!
     end
   end
 end
