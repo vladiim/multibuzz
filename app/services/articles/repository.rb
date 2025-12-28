@@ -26,7 +26,9 @@ module Articles
       end
 
       def by_section
-        available.group_by(&:section)
+        available
+          .group_by(&:section)
+          .transform_values { |articles| articles.sort_by(&:section_order) }
       end
 
       def featured(limit: 6)

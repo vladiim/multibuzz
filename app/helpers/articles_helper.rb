@@ -2,9 +2,16 @@ module ArticlesHelper
   include DocsHelper
 
   def render_article_content(article)
-    # Use ActionView's render to properly handle block syntax like <%= helper do %>
+    # Use ActionView's ERB handler to properly support block syntax like <%= helper do %>
     # Plain ERB.new doesn't support this pattern
-    markdown_content = render(inline: article.content, type: :erb)
+    handler = ActionView::Template.handler_for_extension(:erb)
+    template = ActionView::Template.new(
+      article.content,
+      "article_content",
+      handler,
+      locals: []
+    )
+    markdown_content = template.render(self, {})
     render_markdown(markdown_content)
   end
 
