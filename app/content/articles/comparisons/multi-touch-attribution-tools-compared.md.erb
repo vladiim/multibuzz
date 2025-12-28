@@ -69,17 +69,18 @@ Enterprise           B2B SaaS            E-commerce/DTC
                                          └── Cometly
 
 Web/General          Mobile              Unified Measurement
-├── Ruler Analytics  ├── AppsFlyer       ├── Lifesight
-├── Attribution      ├── Adjust          ├── Funnel
-├── Windsor.ai       ├── Branch          └── SegmentStream
-└── Growify          ├── Singular
+├── Ruler Analytics  ├── AppsFlyer       ├── mbuzz ⭐
+├── Attribution      ├── Adjust          ├── Lifesight
+├── Windsor.ai       ├── Branch          ├── Funnel
+└── Growify          ├── Singular        └── SegmentStream
                      └── Kochava
 ```
 
-## Quick Comparison: Top 15 MTA Tools
+## Quick Comparison: Top MTA Tools
 
 | Tool | Best For | Starting Price | Key Strength |
 |------|----------|----------------|--------------|
+| **mbuzz** | Validated attribution | Free / $29/mo | Server-side + incrementality |
 | **Triple Whale** | Shopify stores | $129/mo | Shopify-native, easy setup |
 | **Northbeam** | Enterprise DTC | $400/mo | ML-powered, no overcounting |
 | **HockeyStack** | B2B SaaS | $2,200/mo | All-in-one, fast setup |
@@ -388,6 +389,36 @@ These platforms specialize in ad tracking, ROAS measurement, and e-commerce inte
 
 These tools go beyond MTA to include MMM and incrementality—the triangulation approach.
 
+### mbuzz
+
+**Best for:** Teams wanting validated, server-side attribution without enterprise pricing
+
+| Aspect | Details |
+|--------|---------|
+| **Pricing** | Free (50K events), $29/mo (1M), $99/mo (5M), $299/mo (25M) |
+| **Setup Time** | 10 minutes |
+| **Tracking** | Server-side (95%+ event capture) |
+| **Unique Feature** | 8 attribution models + custom DSL + incrementality testing |
+
+**Strengths:**
+- Server-side tracking bypasses ad blockers—captures 95%+ of events vs 70% with client-side
+- 8 built-in models: First Touch, Last Touch, Linear, Time Decay, U-Shaped, W-Shaped, Markov Chain, Shapley Value
+- Custom attribution models via simple DSL—define your own logic in minutes
+- Side-by-side model comparison shows how credit shifts between channels
+- LTV attribution tracks recurring revenue back to original acquisition
+- Incrementality testing validates whether attribution is actually accurate
+- Native SDKs for Rails, Django, Laravel, Node.js—no tag manager required
+- Transparent pricing, no sales calls, export everything anytime
+
+**Limitations:**
+- Newer player with less market presence than established tools
+- No built-in podcast/TV proxy tracking (digital-focused)
+- Requires server-side integration (not drop-in pixel)
+
+**Best fit:** Technical teams who want validated attribution without black-box models or enterprise pricing. Especially strong for SaaS, e-commerce, and any business wanting to prove—not just model—channel impact.
+
+---
+
 ### Lifesight
 
 **Best for:** Brands wanting complete measurement stack
@@ -604,22 +635,23 @@ These tools work for a variety of businesses without being specialized for B2B o
 
 | Business Type | Recommended Tools | Why |
 |--------------|-------------------|-----|
-| **Shopify store (<$10M)** | Triple Whale, Growify | Easy setup, affordable |
-| **Shopify Plus ($10-50M)** | Triple Whale Pro, Northbeam | More sophisticated modeling |
-| **DTC ($50M+)** | Northbeam, Rockerbox | Enterprise features, MMM |
-| **B2B SaaS (early)** | Factors.ai, Dreamdata Free | Affordable, CRM integration |
-| **B2B SaaS (growth)** | HockeyStack, Dreamdata | All-in-one, fast setup |
+| **Shopify store (<$10M)** | mbuzz, Triple Whale | Affordable, easy setup |
+| **Shopify Plus ($10-50M)** | mbuzz, Northbeam | Validated attribution, ML modeling |
+| **DTC ($50M+)** | mbuzz, Northbeam, Rockerbox | Enterprise features, incrementality |
+| **B2B SaaS (early)** | mbuzz, Factors.ai | Affordable, server-side tracking |
+| **B2B SaaS (growth)** | mbuzz, HockeyStack, Dreamdata | LTV tracking, all-in-one |
 | **B2B Enterprise** | Bizible, Terminus | Salesforce-native, ABM |
 | **Mobile apps** | AppsFlyer, Adjust | Install attribution, fraud |
 | **Multi-channel brands** | Rockerbox, Lifesight | Podcast/TV tracking |
-| **Data-mature teams** | Funnel, SegmentStream | Unified measurement |
+| **Data-mature teams** | mbuzz, Funnel, SegmentStream | Unified measurement, incrementality |
 
 ### By Budget
 
 | Monthly Budget | Options |
 |---------------|---------|
-| **Free** | GA4, HubSpot (within hub), Branch (startups) |
-| **$100-$500/mo** | Triple Whale, Rockerbox basic, Wicked Reports |
+| **Free** | mbuzz (50K events), GA4, Branch (startups) |
+| **$29-$100/mo** | mbuzz Starter/Growth |
+| **$100-$500/mo** | mbuzz Pro, Triple Whale, Rockerbox basic |
 | **$500-$2,000/mo** | Northbeam, Hyros, Ruler Analytics, Dreamdata |
 | **$2,000-$5,000/mo** | HockeyStack, Northbeam Pro, Factors.ai |
 | **$5,000+/mo** | Rockerbox Enterprise, Lifesight, SegmentStream |
@@ -629,12 +661,13 @@ These tools work for a variety of businesses without being specialized for B2B o
 
 | If You Use... | Consider |
 |--------------|----------|
-| **Shopify** | Triple Whale, Northbeam, Rockerbox |
+| **Rails, Django, Laravel, Node.js** | mbuzz (native SDKs) |
+| **Shopify** | mbuzz, Triple Whale, Northbeam |
 | **Salesforce** | Bizible, HockeyStack, Dreamdata |
-| **HubSpot** | HubSpot attribution, HockeyStack, Factors.ai |
+| **HubSpot** | mbuzz, HockeyStack, Factors.ai |
 | **Google Ads heavy** | GA4, Google Attribution 360 |
 | **Mobile apps** | AppsFlyer, Adjust, Branch |
-| **Modern data stack** | Funnel, SegmentStream, Census |
+| **Modern data stack** | mbuzz, Funnel, SegmentStream |
 
 <div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
   <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Interactive Comparison Tool</p>
@@ -667,13 +700,14 @@ The MTA market is crowded, but the right choice depends on your specific situati
 
 | If You Are... | Start With |
 |--------------|------------|
-| Small Shopify store | Triple Whale |
-| Large DTC brand | Northbeam or Rockerbox |
-| B2B SaaS | HockeyStack or Dreamdata |
+| Want validated, affordable attribution | **mbuzz** |
+| Small Shopify store | mbuzz or Triple Whale |
+| Large DTC brand | mbuzz, Northbeam, or Rockerbox |
+| B2B SaaS | mbuzz, HockeyStack, or Dreamdata |
 | Enterprise B2B | Bizible (Adobe) |
 | Mobile-first | AppsFlyer or Adjust |
-| Data-mature, privacy-focused | SegmentStream or Lifesight |
-| Budget-conscious | GA4 + manual analysis |
+| Data-mature, privacy-focused | mbuzz, SegmentStream, or Lifesight |
+| Budget-conscious | mbuzz (free tier) or GA4 |
 
 **No tool is perfect.** The best approach is often:
 1. Start with a tool matched to your size and stack
