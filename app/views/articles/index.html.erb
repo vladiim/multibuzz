@@ -9,22 +9,11 @@
   </div>
 </section>
 
-<% if @featured.any? %>
-  <section class="py-12 px-6 bg-gray-50">
-    <div class="max-w-5xl mx-auto">
-      <h2 class="text-2xl font-bold text-gray-900 mb-8">Start Here</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <% @featured.each do |article| %>
-          <%= render "article_card", article: article %>
-        <% end %>
-      </div>
-    </div>
-  </section>
-<% end %>
-
 <section class="py-12 px-6">
   <div class="max-w-5xl mx-auto">
-    <% @sections.each do |section, articles| %>
+    <% Article::SECTIONS.each do |section| %>
+      <% articles = @sections[section] %>
+      <% next unless articles&.any? %>
       <div class="mb-12">
         <h2 class="text-xl font-bold text-gray-900 mb-4 capitalize">
           <%= section.tr("-", " ") %>

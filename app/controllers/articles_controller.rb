@@ -8,7 +8,6 @@ class ArticlesController < ApplicationController
 
   def index
     @sections = Articles::Repository.by_section
-    @featured = Articles::Repository.featured
   end
 
   def show
