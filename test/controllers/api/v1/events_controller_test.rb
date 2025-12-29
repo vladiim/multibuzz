@@ -266,6 +266,165 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
       "Explicit visitor_id in payload should take precedence over cookie"
   end
 
+  # Server-side session resolution tests
+
+  test "should resolve session server-side using ip and user_agent" do
+    visitor_id = "vis_server_side_#{SecureRandom.hex(8)}"
+
+    # Create existing visitor and session with matching device fingerprint
+    visitor = account.visitors.create!(
+      visitor_id: visitor_id,
+      first_seen_at: Time.current,
+      last_seen_at: Time.current,
+      is_test: true
+    )
+
+    device_fingerprint = Digest::SHA256.hexdigest("127.0.0.0|Rails Testing")[0, 32]
+    existing_session = account.sessions.create!(
+      visitor: visitor,
+      session_id: "sess_existing_#{SecureRandom.hex(8)}",
+      started_at: 10.minutes.ago,
+      last_activity_at: 10.minutes.ago,
+      device_fingerprint: device_fingerprint,
+      is_test: true
+    )
+
+    payload = {
+      events: [
+        event_without_ids.merge(
+          "visitor_id" => visitor_id,
+          "session_id" => "sess_client_should_be_ignored"
+        )
+      ]
+    }
+
+    post api_v1_events_path, params: payload, headers: auth_headers_with_user_agent, as: :json
+
+    assert_response :accepted
+
+    created_event = account.events.unscoped.where(account: account).test_data.last
+    assert_equal existing_session.session_id, created_event.session.session_id,
+      "Should use existing session, not client-sent session_id"
+  end
+
+  test "should create new session when existing session expired" do
+    visitor_id = "vis_expired_#{SecureRandom.hex(8)}"
+
+    visitor = account.visitors.create!(
+      visitor_id: visitor_id,
+      first_seen_at: Time.current,
+      last_seen_at: Time.current,
+      is_test: true
+    )
+
+    device_fingerprint = Digest::SHA256.hexdigest("127.0.0.0|Rails Testing")[0, 32]
+    old_session = account.sessions.create!(
+      visitor: visitor,
+      session_id: "sess_old_#{SecureRandom.hex(8)}",
+      started_at: 1.hour.ago,
+      last_activity_at: 45.minutes.ago,  # Expired (> 30 min)
+      device_fingerprint: device_fingerprint,
+      is_test: true
+    )
+
+    payload = {
+      events: [event_without_ids.merge("visitor_id" => visitor_id)]
+    }
+
+    post api_v1_events_path, params: payload, headers: auth_headers_with_user_agent, as: :json
+
+    assert_response :accepted
+
+    created_event = account.events.unscoped.where(account: account).test_data.last
+    assert_not_equal old_session.session_id, created_event.session.session_id,
+      "Should create new session when existing session expired"
+  end
+
+  test "should generate deterministic session_id for concurrent requests" do
+    visitor_id = "vis_concurrent_#{SecureRandom.hex(8)}"
+
+    # Create visitor but no session
+    account.visitors.create!(
+      visitor_id: visitor_id,
+      first_seen_at: Time.current,
+      last_seen_at: Time.current,
+      is_test: true
+    )
+
+    # Send two events in same request (simulating concurrent page loads)
+    payload = {
+      events: [
+        event_without_ids.merge("visitor_id" => visitor_id, "event_type" => "page_view"),
+        event_without_ids.merge("visitor_id" => visitor_id, "event_type" => "button_click")
+      ]
+    }
+
+    post api_v1_events_path, params: payload, headers: auth_headers_with_user_agent, as: :json
+
+    assert_response :accepted
+
+    events = account.events.unscoped.where(account: account).test_data.order(created_at: :asc).last(2)
+    assert_equal events.first.session_id, events.last.session_id,
+      "Concurrent events should get same deterministic session_id"
+  end
+
+  test "should update last_activity_at on session for each event" do
+    visitor_id = "vis_activity_#{SecureRandom.hex(8)}"
+
+    visitor = account.visitors.create!(
+      visitor_id: visitor_id,
+      first_seen_at: Time.current,
+      last_seen_at: Time.current,
+      is_test: true
+    )
+
+    device_fingerprint = Digest::SHA256.hexdigest("127.0.0.0|Rails Testing")[0, 32]
+    session = account.sessions.create!(
+      visitor: visitor,
+      session_id: "sess_activity_#{SecureRandom.hex(8)}",
+      started_at: 20.minutes.ago,
+      last_activity_at: 20.minutes.ago,
+      device_fingerprint: device_fingerprint,
+      is_test: true
+    )
+
+    old_activity = session.last_activity_at
+
+    payload = {
+      events: [event_without_ids.merge("visitor_id" => visitor_id)]
+    }
+
+    post api_v1_events_path, params: payload, headers: auth_headers_with_user_agent, as: :json
+
+    assert_response :accepted
+    assert session.reload.last_activity_at > old_activity,
+      "Session last_activity_at should be updated"
+  end
+
+  test "should store device_fingerprint on new session" do
+    visitor_id = "vis_fingerprint_#{SecureRandom.hex(8)}"
+
+    account.visitors.create!(
+      visitor_id: visitor_id,
+      first_seen_at: Time.current,
+      last_seen_at: Time.current,
+      is_test: true
+    )
+
+    payload = {
+      events: [event_without_ids.merge("visitor_id" => visitor_id)]
+    }
+
+    post api_v1_events_path, params: payload, headers: auth_headers_with_user_agent, as: :json
+
+    assert_response :accepted
+
+    created_event = account.events.unscoped.where(account: account).test_data.last
+    assert created_event.session.device_fingerprint.present?,
+      "New session should have device_fingerprint stored"
+    assert_equal 32, created_event.session.device_fingerprint.length
+  end
+
   private
 
   def extract_cookie_value(cookie_name)
@@ -292,6 +451,10 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
 
   def auth_headers
     { "Authorization" => "Bearer #{plaintext_key}" }
+  end
+
+  def auth_headers_with_user_agent
+    auth_headers.merge("User-Agent" => "Rails Testing")
   end
 
   def invalid_auth_headers

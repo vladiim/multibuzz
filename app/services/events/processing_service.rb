@@ -44,10 +44,14 @@ module Events
     def resolve_session_server_side
       Sessions::ResolutionService.new(
         account: account,
-        visitor_id: event_data["visitor_id"],
+        visitor_id: event_visitor_id,
         ip: event_ip,
         user_agent: event_user_agent
       ).call
+    end
+
+    def event_visitor_id
+      event_data["visitor_id"] || event_data[:visitor_id]
     end
 
     def client_session_id
@@ -55,11 +59,11 @@ module Events
     end
 
     def event_ip
-      event_data["ip"]
+      event_data["ip"] || event_data[:ip]
     end
 
     def event_user_agent
-      event_data["user_agent"]
+      event_data["user_agent"] || event_data[:user_agent]
     end
 
     def device_fingerprint

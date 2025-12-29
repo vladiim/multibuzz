@@ -390,6 +390,37 @@ The `last_activity_at` column can remain - it's additive and doesn't break exist
 >
 > This is a separate PR after server-side resolution is proven in production.
 
+### Server-Side SDK Changes Required
+
+**Issue:** Server-side SDKs (Ruby, Python, PHP) make HTTP requests from the web server to the API. The API captures `request.ip` and `request.user_agent` from these requests, but these reflect the SERVER's IP and HTTP client library (e.g., "Faraday/1.0"), not the end user's browser.
+
+**Current Behavior:** When ip/user_agent don't match a real browser fingerprint, the API falls back to client-side `session_id`. This means server-side SDKs continue using the old time-bucket session resolution until updated.
+
+**Required Changes (Future PR):**
+
+| SDK | Repo | Changes |
+|-----|------|---------|
+| mbuzz-ruby | `mbuzz-ruby` | Forward `request.ip` and `request.user_agent` in event payload |
+| mbuzz-python | `mbuzz-python` | Forward client IP and User-Agent from WSGI/ASGI request |
+| mbuzz-php | `mbuzz-php` | Forward `$_SERVER['REMOTE_ADDR']` and `$_SERVER['HTTP_USER_AGENT']` |
+
+**Example (Ruby):**
+```ruby
+# Current - server's request context is lost
+Mbuzz::Client.track(visitor_id: vid, event_type: "page_view", properties: {})
+
+# Updated - forward original client context
+Mbuzz::Client.track(
+  visitor_id: vid,
+  event_type: "page_view",
+  ip: request.ip,
+  user_agent: request.user_agent,
+  properties: {}
+)
+```
+
+**Note:** JavaScript SDK (browser) works automatically since the browser sends User-Agent header directly to the API.
+
 ---
 
 ## Implementation Checklist
@@ -431,16 +462,16 @@ The `last_activity_at` column can remain - it's additive and doesn't break exist
 - [x] All tests pass (18 tests)
 
 ### Phase 5: Events Controller Updates (TDD)
-- [ ] Write integration tests for events endpoint without `session_id`
+- [x] Write integration tests for events endpoint without `session_id`
 - [x] `Api::V1::EventsController` already captures ip/user_agent via EnrichmentService
 - [x] Backwards compatibility: API accepts client `session_id` but resolves server-side when ip/user_agent present
-- [ ] All tests pass
+- [x] All tests pass (27 controller tests)
 
 ### Phase 6: Integration Testing
-- [ ] Test concurrent requests → same session
-- [ ] Test session continuation within 30min window
-- [ ] Test new session after 30min gap
-- [ ] Test new visitor flow end-to-end
+- [x] Test concurrent requests → same session
+- [x] Test session continuation within 30min window
+- [x] Test new session after 30min gap (expired session test)
+- [x] Test new visitor flow end-to-end (device fingerprint test)
 
 ### Phase 7: Cleanup & Documentation
 - [ ] Update API documentation
@@ -458,3 +489,5 @@ The `last_activity_at` column can remain - it's additive and doesn't break exist
 | 2024-12-29 | Phase 2: ResolutionService | Complete | 12 tests, TDD approach |
 | 2024-12-29 | Phase 3: TrackingService | Complete | All 3 services now update `last_activity_at` |
 | 2024-12-29 | Phase 4: ProcessingService | Complete | 18 tests, server-side resolution integrated |
+| 2024-12-30 | Phase 5: Events Controller | Complete | 27 controller tests, integration tests added |
+| 2024-12-30 | Phase 6: Integration Testing | Complete | All integration scenarios tested |
