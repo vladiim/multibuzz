@@ -194,6 +194,104 @@ module Dashboard
         assert_in_delta 5.0, result[:avg_days_to_convert], 0.1
       end
 
+      # Median-based calculation tests (resistant to outliers)
+
+      test "uses median for avg_visits_to_convert to resist outliers" do
+        # Create 5 normal conversions with 1-2 sessions each
+        4.times do
+          s = create_session(started_at: 1.day.ago)
+          conv = create_conversion_with_journey(
+            converted_at: Time.current,
+            journey_session_ids: [s.id]
+          )
+          create_credit_for_conversion(conv)
+        end
+
+        # Create 1 outlier with 100 sessions
+        outlier_sessions = create_sessions(100)
+        outlier = create_conversion_with_journey(
+          converted_at: Time.current,
+          journey_session_ids: outlier_sessions.map(&:id)
+        )
+        create_credit_for_conversion(outlier)
+
+        # Median of [1, 1, 1, 1, 100] = 1 (middle value)
+        # Mean would be 20.8, but median is 1
+        assert_equal 1.0, result[:avg_visits_to_convert]
+      end
+
+      test "uses median for avg_days_to_convert to resist outliers" do
+        now = Time.current
+
+        # 4 conversions with 1-day journey
+        4.times do
+          s = create_session(started_at: 1.day.ago)
+          conv = create_conversion_with_journey(
+            converted_at: now,
+            journey_session_ids: [s.id]
+          )
+          create_credit_for_conversion(conv)
+        end
+
+        # 1 outlier with 100-day journey
+        outlier_session = create_session(started_at: 100.days.ago)
+        outlier = create_conversion_with_journey(
+          converted_at: now,
+          journey_session_ids: [outlier_session.id]
+        )
+        create_credit_for_conversion(outlier)
+
+        # Median of [1, 1, 1, 1, 100] = 1 (middle value)
+        # Mean would be 20.8, but median is 1
+        assert_in_delta 1.0, result[:avg_days_to_convert], 0.1
+      end
+
+      test "uses median for avg_channels_to_convert to resist outliers" do
+        # 4 conversions with 1 channel each
+        4.times do
+          conv = create_conversion
+          create_credit_for_conversion(conv, channel: Channels::DIRECT)
+        end
+
+        # 1 outlier with 10 channels
+        outlier = create_conversion
+        [
+          Channels::PAID_SEARCH, Channels::ORGANIC_SEARCH, Channels::PAID_SOCIAL,
+          Channels::ORGANIC_SOCIAL, Channels::EMAIL, Channels::DIRECT,
+          Channels::REFERRAL, Channels::DISPLAY, Channels::VIDEO, Channels::OTHER
+        ].each do |channel|
+          create_credit_for_conversion(outlier, channel: channel)
+        end
+
+        # Median of [1, 1, 1, 1, 10] = 1 (middle value)
+        # Mean would be 2.8, but median is 1
+        assert_equal 1.0, result[:avg_channels_to_convert]
+      end
+
+      test "median with even number of elements averages two middle values" do
+        # 4 conversions: 2 with 2 sessions, 2 with 4 sessions
+        2.times do
+          sessions = create_sessions(2)
+          conv = create_conversion_with_journey(
+            converted_at: Time.current,
+            journey_session_ids: sessions.map(&:id)
+          )
+          create_credit_for_conversion(conv)
+        end
+
+        2.times do
+          sessions = create_sessions(4)
+          conv = create_conversion_with_journey(
+            converted_at: Time.current,
+            journey_session_ids: sessions.map(&:id)
+          )
+          create_credit_for_conversion(conv)
+        end
+
+        # Sorted: [2, 2, 4, 4] -> median = (2 + 4) / 2 = 3.0
+        assert_equal 3.0, result[:avg_visits_to_convert]
+      end
+
       private
 
       def result

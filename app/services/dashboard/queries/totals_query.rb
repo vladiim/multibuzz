@@ -1,6 +1,10 @@
 module Dashboard
   module Queries
     class TotalsQuery
+      DECIMAL_PRECISION = 1
+      CURRENCY_PRECISION = 2
+      MEDIAN_DIVISOR = 2
+
       def initialize(scope, prior_scope: nil, sessions_scope: nil, prior_sessions_scope: nil)
         @scope = scope
         @prior_scope = prior_scope
@@ -35,7 +39,7 @@ module Dashboard
       def calculate_aov
         return nil if sum_credits.zero?
 
-        (sum_revenue / sum_credits).round(2)
+        (sum_revenue / sum_credits).round(CURRENCY_PRECISION)
       end
 
       def avg_days_to_convert
@@ -44,7 +48,7 @@ module Dashboard
         days = days_per_conversion
         return nil if days.empty?
 
-        (days.sum / days.size).round(1)
+        median(days).round(DECIMAL_PRECISION)
       end
 
       def days_per_conversion
@@ -77,7 +81,7 @@ module Dashboard
         return nil if conversion_count.zero?
         return nil if channels_per_conversion.empty?
 
-        (channels_per_conversion.values.sum.to_f / channels_per_conversion.size).round(1)
+        median(channels_per_conversion.values).round(DECIMAL_PRECISION)
       end
 
       def avg_visits_to_convert
@@ -86,7 +90,7 @@ module Dashboard
         visits = journey_visits_per_conversion
         return nil if visits.empty?
 
-        (visits.values.sum.to_f / visits.size).round(1)
+        median(visits.values).round(DECIMAL_PRECISION)
       end
 
       def channels_per_conversion
@@ -130,12 +134,21 @@ module Dashboard
         {
           conversions: prior_conversions,
           revenue: prior_revenue,
-          aov: prior_conversions.positive? ? (prior_revenue / prior_conversions).round(2) : nil
+          aov: prior_conversions.positive? ? (prior_revenue / prior_conversions).round(CURRENCY_PRECISION) : nil
         }
       end
 
       def empty_prior_period
         { conversions: 0, revenue: 0, aov: nil }
+      end
+
+      def median(values)
+        return nil if values.empty?
+
+        sorted = values.map(&:to_f).sort
+        midpoint = sorted.size / MEDIAN_DIVISOR
+
+        sorted.size.odd? ? sorted[midpoint] : (sorted[midpoint - 1] + sorted[midpoint]) / MEDIAN_DIVISOR.to_f
       end
     end
   end
