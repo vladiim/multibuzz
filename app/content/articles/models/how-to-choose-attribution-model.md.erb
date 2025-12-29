@@ -115,6 +115,16 @@ Different questions need different models. There's nothing wrong with using mult
   <p class="text-yellow-700 text-sm">Create visual decision tree: Start with "What's your sales cycle?" → branches by length → "Monthly conversions?" → branches by volume → "Primary use case?" → final model recommendations. This becomes a signature mbuzz framework.</p>
 </div>
 
+<%# TODO: Interactive Tool - "Which Attribution Model?" Quiz
+    Implementation:
+    1. Create Stimulus controller: app/javascript/controllers/model_quiz_controller.js
+    2. 5 questions: sales cycle length, monthly conversions, primary use case, data maturity, team size
+    3. Client-side logic to calculate recommendation (no backend needed)
+    4. Output: Recommended model + "Try it in mbuzz" CTA with template param
+    5. Track quiz completions in analytics
+    6. Consider: Save quiz results to show personalized dashboard on signup
+%>
+
 ## Model-by-Model Breakdown
 
 ### Last-Touch (Last-Click)
@@ -175,6 +185,12 @@ Credit:   20%     20%    20%     20%     (conversion)
 <%= render_info_box do %>
   <strong>Our recommendation:</strong> If you're moving from single-touch to multi-touch, start with linear. It's transparent, unbiased, and provides a solid baseline to compare against more complex models.
 <% end %>
+
+<%= render "articles/cta_banner",
+    title: "Start with Linear Attribution",
+    description: "mbuzz makes it easy to start with linear and compare against other models. See how your channels really perform.",
+    cta_text: "Try Linear Free →",
+    style: :light %>
 
 ### Time-Decay
 

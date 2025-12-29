@@ -537,6 +537,15 @@ Garbage in, garbage out. If your touchpoint data is messy—duplicate sessions, 
 
 ## Implementing Data-Driven Attribution in mbuzz
 
+<%# TODO: CTA - "Use This Template" buttons for AML examples below
+    Implementation:
+    1. Create partial: app/views/articles/_use_template_cta.html.erb
+    2. Add button after each YAML code block
+    3. Link to: signup_path(template: "markov-chain") with template param
+    4. Backend: Create TemplatePreloader service that applies model config on signup
+    5. Template IDs: markov-chain, shapley, ml-gradient-boosting, hybrid-markov-linear, etc.
+%>
+
 mbuzz uses **AML (Attribution Model Language)** to configure data-driven models. Unlike rule-based models, these require additional settings for algorithms, thresholds, and validation.
 
 ### Basic Markov Chain Model

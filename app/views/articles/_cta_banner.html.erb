@@ -1,0 +1,22 @@
+<%# Usage: render "articles/cta_banner", title: "...", description: "...", cta_text: "...", style: :dark/:light/:warning %>
+<% style ||= :dark %>
+<% case style %>
+<% when :dark %>
+  <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-lg p-6 my-8 text-white not-prose">
+    <h3 class="text-lg font-bold mb-2"><%= title %></h3>
+    <p class="text-slate-300 text-sm mb-4"><%= description %></p>
+    <%= link_to cta_text, signup_path, class: "inline-block bg-white text-slate-900 px-4 py-2 rounded font-medium hover:bg-slate-100" %>
+  </div>
+<% when :light %>
+  <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-6 my-8 not-prose">
+    <h3 class="text-lg font-bold text-indigo-900 mb-2"><%= title %></h3>
+    <p class="text-indigo-700 text-sm mb-4"><%= description %></p>
+    <%= link_to cta_text, signup_path, class: "inline-block bg-indigo-600 text-white px-4 py-2 rounded font-medium hover:bg-indigo-700" %>
+  </div>
+<% when :warning %>
+  <div class="border-l-4 border-amber-500 bg-amber-50 p-4 my-6 not-prose">
+    <p class="text-amber-800 font-medium"><%= title %></p>
+    <p class="text-amber-700 text-sm mt-1"><%= description %></p>
+    <%= link_to cta_text, signup_path, class: "text-amber-700 underline text-sm font-medium" %>
+  </div>
+<% end %>

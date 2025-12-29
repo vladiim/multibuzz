@@ -223,6 +223,12 @@ MTA breaks this cycle by showing the true contribution of each channel at every 
   <p class="text-yellow-700 text-sm">Back up the 50%/70% thresholds with mbuzz data. Example: "Among mbuzz customers, 73% of converting journeys involve 2+ channels—meaning most businesses are actively harmed by single-touch attribution." A histogram showing touchpoint distribution would be even stronger.</p>
 </div>
 
+<%= render "articles/cta_banner",
+    title: "Stop the Attribution Death Spiral",
+    description: "See your full customer journey with server-side tracking that captures 95%+ of events. 8 attribution models included.",
+    cta_text: "Get Started Free",
+    style: :dark %>
+
 ## When to Use Multi-Touch Attribution
 
 MTA provides the most value when:
@@ -317,6 +323,16 @@ Client-side tracking (JavaScript) is blocked by ad blockers, Safari ITP, and Fir
   <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Server-Side Tracking Data</p>
   <p class="text-yellow-700 text-sm">Replace "25-40%" with precise mbuzz data. Example: "mbuzz customers see an average 32% increase in tracked events after enabling server-side tracking." Optionally include a before/after dashboard screenshot showing the event capture improvement.</p>
 </div>
+
+<%# TODO: Interactive Tool - "Event Capture Gap Calculator"
+    Implementation:
+    1. Simple JS calculator (no Stimulus needed, could be vanilla JS or Stimulus)
+    2. Inputs: Monthly sessions (number input), estimated ad blocker rate (slider 20-40%)
+    3. Calculation: missed_events = sessions * ad_blocker_rate
+    4. Output: "You're missing ~X,000 events/month. Server-side captures 95%+"
+    5. CTA: "See what you're missing → Get Started Free"
+    6. Design: Inline calculator widget with real-time calculation
+%>
 
 ### 3. Journey Stitching
 

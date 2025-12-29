@@ -443,6 +443,15 @@ ORDER BY attributed_revenue DESC;
 
 ## Implementing Position-Based in mbuzz
 
+<%# TODO: CTA - "Use This Template" buttons for AML examples below
+    Implementation:
+    1. Create partial: app/views/articles/_use_template_cta.html.erb
+    2. Add button after each YAML code block
+    3. Link to: signup_path(template: "position-u-shaped") with template param
+    4. Backend: Create TemplatePreloader service that applies model config on signup
+    5. Template IDs: position-u-shaped, position-w-shaped, position-intro-heavy, position-closer-heavy, etc.
+%>
+
 mbuzz uses **AML (Attribution Model Language)** to configure attribution models. Position-based models have configurable weights for first, middle, and last positions—plus support for W-shaped with a lead creation position.
 
 ### Basic U-Shaped Model (40-20-40)
