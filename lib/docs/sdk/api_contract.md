@@ -2,8 +2,8 @@
 
 **Purpose**: Define the exact API behavior that all SDKs must implement to remain compatible with the mbuzz backend.
 
-**Last Updated**: 2025-11-29
-**Backend Version**: 1.2.0
+**Last Updated**: 2025-12-30
+**Backend Version**: 1.3.0
 
 ---
 
@@ -156,7 +156,7 @@ X-Mbuzz-User-Agent: Mozilla/5.0... # Visitor's real UA (for server-side SDKs)
 ```
 Authorization: Bearer {api_key}
 Content-Type: application/json
-User-Agent: mbuzz-ruby/1.0.0 (Ruby/3.2.0)
+User-Agent: Mozilla/5.0...  # Browser's User-Agent (for server-side session resolution)
 ```
 
 **Request Body** (batch format - preferred):
@@ -166,7 +166,8 @@ User-Agent: mbuzz-ruby/1.0.0 (Ruby/3.2.0)
     {
       "event_type": "add_to_cart",
       "visitor_id": "a1b2c3d4e5f6...",
-      "session_id": "x1y2z3a4b5c6...",
+      "ip": "192.168.1.100",
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)...",
       "properties": {
         "url": "https://example.com/product/123",
         "referrer": "https://example.com/catalog",
@@ -183,8 +184,18 @@ User-Agent: mbuzz-ruby/1.0.0 (Ruby/3.2.0)
 - `event_type` (String) - Name of the event
 - `visitor_id` OR `user_id` (String) - At least one required
 
+**Server-Side Session Resolution Fields** (v1.3.0+):
+- `ip` (String) - Client's IP address (for device fingerprinting)
+- `user_agent` (String) - Client's User-Agent string (for device fingerprinting)
+
+When both `ip` and `user_agent` are provided, the API resolves sessions server-side using a true 30-minute sliding window. This is the **preferred method** for server-side SDKs (Ruby, Python, PHP).
+
+For browser-based SDKs (JavaScript), these values are captured from HTTP request headers automatically.
+
+**Legacy Fields** (deprecated, but still supported):
+- `session_id` (String) - Client-generated session ID. Ignored when `ip` and `user_agent` are present.
+
 **Recommended Fields**:
-- `session_id` (String) - Links event to session for attribution
 - `properties.url` (String) - Current page URL
 - `properties.referrer` (String) - Referring URL
 
@@ -407,18 +418,28 @@ _mbuzz_vid=<64 hex chars>; Max-Age=63072000; Path=/; HttpOnly; SameSite=Lax; Sec
 ### Session ID
 
 **Format**: 64-character hex string
-**Generation**: `SecureRandom.hex(32)` or equivalent
 **Lifetime**: 30 minutes (sliding expiry)
-**Storage**: Cookie named `_mbuzz_sid`
 
-**Cookie attributes**:
-```
-_mbuzz_sid=<64 hex chars>; Max-Age=1800; Path=/; HttpOnly; SameSite=Lax; Secure
-```
+**Resolution Methods**:
 
-**New session when**:
-- No session cookie exists
-- Session cookie expired (30+ minutes since last activity)
+| Method | When Used | How It Works |
+|--------|-----------|--------------|
+| Server-side (preferred) | `ip` and `user_agent` provided in event | API resolves session using device fingerprint + 30-min sliding window |
+| Client-side (legacy) | `session_id` provided, no `ip`/`user_agent` | SDK generates and manages session ID |
+
+**Server-side resolution** (v1.3.0+):
+- API generates `device_fingerprint = SHA256(ip\|user_agent)[0:32]`
+- Finds existing session for visitor + device fingerprint with activity < 30 min ago
+- Creates new session if no active session found
+- Uses deterministic ID generation for concurrent request handling
+
+**Client-side resolution** (legacy):
+- **Storage**: Cookie named `_mbuzz_sid`
+- **Generation**: `SecureRandom.hex(32)` or equivalent
+- **Cookie attributes**: `_mbuzz_sid=<64 hex chars>; Max-Age=1800; Path=/; HttpOnly; SameSite=Lax; Secure`
+- **New session when**: No session cookie exists OR session cookie expired (30+ minutes since last activity)
+
+**Migration path**: SDKs should transition to server-side resolution by including `ip` and `user_agent` in event payloads. The API will then ignore any client-sent `session_id`.
 
 ### User ID
 
@@ -480,18 +501,23 @@ _mbuzz_sid=<64 hex chars>; Max-Age=1800; Path=/; HttpOnly; SameSite=Lax; Secure
 
 ### Core (Required)
 
-- ✅ Session creation (`POST /sessions`) - async, on new session
 - ✅ Event tracking (`POST /events`)
 - ✅ Visitor ID generation and cookie management
-- ✅ Session ID generation and cookie management
 - ✅ Authentication (Bearer token)
 - ✅ Error handling (never raise exceptions)
 
 ### Standard (Recommended)
 
+- ✅ Server-side session resolution (include `ip` and `user_agent` in events) - v1.3.0+
 - ✅ User identification with cross-device linking (`POST /identify`)
 - ✅ Include URL and referrer in event properties
 - ✅ Conversion tracking (`POST /conversions`)
+- ✅ Session creation (`POST /sessions`) - async, on new session
+
+### Legacy (Deprecated)
+
+- ⚠️ Client-side session ID generation - replaced by server-side resolution
+- ⚠️ Session ID cookie management (`_mbuzz_sid`) - no longer needed with server-side resolution
 
 ### Advanced (Optional)
 

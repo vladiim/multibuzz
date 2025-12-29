@@ -396,30 +396,270 @@ The `last_activity_at` column can remain - it's additive and doesn't break exist
 
 **Current Behavior:** When ip/user_agent don't match a real browser fingerprint, the API falls back to client-side `session_id`. This means server-side SDKs continue using the old time-bucket session resolution until updated.
 
-**Required Changes (Future PR):**
+**Note:** JavaScript SDK (browser) works automatically since the browser sends User-Agent header directly to the API.
 
-| SDK | Repo | Changes |
-|-----|------|---------|
-| mbuzz-ruby | `mbuzz-ruby` | Forward `request.ip` and `request.user_agent` in event payload |
-| mbuzz-python | `mbuzz-python` | Forward client IP and User-Agent from WSGI/ASGI request |
-| mbuzz-php | `mbuzz-php` | Forward `$_SERVER['REMOTE_ADDR']` and `$_SERVER['HTTP_USER_AGENT']` |
+---
 
-**Example (Ruby):**
+## SDK Implementation Specs
+
+### mbuzz-ruby
+
+**Repo:** `mbuzz-ruby`
+
+**Files to modify:**
+
+| File | Changes |
+|------|---------|
+| `lib/mbuzz/client.rb` | Add `ip:` and `user_agent:` parameters to `track`, `identify`, `conversion` methods |
+| `lib/mbuzz/client/track_request.rb` | Include `ip` and `user_agent` in payload |
+| `lib/mbuzz/client/identify_request.rb` | Include `ip` and `user_agent` in payload |
+| `lib/mbuzz/client/conversion_request.rb` | Include `ip` and `user_agent` in payload |
+| `lib/mbuzz/middleware/tracking.rb` | Capture and forward `request.ip` and `request.user_agent` |
+| `lib/mbuzz/session/id_generator.rb` | Remove (no longer needed) |
+
+**API changes:**
+
 ```ruby
-# Current - server's request context is lost
-Mbuzz::Client.track(visitor_id: vid, event_type: "page_view", properties: {})
+# lib/mbuzz/client.rb
+module Mbuzz
+  class Client
+    def self.track(visitor_id: nil, session_id: nil, event_type:, properties: {}, ip: nil, user_agent: nil)
+      TrackRequest.new(visitor_id, session_id, event_type, properties, ip, user_agent).call
+    end
+  end
+end
 
-# Updated - forward original client context
-Mbuzz::Client.track(
-  visitor_id: vid,
-  event_type: "page_view",
-  ip: request.ip,
-  user_agent: request.user_agent,
-  properties: {}
-)
+# lib/mbuzz/client/track_request.rb
+def payload
+  {
+    visitor_id: @visitor_id,
+    event_type: @event_type,
+    properties: @properties,
+    ip: @ip,
+    user_agent: @user_agent,
+    timestamp: Time.now.utc.iso8601
+  }.compact
+end
 ```
 
-**Note:** JavaScript SDK (browser) works automatically since the browser sends User-Agent header directly to the API.
+**Middleware changes:**
+
+```ruby
+# lib/mbuzz/middleware/tracking.rb
+def track_page_view(request)
+  Mbuzz::Client.track(
+    visitor_id: get_visitor_id(request),
+    event_type: "page_view",
+    ip: request.ip,
+    user_agent: request.user_agent,
+    properties: { url: request.url, referrer: request.referrer }
+  )
+end
+```
+
+**Removal checklist:**
+- [ ] Remove `lib/mbuzz/session/id_generator.rb`
+- [ ] Remove `session_id` parameter from all Client methods
+- [ ] Remove `_mbuzz_sid` cookie handling from middleware
+- [ ] Remove `SESSION_COOKIE_NAME` constant
+
+---
+
+### mbuzz-python
+
+**Repo:** `mbuzz-python`
+
+**Files to modify:**
+
+| File | Changes |
+|------|---------|
+| `src/mbuzz/client.py` | Add `ip` and `user_agent` parameters to tracking methods |
+| `src/mbuzz/middleware.py` | Capture and forward client IP and User-Agent |
+
+**API changes:**
+
+```python
+# src/mbuzz/client.py
+class MbuzzClient:
+    def track(
+        self,
+        visitor_id: str,
+        event_type: str,
+        properties: dict = None,
+        ip: str = None,
+        user_agent: str = None
+    ) -> dict:
+        payload = {
+            "events": [{
+                "visitor_id": visitor_id,
+                "event_type": event_type,
+                "properties": properties or {},
+                "ip": ip,
+                "user_agent": user_agent,
+                "timestamp": datetime.utcnow().isoformat() + "Z"
+            }]
+        }
+        return self._post("/events", payload)
+```
+
+**Middleware changes (Flask example):**
+
+```python
+# src/mbuzz/middleware.py
+from flask import request
+
+def track_page_view():
+    mbuzz.track(
+        visitor_id=get_visitor_id(),
+        event_type="page_view",
+        ip=request.remote_addr,
+        user_agent=request.headers.get("User-Agent"),
+        properties={"url": request.url}
+    )
+```
+
+**Middleware changes (Django example):**
+
+```python
+# For Django middleware
+def process_request(self, request):
+    client_ip = self.get_client_ip(request)
+    user_agent = request.META.get("HTTP_USER_AGENT", "")
+
+    mbuzz.track(
+        visitor_id=self.get_visitor_id(request),
+        event_type="page_view",
+        ip=client_ip,
+        user_agent=user_agent,
+        properties={"url": request.build_absolute_uri()}
+    )
+
+def get_client_ip(self, request):
+    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+    if x_forwarded_for:
+        return x_forwarded_for.split(",")[0].strip()
+    return request.META.get("REMOTE_ADDR")
+```
+
+**Removal checklist:**
+- [ ] Remove session_id generation logic
+- [ ] Remove session cookie handling
+- [ ] Remove `session_id` parameter from all methods
+
+---
+
+### mbuzz-php
+
+**Repo:** `mbuzz-php`
+
+**Files to modify:**
+
+| File | Changes |
+|------|---------|
+| `src/Mbuzz/Client.php` | Add `ip` and `userAgent` parameters to tracking methods |
+| `src/Mbuzz/Middleware.php` | Capture and forward `$_SERVER` values |
+
+**API changes:**
+
+```php
+// src/Mbuzz/Client.php
+class Client
+{
+    public function track(
+        string $visitorId,
+        string $eventType,
+        array $properties = [],
+        ?string $ip = null,
+        ?string $userAgent = null
+    ): array {
+        $payload = [
+            'events' => [[
+                'visitor_id' => $visitorId,
+                'event_type' => $eventType,
+                'properties' => $properties,
+                'ip' => $ip,
+                'user_agent' => $userAgent,
+                'timestamp' => gmdate('Y-m-d\TH:i:s\Z')
+            ]]
+        ];
+
+        return $this->post('/events', $payload);
+    }
+}
+```
+
+**Middleware changes:**
+
+```php
+// src/Mbuzz/Middleware.php
+class Middleware
+{
+    public function trackPageView(): void
+    {
+        $this->client->track(
+            visitorId: $this->getVisitorId(),
+            eventType: 'page_view',
+            properties: ['url' => $this->getCurrentUrl()],
+            ip: $this->getClientIp(),
+            userAgent: $_SERVER['HTTP_USER_AGENT'] ?? null
+        );
+    }
+
+    private function getClientIp(): ?string
+    {
+        // Check for proxy headers first
+        if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $ips = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+            return trim($ips[0]);
+        }
+
+        return $_SERVER['REMOTE_ADDR'] ?? null;
+    }
+}
+```
+
+**Removal checklist:**
+- [ ] Remove session ID generation logic
+- [ ] Remove session cookie handling (`_mbuzz_sid`)
+- [ ] Remove `sessionId` parameter from all methods
+
+---
+
+### mbuzz-node (JavaScript - Browser)
+
+**Repo:** `mbuzz-node`
+
+**No changes required for server-side session resolution.** The browser automatically sends the `User-Agent` header with every request to the API, and the API captures the client IP from the connection.
+
+**Future cleanup (optional):**
+- [ ] Remove client-side session_id generation (if any)
+- [ ] Remove `_mbuzz_sid` cookie handling (if any)
+- [ ] Simplify SDK to only manage visitor_id
+
+---
+
+## IP Forwarding Considerations
+
+When running behind a reverse proxy (nginx, CloudFlare, load balancer), the SDKs must extract the original client IP from forwarded headers:
+
+| Header | Provider |
+|--------|----------|
+| `X-Forwarded-For` | Standard proxy header (first IP in list) |
+| `X-Real-IP` | nginx |
+| `CF-Connecting-IP` | CloudFlare |
+| `True-Client-IP` | Akamai, CloudFlare Enterprise |
+
+**Recommended approach:** Check headers in order of specificity, fall back to `REMOTE_ADDR`.
+
+```ruby
+# Ruby example
+def client_ip(request)
+  request.headers["CF-Connecting-IP"] ||
+    request.headers["X-Real-IP"] ||
+    request.headers["X-Forwarded-For"]&.split(",")&.first&.strip ||
+    request.ip
+end
+```
 
 ---
 
@@ -473,11 +713,60 @@ Mbuzz::Client.track(
 - [x] Test new session after 30min gap (expired session test)
 - [x] Test new visitor flow end-to-end (device fingerprint test)
 
-### Phase 7: Cleanup & Documentation
-- [ ] Update API documentation
-- [ ] Remove/deprecate `Sessions::IdentificationService` if no longer needed
-- [ ] Final test suite run
+### Phase 7: API Documentation
+- [ ] Update API documentation for events endpoint
+- [ ] Document server-side session resolution behavior
 - [ ] Deploy to production
+
+### Phase 8: SDK Updates (Separate PRs)
+- [ ] Update mbuzz-ruby to forward client ip/user_agent
+- [ ] Update mbuzz-python to forward client ip/user_agent
+- [ ] Update mbuzz-php to forward client ip/user_agent
+- [ ] Remove session_id generation from all SDKs
+- [ ] Remove `_mbuzz_sid` cookie handling from all SDKs
+
+### Phase 9: Cleanup (After SDK Updates Deployed)
+- [ ] Review and deprecate `Sessions::IdentificationService` (see analysis below)
+- [ ] Remove backwards compatibility code for client session_id
+- [ ] Final cleanup and documentation update
+
+---
+
+## Sessions::IdentificationService Deprecation Analysis
+
+**File:** `app/services/sessions/identification_service.rb`
+
+**Current Usage:**
+- Called by `Api::V1::EventsController` to:
+  1. Set `_mbuzz_sid` cookie in response
+  2. Provide fallback `session_id` when event doesn't include one
+
+**Why NOT to deprecate yet:**
+
+| Reason | Impact |
+|--------|--------|
+| Cookie management | Browser SDKs may still read `_mbuzz_sid` for backwards compatibility |
+| Fallback session_id | When `ip`/`user_agent` not available, falls back to client session_id |
+| Legacy SDK support | Older SDK versions still depend on cookie-based sessions |
+
+**Deprecation Prerequisites:**
+
+1. ✅ Server-side session resolution implemented and stable
+2. ⬜ All SDKs updated to send `ip` and `user_agent`
+3. ⬜ All SDKs stop generating client-side session_id
+4. ⬜ All SDKs stop reading/writing `_mbuzz_sid` cookie
+5. ⬜ Sufficient migration period (recommend 3-6 months)
+6. ⬜ Analytics confirm <5% of events use client session_id
+
+**Deprecation Steps (Future):**
+
+1. Add deprecation warning to `Sessions::IdentificationService`
+2. Stop setting `_mbuzz_sid` cookie in API responses
+3. Remove fallback to client session_id in `Events::EnrichmentService`
+4. Delete `Sessions::IdentificationService`
+5. Update API documentation
+
+**Current Recommendation:** Keep `Sessions::IdentificationService` until Phase 8 (SDK updates) is complete and deployed for at least 3 months.
 
 ---
 
@@ -491,3 +780,6 @@ Mbuzz::Client.track(
 | 2024-12-29 | Phase 4: ProcessingService | Complete | 18 tests, server-side resolution integrated |
 | 2024-12-30 | Phase 5: Events Controller | Complete | 27 controller tests, integration tests added |
 | 2024-12-30 | Phase 6: Integration Testing | Complete | All integration scenarios tested |
+| 2024-12-30 | Phase 7: API Documentation | Complete | Updated api_contract.md with session resolution fields |
+| 2024-12-30 | Phase 8: SDK Specs | Complete | Documented Ruby, Python, PHP SDK changes required |
+| 2024-12-30 | Phase 9: IdentificationService | Deferred | Analysis complete, defer deprecation until SDKs updated |
