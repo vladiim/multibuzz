@@ -1,0 +1,918 @@
+---
+title: "Data-Driven Attribution: Markov Chains, Shapley Values, and ML Models"
+slug: "data-driven-attribution"
+description: "Data-driven attribution uses algorithms to learn touchpoint importance from your data. Learn how Markov chains, Shapley values, and machine learning models work, when to use them, and their limitations."
+published_at:
+section: models
+section_order: 6
+status: draft
+priority: P1
+category: "Attribution Models"
+tags:
+  - data-driven attribution
+  - markov chain attribution
+  - shapley value attribution
+  - algorithmic attribution
+  - machine learning attribution
+related_articles:
+  - linear-attribution
+  - position-based-attribution
+  - how-to-choose-attribution-model
+  - what-is-multi-touch-attribution
+seo:
+  title: "Data-Driven Attribution: Markov, Shapley & ML Models Explained"
+aeo:
+  target_query: "data driven attribution model"
+  tldr: "Data-driven attribution uses algorithms—Markov chains, Shapley values, or machine learning—to learn touchpoint importance from your actual conversion data. Unlike rule-based models (linear, position-based), these models don't assume credit distribution; they calculate it. The catch: they require significant data volume (2,000-5,000+ monthly conversions), are often black boxes, and can overfit to noise with insufficient data."
+  key_takeaways:
+    - "Data-driven models learn touchpoint importance rather than assuming it"
+    - "Markov chains calculate 'removal effect'—what happens if a channel didn't exist"
+    - "Shapley values use game theory for 'fair' credit distribution"
+    - "Require high volume (2,000-5,000+ conversions/month) to be reliable"
+  faq:
+    - q: "What is data-driven attribution?"
+      a: "Data-driven attribution uses algorithms to determine how much credit each touchpoint deserves based on actual conversion patterns in your data. Instead of assuming equal credit (linear) or position-based credit, it calculates the contribution of each touchpoint by analyzing what paths lead to conversion."
+    - q: "What is Markov chain attribution?"
+      a: "Markov chain attribution models customer journeys as a probabilistic chain of states (channels). It calculates each channel's importance by measuring the 'removal effect'—how much would conversions drop if that channel didn't exist? Channels with higher removal effect get more credit."
+    - q: "What is Shapley value attribution?"
+      a: "Shapley value attribution uses game theory to fairly distribute credit. It considers all possible orderings of touchpoints and calculates each channel's marginal contribution across all permutations. It's mathematically 'fair' but computationally expensive (O(2^n) complexity)."
+    - q: "Is Google's data-driven attribution accurate?"
+      a: "Google's DDA is convenient but has limitations: it's a black box (you can't see the logic), it may favor Google properties, and it only sees Google touchpoints. For unbiased, cross-channel attribution, build your own or use a third-party tool."
+    - q: "How much data do I need for data-driven attribution?"
+      a: "Markov chain: 2,000+ conversions/month minimum. Shapley value: 5,000+ conversions/month. Machine learning: 10,000+ conversions/month with diverse paths. Below these thresholds, models overfit and produce unreliable results—stick to rule-based models."
+schema:
+  type: Article
+  author: "holly-henderson"
+has_code_examples: true
+has_calculator: false
+has_download: false
+---
+
+<%= render_tldr(@article.tldr) %>
+
+## What Data-Driven Attribution Is
+
+Data-driven attribution answers: **"Based on our actual conversion data, how much did each touchpoint contribute?"**
+
+Unlike rule-based models that assume credit distribution (linear = equal, position-based = 40-20-40), data-driven models calculate it:
+
+```
+Rule-Based vs Data-Driven:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Rule-Based (Position-Based):
+"First and last get 40% each, middle splits 20%"
+→ Assumption built into the model
+
+Data-Driven:
+"Based on 10,000 conversions, here's what we learned:
+ - Paid Social appears early, 32% removal effect
+ - Email appears late, 28% removal effect
+ - Organic balanced, 22% removal effect"
+→ Calculated from actual data
+```
+
+The appeal: let data determine importance rather than imposing assumptions.
+
+### Three Main Approaches
+
+| Approach | How It Works | Data Needs | Complexity |
+|----------|--------------|------------|------------|
+| **Markov Chain** | Models paths as probabilistic chains; calculates "removal effect" | 2,000+ conversions | Medium |
+| **Shapley Value** | Game theory; fair distribution based on marginal contribution | 5,000+ conversions | High |
+| **Machine Learning** | Trains models to predict conversion; interprets feature importance | 10,000+ conversions | Very High |
+
+All three learn from data, but with different math and tradeoffs.
+
+## Markov Chain Attribution
+
+### How It Works
+
+Markov chain attribution models customer journeys as a sequence of states, where each state is a channel. It calculates the probability of moving between channels and reaching conversion.
+
+```
+Markov Chain Visualization:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                    ┌────────────┐
+                    │  Organic   │
+                    └─────┬──────┘
+                          │ 30%
+         ┌────────────────┼────────────────┐
+         ▼                ▼                ▼
+   ┌──────────┐    ┌──────────┐     ┌──────────┐
+   │  Email   │    │  Social  │     │  Search  │
+   └────┬─────┘    └────┬─────┘     └────┬─────┘
+        │ 45%           │ 20%            │ 60%
+        ▼               ▼                ▼
+   ┌────────────────────────────────────────────┐
+   │              CONVERSION                     │
+   └────────────────────────────────────────────┘
+```
+
+The key insight: **removal effect**. What happens to overall conversions if we remove a channel from the chain?
+
+### Calculating Removal Effect
+
+1. Calculate baseline conversion probability (with all channels)
+2. Remove one channel (set its conversion probability to 0)
+3. Recalculate conversion probability
+4. The drop = that channel's removal effect
+
+```
+Example:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Baseline conversion rate: 5.0%
+
+Remove Paid Social: Conversion drops to 3.2%
+→ Paid Social removal effect = (5.0 - 3.2) / 5.0 = 36%
+
+Remove Email: Conversion drops to 3.8%
+→ Email removal effect = (5.0 - 3.8) / 5.0 = 24%
+
+Remove Organic: Conversion drops to 4.1%
+→ Organic removal effect = (5.0 - 4.1) / 5.0 = 18%
+```
+
+Channels with higher removal effect get more credit.
+
+### Implementation Sketch
+
+```ruby
+class MarkovChainAttribution
+  def initialize(conversions:, non_conversions:)
+    @conversions = conversions        # Array of converting paths
+    @non_conversions = non_conversions # Array of non-converting paths
+    @channels = extract_unique_channels
+  end
+
+  def calculate_credit
+    baseline_rate = conversion_rate(@conversions, @non_conversions)
+
+    removal_effects = @channels.map do |channel|
+      # Remove channel from all paths
+      modified_conversions = remove_channel(@conversions, channel)
+      modified_non_conversions = remove_channel(@non_conversions, channel)
+
+      # Recalculate conversion rate
+      modified_rate = conversion_rate(modified_conversions, modified_non_conversions)
+
+      # Calculate removal effect
+      effect = (baseline_rate - modified_rate) / baseline_rate
+      [channel, effect.clamp(0, 1)]
+    end.to_h
+
+    # Normalize to sum to 1
+    total_effect = removal_effects.values.sum
+    removal_effects.transform_values { |v| v / total_effect }
+  end
+
+  private
+
+  def conversion_rate(conversions, non_conversions)
+    conversions.size.to_f / (conversions.size + non_conversions.size)
+  end
+
+  def remove_channel(paths, channel)
+    paths.map { |path| path.reject { |c| c == channel } }
+         .reject(&:empty?)
+  end
+end
+```
+
+### Markov Chain Pros and Cons
+
+**Pros:**
+- Intuitive "what if" logic
+- Accounts for channel interactions
+- Works with medium data volumes (2,000+ conversions)
+- Transparent calculation
+
+**Cons:**
+- Assumes first-order Markov property (only previous state matters)
+- Sensitive to path definition and deduplication
+- Removal effect can exceed 100% in aggregate (channels overlap)
+- Doesn't account for order within channel
+
+<%= render_info_box do %>
+  <strong>When to use Markov:</strong> You have 2,000-10,000 monthly conversions, want interpretable results, and are comfortable with the removal effect logic.
+<% end %>
+
+## Shapley Value Attribution
+
+### How It Works
+
+Shapley value comes from cooperative game theory. The core idea: what's the fair way to divide credit among players (channels) who worked together to win (convert)?
+
+The answer: calculate each channel's marginal contribution across all possible orderings, then average.
+
+```
+Shapley Value Intuition:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Channels: {Social, Email, Search}
+
+Consider all orderings and marginal contributions:
+
+Order: Social → Email → Search
+- Social joins first: +10% conversion
+- Email joins second: +15% additional
+- Search joins third: +5% additional
+
+Order: Email → Social → Search
+- Email joins first: +12% conversion
+- Social joins second: +8% additional
+- Search joins third: +10% additional
+
+... (all 6 orderings) ...
+
+Shapley Value = Average marginal contribution across all orderings
+```
+
+This ensures "fair" credit that satisfies mathematical properties like:
+- Efficiency: Total credit sums to 100%
+- Symmetry: Equal contributors get equal credit
+- Null player: Non-contributors get zero
+- Additivity: Combines properly across games
+
+### The Computational Problem
+
+Shapley value requires calculating all permutations. With n channels, there are n! orderings:
+
+| Channels | Orderings | Computation |
+|----------|-----------|-------------|
+| 3 | 6 | Trivial |
+| 5 | 120 | Fast |
+| 10 | 3,628,800 | Slow |
+| 15 | 1,307,674,368,000 | Impossible |
+
+For real-world channel counts, approximation algorithms (sampling) are necessary.
+
+### Implementation Sketch
+
+```ruby
+class ShapleyValueAttribution
+  def initialize(channel_contributions)
+    # channel_contributions: Hash mapping channel combinations to conversion lift
+    # e.g., { [:social] => 0.10, [:social, :email] => 0.22, ... }
+    @contributions = channel_contributions
+    @channels = channel_contributions.keys.flatten.uniq
+  end
+
+  def calculate_shapley_values
+    @channels.map do |channel|
+      shapley = 0.0
+
+      # For each possible coalition not containing the channel
+      coalitions_without_channel = all_coalitions.reject { |c| c.include?(channel) }
+
+      coalitions_without_channel.each do |coalition|
+        coalition_with = (coalition + [channel]).sort
+        marginal = (@contributions[coalition_with] || 0) - (@contributions[coalition] || 0)
+
+        # Weight by coalition size
+        weight = factorial(coalition.size) * factorial(@channels.size - coalition.size - 1) /
+                 factorial(@channels.size).to_f
+
+        shapley += weight * marginal
+      end
+
+      [channel, shapley]
+    end.to_h
+  end
+
+  private
+
+  def all_coalitions
+    (0..@channels.size).flat_map { |n| @channels.combination(n).to_a }
+  end
+
+  def factorial(n)
+    n <= 1 ? 1 : n * factorial(n - 1)
+  end
+end
+```
+
+### Shapley Pros and Cons
+
+**Pros:**
+- Mathematically "fair" distribution
+- No inherent bias toward any position
+- Theoretically sound (Nobel Prize-winning concept)
+
+**Cons:**
+- Computationally expensive (O(2^n))
+- Requires high data volume (5,000+ conversions)
+- Black box to non-technical stakeholders
+- Hard to explain "what is a Shapley value?"
+
+<%= render_warning_box do %>
+  <strong>The Shapley paradox:</strong> It's the most theoretically fair model, but also the hardest to explain. If stakeholders don't trust what they can't understand, Shapley's elegance doesn't help.
+<% end %>
+
+## Machine Learning Attribution
+
+### How It Works
+
+ML-based attribution trains a model to predict conversion, then interprets which features (touchpoints) drove the prediction.
+
+Common approaches:
+
+| Method | How It Works | Interpretation |
+|--------|--------------|----------------|
+| **Logistic Regression** | Linear model with channel coefficients | Coefficients = importance |
+| **Random Forest** | Ensemble of decision trees | Feature importance scores |
+| **Gradient Boosting** | Sequential tree boosting | SHAP values for explanation |
+| **Neural Networks** | Deep learning | Attention weights, SHAP |
+
+### Example: Logistic Regression
+
+```ruby
+# Simplified example using channel presence as features
+class MLAttribution
+  def initialize(journeys)
+    @journeys = journeys
+    @channels = extract_unique_channels(journeys)
+  end
+
+  def train_and_attribute
+    # Create feature matrix: each row = journey, columns = channel presence
+    x = @journeys.map { |j| @channels.map { |c| j[:touches].include?(c) ? 1 : 0 } }
+    y = @journeys.map { |j| j[:converted] ? 1 : 0 }
+
+    # Train logistic regression (pseudocode)
+    model = LogisticRegression.fit(x, y)
+
+    # Extract coefficients as channel importance
+    @channels.zip(model.coefficients).to_h
+  end
+end
+```
+
+### SHAP Values for Model Interpretation
+
+SHAP (SHapley Additive exPlanations) applies Shapley logic to ML models:
+
+```
+SHAP for Each Conversion:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Base prediction: 15% conversion probability
+
+Journey: Social → Content → Email → Purchase
+
+SHAP breakdown:
+- Social: +3% (raised probability from 15% → 18%)
+- Content: +8% (raised from 18% → 26%)
+- Email: +12% (raised from 26% → 38%)
+- Other factors: +62% to reach 100%
+
+Each touchpoint's SHAP value = its marginal contribution to THIS conversion.
+```
+
+### ML Pros and Cons
+
+**Pros:**
+- Can capture complex, non-linear interactions
+- Handles high-dimensional data well
+- SHAP provides per-conversion explanations
+- Continuously improves with more data
+
+**Cons:**
+- Requires significant data (10,000+ conversions)
+- Black box without careful interpretation
+- Easy to overfit
+- Needs ML expertise to implement correctly
+
+## Google's Data-Driven Attribution
+
+Google Ads and GA4 offer "data-driven attribution" (DDA). What's inside?
+
+### What We Know
+
+- Uses machine learning trained on your conversion data
+- Compares converting vs non-converting paths
+- Learns which touchpoints correlate with conversion
+- Updates regularly as new data arrives
+
+### What We Don't Know
+
+- Exact algorithm (black box)
+- How Google properties are weighted
+- How cross-channel data is handled
+- Whether it's biased toward Google inventory
+
+### Limitations
+
+| Issue | Implication |
+|-------|-------------|
+| **Black box** | Can't validate or explain results |
+| **Google ecosystem only** | Doesn't see non-Google touchpoints well |
+| **Potential bias** | May favor Google Ads inventory |
+| **Minimum data** | Needs 3,000+ conversions per 30 days |
+| **No customization** | Can't adjust for business logic |
+
+<%= render_warning_box do %>
+  <strong>The Google DDA trap:</strong> It's convenient, but you're trusting a black box from the company that sells you ads. For unbiased cross-channel attribution, consider building your own or using independent tools.
+<% end %>
+
+## When to Use Data-Driven Attribution
+
+### Use Data-Driven When:
+
+1. **High conversion volume:** 2,000+ monthly conversions (Markov), 5,000+ (Shapley), 10,000+ (ML)
+
+2. **Diverse conversion paths:** Multiple channels, varying journey lengths
+
+3. **You want to learn, not assume:** Let data reveal importance rather than imposing rules
+
+4. **You have analytics resources:** Someone can implement, validate, and maintain the models
+
+### Stick to Rule-Based When:
+
+1. **Low volume:** Under 2,000 monthly conversions, data-driven overfits
+
+2. **Homogeneous paths:** Most journeys look similar, little to learn
+
+3. **Stakeholder transparency matters:** Rule-based is easier to explain
+
+4. **Speed to value:** Linear or position-based ships immediately
+
+### Decision Framework
+
+```
+Data-Driven Decision Tree:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Monthly conversions?
+├─ < 2,000: Use rule-based (linear, position)
+├─ 2,000 - 5,000: Consider Markov chain
+├─ 5,000 - 10,000: Markov or Shapley approximation
+└─ 10,000+: Full data-driven (ML with SHAP)
+
+Analytics resources?
+├─ None: Use vendor solutions (with caveats)
+├─ Some: Markov chain (manageable complexity)
+└─ Strong: Custom ML with validation
+```
+
+## Validating Data-Driven Models
+
+All attribution is correlational—including data-driven. Validate with:
+
+### 1. Compare to Rule-Based Baselines
+
+```
+Validation Check:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Channel    | Linear | Position | Markov | Difference
+───────────|────────|──────────|────────|───────────
+Paid Social| 25%    | 32%      | 38%    | Markov higher
+Email      | 20%    | 18%      | 15%    | Markov lower
+Organic    | 30%    | 28%      | 28%    | Consistent
+Search     | 25%    | 22%      | 19%    | Markov lower
+
+Large discrepancies warrant investigation.
+```
+
+### 2. Incrementality Tests
+
+Run holdout experiments to measure true causal impact:
+
+```
+Validation with Incrementality:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Channel    | Markov Credit | Incremental (Test) | Calibration
+───────────|───────────────|──────────────────--|────────────
+Paid Social| $100K         | $120K              | 1.2x undervalued
+Email      | $80K          | $50K               | 0.6x overvalued
+```
+
+Use calibration factors to adjust model outputs toward ground truth.
+
+### 3. Stability Over Time
+
+Good models produce stable results. Wild swings suggest overfitting:
+
+```
+Stability Check:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Channel    | Week 1 | Week 2 | Week 3 | Week 4 | Stability
+───────────|────────|────────|────────|────────|──────────
+Paid Social| 32%    | 35%    | 30%    | 33%    | Stable ✓
+Email      | 18%    | 25%    | 12%    | 22%    | Unstable ✗
+```
+
+Unstable channels may need more data or model refinement.
+
+## Common Data-Driven Mistakes
+
+### Mistake 1: Using Data-Driven with Low Volume
+
+With 500 monthly conversions, data-driven models overfit to noise. You'll get random numbers, not insights.
+
+**Fix:** Minimum 2,000 conversions/month for Markov, 5,000+ for Shapley/ML.
+
+### Mistake 2: Trusting Black Box Outputs
+
+"The model says Paid Social deserves 45%"—but why? Without understanding, you can't validate or act confidently.
+
+**Fix:** Use interpretable models (Markov, SHAP). Demand explanations.
+
+### Mistake 3: Not Validating with Experiments
+
+Data-driven models find correlations, not causation. A channel might correlate with conversion without causing it.
+
+**Fix:** Run incrementality tests quarterly. Calibrate model outputs.
+
+### Mistake 4: Ignoring Path Quality
+
+Garbage in, garbage out. If your touchpoint data is messy—duplicate sessions, missing referrers, poor identity resolution—data-driven models amplify errors.
+
+**Fix:** Clean data before modeling. Validate path quality.
+
+## Implementing Data-Driven Attribution in mbuzz
+
+mbuzz uses **AML (Attribution Model Language)** to configure data-driven models. Unlike rule-based models, these require additional settings for algorithms, thresholds, and validation.
+
+### Basic Markov Chain Model
+
+```yaml
+# mbuzz AML - Markov Chain Attribution
+model: markov_chain
+name: "Markov Attribution"
+description: "Calculate channel importance via removal effect"
+
+settings:
+  lookback_window: 30d
+  order: 1                    # First-order Markov (previous state only)
+  min_path_frequency: 10      # Ignore paths with < 10 occurrences
+  include_non_conversions: true
+
+validation:
+  min_conversions: 2000       # Warn if below threshold
+  holdout_percentage: 20      # Reserve for validation
+```
+
+### Shapley Value Model
+
+```yaml
+model: shapley
+name: "Shapley Attribution"
+description: "Game-theoretic fair credit distribution"
+
+settings:
+  lookback_window: 30d
+  sampling_iterations: 10000   # Approximate (full computation too slow)
+  channel_limit: 15           # Max channels (complexity grows 2^n)
+
+validation:
+  min_conversions: 5000       # Higher threshold for Shapley
+  convergence_threshold: 0.01 # Stop when values stabilize
+```
+
+### Machine Learning Model
+
+```yaml
+model: ml_attribution
+name: "ML Attribution"
+algorithm: gradient_boosting   # Options: logistic, random_forest, gradient_boosting
+
+settings:
+  lookback_window: 30d
+  features:
+    - channel_sequence
+    - time_between_touches
+    - touchpoint_count
+    - device_type
+    - day_of_week
+
+training:
+  train_test_split: 0.8
+  cross_validation_folds: 5
+  retrain_frequency: weekly
+
+interpretation:
+  method: shap               # SHAP values for per-conversion explanation
+  aggregate_to: channel
+```
+
+### Hybrid Model (Markov + Rule-Based Fallback)
+
+For accounts with inconsistent volume:
+
+```yaml
+model: hybrid
+name: "Adaptive Attribution"
+
+primary:
+  model: markov_chain
+  settings:
+    min_path_frequency: 10
+
+fallback:
+  model: linear              # Use linear when data insufficient
+  trigger_when:
+    monthly_conversions_below: 2000
+    path_diversity_below: 0.3
+
+notification:
+  alert_on_fallback: true
+  email: attribution-team@company.com
+```
+
+### Compare Data-Driven to Rule-Based
+
+```yaml
+# Run multiple models to validate data-driven outputs
+models:
+  - model: markov_chain
+    name: "Markov"
+    settings:
+      lookback_window: 30d
+
+  - model: linear
+    name: "Linear Baseline"
+    settings:
+      lookback_window: 30d
+
+  - model: position_based
+    name: "Position Baseline"
+    settings:
+      first_weight: 0.40
+      last_weight: 0.40
+
+comparison:
+  enabled: true
+  primary: "Markov"
+  divergence_threshold: 0.25    # Alert if >25% difference from baselines
+  report_frequency: weekly
+```
+
+## Tuning Data-Driven Models for Your Business
+
+Data-driven models have more parameters and require more careful tuning than rule-based models.
+
+### By Business Type and Volume
+
+| Business Type | Model Choice | Min Volume | Key Settings |
+|---------------|--------------|------------|--------------|
+| **High-volume e-commerce** | Markov or ML | 5,000+/mo | Short lookback (14d), fast retraining |
+| **Mid-volume e-commerce** | Markov | 2,000-5,000/mo | 30d lookback, weekly updates |
+| **B2B SaaS (good volume)** | Markov | 2,000+/mo | 90d lookback, exclude branded |
+| **B2B SaaS (low volume)** | Rule-based fallback | <2,000/mo | Use linear or position-based |
+| **Enterprise B2B** | Rule-based | <500/mo | Markov will overfit |
+
+### By Business Stage
+
+```yaml
+# Early-stage: Don't use data-driven yet
+# Stick to rule-based until you have volume
+
+---
+
+# Growth-stage: Start testing Markov
+model: markov_chain
+name: "Growth Markov"
+
+settings:
+  lookback_window: 30d
+  min_path_frequency: 5       # Lower threshold (less data)
+
+validation:
+  min_conversions: 2000
+  compare_to_baseline: linear
+
+# Run in parallel with linear, don't use for decisions yet
+mode: shadow
+
+---
+
+# Scale-stage: Full data-driven with validation
+model: markov_chain
+name: "Production Markov"
+
+settings:
+  lookback_window: 30d
+  order: 1
+  min_path_frequency: 20      # Higher threshold (more data)
+
+validation:
+  holdout_percentage: 20
+  incrementality_tests:
+    frequency: quarterly
+    channels: [paid_social, display]
+
+mode: production
+```
+
+### Seasonal and Campaign Adjustments
+
+Data-driven models can adapt, but need care during unusual periods:
+
+```yaml
+# Black Friday / Holiday: Retrain more frequently
+model: markov_chain
+name: "Holiday Markov"
+
+settings:
+  lookback_window: 14d        # Shorter window, fresh patterns
+  min_path_frequency: 5       # Lower threshold (paths are new)
+
+training:
+  retrain_frequency: daily    # Patterns changing rapidly
+  warm_start: true            # Build on previous model
+
+date_range:
+  start: "2024-11-15"
+  end: "2024-12-31"
+
+# Compare to baseline to detect anomalies
+comparison:
+  baseline_model: "Standard Markov"
+  alert_on_divergence: 0.30
+```
+
+```yaml
+# Major Campaign Launch: Isolate and train separately
+model: markov_chain
+name: "Launch Campaign Markov"
+
+settings:
+  lookback_window: 14d
+
+filters:
+  require_campaign:
+    - "product-launch-2024"
+
+# Separate model for launch to avoid contaminating main model
+mode: isolated
+
+# Compare launch paths to normal paths
+comparison:
+  baseline_model: "Production Markov"
+  report_differences: true
+```
+
+### Algorithm Selection by Scenario
+
+```yaml
+# Use Markov for interpretability
+model: markov_chain
+name: "Explainable Attribution"
+use_case: stakeholder_reporting
+
+settings:
+  order: 1
+  output_removal_effects: true    # Show "what if" for each channel
+
+---
+
+# Use Shapley for fairness
+model: shapley
+name: "Fair Attribution"
+use_case: cross_team_credit
+
+settings:
+  sampling_iterations: 10000
+
+---
+
+# Use ML for maximum accuracy (if you have the data)
+model: ml_attribution
+name: "Predictive Attribution"
+use_case: budget_optimization
+
+settings:
+  algorithm: gradient_boosting
+  features:
+    - channel_sequence
+    - touchpoint_timing
+    - user_segment
+  interpretation:
+    method: shap
+```
+
+### Data Quality Controls
+
+Data-driven models amplify data quality issues:
+
+```yaml
+model: markov_chain
+name: "Quality-Controlled Markov"
+
+settings:
+  lookback_window: 30d
+
+data_quality:
+  # Remove suspicious paths
+  max_touchpoints_per_day: 50     # Cap unrealistic activity
+  min_time_between_touches: 1s    # Remove duplicate clicks
+  exclude_bot_traffic: true
+
+  # Path deduplication
+  dedupe_level: session
+  dedupe_window: 30m              # Same channel within 30m = one touch
+
+  # Identity resolution
+  require_identity: false         # Include anonymous paths
+  stitch_anonymous: true          # Connect anonymous → known
+
+validation:
+  path_diversity_min: 0.3         # Alert if paths too homogeneous
+  channel_coverage_min: 0.8       # Alert if channels underrepresented
+```
+
+### Parameter Tuning Cheatsheet
+
+| Scenario | Parameter Change | Why |
+|----------|------------------|-----|
+| **Low volume (<2K/mo)** | Fall back to rule-based | Markov will overfit |
+| **Growing volume (2K-5K)** | Use Markov, lower thresholds | Start learning, be careful |
+| **High volume (5K+)** | Full Markov or ML | Enough data to learn |
+| **Seasonal spike** | Shorter lookback, daily retrain | Patterns changing fast |
+| **Post-seasonal** | Longer lookback, exclude spike period | Return to normal patterns |
+| **New channel launch** | Lower min_path_frequency | Let new paths contribute |
+| **Noisy data** | Higher min_path_frequency | Filter out noise |
+| **Stakeholder skepticism** | Add rule-based comparison | Show divergence is justified |
+| **Budget reallocation** | Validate with incrementality | Confirm before acting |
+| **Cross-team conflict** | Use Shapley | Mathematically "fair" |
+
+### Validation Configuration
+
+Always validate data-driven models:
+
+```yaml
+model: markov_chain
+name: "Validated Markov"
+
+validation:
+  # Statistical validation
+  holdout_percentage: 20
+  cross_validation: true
+
+  # Business validation
+  compare_to_models:
+    - linear
+    - position_based
+  divergence_alert_threshold: 0.25
+
+  # Ground truth validation
+  incrementality_tests:
+    frequency: quarterly
+    channels_to_test:
+      - paid_social
+      - display
+      - email
+    calibration:
+      enabled: true
+      apply_to_attribution: true
+
+  # Stability monitoring
+  weekly_stability_check: true
+  alert_on_volatile_channels: true   # >30% swing week-over-week
+
+reporting:
+  include_confidence_intervals: true
+  show_model_diagnostics: true
+```
+
+## Summary
+
+Data-driven attribution uses algorithms—Markov chains, Shapley values, or machine learning—to learn touchpoint importance from conversion data. Unlike rule-based models, it calculates rather than assumes credit distribution.
+
+**Use data-driven when:**
+- High conversion volume (2,000+ monthly)
+- Diverse conversion paths to learn from
+- Analytics resources to implement and validate
+- You want data to determine importance
+
+**Stick to rule-based when:**
+- Low volume (overfitting risk)
+- Need stakeholder transparency
+- Quick implementation required
+- Paths are homogeneous
+
+**Best practice:** Start with rule-based (linear) as a baseline, graduate to Markov when you have volume, and validate any model with incrementality tests. Don't trust black boxes—demand explainability.
+
+## Further Reading
+
+**On Algorithmic Attribution:**
+- [Shapley, L.S. (1953). A Value for n-Person Games](https://www.rand.org/pubs/papers/P295.html) — Original Shapley value paper
+- [Anderl et al. (2016). Mapping the Customer Journey](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2685313) — Markov chain attribution research
+
+**On Validation:**
+- [Triangulating MTA, MMM, and Incrementality](/articles/mta-mmm-incrementality-triangulation) — Multi-method validation
+- [MTA vs MMM: What's the Difference?](/articles/mta-vs-mmm) — Where attribution fits
+
+**On Model Selection:**
+- [How to Choose the Right Attribution Model](/articles/how-to-choose-attribution-model) — Decision framework
+- [Linear Attribution](/articles/linear-attribution) — The neutral baseline
+
+<%= render_key_takeaways(@article.key_takeaways) %>
+
+<%= render_faq(@article.faq) %>

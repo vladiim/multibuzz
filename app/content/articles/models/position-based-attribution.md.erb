@@ -1,0 +1,768 @@
+---
+title: "Position-Based Attribution: Credit First and Last Touches"
+slug: "position-based-attribution"
+description: "Position-based (U-shaped) attribution gives 40% credit to first touch, 40% to last touch, and splits 20% among middle touchpoints. Learn when this model fits your business and how to implement it."
+published_at:
+section: models
+section_order: 5
+status: draft
+priority: P1
+category: "Attribution Models"
+tags:
+  - position-based attribution
+  - u-shaped attribution
+  - w-shaped attribution
+  - attribution models
+  - multi-touch attribution
+related_articles:
+  - first-touch-attribution
+  - last-touch-attribution
+  - linear-attribution
+  - how-to-choose-attribution-model
+seo:
+  title: "Position-Based Attribution (U-Shaped): How It Works"
+aeo:
+  target_query: "position based attribution"
+  tldr: "Position-based attribution (also called U-shaped) gives 40% credit to the first touchpoint, 40% to the last touchpoint, and splits the remaining 20% among middle touches. It recognizes that both introduction and conversion are critical moments while still acknowledging the nurturing journey. A variation called W-shaped adds a third key position (lead creation) for B2B with distinct funnel stages."
+  key_takeaways:
+    - "Standard split: 40% first-touch, 40% last-touch, 20% to middle"
+    - "Best for B2B where both pipeline sourcing and deal closing matter"
+    - "Under-credits middle-funnel nurturing (content, email sequences)"
+    - "W-shaped variant adds 30% to 'lead creation' moment for three key positions"
+  faq:
+    - q: "What is position-based attribution?"
+      a: "Position-based attribution is a multi-touch model that gives extra weight to the first and last touchpoints in a customer journey. The most common split is 40-20-40: 40% to the first touch (introduction), 20% split among middle touches (nurturing), and 40% to the last touch (conversion)."
+    - q: "What's the difference between U-shaped and W-shaped attribution?"
+      a: "U-shaped gives 40% to first and last touches. W-shaped adds a third key position—typically the 'lead creation' moment (form fill, signup)—and splits credit 30-30-30 to first, lead creation, and last, with 10% to other touches. W-shaped is for B2B with clear funnel stages."
+    - q: "Is position-based better than linear attribution?"
+      a: "It depends on your funnel. Position-based is better when introduction and conversion are genuinely more important than nurturing. Linear is better when all touchpoints contribute equally or when you don't want built-in assumptions about importance."
+    - q: "Does GA4 support position-based attribution?"
+      a: "No. GA4 removed position-based attribution in 2023 along with linear and time-decay. Only last-click and data-driven remain. Use a third-party attribution tool or build position-based in your data warehouse."
+    - q: "What percentage should I use for position-based?"
+      a: "40-20-40 is the industry standard, but you can customize. Some teams use 30-40-30 if middle-funnel nurturing is critical. The percentages are arbitrary—choose what reflects your business reality, or use data-driven models to learn actual weights."
+schema:
+  type: Article
+  author: "holly-henderson"
+has_code_examples: true
+has_calculator: false
+has_download: false
+---
+
+<%= render_tldr(@article.tldr) %>
+
+## What Position-Based Attribution Measures
+
+Position-based attribution answers: **"How do I credit both the channel that introduced this customer AND the channel that converted them?"**
+
+It's a compromise between first-touch (introducers) and last-touch (closers):
+
+```
+Customer Journey with Position-Based (40-20-40):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  LinkedIn Ad  →  Whitepaper  →  Webinar  →  Demo Request  →  Close
+    (Day 1)        (Day 10)      (Day 25)     (Day 40)       (Day 45)
+       │              │             │            │
+       ▼              ▼             ▼            ▼
+   ┌───────┐     ┌───────┐    ┌───────┐    ┌───────┐
+   │  40%  │     │  10%  │    │  10%  │    │  40%  │
+   └───────┘     └───────┘    └───────┘    └───────┘
+   First touch   ←─── 20% split ───→      Last touch
+```
+
+The LinkedIn ad that sourced the opportunity gets 40%. The demo request that triggered conversion gets 40%. The nurturing content in between splits the remaining 20%.
+
+### Why Position Matters
+
+Different touchpoint positions serve different strategic functions:
+
+| Position | Function | Why It Matters |
+|----------|----------|----------------|
+| **First touch** | Introduction, awareness | No first touch = no journey |
+| **Middle touches** | Education, nurturing, consideration | Moves prospects toward purchase |
+| **Last touch** | Conversion trigger | Without it, no sale closes |
+
+Position-based acknowledges that beginning and end are often strategically distinct from the middle—while still crediting the journey.
+
+## When Position-Based Is the Right Choice
+
+### 1. B2B Lead Generation
+
+B2B funnels often have clear "sourcing" (first touch) and "closing" (last touch) moments that different teams own:
+
+```
+Typical B2B Journey:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Demand Gen owns:  Marketing Ops owns:  Sales owns:
+      │                  │                 │
+      ▼                  ▼                 ▼
+  LinkedIn Ad  →  Nurture Flow  →  Demo  →  Close
+     40%           10% each         40%
+
+Marketing gets credit for sourcing (first) AND conversion (last).
+```
+
+This satisfies both demand gen teams (who want sourcing credit) and performance teams (who want conversion credit).
+
+### 2. Long Sales Cycles with Distinct Stages
+
+When journeys span months with clear phase transitions:
+
+- **Awareness phase:** First touch starts the journey
+- **Consideration phase:** Content and nurture (middle touches)
+- **Decision phase:** Last touch triggers purchase
+
+Position-based matches this mental model without over-complicating attribution.
+
+### 3. Shared Credit Across Teams
+
+When marketing and sales share pipeline responsibility:
+
+| Team | Their Goal | Model Credit |
+|------|------------|--------------|
+| Demand gen | Source pipeline | First-touch (40%) |
+| Marketing ops | Nurture leads | Middle touches (20%) |
+| Performance | Drive conversion | Last-touch (40%) |
+
+Position-based creates natural accountability without fighting over credit.
+
+### 4. When You Value Introduction AND Conversion
+
+If you believe two moments matter most—discovering the brand and deciding to buy—position-based captures both without requiring data-driven complexity.
+
+<%= render_info_box do %>
+  <strong>The 40-20-40 intuition:</strong> "Getting the customer and closing the deal are both critical. The stuff in between helps, but less so." If this matches your business reality, position-based fits.
+<% end %>
+
+## When Position-Based Is the Wrong Choice
+
+### 1. Content-Heavy Nurture Journeys
+
+If your middle-funnel content—whitepapers, webinars, case studies—genuinely drives purchase decisions, position-based under-credits them:
+
+```
+Content-Heavy Journey:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Ad → Whitepaper → Webinar → Case Study → Demo → Blog → Purchase
+     └────────────── These get only 20% total ──────────────┘
+```
+
+If each content piece builds conviction, they deserve more than a 20% split.
+
+**Consider:** Linear attribution or custom weights.
+
+### 2. Single-Session Conversions
+
+If first touch = last touch (same session purchase), position-based adds no value:
+
+```
+Single-Session:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Google Ad  →  Purchase (same session)
+     │
+     ▼
+  First = Last = 40% + 40% = 80%? No—just use last-touch.
+```
+
+For e-commerce impulse buys, simpler models work fine.
+
+### 3. When You Have High-Volume Data
+
+With 5,000+ monthly conversions, data-driven models can learn actual touchpoint importance rather than assuming 40-20-40. Why guess when you can measure?
+
+<%= render_warning_box do %>
+  <strong>The middle-funnel trap:</strong> Position-based assumes middle touches matter less. For businesses where content marketing, email nurture, or progressive education drives conversion, this assumption may cost you insights.
+<% end %>
+
+## Position-Based Variations
+
+### Standard U-Shaped (40-20-40)
+
+The classic split:
+- 40% to first touch
+- 20% split among middle touches
+- 40% to last touch
+
+Best for: Standard B2B, clear intro/close distinction.
+
+### W-Shaped (30-30-30-10)
+
+Adds a third key position—typically "lead creation" (form fill, signup, MQL):
+
+```
+W-Shaped Attribution:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Ad  →  Content  →  Form Fill  →  Nurture  →  Close
+  │                      │                       │
+  ▼                      ▼                       ▼
+ 30%                    30%                     30%
+          └──── 10% split among others ────┘
+```
+
+Best for: B2B with distinct lead capture moment, marketing → sales handoff.
+
+### Custom Position-Based
+
+Adjust percentages to match your funnel:
+
+| Variant | First | Middle | Last | Use Case |
+|---------|-------|--------|------|----------|
+| Heavy nurture | 25% | 50% | 25% | Content-driven sales |
+| Closer-focused | 30% | 20% | 50% | Fast conversion, many intros |
+| Intro-focused | 50% | 20% | 30% | Awareness critical, many closers |
+
+The 40-20-40 split is arbitrary—customize if you have reason to.
+
+## How Position-Based Works
+
+### The Math (U-Shaped)
+
+```
+If touchpoints = [first, middle1, middle2, ..., last]:
+
+first_touch_credit = 0.40
+last_touch_credit = 0.40
+middle_credit_per_touch = 0.20 / (number_of_middle_touches)
+
+Special cases:
+- 1 touchpoint: Gets 100%
+- 2 touchpoints: Each gets 50%
+```
+
+### Implementation
+
+```ruby
+class PositionBasedAttribution
+  def initialize(first_weight: 0.4, last_weight: 0.4, lookback_days: 90)
+    @first_weight = first_weight
+    @last_weight = last_weight
+    @middle_weight = 1.0 - first_weight - last_weight
+    @lookback_days = lookback_days
+  end
+
+  def attribute(conversion)
+    touchpoints = conversion.user.touchpoints
+      .where("occurred_at >= ?", conversion.occurred_at - @lookback_days.days)
+      .where("occurred_at <= ?", conversion.occurred_at)
+      .order(:occurred_at)
+      .to_a
+
+    return [] if touchpoints.empty?
+
+    case touchpoints.size
+    when 1
+      # Single touch gets 100%
+      [build_result(touchpoints.first, 1.0)]
+    when 2
+      # Two touches split 50/50
+      [
+        build_result(touchpoints.first, 0.5),
+        build_result(touchpoints.last, 0.5)
+      ]
+    else
+      # First: @first_weight, Last: @last_weight, Middle: split @middle_weight
+      middle_touches = touchpoints[1..-2]
+      middle_credit = @middle_weight / middle_touches.size
+
+      results = [build_result(touchpoints.first, @first_weight)]
+      middle_touches.each { |tp| results << build_result(tp, middle_credit) }
+      results << build_result(touchpoints.last, @last_weight)
+      results
+    end
+  end
+
+  private
+
+  def build_result(touchpoint, credit)
+    {
+      channel: touchpoint.channel,
+      source: touchpoint.source,
+      medium: touchpoint.medium,
+      campaign: touchpoint.campaign,
+      credit: credit,
+      touchpoint_at: touchpoint.occurred_at
+    }
+  end
+end
+```
+
+### W-Shaped Implementation
+
+W-shaped requires defining the "lead creation" touchpoint:
+
+```ruby
+class WShapedAttribution
+  def initialize(first_weight: 0.3, lead_weight: 0.3, last_weight: 0.3, lookback_days: 90)
+    @first_weight = first_weight
+    @lead_weight = lead_weight
+    @last_weight = last_weight
+    @other_weight = 1.0 - first_weight - lead_weight - last_weight
+    @lookback_days = lookback_days
+  end
+
+  def attribute(conversion)
+    touchpoints = conversion.user.touchpoints
+      .where("occurred_at >= ?", conversion.occurred_at - @lookback_days.days)
+      .where("occurred_at <= ?", conversion.occurred_at)
+      .order(:occurred_at)
+      .to_a
+
+    # Find the lead creation touchpoint (e.g., form fill)
+    lead_touch = touchpoints.find { |tp| tp.is_lead_creation? }
+
+    # Distribute credit based on position
+    # ... (similar logic with three key positions)
+  end
+end
+```
+
+The tricky part: defining what counts as "lead creation." Usually it's:
+- Form submission
+- Demo request
+- Free trial signup
+- MQL qualification
+
+## Comparing Position-Based to Other Models
+
+### Position-Based vs Linear
+
+| Aspect | Position-Based | Linear |
+|--------|----------------|--------|
+| First-touch credit | 40% | Equal share |
+| Last-touch credit | 40% | Equal share |
+| Middle credit | 20% split | Equal share |
+| Assumption | Ends matter more | All equal |
+| Best for | Clear intro/close | Unknown importance |
+
+**When to prefer position-based:** When you're confident first and last are most important.
+**When to prefer linear:** When all touchpoints genuinely contribute equally.
+
+### Position-Based vs Time-Decay
+
+| Aspect | Position-Based | Time-Decay |
+|--------|----------------|------------|
+| First-touch credit | 40% | Low (decayed) |
+| Last-touch credit | 40% | High |
+| Logic | Position matters | Recency matters |
+| Best for | B2B, long cycles | E-commerce, short cycles |
+
+**When to prefer position-based:** B2B where sourcing matters.
+**When to prefer time-decay:** E-commerce where recency correlates with intent.
+
+### Position-Based vs First + Last Combined
+
+Instead of position-based, some teams run first-touch and last-touch separately:
+
+| Approach | Pros | Cons |
+|----------|------|------|
+| Position-based | Single unified model | Arbitrary 40/40 split |
+| First + Last separate | Flexible analysis | Two numbers to reconcile |
+
+Both work—position-based is simpler for reporting, separate is better for deep analysis.
+
+## Common Position-Based Mistakes
+
+### Mistake 1: Using 40-20-40 Without Thinking
+
+The 40-20-40 split is arbitrary. If your middle-funnel content drives conversion, 40-20-40 undervalues it.
+
+**Fix:** Analyze whether middle touches correlate with higher conversion rates. If so, consider increasing middle weight.
+
+### Mistake 2: Not Handling Edge Cases
+
+Two-touch journeys shouldn't give 80% to one path:
+
+```
+BAD: 2-touch journey
+Ad → Purchase
+40% + 40% = 80%? Where's the other 20%?
+
+GOOD: 2-touch journey
+Ad → Purchase
+50% + 50% = 100%
+```
+
+**Fix:** Handle 1-touch and 2-touch journeys as special cases.
+
+### Mistake 3: Ignoring Journey Length Distribution
+
+If most journeys have 2-3 touchpoints, position-based behaves almost like first-touch + last-touch. The "middle" barely exists.
+
+**Fix:** Analyze journey length distribution. If most journeys are short, simpler models may suffice.
+
+### Mistake 4: W-Shaped Without Clear Lead Stage
+
+W-shaped only works if you have a clear "lead creation" event. Without it, you're guessing which touchpoint to credit.
+
+**Fix:** Only use W-shaped if you track explicit lead creation events (form fills, signups).
+
+## Position-Based and GA4
+
+Google Analytics 4 removed position-based attribution in 2023. Your options:
+
+### 1. Third-Party Attribution Tools
+
+Use mbuzz or similar tools that support position-based with configurable weights.
+
+### 2. Build in Your Data Warehouse
+
+```sql
+WITH touchpoint_positions AS (
+  SELECT
+    conversion_id,
+    channel,
+    touchpoint_time,
+    conversion_value,
+    ROW_NUMBER() OVER (PARTITION BY conversion_id ORDER BY touchpoint_time) as position,
+    COUNT(*) OVER (PARTITION BY conversion_id) as total_touches
+  FROM touchpoint_data
+),
+credited AS (
+  SELECT
+    *,
+    CASE
+      WHEN total_touches = 1 THEN 1.0
+      WHEN total_touches = 2 THEN 0.5
+      WHEN position = 1 THEN 0.4
+      WHEN position = total_touches THEN 0.4
+      ELSE 0.2 / (total_touches - 2)
+    END as credit
+  FROM touchpoint_positions
+)
+SELECT
+  channel,
+  SUM(credit * conversion_value) as attributed_revenue
+FROM credited
+GROUP BY channel
+ORDER BY attributed_revenue DESC;
+```
+
+## Implementing Position-Based in mbuzz
+
+mbuzz uses **AML (Attribution Model Language)** to configure attribution models. Position-based models have configurable weights for first, middle, and last positions—plus support for W-shaped with a lead creation position.
+
+### Basic U-Shaped Model (40-20-40)
+
+```yaml
+# mbuzz AML - Position-Based Attribution
+model: position_based
+name: "U-Shaped"
+description: "40% first, 40% last, 20% middle"
+
+settings:
+  first_weight: 0.40
+  last_weight: 0.40
+  middle_weight: 0.20        # Split among all middle touches
+  lookback_window: 90d
+  include_direct: true
+```
+
+### W-Shaped Model (30-30-30-10)
+
+For B2B with distinct lead creation moment:
+
+```yaml
+model: position_based
+name: "W-Shaped"
+variant: w_shaped
+
+settings:
+  first_weight: 0.30
+  lead_creation_weight: 0.30
+  last_weight: 0.30
+  other_weight: 0.10         # Split among remaining touches
+  lookback_window: 90d
+
+# Define what counts as "lead creation"
+lead_creation_events:
+  - form_submission
+  - demo_request
+  - free_trial_start
+  - contact_sales
+```
+
+### Custom Weight Distributions
+
+```yaml
+# Heavy on introduction (brand awareness focus)
+model: position_based
+name: "Intro-Heavy"
+settings:
+  first_weight: 0.50
+  last_weight: 0.30
+  middle_weight: 0.20
+
+---
+
+# Heavy on conversion (performance focus)
+model: position_based
+name: "Closer-Heavy"
+settings:
+  first_weight: 0.30
+  last_weight: 0.50
+  middle_weight: 0.20
+
+---
+
+# Heavy on nurture (content-driven sales)
+model: position_based
+name: "Nurture-Heavy"
+settings:
+  first_weight: 0.25
+  last_weight: 0.25
+  middle_weight: 0.50
+```
+
+### Compare Different Position Weights
+
+```yaml
+# Test which weight distribution matches reality
+models:
+  - model: position_based
+    name: "Standard (40-20-40)"
+    settings:
+      first_weight: 0.40
+      last_weight: 0.40
+
+  - model: position_based
+    name: "Intro Focus (50-20-30)"
+    settings:
+      first_weight: 0.50
+      last_weight: 0.30
+
+  - model: position_based
+    name: "Closer Focus (30-20-50)"
+    settings:
+      first_weight: 0.30
+      last_weight: 0.50
+
+comparison:
+  enabled: true
+  primary: "Standard (40-20-40)"
+  validate_with: incrementality    # Flag if test results differ
+```
+
+## Tuning Position-Based for Your Business
+
+Position-based is highly customizable. Here's how to tune the weights.
+
+### Weights by Business Type
+
+| Business Type | First | Middle | Last | Variant |
+|---------------|-------|--------|------|---------|
+| **B2B SaaS (standard)** | 40% | 20% | 40% | U-shaped |
+| **B2B Enterprise** | 30% | 30% | 40% | Custom (lead creation) |
+| **B2B with clear MQL stage** | 30% | 10% | 30% + 30% lead | W-shaped |
+| **High-AOV e-commerce** | 35% | 30% | 35% | Balanced |
+| **Content-driven sales** | 25% | 50% | 25% | Nurture-heavy |
+| **Performance-driven** | 30% | 20% | 50% | Closer-heavy |
+| **Brand-building focus** | 50% | 20% | 30% | Intro-heavy |
+
+### By Business Stage
+
+```yaml
+# Early-stage B2B: Standard U-shaped, learn patterns
+model: position_based
+name: "Startup Position"
+settings:
+  first_weight: 0.40
+  last_weight: 0.40
+  lookback_window: 60d
+
+---
+
+# Growth-stage: Refine based on what you've learned
+model: position_based
+name: "Growth Position"
+settings:
+  first_weight: 0.35           # Adjusted based on data
+  last_weight: 0.45            # Closers slightly more important
+  lookback_window: 90d
+  include_direct: false        # Exclude brand noise
+
+---
+
+# Scale-stage: W-shaped with clear funnel stages
+model: position_based
+name: "Enterprise W-Shaped"
+variant: w_shaped
+settings:
+  first_weight: 0.30
+  lead_creation_weight: 0.30
+  last_weight: 0.30
+  lookback_window: 180d        # Long enterprise cycles
+
+lead_creation_events:
+  - demo_scheduled
+  - proposal_sent
+```
+
+### Seasonal and Campaign Adjustments
+
+During major campaigns, the journey pattern shifts:
+
+```yaml
+# Product Launch: Heavy on introduction
+model: position_based
+name: "Launch Position"
+settings:
+  first_weight: 0.50           # First touch really matters for new product
+  last_weight: 0.35
+  middle_weight: 0.15
+  lookback_window: 30d         # Short window for launch
+
+date_range:
+  start: "2024-03-01"
+  end: "2024-03-31"
+
+filters:
+  require_campaign:
+    - "product-launch-2024"
+```
+
+```yaml
+# End of Quarter Push: Heavy on closers
+model: position_based
+name: "EOQ Position"
+settings:
+  first_weight: 0.30
+  last_weight: 0.55            # Closing matters most in Q-end push
+  middle_weight: 0.15
+  lookback_window: 45d
+
+date_range:
+  start: "2024-03-15"
+  end: "2024-03-31"
+```
+
+```yaml
+# Brand Campaign: Heavy on introduction
+model: position_based
+name: "Brand Campaign Position"
+settings:
+  first_weight: 0.55           # Brand awareness = first touch value
+  last_weight: 0.25
+  middle_weight: 0.20
+  lookback_window: 60d
+
+filters:
+  require_campaign:
+    - "brand-awareness-q1"
+```
+
+### Team-Based Attribution Views
+
+Different teams need different perspectives:
+
+```yaml
+# Demand Gen View: Emphasize sourcing
+models:
+  - model: position_based
+    name: "Demand Gen View"
+    settings:
+      first_weight: 0.60       # Heavily credit sourcing
+      last_weight: 0.25
+    audience: demand_gen_team
+
+  - model: position_based
+    name: "Performance View"
+    settings:
+      first_weight: 0.25
+      last_weight: 0.60        # Heavily credit closing
+    audience: performance_team
+
+  - model: position_based
+    name: "Executive View"
+    settings:
+      first_weight: 0.40
+      last_weight: 0.40        # Balanced for leadership
+    audience: executives
+
+reporting:
+  show_all_views: true
+  highlight_differences: true
+```
+
+### Dynamic Weights Based on Journey Length
+
+Adjust weights based on how many touchpoints occurred:
+
+```yaml
+# Short journeys: More balanced (not much middle to credit)
+# Long journeys: Protect middle-funnel credit
+
+model: position_based
+name: "Dynamic Position"
+
+settings:
+  lookback_window: 90d
+
+dynamic_weights:
+  short_journey:               # 2-3 touchpoints
+    threshold: 3
+    first_weight: 0.50
+    last_weight: 0.50
+
+  medium_journey:              # 4-7 touchpoints
+    threshold: 7
+    first_weight: 0.40
+    last_weight: 0.40
+    middle_weight: 0.20
+
+  long_journey:                # 8+ touchpoints
+    threshold: 999
+    first_weight: 0.35
+    last_weight: 0.35
+    middle_weight: 0.30        # More credit to nurturing
+```
+
+### Parameter Tuning Cheatsheet
+
+| Scenario | Weight Adjustment | Why |
+|----------|-------------------|-----|
+| **Demand gen is undervalued** | Increase first_weight (50%+) | Credit sourcing more |
+| **Closers are undervalued** | Increase last_weight (50%+) | Credit conversion more |
+| **Content marketing critical** | Increase middle_weight (40%+) | Credit nurturing more |
+| **Short sales cycles** | Use balanced 33-33-33 | All touches close together |
+| **Long cycles with clear stages** | Use W-shaped | Credit lead creation separately |
+| **Brand campaign running** | Boost first_weight temporarily | Measure awareness impact |
+| **End of quarter push** | Boost last_weight temporarily | Measure closing impact |
+| **New market entry** | Heavy first_weight (60%) | Every introduction matters |
+| **Mature market** | Balanced or closer-heavy | Focus on conversion efficiency |
+
+## Summary
+
+Position-based attribution (U-shaped) gives 40% credit to first touch, 40% to last touch, and 20% to middle touches. It balances the need to credit both introduction and conversion while acknowledging the nurturing journey.
+
+**Use position-based when:**
+- B2B with clear sourcing and closing moments
+- Multiple teams share pipeline responsibility
+- You want both first-touch and last-touch credit in one model
+- Long sales cycles with distinct funnel stages
+
+**Don't use position-based when:**
+- Middle-funnel content is critical to conversion
+- Single-session conversions dominate
+- You have high volume for data-driven models
+- The 40-20-40 assumption doesn't match your reality
+
+**Best practice:** Start with 40-20-40 as a baseline, then analyze whether your middle touches deserve more credit. Consider W-shaped for B2B with clear lead creation stages. Validate with incrementality tests.
+
+## Further Reading
+
+**On Attribution Models:**
+- [First-Touch Attribution](/articles/first-touch-attribution) — Understanding introduction value
+- [Last-Touch Attribution](/articles/last-touch-attribution) — Understanding conversion value
+- [Linear Attribution](/articles/linear-attribution) — The neutral alternative
+- [How to Choose the Right Attribution Model](/articles/how-to-choose-attribution-model) — Decision framework
+
+**On B2B Attribution:**
+- [B2B Attribution for Long Sales Cycles](/articles/b2b-attribution-long-sales-cycles) — Adapting attribution for B2B
+
+<%= render_key_takeaways(@article.key_takeaways) %>
+
+<%= render_faq(@article.faq) %>

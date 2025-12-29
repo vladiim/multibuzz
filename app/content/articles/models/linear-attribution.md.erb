@@ -1,0 +1,664 @@
+---
+title: "Linear Attribution: The Neutral Baseline Model"
+slug: "linear-attribution"
+description: "Linear attribution gives equal credit to every touchpoint in the customer journey. Learn when linear is the right choice, how to implement it, and why it's the best starting point for multi-touch attribution."
+published_at:
+section: models
+section_order: 3
+status: draft
+priority: P1
+category: "Attribution Models"
+tags:
+  - linear attribution
+  - attribution models
+  - multi-touch attribution
+  - equal credit
+  - marketing measurement
+related_articles:
+  - first-touch-attribution
+  - last-touch-attribution
+  - time-decay-attribution
+  - how-to-choose-attribution-model
+seo:
+  title: "Linear Attribution Model: How It Works & When to Use It"
+aeo:
+  target_query: "linear attribution model"
+  tldr: "Linear attribution divides conversion credit equally among all touchpoints in the customer journey. If there are 5 touchpoints, each gets 20% credit. It's the most neutral multi-touch model—no built-in bias toward first, last, or any specific position. Use linear as your baseline when moving from single-touch to multi-touch, or when you genuinely believe all touchpoints contribute equally."
+  key_takeaways:
+    - "Linear gives equal credit to all touchpoints—no positional bias"
+    - "Best starting point when moving from single-touch to multi-touch attribution"
+    - "Simple to explain and implement, fully transparent"
+    - "May undervalue particularly important touchpoints, but provides neutral baseline"
+  faq:
+    - q: "What is linear attribution?"
+      a: "Linear attribution is a multi-touch model that divides conversion credit equally among all marketing touchpoints. If a customer had 4 touchpoints before converting, each gets 25% of the credit. It's called 'linear' because credit is distributed in a straight line—no weighting."
+    - q: "When should I use linear attribution?"
+      a: "Use linear when you're moving from single-touch to multi-touch, when you're unsure which touchpoints matter most, or when you want a neutral baseline to compare against other models. It's also good for long consideration journeys where every touch genuinely contributes."
+    - q: "Is linear attribution better than last-touch?"
+      a: "For budget allocation, yes—linear doesn't systematically over-credit closers like last-touch does. For conversion optimization specifically, last-touch may still be useful. Linear is better as a default for understanding full-journey contribution."
+    - q: "Does Google Analytics 4 support linear attribution?"
+      a: "No. GA4 removed linear attribution in 2023, keeping only last-click and data-driven. To use linear attribution, you need a third-party tool or build your own model in your data warehouse."
+    - q: "What are the disadvantages of linear attribution?"
+      a: "Linear assumes all touchpoints are equally important, which may not reflect reality. A compelling demo might matter more than a banner ad impression. For businesses with clearly differentiated touchpoint importance, position-based or data-driven models may be more accurate."
+schema:
+  type: Article
+  author: "holly-henderson"
+has_code_examples: true
+has_calculator: false
+has_download: false
+---
+
+<%= render_tldr(@article.tldr) %>
+
+## What Linear Attribution Measures
+
+Linear attribution answers: **"How should I credit all the marketing touchpoints that contributed to this conversion?"**
+
+Its answer: give everyone equal credit.
+
+```
+Customer Journey:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Facebook Ad  →  Blog Post  →  Email  →  Paid Search  →  Purchase
+     (Day 1)       (Day 5)      (Day 12)    (Day 14)
+       │             │            │            │
+       ▼             ▼            ▼            ▼
+   ┌───────┐    ┌───────┐    ┌───────┐    ┌───────┐
+   │  25%  │    │  25%  │    │  25%  │    │  25%  │
+   └───────┘    └───────┘    └───────┘    └───────┘
+```
+
+Four touchpoints, 25% each. Ten touchpoints, 10% each. The math is straightforward, and that's the point.
+
+### Why Linear Matters
+
+Linear attribution makes no assumptions about which touchpoints are more important. Compare this to:
+
+| Model | Assumption | Bias |
+|-------|------------|------|
+| **First-touch** | Introduction matters most | Over-credits awareness |
+| **Last-touch** | Closing matters most | Over-credits conversion |
+| **Time-decay** | Recent touches matter more | Over-credits recency |
+| **Position-based** | First and last matter most | Under-credits middle |
+| **Linear** | All touches matter equally | None (but maybe naive) |
+
+Linear's "bias" is assuming equal importance—which may or may not match reality. But it's the only model that doesn't bake in a predetermined hierarchy.
+
+## When Linear Attribution Is the Right Choice
+
+### 1. Your First Multi-Touch Model
+
+If you're moving from last-touch or first-touch to multi-touch, start with linear:
+
+```
+Before (Last-Touch):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Channel      | Credit
+─────────────|────────
+Email        | 45%
+Paid Search  | 30%
+Paid Social  | 5%
+Organic      | 20%
+
+After (Linear):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Channel      | Credit  | Change
+─────────────|─────────|────────
+Email        | 22%     | -23pp
+Paid Search  | 25%     | -5pp
+Paid Social  | 28%     | +23pp
+Organic      | 25%     | +5pp
+```
+
+The shift reveals what last-touch was hiding: Paid Social introduces far more customers than it closes. Linear exposes the full journey.
+
+### 2. Long Consideration Journeys
+
+For products with extended research phases—B2B software, high-ticket items, considered purchases—every touchpoint genuinely contributes:
+
+- Initial ad creates awareness
+- Content builds understanding
+- Webinar demonstrates value
+- Case study provides proof
+- Email answers objections
+- Demo enables evaluation
+
+Giving 100% to any single touch ignores the others' contribution. Linear acknowledges the entire journey.
+
+### 3. When You're Unsure What Matters Most
+
+If you don't have strong hypotheses about which touchpoints drive conversion, linear is the honest choice. It says: "We don't know the relative importance, so we'll treat them equally until we learn more."
+
+This is intellectually honest. Better to be neutrally wrong than confidently biased.
+
+### 4. Baseline for Comparison
+
+Run linear alongside other models to understand how each model's biases affect your data:
+
+| Channel | Linear | Time-Decay | Position-Based | Insight |
+|---------|--------|------------|----------------|---------|
+| Paid Social | 28% | 15% | 32% | Time-decay undervalues early touches |
+| Email | 22% | 35% | 18% | Time-decay over-credits recency |
+| Organic | 25% | 20% | 22% | Consistent across models |
+| Paid Search | 25% | 30% | 28% | Slight closer role |
+
+Linear becomes your neutral reference point.
+
+<%= render_info_box do %>
+  <strong>Our recommendation:</strong> Start with linear when adopting multi-touch attribution. It's transparent, unbiased, and provides a solid foundation. Graduate to more sophisticated models once you understand your baseline.
+<% end %>
+
+## When Linear Is the Wrong Choice
+
+### 1. Single-Session Conversions
+
+If most conversions happen in one session with one touchpoint, linear adds complexity without value:
+
+```
+Single-Session Journey:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Google Ad  →  Purchase (same session)
+      │
+      ▼
+  100% = 100%  ← Linear and last-touch are identical
+```
+
+For impulse purchases or simple conversions, the overhead of multi-touch isn't worth it.
+
+### 2. When Touchpoints Clearly Differ in Impact
+
+Some touchpoints genuinely matter more:
+
+- A 30-minute demo vs a banner impression
+- A personalized email vs a generic newsletter
+- A sales call vs an automated drip
+
+Linear treats these equally, which may misallocate credit. If you have strong evidence about touchpoint impact, use a weighted model.
+
+### 3. High-Volume Data-Driven Scenarios
+
+If you have 5,000+ monthly conversions, algorithmic models (Markov, Shapley) can learn actual touchpoint impact from data rather than assuming equal contribution.
+
+<%= render_warning_box do %>
+  <strong>The linear trap:</strong> Don't mistake "neutral" for "correct." Linear is unbiased, but if your touchpoints genuinely have different impacts, linear will misattribute credit. Use it as a baseline, then validate with incrementality testing.
+<% end %>
+
+## How Linear Attribution Works
+
+### The Math
+
+Linear attribution divides credit equally:
+
+```
+Credit per touchpoint = 1 / Number of touchpoints
+```
+
+For a journey with n touchpoints:
+
+| Touchpoints | Credit Each |
+|-------------|-------------|
+| 2 | 50% |
+| 3 | 33.3% |
+| 4 | 25% |
+| 5 | 20% |
+| 10 | 10% |
+
+### Implementation
+
+```ruby
+class LinearAttribution
+  def initialize(lookback_days: 30)
+    @lookback_days = lookback_days
+  end
+
+  def attribute(conversion)
+    touchpoints = conversion.user.touchpoints
+      .where("occurred_at >= ?", conversion.occurred_at - @lookback_days.days)
+      .where("occurred_at <= ?", conversion.occurred_at)
+      .order(:occurred_at)
+
+    return [] if touchpoints.empty?
+
+    credit_per_touch = 1.0 / touchpoints.count
+
+    touchpoints.map do |touchpoint|
+      {
+        channel: touchpoint.channel,
+        source: touchpoint.source,
+        medium: touchpoint.medium,
+        campaign: touchpoint.campaign,
+        credit: credit_per_touch,
+        touchpoint_at: touchpoint.occurred_at
+      }
+    end
+  end
+end
+```
+
+### Aggregating to Channels
+
+To get channel-level credit:
+
+```sql
+SELECT
+  channel,
+  SUM(credit) as total_credit,
+  SUM(credit * conversion_value) as attributed_revenue,
+  COUNT(DISTINCT conversion_id) as assisted_conversions
+FROM attribution_results
+WHERE model = 'linear'
+GROUP BY channel
+ORDER BY attributed_revenue DESC;
+```
+
+### Key Implementation Decisions
+
+| Decision | Options | Recommendation |
+|----------|---------|----------------|
+| **Lookback window** | 7, 30, 60, 90 days | Match your sales cycle |
+| **Include direct?** | Yes / No | Include—it's a real touchpoint |
+| **Deduplicate touches?** | Session-level or event-level | Session-level usually |
+| **Minimum touchpoints** | 1, 2, or more | 1 (single-touch gets 100%) |
+
+## Linear vs Other Models
+
+### Linear vs Last-Touch
+
+| Aspect | Linear | Last-Touch |
+|--------|--------|------------|
+| **Credit distribution** | Equal to all | 100% to last |
+| **Awareness channel credit** | Fair | Under-credited |
+| **Closer channel credit** | Fair | Over-credited |
+| **Budget allocation** | Balanced | Starves funnel |
+| **Complexity** | Simple | Simpler |
+| **Best for** | Full-journey view | CRO only |
+
+**Verdict:** Linear is better for budget decisions. Last-touch remains useful for conversion optimization specifically.
+
+### Linear vs First-Touch
+
+| Aspect | Linear | First-Touch |
+|--------|--------|-------------|
+| **Credit distribution** | Equal to all | 100% to first |
+| **Awareness channel credit** | Fair | Over-credited |
+| **Closer channel credit** | Fair | Under-credited |
+| **Use case** | Budget allocation | Pipeline sourcing |
+
+**Verdict:** Use both. First-touch answers "where do leads come from?" Linear answers "what's the full contribution?"
+
+### Linear vs Time-Decay
+
+| Aspect | Linear | Time-Decay |
+|--------|--------|------------|
+| **Credit distribution** | Equal to all | More to recent |
+| **Assumption** | All touches equal | Recency matters |
+| **Early-funnel credit** | Fair | Under-credited |
+| **Late-funnel credit** | Fair | Over-credited |
+| **Best for** | Long cycles | Short cycles, e-commerce |
+
+**Verdict:** Time-decay makes sense when recent touches genuinely matter more (e.commerce, urgency products). Linear is more neutral for considered purchases.
+
+### Linear vs Position-Based
+
+| Aspect | Linear | Position-Based |
+|--------|--------|----------------|
+| **Credit distribution** | Equal to all | 40/20/40 (U-shaped) |
+| **First-touch credit** | Equal share | 40% |
+| **Last-touch credit** | Equal share | 40% |
+| **Middle touches** | Equal share | 20% split |
+| **Best for** | Unknown importance | Known first/last value |
+
+**Verdict:** Position-based is better when you have strong reason to believe introduction and conversion are the key moments. Linear is better when the middle of the journey matters.
+
+## Common Linear Attribution Mistakes
+
+### Mistake 1: Treating Linear as "Truth"
+
+Linear is not the correct answer—it's a neutral starting point. All attribution models are simplifications.
+
+**Fix:** Use linear as a baseline, then validate with incrementality tests.
+
+### Mistake 2: Too Many Low-Quality Touchpoints
+
+If you include every page view, email open, and ad impression, you dilute credit across noise:
+
+```
+Journey with 50 touchpoints:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Each touchpoint = 2% credit
+Important demo = 2%
+Random banner view = 2%  ← Same credit, very different impact
+```
+
+**Fix:** Define what counts as a touchpoint. Usually: clicks, meaningful engagements, not passive impressions.
+
+### Mistake 3: Not Accounting for Journey Length
+
+Conversions with 2 touchpoints vs 10 touchpoints get the same total credit (100%), but distributed very differently:
+
+| Metric | 2-Touch Journey | 10-Touch Journey |
+|--------|-----------------|------------------|
+| Total credit | 100% | 100% |
+| Credit per touch | 50% | 10% |
+| Interpretation | High-impact touches | Many small contributions |
+
+**Fix:** Segment analysis by journey length. Compare channels within similar journey lengths.
+
+### Mistake 4: Ignoring Conversion Value
+
+Linear credits all touchpoints equally, but if conversion values vary, weight by value:
+
+```ruby
+# Credit weighted by conversion value
+attributed_value = credit_per_touch * conversion.value
+
+# Channel gets sum of attributed values
+channel_revenue = attributions.sum { |a| a[:credit] * a[:conversion_value] }
+```
+
+## Linear Attribution and GA4
+
+Google Analytics 4 removed linear attribution in 2023. Your options:
+
+### 1. Use a Third-Party Tool
+
+Attribution platforms like mbuzz support linear and other models out of the box.
+
+### 2. Build in BigQuery
+
+Export GA4 data to BigQuery and calculate linear attribution:
+
+```sql
+WITH touchpoints AS (
+  SELECT
+    user_pseudo_id,
+    event_timestamp,
+    traffic_source.source,
+    traffic_source.medium
+  FROM `project.dataset.events_*`
+  WHERE event_name IN ('page_view', 'click', ...)
+),
+conversions AS (
+  SELECT
+    user_pseudo_id,
+    event_timestamp as conversion_time,
+    event_params.value.double_value as value
+  FROM `project.dataset.events_*`
+  WHERE event_name = 'purchase'
+),
+journeys AS (
+  SELECT
+    c.user_pseudo_id,
+    c.conversion_time,
+    c.value,
+    t.source,
+    t.medium,
+    COUNT(*) OVER (PARTITION BY c.user_pseudo_id, c.conversion_time) as touchpoint_count
+  FROM conversions c
+  JOIN touchpoints t ON c.user_pseudo_id = t.user_pseudo_id
+    AND t.event_timestamp < c.conversion_time
+    AND t.event_timestamp > TIMESTAMP_SUB(c.conversion_time, INTERVAL 30 DAY)
+)
+SELECT
+  source,
+  medium,
+  SUM(value / touchpoint_count) as linear_attributed_revenue
+FROM journeys
+GROUP BY source, medium
+ORDER BY linear_attributed_revenue DESC;
+```
+
+### 3. Use Segment or CDPs
+
+Customer data platforms often include attribution modeling as a feature.
+
+## Validating Linear Attribution
+
+### Compare to Other Models
+
+If linear produces wildly different results from time-decay or position-based, investigate why:
+
+| Channel | Linear | Time-Decay | Gap | Investigation |
+|---------|--------|------------|-----|---------------|
+| Paid Social | 30% | 12% | -18pp | Lots of early touches, few late |
+| Email | 18% | 35% | +17pp | Mostly late-journey touches |
+
+Large gaps suggest the channel has a specific role (introducer vs closer).
+
+### Validate with Incrementality
+
+Linear might over- or under-credit certain channels. Test with holdout experiments:
+
+1. Pause a channel in test markets
+2. Measure actual revenue impact
+3. Compare to linear-attributed revenue
+4. Calculate calibration factor
+
+```
+Linear attributed: $100K/month to Paid Social
+Incrementality test: $80K actual lift
+Calibration factor: 0.8x
+```
+
+Apply calibration to adjust linear attribution toward truth.
+
+## Implementing Linear Attribution in mbuzz
+
+mbuzz uses **AML (Attribution Model Language)** to configure attribution models. AML is a simple, declarative syntax that lets you define exactly how credit should be distributed.
+
+### Basic Linear Model
+
+```yaml
+# mbuzz AML - Linear Attribution
+model: linear
+name: "Equal Credit"
+description: "Distribute credit equally across all touchpoints"
+
+settings:
+  lookback_window: 30d
+  include_direct: true
+  dedupe_level: session    # session | event
+  min_touchpoints: 1
+```
+
+This creates a standard linear model with 30-day lookback, including direct traffic, deduplicating at the session level.
+
+### Linear with Channel Filtering
+
+```yaml
+# Only credit marketing channels (exclude direct/organic brand)
+model: linear
+name: "Marketing Linear"
+
+settings:
+  lookback_window: 30d
+
+filters:
+  exclude_channels:
+    - direct
+    - organic_brand
+  include_only:
+    - paid_social
+    - paid_search
+    - email
+    - display
+    - affiliate
+```
+
+### Running Multiple Linear Models
+
+```yaml
+# Compare different lookback windows
+models:
+  - model: linear
+    name: "Linear 7d"
+    settings:
+      lookback_window: 7d
+
+  - model: linear
+    name: "Linear 30d"
+    settings:
+      lookback_window: 30d
+
+  - model: linear
+    name: "Linear 90d"
+    settings:
+      lookback_window: 90d
+
+comparison:
+  enabled: true
+  primary: "Linear 30d"
+```
+
+## Tuning Linear Parameters for Your Business
+
+Linear attribution has few parameters, but the ones it has matter. Here's how to tune them for different contexts.
+
+### By Business Type
+
+| Business Type | Lookback Window | Include Direct? | Dedupe Level |
+|---------------|-----------------|-----------------|--------------|
+| **Impulse e-commerce** | 7 days | Yes | Session |
+| **Considered purchase** | 30 days | Yes | Session |
+| **B2B SaaS** | 60-90 days | No (often brand) | Session |
+| **Enterprise B2B** | 90-180 days | No | Event (capture all) |
+| **Subscription/DTC** | 30 days | Yes | Session |
+
+### By Business Stage
+
+```yaml
+# Early-stage: Simple, learn your baseline
+model: linear
+name: "Startup Linear"
+settings:
+  lookback_window: 30d
+  include_direct: true
+  dedupe_level: session
+
+---
+
+# Growth-stage: More nuance, exclude noise
+model: linear
+name: "Growth Linear"
+settings:
+  lookback_window: 30d
+  include_direct: false    # Brand strength distorts
+
+filters:
+  exclude_channels:
+    - organic_brand        # Exclude branded organic
+  min_conversion_value: 10 # Ignore micro-conversions
+
+---
+
+# Scale-stage: Segment analysis
+models:
+  - model: linear
+    name: "New Customer Linear"
+    settings:
+      lookback_window: 60d
+    filters:
+      user_segment: new_customers
+
+  - model: linear
+    name: "Returning Linear"
+    settings:
+      lookback_window: 14d    # Shorter for returning
+    filters:
+      user_segment: returning_customers
+```
+
+### Seasonal Adjustments
+
+During major campaigns or seasonal peaks, journey patterns change:
+
+```yaml
+# Black Friday / Holiday Season
+model: linear
+name: "Holiday Linear"
+settings:
+  lookback_window: 14d      # Compressed buying cycles
+  include_direct: true
+
+date_range:
+  start: "2024-11-15"
+  end: "2024-12-31"
+
+# Compare to baseline
+comparison:
+  baseline_model: "Standard Linear"
+  baseline_period: "2024-10-01 to 2024-11-14"
+```
+
+### Big Campaign / Launch Adjustments
+
+When launching a major campaign, isolate its attribution:
+
+```yaml
+# Product Launch Attribution
+model: linear
+name: "Launch Linear"
+
+settings:
+  lookback_window: 14d      # Fresh launch, short history
+
+filters:
+  # Only attribute conversions where launch campaign was touched
+  require_campaign:
+    - "product-launch-2024"
+    - "launch-retargeting"
+
+# Track daily to see ramp
+reporting:
+  granularity: daily
+  compare_to_forecast: true
+```
+
+### Parameter Tuning Cheatsheet
+
+| Scenario | Parameter Change | Why |
+|----------|------------------|-----|
+| **Faster sales cycle** | Shorter lookback (7-14d) | Avoid crediting irrelevant old touches |
+| **Slower sales cycle** | Longer lookback (60-90d) | Capture full journey |
+| **Strong brand** | Exclude direct | Brand visits distort marketing credit |
+| **New market/product** | Include direct | Every touch matters, brand is weak |
+| **High-frequency touchpoints** | Session dedupe | Avoid over-crediting email opens etc. |
+| **Low-frequency, high-value touches** | Event dedupe | Capture every interaction |
+| **Seasonality spike** | Shorter lookback | Reflect compressed cycles |
+| **Post-holiday normalization** | Longer lookback | Account for gift card redemptions |
+
+## Summary
+
+Linear attribution distributes credit equally across all touchpoints. It's simple, transparent, and unbiased—making it the ideal baseline for multi-touch attribution.
+
+**Use linear when:**
+- Moving from single-touch to multi-touch attribution
+- You want a neutral, unbiased view of contribution
+- Journey touchpoints are roughly equal in importance
+- You need a baseline to compare other models against
+
+**Don't rely solely on linear because:**
+- Some touchpoints genuinely matter more than others
+- It may dilute credit across low-impact touches
+- It doesn't capture recency or position effects
+
+**Best practice:** Start with linear, understand your baseline, then explore time-decay or position-based if you have strong hypotheses about touchpoint importance. Validate any model with incrementality tests.
+
+## Further Reading
+
+**On Attribution Models:**
+- [First-Touch Attribution](/articles/first-touch-attribution) — Credits the introduction
+- [Last-Touch Attribution](/articles/last-touch-attribution) — Credits the close
+- [Time-Decay Attribution](/articles/time-decay-attribution) — Credits recency
+- [How to Choose the Right Attribution Model](/articles/how-to-choose-attribution-model) — Decision framework
+
+**On Validation:**
+- [MTA vs MMM: What's the Difference?](/articles/mta-vs-mmm) — Where attribution fits in measurement
+- [Triangulating MTA, MMM, and Incrementality](/articles/mta-mmm-incrementality-triangulation) — Validating with multiple methods
+
+<%= render_key_takeaways(@article.key_takeaways) %>
+
+<%= render_faq(@article.faq) %>

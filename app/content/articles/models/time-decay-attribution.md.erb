@@ -1,0 +1,705 @@
+---
+title: "Time-Decay Attribution: Credit Recent Touchpoints More"
+slug: "time-decay-attribution"
+description: "Time-decay attribution gives more credit to touchpoints closer to conversion. Learn how the half-life parameter works, when time-decay is the right model, and how to implement it for your business."
+published_at:
+section: models
+section_order: 4
+status: draft
+priority: P1
+category: "Attribution Models"
+tags:
+  - time-decay attribution
+  - attribution models
+  - multi-touch attribution
+  - recency weighting
+  - marketing measurement
+related_articles:
+  - linear-attribution
+  - last-touch-attribution
+  - position-based-attribution
+  - how-to-choose-attribution-model
+seo:
+  title: "Time-Decay Attribution Model: How It Works & When to Use It"
+aeo:
+  target_query: "time decay attribution model"
+  tldr: "Time-decay attribution gives more credit to touchpoints closer to the conversion moment. Credit decreases exponentially as you go further back in time—controlled by a 'half-life' parameter (commonly 7 days). It's a middle ground between last-touch and linear: acknowledging all touchpoints while recognizing that recent interactions often have more influence on the final decision."
+  key_takeaways:
+    - "Time-decay credits all touchpoints, but weights recent touches more heavily"
+    - "The half-life parameter controls how quickly credit decays (7 days is common)"
+    - "Best for e-commerce and short-to-medium sales cycles where recency matters"
+    - "Less extreme than last-touch, but still under-credits early awareness"
+  faq:
+    - q: "What is time-decay attribution?"
+      a: "Time-decay attribution is a multi-touch model that distributes credit based on how close each touchpoint was to the conversion. Recent touchpoints get more credit; older touchpoints get less. The decay follows an exponential curve controlled by a half-life parameter."
+    - q: "What is a good half-life for time-decay?"
+      a: "7 days is the most common default. For e-commerce with fast purchase cycles, 3-5 days may work better. For B2B or considered purchases, 14-30 days gives more credit to the full journey. Match your half-life to your typical time-to-conversion."
+    - q: "Is time-decay better than linear?"
+      a: "It depends on your business. Time-decay is better when recent touches genuinely influence purchase decisions more (e-commerce, urgency products). Linear is better when early-funnel touches are equally important (B2B, long cycles). Neither is universally 'better.'"
+    - q: "Does GA4 support time-decay attribution?"
+      a: "No. GA4 removed time-decay attribution in 2023 along with linear and position-based. Only last-click and data-driven remain. Use a third-party tool or build your own model to use time-decay."
+    - q: "How does time-decay differ from last-touch?"
+      a: "Last-touch gives 100% to the final touchpoint; time-decay distributes across all touchpoints but weights recent ones more. Time-decay is less extreme—early touches still get some credit, just less than recent ones."
+schema:
+  type: Article
+  author: "holly-henderson"
+has_code_examples: true
+has_calculator: false
+has_download: false
+---
+
+<%= render_tldr(@article.tldr) %>
+
+## What Time-Decay Attribution Measures
+
+Time-decay attribution answers: **"How much did each touchpoint contribute, considering that recent touches probably mattered more?"**
+
+It's a compromise between linear (equal credit) and last-touch (all credit to final touch):
+
+```
+Customer Journey with 7-Day Half-Life:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Facebook Ad  →  Blog Post  →  Email  →  Paid Search  →  Purchase
+    (Day 1)        (Day 8)      (Day 13)    (Day 14)       (Day 14)
+       │             │            │            │
+       ▼             ▼            ▼            ▼
+   ┌───────┐    ┌───────┐    ┌───────┐    ┌───────┐
+   │   6%  │    │  12%  │    │  32%  │    │  50%  │
+   └───────┘    └───────┘    └───────┘    └───────┘
+       ↑             ↑            ↑            ↑
+   13 days ago   6 days ago   1 day ago    Same day
+```
+
+The touchpoint on the same day gets the most credit. The touchpoint from 13 days ago gets the least—but it still gets *some* credit, unlike last-touch.
+
+### The Half-Life Concept
+
+Time-decay uses exponential decay with a **half-life** parameter. At one half-life before conversion, a touchpoint receives 50% of the credit it would get if it happened at conversion time.
+
+| Days Before Conversion | Credit (7-Day Half-Life) |
+|-----------------------|--------------------------|
+| 0 (same day) | 100% base weight |
+| 7 days | 50% of base |
+| 14 days | 25% of base |
+| 21 days | 12.5% of base |
+| 28 days | 6.25% of base |
+
+Credit decays quickly. A touchpoint from 28 days ago gets only 6% of the weight of a same-day touchpoint.
+
+## When Time-Decay Is the Right Choice
+
+### 1. E-Commerce and Retail
+
+E-commerce purchases often follow a pattern: browse, consider, return, buy. The recent touches—the retargeting ad, the email reminder, the price drop notification—often tip the decision.
+
+```
+Typical E-Commerce Journey:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Day 1:  Discovery (paid social)     → Low intent
+Day 3:  Research (organic search)   → Building interest
+Day 5:  Product page (direct)       → Considering
+Day 7:  Cart abandon (email)        → Re-engagement
+Day 8:  Purchase (retargeting)      → Conversion
+
+Time-decay reflects this reality: recent touches drove the purchase.
+```
+
+### 2. Short-to-Medium Sales Cycles
+
+For products bought within 2-4 weeks, time-decay captures the intensifying engagement pattern:
+
+| Sales Cycle | Half-Life Recommendation |
+|-------------|-------------------------|
+| 1-7 days | 3 days |
+| 1-2 weeks | 5-7 days |
+| 2-4 weeks | 7-10 days |
+| 1-2 months | 14-21 days |
+
+Match your half-life to your typical consideration period.
+
+### 3. Urgency and Seasonality
+
+Products with urgency (events, limited offers, seasonal items) see compressed decision windows. Recent touches matter more:
+
+- Concert tickets: Decision made days before purchase
+- Black Friday deals: Hours matter, not days
+- Tax services: Last week of tax season drives conversion
+
+Time-decay with a short half-life (3-5 days) captures these dynamics.
+
+### 4. When You Want More Nuance Than Last-Touch
+
+Time-decay acknowledges that early touches contributed—they just mattered less than recent ones:
+
+| Model | Facebook (Day 1) | Email (Day 12) | Search (Day 14) |
+|-------|-----------------|----------------|-----------------|
+| Last-touch | 0% | 0% | 100% |
+| Time-decay (7d) | 6% | 32% | 62% |
+| Linear | 33% | 33% | 33% |
+
+Time-decay sits between the extremes, providing a reasonable middle ground.
+
+<%= render_info_box do %>
+  <strong>Rule of thumb:</strong> Use time-decay when you believe recency matters but don't want to ignore early-funnel completely. It's the "I don't want to go full last-touch" model.
+<% end %>
+
+## When Time-Decay Is the Wrong Choice
+
+### 1. Long B2B Sales Cycles
+
+With 90+ day sales cycles, time-decay aggressively underweights the touchpoints that started the journey:
+
+```
+B2B Journey with 7-Day Half-Life:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LinkedIn Ad    →  Webinar  →  Sales Demo  →  Proposal  →  Close
+  (Day 1)        (Day 30)      (Day 60)      (Day 80)    (Day 90)
+     │              │             │             │
+     ▼              ▼             ▼             ▼
+   0.01%          0.8%          10%           40%       ← Decay destroyed early credit
+```
+
+The LinkedIn ad that sourced the deal gets nearly zero credit—which doesn't reflect its importance.
+
+**Fix:** Either use a much longer half-life (30+ days) or switch to position-based for B2B.
+
+### 2. When First-Touch Really Matters
+
+For businesses where the introduction is critical—breaking into a new audience, first-time brand exposure—time-decay undervalues that moment.
+
+### 3. Content-Heavy Journeys
+
+If your funnel relies on progressive education (SaaS with whitepapers → webinars → demos), each content piece builds on the previous. Time-decay penalizes the foundational content.
+
+<%= render_warning_box do %>
+  <strong>The recency bias trap:</strong> Time-decay, like last-touch, systematically credits closers over introducers. Use it only when you believe recency genuinely correlates with influence—not just because it seems intuitive.
+<% end %>
+
+## How Time-Decay Works
+
+### The Math
+
+Time-decay uses exponential decay:
+
+```
+Weight = 2^(-t / half_life)
+```
+
+Where:
+- t = time between touchpoint and conversion (in days)
+- half_life = your chosen parameter (commonly 7 days)
+
+Then normalize weights so they sum to 1:
+
+```
+Credit = Weight / Sum(all weights)
+```
+
+### Example Calculation
+
+Journey: 3 touchpoints at Day 1, Day 7, and Day 14 (conversion)
+Half-life: 7 days
+
+| Touchpoint | Days Before | Raw Weight | Normalized Credit |
+|------------|-------------|------------|-------------------|
+| Day 1 | 13 | 2^(-13/7) = 0.27 | 0.27/1.77 = 15% |
+| Day 7 | 7 | 2^(-7/7) = 0.50 | 0.50/1.77 = 28% |
+| Day 14 | 0 | 2^(0/7) = 1.00 | 1.00/1.77 = 57% |
+| **Total** | | **1.77** | **100%** |
+
+### Implementation
+
+```ruby
+class TimeDecayAttribution
+  def initialize(half_life_days: 7, lookback_days: 30)
+    @half_life_days = half_life_days
+    @lookback_days = lookback_days
+  end
+
+  def attribute(conversion)
+    touchpoints = conversion.user.touchpoints
+      .where("occurred_at >= ?", conversion.occurred_at - @lookback_days.days)
+      .where("occurred_at <= ?", conversion.occurred_at)
+      .order(:occurred_at)
+
+    return [] if touchpoints.empty?
+
+    # Calculate raw weights
+    weights = touchpoints.map do |tp|
+      days_before = (conversion.occurred_at.to_date - tp.occurred_at.to_date).to_i
+      calculate_weight(days_before)
+    end
+
+    total_weight = weights.sum
+
+    # Normalize and build results
+    touchpoints.zip(weights).map do |touchpoint, weight|
+      {
+        channel: touchpoint.channel,
+        source: touchpoint.source,
+        medium: touchpoint.medium,
+        campaign: touchpoint.campaign,
+        credit: weight / total_weight,
+        touchpoint_at: touchpoint.occurred_at
+      }
+    end
+  end
+
+  private
+
+  def calculate_weight(days_before)
+    2.0 ** (-days_before.to_f / @half_life_days)
+  end
+end
+```
+
+### Choosing Your Half-Life
+
+| Business Type | Typical Cycle | Recommended Half-Life |
+|---------------|---------------|----------------------|
+| Impulse e-commerce | < 3 days | 1-2 days |
+| Considered e-commerce | 1-2 weeks | 5-7 days |
+| Low-cost SaaS | 2-4 weeks | 7-14 days |
+| Mid-market SaaS | 1-3 months | 14-21 days |
+| Enterprise B2B | 3-12 months | 30+ days (or use position-based) |
+
+**Validate your choice:** Look at your time-to-conversion distribution. Set half-life so touchpoints within your typical buying window still get meaningful credit.
+
+## Comparing Time-Decay to Other Models
+
+### Time-Decay vs Last-Touch
+
+| Aspect | Time-Decay | Last-Touch |
+|--------|------------|------------|
+| Early touches | Some credit (decayed) | Zero credit |
+| Late touches | Most credit | All credit |
+| Extremity | Moderate | Extreme |
+| Funnel view | Compressed but visible | Only sees the close |
+
+**When to prefer time-decay:** When you want last-touch's recency emphasis without completely ignoring the journey.
+
+### Time-Decay vs Linear
+
+| Aspect | Time-Decay | Linear |
+|--------|------------|--------|
+| Credit distribution | Weighted by recency | Equal |
+| Assumption | Recent = more important | All equal |
+| Awareness channels | Under-credited | Fair credit |
+| Conversion channels | Boosted | Fair credit |
+
+**When to prefer time-decay:** E-commerce, short cycles, urgency products.
+**When to prefer linear:** B2B, long cycles, education-heavy funnels.
+
+### Time-Decay vs Position-Based
+
+| Aspect | Time-Decay | Position-Based |
+|--------|------------|----------------|
+| First-touch credit | Low (decayed) | High (40%) |
+| Last-touch credit | High | High (40%) |
+| Middle credit | Varies by recency | Low (20% split) |
+| Use case | Recency-driven | First/last emphasis |
+
+**When to prefer time-decay:** Short cycles where introduction is less critical.
+**When to prefer position-based:** B2B where both sourcing and closing matter.
+
+## Time-Decay in Practice
+
+### Visualizing the Decay Curve
+
+```
+Credit Weight by Days Before Conversion (7-Day Half-Life):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+100% │████
+     │████████
+ 75% │████████████
+     │████████████████
+ 50% │████████████████████
+     │████████████████████████
+ 25% │████████████████████████████
+     │████████████████████████████████
+  0% └────────────────────────────────────────
+     0    7    14    21    28    35    42
+              Days Before Conversion
+
+At 7 days: 50% weight
+At 14 days: 25% weight
+At 21 days: 12.5% weight
+```
+
+### Impact on Channel Credit
+
+Here's how a typical e-commerce business sees credit shift between models:
+
+| Channel | Last-Touch | Time-Decay (7d) | Linear |
+|---------|------------|-----------------|--------|
+| Paid Social | 8% | 18% | 30% |
+| Email | 40% | 32% | 20% |
+| Retargeting | 25% | 22% | 15% |
+| Organic | 12% | 15% | 20% |
+| Paid Search | 15% | 13% | 15% |
+
+Time-decay rebalances from pure last-touch but still favors conversion channels.
+
+### Setting Up Multiple Half-Lives
+
+Some teams run time-decay with different half-lives for different analyses:
+
+| Analysis | Half-Life | Purpose |
+|----------|-----------|---------|
+| Performance marketing | 3 days | Optimize conversion |
+| Standard reporting | 7 days | Balanced view |
+| Brand marketing | 21 days | Value awareness |
+
+Compare results to understand how half-life assumptions affect credit.
+
+## Common Time-Decay Mistakes
+
+### Mistake 1: Using Default Half-Life Without Analysis
+
+The 7-day default may not match your business. If your sales cycle is 30 days, 7-day half-life crushes early-touch credit.
+
+**Fix:** Analyze your time-to-conversion distribution. Set half-life to match your business reality.
+
+### Mistake 2: Forgetting About Lookback Window
+
+Time-decay still needs a lookback window. Too short = missing early touches. Too long = including irrelevant ancient touches.
+
+**Fix:** Set lookback to 2-3x your typical sales cycle. A 14-day cycle should use 30-45 day lookback.
+
+### Mistake 3: Assuming Recency = Causation
+
+Just because email was recent doesn't mean it caused the purchase. The user might have already decided; email just reminded them.
+
+**Fix:** Validate time-decay with incrementality tests. Does email's attributed credit match its actual incremental impact?
+
+### Mistake 4: Using Same Half-Life for All Segments
+
+New customers vs returning customers have different journey patterns. Applying one half-life to both distorts credit.
+
+**Fix:** Consider segment-specific half-lives or analyze segments separately.
+
+## Time-Decay and GA4
+
+Google Analytics 4 removed time-decay attribution in 2023. Your options:
+
+### 1. Third-Party Attribution Tools
+
+Use mbuzz or similar tools that support time-decay with configurable half-life.
+
+### 2. Build in Your Data Warehouse
+
+Export data to BigQuery/Snowflake and implement time-decay:
+
+```sql
+WITH touchpoints_weighted AS (
+  SELECT
+    user_id,
+    conversion_id,
+    channel,
+    conversion_value,
+    touchpoint_time,
+    conversion_time,
+    -- Calculate weight using 7-day half-life
+    POWER(2, -DATE_DIFF(conversion_time, touchpoint_time, DAY) / 7.0) as weight
+  FROM touchpoint_data
+),
+normalized AS (
+  SELECT
+    *,
+    weight / SUM(weight) OVER (PARTITION BY conversion_id) as credit
+  FROM touchpoints_weighted
+)
+SELECT
+  channel,
+  SUM(credit * conversion_value) as attributed_revenue
+FROM normalized
+GROUP BY channel
+ORDER BY attributed_revenue DESC;
+```
+
+## Implementing Time-Decay in mbuzz
+
+mbuzz uses **AML (Attribution Model Language)** to configure attribution models. For time-decay, the key parameter is `half_life`—how quickly credit decays as touchpoints age.
+
+### Basic Time-Decay Model
+
+```yaml
+# mbuzz AML - Time-Decay Attribution
+model: time_decay
+name: "7-Day Decay"
+description: "Credit decays by 50% every 7 days"
+
+settings:
+  half_life: 7d
+  lookback_window: 30d
+  include_direct: true
+  dedupe_level: session
+```
+
+### Configuring Different Half-Lives
+
+```yaml
+# E-commerce: Fast decay (recent touches matter most)
+model: time_decay
+name: "E-commerce Decay"
+settings:
+  half_life: 3d
+  lookback_window: 14d
+
+---
+
+# Considered purchase: Moderate decay
+model: time_decay
+name: "Considered Purchase"
+settings:
+  half_life: 7d
+  lookback_window: 30d
+
+---
+
+# B2B SaaS: Slow decay (don't crush early touches)
+model: time_decay
+name: "B2B Decay"
+settings:
+  half_life: 21d
+  lookback_window: 90d
+```
+
+### Compare Multiple Half-Lives
+
+```yaml
+# A/B test half-life settings
+models:
+  - model: time_decay
+    name: "Fast Decay (3d)"
+    settings:
+      half_life: 3d
+      lookback_window: 30d
+
+  - model: time_decay
+    name: "Standard Decay (7d)"
+    settings:
+      half_life: 7d
+      lookback_window: 30d
+
+  - model: time_decay
+    name: "Slow Decay (14d)"
+    settings:
+      half_life: 14d
+      lookback_window: 30d
+
+comparison:
+  enabled: true
+  primary: "Standard Decay (7d)"
+  highlight_divergence: true    # Flag when models disagree by >20%
+```
+
+### Time-Decay with Minimum Credit Floor
+
+Prevent early touchpoints from getting near-zero credit:
+
+```yaml
+model: time_decay
+name: "Floored Time-Decay"
+
+settings:
+  half_life: 7d
+  lookback_window: 30d
+  min_credit_floor: 0.05    # No touchpoint gets less than 5%
+
+# This prevents the 60-day-old touchpoint from getting 0.1% credit
+# It will get at least 5%, preserving some awareness value
+```
+
+## Tuning Time-Decay for Your Business
+
+Time-decay has more levers than linear. Here's how to tune them.
+
+### Half-Life by Business Type
+
+| Business Type | Half-Life | Lookback | Why |
+|---------------|-----------|----------|-----|
+| **Flash sales / Urgency** | 1-2 days | 7 days | Decisions made fast |
+| **Impulse e-commerce** | 3 days | 14 days | Short consideration |
+| **Standard e-commerce** | 5-7 days | 30 days | Normal shopping cycle |
+| **High-AOV retail** | 7-10 days | 45 days | More research time |
+| **Low-cost SaaS** | 7 days | 30 days | Quick trial-to-buy |
+| **Mid-market SaaS** | 14 days | 60 days | Sales involvement |
+| **Enterprise B2B** | 21-30 days | 90+ days | Long cycles, don't crush early |
+
+### By Business Stage
+
+```yaml
+# Early-stage: Standard decay, learn patterns
+model: time_decay
+name: "Startup Time-Decay"
+settings:
+  half_life: 7d
+  lookback_window: 30d
+
+---
+
+# Growth-stage: Tune based on observed patterns
+model: time_decay
+name: "Growth Time-Decay"
+settings:
+  half_life: 5d              # Faster if you see quick conversions
+  lookback_window: 21d
+  include_direct: false      # Exclude brand strength noise
+
+---
+
+# Scale-stage: Segment-specific decay
+models:
+  - model: time_decay
+    name: "New Customer Decay"
+    settings:
+      half_life: 10d         # Longer consideration for new
+      lookback_window: 45d
+    filters:
+      user_segment: new_customers
+
+  - model: time_decay
+    name: "Returning Decay"
+    settings:
+      half_life: 3d          # Fast for returning customers
+      lookback_window: 14d
+    filters:
+      user_segment: returning_customers
+```
+
+### Seasonal Adjustments
+
+Buying behavior compresses during high-intent periods:
+
+```yaml
+# Black Friday / Cyber Monday
+model: time_decay
+name: "BFCM Time-Decay"
+settings:
+  half_life: 2d              # Decisions happen in hours, not days
+  lookback_window: 7d        # Only credit recent awareness
+
+date_range:
+  start: "2024-11-25"
+  end: "2024-12-02"
+
+---
+
+# Post-holiday / January
+model: time_decay
+name: "January Recovery"
+settings:
+  half_life: 10d             # Gift card redemptions take time
+  lookback_window: 45d       # Credit holiday marketing
+
+date_range:
+  start: "2024-12-26"
+  end: "2025-01-31"
+```
+
+### Campaign Launch Adjustments
+
+When launching something new, recency matters even more:
+
+```yaml
+# Product Launch: Heavy recency weighting
+model: time_decay
+name: "Launch Time-Decay"
+
+settings:
+  half_life: 3d              # Very recent touches drive launch conversions
+  lookback_window: 14d       # Don't credit pre-launch activity
+
+filters:
+  require_campaign:
+    - "product-launch-2024"
+
+# Daily tracking for launch week
+reporting:
+  granularity: daily
+  start_date: "2024-03-01"
+  end_date: "2024-03-14"
+```
+
+### Dynamic Half-Life (Advanced)
+
+For sophisticated setups, vary half-life by conversion type:
+
+```yaml
+# Different decay for different conversion values
+models:
+  - model: time_decay
+    name: "Small Purchase Decay"
+    settings:
+      half_life: 3d          # Quick decisions
+    filters:
+      conversion_value:
+        max: 50
+
+  - model: time_decay
+    name: "Medium Purchase Decay"
+    settings:
+      half_life: 7d          # Moderate consideration
+    filters:
+      conversion_value:
+        min: 50
+        max: 200
+
+  - model: time_decay
+    name: "Large Purchase Decay"
+    settings:
+      half_life: 14d         # Extended consideration
+    filters:
+      conversion_value:
+        min: 200
+```
+
+### Parameter Tuning Cheatsheet
+
+| Scenario | Parameter Change | Why |
+|----------|------------------|-----|
+| **Faster conversions observed** | Shorter half-life (3-5d) | Match actual behavior |
+| **Longer consideration observed** | Longer half-life (14-21d) | Don't crush early touches |
+| **High urgency / sale period** | Very short half-life (1-2d) | Decisions made fast |
+| **Post-holiday period** | Longer half-life (10-14d) | Gift cards, returns, delayed decisions |
+| **New customer acquisition focus** | Longer half-life | Value awareness more |
+| **Retention / repeat focus** | Shorter half-life | Recent re-engagement matters |
+| **Early touches getting crushed** | Add min_credit_floor | Preserve some awareness credit |
+| **Too much credit to old touches** | Shorter lookback window | Exclude irrelevant history |
+
+## Summary
+
+Time-decay attribution credits touchpoints based on recency—recent touches get more credit, older touches get less. It's a middle ground between last-touch (all credit to final touch) and linear (equal credit).
+
+**Use time-decay when:**
+- Short to medium sales cycles (< 30 days)
+- E-commerce and retail where recency matters
+- You want last-touch's emphasis without ignoring the journey
+- Products with urgency or seasonality
+
+**Don't use time-decay when:**
+- Long B2B sales cycles (it crushes early-touch credit)
+- First-touch genuinely matters for sourcing
+- Content-heavy journeys where early education matters
+
+**Best practice:** Start with a 7-day half-life, then adjust based on your conversion cycle. Validate with incrementality tests to confirm recency actually correlates with influence.
+
+## Further Reading
+
+**On Attribution Models:**
+- [Linear Attribution](/articles/linear-attribution) — The neutral baseline
+- [Position-Based Attribution](/articles/position-based-attribution) — Emphasize first and last
+- [How to Choose the Right Attribution Model](/articles/how-to-choose-attribution-model) — Decision framework
+
+**On Validation:**
+- [MTA vs MMM](/articles/mta-vs-mmm) — Where attribution fits in the measurement stack
+- [Triangulating Measurement Methods](/articles/mta-mmm-incrementality-triangulation) — Validating with multiple approaches
+
+<%= render_key_takeaways(@article.key_takeaways) %>
+
+<%= render_faq(@article.faq) %>
