@@ -146,6 +146,30 @@ module Identities
       assert_not_includes conversions, conv2
     end
 
+    # Session activity tracking tests
+
+    test "updates session last_activity_at when visitor linked to identity" do
+      visitor = create_visitor(visitor_id: "vis_activity_track")
+      session = create_session_for_visitor(visitor, started_at: 1.hour.ago)
+      session.update!(last_activity_at: 1.hour.ago)
+      old_activity = session.last_activity_at
+
+      result = service(user_id: "activity_user", visitor_id: "vis_activity_track").call
+
+      assert result[:success]
+      assert session.reload.last_activity_at > old_activity
+      assert_in_delta Time.current.to_i, session.last_activity_at.to_i, 2
+    end
+
+    test "handles visitor with no sessions when updating activity" do
+      visitor = create_visitor(visitor_id: "vis_no_session_activity")
+
+      result = service(user_id: "no_session_user", visitor_id: "vis_no_session_activity").call
+
+      assert result[:success]
+      assert result[:visitor_linked]
+    end
+
     private
 
     def service(user_id:, visitor_id: nil, traits: {})

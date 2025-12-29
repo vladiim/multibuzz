@@ -418,11 +418,11 @@ The `last_activity_at` column can remain - it's additive and doesn't break exist
 - [x] Write tests for `Sessions::TrackingService` updating `last_activity_at`
 - [x] Update `Sessions::TrackingService` to set `last_activity_at`
 - [x] Add `device_fingerprint` parameter to `Sessions::TrackingService`
-- [ ] Write tests for `Conversions::TrackingService` updating `last_activity_at`
-- [ ] Update `Conversions::TrackingService` to set `last_activity_at`
-- [ ] Write tests for `Identities::IdentificationService` updating `last_activity_at`
-- [ ] Update `Identities::IdentificationService` to set `last_activity_at`
-- [x] All TrackingService tests pass (13 tests)
+- [x] Write tests for `Conversions::TrackingService` updating `last_activity_at`
+- [x] Update `Conversions::TrackingService` to set `last_activity_at`
+- [x] Write tests for `Identities::IdentificationService` updating `last_activity_at`
+- [x] Update `Identities::IdentificationService` to set `last_activity_at`
+- [x] All tests pass (353 service tests)
 
 ### Phase 4: Processing Service Updates (TDD)
 - [x] Write tests for `Events::ProcessingService` with session resolution
@@ -456,5 +456,5 @@ The `last_activity_at` column can remain - it's additive and doesn't break exist
 |------|------|--------|-------|
 | 2024-12-29 | Phase 1: Migration | Complete | Added `last_activity_at` and `device_fingerprint` columns |
 | 2024-12-29 | Phase 2: ResolutionService | Complete | 12 tests, TDD approach |
-| 2024-12-29 | Phase 3: TrackingService | Partial | Updated for events; Conversions/Identity pending |
+| 2024-12-29 | Phase 3: TrackingService | Complete | All 3 services now update `last_activity_at` |
 | 2024-12-29 | Phase 4: ProcessingService | Complete | 18 tests, server-side resolution integrated |

@@ -357,6 +357,36 @@ module Conversions
     end
 
     # ==========================================
+    # Session Activity Tracking tests
+    # ==========================================
+
+    test "updates session last_activity_at when conversion created" do
+      session = event.session
+      session.update!(last_activity_at: 1.hour.ago)
+      old_activity = session.last_activity_at
+
+      result = build_service(event_id: event.prefix_id).call
+
+      assert result[:success]
+      assert session.reload.last_activity_at > old_activity
+      assert_in_delta Time.current.to_i, session.last_activity_at.to_i, 2
+    end
+
+    test "handles nil session gracefully when updating activity" do
+      # Visitor with no sessions
+      new_visitor = account.visitors.create!(
+        visitor_id: "no_sessions_visitor_#{SecureRandom.hex(8)}",
+        first_seen_at: Time.current,
+        last_seen_at: Time.current
+      )
+
+      result = build_service(visitor_id: new_visitor.visitor_id).call
+
+      assert result[:success]
+      assert_nil result[:conversion].session_id
+    end
+
+    # ==========================================
     # Billing Usage tests
     # ==========================================
 

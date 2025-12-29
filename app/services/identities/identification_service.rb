@@ -45,8 +45,17 @@ module Identities
       return false unless visitor
 
       visitor.update!(identity: identity)
+      update_session_activity
       queue_reattribution_if_needed
       true
+    end
+
+    def update_session_activity
+      most_recent_session&.update!(last_activity_at: Time.current)
+    end
+
+    def most_recent_session
+      visitor&.sessions&.order(started_at: :desc)&.first
     end
 
     def queue_reattribution_if_needed

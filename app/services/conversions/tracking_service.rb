@@ -25,8 +25,13 @@ module Conversions
     def run
       return validation_error if validation_error
 
+      update_session_activity
       increment_usage!
       success_result(conversion: conversion)
+    end
+
+    def update_session_activity
+      resolved_session&.update!(last_activity_at: Time.current)
     end
 
     def increment_usage!
