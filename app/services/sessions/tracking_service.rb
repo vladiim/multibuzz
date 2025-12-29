@@ -1,16 +1,17 @@
 module Sessions
   class TrackingService < ApplicationService
-    def initialize(account, session_id, visitor, event_timestamp: nil, is_test: false)
+    def initialize(account, session_id, visitor, event_timestamp: nil, is_test: false, device_fingerprint: nil)
       @account = account
       @session_id = session_id
       @visitor = visitor
       @event_timestamp = event_timestamp
       @is_test = is_test
+      @device_fingerprint = device_fingerprint
     end
 
     private
 
-    attr_reader :account, :session_id, :visitor, :event_timestamp, :is_test
+    attr_reader :account, :session_id, :visitor, :event_timestamp, :is_test, :device_fingerprint
 
     def run
       created = session.nil?
@@ -20,12 +21,15 @@ module Sessions
           session_id: session_id,
           visitor: visitor,
           started_at: event_timestamp,
-          is_test: is_test
+          is_test: is_test,
+          device_fingerprint: device_fingerprint,
+          last_activity_at: event_timestamp
         )
         return error_result(session.errors.full_messages) unless session.persisted?
         created = true
       end
 
+      session.update!(last_activity_at: Time.current) unless created
       session.increment_page_views!
       increment_usage! if created
 

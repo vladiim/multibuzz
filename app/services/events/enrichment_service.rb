@@ -19,7 +19,9 @@ module Events
       {
         visitor_id: visitor_id,
         session_id: session_id,
-        timestamp: (event_data["timestamp"] || event_data[:timestamp] || Time.current.utc.iso8601)
+        timestamp: (event_data["timestamp"] || event_data[:timestamp] || Time.current.utc.iso8601),
+        ip: anonymized_ip,
+        user_agent: user_agent
       }.merge(enriched_properties)
     end
 

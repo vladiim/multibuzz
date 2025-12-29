@@ -78,6 +78,48 @@ class Sessions::TrackingServiceTest < ActiveSupport::TestCase
     assert_in_delta Time.current.to_i, result[:session].started_at.to_i, 2
   end
 
+  # --- Device Fingerprint ---
+
+  test "should store device_fingerprint when creating session" do
+    @session_id = "sess_with_fingerprint"
+
+    service = Sessions::TrackingService.new(
+      account, @session_id, visitor,
+      device_fingerprint: "abc123fingerprint"
+    )
+    result = service.call
+
+    assert result[:success]
+    assert_equal "abc123fingerprint", result[:session].device_fingerprint
+  end
+
+  # --- Last Activity Tracking ---
+
+  test "should set last_activity_at when creating session" do
+    @session_id = "sess_new_with_activity"
+    event_time = 1.hour.ago
+
+    service = Sessions::TrackingService.new(
+      account, @session_id, visitor,
+      event_timestamp: event_time
+    )
+    result = service.call
+
+    assert result[:success]
+    assert_in_delta event_time.to_i, result[:session].last_activity_at.to_i, 1
+  end
+
+  test "should update last_activity_at on existing session" do
+    session.update!(last_activity_at: 1.hour.ago)
+    old_activity = session.last_activity_at
+
+    result
+
+    assert result[:success]
+    assert session.reload.last_activity_at > old_activity
+    assert_in_delta Time.current.to_i, session.last_activity_at.to_i, 2
+  end
+
   # --- Billing Usage ---
 
   test "should increment usage counter when session is created" do

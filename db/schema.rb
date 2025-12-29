@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_17_035849) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_29_223010) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -333,6 +333,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_17_035849) do
     t.string "channel"
     t.boolean "is_test", default: false, null: false
     t.jsonb "click_ids", default: {}, null: false
+    t.datetime "last_activity_at"
+    t.string "device_fingerprint"
     t.index ["account_id", "session_id", "started_at"], name: "index_sessions_on_account_id_and_session_id", unique: true
     t.index ["account_id"], name: "index_sessions_on_account_id"
     t.index ["channel"], name: "index_sessions_on_channel"
@@ -343,6 +345,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_17_035849) do
     t.index ["is_test"], name: "index_sessions_on_is_test"
     t.index ["session_id"], name: "index_sessions_on_session_id"
     t.index ["started_at"], name: "index_sessions_on_started_at"
+    t.index ["visitor_id", "device_fingerprint", "last_activity_at"], name: "index_sessions_for_resolution"
     t.index ["visitor_id"], name: "index_sessions_on_visitor_id"
   end
 

@@ -25,11 +25,47 @@ module Events
     def session_result
       @session_result ||= Sessions::TrackingService.new(
         account,
-        event_data["session_id"],
+        resolved_session_id,
         visitor,
         event_timestamp: event_timestamp,
-        is_test: is_test
+        is_test: is_test,
+        device_fingerprint: device_fingerprint
       ).call
+    end
+
+    def resolved_session_id
+      @resolved_session_id ||= server_side_resolution? ? resolve_session_server_side : client_session_id
+    end
+
+    def server_side_resolution?
+      event_ip.present? && event_user_agent.present?
+    end
+
+    def resolve_session_server_side
+      Sessions::ResolutionService.new(
+        account: account,
+        visitor_id: event_data["visitor_id"],
+        ip: event_ip,
+        user_agent: event_user_agent
+      ).call
+    end
+
+    def client_session_id
+      event_data["session_id"]
+    end
+
+    def event_ip
+      event_data["ip"]
+    end
+
+    def event_user_agent
+      event_data["user_agent"]
+    end
+
+    def device_fingerprint
+      return nil unless server_side_resolution?
+
+      @device_fingerprint ||= Digest::SHA256.hexdigest("#{event_ip}|#{event_user_agent}")[0, 32]
     end
 
     def event_timestamp

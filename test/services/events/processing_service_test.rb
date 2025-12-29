@@ -121,6 +121,73 @@ class Events::ProcessingServiceTest < ActiveSupport::TestCase
     assert_equal "purchase", result[:event].funnel
   end
 
+  # --- Server-side session resolution ---
+
+  test "should resolve session server-side when ip and user_agent provided" do
+    # Existing session with matching fingerprint
+    session.update!(
+      device_fingerprint: device_fingerprint,
+      last_activity_at: 10.minutes.ago
+    )
+
+    @event_data = valid_event_data.merge(
+      "ip" => test_ip,
+      "user_agent" => test_user_agent,
+      "session_id" => "sess_should_be_ignored"  # Client-sent, should be ignored
+    )
+
+    assert result[:success]
+    # Should use existing session, not the client-sent session_id
+    assert_equal session.session_id, result[:event].session.session_id
+  end
+
+  test "should generate new session_id when no active session exists" do
+    @session_id = nil
+    @event_data = valid_event_data.merge(
+      "ip" => test_ip,
+      "user_agent" => test_user_agent,
+      "session_id" => nil
+    )
+
+    assert_difference -> { Session.count }, 1 do
+      assert result[:success]
+      # Should have generated a deterministic session_id
+      assert result[:event].session.session_id.present?
+      assert_equal 32, result[:event].session.session_id.length
+    end
+  end
+
+  test "should store device_fingerprint on new session" do
+    @event_data = valid_event_data.merge(
+      "ip" => test_ip,
+      "user_agent" => test_user_agent,
+      "session_id" => "sess_new_with_fingerprint"
+    )
+
+    assert result[:success]
+    assert_equal device_fingerprint, result[:event].session.device_fingerprint
+  end
+
+  test "should fallback to client session_id when ip/user_agent missing" do
+    # No ip/user_agent = can't do server-side resolution, use client session_id
+    @event_data = valid_event_data  # No ip or user_agent
+
+    assert result[:success]
+    assert_equal session_id, result[:event].session.session_id
+  end
+
+  def test_ip
+    "192.168.1.100"
+  end
+
+  def test_user_agent
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+  end
+
+  def device_fingerprint
+    @device_fingerprint ||= Digest::SHA256.hexdigest("#{test_ip}|#{test_user_agent}")[0, 32]
+  end
+
   def valid_event_data
     {
       "event_type" => "page_view",
