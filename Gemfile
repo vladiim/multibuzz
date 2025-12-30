@@ -5,7 +5,7 @@ gem "rails", "~> 8.0.2"
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
 gem "propshaft"
 # Use postgresql as the database for Active Record
-gem "pg", "~> 1.1"
+gem "pg", "~> 1.6"
 # TimescaleDB for time-series optimization [https://github.com/jonatas/timescaledb]
 gem "timescaledb", "~> 0.2.0"
 # OpenStruct is required by timescaledb gem but not included in Ruby 3.x by default
