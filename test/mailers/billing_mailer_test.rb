@@ -32,7 +32,7 @@ class BillingMailerTest < ActionMailer::TestCase
     end
 
     assert_equal [account.billing_email], email.to
-    assert_match /events.*locked/i, email.subject
+    assert_match /records.*locked/i, email.subject
   end
 
   test "events_unlocked confirms restoration" do

@@ -7,7 +7,7 @@
 <%# SEO Meta Tags %>
 <meta name="description" content="<%= content_for(:meta_description) || "Server-side multi-touch attribution you own. Track customer journeys, measure marketing ROI, and understand what drives conversions—without black-box models or data lock-in." %>">
 <meta name="robots" content="index, follow">
-<link rel="canonical" href="<%= content_for(:canonical_url) || request.original_url %>">
+<link rel="canonical" href="<%= content_for(:canonical_url) || request.original_url.split("?").first %>">
 
 <%# Favicon Links %>
 <link rel="icon" href="/favicon.ico" sizes="48x48">
@@ -17,12 +17,12 @@
 <link rel="manifest" href="/manifest.json">
 
 <%# Open Graph Tags %>
-<meta property="og:type" content="website">
+<meta property="og:type" content="<%= content_for(:og_type) || "website" %>">
 <meta property="og:site_name" content="mbuzz">
 <meta property="og:title" content="<%= content_for(:og_title) || content_for(:title) || "mbuzz - Server-Side Multi-Touch Attribution" %>">
 <meta property="og:description" content="<%= content_for(:og_description) || content_for(:meta_description) || "Server-side multi-touch attribution you own. Track customer journeys, measure marketing ROI, and understand what drives conversions." %>">
 <meta property="og:image" content="<%= content_for(:og_image) || "https://mbuzz.co/og-image.png" %>">
-<meta property="og:url" content="<%= content_for(:canonical_url) || request.original_url %>">
+<meta property="og:url" content="<%= content_for(:canonical_url) || request.original_url.split("?").first %>">
 
 <%# Twitter Card Tags %>
 <meta name="twitter:card" content="summary_large_image">

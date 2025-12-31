@@ -41,7 +41,7 @@ class Dashboard::BillingBannerTest < ActionDispatch::IntegrationTest
     get dashboard_path
 
     assert_response :success
-    assert_select ".bg-amber-50", text: /Event limit reached/
+    assert_select ".bg-amber-50", text: /Record limit reached/
     assert_select "a", text: "Upgrade Now"
   end
 
@@ -52,7 +52,7 @@ class Dashboard::BillingBannerTest < ActionDispatch::IntegrationTest
     get dashboard_path
 
     assert_response :success
-    assert_select ".bg-amber-50", text: /Approaching event limit/
+    assert_select ".bg-amber-50", text: /Approaching record limit/
     assert_select "a", text: "View Plans"
   end
 

@@ -2,33 +2,29 @@
 <html lang="en">
   <head>
     <% if @meta %>
+      <%# Set content_for blocks to be used by _head.html.erb %>
+      <% content_for :title, @meta[:title] %>
+      <% content_for :meta_description, @meta[:description] %>
+      <% content_for :canonical_url, article_url(@article.slug) %>
+      <% content_for :og_title, @meta.dig(:og, :title) %>
+      <% content_for :og_description, @meta.dig(:og, :description) %>
+      <% content_for :og_image, @meta.dig(:og, :image) || "https://mbuzz.co/og-image.png" %>
+      <% content_for :og_type, @meta.dig(:og, :type) %>
+
       <title><%= @meta[:title] %> | mbuzz</title>
-      <meta name="description" content="<%= @meta[:description] %>">
-      <link rel="canonical" href="<%= request.original_url %>">
-
-      <meta property="og:type" content="<%= @meta.dig(:og, :type) %>">
-      <meta property="og:title" content="<%= @meta.dig(:og, :title) %>">
-      <meta property="og:description" content="<%= @meta.dig(:og, :description) %>">
-      <% if @meta.dig(:og, :image) %>
-        <meta property="og:image" content="<%= @meta.dig(:og, :image) %>">
-      <% end %>
-      <meta property="og:url" content="<%= request.original_url %>">
-      <meta property="article:published_time" content="<%= @meta.dig(:article, :published_time) %>">
-      <meta property="article:modified_time" content="<%= @meta.dig(:article, :modified_time) %>">
-      <meta property="article:author" content="<%= @meta.dig(:article, :author) %>">
-      <meta property="article:section" content="<%= @meta.dig(:article, :section) %>">
-
-      <meta name="twitter:card" content="<%= @meta.dig(:twitter, :card) %>">
-      <meta name="twitter:title" content="<%= @meta.dig(:twitter, :title) %>">
-      <meta name="twitter:description" content="<%= @meta.dig(:twitter, :description) %>">
-      <% if @meta.dig(:twitter, :image) %>
-        <meta name="twitter:image" content="<%= @meta.dig(:twitter, :image) %>">
-      <% end %>
     <% else %>
       <title>mbuzz Academy</title>
     <% end %>
 
     <%= render "layouts/head" %>
+
+    <% if @meta %>
+      <%# Article-specific meta tags (not in _head.html.erb) %>
+      <meta property="article:published_time" content="<%= @meta.dig(:article, :published_time) %>">
+      <meta property="article:modified_time" content="<%= @meta.dig(:article, :modified_time) %>">
+      <meta property="article:author" content="<%= @meta.dig(:article, :author) %>">
+      <meta property="article:section" content="<%= @meta.dig(:article, :section) %>">
+    <% end %>
 
     <% if @article %>
       <script type="application/ld+json">
