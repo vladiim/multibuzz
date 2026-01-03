@@ -14,7 +14,7 @@
             Payment failed. Records are being stored but locked.
           </p>
         </div>
-        <%= link_to "Update Payment", "#", class: "text-sm font-medium text-red-800 hover:text-red-900 underline" %>
+        <%= link_to "Update Payment", portal_account_billing_path, class: "text-sm font-medium text-red-800 hover:text-red-900 underline" %>
       </div>
     </div>
   </div>
@@ -31,7 +31,7 @@
             Free access ends in <%= account.days_until_free_expires %> days.
           </p>
         </div>
-        <%= link_to "View Plans", "#", class: "text-sm font-medium text-blue-800 hover:text-blue-900 underline" %>
+        <%= link_to "View Plans", account_billing_path, class: "text-sm font-medium text-blue-800 hover:text-blue-900 underline" %>
       </div>
     </div>
   </div>
@@ -48,7 +48,7 @@
             Record limit reached. New records are not being tracked.
           </p>
         </div>
-        <%= link_to "Upgrade Now", "#", class: "text-sm font-medium text-amber-800 hover:text-amber-900 underline" %>
+        <%= link_to "Upgrade Now", account_billing_path, class: "text-sm font-medium text-amber-800 hover:text-amber-900 underline" %>
       </div>
     </div>
   </div>
@@ -65,7 +65,7 @@
             Approaching record limit (<%= account.usage_percentage %>% used).
           </p>
         </div>
-        <%= link_to "View Plans", "#", class: "text-sm font-medium text-amber-700 hover:text-amber-800 underline" %>
+        <%= link_to "View Plans", account_billing_path, class: "text-sm font-medium text-amber-700 hover:text-amber-800 underline" %>
       </div>
     </div>
   </div>
