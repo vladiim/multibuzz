@@ -1,5 +1,5 @@
-<%# Side navigation for /account/* pages %>
-<nav class="w-48 flex-shrink-0">
+<%# Side navigation for /account/* pages - hidden on mobile, shown on md+ %>
+<nav class="hidden md:block w-48 flex-shrink-0">
   <div class="space-y-1">
     <%= link_to account_path,
       class: "flex items-center px-3 py-2 text-sm font-medium rounded-md #{current_page?(account_path) ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}" do %>

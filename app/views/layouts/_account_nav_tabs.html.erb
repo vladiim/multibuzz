@@ -1,0 +1,29 @@
+<%# Horizontal tab navigation for /account/* pages - shown on mobile only %>
+<nav class="md:hidden -mx-4 px-4 mb-6 overflow-x-auto">
+  <div class="flex gap-1 border-b border-gray-200 min-w-max">
+    <%= link_to account_path,
+      class: "flex-shrink-0 px-3 py-2 text-sm font-medium border-b-2 #{current_page?(account_path) ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}" do %>
+      General
+    <% end %>
+
+    <%= link_to account_billing_path,
+      class: "flex-shrink-0 px-3 py-2 text-sm font-medium border-b-2 #{current_page?(account_billing_path) ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}" do %>
+      Billing
+    <% end %>
+
+    <%= link_to account_team_path,
+      class: "flex-shrink-0 px-3 py-2 text-sm font-medium border-b-2 #{current_page?(account_team_path) ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}" do %>
+      Team
+    <% end %>
+
+    <%= link_to account_api_keys_path,
+      class: "flex-shrink-0 px-3 py-2 text-sm font-medium border-b-2 #{current_page?(account_api_keys_path) ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}" do %>
+      API Keys
+    <% end %>
+
+    <%= link_to account_attribution_models_path,
+      class: "flex-shrink-0 px-3 py-2 text-sm font-medium border-b-2 #{request.path.start_with?('/account/attribution_models') ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}" do %>
+      Attribution
+    <% end %>
+  </div>
+</nav>
