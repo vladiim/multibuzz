@@ -14,7 +14,7 @@
             Payment failed. Records are being stored but locked.
           </p>
         </div>
-        <%= link_to "Update Payment", portal_account_billing_path, class: "text-sm font-medium text-red-800 hover:text-red-900 underline" %>
+        <%= link_to "Update Payment", portal_account_billing_path, data: { turbo: false }, class: "text-sm font-medium text-red-800 hover:text-red-900 underline" %>
       </div>
     </div>
   </div>

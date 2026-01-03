@@ -32,7 +32,7 @@
                 <div class="flex items-center gap-4">
                   <%= render "shared/billing_status_badge", account: current_account %>
                   <% if current_account.has_active_subscription? %>
-                    <%= link_to "Manage Subscription", portal_account_billing_path, class: "inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50" %>
+                    <%= link_to "Manage Subscription", portal_account_billing_path, data: { turbo: false }, class: "inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50" %>
                   <% end %>
                 </div>
               </div>
@@ -85,7 +85,7 @@
                           Current Plan
                         </span>
                       <% else %>
-                        <%= form_with url: checkout_account_billing_path, method: :post, class: "mt-4" do |f| %>
+                        <%= form_with url: checkout_account_billing_path, method: :post, data: { turbo: false }, class: "mt-4" do |f| %>
                           <%= f.hidden_field :plan_slug, value: plan.slug %>
                           <%= f.submit "Upgrade", class: "w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 cursor-pointer" %>
                         <% end %>
