@@ -2,7 +2,7 @@ free:
   name: "Free"
   slug: "free"
   monthly_price_cents: 0
-  events_included: 50000
+  events_included: 500000
   overage_price_cents: null
   stripe_price_id: null
   is_active: true

@@ -429,7 +429,7 @@ These tools go beyond MTA to include MMM and incrementality—the triangulation 
 
 | Aspect | Details |
 |--------|---------|
-| **Pricing** | Free (50K events), $29/mo (1M), $99/mo (5M), $299/mo (25M) |
+| **Pricing** | Free (<%= free_event_limit_display %> events), $29/mo (1M), $99/mo (5M), $299/mo (25M) |
 | **Setup Time** | 10 minutes |
 | **Tracking** | Server-side (95%+ event capture) |
 | **Unique Feature** | 8 attribution models + custom DSL + incrementality testing |
@@ -683,7 +683,7 @@ These tools work for a variety of businesses without being specialized for B2B o
 
 | Monthly Budget | Options |
 |---------------|---------|
-| **Free** | mbuzz (50K events), GA4, Branch (startups) |
+| **Free** | mbuzz (<%= free_event_limit_display %> events), GA4, Branch (startups) |
 | **$29-$100/mo** | mbuzz Starter/Growth |
 | **$100-$500/mo** | mbuzz Pro, Triple Whale, Rockerbox basic |
 | **$500-$2,000/mo** | Northbeam, Hyros, Ruler Analytics, Dreamdata |
@@ -750,7 +750,7 @@ The MTA market is crowded, but the right choice depends on your specific situati
 
 <%= render "articles/cta_banner",
     title: "Try mbuzz Free",
-    description: "Server-side tracking (95%+ event capture), 8 attribution models + custom DSL, incrementality testing built-in. Free up to 50K records/month.",
+    description: "Server-side tracking (95%+ event capture), 8 attribution models + custom DSL, incrementality testing built-in. Free up to #{free_event_limit_display} records/month.",
     cta_text: "Start Free →",
     style: :light %>
 

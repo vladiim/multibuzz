@@ -115,7 +115,7 @@ end
 
 | Tier | Records/Month | Price |
 |------|-------------|-------|
-| Free | Up to 50K | $0 |
+| Free | Up to <%= free_event_limit_display %> | $0 |
 | Starter | Up to 1M | $29/mo |
 | Growth | Up to 5M | $99/mo |
 | Pro | Up to 25M | $299/mo |
@@ -417,7 +417,7 @@ If you already have web analytics (GA4, Heap, Amplitude), HockeyStack's bundled 
 
 <%= render "articles/cta_banner",
     title: "Looking for a HockeyStack Alternative?",
-    description: "mbuzz offers the same attribution models at a fraction of the price. Free up to 50K records/month.",
+    description: "mbuzz offers the same attribution models at a fraction of the price. Free up to #{free_event_limit_display} records/month.",
     cta_text: "Try mbuzz Free →",
     style: :dark %>
 

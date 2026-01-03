@@ -28,11 +28,19 @@ module Billing
   EVENTS_PER_MILLION = 1_000_000
   EVENTS_PER_THOUSAND = 1_000
 
-  # --- Plan Limits ---
-  FREE_EVENT_LIMIT = 50_000
+  # --- Plan Limits (Single Source of Truth) ---
+  FREE_EVENT_LIMIT = 500_000
   STARTER_EVENT_LIMIT = 1_000_000
   GROWTH_EVENT_LIMIT = 5_000_000
   PRO_EVENT_LIMIT = 25_000_000
+
+  # Consolidated plan limits hash - use this for lookups
+  PLAN_LIMITS = {
+    PLAN_FREE => FREE_EVENT_LIMIT,
+    PLAN_STARTER => STARTER_EVENT_LIMIT,
+    PLAN_GROWTH => GROWTH_EVENT_LIMIT,
+    PLAN_PRO => PRO_EVENT_LIMIT
+  }.freeze
 
   # --- Overage Block Sizes ---
   # Each tier has a different block size for overage billing
@@ -52,12 +60,7 @@ module Billing
   }.freeze
 
   # --- Attribution Rerun Limits (matches event limits) ---
-  RERUN_LIMITS = {
-    PLAN_FREE => 50_000,
-    PLAN_STARTER => 1_000_000,
-    PLAN_GROWTH => 5_000_000,
-    PLAN_PRO => 25_000_000
-  }.freeze
+  RERUN_LIMITS = PLAN_LIMITS
 
   # --- Rerun Overage (event_overage / 7, in cents per block) ---
   # Starter: $5/250K block / 7 = ~$0.71

@@ -34,7 +34,7 @@
           <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
           </svg>
-          <span>Free tier: 50K records/month, hard cap. Upgrade to continue beyond that</span>
+          <span>Free tier: <%= free_event_limit_display %> records/month, hard cap. Upgrade to continue beyond that</span>
         </li>
         <li class="flex items-start gap-2">
           <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -125,12 +125,12 @@
 
       <h3>Free Tier</h3>
       <p>
-        The Free tier includes up to 50,000 records per month. This is a <strong>hard cap</strong>:
+        The Free tier includes up to <%= free_event_limit_full %> records per month. This is a <strong>hard cap</strong>:
       </p>
       <ul>
-        <li>When you reach 50K records, we stop storing new records</li>
+        <li>When you reach <%= free_event_limit_display %> records, we stop storing new records</li>
         <li>There are no overage charges on the Free tier (no payment method required)</li>
-        <li>To continue tracking beyond 50K, you must upgrade to a paid plan</li>
+        <li>To continue tracking beyond <%= free_event_limit_display %>, you must upgrade to a paid plan</li>
         <li>Your record counter resets at the start of each monthly cycle</li>
       </ul>
 
