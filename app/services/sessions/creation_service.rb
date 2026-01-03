@@ -88,6 +88,26 @@ module Sessions
     end
 
     def find_or_create_visitor
+      canonical_visitor || find_or_create_by_visitor_id
+    end
+
+    # Detect concurrent Turbo frame requests by checking for recent sessions
+    # with the same session_id. All concurrent requests generate the SAME
+    # session_id (fingerprint-based) but DIFFERENT random visitor_ids.
+    # Reusing the canonical visitor prevents duplicate visitor creation.
+    def canonical_visitor
+      return @canonical_visitor if defined?(@canonical_visitor)
+
+      existing_session = account.sessions
+        .where(session_id: session_id)
+        .where("sessions.created_at > ?", 30.seconds.ago)
+        .order(:created_at)
+        .first
+
+      @canonical_visitor = existing_session&.visitor
+    end
+
+    def find_or_create_by_visitor_id
       account.visitors.find_or_create_by!(visitor_id: visitor_id) do |v|
         v.first_seen_at = started_at
         v.last_seen_at = started_at
@@ -108,8 +128,23 @@ module Sessions
     end
 
     def find_or_initialize_session
-      existing = account.sessions.find_by(session_id: session_id, visitor: visitor)
-      return existing if existing
+      # First check if session exists for the current visitor
+      existing_for_visitor = account.sessions.find_by(session_id: session_id, visitor: visitor)
+      return existing_for_visitor if existing_for_visitor
+
+      # Race condition safeguard: check if ANY session exists with this session_id
+      # This catches cases where canonical_visitor was queried before first session committed
+      existing_any = account.sessions
+        .where(session_id: session_id)
+        .where("sessions.created_at > ?", 30.seconds.ago)
+        .order(:created_at)
+        .first
+
+      if existing_any && existing_any.visitor != visitor
+        # Another request created a session - use their visitor for consistency
+        @visitor = existing_any.visitor
+        return existing_any
+      end
 
       account.sessions.new(
         session_id: session_id,
