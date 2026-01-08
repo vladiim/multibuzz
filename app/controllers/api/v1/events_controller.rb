@@ -20,7 +20,9 @@ module Api
 
       def process_events
         set_cookies
-        render_accepted(ingestion_result)
+        result = ingestion_result
+        process_identifiers
+        render_accepted(result)
       end
 
       def set_cookies
@@ -28,6 +30,39 @@ module Api
           visitor_identification[:set_cookie],
           session_identification[:set_cookie]
         ].compact.join(", ")
+      end
+
+      def process_identifiers
+        identifier_params.each { |params| identify_visitor(params) }
+      end
+
+      def identifier_params
+        events_data
+          .map { |event| build_identifier_params(event) }
+          .compact
+      end
+
+      def build_identifier_params(event_data)
+        identifier = event_data["identifier"] || event_data[:identifier]
+        return unless identifier.present?
+
+        user_id = identifier["email"] || identifier[:email] ||
+          identifier["user_id"] || identifier[:user_id] ||
+          identifier.values.first
+        return unless user_id.present?
+
+        {
+          user_id: user_id,
+          visitor_id: event_data["visitor_id"] || event_data[:visitor_id] || visitor_identification[:visitor_id]
+        }
+      end
+
+      def identify_visitor(params)
+        Identities::IdentificationService.new(
+          current_account,
+          params,
+          is_test: current_api_key.test?
+        ).call
       end
 
       def visitor_identification
@@ -64,7 +99,7 @@ module Api
       end
 
       def events_data
-        params[:events].map(&:to_unsafe_h)
+        @events_data ||= params[:events].map(&:to_unsafe_h)
       end
 
       def render_accepted(result)

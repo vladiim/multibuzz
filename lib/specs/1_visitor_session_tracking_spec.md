@@ -254,10 +254,10 @@ Sources:
 
 ### Phase 2: Identity Cross-Device (API)
 
-- [ ] Update `Sessions::ResolutionService` with identity lookup
-- [ ] Add `identifier` param to events/conversions controllers
-- [ ] Link visitors to identity on first match
-- [ ] Write cross-device test scenarios
+- [x] Update `Sessions::ResolutionService` with identity lookup
+- [x] Add `identifier` param to events/conversions controllers
+- [x] Link visitors to identity on first match
+- [x] Write cross-device test scenarios
 
 ### Phase 3: Conversions Fallback (API)
 
@@ -442,7 +442,7 @@ ORDER BY 1;
 |------|------|--------|
 | 2026-01-08 | Spec v3 - validated against codebases | Complete |
 | 2026-01-09 | Phase 1: Visitor Deduplication | Complete |
-| | Phase 2: Identity Cross-Device | Pending |
+| 2026-01-09 | Phase 2: Identity Cross-Device | Complete |
 | | Phase 3: Conversions Fallback | Pending |
 | | Phase 4: SDK Simplification | Pending |
 | | Phase 5: Documentation | Pending |

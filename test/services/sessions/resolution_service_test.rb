@@ -140,6 +140,148 @@ class Sessions::ResolutionServiceTest < ActiveSupport::TestCase
     assert_not_equal other_session.session_id, result
   end
 
+  # --- Identity-based cross-device resolution (R2) ---
+
+  test "with identifier finds session across all visitors linked to identity" do
+    # Setup: Link visitor :two (desktop) to identity
+    desktop_visitor = visitors(:two)
+    desktop_visitor.update!(identity: identity)
+
+    # Create active session for desktop visitor
+    desktop_session = account.sessions.create!(
+      session_id: "sess_desktop_#{SecureRandom.hex(8)}",
+      visitor: desktop_visitor,
+      started_at: 1.hour.ago,
+      last_activity_at: 5.minutes.ago,
+      device_fingerprint: "fp_desktop_different"  # Different fingerprint (different device)
+    )
+
+    # Mobile visitor (not yet linked to identity) queries with identifier
+    mobile_service = Sessions::ResolutionService.new(
+      account: account,
+      visitor_id: visitor.visitor_id,  # Mobile visitor
+      ip: ip,
+      user_agent: user_agent,
+      identifier: { email: identity.external_id }  # Identifies as same user
+    )
+
+    result = mobile_service.call
+
+    # Should find the desktop session via identity lookup (same user, different device)
+    assert_equal desktop_session.session_id, result,
+      "Should find session from another visitor linked to the same identity"
+  end
+
+  test "with identifier links current visitor to identity" do
+    # Visitor is not yet linked to identity
+    assert_nil visitor.identity_id
+
+    service_with_identifier = Sessions::ResolutionService.new(
+      account: account,
+      visitor_id: visitor.visitor_id,
+      ip: ip,
+      user_agent: user_agent,
+      identifier: { email: identity.external_id }
+    )
+
+    service_with_identifier.call
+
+    # Visitor should now be linked to identity
+    visitor.reload
+    assert_equal identity.id, visitor.identity_id,
+      "Visitor should be linked to identity after resolution with identifier"
+  end
+
+  test "without identifier does not find sessions from other visitors" do
+    # Setup: Link visitor :two to identity and create active session
+    desktop_visitor = visitors(:two)
+    desktop_visitor.update!(identity: identity)
+
+    desktop_session = account.sessions.create!(
+      session_id: "sess_desktop_no_ident_#{SecureRandom.hex(8)}",
+      visitor: desktop_visitor,
+      started_at: 1.hour.ago,
+      last_activity_at: 5.minutes.ago,
+      device_fingerprint: "fp_desktop_different"
+    )
+
+    # Query WITHOUT identifier - should not find desktop session
+    result = service.call
+
+    assert_not_equal desktop_session.session_id, result,
+      "Without identifier, should not find sessions from other visitors"
+  end
+
+  test "identifier lookup does not cross account boundaries" do
+    # Create identity with same external_id in other account
+    other_identity = accounts(:two).identities.create!(
+      external_id: "shared_email@example.com",
+      first_identified_at: Time.current,
+      last_identified_at: Time.current
+    )
+
+    # Create identity in current account with same external_id
+    current_identity = account.identities.create!(
+      external_id: "shared_email@example.com",
+      first_identified_at: Time.current,
+      last_identified_at: Time.current
+    )
+
+    # Link visitor from other account to other identity
+    other_visitor = visitors(:three)
+    other_visitor.update!(identity: other_identity)
+
+    other_session = accounts(:two).sessions.create!(
+      session_id: "sess_other_account_#{SecureRandom.hex(8)}",
+      visitor: other_visitor,
+      started_at: 1.hour.ago,
+      last_activity_at: 5.minutes.ago,
+      device_fingerprint: device_fingerprint
+    )
+
+    # Query with identifier - should NOT find other account's session
+    service_with_identifier = Sessions::ResolutionService.new(
+      account: account,
+      visitor_id: visitor.visitor_id,
+      ip: ip,
+      user_agent: user_agent,
+      identifier: { email: "shared_email@example.com" }
+    )
+
+    result = service_with_identifier.call
+
+    assert_not_equal other_session.session_id, result,
+      "Should not find sessions from other accounts even with same identifier"
+  end
+
+  test "identity session must be within 30 minute timeout" do
+    # Setup: Link visitor :two to identity
+    desktop_visitor = visitors(:two)
+    desktop_visitor.update!(identity: identity)
+
+    # Create session that's expired (more than 30 min ago)
+    expired_session = account.sessions.create!(
+      session_id: "sess_expired_#{SecureRandom.hex(8)}",
+      visitor: desktop_visitor,
+      started_at: 2.hours.ago,
+      last_activity_at: 45.minutes.ago,  # Expired
+      device_fingerprint: "fp_desktop"
+    )
+
+    service_with_identifier = Sessions::ResolutionService.new(
+      account: account,
+      visitor_id: visitor.visitor_id,
+      ip: ip,
+      user_agent: user_agent,
+      identifier: { email: identity.external_id }
+    )
+
+    result = service_with_identifier.call
+
+    assert_not_equal expired_session.session_id, result,
+      "Should not find expired sessions even via identity lookup"
+  end
+
   # --- Edge cases ---
 
   test "handles nil last_activity_at gracefully (legacy sessions)" do
@@ -210,5 +352,9 @@ class Sessions::ResolutionServiceTest < ActiveSupport::TestCase
 
   def device_fingerprint
     @device_fingerprint ||= Digest::SHA256.hexdigest("#{ip}|#{user_agent}")[0, 32]
+  end
+
+  def identity
+    @identity ||= identities(:one)
   end
 end
