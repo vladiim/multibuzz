@@ -366,32 +366,34 @@ MD
 
   ## Automatic Session Tracking
 
-  The SDK includes middleware that automatically creates sessions when visitors land on your site.
+  The SDK includes middleware that automatically tracks visitors and enables server-side session resolution.
 
   **What happens on each request**:
   1. SDK checks for existing visitor cookie (`_mbuzz_vid`)
-  2. SDK checks for existing session cookie (`_mbuzz_sid`)
-  3. If new session detected → **POST to API** with full context
-  4. Cookies refreshed
+  2. SDK captures IP address and User-Agent
+  3. Events are sent to API with visitor context
+  4. **Server resolves sessions** using device fingerprint + 30-minute sliding window
 
-  **Session context captured automatically**:
+  **Context captured automatically**:
   - Full URL (including UTM parameters)
   - Referrer URL
-  - User-Agent
-  - IP address (for geo lookup)
+  - User-Agent (for session resolution)
+  - IP address (for session resolution + geo lookup)
 
-  **Session detection**:
-  - **New visitor**: No `_mbuzz_vid` cookie → new session
-  - **Returning visitor, new session**: `_mbuzz_vid` exists but `_mbuzz_sid` missing/expired (30+ min) → new session
-  - **Same session**: Both cookies valid → no new session
+  **Session resolution (server-side)**:
+  - Server generates device fingerprint from IP + User-Agent
+  - Finds active session for visitor + fingerprint (activity < 30 min ago)
+  - Creates new session if no active session found
+  - True 30-minute sliding window (not fixed time buckets)
 
   **The API handles**:
+  - Session resolution and creation
   - UTM parameter extraction
   - Referrer analysis
   - Channel derivation (`paid_search`, `organic`, `email`, etc.)
   - Visitor/Session record creation
 
-  **Important**: Session POSTs are async and non-blocking. Your page render is not slowed.
+  **Important**: All API calls are async and non-blocking. Your page render is not slowed.
 
   **Disable if needed**:
 MD

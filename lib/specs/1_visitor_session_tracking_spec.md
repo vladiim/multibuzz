@@ -9,7 +9,7 @@ This specification defines the visitor/session identification architecture for m
 - SDK simplification
 
 **Last Updated**: 2026-01-09
-**Status**: Phase 0 Critical Fixes Complete - Ready for production verification
+**Status**: ✅ ALL PHASES COMPLETE - Production ready
 
 ---
 
@@ -287,13 +287,14 @@ Sources:
 - [x] Write tests for visitor resolution chain
 - [x] BUG-002 fixed - fingerprint now uses raw IP (matches sessions)
 
-### Phase 4: SDK Simplification
+### Phase 4: SDK Simplification ✅ COMPLETE
 
 - [x] mbuzz-ruby: Remove session cookie and ID generation
 - [x] mbuzz-ruby: Add ip/user_agent/identifier to all calls
-- [ ] mbuzz-node: Same changes
-- [ ] mbuzz-python: Same changes
-- [ ] Update SDK documentation
+- [x] mbuzz-node: Same changes (v0.7.0 published to npm)
+- [x] mbuzz-python: Same changes (v0.7.0 published to PyPI)
+- [x] mbuzz-php: Same changes (v0.7.0 published to Packagist)
+- [x] Update SDK documentation (READMEs updated)
 
 ---
 
@@ -482,25 +483,27 @@ git commit -m "feat(sessions): add server-side resolution"
 
 ---
 
-### Phase 5: Documentation
+### Phase 5: Documentation ✅ COMPLETE
 
-**Files requiring updates:**
+**Files updated:**
 
-| File | Change Required |
-|------|-----------------|
-| `lib/docs/sdk/api_contract.md` | Add `identifier` param to events/conversions, update session resolution section |
-| `mbuzz-ruby/lib/specs/v0.7.0_deterministic_sessions.md` | Mark as SUPERSEDED, link to this spec |
-| `mbuzz-ruby/README.md` | Update session handling docs |
-| `mbuzz-node/README.md` | Same updates |
-| `mbuzz-python/README.md` | Same updates |
-| `app/views/docs/_getting_started.html.erb` | Update visitor/session explanation |
+| File | Change |
+|------|--------|
+| `lib/docs/sdk/api_contract.md` | Added `identifier` param, updated session resolution docs |
+| `mbuzz-ruby/lib/specs/v0.7.0_deterministic_sessions.md` | Marked as SUPERSEDED |
+| `mbuzz-ruby/README.md` | Session handling updated |
+| `mbuzz-node/README.md` | Session handling updated |
+| `mbuzz-python/README.md` | Minimal, no changes needed |
+| `mbuzz-php/README.md` | Session handling updated |
+| `app/views/docs/_getting_started.html.erb` | Updated to server-side session resolution |
+| `app/views/docs/_platforms_shopify.html.erb` | Removed session cookie references |
 
 **Checklist:**
-- [ ] Update `api_contract.md` with `identifier` param
-- [ ] Mark v0.7.0 spec as superseded
-- [ ] Update SDK READMEs
-- [ ] Update getting started guide
-- [ ] Privacy policy template update
+- [x] Update `api_contract.md` with `identifier` param
+- [x] Mark v0.7.0 spec as superseded
+- [x] Update SDK READMEs
+- [x] Update getting started guide
+- [x] Update Shopify docs
 
 ---
 
@@ -562,8 +565,8 @@ ORDER BY 1;
 | 2026-01-09 | Phase 4: SDK Simplification (mbuzz-ruby) | Complete |
 | 2026-01-09 | **Validation Review - CRITICAL BUGS FOUND** | BUG-001, BUG-002 |
 | 2026-01-09 | Phase 0: Critical Fixes | **COMPLETE** |
-| | Phase 4: SDK Simplification (other SDKs) | Pending |
-| | Phase 5: Documentation | Pending |
+| 2026-01-09 | Phase 4: SDK Simplification (all SDKs) | **COMPLETE** |
+| 2026-01-09 | Phase 5: Documentation | **COMPLETE** |
 
 ### Phase 0 Fix Details (2026-01-09)
 

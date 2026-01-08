@@ -246,12 +246,13 @@
 
   ### How Visitors Are Tracked
 
-  The integration uses cookies to track visitors:
+  The integration uses a cookie to track visitors:
 
   - `_mbuzz_vid` - Visitor ID (2 year expiry)
-  - `_mbuzz_sid` - Session ID (30 minute expiry)
 
-  These IDs are automatically stored in Shopify's cart `note_attributes`, which persist through checkout and appear in webhooks.
+  Session resolution is handled server-side using device fingerprinting (IP + User-Agent) with a true 30-minute sliding window.
+
+  The visitor ID is automatically stored in Shopify's cart `note_attributes`, which persists through checkout and appears in webhooks.
 
   ### Cross-Device Attribution
 
@@ -313,7 +314,7 @@
 
   1. Visit your store in an incognito window
   2. Open browser DevTools → Application → Cookies
-  3. Confirm `_mbuzz_vid` and `_mbuzz_sid` cookies are set
+  3. Confirm `_mbuzz_vid` cookie is set
 
   ### Test Webhook Flow
 

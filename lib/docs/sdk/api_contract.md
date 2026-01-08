@@ -2,8 +2,8 @@
 
 **Purpose**: Define the exact API behavior that all SDKs must implement to remain compatible with the mbuzz backend.
 
-**Last Updated**: 2025-12-30
-**Backend Version**: 1.3.0
+**Last Updated**: 2026-01-09
+**Backend Version**: 1.4.0
 
 ---
 
@@ -187,8 +187,11 @@ User-Agent: Mozilla/5.0...  # Browser's User-Agent (for server-side session reso
 **Server-Side Session Resolution Fields** (v1.3.0+):
 - `ip` (String) - Client's IP address (for device fingerprinting)
 - `user_agent` (String) - Client's User-Agent string (for device fingerprinting)
+- `identifier` (Object, optional) - Cross-device identity resolution (e.g., `{ "email": "user@example.com" }`)
 
-When both `ip` and `user_agent` are provided, the API resolves sessions server-side using a true 30-minute sliding window. This is the **preferred method** for server-side SDKs (Ruby, Python, PHP).
+When both `ip` and `user_agent` are provided, the API resolves sessions server-side using a true 30-minute sliding window. This is the **preferred method** for server-side SDKs (Ruby, Python, PHP, Node).
+
+When `identifier` is provided, the API can resolve sessions across devices by finding other visitors linked to the same identity.
 
 For browser-based SDKs (JavaScript), these values are captured from HTTP request headers automatically.
 
@@ -266,6 +269,9 @@ When the account cannot accept events due to billing issues (exceeded quota, pay
 - `user_id` (String) - Links conversion to an Identity (required for acquisition features)
 - `is_acquisition` (Boolean) - Mark this as the acquisition conversion for this user (default: false)
 - `inherit_acquisition` (Boolean) - Inherit attribution from user's acquisition conversion (default: false)
+- `ip` (String) - Client's IP address (for visitor fallback via fingerprint)
+- `user_agent` (String) - Client's User-Agent string (for visitor fallback via fingerprint)
+- `identifier` (Object) - Cross-device identity resolution (e.g., `{ "email": "user@example.com" }`)
 
 **Recurring Revenue Attribution**:
 
@@ -433,13 +439,13 @@ _mbuzz_vid=<64 hex chars>; Max-Age=63072000; Path=/; HttpOnly; SameSite=Lax; Sec
 - Creates new session if no active session found
 - Uses deterministic ID generation for concurrent request handling
 
-**Client-side resolution** (legacy):
-- **Storage**: Cookie named `_mbuzz_sid`
+**Client-side resolution** (legacy - deprecated in SDK v0.7.0):
+- **Storage**: Cookie named `_mbuzz_sid` (no longer used in v0.7.0+ SDKs)
 - **Generation**: `SecureRandom.hex(32)` or equivalent
 - **Cookie attributes**: `_mbuzz_sid=<64 hex chars>; Max-Age=1800; Path=/; HttpOnly; SameSite=Lax; Secure`
 - **New session when**: No session cookie exists OR session cookie expired (30+ minutes since last activity)
 
-**Migration path**: SDKs should transition to server-side resolution by including `ip` and `user_agent` in event payloads. The API will then ignore any client-sent `session_id`.
+**Migration path**: SDKs v0.7.0+ use server-side resolution exclusively. The `_mbuzz_sid` cookie is no longer set or read. All SDKs now send `ip` and `user_agent` with events, and the server handles session resolution with a true 30-minute sliding window.
 
 ### User ID
 
