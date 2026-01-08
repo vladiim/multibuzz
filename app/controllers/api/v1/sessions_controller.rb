@@ -27,7 +27,8 @@ module Api
           :session_id,
           :url,
           :referrer,
-          :started_at
+          :started_at,
+          :device_fingerprint
         )
       end
 

@@ -10,19 +10,33 @@ module Sessions
 
     attr_reader :account, :params, :is_test
 
+    def device_fingerprint
+      params[:device_fingerprint]
+    end
+
     def run
       return error_result(["visitor_id is required"]) unless visitor_id.present?
       return error_result(["session_id is required"]) unless session_id.present?
       return error_result(["url is required"]) unless url.present?
 
-      process_visitor
-      process_session
+      with_session_lock do
+        process_visitor
+        process_session
+      end
 
       success_result(
         visitor_id: visitor_id,
         session_id: session_id,
         channel: session.channel
       )
+    end
+
+    def with_session_lock
+      lock_key = Digest::MD5.hexdigest("#{account.id}:#{session_id}").to_i(16) % (2**31)
+      ActiveRecord::Base.transaction do
+        ActiveRecord::Base.connection.execute("SELECT pg_advisory_xact_lock(#{lock_key})")
+        yield
+      end
     end
 
     def process_visitor
@@ -91,23 +105,34 @@ module Sessions
       canonical_visitor || find_or_create_by_visitor_id
     end
 
-    # Detect concurrent Turbo frame requests by checking for recent sessions
-    # with the same session_id. All concurrent requests generate the SAME
-    # session_id (fingerprint-based) but DIFFERENT random visitor_ids.
-    # Reusing the canonical visitor prevents duplicate visitor creation.
     def canonical_visitor
       return @canonical_visitor if defined?(@canonical_visitor)
 
-      existing_session = account.sessions
-        .where(session_id: session_id)
+      @canonical_visitor = find_canonical_by_fingerprint || find_canonical_by_session_id
+    end
+
+    def find_canonical_by_fingerprint
+      return unless device_fingerprint.present?
+
+      recent_fingerprint_session&.visitor
+    end
+
+    def recent_fingerprint_session
+      account.sessions
+        .where(device_fingerprint: device_fingerprint)
         .where("sessions.created_at > ?", 30.seconds.ago)
         .order(:created_at)
         .first
+    end
 
-      @canonical_visitor = existing_session&.visitor
+    def find_canonical_by_session_id
+      recent_session_with_same_id&.visitor
     end
 
     def find_or_create_by_visitor_id
+      check_for_concurrent_session
+      return @canonical_visitor if @canonical_visitor
+
       account.visitors.find_or_create_by!(visitor_id: visitor_id) do |v|
         v.first_seen_at = started_at
         v.last_seen_at = started_at
@@ -116,11 +141,44 @@ module Sessions
       end
     end
 
+    def check_for_concurrent_session
+      return if defined?(@canonical_visitor)
+
+      existing = recent_fingerprint_session || recent_session_with_same_id
+      @canonical_visitor = existing&.visitor
+    end
+
+    def recent_session_with_same_id
+      account.sessions
+        .where(session_id: session_id)
+        .where("sessions.created_at > ?", 30.seconds.ago)
+        .order(:created_at)
+        .first
+    end
+
     def create_or_update_session
       return if session.persisted? && session.initial_utm.present?
 
       session.assign_attributes(session_attributes)
       session.save!
+    rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid
+      handle_session_race_condition
+    end
+
+    def handle_session_race_condition
+      orphaned_visitor = @visitor if @visitor_created
+      @session = account.sessions.find_by!(session_id: session_id)
+      @visitor = session.visitor
+      @session_created = false
+      @visitor_created = false
+      delete_orphaned_visitor(orphaned_visitor)
+    end
+
+    def delete_orphaned_visitor(orphaned_visitor)
+      return unless orphaned_visitor
+      return if orphaned_visitor == @visitor
+
+      orphaned_visitor.destroy
     end
 
     def session
@@ -128,30 +186,29 @@ module Sessions
     end
 
     def find_or_initialize_session
-      # First check if session exists for the current visitor
       existing_for_visitor = account.sessions.find_by(session_id: session_id, visitor: visitor)
       return existing_for_visitor if existing_for_visitor
 
-      # Race condition safeguard: check if ANY session exists with this session_id
-      # This catches cases where canonical_visitor was queried before first session committed
-      existing_any = account.sessions
-        .where(session_id: session_id)
-        .where("sessions.created_at > ?", 30.seconds.ago)
-        .order(:created_at)
-        .first
-
-      if existing_any && existing_any.visitor != visitor
-        # Another request created a session - use their visitor for consistency
-        @visitor = existing_any.visitor
-        return existing_any
-      end
+      existing_any = recent_session_with_same_id
+      return adopt_existing_session(existing_any) if existing_any
 
       account.sessions.new(
         session_id: session_id,
         visitor: visitor,
+        device_fingerprint: device_fingerprint,
         started_at: started_at,
         is_test: is_test
       )
+    end
+
+    def adopt_existing_session(existing_session)
+      return existing_session if existing_session.visitor == visitor
+
+      orphaned_visitor = @visitor if @visitor_created
+      @visitor = existing_session.visitor
+      @visitor_created = false
+      delete_orphaned_visitor(orphaned_visitor)
+      existing_session
     end
 
     def session_attributes

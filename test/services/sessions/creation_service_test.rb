@@ -58,7 +58,7 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
     assert account.visitors.exists?(visitor_id: "vis_different_2")
   end
 
-  test "same session_id after 30 seconds should create new visitor" do
+  test "same session_id after 30 seconds should reuse existing sessions visitor" do
     # Create first session
     first_params = {
       visitor_id: "vis_old_session",
@@ -72,17 +72,23 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
       created_at: 31.seconds.ago
     )
 
-    # New request with same session_id should create new visitor
+    # New request with same session_id but different visitor_id
+    # Should use the existing session's visitor (session_id is unique)
     second_params = {
       visitor_id: "vis_new_session",
       session_id: "sess_time_bounded",
       url: "https://example.com/page"
     }
-    Sessions::CreationService.new(account, second_params).call
+    result = Sessions::CreationService.new(account, second_params).call
 
-    # New visitor should be created (old session is outside 30-second window)
+    assert result[:success]
+    # Original visitor should exist
     assert account.visitors.exists?(visitor_id: "vis_old_session")
-    assert account.visitors.exists?(visitor_id: "vis_new_session")
+    # New visitor should NOT be created - session_id is unique, so we use existing session's visitor
+    refute account.visitors.exists?(visitor_id: "vis_new_session"),
+      "Should NOT create new visitor - session_id already exists, use existing session's visitor"
+    # Should still have only one session
+    assert_equal 1, account.sessions.where(session_id: "sess_time_bounded").count
   end
 
   # --- Billing Usage ---
