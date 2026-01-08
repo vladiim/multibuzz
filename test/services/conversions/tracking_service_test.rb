@@ -361,8 +361,10 @@ module Conversions
     # ==========================================
 
     test "finds visitor via fingerprint when visitor_id not found" do
-      # Create a session with known fingerprint (using anonymized IP: 192.168.1.0)
-      fingerprint = Digest::SHA256.hexdigest("192.168.1.0|Mozilla/5.0")[0, 32]
+      # Create a session with known fingerprint (using raw IP)
+      raw_ip = "192.168.1.100"
+      user_agent = "Mozilla/5.0"
+      fingerprint = Digest::SHA256.hexdigest("#{raw_ip}|#{user_agent}")[0, 32]
       session_with_fingerprint = account.sessions.create!(
         session_id: "sess_fp_test_#{SecureRandom.hex(8)}",
         visitor: visitor,
@@ -373,8 +375,8 @@ module Conversions
 
       result = build_service(
         visitor_id: "nonexistent_visitor_id",
-        ip: "192.168.1.100", # Will be anonymized to 192.168.1.0
-        user_agent: "Mozilla/5.0"
+        ip: raw_ip,
+        user_agent: user_agent
       ).call
 
       assert result[:success], "Should find visitor via fingerprint fallback"
@@ -524,6 +526,35 @@ module Conversions
 
       assert result[:success]
       # Should use visitor_id lookup, not fingerprint match
+      assert_equal visitor.id, result[:conversion].visitor_id
+    end
+
+    test "fingerprint uses raw IP for consistency with session resolution" do
+      # Sessions are created via Sessions::ResolutionService which uses RAW IP for fingerprint
+      # Conversions must use the same fingerprint formula to match sessions
+      raw_ip = "203.0.113.42"
+      user_agent = "ConsistencyAgent/1.0"
+
+      # This is how Sessions::ResolutionService calculates fingerprint - RAW IP
+      session_fingerprint = Digest::SHA256.hexdigest("#{raw_ip}|#{user_agent}")[0, 32]
+
+      # Create session as if it was created by ResolutionService
+      account.sessions.create!(
+        session_id: "sess_consistency_#{SecureRandom.hex(8)}",
+        visitor: visitor,
+        device_fingerprint: session_fingerprint,
+        started_at: 5.seconds.ago,
+        last_activity_at: 5.seconds.ago
+      )
+
+      # TrackingService must use the same raw IP formula to find this session
+      result = build_service(
+        visitor_id: "nonexistent_visitor_id",
+        ip: raw_ip,
+        user_agent: user_agent
+      ).call
+
+      assert result[:success], "TrackingService should find visitor via fingerprint matching ResolutionService"
       assert_equal visitor.id, result[:conversion].visitor_id
     end
 

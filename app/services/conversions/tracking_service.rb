@@ -98,13 +98,7 @@ module Conversions
     end
 
     def device_fingerprint
-      @device_fingerprint ||= Digest::SHA256.hexdigest("#{anonymized_ip}|#{user_agent}")[0, FINGERPRINT_LENGTH]
-    end
-
-    def anonymized_ip
-      @anonymized_ip ||= IPAddr.new(ip).mask(24).to_s
-    rescue IPAddr::Error
-      nil
+      @device_fingerprint ||= Digest::SHA256.hexdigest("#{ip}|#{user_agent}")[0, FINGERPRINT_LENGTH]
     end
 
     def resolved_session
