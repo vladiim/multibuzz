@@ -176,6 +176,36 @@ class Events::ProcessingServiceTest < ActiveSupport::TestCase
     assert_equal session_id, result[:event].session.session_id
   end
 
+  # --- Visitor fingerprint deduplication ---
+
+  test "should pass device_fingerprint to LookupService for visitor deduplication" do
+    # First request creates a visitor and session with fingerprint
+    first_visitor = account.visitors.create!(visitor_id: "vis_first_request")
+    first_session = account.sessions.create!(
+      visitor: first_visitor,
+      session_id: "sess_first",
+      device_fingerprint: device_fingerprint,
+      started_at: Time.current
+    )
+
+    # Second concurrent request with DIFFERENT visitor_id but SAME fingerprint
+    @visitor_id = nil  # Clear memoization
+    @event_data = {
+      "event_type" => "page_view",
+      "visitor_id" => "vis_second_request",  # Different visitor_id
+      "ip" => test_ip,
+      "user_agent" => test_user_agent,
+      "timestamp" => Time.current.iso8601,
+      "properties" => { "url" => "https://example.com" }
+    }
+
+    assert_no_difference -> { Visitor.count } do
+      assert result[:success]
+      # Should use the first visitor (deduplicated via fingerprint)
+      assert_equal first_visitor, result[:event].visitor
+    end
+  end
+
   def test_ip
     "192.168.1.100"
   end

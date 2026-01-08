@@ -19,7 +19,12 @@ module Events
     end
 
     def visitor_result
-      @visitor_result ||= Visitors::LookupService.new(account, event_data["visitor_id"], is_test: is_test).call
+      @visitor_result ||= Visitors::LookupService.new(
+        account,
+        event_data["visitor_id"],
+        is_test: is_test,
+        device_fingerprint: device_fingerprint
+      ).call
     end
 
     def session_result
