@@ -22,12 +22,12 @@ module Sessions
     attr_reader :account, :visitor_id, :ip, :user_agent, :identifier
 
     def resolved_session
-      return unless visitor
-
       identity_session || visitor_session
     end
 
     def visitor_session
+      return unless visitor
+
       account.sessions
         .where(visitor_id: visitor.id)
         .where(device_fingerprint: device_fingerprint)

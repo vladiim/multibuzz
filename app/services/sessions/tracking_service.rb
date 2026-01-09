@@ -37,7 +37,19 @@ module Sessions
     end
 
     def session
-      @session ||= account.sessions.active.find_by(session_id: session_id, visitor: visitor)
+      @session ||= find_existing_session
+    end
+
+    def find_existing_session
+      existing_for_visitor || existing_cross_device
+    end
+
+    def existing_for_visitor
+      account.sessions.active.find_by(session_id: session_id, visitor: visitor)
+    end
+
+    def existing_cross_device
+      account.sessions.active.find_by(session_id: session_id)
     end
 
     def increment_usage!

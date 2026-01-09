@@ -25,8 +25,8 @@ class IdentityCrossDeviceTest < Minitest::Test
   end
 
   # Main test: Cross-device session resolution via identity
-  # When tracking an event with `identifier`, should find sessions across all
-  # visitors linked to that identity
+  # When tracking an event with `identifier`, should find the desktop session
+  # and use it for the mobile event (same user, different device)
   def test_event_with_identifier_resolves_cross_device_session
     skip "Requires local API server" unless api_available?
 
@@ -50,7 +50,7 @@ class IdentityCrossDeviceTest < Minitest::Test
     sleep 1 # Allow async processing
 
     # Step 3: Mobile visit - track event with identifier (NEW visitor, different device)
-    # The identifier should trigger cross-device session lookup
+    # The identifier should trigger cross-device session lookup and find the desktop session
     event_result = track_event_with_identifier(
       visitor_id: @mobile_visitor_id,
       identifier: { email: @user_email },
@@ -64,18 +64,24 @@ class IdentityCrossDeviceTest < Minitest::Test
 
     sleep 2 # Allow async processing
 
-    # Step 4: Verify mobile visitor is now linked to the same identity
+    # Step 4: Verify mobile visitor is linked to same identity
     desktop_data = VerificationHelper.verify(visitor_id: @desktop_visitor_id)
     mobile_data = VerificationHelper.verify(visitor_id: @mobile_visitor_id)
 
     assert desktop_data[:visitor][:identity_id], "Desktop visitor should have identity"
-    assert mobile_data[:visitor][:identity_id], "Mobile visitor should have identity after event with identifier"
+    assert mobile_data[:visitor][:identity_id], "Mobile visitor should have identity"
     assert_equal desktop_data[:visitor][:identity_id], mobile_data[:visitor][:identity_id],
       "Both visitors should be linked to the same identity"
 
-    # Step 5: KEY TEST - The mobile event should be assigned to a session that considers
-    # the identity's cross-device history. Verify the event was created correctly.
-    assert mobile_data[:events]&.any?, "Mobile visitor should have events"
+    # Step 5: KEY TEST - The mobile event should be assigned to the DESKTOP session
+    # This proves cross-device session resolution is working
+    mobile_event = mobile_data[:events]&.first
+    assert mobile_event, "Mobile visitor should have an event"
+
+    # The event's session_id should be the desktop session (cross-device resolution)
+    assert_equal @desktop_session_id, mobile_event[:session_id],
+      "Mobile event should use desktop session (cross-device resolution). " \
+      "Got session_id: #{mobile_event[:session_id]}, expected: #{@desktop_session_id}"
   end
 
   # Test: Sessions remain separate without identifier

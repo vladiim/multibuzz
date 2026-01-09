@@ -118,6 +118,7 @@ module Api
         def event_to_h(event)
           {
             event_type: event.event_type,
+            session_id: event.session&.session_id,
             occurred_at: event.occurred_at,
             properties: event.properties,
             url: event.url

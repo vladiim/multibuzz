@@ -46,7 +46,8 @@ module Events
         account: account,
         visitor_id: event_visitor_id,
         ip: event_ip,
-        user_agent: event_user_agent
+        user_agent: event_user_agent,
+        identifier: event_identifier
       ).call
     end
 
@@ -64,6 +65,10 @@ module Events
 
     def event_user_agent
       event_data["user_agent"] || event_data[:user_agent]
+    end
+
+    def event_identifier
+      event_data["identifier"] || event_data[:identifier]
     end
 
     def device_fingerprint

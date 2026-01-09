@@ -197,6 +197,7 @@ module Sessions
         visitor: visitor,
         device_fingerprint: device_fingerprint,
         started_at: started_at,
+        last_activity_at: started_at,
         is_test: is_test
       )
     end

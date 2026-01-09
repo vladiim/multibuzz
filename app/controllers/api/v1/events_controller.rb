@@ -93,9 +93,17 @@ module Api
         Events::EnrichmentService.new(
           request,
           event_data,
-          visitor_id: event_data["visitor_id"] || event_data[:visitor_id] || visitor_identification[:visitor_id],
-          session_id: event_data["session_id"] || event_data[:session_id] || session_identification[:session_id]
+          visitor_id: resolve_visitor_id(event_data),
+          session_id: resolve_session_id(event_data)
         ).call
+      end
+
+      def resolve_visitor_id(event_data)
+        event_data["visitor_id"] || event_data[:visitor_id] || visitor_identification[:visitor_id]
+      end
+
+      def resolve_session_id(event_data)
+        event_data["session_id"] || event_data[:session_id] || session_identification[:session_id]
       end
 
       def events_data
