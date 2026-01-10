@@ -1,5 +1,48 @@
 # Spec: Dashboard Metrics Enhancements
 
+**Status**: Feature 1 Complete, Feature 2 Partial (Bug)
+**Last Updated**: 2026-01-10
+
+## Implementation Status
+
+### Feature 1: Avg Days to Convert ✅ COMPLETE
+- `avg_days_to_convert` implemented in `TotalsQuery`
+- `avg_days_by_channel` in `JourneyMetricsByChannel`
+- `avg_days` in `ByChannelQuery` and `ByConversionNameQuery`
+
+### Feature 2: Metric-Responsive Charts 🔄 PARTIAL
+- ✅ Channel chart responds to metric selection
+- ✅ Dimension chart responds to metric selection
+- ❌ **BUG: Time Series Chart doesn't respond to metric**
+
+---
+
+## 🐛 OUTSTANDING BUG: Time Series Chart Not Metric-Responsive
+
+**Location**: `app/views/dashboard/conversions/_full_dashboard.html.erb:62-67`
+
+**Current behavior**: Time Series Chart always shows credits/conversions regardless of which KPI card is selected.
+
+**Expected behavior**: When user clicks "Avg Days to Convert" KPI, the time series should show avg_days over time.
+
+**Root cause**: `TimeSeriesQuery` only returns credits data. It doesn't support different metrics.
+
+```erb
+<!-- Current: No metric passed -->
+<div id="time-series-chart"
+  data-controller="chart"
+  data-chart-type-value="line"
+  data-chart-data-value="<%= data[:time_series].to_json %>">
+```
+
+**Fix required**:
+1. Extend `TimeSeriesQuery` to accept a `metric` parameter
+2. Return data for the selected metric (credits, revenue, avg_days, etc.)
+3. Pass `chart_metric` to the time series chart div
+4. Add metric-specific formatting in `chart_controller.js`
+
+---
+
 ## Overview
 
 Two enhancements to the conversions dashboard:
