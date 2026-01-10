@@ -1,6 +1,7 @@
 module Dashboard
   class ConversionsDataService < ApplicationService
     CACHE_TTL = 5.minutes
+    METRIC_AOV = "aov"
 
     def initialize(account, filter_params)
       @account = account
@@ -44,7 +45,8 @@ module Dashboard
         channels: filter_params[:channels].sort,
         conversion_filters: conversion_filters,
         breakdown_dimension: breakdown_dimension,
-        test_mode: test_mode
+        test_mode: test_mode,
+        metric: time_series_metric
       }
     end
 
@@ -62,7 +64,17 @@ module Dashboard
     end
 
     def time_series
-      Queries::TimeSeriesQuery.new(credits_scope, date_range: date_range).call
+      Queries::TimeSeriesQuery.new(credits_scope, date_range: date_range, metric: time_series_metric).call
+    end
+
+    def time_series_metric
+      metrics = Queries::TimeSeriesQuery::Metrics
+
+      case filter_params[:metric]
+      when metrics::REVENUE, METRIC_AOV then metrics::REVENUE
+      when metrics::CONVERSIONS then metrics::CONVERSIONS
+      else metrics::CREDITS
+      end
     end
 
     def top_campaigns

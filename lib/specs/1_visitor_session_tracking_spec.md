@@ -8,8 +8,152 @@ This specification defines the visitor/session identification architecture for m
 - Cross-device identity resolution
 - SDK simplification
 
-**Last Updated**: 2026-01-09
-**Status**: ✅ ALL PHASES COMPLETE - Production ready
+**Last Updated**: 2026-01-10
+**Status**: ✅ ALL PHASES COMPLETE - Manual testing of Shopify SDK pending
+
+---
+
+## Outstanding Issues (2026-01-10)
+
+### ~~Critical: mbuzz-shopify SDK Not Updated~~ ✅ RESOLVED
+
+**Location**: `/Users/vlad/code/m/mbuzz-shopify/extensions/mbuzz-tracking/assets/mbuzz-shopify.js`
+
+**Status**: ✅ UPDATED (2026-01-10)
+
+~~The Shopify SDK has **not been updated** to v0.7.0 patterns and still uses deprecated client-side session management.~~
+
+**Resolution**: Updated mbuzz-shopify.js to v0.7.0 patterns:
+- Removed `_mbuzz_sid` cookie and `getSessionId()` function
+- Added `user_agent` to all event/conversion payloads
+- Removed `session_id` from payloads - server now resolves
+- Updated README documentation
+
+**Deployment**: Released as `mbuzz-attribution-5` on 2026-01-10. Live on all Shopify stores with the app installed.
+
+### Medium: IPv6 Not Tested
+
+**Status**: No test coverage
+
+Fingerprint calculation uses raw IP without special handling for IPv6. Different IPv6 representations for the same user could produce different fingerprints.
+
+**Recommendation**: Add IPv6 normalization or test coverage.
+
+### Low: identifier Format Validation
+
+**Status**: No schema validation
+
+The `identifier` param accepts any object structure. Consider adding validation:
+- Must have at least one key
+- Log warning for unexpected keys
+
+---
+
+## Post-Review Issues (2026-01-09)
+
+Following a full SDK review against R4 requirements, the following test coverage gaps were identified. All SDKs pass their unit tests and the **code implementations are correct** - these are missing tests only.
+
+### Issue Summary
+
+| SDK | Issue Type | Severity | Status |
+|-----|-----------|----------|--------|
+| mbuzz-ruby | Missing tests | Low | ✅ Fixed |
+| mbuzz-node | Missing tests | Low | ✅ Fixed |
+| mbuzz-python | Missing tests | Low | ✅ Fixed |
+| mbuzz-php | Missing test file | Medium | ✅ Fixed |
+| mbuzz-php | Missing context integration tests | Medium | ✅ Fixed |
+
+### End-to-End Test Coverage Audit (Post-Fix)
+
+| SDK | Context Integration Tests | Request Unit Tests | Track context→payload | Conversion context→payload |
+|-----|--------------------------|-------------------|----------------------|---------------------------|
+| **mbuzz-ruby** | ✅ `event_integration_test.rb` | ✅ `client_test.rb` | ✅ | ✅ |
+| **mbuzz-node** | ✅ `mbuzz.test.ts` | ✅ `trackRequest.test.ts` | ✅ | ✅ |
+| **mbuzz-python** | ✅ `test_client.py` | ✅ `test_client.py` | ✅ | ✅ |
+| **mbuzz-php** | ✅ `ClientIntegrationTest.php` | ✅ `TrackRequestTest.php`, `ConversionRequestTest.php` | ✅ | ✅ |
+
+**All resolved (2026-01-09):**
+- Ruby: Added conversion context tests + identifier tests ✅
+- Node: Added conversion identifier + context tests ✅
+- Python: Added conversion context resolution tests ✅
+- PHP: Created ConversionRequestTest.php + added identifier test to TrackRequestTest.php ✅
+- PHP: Created ClientIntegrationTest.php with 7 context integration tests ✅
+
+### Context Integration Tests Now Complete
+
+All SDKs now have equivalent test coverage:
+
+| Test Case | Ruby | Node | Python | PHP |
+|-----------|------|------|--------|-----|
+| `track()` uses ip from Context | ✅ | ✅ | ✅ | ✅ |
+| `track()` uses userAgent from Context | ✅ | ✅ | ✅ | ✅ |
+| `conversion()` uses ip from Context | ✅ | ✅ | ✅ | ✅ |
+| `conversion()` uses userAgent from Context | ✅ | ✅ | ✅ | ✅ |
+| `conversion()` explicit overrides Context | ✅ | ✅ | ✅ | ✅ |
+| `conversion()` passes identifier + context | ✅ | ✅ | ✅ | ✅ |
+
+### Required Fixes
+
+#### 1. mbuzz-ruby (`/Users/vlad/code/m/mbuzz-ruby`)
+
+**File**: `test/mbuzz/client_test.rb`
+
+Add tests verifying the HTTP payload includes:
+- `ip` when provided to `track()`
+- `user_agent` when provided to `track()`
+- `identifier` when provided to `track()`
+- All three fields in conversion requests
+
+#### 2. mbuzz-node (`/Users/vlad/code/m/mbuzz-node`)
+
+**File**: `test/mbuzz.test.js`
+
+Add 3 missing tests:
+1. Conversion request includes `ip` and `user_agent` in payload
+2. Undefined values are excluded from conversion payload
+3. Conversion request includes `identifier` when provided
+
+#### 3. mbuzz-python (`/Users/vlad/code/m/mbuzz-python`)
+
+**File**: `tests/test_client.py`
+
+Add 2 missing tests:
+1. Conversion uses context for ip/user_agent resolution
+2. Explicit ip/user_agent override context values
+
+#### 4. mbuzz-php (`/Users/vlad/code/m/mbuzz-php`)
+
+**File**: Create `tests/Request/ConversionRequestTest.php`
+
+Create new test file covering:
+- `ip` and `user_agent` included in conversion payload
+- `identifier` included when provided
+- Optional fields excluded when null
+
+### Verification Commands
+
+```bash
+# Run all SDK tests after fixes
+cd /Users/vlad/code/m/mbuzz-ruby && bundle exec rake test
+cd /Users/vlad/code/m/mbuzz-node && npm test
+cd /Users/vlad/code/m/mbuzz-python && python -m pytest
+cd /Users/vlad/code/m/mbuzz-php && ./vendor/bin/phpunit
+```
+
+### Fix Status
+
+| SDK | Request Tests | Context Integration Tests | Completed |
+|-----|--------------|--------------------------|-----------|
+| mbuzz-ruby | ✅ Fixed | ✅ Fixed | 2026-01-09 |
+| mbuzz-node | ✅ Fixed | ✅ Fixed | 2026-01-09 |
+| mbuzz-python | ✅ Fixed | ✅ Fixed | 2026-01-09 |
+| mbuzz-php | ✅ Fixed | ✅ Fixed | 2026-01-09 |
+
+**All tests passing:**
+- mbuzz-ruby: 117 tests, 170 assertions ✅
+- mbuzz-node: 114 tests ✅
+- mbuzz-python: 96 tests ✅
+- mbuzz-php: 116 tests, 194 assertions ✅
 
 ---
 
@@ -287,7 +431,7 @@ Sources:
 - [x] Write tests for visitor resolution chain
 - [x] BUG-002 fixed - fingerprint now uses raw IP (matches sessions)
 
-### Phase 4: SDK Simplification ✅ COMPLETE
+### Phase 4: SDK Simplification (Server-Side SDKs) ✅ COMPLETE
 
 - [x] mbuzz-ruby: Remove session cookie and ID generation
 - [x] mbuzz-ruby: Add ip/user_agent/identifier to all calls
@@ -295,6 +439,14 @@ Sources:
 - [x] mbuzz-python: Same changes (v0.7.0 published to PyPI)
 - [x] mbuzz-php: Same changes (v0.7.0 published to Packagist)
 - [x] Update SDK documentation (READMEs updated)
+
+### Phase 6: Browser SDK Updates ✅ COMPLETE
+
+- [x] mbuzz-shopify: Remove session cookie (`_mbuzz_sid`)
+- [x] mbuzz-shopify: Remove client-side session ID generation
+- [x] mbuzz-shopify: Add `user_agent` to event/conversion payloads
+- [x] mbuzz-shopify: Update README to remove session cookie references
+- [x] mbuzz-shopify: Deployed to Shopify (mbuzz-attribution-5, 2026-01-10)
 
 ---
 
@@ -567,6 +719,9 @@ ORDER BY 1;
 | 2026-01-09 | Phase 0: Critical Fixes | **COMPLETE** |
 | 2026-01-09 | Phase 4: SDK Simplification (all SDKs) | **COMPLETE** |
 | 2026-01-09 | Phase 5: Documentation | **COMPLETE** |
+| 2026-01-10 | Spec Review - Shopify SDK gap identified | Resolved |
+| 2026-01-10 | Phase 6: Browser SDK Updates | **COMPLETE** |
+| 2026-01-10 | mbuzz-shopify deployed to Shopify | mbuzz-attribution-5 |
 
 ### Phase 0 Fix Details (2026-01-09)
 

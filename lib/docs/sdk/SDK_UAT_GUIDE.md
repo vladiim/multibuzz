@@ -686,7 +686,7 @@ Additional tests specific to Rails integration:
 |------|-------------|---------------|
 | R1 | Middleware auto-captures request URL | URL captured from `request.original_url` |
 | R2 | Middleware auto-captures referrer | Referrer captured from `request.referrer` |
-| R3 | Cookie management (_mbuzz_vid, _mbuzz_sid) | Cookies set/read correctly |
+| R3 | Cookie management (_mbuzz_vid only, v0.7.0+) | Visitor cookie set; NO session cookie |
 | R4 | Thread-safe request context | Concurrent requests don't leak data |
 | R5 | Background job tracking | `Mbuzz.track` works from Sidekiq/ActiveJob |
 | R6 | Silent failures | Network errors don't raise exceptions |

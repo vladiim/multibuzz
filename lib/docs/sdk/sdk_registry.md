@@ -2,21 +2,37 @@
 
 **Purpose**: Central registry of all mbuzz SDKs with version info, status, and maintenance notes.
 
-**Last Updated**: 2025-11-29
+**Last Updated**: 2026-01-10
 
 ---
 
-## Active SDKs
+## Session Management (v0.7.0+)
+
+**IMPORTANT**: As of SDK v0.7.0, session management has moved to server-side resolution.
+
+| Behavior | Pre-v0.7.0 (Legacy) | v0.7.0+ (Current) |
+|----------|---------------------|-------------------|
+| Session cookie | `_mbuzz_sid` (SDK-managed) | **Removed** - server resolves |
+| Session ID | SDK-generated time-bucket | Server-side sliding window |
+| Required params | `visitor_id`, `session_id` | `visitor_id`, `ip`, `user_agent` |
+| Session timeout | Fixed 30-min buckets | True 30-min sliding window |
+| Cross-device | Not supported | Via `identifier` param |
+
+See [Visitor & Session Tracking Spec](../../specs/1_visitor_session_tracking_spec.md) for details.
+
+---
+
+## Active Server-Side SDKs
 
 ### Ruby SDK
 
-**Repository**: https://github.com/mbuzz-tracking/mbuzz-ruby
+**Repository**: `/Users/vlad/code/m/mbuzz-ruby`
 **Package**: https://rubygems.org/gems/mbuzz
-**Status**: ✅ Production Ready
-**Current Version**: 0.5.0
+**Status**: ✅ Production Ready (v0.7.0)
+**Current Version**: 0.7.0
 
 **Maintainer**: Vlad
-**Last Verified**: 2025-11-29
+**Last Verified**: 2026-01-09
 
 **Framework Support**:
 - ✅ Ruby on Rails (6.0+)
@@ -30,16 +46,15 @@
 - ✅ `Mbuzz.conversion(type, revenue:, **props)` - Track business outcomes
 - ✅ `Mbuzz.identify(user_id, traits:, visitor_id:)` - Link visitor to user + traits
 - ✅ Visitor ID generation (cookie `_mbuzz_vid`, 64 hex chars, 2yr expiry)
-- ✅ Session ID generation (cookie `_mbuzz_sid`, 64 hex chars, 30min expiry)
-- ✅ Session creation (`POST /sessions`) on new session
+- ✅ **Server-side session resolution** (passes `ip`, `user_agent` to API)
+- ✅ **Cross-device identity** (passes `identifier` to API)
 - ✅ URL/referrer auto-enrichment via RequestContext
 
-**Deprecated Methods** (emit warnings, still work):
-- `Mbuzz.configure { }` → use `Mbuzz.init`
-- `Mbuzz.track(...)` → use `Mbuzz.event`
-
-**Removed**:
-- `Mbuzz.alias` → merged into `Mbuzz.identify` with `visitor_id:` param
+**v0.7.0 Changes** (session simplification):
+- ❌ Session cookie (`_mbuzz_sid`) - **REMOVED**
+- ❌ Client-side session ID generation - **REMOVED**
+- ✅ `ip` and `user_agent` passed to all API calls
+- ✅ `identifier` param for cross-device resolution
 
 **Installation**:
 ```ruby
@@ -47,104 +62,94 @@
 gem 'mbuzz'
 ```
 
-**Quick Start**: [Getting Started →](https://mbuzz.co/docs/getting-started)
+---
+
+### Node.js SDK
+
+**Repository**: `/Users/vlad/code/m/mbuzz-node`
+**Package**: https://www.npmjs.com/package/mbuzz
+**Status**: ✅ Production Ready (v0.7.0)
+**Current Version**: 0.7.0
+
+**Framework Support**:
+- ✅ Express.js
+- ✅ Next.js
+- ✅ Nest.js
+- ✅ Plain Node.js
+
+**Features**:
+- ✅ Full 4-Call Model
+- ✅ Server-side session resolution
+- ✅ TypeScript types included
 
 ---
 
-## Planned SDKs
-
 ### Python SDK
 
-**Repository**: https://github.com/mbuzz-tracking/mbuzz-python (not created yet)
-**Package**: https://pypi.org/project/mbuzz/ (not published yet)
-**Status**: 📋 Planned
-**Target Version**: 0.1.0
+**Repository**: `/Users/vlad/code/m/mbuzz-python`
+**Package**: https://pypi.org/project/mbuzz/
+**Status**: ✅ Production Ready (v0.7.0)
+**Current Version**: 0.7.0
 
-**Framework Support** (planned):
-- Django
-- Flask
-- FastAPI
-- Plain Python
+**Framework Support**:
+- ✅ Django
+- ✅ Flask
+- ✅ FastAPI
+- ✅ Plain Python
 
-**Timeline**: Q1 2026
+**Features**:
+- ✅ Full 4-Call Model
+- ✅ Server-side session resolution
 
 ---
 
 ### PHP SDK
 
-**Repository**: https://github.com/mbuzz-tracking/mbuzz-php (not created yet)
-**Package**: https://packagist.org/packages/mbuzz/mbuzz (not published yet)
-**Status**: 📋 Planned
-**Target Version**: 0.1.0
+**Repository**: `/Users/vlad/code/m/mbuzz-php`
+**Package**: https://packagist.org/packages/mbuzz/mbuzz
+**Status**: ✅ Production Ready (v0.7.0)
+**Current Version**: 0.7.0
 
-**Framework Support** (planned):
-- Laravel
-- Symfony
-- WordPress plugin
-- Plain PHP
+**Framework Support**:
+- ✅ Laravel
+- ✅ Symfony
+- ✅ Plain PHP
 
-**Timeline**: Q2 2026
-
----
-
-### Node.js SDK
-
-**Repository**: https://github.com/mbuzz-tracking/mbuzz-node (not created yet)
-**Package**: https://www.npmjs.com/package/mbuzz (not published yet)
-**Status**: 📋 Planned
-**Target Version**: 0.1.0
-
-**Framework Support** (planned):
-- Express.js
-- Next.js
-- Nest.js
-- Plain Node.js
-
-**Timeline**: Q1 2026
+**Features**:
+- ✅ Full 4-Call Model
+- ✅ Server-side session resolution
 
 ---
 
-### Magento 2 Extension
-
-**Repository**: https://github.com/mbuzz-tracking/mbuzz-magento (not created yet)
-**Package**: https://packagist.org/packages/mbuzz/module-tracking (not published yet)
-**Status**: 📋 Planned (Spec Complete)
-**Target Version**: 0.1.0
-
-**Platform Support** (planned):
-- Magento 2.4.x (Open Source)
-- Adobe Commerce (Cloud & On-Premise)
-- PHP 8.1+
-
-**Features** (planned):
-- Server-side purchase tracking (ad-blocker resistant)
-- Automatic page view tracking
-- Add to cart / remove from cart events
-- Customer registration & login (identify)
-- Admin configuration UI
-- Message queue support (RabbitMQ)
-- CLI test commands
-
-**Specification**: [lib/specs/magento_sdk_spec.md](../../specs/magento_sdk_spec.md)
-
-**Timeline**: Q2 2026
-
----
+## Browser/Platform SDKs
 
 ### Shopify App
 
-**Repository**: https://github.com/mbuzz-tracking/mbuzz-shopify (not created yet)
-**Status**: 📋 Planned
-**Target Version**: 0.1.0
+**Repository**: `/Users/vlad/code/m/mbuzz-shopify`
+**Status**: ✅ Production Ready (v0.7.0)
 
-**Features** (planned):
-- Shopify Plus support
-- Order webhook integration
-- Customer event tracking
-- Automatic UTM capture
-- Shopify Admin embedded app
+**Features**:
+- ✅ Shopify theme extension
+- ✅ Checkout pixel integration
+- ✅ Auto page view tracking
+- ✅ Add to cart tracking
+- ✅ Server-side session resolution (passes `user_agent`)
+- ✅ Visitor cookie only (`_mbuzz_vid`)
 
-**Timeline**: Q3 2026
+**v0.7.0 Changes** (2026-01-10):
+- Removed `_mbuzz_sid` session cookie
+- Removed client-side session ID generation
+- Added `user_agent` to all API payloads
+- Server handles session resolution via fingerprinting
+
+---
+
+## Planned SDKs
+
+### Magento 2 Extension
+
+**Status**: 📋 Planned (Spec Complete)
+**Specification**: [lib/specs/magento_sdk_spec.md](../../specs/magento_sdk_spec.md)
 
 ---
 
@@ -154,18 +159,19 @@ gem 'mbuzz'
 
 **Required Methods**:
 ```
-# 1. init(config) - Configure SDK and establish session
-# Internally: Creates session via POST /sessions on new session detection
+# 1. init(config) - Configure SDK
+# Sets up API key, base URL, debug mode
 
 # 2. event(event_type, properties) - Track journey steps
 # Maps to: POST /events
+# Must include: visitor_id, ip, user_agent
 
 # 3. conversion(conversion_type, revenue, properties) - Track business outcomes
 # Maps to: POST /conversions
+# Must include: visitor_id, ip, user_agent
 
 # 4. identify(user_id, traits) - Link visitor to known user
 # Maps to: POST /identify (with visitor_id from cookie)
-# Note: alias() is deprecated - use identify() with visitor_id instead
 ```
 
 **Required Configuration**:
@@ -176,26 +182,27 @@ enabled (default: true)
 debug (default: false)
 ```
 
-**Required Behavior**:
+**Required Behavior (v0.7.0+)**:
 - Auto-generate visitor_id (64 hex chars) and store in cookie `_mbuzz_vid`
-- Auto-generate session_id (64 hex chars) and store in cookie `_mbuzz_sid`
-- Detect new sessions (no cookie or 30+ min expired)
-- POST to `/sessions` on new session (async, non-blocking)
-- Include URL and referrer in session and event calls
+- **DO NOT** manage session cookies - server handles session resolution
+- Pass `ip` and `user_agent` with all event/conversion calls
+- Optionally pass `identifier` for cross-device resolution
+- Include URL and referrer in event properties
 - Never raise exceptions (return false on errors)
 - Log errors if debug mode enabled
 - Send timestamps in ISO8601 format
 
 **See**: [API Contract](./api_contract.md) for complete specification
-**See**: [Identity & Sessions Spec](../../specs/identity_and_sessions_spec.md) for concepts
+**See**: [Visitor & Session Tracking Spec](../../specs/1_visitor_session_tracking_spec.md) for session resolution
 
 ---
 
 ## Version Compatibility Matrix
 
-| Backend Version | Ruby SDK | Python SDK | PHP SDK | Node SDK |
-|----------------|----------|------------|---------|----------|
-| 1.2.0 (current) | 0.5.0+   | N/A        | N/A     | N/A      |
+| Backend Version | Ruby SDK | Python SDK | PHP SDK | Node SDK | Shopify |
+|----------------|----------|------------|---------|----------|---------|
+| 1.4.0 (current) | 0.7.0+ | 0.7.0+ | 0.7.0+ | 0.7.0+ | 0.7.0+ |
+| 1.3.0 | 0.6.0+ | 0.6.0+ | 0.6.0+ | 0.6.0+ | Works (legacy) |
 
 **Breaking Change Policy**:
 - Backend maintains compatibility for 1 major version back
@@ -209,16 +216,17 @@ debug (default: false)
 
 Before releasing any SDK version:
 
-### Code
+### Code (v0.7.0+ Server-Side SDKs)
 - [ ] All methods match API contract
 - [ ] Parameter names match backend expectations
 - [ ] Timestamp format is ISO8601
 - [ ] Error handling never raises exceptions
 - [ ] Tests cover all public methods
 - [ ] Examples in README work
-- [ ] Session creation on new session (POST /sessions)
-- [ ] URL and referrer included in sessions/events
-- [ ] Session detection (cookie missing or expired)
+- [ ] `ip` and `user_agent` included in event/conversion calls
+- [ ] `identifier` param supported for cross-device resolution
+- [ ] URL and referrer included in event properties
+- [ ] **NO** session cookie management (server resolves)
 
 ### Documentation
 - [ ] README updated with new features
@@ -284,6 +292,9 @@ Before releasing any SDK version:
 | Event metadata | `properties` | Hash/Object | No |
 | When it happened | `timestamp` | ISO8601 String | No (auto) |
 | User traits | `traits` | Hash/Object | No |
+| Client IP | `ip` | String | Yes (v0.7.0+) |
+| Client User-Agent | `user_agent` | String | Yes (v0.7.0+) |
+| Cross-device identity | `identifier` | Hash/Object | No |
 
 *Either `user_id` OR `visitor_id` required for `track()`
 

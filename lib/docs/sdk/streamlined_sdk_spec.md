@@ -1,8 +1,12 @@
 # Streamlined SDK Architecture Specification
 
 **Status**: ✅ COMPLETE
-**Last Updated**: 2025-11-29
+**Last Updated**: 2026-01-10
 **Epic**: SDK Simplification & Documentation Overhaul
+
+> **Note**: Session management has been further simplified in SDK v0.7.0.
+> Session cookies (`_mbuzz_sid`) are **no longer used**. Server handles session resolution.
+> See [Visitor & Session Tracking Spec](../../specs/1_visitor_session_tracking_spec.md) for details.
 
 ---
 
@@ -264,20 +268,19 @@ All SDKs MUST implement these 4 methods:
 | `debug` | boolean | No | `false` | Enable debug logging |
 
 **Fixed Values** (not configurable):
-- Session timeout: 30 minutes (cookie expiry)
 - Visitor cookie expiry: 2 years
 - HTTP timeout: 5 seconds
 
-**Internal Behavior**:
+**Internal Behavior (v0.7.0+)**:
 1. Store configuration
 2. Middleware generates/retrieves `visitor_id` from cookie `_mbuzz_vid`
-3. Middleware generates/retrieves `session_id` from cookie `_mbuzz_sid`
-4. If new session detected → POST to `/api/v1/sessions` (async, non-blocking)
-5. Set cookies in response
+3. Middleware captures `ip` and `user_agent` from request
+4. ~~Middleware generates/retrieves `session_id` from cookie `_mbuzz_sid`~~ **REMOVED in v0.7.0**
+5. Pass `ip`, `user_agent` with all API calls - server resolves sessions
 
-**Server-Side SDKs**: Must provide middleware that runs per-request
+**Server-Side SDKs**: Must provide middleware that runs per-request, capturing `ip` and `user_agent`
 
-**Client-Side SDKs**: Called once on page load
+**Client-Side SDKs**: Pass `navigator.userAgent` to API; server extracts IP from HTTP headers
 
 #### `event(event_type, properties)`
 
@@ -289,12 +292,14 @@ All SDKs MUST implement these 4 methods:
 | `event_type` | string | Yes | Event name (e.g., `page_view`, `add_to_cart`) |
 | `properties` | object | No | Custom event properties |
 
-**Auto-enriched by SDK**:
+**Auto-enriched by SDK (v0.7.0+)**:
 - `visitor_id` (from cookie)
-- `session_id` (from cookie)
+- `ip` (from request - server-side SDKs)
+- `user_agent` (from request or navigator.userAgent)
 - `url` (current page URL)
 - `referrer` (document referrer)
 - `timestamp` (ISO8601)
+- ~~`session_id` (from cookie)~~ **REMOVED in v0.7.0** - server resolves
 
 **Maps to**: `POST /api/v1/events`
 

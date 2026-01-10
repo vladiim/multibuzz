@@ -1,7 +1,18 @@
 # Server-Side Attribution Architecture
 
 **Date**: 2025-11-14
-**Updated**: 2025-11-28
+**Updated**: 2026-01-10
+
+> **⚠️ Session Management Updated (v0.7.0+)**
+>
+> This document references client-side session cookies (`_mbuzz_sid`), which have been **deprecated**.
+> As of SDK v0.7.0 and Backend v1.4.0, session resolution is fully server-side:
+> - SDKs pass `ip` and `user_agent` instead of `session_id`
+> - Server calculates device fingerprint: `SHA256(ip|user_agent)[0:32]`
+> - True 30-minute sliding window (not fixed time buckets)
+> - Cross-device sessions via `identifier` param
+>
+> See [Visitor & Session Tracking Spec](../../specs/1_visitor_session_tracking_spec.md) for current implementation.
 
 ---
 

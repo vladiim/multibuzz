@@ -2,7 +2,12 @@
 
 Version: 1.1.0
 Last Updated: 2025-11-28
-Status: **IMPLEMENTED**
+Status: **⚠️ PARTIALLY SUPERSEDED**
+
+> **Important**: Session management sections of this document are outdated.
+> As of SDK v0.7.0, session cookies (`_mbuzz_sid`) are **no longer used**.
+> See [Visitor & Session Tracking Spec](../../specs/1_visitor_session_tracking_spec.md) for current session resolution.
+> See [API Contract](./api_contract.md) for `ip`, `user_agent`, and `identifier` params.
 
 This document defines the requirements for any Multibuzz SDK implementation. All SDKs (Ruby, JavaScript, Python, PHP, etc.) MUST implement this specification to be considered valid.
 
@@ -86,12 +91,16 @@ Test keys (`sk_test_*`) create records with `is_test: true` for isolated testing
 
 ### Session ID
 
+> **⚠️ DEPRECATED (v0.7.0+)**: Session cookies are no longer used. Server resolves sessions based on `ip` + `user_agent` fingerprint with true 30-minute sliding window.
+
 - **Purpose**: Group events within a browsing session
 - **Format**: 64-character hex string (32 bytes)
-- **Generation**: New session on first visit or after 30-minute inactivity
-- **Storage**: Cookie named `_mbuzz_sid` (or SDK-specific prefix)
-- **Expiry**: 30 minutes (sliding)
-- **Cookie attributes**: `HttpOnly; SameSite=Lax; Secure (in production); Path=/`
+- ~~**Generation**: New session on first visit or after 30-minute inactivity~~
+- ~~**Storage**: Cookie named `_mbuzz_sid` (or SDK-specific prefix)~~
+- ~~**Expiry**: 30 minutes (sliding)~~
+- ~~**Cookie attributes**: `HttpOnly; SameSite=Lax; Secure (in production); Path=/`~~
+
+**v0.7.0+ Behavior**: SDKs pass `ip` and `user_agent` to the API. Server calculates device fingerprint and resolves session with true sliding window.
 
 ### User ID
 
