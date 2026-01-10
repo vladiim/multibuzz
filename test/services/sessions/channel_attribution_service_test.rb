@@ -179,11 +179,12 @@ class Sessions::ChannelAttributionServiceTest < ActiveSupport::TestCase
     assert_equal Channels::PAID_SEARCH, service({}, "https://facebook.com", { gclid: "abc" }).call
   end
 
-  test "utm takes priority over click_id" do
-    # utm says email, click_id says paid_search
+  test "click_id takes priority over utm (GA4 alignment)" do
+    # click_id is most reliable signal for paid traffic
+    # gclid says paid_search, utm says email - trust the click_id
     utm_data = { utm_medium: "email" }
 
-    assert_equal Channels::EMAIL, service(utm_data, nil, { gclid: "abc" }).call
+    assert_equal Channels::PAID_SEARCH, service(utm_data, nil, { gclid: "abc" }).call
   end
 
   # ==========================================
@@ -252,11 +253,12 @@ class Sessions::ChannelAttributionServiceTest < ActiveSupport::TestCase
     end
   end
 
-  test "utm_medium takes priority over plcid" do
-    # If someone explicitly set utm_medium, respect that
+  test "plcid takes priority over utm_medium (GA4 alignment)" do
+    # plcid is a Google Places click identifier - most reliable signal
+    # Even with utm_medium set, plcid indicates Google Maps/Business traffic
     utm_data = { utm_medium: "email", utm_term: "plcid_123456789" }
 
-    assert_equal Channels::EMAIL, service(utm_data).call
+    assert_equal Channels::ORGANIC_SEARCH, service(utm_data).call
   end
 
   test "plcid takes priority over referrer" do

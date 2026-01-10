@@ -1,7 +1,7 @@
 # Channel Classification Specification
 
-**Status**: Planning
-**Last Updated**: 2025-12-11
+**Status**: Phase 0-1 Complete, Phase 2-3 Partial
+**Last Updated**: 2026-01-10
 **Priority**: P0 - Critical (Core Product Functionality)
 
 ---
@@ -405,63 +405,85 @@ GA4 maintains 800+ known sources:
 
 ## 8. Implementation Checklist
 
-### Phase 0: Immediate Fixes (P0 - do first)
+### Phase 0: Immediate Fixes (P0) ✅ COMPLETE
 
-- [ ] Create `Sessions::UtmNormalizationService` for UTM value normalization
-  - [ ] Exact alias lookup (from constants)
-  - [ ] Separator normalization (`-` and space → `_`)
-  - [ ] Compound word detection (`paidsocial` → `paid_social`)
-  - [ ] Levenshtein matching for sources only (threshold ≤2)
-  - [ ] Log unmatched values for pattern discovery
-- [ ] Create `Sessions::UrlNormalizationService` for URL/domain normalization
-  - [ ] Lowercase domains
-  - [ ] Strip `www.` prefix
-  - [ ] Decode URL-encoded characters
-- [ ] Fix `utm_medium=paid` to check `utm_source` before classifying
-- [ ] Add `plcid` detection in `utm_term` for Google Places
-- [ ] Configure internal domains filter (stage, localhost, pettechpro)
-- [ ] Tests for Facebook ads with `utm_medium=paid` → paid_social
-- [ ] Tests for all medium alias variations
+- [x] Create `Sessions::UtmNormalizationService` for UTM value normalization ✅
+  - [x] Exact alias lookup (from constants) ✅ `app/constants/utm_aliases.rb`
+  - [x] Separator normalization (`-` and space → `_`) ✅ `MediumNormalizer.parameterize`
+  - [x] Compound word detection (`paidsocial` → `paid_social`) ✅ via alias lookup
+  - [ ] Levenshtein matching for sources only (threshold ≤2) - SKIPPED (risk vs benefit)
+  - [ ] Log unmatched values for pattern discovery - NOT DONE
+- [x] Create `Sessions::UrlNormalizationService` for URL/domain normalization ✅
+  - [x] Lowercase domains ✅
+  - [x] Strip `www.` prefix ✅
+  - [x] Decode URL-encoded characters ✅
+- [x] Fix `utm_medium=paid` to check `utm_source` before classifying ✅
+  - Lambda `paid_channel` checks `social_source?` in `ChannelAttributionService`
+- [x] Add `plcid` detection in `utm_term` for Google Places ✅
+  - `ClickIdentifiers.plcid?` method with `PLCID_PATTERN`
+- [ ] Configure internal domains filter (stage, localhost, pettechpro) - PARTIAL
+  - Basic `internal_referrer?` check exists (compares page_host)
+  - Per-account `internal_domains` NOT YET IMPLEMENTED
+- [x] Tests for Facebook ads with `utm_medium=paid` → paid_social ✅
+  - `channel_attribution_service_test.rb:150`
+- [x] Tests for all medium alias variations ✅
+  - `utm_normalization_service_test.rb`
 
-### Phase 1: Click Identifier Detection (P0)
+### Phase 1: Click Identifier Detection (P0) ✅ COMPLETE
 
-- [ ] Create `app/constants/click_identifiers.rb`
-- [ ] Create `Sessions::ClickIdCaptureService`
-- [ ] Add migration for click_id columns on sessions
-- [ ] Update `ChannelAttributionService` to check click IDs first
-- [ ] Update event/session processing to extract click IDs
-- [ ] Tests for gclid, msclkid, fbclid, gbraid, etc.
+- [x] Create `app/constants/click_identifiers.rb` ✅
+  - 17 click IDs: gclid, gbraid, wbraid, dclid, gclsrc, msclkid, fbclid, ttclid, li_fat_id, twclid, epik, sclid, ScCid, rdt_cid, qclid, vmcid, yclid, sznclid
+- [x] Create `Sessions::ClickIdCaptureService` ✅
+  - Extracts click IDs from URL params
+  - `infer_source()` and `infer_channel()` methods
+- [ ] Add migration for click_id columns on sessions - NOT DONE
+  - Click IDs extracted but not persisted to session columns
+- [x] Update `ChannelAttributionService` to check click IDs ✅
+  - 2026-01-10: Now checks click IDs FIRST (GA4 alignment)
+- [x] Update event/session processing to extract click IDs ✅
+- [x] Tests for gclid, msclkid, fbclid, gbraid, etc. ✅
+  - `click_id_capture_service_test.rb`
+  - `channel_attribution_service_test.rb:165-180`
 
-### Phase 2: Enhanced UTM Patterns (P1)
+### Phase 2: Enhanced UTM Patterns (P1) ✅ MOSTLY COMPLETE
 
-- [ ] Expand all pattern variations (hyphens, underscores, no separator)
-- [ ] Add paid/organic detection for video channel
-- [ ] Add new channel patterns (audio, sms, push, shopping)
-- [ ] Tests for all pattern variations
+- [x] Expand all pattern variations (hyphens, underscores, no separator) ✅
+  - `utm_aliases.rb` covers all variations
+- [ ] Add paid/organic detection for video channel - NOT DONE
+  - Currently single `video` channel (GA4 has `paid_video`/`organic_video`)
+- [ ] Add new channel patterns (audio, sms, push, shopping) - NOT DONE
+  - 11 channels vs GA4's 18
+- [x] Tests for all pattern variations ✅
 
-### Phase 3: Source Category Database (P1)
+### Phase 3: Source Category Database (P1) ✅ COMPLETE
 
-- [ ] Create `source_categories` table and model
-- [ ] Import Snowplow referers.yml
-- [ ] Create `SourceCategories::LookupService`
-- [ ] Update classification to use source categories
-- [ ] Schedule daily sync job
+- [x] Create `source_categories` table and model ✅
+  - Named `referrer_sources` table with `ReferrerSource` model
+- [x] Import Snowplow referers.yml ✅
+  - Plus Matomo search engines, social networks, spam list
+- [x] Create `SourceCategories::LookupService` ✅
+  - `ReferrerSources::LookupService` with caching
+- [x] Update classification to use source categories ✅
+  - `channel_from_lookup` in `ChannelAttributionService`
+- [x] Schedule daily sync job ✅
+  - `ReferrerSources::SyncService`
 
-### Phase 4: Internal Traffic Filtering (P1)
+### Phase 4: Internal Traffic Filtering (P1) - PARTIAL
 
-- [ ] Add `internal_domains` column to accounts
-- [ ] UI in account settings to configure internal domains
-- [ ] Filter internal traffic from attribution
-- [ ] Option to mark as `internal` channel vs exclude entirely
+- [ ] Add `internal_domains` column to accounts - NOT DONE
+- [ ] UI in account settings to configure internal domains - NOT DONE
+- [x] Filter internal traffic from attribution ✅
+  - Basic `internal_referrer?` compares referrer to page_host
+- [ ] Option to mark as `internal` channel vs exclude entirely - NOT DONE
 
-### Phase 5: LLM-Assisted Review (P2)
+### Phase 5: LLM-Assisted Review (P2) - NOT STARTED
 
 - [ ] Background job to review "other" channel sessions
 - [ ] LLM prompt for channel suggestion
 - [ ] Admin UI for reviewing suggestions
 - [ ] Weekly pattern suggestion report
 
-### Phase 6: Backfill & Verification (P1)
+### Phase 6: Backfill & Verification (P1) - NOT STARTED
 
 - [ ] Backfill script to re-extract click IDs from event URLs
 - [ ] Re-classify existing sessions

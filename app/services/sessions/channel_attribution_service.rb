@@ -43,10 +43,14 @@ module Sessions
     end
 
     def call
+      # GA4-aligned classification hierarchy:
+      # 1. Click identifiers (most reliable signal for paid traffic)
+      # 2. UTM parameters (explicit tagging)
+      # 3. Referrer patterns (fallback)
+      return channel_from_click_ids if click_ids.any?
+      return Channels::ORGANIC_SEARCH if plcid_present?
       return channel_from_utm_or_fallback if utm_medium.present?
       return channel_from_utm_source if utm_source.present?
-      return Channels::ORGANIC_SEARCH if plcid_present?
-      return channel_from_click_ids if click_ids.any?
       return Channels::DIRECT if internal_referrer?
       return channel_from_referrer if referrer_domain.present?
 
