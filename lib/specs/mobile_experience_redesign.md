@@ -322,10 +322,10 @@ Based on research from [Toptal](https://www.toptal.com/designers/dashboard-desig
 3. ✅ KPI card grid and padding (`gap-2 sm:gap-4`, `p-3 sm:p-5`)
 4. ✅ Test/Live toggle relocation + persistence (moved to Account Settings, database-backed)
 
-### Sprint 2: Navigation & Tables ✅ PARTIALLY COMPLETE
+### Sprint 2: Navigation & Tables ✅ COMPLETE
 5. ✅ Account nav mobile redesign (vertical stacked list with icons)
 6. ✅ Dashboard tabs spacing (`gap-3 sm:gap-6`)
-7. ⏳ Cohort table horizontal scroll (pending)
+7. ✅ Cohort table horizontal scroll with sticky first column
 8. ✅ Funnel cards stacking (`flex-col sm:flex-row`)
 
 ### Sprint 3: Polish (pending)
