@@ -56,29 +56,8 @@ module Dashboard
       assert_redirected_to login_path
     end
 
-    test "navbar shows test mode toggle when logged in" do
-      get dashboard_path
-
-      assert_response :success
-      assert_select "form[action='#{dashboard_view_mode_path}']", count: 2
-    end
-
-    test "navbar shows Test button active when in test mode" do
-      patch dashboard_view_mode_path, params: { mode: "test" }
-      follow_redirect!
-
-      assert_select "form[action='#{dashboard_view_mode_path}']" do
-        assert_select "button.bg-amber-500", text: "Test"
-      end
-    end
-
-    test "navbar shows Live button active when in production mode" do
-      get dashboard_path
-
-      assert_select "form[action='#{dashboard_view_mode_path}']" do
-        assert_select "button.bg-white", text: "Live"
-      end
-    end
+    # Note: Test/Live toggle moved from nav bar to account settings.
+    # See AccountControllerTest for toggle tests.
 
     test "shows test mode banner when in test mode" do
       patch dashboard_view_mode_path, params: { mode: "test" }
@@ -95,18 +74,12 @@ module Dashboard
       assert_select "[data-testid='test-mode-banner']", count: 0
     end
 
-    test "defaults to test mode when onboarding is incomplete" do
-      # Use user:three who only has one account membership (admin in account:one)
-      # This avoids the primary_account ambiguity when a user has multiple memberships
+    test "defaults to test mode when live_mode_enabled is false" do
       single_account_user = users(:three)
       target_account = accounts(:one)
 
-      # Start fresh with no view_mode in session
       reset!
-
-      # Reset the account to incomplete onboarding
-      target_account.update!(onboarding_progress: 1)
-      assert_not target_account.reload.onboarding_complete?, "Account should have incomplete onboarding"
+      target_account.update!(live_mode_enabled: false)
 
       sign_in_as(single_account_user)
       get dashboard_path
@@ -116,16 +89,12 @@ module Dashboard
       assert_select "[data-testid='test-mode-banner']"
     end
 
-    test "defaults to production mode when onboarding is complete" do
-      # Use user:three who only has one account membership (admin in account:one)
+    test "defaults to production mode when live_mode_enabled is true" do
       single_account_user = users(:three)
       target_account = accounts(:one)
 
-      # Start fresh with no view_mode in session
       reset!
-
-      # Complete onboarding
-      target_account.update!(onboarding_progress: (1 << Account::Onboarding::ONBOARDING_STEPS.size) - 1)
+      target_account.update!(live_mode_enabled: true)
 
       sign_in_as(single_account_user)
       get dashboard_path
@@ -134,13 +103,12 @@ module Dashboard
       assert_select "[data-testid='test-mode-banner']", count: 0
     end
 
-    test "user can still switch to production mode even with incomplete onboarding" do
-      # Start fresh with incomplete onboarding
+    test "user can still switch to production mode even when live_mode is disabled" do
       reset!
-      Account.find(account.id).update!(onboarding_progress: 1)
+      Account.find(account.id).update!(live_mode_enabled: false)
       sign_in_as(user)
 
-      # User explicitly switches to production mode
+      # User explicitly switches to production mode via session
       patch dashboard_view_mode_path, params: { mode: "production" }
       follow_redirect!
 

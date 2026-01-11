@@ -18,9 +18,6 @@
       <% if current_user %>
         <!-- Signed In: Account & User Dropdowns -->
         <div class="flex items-center gap-3">
-          <!-- Test/Live Mode Toggle -->
-          <%= render "layouts/view_mode_toggle" %>
-
           <!-- Account Dropdown -->
           <div data-controller="toggle" data-toggle-close-on-click-outside-value="true" class="relative">
             <button type="button" data-action="click->toggle#toggle" class="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:text-gray-900 rounded-md hover:bg-gray-50">

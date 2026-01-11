@@ -78,6 +78,41 @@ class AccountControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to login_path
   end
 
+  # --- Live Mode Toggle ---
+
+  test "update enables live mode" do
+    sign_in
+
+    patch account_path, params: { account: { live_mode_enabled: true } }
+
+    assert_redirected_to account_path
+    assert account.reload.live_mode_enabled?
+    assert_equal "Live mode enabled. Dashboard now shows production data.", flash[:notice]
+  end
+
+  test "update disables live mode" do
+    sign_in
+    account.update!(live_mode_enabled: true)
+
+    patch account_path, params: { account: { live_mode_enabled: false } }
+
+    assert_redirected_to account_path
+    assert_not account.reload.live_mode_enabled?
+    assert_equal "Test mode enabled. Dashboard now shows test data.", flash[:notice]
+  end
+
+  test "live mode persists across sessions" do
+    sign_in
+    account.update!(live_mode_enabled: true)
+
+    # Logout and login again
+    delete logout_path
+    sign_in
+
+    get dashboard_path
+    assert_response :success
+  end
+
   private
 
   def sign_in

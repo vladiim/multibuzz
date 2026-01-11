@@ -26,7 +26,8 @@ class ApplicationController < ActionController::Base
   def default_view_mode
     return DEFAULT_VIEW_MODE unless current_account
 
-    current_account.onboarding_complete? ? DEFAULT_VIEW_MODE : "test"
+    # Respect persistent live_mode_enabled setting
+    current_account.live_mode_enabled? ? DEFAULT_VIEW_MODE : "test"
   end
 
   def test_mode?

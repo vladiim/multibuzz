@@ -5,10 +5,10 @@
 <% prior_value = local_assigns[:prior_value] %>
 
 <div class="flex items-center gap-1.5">
-  <dt class="text-sm font-medium text-gray-500"><%= label %></dt>
+  <dt class="text-xs sm:text-sm font-medium text-gray-500"><%= label %></dt>
 </div>
 <dd class="mt-1">
-  <span class="text-2xl font-semibold text-gray-900">
+  <span class="text-lg sm:text-2xl font-semibold text-gray-900">
     <%= value.present? ? format_metric(value, type: type) : "—" %>
   </span>
   <% if prior_value.present? %>

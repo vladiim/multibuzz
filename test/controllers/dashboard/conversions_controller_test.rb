@@ -5,8 +5,8 @@ require "test_helper"
 module Dashboard
   class ConversionsControllerTest < ActionDispatch::IntegrationTest
     setup do
-      # Complete onboarding so default view mode is production
-      accounts(:one).update!(onboarding_progress: (1 << Account::Onboarding::ONBOARDING_STEPS.size) - 1)
+      # Enable live mode so default view mode is production
+      accounts(:one).update!(live_mode_enabled: true)
       sign_in_as users(:one)
       AttributionCredit.delete_all
       Conversion.where(account: account).delete_all
@@ -176,7 +176,8 @@ module Dashboard
         visitor: visitors(:one),
         conversion_type: "purchase",
         revenue: 100,
-        converted_at: 5.days.ago
+        converted_at: 5.days.ago,
+        is_test: false
       )
 
       account.attribution_credits.create!(
@@ -194,7 +195,8 @@ module Dashboard
       conversion = account.conversions.create!(
         visitor: visitors(:one),
         conversion_type: "purchase",
-        converted_at: 5.days.ago
+        converted_at: 5.days.ago,
+        is_test: false
       )
 
       # 2 different channels for this conversion
@@ -222,17 +224,20 @@ module Dashboard
       s1 = account.sessions.create!(
         visitor: visitors(:one),
         session_id: "sess_101",
-        started_at: 10.days.ago
+        started_at: 10.days.ago,
+        is_test: false
       )
       s2 = account.sessions.create!(
         visitor: visitors(:one),
         session_id: "sess_102",
-        started_at: 7.days.ago
+        started_at: 7.days.ago,
+        is_test: false
       )
       s3 = account.sessions.create!(
         visitor: visitors(:one),
         session_id: "sess_103",
-        started_at: 5.days.ago
+        started_at: 5.days.ago,
+        is_test: false
       )
 
       # Create conversion with 3 sessions in journey
@@ -240,7 +245,8 @@ module Dashboard
         visitor: visitors(:one),
         conversion_type: "purchase",
         converted_at: 5.days.ago,
-        journey_session_ids: [s1.id, s2.id, s3.id]
+        journey_session_ids: [s1.id, s2.id, s3.id],
+        is_test: false
       )
 
       # Create credit (only 1 needed for first touch)

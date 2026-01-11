@@ -5,8 +5,8 @@ require "test_helper"
 module Dashboard
   class SetupGuidanceBannerTest < ActionDispatch::IntegrationTest
     setup do
-      # Complete onboarding so default view mode is production
-      account.update!(onboarding_progress: (1 << Account::Onboarding::ONBOARDING_STEPS.size) - 1)
+      # Enable live mode so default view mode is production
+      account.update!(live_mode_enabled: true)
       # Clear any existing data
       account.api_keys.destroy_all
       account.events.destroy_all
@@ -119,8 +119,8 @@ module Dashboard
     # ==========================================
 
     test "hides all setup banners in test mode" do
-      # Reset onboarding so default is test mode
-      account.update!(onboarding_progress: 1)
+      # Disable live mode so default is test mode
+      account.update!(live_mode_enabled: false)
       sign_in_as(user)
       get dashboard_path
 

@@ -5,8 +5,8 @@ require "test_helper"
 module Dashboard
   class ConversionFiltersControllerTest < ActionDispatch::IntegrationTest
     setup do
-      # Complete onboarding so default view mode is production
-      accounts(:one).update!(onboarding_progress: (1 << Account::Onboarding::ONBOARDING_STEPS.size) - 1)
+      # Enable live mode so default view mode is production
+      accounts(:one).update!(live_mode_enabled: true)
       sign_in_as users(:one)
     end
 
@@ -307,7 +307,8 @@ module Dashboard
         conversion_type: conversion_type,
         funnel: funnel,
         properties: properties,
-        converted_at: Time.current
+        converted_at: Time.current,
+        is_test: false  # Create production data since we're testing in production mode
       )
     end
   end

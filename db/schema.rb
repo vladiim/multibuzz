@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_29_223010) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_10_090440) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -70,6 +70,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_29_223010) do
     t.datetime "onboarding_skipped_at"
     t.string "shopify_domain"
     t.string "shopify_webhook_secret"
+    t.boolean "live_mode_enabled", default: false, null: false
     t.index ["billing_status"], name: "index_accounts_on_billing_status"
     t.index ["free_until"], name: "index_accounts_on_free_until"
     t.index ["payment_failed_at"], name: "index_accounts_on_payment_failed_at"
@@ -400,9 +401,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_29_223010) do
   add_foreign_key "visitors", "accounts"
   add_foreign_key "visitors", "identities"
 
-  # NOTE: TimescaleDB hypertables and continuous aggregates are excluded from schema.rb
-  # They are created via migrations which skip in test environment.
-  # Production uses db:migrate which runs the TimescaleDB migrations.
-  # See: create_hypertable for events and sessions
-  # See: create_continuous_aggregate for channel_attribution_daily, source_attribution_daily
+  # TimescaleDB features excluded from schema.rb (test environments don't support them).
+  # Production uses db:migrate which runs the migrations with TimescaleDB calls.
+  # Excluded:
+  # - create_hypertable "events" (7 day chunks, compression)
+  # - create_hypertable "sessions" (7 day chunks, compression)
+  # - create_continuous_aggregate "channel_attribution_daily"
+  # - create_continuous_aggregate "source_attribution_daily"
 end
