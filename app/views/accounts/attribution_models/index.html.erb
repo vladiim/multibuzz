@@ -8,31 +8,28 @@
 
         <div class="flex-1 space-y-4 md:space-y-6">
           <%= render "layouts/account_nav_tabs" %>
-          <%# Header %>
-          <div class="flex items-center justify-between">
+          <%# Header - stacks on mobile %>
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <h1 class="text-xl font-semibold text-gray-900">Attribution Models</h1>
+              <h1 class="text-lg sm:text-xl font-semibold text-gray-900">Attribution Models</h1>
               <p class="mt-1 text-sm text-gray-500">Configure how conversion credit is distributed across touchpoints</p>
             </div>
             <% if current_account.can_create_custom_model? %>
               <%= link_to new_account_attribution_model_path,
-                class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700" do %>
+                class: "inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 whitespace-nowrap" do %>
                 <svg class="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                 </svg>
-                Create Custom Model
+                Create Model
               <% end %>
             <% elsif current_account.can_edit_full_aml? %>
-              <span class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-500 bg-gray-100 cursor-not-allowed">
-                <svg class="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                </svg>
+              <span class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-500 bg-gray-100 cursor-not-allowed whitespace-nowrap">
                 Limit Reached (<%= current_account.custom_models_count %>/<%= current_account.custom_model_limit %>)
               </span>
             <% else %>
               <%= link_to account_billing_path,
-                class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700" do %>
-                Upgrade to Create Custom Models
+                class: "inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 whitespace-nowrap" do %>
+                Upgrade for Custom Models
               <% end %>
             <% end %>
           </div>
@@ -60,10 +57,10 @@
             <ul class="divide-y divide-gray-200">
               <% @templates.each do |template| %>
                 <% model = @preset_models.find { |m| m.algorithm == template[:key].to_s } %>
-                <li class="px-6 py-4 hover:bg-gray-50">
-                  <div class="flex items-center justify-between">
+                <li class="px-4 sm:px-6 py-4 hover:bg-gray-50">
+                  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div class="flex-1 min-w-0">
-                      <div class="flex items-center gap-2">
+                      <div class="flex items-center gap-2 flex-wrap">
                         <h3 class="text-sm font-medium text-gray-900"><%= template[:name] %></h3>
                         <% if model&.is_default? %>
                           <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
@@ -79,9 +76,9 @@
                           </span>
                         <% end %>
                       </div>
-                      <p class="mt-1 text-sm text-gray-500 truncate"><%= template[:description] %></p>
+                      <p class="mt-1 text-sm text-gray-500"><%= template[:description] %></p>
                     </div>
-                    <div class="flex items-center gap-2 ml-4">
+                    <div class="flex items-center gap-2 flex-wrap">
                       <% if model %>
                         <% unless model.is_default? %>
                           <%= button_to set_default_account_attribution_model_path(model),
@@ -103,21 +100,17 @@
                           <%= button_to rerun_account_attribution_model_path(model),
                             method: :post,
                             class: "inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-emerald-600 hover:bg-emerald-700",
-                            title: "Run attribution on #{model.pending_conversions_count} pending conversions" do %>
-                            <svg class="-ml-0.5 mr-1.5 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            title: "Run attribution" do %>
+                            <svg class="-ml-0.5 mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            Run Model
+                            Run
                           <% end %>
                         <% end %>
                         <%= link_to edit_account_attribution_model_path(model),
                           class: "inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-indigo-600 hover:bg-indigo-700" do %>
-                          <% if current_account.can_edit_full_aml? %>
-                            Edit
-                          <% else %>
-                            Configure
-                          <% end %>
+                          Edit
                         <% end %>
                       <% end %>
                     </div>
@@ -137,10 +130,10 @@
               <% if @custom_models.any? %>
                 <ul class="divide-y divide-gray-200">
                   <% @custom_models.each do |model| %>
-                    <li class="px-6 py-4 hover:bg-gray-50">
-                      <div class="flex items-center justify-between">
+                    <li class="px-4 sm:px-6 py-4 hover:bg-gray-50">
+                      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div class="flex-1 min-w-0">
-                          <div class="flex items-center gap-2">
+                          <div class="flex items-center gap-2 flex-wrap">
                             <h3 class="text-sm font-medium text-gray-900"><%= model.name %></h3>
                             <% if model.is_default? %>
                               <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
@@ -157,7 +150,7 @@
                             Created <%= time_ago_in_words(model.created_at) %> ago
                           </p>
                         </div>
-                        <div class="flex items-center gap-2 ml-4">
+                        <div class="flex items-center gap-2 flex-wrap">
                           <% unless model.is_default? %>
                             <%= button_to set_default_account_attribution_model_path(model),
                               method: :post,
@@ -169,12 +162,12 @@
                             <%= button_to rerun_account_attribution_model_path(model),
                               method: :post,
                               class: "inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-emerald-600 hover:bg-emerald-700",
-                              title: "Run attribution on #{model.pending_conversions_count} pending conversions" do %>
-                              <svg class="-ml-0.5 mr-1.5 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              title: "Run attribution" do %>
+                              <svg class="-ml-0.5 mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                               </svg>
-                              Run Model
+                              Run
                             <% end %>
                           <% end %>
                           <%= link_to edit_account_attribution_model_path(model),
