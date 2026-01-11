@@ -85,8 +85,8 @@
             </div>
           </div>
 
-          <!-- Collapsible Filters Bar (pushes content down) -->
-          <div data-toggle-target="filters" class="hidden py-4">
+          <!-- Desktop: Collapsible Filters Bar (hidden on mobile) -->
+          <div data-toggle-target="filters" class="hidden sm:hidden py-4">
             <%= turbo_frame_tag "filters_#{current_account.prefix_id}",
               src: dashboard_filters_path(request.query_parameters),
               loading: :lazy do %>
@@ -99,6 +99,42 @@
                 </div>
               </div>
             <% end %>
+          </div>
+
+          <!-- Mobile: Bottom Sheet Filter Panel -->
+          <div id="filter-backdrop"
+            class="hidden sm:hidden fixed inset-0 bg-black/50 z-40"
+            data-action="click->toggle#closeMobileFilters">
+          </div>
+          <div id="filter-sheet"
+            class="sm:hidden fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-2xl shadow-xl transform translate-y-full transition-transform duration-200 ease-out max-h-[85vh] overflow-hidden flex flex-col">
+            <!-- Drag handle -->
+            <div class="flex justify-center pt-3 pb-2">
+              <div class="w-10 h-1 bg-gray-300 rounded-full"></div>
+            </div>
+            <!-- Header -->
+            <div class="flex items-center justify-between px-4 pb-3 border-b border-gray-200">
+              <h3 class="text-lg font-semibold text-gray-900">Filters</h3>
+              <button type="button"
+                data-action="click->toggle#closeMobileFilters"
+                class="p-2 -mr-2 text-gray-400 hover:text-gray-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <!-- Filter content -->
+            <div class="flex-1 overflow-y-auto p-4">
+              <%= turbo_frame_tag "filters_mobile_#{current_account.prefix_id}",
+                src: dashboard_filters_path(request.query_parameters.merge(mobile: true)),
+                loading: :lazy do %>
+                <div class="space-y-4 animate-pulse">
+                  <div class="h-16 bg-gray-200 rounded"></div>
+                  <div class="h-16 bg-gray-200 rounded"></div>
+                  <div class="h-16 bg-gray-200 rounded"></div>
+                </div>
+              <% end %>
+            </div>
           </div>
 
           <!-- Tab Content -->

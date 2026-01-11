@@ -1,6 +1,6 @@
-<%= turbo_frame_tag "filters_#{current_account.prefix_id}" do %>
-  <div class="dashboard-filters bg-white p-4 rounded-lg shadow">
-    <form action="<%= dashboard_path %>" method="get" data-turbo-frame="_top" class="flex flex-wrap gap-4 items-end">
+<%= turbo_frame_tag @mobile ? "filters_mobile_#{current_account.prefix_id}" : "filters_#{current_account.prefix_id}" do %>
+  <div class="dashboard-filters <%= 'bg-white p-4 rounded-lg shadow' unless @mobile %>">
+    <form action="<%= dashboard_path %>" method="get" data-turbo-frame="_top" class="<%= @mobile ? 'flex flex-col gap-4' : 'flex flex-wrap gap-4 items-end' %>">
       <!-- Preserve params not controlled by this form -->
       <%= hidden_field_tag :metric, @filter_params[:metric] %>
       <%= hidden_field_tag :journey_position, @filter_params[:journey_position] %>
@@ -9,10 +9,10 @@
       <% is_custom = @filter_params[:date_range].is_a?(Hash) %>
       <div class="filter-group" data-controller="toggle">
         <label class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
-        <div class="flex items-center gap-2">
+        <div class="<%= @mobile ? 'flex flex-col gap-2' : 'flex items-center gap-2' %>">
           <select name="date_range"
             data-action="change->toggle#handleDateRange"
-            class="block w-36 px-3 py-2 text-sm border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            class="block <%= @mobile ? 'w-full' : 'w-36' %> px-3 py-2 text-sm border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
             <option value="7d" <%= 'selected' if @filter_params[:date_range] == '7d' %>>Last 7 Days</option>
             <option value="30d" <%= 'selected' if @filter_params[:date_range] == '30d' %>>Last 30 Days</option>
             <option value="90d" <%= 'selected' if @filter_params[:date_range] == '90d' %>>Last 90 Days</option>
@@ -21,11 +21,11 @@
           <div data-toggle-target="content" class="<%= 'hidden' unless is_custom %> flex items-center gap-2">
             <input type="date" name="start_date"
               value="<%= is_custom ? @filter_params[:date_range][:start_date] : '' %>"
-              class="block px-2 py-2 text-sm border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              class="block <%= @mobile ? 'flex-1' : '' %> px-2 py-2 text-sm border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
             <span class="text-gray-500">–</span>
             <input type="date" name="end_date"
               value="<%= is_custom ? @filter_params[:date_range][:end_date] : '' %>"
-              class="block px-2 py-2 text-sm border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              class="block <%= @mobile ? 'flex-1' : '' %> px-2 py-2 text-sm border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
           </div>
         </div>
       </div>
@@ -41,7 +41,7 @@
         <div class="relative">
           <button type="button"
             data-action="click->toggle#toggle"
-            class="w-48 px-3 py-2 text-sm text-left border border-gray-300 rounded bg-white flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            class="<%= @mobile ? 'w-full' : 'w-48' %> px-3 py-2 text-sm text-left border border-gray-300 rounded bg-white flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-indigo-500">
             <span data-limited-checkbox-target="label">
               <%= @filter_params[:models]&.length.to_i > 0 ? "#{@filter_params[:models].length} model#{'s' if @filter_params[:models].length > 1}" : "Select models" %>
             </span>
@@ -98,7 +98,7 @@
         <div class="relative">
           <button type="button"
             data-action="click->toggle#toggle"
-            class="w-44 px-3 py-2 text-sm text-left border border-gray-300 rounded bg-white flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            class="<%= @mobile ? 'w-full' : 'w-44' %> px-3 py-2 text-sm text-left border border-gray-300 rounded bg-white flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-indigo-500">
             <span data-checkbox-group-target="label">
               <%= @filter_params[:channels].length == Channels::ALL.length ? 'All Channels' : "#{@filter_params[:channels].length} selected" %>
             </span>
@@ -138,9 +138,9 @@
         filters: filters %>
 
       <!-- Apply Button -->
-      <div class="filter-group">
-        <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-          Apply
+      <div class="filter-group <%= 'mt-2' if @mobile %>">
+        <button type="submit" class="<%= @mobile ? 'w-full' : '' %> px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          Apply Filters
         </button>
       </div>
     </form>

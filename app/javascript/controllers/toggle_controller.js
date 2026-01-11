@@ -101,10 +101,65 @@ export default class extends Controller {
     })
   }
 
-  // Toggle filters panel specifically
+  // Toggle filters panel - bottom sheet on mobile, inline on desktop
   toggleFilters() {
+    const isMobile = window.innerWidth < 640
+    if (isMobile) {
+      this.toggleMobileFilters()
+    } else {
+      this.toggleDesktopFilters()
+    }
+  }
+
+  toggleDesktopFilters() {
     if (this.hasFiltersTarget) {
       this.filtersTarget.classList.toggle(this.hiddenClass)
+    }
+  }
+
+  toggleMobileFilters() {
+    const sheet = document.getElementById("filter-sheet")
+    const backdrop = document.getElementById("filter-backdrop")
+    if (!sheet) return
+
+    const isOpen = !sheet.classList.contains("translate-y-full")
+    if (isOpen) {
+      this.closeMobileFilters()
+    } else {
+      this.openMobileFilters()
+    }
+  }
+
+  openMobileFilters() {
+    const sheet = document.getElementById("filter-sheet")
+    const backdrop = document.getElementById("filter-backdrop")
+    if (!sheet) return
+
+    backdrop?.classList.remove("hidden")
+    requestAnimationFrame(() => {
+      sheet.classList.remove("translate-y-full")
+    })
+    document.body.style.overflow = "hidden"
+
+    this._boundEscapeHandler = (e) => {
+      if (e.key === "Escape") this.closeMobileFilters()
+    }
+    document.addEventListener("keydown", this._boundEscapeHandler)
+  }
+
+  closeMobileFilters() {
+    const sheet = document.getElementById("filter-sheet")
+    const backdrop = document.getElementById("filter-backdrop")
+    if (!sheet) return
+
+    sheet.classList.add("translate-y-full")
+    setTimeout(() => {
+      backdrop?.classList.add("hidden")
+    }, 200)
+    document.body.style.overflow = ""
+
+    if (this._boundEscapeHandler) {
+      document.removeEventListener("keydown", this._boundEscapeHandler)
     }
   }
 
