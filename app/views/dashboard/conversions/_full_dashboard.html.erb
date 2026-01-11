@@ -3,8 +3,8 @@
 <% prior = totals[:prior_period] %>
 <% selected_metric = @filter_params[:metric] %>
 
-<!-- KPI Cards -->
-<div class="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 mb-6">
+<!-- KPI Cards: 1 col on phones, 2 on sm+, 3 on lg+ -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
   <%= render "dashboard/conversions/kpi_card",
     metric: "conversions",
     label: "Conversions",

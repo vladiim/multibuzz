@@ -87,7 +87,7 @@ module Dashboard
 
       assert_response :success
       # Should have 6 KPIs: conversions, revenue, aov, avg_days, avg_channels, avg_visits
-      assert_select ".grid.grid-cols-2.lg\\:grid-cols-3 > *", count: 6
+      assert_select ".grid.grid-cols-1.sm\\:grid-cols-2.lg\\:grid-cols-3 > *", count: 6
     end
 
     # ==========================================
