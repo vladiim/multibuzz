@@ -116,30 +116,7 @@ Based on research from [Toptal](https://www.toptal.com/designers/dashboard-desig
 
 ---
 
-### 1.4 Filters - Bottom Sheet Pattern
-
-**Pattern**: Modal bottom sheet on mobile, inline on desktop
-
-**Mobile Behavior**:
-- Single "Filters" button showing active filter count
-- Tapping opens bottom sheet from viewport bottom
-- Sheet contains full-width stacked filter controls
-- "Apply" button at bottom to confirm and close
-- Background overlay dismisses without applying
-
-**Desktop Behavior**: Current inline horizontal layout (unchanged)
-
-**Specifications**:
-- Sheet max-height: 80vh with internal scroll
-- Rounded top corners (1rem radius)
-- Drag handle indicator at top for discoverability
-- Animate slide-up on open, slide-down on close
-
-**Files**: `filters/show.html.erb`, new `filter_sheet_controller.js`
-
----
-
-### 1.5 Account Navigation - Stacked List Pattern
+### 1.4 Account Navigation - Stacked List Pattern
 
 **Pattern**: Vertical stacked list replacing horizontal tabs on mobile
 
@@ -161,7 +138,7 @@ Based on research from [Toptal](https://www.toptal.com/designers/dashboard-desig
 
 ---
 
-### 1.6 Test/Live Data Toggle - Move to Account Settings
+### 1.5 Test/Live Data Toggle - Move to Account Settings
 
 **Current State**:
 - Toggle visible in main nav bar (`layouts/_nav.html.erb`)
@@ -339,24 +316,23 @@ Based on research from [Toptal](https://www.toptal.com/designers/dashboard-desig
 
 ## Implementation Order
 
-### Sprint 1: Critical Fixes ✅ MOSTLY COMPLETE
+### Sprint 1: Critical Fixes ✅ COMPLETE
 1. ✅ Event panel responsive width (`w-full sm:w-96`)
 2. ✅ Chart responsive heights (`h-48 sm:h-64 lg:h-72` etc.)
 3. ✅ KPI card grid and padding (`gap-2 sm:gap-4`, `p-3 sm:p-5`)
-4. ⏳ Filter bottom sheet (pending)
-5. ✅ Test/Live toggle relocation + persistence (moved to Account Settings, database-backed)
+4. ✅ Test/Live toggle relocation + persistence (moved to Account Settings, database-backed)
 
 ### Sprint 2: Navigation & Tables ✅ PARTIALLY COMPLETE
-6. ✅ Account nav mobile redesign (vertical stacked list with icons)
-7. ✅ Dashboard tabs spacing (`gap-3 sm:gap-6`)
-8. ⏳ Cohort table horizontal scroll (pending)
-9. ✅ Funnel cards stacking (`flex-col sm:flex-row`)
+5. ✅ Account nav mobile redesign (vertical stacked list with icons)
+6. ✅ Dashboard tabs spacing (`gap-3 sm:gap-6`)
+7. ⏳ Cohort table horizontal scroll (pending)
+8. ✅ Funnel cards stacking (`flex-col sm:flex-row`)
 
 ### Sprint 3: Polish (pending)
-10. ⏳ Tailwind XS breakpoint
-11. ⏳ Touch-optimized charts
-12. ⏳ Pull-to-refresh
-13. ⏳ Offline indicator
+9. ⏳ Tailwind XS breakpoint
+10. ⏳ Touch-optimized charts
+11. ⏳ Pull-to-refresh
+12. ⏳ Offline indicator
 
 ---
 
@@ -367,7 +343,6 @@ Based on research from [Toptal](https://www.toptal.com/designers/dashboard-desig
 | `app/views/dashboard/show.html.erb` | Event panel, tabs | HIGH |
 | `app/views/dashboard/conversions/_full_dashboard.html.erb` | Charts, KPI grid | HIGH |
 | `app/views/dashboard/conversions/_kpi_card.html.erb` | Responsive padding/text | HIGH |
-| `app/views/dashboard/filters/show.html.erb` | Bottom sheet | HIGH |
 | `app/views/layouts/_nav.html.erb` | Remove test/live toggle | HIGH |
 | `app/views/accounts/show.html.erb` | Add data mode section | HIGH |
 | `app/controllers/accounts_controller.rb` | Handle live_mode toggle | HIGH |
@@ -398,7 +373,6 @@ Based on research from [Toptal](https://www.toptal.com/designers/dashboard-desig
 - [x] KPIs visible without scrolling on iPhone SE
 - [x] No horizontal scrolling required on any phone
 - [x] Event panel doesn't overflow on any device
-- [ ] Filters accessible via bottom sheet on mobile
 - [x] Account settings fully navigable on mobile
 - [x] All touch targets minimum 48px (account nav)
 - [ ] Landscape orientation doesn't break layouts
