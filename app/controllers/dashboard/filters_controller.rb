@@ -3,7 +3,6 @@ module Dashboard
     def show
       @available_models = current_account.attribution_models.active
       @filter_params = filter_params
-      @mobile = params[:mobile].present?
     end
   end
 end
