@@ -8,7 +8,7 @@ This specification defines the architectural change requiring events and convers
 - SDK calls outside middleware scope
 
 **Last Updated**: 2026-01-13
-**Status**: Phase 0 Complete (API changes), SDK/Docs pending
+**Status**: Phase 0-1 Complete (API + Ruby SDK), PHP/Docs/pet_resorts pending
 
 ---
 
@@ -93,7 +93,7 @@ Background Job → Mta::Track.new(event: 'purchase', order: order).call
 
 **When**: `Mbuzz.event()` or `Mbuzz.conversion()` called outside request context
 **Do**: Raise error or return failure instead of generating orphan visitor_id
-**Status**: Pending
+**Status**: ✅ COMPLETE
 
 ### R4: SDK - Remove Silent Fallback (PHP)
 
@@ -105,7 +105,7 @@ Background Job → Mta::Track.new(event: 'purchase', order: order).call
 
 **When**: Calling from background job or non-request context
 **Do**: Allow explicit `visitor_id:` parameter that overrides context
-**Status**: Pending
+**Status**: ✅ COMPLETE (Ruby), Pending (PHP)
 
 ### R6: Documentation - Background Job Pattern
 
@@ -234,42 +234,44 @@ cd /Users/vlad/code/m/multibuzz && bin/rails test
   - `test/integration/event_tracking_flow_test.rb`
   - `test/integration/concurrent_events_dedup_test.rb`
 
-### Phase 1: mbuzz-ruby SDK Changes
+### Phase 1: mbuzz-ruby SDK Changes ✅ COMPLETE
 
-- [ ] Remove `fallback_visitor_id` method
+- [x] Remove `fallback_visitor_id` method
   - File: `/Users/vlad/code/m/mbuzz-ruby/lib/mbuzz.rb`
-  - Lines: 68-71
-  - Change: Return `nil` instead of generating new ID
+  - Change: Removed entire method, visitor_id returns nil without context
 
-- [ ] Update `visitor_id` method to return nil when no context
+- [x] Update `visitor_id` method to return nil when no context
   - File: `/Users/vlad/code/m/mbuzz-ruby/lib/mbuzz.rb`
-  - Lines: 65-67
-  - Change: Remove `|| fallback_visitor_id` fallback
+  - Change: Removed `|| fallback_visitor_id` fallback
 
-- [ ] Add explicit `visitor_id:` parameter to `event()` method
+- [x] Add explicit `visitor_id:` parameter to `event()` method
   - File: `/Users/vlad/code/m/mbuzz-ruby/lib/mbuzz.rb`
-  - Lines: 82-105
-  - Change: Add `visitor_id: nil` parameter, use if provided
+  - Change: Added `visitor_id: nil` parameter, returns false if no identifier
 
-- [ ] Add explicit `visitor_id:` parameter to `conversion()` method
+- [x] Add explicit `visitor_id:` parameter to `conversion()` method
   - File: `/Users/vlad/code/m/mbuzz-ruby/lib/mbuzz.rb`
-  - Lines: 113-149
-  - Change: Add `visitor_id: nil` parameter, use if provided
+  - Change: Added `visitor_id: nil` parameter, returns false if no identifier
 
-- [ ] Update `Client.track` to validate visitor_id presence
-  - File: `/Users/vlad/code/m/mbuzz-ruby/lib/mbuzz/client.rb`
-  - Change: Return error result if no visitor_id and no user_id
-
-- [ ] Add warning log when visitor_id is nil
+- [x] Return false when no identifier available (visitor_id or user_id)
   - File: `/Users/vlad/code/m/mbuzz-ruby/lib/mbuzz.rb`
-  - Change: `Mbuzz.config.logger.warn` when visitor_id missing
+  - Change: Early return `false` in event() and conversion()
 
-- [ ] Update tests for new behavior
-  - File: `/Users/vlad/code/m/mbuzz-ruby/test/mbuzz_test.rb`
-  - File: `/Users/vlad/code/m/mbuzz-ruby/test/mbuzz/client_test.rb`
-  - Change: Test explicit visitor_id param, test nil handling
+- [x] Add unit tests for explicit visitor_id requirement
+  - File: `/Users/vlad/code/m/mbuzz-ruby/test/mbuzz/explicit_visitor_id_test.rb`
+  - Tests: event/conversion without context fails, with explicit visitor_id succeeds
 
-- [ ] Update README with background job documentation
+- [x] Add integration test endpoints for background job simulation
+  - File: `/Users/vlad/code/m/multibuzz/sdk_integration_tests/apps/mbuzz_ruby_testapp/app.rb`
+  - Endpoints: background_event_no_visitor, background_event_with_visitor, etc.
+
+- [x] Add integration tests for background job scenarios
+  - File: `/Users/vlad/code/m/multibuzz/sdk_integration_tests/scenarios/background_job_visitor_test.rb`
+
+- [x] Update existing tests for new behavior
+  - File: `/Users/vlad/code/m/mbuzz-ruby/test/test_mbuzz.rb` - Removed fallback tests
+  - File: `/Users/vlad/code/m/mbuzz-ruby/test/mbuzz/event_integration_test.rb` - Added visitor_id to MockRequest
+
+- [ ] Update README with background job documentation (deferred to Phase 3)
   - File: `/Users/vlad/code/m/mbuzz-ruby/README.md`
   - Change: Add "Background Jobs" section with examples
 
@@ -572,7 +574,7 @@ cd /Users/vlad/code/m/multibuzz && bin/rails test test/integration/
 |------|------|--------|
 | 2026-01-13 | Spec created | Complete |
 | 2026-01-13 | Phase 0: API changes | ✅ Complete |
-| TBD | Phase 1: mbuzz-ruby SDK | Pending |
+| 2026-01-13 | Phase 1: mbuzz-ruby SDK | ✅ Complete |
 | TBD | Phase 2: mbuzz-php SDK | Pending |
 | TBD | Phase 3: Documentation | Pending |
 | TBD | Phase 4: pet_resorts fix | Pending |

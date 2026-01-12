@@ -85,6 +85,67 @@ class MbuzzRubyTestapp < Sinatra::Base
     }.to_json
   end
 
+  # -------------------------------------------------------------------
+  # Background job simulation endpoints (no request context)
+  # These test Mbuzz.event/conversion called outside middleware scope
+  # -------------------------------------------------------------------
+
+  # BROKEN PATTERN: No visitor_id passed - should fail after SDK fix
+  post "/api/background_event_no_visitor" do
+    content_type :json
+    data = JSON.parse(request.body.read)
+
+    result = Mbuzz.event(
+      data["event_type"],
+      **symbolize_keys(data["properties"] || {})
+    )
+
+    { success: result != false, result: result }.to_json
+  end
+
+  # CORRECT PATTERN: Explicit visitor_id passed - should always work
+  post "/api/background_event_with_visitor" do
+    content_type :json
+    data = JSON.parse(request.body.read)
+
+    result = Mbuzz.event(
+      data["event_type"],
+      visitor_id: data["visitor_id"],
+      **symbolize_keys(data["properties"] || {})
+    )
+
+    { success: result != false, result: result }.to_json
+  end
+
+  # BROKEN PATTERN: No visitor_id for conversion - should fail
+  post "/api/background_conversion_no_visitor" do
+    content_type :json
+    data = JSON.parse(request.body.read)
+
+    result = Mbuzz.conversion(
+      data["conversion_type"],
+      revenue: data["revenue"],
+      **symbolize_keys(data["properties"] || {})
+    )
+
+    { success: result != false, result: result }.to_json
+  end
+
+  # CORRECT PATTERN: Explicit visitor_id for conversion - should work
+  post "/api/background_conversion_with_visitor" do
+    content_type :json
+    data = JSON.parse(request.body.read)
+
+    result = Mbuzz.conversion(
+      data["conversion_type"],
+      visitor_id: data["visitor_id"],
+      revenue: data["revenue"],
+      **symbolize_keys(data["properties"] || {})
+    )
+
+    { success: result != false, result: result }.to_json
+  end
+
   private
 
   # Read visitor_id from the cookie set by middleware
