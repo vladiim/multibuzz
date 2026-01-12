@@ -8,7 +8,7 @@ This specification defines the architectural change requiring events and convers
 - SDK calls outside middleware scope
 
 **Last Updated**: 2026-01-13
-**Status**: Phase 0-3 Complete (API + Ruby + PHP SDK + Docs), pet_resorts pending
+**Status**: ✅ All Phases Complete (API + Ruby + PHP SDK + Docs + CurrentAttributes)
 
 ---
 
@@ -113,11 +113,11 @@ Background Job → Mta::Track.new(event: 'purchase', order: order).call
 **Do**: Document the pattern of storing visitor_id and passing explicitly
 **Status**: ✅ COMPLETE (app docs), SDK READMEs pending
 
-### R7: Client Implementation - Store visitor_id
+### R7: CurrentAttributes - Automatic Background Job Context
 
-**When**: Processing orders/events that may be handled in background jobs
-**Do**: Store `mbuzz_visitor_id` on the record when created in request context
-**Status**: Pending (pet_resorts)
+**When**: Rails background jobs need visitor context without database changes
+**Do**: Use `ActiveSupport::CurrentAttributes` for automatic serialization into job payloads
+**Status**: ✅ COMPLETE (mbuzz-ruby)
 
 ---
 
@@ -324,32 +324,35 @@ cd /Users/vlad/code/m/multibuzz && bin/rails test
   - File: `/Users/vlad/code/m/mbuzz-ruby/README.md`
   - File: `/Users/vlad/code/m/mbuzz-php/README.md`
 
-### Phase 4: pet_resorts Implementation Fix
+### Phase 4: CurrentAttributes for Background Jobs ✅ COMPLETE
 
-- [ ] Add `mbuzz_visitor_id` column to orders table
-  - File: `/Users/vlad/code/pet_resorts/db/migrate/XXXXXX_add_mbuzz_visitor_id_to_orders.rb`
-  - Change: `add_column :orders, :mbuzz_visitor_id, :string`
+**Approach**: Use `ActiveSupport::CurrentAttributes` instead of database storage.
+Rails automatically serializes CurrentAttributes into ActiveJob payloads and restores
+them when jobs execute. Zero database changes required for SDK users.
 
-- [ ] Store visitor_id when order created in request context
-  - File: `/Users/vlad/code/pet_resorts/app/controllers/orders_controller.rb`
-  - Change: `order.mbuzz_visitor_id = Mbuzz.visitor_id` on create
+- [x] Add `Mbuzz::Current` class using ActiveSupport::CurrentAttributes
+  - File: `/Users/vlad/code/m/mbuzz-ruby/lib/mbuzz/current.rb`
+  - Attributes: `visitor_id`, `user_id`, `ip`, `user_agent`
 
-- [ ] Update `Mta::Base` to accept visitor_id parameter
-  - File: `/Users/vlad/code/pet_resorts/app/services/mta/base.rb`
-  - Change: Add `visitor_id:` to initialize, pass to Mbuzz calls
+- [x] Middleware stores context in Current during request
+  - File: `/Users/vlad/code/m/mbuzz-ruby/lib/mbuzz/middleware/tracking.rb`
+  - Change: `store_in_current_attributes(context, request)` in call()
 
-- [ ] Update `Mta::Track` to pass visitor_id
-  - File: `/Users/vlad/code/pet_resorts/app/services/mta/track.rb`
-  - Change: `Mbuzz.event(event, visitor_id: visitor_id, ...)`
+- [x] Middleware resets Current after request completes
+  - File: `/Users/vlad/code/m/mbuzz-ruby/lib/mbuzz/middleware/tracking.rb`
+  - Change: `reset_current_attributes` in ensure block
 
-- [ ] Update `Mta::Convert` to pass visitor_id
-  - File: `/Users/vlad/code/pet_resorts/app/services/mta/convert.rb`
-  - Change: `Mbuzz.conversion(event, visitor_id: visitor_id, ...)`
+- [x] Context accessors check Current first (for background jobs)
+  - File: `/Users/vlad/code/m/mbuzz-ruby/lib/mbuzz.rb`
+  - Change: `current_visitor_id || RequestContext.current&.request&.env&.dig(...)`
 
-- [ ] Update all Mta service call sites to pass visitor_id
-  - File: `/Users/vlad/code/pet_resorts/app/controllers/order_items_controller.rb`
-  - File: `/Users/vlad/code/pet_resorts/app/controllers/flow/booking/reviews_controller.rb`
-  - Change: Pass `visitor_id: order.mbuzz_visitor_id`
+- [x] Add unit tests for CurrentAttributes behavior
+  - File: `/Users/vlad/code/m/mbuzz-ruby/test/mbuzz/current_attributes_test.rb`
+  - Tests: Current stores/resets values, middleware populates Current, Mbuzz.event uses Current
+
+- [x] Add activesupport as development dependency
+  - File: `/Users/vlad/code/m/mbuzz-ruby/Gemfile`
+  - Change: `gem "activesupport", ">= 7.0"`
 
 ---
 
@@ -459,58 +462,93 @@ Add to `app/views/docs/_getting_started.html.erb` after Sessions section:
 4. **Pass visitor_id explicitly** - Show code example for each SDK
 5. **Common errors** - "Visitor not found" means missing visitor_id
 
-### pet_resorts: Migration Pattern
+### CurrentAttributes Architecture (Recommended for Rails)
+
+Rails automatically serializes `ActiveSupport::CurrentAttributes` into ActiveJob payloads
+and restores them when jobs execute. This means visitor_id is available in background
+jobs without any manual passing or database storage.
 
 ```ruby
-# db/migrate/XXXXXX_add_mbuzz_visitor_id_to_orders.rb
-class AddMbuzzVisitorIdToOrders < ActiveRecord::Migration[8.0]
-  def change
-    add_column :orders, :mbuzz_visitor_id, :string
-    add_index :orders, :mbuzz_visitor_id
+# lib/mbuzz/current.rb
+module Mbuzz
+  class Current < ActiveSupport::CurrentAttributes
+    attribute :visitor_id
+    attribute :user_id
+    attribute :ip
+    attribute :user_agent
   end
 end
 ```
 
-### pet_resorts: Controller Pattern
-
-```ruby
-# app/controllers/orders_controller.rb
-def create
-  @order = Order.new(order_params)
-  @order.mbuzz_visitor_id = Mbuzz.visitor_id  # Capture while in request context
-
-  if @order.save
-    # ... success handling
-  end
-end
+**Flow**:
+```
+1. Request arrives
+   ↓
+2. Middleware captures visitor_id from cookie
+   ↓
+3. Middleware stores in Mbuzz::Current.visitor_id
+   ↓
+4. Controller enqueues background job
+   ↓
+5. Rails serializes Current attributes into job payload
+   ↓
+6. Job runs on different thread/process
+   ↓
+7. Rails restores Current.visitor_id before job executes
+   ↓
+8. Mbuzz.event/conversion reads from Current.visitor_id
+   ↓
+9. Works! No database changes needed.
 ```
 
-### pet_resorts: Service Pattern
+### pet_resorts: No Changes Required
+
+With CurrentAttributes, pet_resorts requires **zero code changes**. The existing
+synchronous calls in controllers already work:
 
 ```ruby
-# app/services/mta/base.rb
-module Mta
-  class Base
-    attr_reader :event, :order, :visitor_id
-
-    def initialize(event:, order:, visitor_id: nil)
-      @event = event
-      @order = order
-      @visitor_id = visitor_id || order&.mbuzz_visitor_id
-    end
-  end
-end
-
-# app/services/mta/track.rb
+# app/services/mta/track.rb - UNCHANGED
 module Mta
   class Track < Base
     private
 
     def run
-      Mbuzz.event(event, visitor_id: visitor_id, revenue: revenue, location: location)
+      Mbuzz.event(event, revenue: revenue, location: location)
+      # visitor_id automatically available from Current or request context
     end
   end
 end
+```
+
+If pet_resorts wants to move tracking to background jobs for faster response:
+
+```ruby
+# Option A: Enqueue job (CurrentAttributes handles visitor_id automatically)
+class TrackEventJob < ApplicationJob
+  def perform(event:, order_id:)
+    order = Order.find(order_id)
+    # Mbuzz::Current.visitor_id is automatically restored by Rails!
+    Mbuzz.event(event, revenue: order.est_total)
+  end
+end
+
+# In controller
+TrackEventJob.perform_later(event: 'add_to_cart', order_id: @order.id)
+```
+
+### Alternative: Database Storage Pattern (Non-Rails or Legacy)
+
+For non-Rails applications or when CurrentAttributes isn't available:
+
+```ruby
+# Migration
+add_column :orders, :mbuzz_visitor_id, :string
+
+# Controller - capture during request
+@order.mbuzz_visitor_id = Mbuzz.visitor_id
+
+# Background job - pass explicitly
+Mbuzz.event(event, visitor_id: order.mbuzz_visitor_id)
 ```
 
 ---
@@ -580,7 +618,15 @@ cd /Users/vlad/code/m/multibuzz && bin/rails test test/integration/
 | 2026-01-13 | Phase 1: mbuzz-ruby SDK | ✅ Complete |
 | 2026-01-13 | Phase 2: mbuzz-php SDK | ✅ Complete |
 | 2026-01-13 | Phase 3: Documentation | ✅ Complete |
-| TBD | Phase 4: pet_resorts fix | Pending |
+| 2026-01-13 | Phase 4: CurrentAttributes | ✅ Complete |
+
+### Phase 4 Notes
+
+Originally planned database migration approach was rejected. Instead implemented
+`ActiveSupport::CurrentAttributes` which provides automatic context propagation
+to background jobs with zero database changes required from SDK users.
+
+Key insight: Rails automatically serializes CurrentAttributes into ActiveJob payloads.
 
 ---
 
