@@ -446,6 +446,187 @@ MD
 <%= render_markdown <<~MD
   ---
 
+  ## Background Jobs & Async Processing
+
+  When tracking events from background jobs or async processes (e.g., Sidekiq, Celery, queue workers),
+  there's no HTTP request context. This means the SDK cannot automatically capture the visitor ID from cookies.
+
+  **You must pass `visitor_id` explicitly in background jobs.**
+
+  ### The Problem
+
+  ```
+  Background Job → Mbuzz.event('order_shipped', ...)
+                        ↓
+                  No HTTP Request = No Cookies = No visitor_id
+                        ↓
+                  ❌ Event rejected or orphan visitor created
+  ```
+
+  ### The Solution: Store visitor_id When Creating Records
+
+  1. **Capture visitor_id** in the request context when creating the record
+  2. **Store it** on the record (e.g., `order.mbuzz_visitor_id`)
+  3. **Pass it explicitly** when tracking from background jobs
+MD
+%>
+
+<%= code_tabs(filter_live_examples({
+  ruby: {
+    label: 'Ruby',
+    syntax: 'ruby',
+    code: <<~CODE
+      # 1. Store visitor_id when order is created (in controller)
+      class OrdersController < ApplicationController
+        def create
+          @order = current_user.orders.build(order_params)
+          @order.mbuzz_visitor_id = Mbuzz.visitor_id  # Capture while in request
+          @order.save!
+        end
+      end
+
+      # 2. Pass visitor_id explicitly in background job
+      class OrderProcessingJob < ApplicationJob
+        def perform(order_id)
+          order = Order.find(order_id)
+
+          # Pass visitor_id explicitly - required!
+          Mbuzz.event('order_processed',
+            visitor_id: order.mbuzz_visitor_id,
+            order_id: order.id
+          )
+
+          Mbuzz.conversion('purchase',
+            visitor_id: order.mbuzz_visitor_id,
+            revenue: order.total
+          )
+        end
+      end
+    CODE
+  },
+  php: {
+    label: 'PHP',
+    syntax: 'php',
+    code: <<~CODE
+      // 1. Store visitor_id when order is created (in controller)
+      $order = new Order($request->all());
+      $order->mbuzz_visitor_id = Mbuzz::visitorId();
+      $order->save();
+
+      // 2. Pass visitor_id explicitly in background job
+      class OrderProcessingJob implements ShouldQueue
+      {
+          public function handle(Order $order)
+          {
+              // Pass visitor_id explicitly - required!
+              Mbuzz::event('order_processed', [
+                  'order_id' => $order->id
+              ], $order->mbuzz_visitor_id);
+
+              Mbuzz::conversion('purchase', [
+                  'visitor_id' => $order->mbuzz_visitor_id,
+                  'revenue' => $order->total
+              ]);
+          }
+      }
+    CODE
+  },
+  nodejs: {
+    label: 'Node.js',
+    syntax: 'javascript',
+    code: <<~CODE
+      // 1. Store visitor_id when order is created
+      app.post('/orders', async (req, res) => {
+        const order = await Order.create({
+          ...req.body,
+          mbuzzVisitorId: mbuzz.visitorId()  // Capture while in request
+        });
+        // ...
+      });
+
+      // 2. Pass visitor_id explicitly in background job
+      async function processOrder(orderId) {
+        const order = await Order.findById(orderId);
+
+        // Pass visitor_id explicitly - required!
+        await mbuzz.event('order_processed', {
+          orderId: order.id
+        }, order.mbuzzVisitorId);
+
+        await mbuzz.conversion('purchase', {
+          visitorId: order.mbuzzVisitorId,
+          revenue: order.total
+        });
+      }
+    CODE
+  },
+  python: {
+    label: 'Python',
+    syntax: 'python',
+    code: <<~CODE
+      # 1. Store visitor_id when order is created
+      @app.route('/orders', methods=['POST'])
+      def create_order():
+          order = Order(**request.form)
+          order.mbuzz_visitor_id = mbuzz.visitor_id()  # Capture while in request
+          order.save()
+          # ...
+
+      # 2. Pass visitor_id explicitly in background job
+      @celery.task
+      def process_order(order_id):
+          order = Order.get(order_id)
+
+          # Pass visitor_id explicitly - required!
+          mbuzz.event('order_processed',
+              visitor_id=order.mbuzz_visitor_id,
+              order_id=order.id
+          )
+
+          mbuzz.conversion('purchase',
+              visitor_id=order.mbuzz_visitor_id,
+              revenue=order.total
+          )
+    CODE
+  }
+}), default: :ruby) %>
+
+<%= render_markdown <<~MD
+  ### Migration Example
+
+  Add a column to store visitor_id:
+
+  ```ruby
+  # Rails migration
+  class AddMbuzzVisitorIdToOrders < ActiveRecord::Migration[8.0]
+    def change
+      add_column :orders, :mbuzz_visitor_id, :string
+      add_index :orders, :mbuzz_visitor_id
+    end
+  end
+  ```
+
+  ### What Happens Without visitor_id?
+
+  | Scenario | Result |
+  |----------|--------|
+  | **Request context** (normal web request) | ✅ Works - visitor_id from cookie |
+  | **Background job** without explicit visitor_id | ❌ Returns `false` - event not tracked |
+  | **Background job** with explicit visitor_id | ✅ Works - event tracked correctly |
+
+  ### Troubleshooting: "Visitor not found" Error
+
+  If you see this error, it means:
+  1. The visitor_id passed doesn't exist in our system, OR
+  2. No visitor_id was provided at all
+
+  **Solutions**:
+  - Ensure you're storing visitor_id when the record is created (in request context)
+  - Ensure you're passing visitor_id explicitly in background jobs
+  - Verify the visitor_id is a valid 64-character hex string
+
+  ---
+
   ## User Identification (identify)
 
   Link visitors to known users and store traits. This enables **cross-device attribution**.
