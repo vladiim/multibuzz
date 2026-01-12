@@ -8,7 +8,7 @@ This specification defines the architectural change requiring events and convers
 - SDK calls outside middleware scope
 
 **Last Updated**: 2026-01-13
-**Status**: Phase 0-1 Complete (API + Ruby SDK), PHP/Docs/pet_resorts pending
+**Status**: Phase 0-2 Complete (API + Ruby + PHP SDK), Docs/pet_resorts pending
 
 ---
 
@@ -99,13 +99,13 @@ Background Job → Mta::Track.new(event: 'purchase', order: order).call
 
 **When**: `$mbuzz->track()` or `$mbuzz->conversion()` called outside request context
 **Do**: Return false instead of generating orphan visitor_id
-**Status**: Pending
+**Status**: ✅ COMPLETE
 
 ### R5: SDK - Add Explicit visitor_id Parameter
 
 **When**: Calling from background job or non-request context
 **Do**: Allow explicit `visitor_id:` parameter that overrides context
-**Status**: ✅ COMPLETE (Ruby), Pending (PHP)
+**Status**: ✅ COMPLETE (Ruby + PHP)
 
 ### R6: Documentation - Background Job Pattern
 
@@ -275,33 +275,34 @@ cd /Users/vlad/code/m/multibuzz && bin/rails test
   - File: `/Users/vlad/code/m/mbuzz-ruby/README.md`
   - Change: Add "Background Jobs" section with examples
 
-### Phase 2: mbuzz-php SDK Changes
+### Phase 2: mbuzz-php SDK Changes ✅ COMPLETE
 
-- [ ] Remove auto-generation in Context initialization
+- [x] Remove auto-generation in Context initialization
   - File: `/Users/vlad/code/m/mbuzz-php/src/Mbuzz/Context.php`
-  - Lines: 49-51
-  - Change: Set `visitorId` to `null` if no cookie, don't generate
+  - Change: visitorId = null if no cookie (no IdGenerator fallback)
 
-- [ ] Update `Client::track()` to accept explicit visitor_id
+- [x] Update `Client::track()` to accept explicit visitor_id
   - File: `/Users/vlad/code/m/mbuzz-php/src/Mbuzz/Client.php`
-  - Lines: 72-79
-  - Change: Add `$visitorId` parameter option
+  - Change: Added `?string $visitorId = null` parameter
 
-- [ ] Update `Client::conversion()` to validate identifier presence
+- [x] Update `Client::conversion()` to validate identifier presence
   - File: `/Users/vlad/code/m/mbuzz-php/src/Mbuzz/Client.php`
-  - Lines: 115-126
-  - Change: Return false if no identifier available
+  - Change: Return false if no visitor_id AND no user_id
 
-- [ ] Add warning when visitor_id is null
-  - File: `/Users/vlad/code/m/mbuzz-php/src/Mbuzz/Client.php`
-  - Change: Log warning via configured logger
+- [x] Update `Mbuzz::event()` facade to pass visitor_id
+  - File: `/Users/vlad/code/m/mbuzz-php/src/Mbuzz/Mbuzz.php`
+  - Change: Added `?string $visitorId = null` parameter
 
-- [ ] Update tests for new behavior
-  - File: `/Users/vlad/code/m/mbuzz-php/tests/Unit/ClientTest.php`
+- [x] Add unit tests for explicit visitor_id requirement
+  - File: `/Users/vlad/code/m/mbuzz-php/tests/Unit/ExplicitVisitorIdTest.php`
+  - Tests: event/conversion without context fails, with explicit visitor_id succeeds
+
+- [x] Update existing tests for new behavior
   - File: `/Users/vlad/code/m/mbuzz-php/tests/Unit/ContextTest.php`
-  - Change: Test null visitor_id handling, explicit param
+  - File: `/Users/vlad/code/m/mbuzz-php/tests/Unit/ClientIntegrationTest.php`
+  - Change: Tests now provide visitor cookies or explicit visitor_id
 
-- [ ] Update README with background job documentation
+- [ ] Update README with background job documentation (deferred to Phase 3)
   - File: `/Users/vlad/code/m/mbuzz-php/README.md`
   - Change: Add "Background Jobs" section with examples
 
@@ -575,7 +576,7 @@ cd /Users/vlad/code/m/multibuzz && bin/rails test test/integration/
 | 2026-01-13 | Spec created | Complete |
 | 2026-01-13 | Phase 0: API changes | ✅ Complete |
 | 2026-01-13 | Phase 1: mbuzz-ruby SDK | ✅ Complete |
-| TBD | Phase 2: mbuzz-php SDK | Pending |
+| 2026-01-13 | Phase 2: mbuzz-php SDK | ✅ Complete |
 | TBD | Phase 3: Documentation | Pending |
 | TBD | Phase 4: pet_resorts fix | Pending |
 
