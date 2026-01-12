@@ -451,8 +451,6 @@ MD
   When tracking events from background jobs or async processes (e.g., Sidekiq, Celery, queue workers),
   there's no HTTP request context. This means the SDK cannot automatically capture the visitor ID from cookies.
 
-  **You must pass `visitor_id` explicitly in background jobs.**
-
   ### The Problem
 
   ```
@@ -463,7 +461,52 @@ MD
                   ❌ Event rejected or orphan visitor created
   ```
 
-  ### The Solution: Store visitor_id When Creating Records
+  ### Solution 1: Rails 7+ with CurrentAttributes (Automatic)
+
+  For **Rails 7+** applications, the Ruby SDK uses `ActiveSupport::CurrentAttributes` which Rails
+  automatically serializes into ActiveJob payloads. **No code changes required** - it just works!
+MD
+%>
+
+<%= code_tabs(filter_live_examples({
+  ruby: {
+    label: 'Ruby (Rails 7+)',
+    syntax: 'ruby',
+    code: <<~CODE
+      # Controller - just enqueue the job, visitor_id is captured automatically
+      class OrdersController < ApplicationController
+        def create
+          @order = Order.create!(order_params)
+          ProcessOrderJob.perform_later(@order.id)
+          # visitor_id automatically captured from request context
+        end
+      end
+
+      # Background job - mbuzz just works!
+      class ProcessOrderJob < ApplicationJob
+        def perform(order_id)
+          order = Order.find(order_id)
+
+          # Mbuzz::Current.visitor_id was restored by Rails automatically
+          Mbuzz.event('order_processed', order_id: order.id)
+          Mbuzz.conversion('purchase', revenue: order.total)
+        end
+      end
+    CODE
+  }
+}), default: :ruby) %>
+
+<%= render_markdown <<~MD
+  **How it works:**
+  1. Middleware captures `visitor_id` from cookie into `Mbuzz::Current`
+  2. Controller enqueues job
+  3. Rails serializes `Mbuzz::Current` into job payload
+  4. Job runs → Rails restores `Mbuzz::Current`
+  5. `Mbuzz.conversion()` reads from `Current` - works!
+
+  ### Solution 2: Store visitor_id on Records (All Platforms)
+
+  For non-Rails applications, or when you need more control:
 
   1. **Capture visitor_id** in the request context when creating the record
   2. **Store it** on the record (e.g., `order.mbuzz_visitor_id`)
