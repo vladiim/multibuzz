@@ -619,6 +619,7 @@ cd /Users/vlad/code/m/multibuzz && bin/rails test test/integration/
 | 2026-01-13 | Phase 2: mbuzz-php SDK | ✅ Complete |
 | 2026-01-13 | Phase 3: Documentation | ✅ Complete |
 | 2026-01-13 | Phase 4: CurrentAttributes | ✅ Complete |
+| 2026-01-13 | Documentation updates | ✅ Complete |
 
 ### Phase 4 Notes
 
@@ -627,6 +628,21 @@ Originally planned database migration approach was rejected. Instead implemented
 to background jobs with zero database changes required from SDK users.
 
 Key insight: Rails automatically serializes CurrentAttributes into ActiveJob payloads.
+
+### Documentation Updates (2026-01-13)
+
+- **mbuzz-ruby README**: Added "Background Jobs" section with CurrentAttributes + explicit visitor_id patterns
+- **multibuzz docs**: Updated `_getting_started.html.erb` with Solution 1 (CurrentAttributes) and Solution 2 (database)
+- **Spec**: Updated to reflect CurrentAttributes approach instead of database migration
+
+### All Work Complete
+
+This specification is **fully implemented**. All phases complete:
+- ✅ API requires existing visitors (no orphan creation)
+- ✅ Ruby SDK: removed fallback, added explicit visitor_id param, added CurrentAttributes
+- ✅ PHP SDK: removed fallback, added explicit visitor_id param
+- ✅ Documentation: getting started guide, README, spec updated
+- ✅ pet_resorts: no changes needed (CurrentAttributes handles it automatically)
 
 ---
 
