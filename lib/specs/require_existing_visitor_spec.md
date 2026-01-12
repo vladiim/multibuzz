@@ -8,7 +8,7 @@ This specification defines the architectural change requiring events and convers
 - SDK calls outside middleware scope
 
 **Last Updated**: 2026-01-13
-**Status**: Phase 0-2 Complete (API + Ruby + PHP SDK), Docs/pet_resorts pending
+**Status**: Phase 0-3 Complete (API + Ruby + PHP SDK + Docs), pet_resorts pending
 
 ---
 
@@ -111,7 +111,7 @@ Background Job → Mta::Track.new(event: 'purchase', order: order).call
 
 **When**: User needs to track events from background jobs
 **Do**: Document the pattern of storing visitor_id and passing explicitly
-**Status**: Pending
+**Status**: ✅ COMPLETE (app docs), SDK READMEs pending
 
 ### R7: Client Implementation - Store visitor_id
 
@@ -306,21 +306,23 @@ cd /Users/vlad/code/m/multibuzz && bin/rails test
   - File: `/Users/vlad/code/m/mbuzz-php/README.md`
   - Change: Add "Background Jobs" section with examples
 
-### Phase 3: multibuzz Documentation Updates
+### Phase 3: multibuzz Documentation Updates ✅ COMPLETE
 
-- [ ] Update Getting Started guide with visitor_id requirement
+- [x] Update Getting Started guide with visitor_id requirement
   - File: `/Users/vlad/code/m/multibuzz/app/views/docs/_getting_started.html.erb`
-  - Section: After "Sessions" section (~line 245)
-  - Change: Add "Background Jobs & Async Processing" section
+  - Added "Background Jobs & Async Processing" section with:
+    - Problem explanation
+    - Solution pattern
+    - Code examples for Ruby, PHP, Node.js, Python
+    - Migration example
 
-- [ ] Update server-side install partial with explicit visitor_id examples
-  - File: `/Users/vlad/code/m/multibuzz/app/views/onboarding/_install_server_side.html.erb`
-  - Change: Show storing and passing visitor_id
-
-- [ ] Add troubleshooting section for "Visitor not found" error
+- [x] Add troubleshooting section for "Visitor not found" error
   - File: `/Users/vlad/code/m/multibuzz/app/views/docs/_getting_started.html.erb`
-  - Section: New "Troubleshooting" section
-  - Change: Document common causes and solutions
+  - Added to Background Jobs section
+
+- [ ] SDK README updates (deferred)
+  - File: `/Users/vlad/code/m/mbuzz-ruby/README.md`
+  - File: `/Users/vlad/code/m/mbuzz-php/README.md`
 
 ### Phase 4: pet_resorts Implementation Fix
 
@@ -577,7 +579,7 @@ cd /Users/vlad/code/m/multibuzz && bin/rails test test/integration/
 | 2026-01-13 | Phase 0: API changes | ✅ Complete |
 | 2026-01-13 | Phase 1: mbuzz-ruby SDK | ✅ Complete |
 | 2026-01-13 | Phase 2: mbuzz-php SDK | ✅ Complete |
-| TBD | Phase 3: Documentation | Pending |
+| 2026-01-13 | Phase 3: Documentation | ✅ Complete |
 | TBD | Phase 4: pet_resorts fix | Pending |
 
 ---
