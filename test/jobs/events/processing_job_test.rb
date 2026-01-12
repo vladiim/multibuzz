@@ -13,8 +13,7 @@ class Events::ProcessingJobTest < ActiveJob::TestCase
     event = Event.last
     assert_equal "page_view", event.event_type
     assert_equal account, event.account
-    assert_equal "vis_test_123", event.visitor.visitor_id
-    assert_equal "sess_test_456", event.session.session_id
+    assert_equal visitor.visitor_id, event.visitor.visitor_id
   end
 
   test "should handle processing errors gracefully" do
@@ -32,19 +31,17 @@ class Events::ProcessingJobTest < ActiveJob::TestCase
     assert_equal account, event.account
   end
 
-  test "should create visitor if not exists" do
-    data = event_data.merge("visitor_id" => "vis_new_123", "session_id" => "sess_new_456")
+  test "should reject event with unknown visitor_id" do
+    data = event_data.merge("visitor_id" => "vis_unknown_123")
 
-    assert_difference -> { Visitor.count }, 1 do
+    assert_no_difference -> { Event.count } do
       Events::ProcessingJob.perform_now(account.id, data)
     end
   end
 
-  test "should create session if not exists" do
-    data = event_data.merge("visitor_id" => "vis_new_123", "session_id" => "sess_new_456")
-
+  test "should create session for existing visitor" do
     assert_difference -> { Session.count }, 1 do
-      Events::ProcessingJob.perform_now(account.id, data)
+      Events::ProcessingJob.perform_now(account.id, event_data)
     end
   end
 
@@ -54,11 +51,15 @@ class Events::ProcessingJobTest < ActiveJob::TestCase
     @account ||= accounts(:one)
   end
 
+  def visitor
+    @visitor ||= visitors(:one)
+  end
+
   def event_data
     {
       "event_type" => "page_view",
-      "visitor_id" => "vis_test_123",
-      "session_id" => "sess_test_456",
+      "visitor_id" => visitor.visitor_id,
+      "session_id" => "sess_test_#{SecureRandom.hex(8)}",
       "timestamp" => "2025-11-07T10:30:45Z",
       "properties" => {
         "url" => "https://example.com/page",

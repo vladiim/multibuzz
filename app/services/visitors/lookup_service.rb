@@ -14,14 +14,12 @@ module Visitors
     def run
       return resolution_result if resolution_result.is_a?(Hash) && resolution_result[:errors]
 
-      touch_last_seen_unless_created
-      increment_usage_if_created
-
+      touch_last_seen
       success_result(resolution_result)
     end
 
     def resolution_result
-      @resolution_result ||= existing_visitor_result || canonical_visitor_result || create_visitor_result
+      @resolution_result ||= existing_visitor_result || canonical_visitor_result || visitor_not_found_error
     end
 
     def existing_visitor_result
@@ -36,11 +34,8 @@ module Visitors
       { visitor: canonical_visitor, created: false, canonical: true }
     end
 
-    def create_visitor_result
-      new_visitor = account.visitors.create(visitor_id: visitor_id, is_test: is_test)
-      return error_result(new_visitor.errors.full_messages) unless new_visitor.persisted?
-
-      { visitor: new_visitor, created: true }
+    def visitor_not_found_error
+      error_result(["Visitor not found"])
     end
 
     def existing_visitor
@@ -59,12 +54,8 @@ module Visitors
         .first
     end
 
-    def touch_last_seen_unless_created
-      resolution_result[:visitor].touch_last_seen! unless resolution_result[:created]
-    end
-
-    def increment_usage_if_created
-      Billing::UsageCounter.new(account).increment! if resolution_result[:created]
+    def touch_last_seen
+      resolution_result[:visitor].touch_last_seen!
     end
   end
 end

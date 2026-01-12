@@ -191,7 +191,7 @@ class Events::IngestionServiceTest < ActiveSupport::TestCase
   def events_data
     @events_data ||= [
       valid_event_data,
-      valid_event_data.merge("visitor_id" => "vis_different", "session_id" => "sess_different")
+      valid_event_data.merge("visitor_id" => visitor_two.visitor_id, "session_id" => "sess_different_#{SecureRandom.hex(4)}")
     ]
   end
 
@@ -217,6 +217,10 @@ class Events::IngestionServiceTest < ActiveSupport::TestCase
 
   def visitor
     @visitor ||= visitors(:one)
+  end
+
+  def visitor_two
+    @visitor_two ||= visitors(:two)
   end
 
   def session

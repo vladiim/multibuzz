@@ -13,13 +13,13 @@ class Events::ProcessingServiceTest < ActiveSupport::TestCase
     assert_equal account, result[:event].account
   end
 
-  test "should find or create visitor" do
-    @visitor_id = "vis_new_visitor"
-    @session_id = "sess_new_session_for_visitor"
+  test "should return error for unknown visitor_id" do
+    @visitor_id = "vis_unknown_visitor"
+    @session_id = "sess_any_session"
 
-    assert_difference -> { Visitor.count }, 1 do
-      assert result[:success]
-      assert_equal "vis_new_visitor", result[:event].visitor.visitor_id
+    assert_no_difference -> { Visitor.count } do
+      assert_not result[:success]
+      assert_includes result[:errors], "Visitor not found"
     end
   end
 

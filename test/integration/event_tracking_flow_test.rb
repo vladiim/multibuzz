@@ -17,13 +17,32 @@ class EventTrackingFlowTest < ActionDispatch::IntegrationTest
     assert result[:success]
     plaintext_key = result[:plaintext_key]
 
-    # When: Sending a batch of events via API
-    # Note: visitor_id and session_id are now server-generated from cookies
+    # Step 1: Create a session first (this creates the visitor with proper attribution)
+    post api_v1_sessions_url,
+      params: {
+        session: {
+          visitor_id: SecureRandom.hex(32),
+          session_id: SecureRandom.hex(32),
+          url: "https://example.com/products?utm_source=google&utm_medium=cpc&utm_campaign=integration_test&utm_content=ad_variant_a&utm_term=test+keywords",
+          referrer: "https://google.com",
+          started_at: Time.current.utc.iso8601
+        }
+      },
+      headers: { "Authorization" => "Bearer #{plaintext_key}" },
+      as: :json
+
+    assert_response :accepted
+    visitor_id = response.parsed_body["visitor_id"]
+    session_id = response.parsed_body["session_id"]
+
+    # Step 2: Send event with the visitor_id from session
     post api_v1_events_url,
       params: {
         events: [
           {
             event_type: "page_view",
+            visitor_id: visitor_id,
+            session_id: session_id,
             timestamp: Time.current.utc.iso8601,
             properties: {
               url: "https://example.com/products?utm_source=google&utm_medium=cpc&utm_campaign=integration_test&utm_content=ad_variant_a&utm_term=test+keywords",
@@ -40,23 +59,17 @@ class EventTrackingFlowTest < ActionDispatch::IntegrationTest
     assert_equal 1, response.parsed_body["accepted"]
     assert_empty response.parsed_body["rejected"]
 
-    # Rate limiting disabled for MVP - headers no longer present
-    # assert response.headers["X-RateLimit-Limit"]
-    # assert response.headers["X-RateLimit-Remaining"]
-    # assert response.headers["X-RateLimit-Reset"]
-
     # When: Processing the job
     perform_enqueued_jobs
 
-    # Then: Visitor is created (server-generated ID)
-    # Note: test API key creates test data, so use .test_data scope
-    visitor = account.visitors.unscope(where: :is_test).test_data.last
-    assert visitor.present?, "Visitor should be created"
+    # Then: Visitor exists
+    visitor = account.visitors.unscope(where: :is_test).test_data.find_by(visitor_id: visitor_id)
+    assert visitor.present?, "Visitor should exist"
     assert visitor.first_seen_at.present?
     assert visitor.last_seen_at.present?
 
     # And: Session is created with UTM data
-    session = account.sessions.unscope(where: :is_test).test_data.last
+    session = account.sessions.unscope(where: :is_test).test_data.find_by(session_id: session_id)
     assert session.present?, "Session should be created"
     assert_equal visitor.id, session.visitor_id
     assert_equal 1, session.page_view_count
@@ -98,13 +111,39 @@ class EventTrackingFlowTest < ActionDispatch::IntegrationTest
     # Test API keys create test data
     initial_visitor_count_a = account_a.visitors.unscope(where: :is_test).test_data.count
     initial_visitor_count_b = account_b.visitors.unscope(where: :is_test).test_data.count
+    initial_event_count_a = account_a.events.unscope(where: :is_test).test_data.count
 
-    # When: Account A creates an event
+    # Step 1: Create a session for Account A (creates visitor with attribution)
+    post api_v1_sessions_url,
+      params: {
+        session: {
+          visitor_id: SecureRandom.hex(32),
+          session_id: SecureRandom.hex(32),
+          url: "https://example.com/account-a-page",
+          started_at: Time.current.utc.iso8601
+        }
+      },
+      headers: { "Authorization" => "Bearer #{api_key_a}" },
+      as: :json
+
+    assert_response :accepted
+    visitor_id = response.parsed_body["visitor_id"]
+
+    # Then: Account A has one more visitor
+    assert_equal initial_visitor_count_a + 1, account_a.visitors.unscope(where: :is_test).test_data.count,
+      "Account A should have one more visitor"
+
+    # And: Account B visitor count unchanged
+    assert_equal initial_visitor_count_b, account_b.visitors.unscope(where: :is_test).test_data.count,
+      "Account B should not have new visitors"
+
+    # Step 2: Create an event for Account A
     post api_v1_events_url,
       params: {
         events: [
           {
             event_type: "page_view",
+            visitor_id: visitor_id,
             timestamp: Time.current.utc.iso8601,
             properties: { url: "https://example.com/account-a-page" }
           }
@@ -115,14 +154,6 @@ class EventTrackingFlowTest < ActionDispatch::IntegrationTest
 
     assert_response :accepted
     perform_enqueued_jobs
-
-    # Then: Account A has one more visitor
-    assert_equal initial_visitor_count_a + 1, account_a.visitors.unscope(where: :is_test).test_data.count,
-      "Account A should have one more visitor"
-
-    # And: Account B visitor count unchanged
-    assert_equal initial_visitor_count_b, account_b.visitors.unscope(where: :is_test).test_data.count,
-      "Account B should not have new visitors"
 
     # And: Account B cannot see Account A's event by URL
     assert_equal 0, account_b.events.unscope(where: :is_test).test_data.where(
@@ -139,23 +170,41 @@ class EventTrackingFlowTest < ActionDispatch::IntegrationTest
     result = ApiKeys::GenerationService.new(account, environment: :test).call
     plaintext_key = result[:plaintext_key]
 
+    # Step 1: Create a session first to get a valid visitor
+    post api_v1_sessions_url,
+      params: {
+        session: {
+          visitor_id: SecureRandom.hex(32),
+          session_id: SecureRandom.hex(32),
+          url: "https://example.com",
+          started_at: Time.current.utc.iso8601
+        }
+      },
+      headers: { "Authorization" => "Bearer #{plaintext_key}" },
+      as: :json
+
+    assert_response :accepted
+    visitor_id = response.parsed_body["visitor_id"]
+
     # When: Sending a batch with valid and invalid events
-    # Note: visitor_id/session_id are now server-generated, so use empty event_type to trigger failure
     post api_v1_events_url,
       params: {
         events: [
           {
             event_type: "page_view",
+            visitor_id: visitor_id,
             timestamp: Time.current.utc.iso8601,
             properties: { url: "https://example.com" }
           },
           {
             event_type: "",  # Invalid - empty event type
+            visitor_id: visitor_id,
             timestamp: Time.current.utc.iso8601,
             properties: { url: "https://example.com" }
           },
           {
             event_type: "page_view",
+            visitor_id: visitor_id,
             timestamp: Time.current.utc.iso8601,
             properties: { url: "https://example.com/other" }
           }

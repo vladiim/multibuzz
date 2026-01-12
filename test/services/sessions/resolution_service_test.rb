@@ -297,7 +297,7 @@ class Sessions::ResolutionServiceTest < ActiveSupport::TestCase
     assert_equal 32, result.length
   end
 
-  test "handles nil device_fingerprint gracefully (legacy sessions)" do
+  test "matches session with nil device_fingerprint for backward compatibility" do
     session.update!(
       last_activity_at: 10.minutes.ago,
       device_fingerprint: nil
@@ -305,9 +305,9 @@ class Sessions::ResolutionServiceTest < ActiveSupport::TestCase
 
     result = service.call
 
-    # Should generate new session since fingerprint doesn't match
-    assert_not_equal session.session_id, result
-    assert_equal 32, result.length
+    # Should continue existing session - nil fingerprint means session was created
+    # before fingerprinting was added, so we match it for backward compatibility
+    assert_equal session.session_id, result
   end
 
   private

@@ -7,14 +7,12 @@ class Visitors::LookupServiceTest < ActiveSupport::TestCase
     assert_not result[:created]
   end
 
-  test "should create new visitor if not found" do
-    @existing_visitor_id = "vis_new_visitor_123"
+  test "should return error when visitor_id not found" do
+    @existing_visitor_id = "vis_unknown_visitor_123"
 
-    assert_difference -> { Visitor.count }, 1 do
-      assert result[:success]
-      assert result[:created]
-      assert_equal "vis_new_visitor_123", result[:visitor].visitor_id
-      assert_equal account, result[:visitor].account
+    assert_no_difference -> { Visitor.count } do
+      assert_not result[:success]
+      assert_includes result[:errors], "Visitor not found"
     end
   end
 
@@ -40,14 +38,6 @@ class Visitors::LookupServiceTest < ActiveSupport::TestCase
   end
 
   # --- Billing Usage ---
-
-  test "should increment usage counter when visitor is created" do
-    @existing_visitor_id = "vis_new_visitor_for_billing"
-
-    assert_difference -> { usage_counter.current_usage }, 1 do
-      result
-    end
-  end
 
   test "should not increment usage counter when visitor already exists" do
     assert_no_difference -> { usage_counter.current_usage } do
@@ -84,7 +74,7 @@ class Visitors::LookupServiceTest < ActiveSupport::TestCase
     assert result[:canonical], "Should indicate canonical visitor was used"
   end
 
-  test "should create new visitor when no recent session with fingerprint" do
+  test "should return error when no recent session with fingerprint and visitor not found" do
     fingerprint = "unique_fingerprint_#{SecureRandom.hex(8)}"
 
     service_with_fingerprint = Visitors::LookupService.new(
@@ -93,14 +83,14 @@ class Visitors::LookupServiceTest < ActiveSupport::TestCase
       device_fingerprint: fingerprint
     )
 
-    assert_difference -> { Visitor.count }, 1 do
+    assert_no_difference -> { Visitor.count } do
       result = service_with_fingerprint.call
-      assert result[:success]
-      assert result[:created]
+      assert_not result[:success]
+      assert_includes result[:errors], "Visitor not found"
     end
   end
 
-  test "should not use canonical visitor when session is older than 30 seconds" do
+  test "should return error when canonical session is older than 30 seconds" do
     fingerprint = "old_fingerprint_#{SecureRandom.hex(8)}"
 
     # Create a session with this fingerprint but older than 30 seconds
@@ -119,10 +109,10 @@ class Visitors::LookupServiceTest < ActiveSupport::TestCase
       device_fingerprint: fingerprint
     )
 
-    assert_difference -> { Visitor.count }, 1 do
+    assert_no_difference -> { Visitor.count } do
       result = service_with_fingerprint.call
-      assert result[:success]
-      assert result[:created], "Should create new visitor when canonical session is too old"
+      assert_not result[:success]
+      assert_includes result[:errors], "Visitor not found"
     end
   end
 
