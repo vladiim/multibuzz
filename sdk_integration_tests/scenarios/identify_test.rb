@@ -4,8 +4,8 @@ require_relative "../test_helper"
 
 class IdentifyTest < SdkIntegrationTest
   def test_identifies_user_via_ui
-    visit "/"
-    track_visitor_id!
+    # Register visitor first
+    visit_and_register
 
     # Fill in identify form using unique IDs
     within("#identify-form") do
@@ -25,8 +25,8 @@ class IdentifyTest < SdkIntegrationTest
   end
 
   def test_links_visitor_to_identity
-    visit "/"
-    track_visitor_id!
+    # Register visitor first
+    visit_and_register
 
     user_id = "link_test_#{SecureRandom.hex(4)}"
     within("#identify-form") do
@@ -46,8 +46,8 @@ class IdentifyTest < SdkIntegrationTest
   end
 
   def test_updates_traits_on_re_identify
-    visit "/"
-    track_visitor_id!
+    # Register visitor first
+    visit_and_register
 
     user_id = "update_test_#{SecureRandom.hex(4)}"
 

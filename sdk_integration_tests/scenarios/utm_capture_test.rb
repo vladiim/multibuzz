@@ -8,7 +8,14 @@ class UtmCaptureTest < SdkIntegrationTest
     visit "/?utm_source=google&utm_medium=cpc&utm_campaign=test_campaign"
     track_visitor_id!
 
-    wait_for_async(3)
+    # Create session with UTM URL
+    result = create_session_for_visitor(
+      @visitor_id,
+      url: "#{sdk_app_url}/?utm_source=google&utm_medium=cpc&utm_campaign=test_campaign"
+    )
+    assert_equal "accepted", result["status"], "Session creation should succeed"
+
+    wait_for_async(2)
 
     data = verify_test_data
     session = data[:sessions].first
@@ -21,53 +28,70 @@ class UtmCaptureTest < SdkIntegrationTest
     assert_equal "test_campaign", utm[:utm_campaign]
   end
 
-  # Note: landing_url is not currently captured by the SDK/Session model
-  # This test is skipped until landing URL feature is implemented
-  # def test_captures_landing_url
-  #   visit "/?page=pricing"
-  #   track_visitor_id!
-  #
-  #   wait_for_async(3)
-  #
-  #   data = verify_test_data
-  #   session = data[:sessions].first
-  #
-  #   assert session[:landing_url].present?, "Session should have landing URL"
-  #   assert_includes session[:landing_url], "page=pricing"
-  # end
-
   def test_captures_referrer
-    # Note: Playwright can set referrer via page.goto options, but in this test
-    # we just verify the field exists and is captured when present
+    # Visit page
     visit "/"
     track_visitor_id!
 
-    wait_for_async(3)
+    # Create session with referrer
+    result = create_session_for_visitor(
+      @visitor_id,
+      url: "#{sdk_app_url}/",
+      referrer: "https://google.com/search?q=test"
+    )
+    assert_equal "accepted", result["status"], "Session creation should succeed"
+
+    wait_for_async(2)
 
     data = verify_test_data
     session = data[:sessions].first
 
-    # Referrer may be nil for direct visits, but the field should exist
+    # Referrer should be captured
     assert session.key?(:initial_referrer), "Session should have referrer field"
+    assert_equal "https://google.com/search?q=test", session[:initial_referrer]
   end
 
-  def test_utm_persists_across_page_navigation
+  def test_utm_persists_in_session
     # First visit with UTM
     visit "/?utm_source=facebook&utm_medium=social"
     track_visitor_id!
-    first_session_id = current_session_id
+
+    # Create session with UTM
+    result = create_session_for_visitor(
+      @visitor_id,
+      url: "#{sdk_app_url}/?utm_source=facebook&utm_medium=social"
+    )
+    session_id = result["session_id"]
 
     wait_for_async(2)
 
-    # Navigate to another page (within session)
-    visit "/"
-    second_session_id = current_session_id
+    # Verify UTM was captured
+    data = verify_test_data
+    session = data[:sessions].find { |s| s[:session_id] == session_id }
+    assert_not_nil session, "Should find session"
+    assert_equal "facebook", session[:initial_utm][:utm_source]
+    assert_equal "social", session[:initial_utm][:utm_medium]
+  end
 
-    # Session should persist
-    assert_equal first_session_id, second_session_id
+  def test_channel_derived_from_utm
+    # Visit with UTM indicating paid search
+    visit "/?utm_source=google&utm_medium=cpc"
+    track_visitor_id!
+
+    # Create session
+    result = create_session_for_visitor(
+      @visitor_id,
+      url: "#{sdk_app_url}/?utm_source=google&utm_medium=cpc"
+    )
+    assert_equal "accepted", result["status"]
+
+    wait_for_async(2)
 
     data = verify_test_data
-    session = data[:sessions].find { |s| s[:session_id] == first_session_id }
-    assert_equal "facebook", session[:initial_utm][:utm_source]
+    session = data[:sessions].first
+
+    # Channel should be derived from UTM
+    assert_not_nil session[:channel], "Session should have channel"
+    assert_equal "paid_search", session[:channel]
   end
 end

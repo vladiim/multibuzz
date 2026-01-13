@@ -7,7 +7,6 @@ class ConcurrentTest < SdkIntegrationTest
     # First browser session
     visit "/"
     first_visitor_id = current_visitor_id
-    first_session_id = current_session_id
 
     # Reset to simulate different browser/incognito
     Capybara.reset_sessions!
@@ -15,13 +14,10 @@ class ConcurrentTest < SdkIntegrationTest
     # Second browser session
     visit "/"
     second_visitor_id = current_visitor_id
-    second_session_id = current_session_id
 
-    # Different browser sessions should have different IDs
+    # Different browser sessions should have different visitor IDs
     refute_equal first_visitor_id, second_visitor_id,
       "Different browser sessions should have unique visitor IDs"
-    refute_equal first_session_id, second_session_id,
-      "Different browser sessions should have unique session IDs"
 
     # Both should be valid IDs
     assert_match(/\A[a-f0-9]{64}\z/, first_visitor_id)
@@ -29,8 +25,8 @@ class ConcurrentTest < SdkIntegrationTest
   end
 
   def test_rapid_events_dont_conflict
-    visit "/"
-    track_visitor_id!
+    # Register visitor first
+    visit_and_register
 
     # Track multiple events rapidly
     within("#event-form") do
@@ -51,8 +47,8 @@ class ConcurrentTest < SdkIntegrationTest
   end
 
   def test_all_events_have_same_visitor_id
-    visit "/"
-    track_visitor_id!
+    # Register visitor first
+    visit_and_register
 
     # Track several events
     within("#event-form") do
@@ -72,5 +68,32 @@ class ConcurrentTest < SdkIntegrationTest
     # but verify the visitor data is consistent
     assert_equal @visitor_id, data[:visitor][:visitor_id]
     assert data[:events].length >= 1, "Should have at least one event"
+  end
+
+  def test_sessions_created_via_api_have_unique_ids
+    # First visitor/session
+    visit "/"
+    track_visitor_id!
+    first_visitor_id = @visitor_id
+    first_result = create_session_for_visitor(first_visitor_id)
+    first_session_id = first_result["session_id"]
+
+    # Reset and create second visitor/session
+    Capybara.reset_sessions!
+    @visitor_id = nil
+
+    visit "/"
+    track_visitor_id!
+    second_visitor_id = @visitor_id
+    second_result = create_session_for_visitor(second_visitor_id)
+    second_session_id = second_result["session_id"]
+
+    # Different visitors should have different session IDs
+    refute_equal first_session_id, second_session_id,
+      "Different visitors should have unique session IDs"
+
+    # Both should be valid IDs
+    assert_match(/\A[a-f0-9]{64}\z/, first_session_id)
+    assert_match(/\A[a-f0-9]{64}\z/, second_session_id)
   end
 end

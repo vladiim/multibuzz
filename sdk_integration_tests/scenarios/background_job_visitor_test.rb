@@ -120,31 +120,6 @@ class BackgroundJobVisitorTest < SdkIntegrationTest
 
   private
 
-  # Create a session via the API to register the visitor
-  # Visitors must exist before events can be tracked (require_existing_visitor spec)
-  def create_session_for_visitor(visitor_id)
-    session_id = SecureRandom.hex(32)
-    uri = URI.parse("#{TestConfig.api_url}/sessions")
-    http = Net::HTTP.new(uri.host, uri.port)
-
-    request = Net::HTTP::Post.new(uri.path)
-    request["Content-Type"] = "application/json"
-    request["Authorization"] = "Bearer #{TestConfig.api_key}"
-    request.body = {
-      session: {
-        visitor_id: visitor_id,
-        session_id: session_id,
-        url: "http://localhost:4001/",
-        started_at: Time.now.utc.iso8601
-      }
-    }.to_json
-
-    response = http.request(request)
-    JSON.parse(response.body)
-  rescue => e
-    { "status" => "error", "error" => e.message }
-  end
-
   # HTTP helper to POST JSON directly to test app (bypasses browser/cookies)
   def post_json(path, data)
     uri = URI.parse("#{sdk_app_url}#{path}")

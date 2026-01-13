@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 require "securerandom"
+require "net/http"
+require "uri"
+require "json"
 require "minitest/autorun"
 require "capybara/minitest"
 require "capybara-playwright-driver"
@@ -102,5 +105,49 @@ class SdkIntegrationTest < Minitest::Test
   # Track visitor ID for cleanup
   def track_visitor_id!
     @visitor_id = current_visitor_id
+  end
+
+  # Create a session via the API to register the visitor
+  # Visitors must exist before events can be tracked (require_existing_visitor spec)
+  # @param visitor_id [String] The visitor ID to register
+  # @param url [String] Optional URL for the session (defaults to test app URL)
+  # @param referrer [String] Optional referrer URL
+  # @return [Hash] The session creation result
+  def create_session_for_visitor(visitor_id, url: nil, referrer: nil)
+    session_id = SecureRandom.hex(32)
+    uri = URI.parse("#{TestConfig.api_url}/sessions")
+    http = Net::HTTP.new(uri.host, uri.port)
+
+    request = Net::HTTP::Post.new(uri.path)
+    request["Content-Type"] = "application/json"
+    request["Authorization"] = "Bearer #{TestConfig.api_key}"
+
+    session_data = {
+      visitor_id: visitor_id,
+      session_id: session_id,
+      url: url || "#{sdk_app_url}/",
+      started_at: Time.now.utc.iso8601
+    }
+    session_data[:referrer] = referrer if referrer
+
+    request.body = { session: session_data }.to_json
+
+    response = http.request(request)
+    result = JSON.parse(response.body)
+    @session_id = result["session_id"] if result["status"] == "accepted"
+    result
+  rescue => e
+    { "status" => "error", "error" => e.message }
+  end
+
+  # Helper to visit page and register visitor in one call
+  # This is the standard pattern for tests that need a registered visitor
+  def visit_and_register(path = "/", url: nil, referrer: nil)
+    visit path
+    track_visitor_id!
+    result = create_session_for_visitor(@visitor_id, url: url, referrer: referrer)
+    raise "Session creation failed: #{result.inspect}" unless result["status"] == "accepted"
+    wait_for_async(0.5)
+    result
   end
 end

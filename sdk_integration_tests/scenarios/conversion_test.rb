@@ -4,8 +4,8 @@ require_relative "../test_helper"
 
 class ConversionTest < SdkIntegrationTest
   def test_tracks_conversion_via_ui
-    visit "/"
-    track_visitor_id!
+    # Register visitor first
+    visit_and_register
 
     # Fill in conversion form using unique IDs
     within("#conversion-form") do
@@ -29,8 +29,8 @@ class ConversionTest < SdkIntegrationTest
   end
 
   def test_tracks_acquisition_conversion
-    visit "/"
-    track_visitor_id!
+    # Register visitor first
+    visit_and_register
 
     # First identify
     user_id = "acq_test_#{SecureRandom.hex(4)}"
@@ -57,8 +57,8 @@ class ConversionTest < SdkIntegrationTest
   end
 
   def test_tracks_conversion_with_zero_revenue
-    visit "/"
-    track_visitor_id!
+    # Register visitor first
+    visit_and_register
 
     within("#conversion-form") do
       fill_in "conversion-type", with: "free_signup"

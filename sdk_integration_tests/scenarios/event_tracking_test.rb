@@ -4,8 +4,8 @@ require_relative "../test_helper"
 
 class EventTrackingTest < SdkIntegrationTest
   def test_tracks_event_via_ui
-    visit "/"
-    track_visitor_id!
+    # Visit and register visitor via session creation
+    visit_and_register
 
     # Fill in the event form using unique IDs
     within("#event-form") do
@@ -28,8 +28,7 @@ class EventTrackingTest < SdkIntegrationTest
   end
 
   def test_event_includes_url_property
-    visit "/"
-    track_visitor_id!
+    visit_and_register
 
     within("#event-form") do
       fill_in "event-type", with: "page_view"
@@ -50,8 +49,7 @@ class EventTrackingTest < SdkIntegrationTest
   end
 
   def test_tracks_multiple_events
-    visit "/"
-    track_visitor_id!
+    visit_and_register
 
     within("#event-form") do
       # Track first event
