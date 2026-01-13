@@ -7,8 +7,8 @@ This specification defines the architectural change requiring events and convers
 - Turbo frames losing cookie context
 - SDK calls outside middleware scope
 
-**Last Updated**: 2026-01-13
-**Status**: ✅ All Phases Complete (API + Ruby + PHP SDK + Docs + CurrentAttributes)
+**Last Updated**: 2026-01-14
+**Status**: ✅ Core Complete (API + Ruby + PHP SDK + Docs + CurrentAttributes) | ⏳ Phase 5: SDK E2E Tests Pending
 
 ---
 
@@ -354,6 +354,39 @@ them when jobs execute. Zero database changes required for SDK users.
   - File: `/Users/vlad/code/m/mbuzz-ruby/Gemfile`
   - Change: `gem "activesupport", ">= 7.0"`
 
+### Phase 5: SDK Integration Test Coverage (PENDING)
+
+**Goal**: Add end-to-end integration test coverage for background job scenarios across all SDKs.
+
+Ruby SDK integration tests are complete. The following SDKs need integration test endpoints
+and test scenarios added to `sdk_integration_tests/`.
+
+- [ ] PHP SDK integration test endpoints
+  - File: `/Users/vlad/code/m/multibuzz/sdk_integration_tests/apps/mbuzz_php_testapp/public/index.php`
+  - Add endpoints:
+    - `POST /api/background_event_no_visitor` - Event without visitor_id (should fail)
+    - `POST /api/background_event_with_visitor` - Event with explicit visitor_id (should succeed)
+    - `POST /api/background_conversion_no_visitor` - Conversion without visitor_id (should fail)
+    - `POST /api/background_conversion_with_visitor` - Conversion with explicit visitor_id (should succeed)
+
+- [ ] PHP SDK integration test scenarios
+  - File: `/Users/vlad/code/m/multibuzz/sdk_integration_tests/scenarios/background_job_visitor_php_test.rb`
+  - Tests: Mirror Ruby background_job_visitor_test.rb for PHP endpoints
+
+- [ ] Node.js SDK integration test endpoints
+  - File: `/Users/vlad/code/m/multibuzz/sdk_integration_tests/apps/mbuzz_node_testapp/server.ts`
+  - Add same 4 background job endpoints as PHP
+
+- [ ] Node.js SDK integration test scenarios
+  - File: `/Users/vlad/code/m/multibuzz/sdk_integration_tests/scenarios/background_job_visitor_node_test.rb`
+
+- [ ] Python SDK integration test endpoints
+  - File: `/Users/vlad/code/m/multibuzz/sdk_integration_tests/apps/mbuzz_python_testapp/app.py`
+  - Add same 4 background job endpoints as PHP
+
+- [ ] Python SDK integration test scenarios
+  - File: `/Users/vlad/code/m/multibuzz/sdk_integration_tests/scenarios/background_job_visitor_python_test.rb`
+
 ---
 
 ## Technical Design Details
@@ -620,6 +653,8 @@ cd /Users/vlad/code/m/multibuzz && bin/rails test test/integration/
 | 2026-01-13 | Phase 3: Documentation | ✅ Complete |
 | 2026-01-13 | Phase 4: CurrentAttributes | ✅ Complete |
 | 2026-01-13 | Documentation updates | ✅ Complete |
+| 2026-01-14 | mbuzz-ruby version bump to 0.7.1 | ✅ Complete |
+| 2026-01-14 | Phase 5: SDK E2E Tests | ⏳ Pending |
 
 ### Phase 4 Notes
 
@@ -635,14 +670,24 @@ Key insight: Rails automatically serializes CurrentAttributes into ActiveJob pay
 - **multibuzz docs**: Updated `_getting_started.html.erb` with Solution 1 (CurrentAttributes) and Solution 2 (database)
 - **Spec**: Updated to reflect CurrentAttributes approach instead of database migration
 
-### All Work Complete
+### Core Implementation Complete
 
-This specification is **fully implemented**. All phases complete:
+Core specification is **fully implemented** and ready for production:
 - ✅ API requires existing visitors (no orphan creation)
 - ✅ Ruby SDK: removed fallback, added explicit visitor_id param, added CurrentAttributes
 - ✅ PHP SDK: removed fallback, added explicit visitor_id param
 - ✅ Documentation: getting started guide, README, spec updated
 - ✅ pet_resorts: no changes needed (CurrentAttributes handles it automatically)
+- ✅ mbuzz-ruby v0.7.1 released with all changes
+
+### Pending: Phase 5 SDK E2E Tests
+
+Integration test endpoints and scenarios needed for:
+- ⏳ PHP SDK background job tests
+- ⏳ Node.js SDK background job tests
+- ⏳ Python SDK background job tests
+
+Note: Unit tests pass for all SDKs. E2E tests are for additional coverage.
 
 ---
 
