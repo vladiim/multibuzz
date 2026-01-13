@@ -280,7 +280,7 @@ def index():
     return render_template_string(
         INDEX_HTML,
         visitor_id=mbuzz.visitor_id(),
-        session_id=mbuzz.session_id(),
+        session_id=None,  # Sessions are server-side (v0.7.0+)
         user_id=mbuzz.user_id(),
     )
 
@@ -290,7 +290,7 @@ def get_ids():
     """Return current tracking IDs."""
     return jsonify({
         "visitor_id": mbuzz.visitor_id(),
-        "session_id": mbuzz.session_id(),
+        "session_id": None,  # Sessions are server-side (v0.7.0+)
         "user_id": mbuzz.user_id(),
     })
 
@@ -309,7 +309,7 @@ def track_event():
         "event_id": result.event_id,
         "event_type": result.event_type,
         "visitor_id": result.visitor_id,
-        "session_id": result.session_id,
+        "session_id": None,  # Sessions are server-side (v0.7.0+)
     })
 
 

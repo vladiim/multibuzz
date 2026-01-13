@@ -153,9 +153,9 @@ class MbuzzRubyTestapp < Sinatra::Base
     request.cookies[Mbuzz::VISITOR_COOKIE_NAME]
   end
 
-  # Read session_id from the cookie set by middleware
+  # Session ID is now server-side (v0.7.0+), no cookie
   def current_session_id
-    request.cookies[Mbuzz::SESSION_COOKIE_NAME]
+    nil
   end
 
   def symbolize_keys(hash)

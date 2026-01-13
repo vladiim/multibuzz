@@ -36,7 +36,7 @@ class BackgroundJobVisitorTest < SdkIntegrationTest
     wait_for_async(2)
 
     # Verify we have a visitor_id
-    assert stored_visitor_id.present?, "Should have visitor_id from session"
+    assert stored_visitor_id && !stored_visitor_id.empty?, "Should have visitor_id from session"
 
     # Call background endpoint WITH explicit visitor_id
     # This is the correct pattern for background jobs
@@ -82,7 +82,7 @@ class BackgroundJobVisitorTest < SdkIntegrationTest
     stored_visitor_id = @visitor_id
     wait_for_async(2)
 
-    assert stored_visitor_id.present?, "Should have visitor_id from session"
+    assert stored_visitor_id && !stored_visitor_id.empty?, "Should have visitor_id from session"
 
     response = post_json("/api/background_conversion_with_visitor", {
       conversion_type: "background_purchase_with_vid",

@@ -49,7 +49,7 @@ switch (true) {
     case $path === '/api/ids' && $method === 'GET':
         echo json_encode([
             'visitor_id' => Mbuzz::visitorId(),
-            'session_id' => Mbuzz::sessionId(),
+            'session_id' => null,  // Sessions are server-side (v0.8.0+)
             'user_id' => Mbuzz::userId(),
         ]);
         break;
@@ -67,7 +67,7 @@ switch (true) {
                 'event_id' => null,
                 'event_type' => $eventType,
                 'visitor_id' => Mbuzz::visitorId(),
-                'session_id' => Mbuzz::sessionId(),
+                'session_id' => null,  // Sessions are server-side (v0.8.0+)
             ]);
         } else {
             echo json_encode($result);
@@ -214,7 +214,7 @@ switch (true) {
 function renderIndex(): void
 {
     $visitorId = Mbuzz::visitorId() ?? '';
-    $sessionId = Mbuzz::sessionId() ?? '';
+    $sessionId = '';  // Sessions are server-side (v0.8.0+)
     $userId = Mbuzz::userId() ?? '(none)';
 
     echo <<<HTML

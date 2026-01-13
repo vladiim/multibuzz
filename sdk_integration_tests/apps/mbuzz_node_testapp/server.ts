@@ -7,7 +7,7 @@ const app = express();
 
 // Cookie names (must match the SDK's cookie names)
 const VISITOR_COOKIE = '_mbuzz_vid';
-const SESSION_COOKIE = '_mbuzz_sid';
+// SESSION_COOKIE removed in v0.7.0 - sessions are server-side
 const PORT = process.env.PORT || 4002;
 
 // Initialize Mbuzz
@@ -25,7 +25,7 @@ app.use(mbuzz.middleware());
 // Serve static HTML
 app.get('/', (req: Request, res: Response) => {
   const visitorId = req.mbuzz?.visitorId || mbuzz.visitorId() || '(none)';
-  const sessionId = req.mbuzz?.sessionId || mbuzz.sessionId() || '(none)';
+  const sessionId = '(server-side)';  // Sessions are server-side (v0.7.0+)
   const userId = req.mbuzz?.userId || mbuzz.userId() || '(none)';
 
   res.send(`
@@ -253,7 +253,7 @@ app.get('/', (req: Request, res: Response) => {
 app.get('/api/ids', (req: Request, res: Response) => {
   res.json({
     visitorId: req.mbuzz?.visitorId || mbuzz.visitorId(),
-    sessionId: req.mbuzz?.sessionId || mbuzz.sessionId(),
+    sessionId: null,  // Sessions are server-side (v0.7.0+)
     userId: req.mbuzz?.userId || mbuzz.userId(),
   });
 });
@@ -262,14 +262,14 @@ app.get('/api/ids', (req: Request, res: Response) => {
 app.post('/api/event', async (req: Request, res: Response) => {
   const { event_type, properties } = req.body;
   const visitorId = req.cookies[VISITOR_COOKIE];
-  const sessionId = req.cookies[SESSION_COOKIE];
 
-  if (!visitorId || !sessionId) {
-    return res.json({ success: false, error: 'Missing visitor or session cookie' });
+  if (!visitorId) {
+    return res.json({ success: false, error: 'Missing visitor cookie' });
   }
 
   try {
-    const context = new RequestContext({ visitorId, sessionId });
+    // Sessions are server-side (v0.7.0+), only need visitorId
+    const context = new RequestContext({ visitorId });
     const result = await withContext(context, () =>
       mbuzz.event(event_type, properties || {})
     );
