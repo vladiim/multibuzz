@@ -121,6 +121,90 @@ switch (true) {
         }
         break;
 
+    // -------------------------------------------------------------------
+    // Background job simulation endpoints (no request context)
+    // These test Mbuzz::event/conversion called outside middleware scope
+    // -------------------------------------------------------------------
+
+    // BROKEN PATTERN: No visitor_id passed - should fail after SDK fix
+    case $path === '/api/background_event_no_visitor' && $method === 'POST':
+        $data = json_decode(file_get_contents('php://input'), true) ?? [];
+        $eventType = $data['event_type'] ?? 'background_test';
+        $properties = $data['properties'] ?? [];
+
+        // Call without visitor_id - simulates background job without context
+        $result = Mbuzz::event($eventType, $properties);
+
+        echo json_encode([
+            'success' => $result !== false,
+            'result' => $result,
+        ]);
+        break;
+
+    // CORRECT PATTERN: Explicit visitor_id passed - should always work
+    case $path === '/api/background_event_with_visitor' && $method === 'POST':
+        $data = json_decode(file_get_contents('php://input'), true) ?? [];
+        $eventType = $data['event_type'] ?? 'background_test';
+        $visitorId = $data['visitor_id'] ?? null;
+        $properties = $data['properties'] ?? [];
+
+        // Call with explicit visitor_id - correct pattern for background jobs
+        $result = Mbuzz::event($eventType, $properties, $visitorId);
+
+        echo json_encode([
+            'success' => $result !== false,
+            'result' => $result,
+        ]);
+        break;
+
+    // BROKEN PATTERN: No visitor_id for conversion - should fail
+    case $path === '/api/background_conversion_no_visitor' && $method === 'POST':
+        $data = json_decode(file_get_contents('php://input'), true) ?? [];
+        $conversionType = $data['conversion_type'] ?? 'background_purchase';
+
+        $options = [];
+        if (isset($data['revenue'])) {
+            $options['revenue'] = (float) $data['revenue'];
+        }
+        if (isset($data['properties'])) {
+            $options['properties'] = $data['properties'];
+        }
+
+        // Call without visitor_id - simulates background job without context
+        $result = Mbuzz::conversion($conversionType, $options);
+
+        echo json_encode([
+            'success' => $result !== false,
+            'result' => $result,
+        ]);
+        break;
+
+    // CORRECT PATTERN: Explicit visitor_id for conversion - should work
+    case $path === '/api/background_conversion_with_visitor' && $method === 'POST':
+        $data = json_decode(file_get_contents('php://input'), true) ?? [];
+        $conversionType = $data['conversion_type'] ?? 'background_purchase';
+        $visitorId = $data['visitor_id'] ?? null;
+
+        $options = [];
+        if ($visitorId !== null) {
+            $options['visitor_id'] = $visitorId;
+        }
+        if (isset($data['revenue'])) {
+            $options['revenue'] = (float) $data['revenue'];
+        }
+        if (isset($data['properties'])) {
+            $options['properties'] = $data['properties'];
+        }
+
+        // Call with explicit visitor_id - correct pattern for background jobs
+        $result = Mbuzz::conversion($conversionType, $options);
+
+        echo json_encode([
+            'success' => $result !== false,
+            'result' => $result,
+        ]);
+        break;
+
     default:
         http_response_code(404);
         echo json_encode(['error' => 'Not Found']);

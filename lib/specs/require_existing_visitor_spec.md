@@ -8,7 +8,7 @@ This specification defines the architectural change requiring events and convers
 - SDK calls outside middleware scope
 
 **Last Updated**: 2026-01-14
-**Status**: ✅ Core Complete (API + Ruby + PHP SDK + Docs + CurrentAttributes) | ⏳ Phase 5: SDK E2E Tests Pending
+**Status**: ✅ All Phases Complete (API + Ruby + PHP SDK + Docs + CurrentAttributes + SDK E2E Tests)
 
 ---
 
@@ -354,38 +354,34 @@ them when jobs execute. Zero database changes required for SDK users.
   - File: `/Users/vlad/code/m/mbuzz-ruby/Gemfile`
   - Change: `gem "activesupport", ">= 7.0"`
 
-### Phase 5: SDK Integration Test Coverage (PENDING)
+### Phase 5: SDK Integration Test Coverage ✅ COMPLETE
 
 **Goal**: Add end-to-end integration test coverage for background job scenarios across all SDKs.
 
-Ruby SDK integration tests are complete. The following SDKs need integration test endpoints
-and test scenarios added to `sdk_integration_tests/`.
+**Architecture**: Tests are SDK-agnostic. The `SDK` env var controls which test app to run against.
+The single `background_job_visitor_test.rb` works across all SDKs.
 
-- [ ] PHP SDK integration test endpoints
+- [x] PHP SDK integration test endpoints
   - File: `/Users/vlad/code/m/multibuzz/sdk_integration_tests/apps/mbuzz_php_testapp/public/index.php`
-  - Add endpoints:
+  - Added endpoints:
     - `POST /api/background_event_no_visitor` - Event without visitor_id (should fail)
     - `POST /api/background_event_with_visitor` - Event with explicit visitor_id (should succeed)
     - `POST /api/background_conversion_no_visitor` - Conversion without visitor_id (should fail)
     - `POST /api/background_conversion_with_visitor` - Conversion with explicit visitor_id (should succeed)
 
-- [ ] PHP SDK integration test scenarios
-  - File: `/Users/vlad/code/m/multibuzz/sdk_integration_tests/scenarios/background_job_visitor_php_test.rb`
-  - Tests: Mirror Ruby background_job_visitor_test.rb for PHP endpoints
-
-- [ ] Node.js SDK integration test endpoints
+- [x] Node.js SDK integration test endpoints
   - File: `/Users/vlad/code/m/multibuzz/sdk_integration_tests/apps/mbuzz_node_testapp/server.ts`
-  - Add same 4 background job endpoints as PHP
+  - Added same 4 background job endpoints
 
-- [ ] Node.js SDK integration test scenarios
-  - File: `/Users/vlad/code/m/multibuzz/sdk_integration_tests/scenarios/background_job_visitor_node_test.rb`
-
-- [ ] Python SDK integration test endpoints
+- [x] Python SDK integration test endpoints
   - File: `/Users/vlad/code/m/multibuzz/sdk_integration_tests/apps/mbuzz_python_testapp/app.py`
-  - Add same 4 background job endpoints as PHP
+  - Added same 4 background job endpoints
 
-- [ ] Python SDK integration test scenarios
-  - File: `/Users/vlad/code/m/multibuzz/sdk_integration_tests/scenarios/background_job_visitor_python_test.rb`
+- [x] SDK-agnostic test scenario (works for all SDKs)
+  - File: `/Users/vlad/code/m/multibuzz/sdk_integration_tests/scenarios/background_job_visitor_test.rb`
+  - Run with: `SDK=php bundle exec ruby -Ilib scenarios/background_job_visitor_test.rb`
+  - Run with: `SDK=node bundle exec ruby -Ilib scenarios/background_job_visitor_test.rb`
+  - Run with: `SDK=python bundle exec ruby -Ilib scenarios/background_job_visitor_test.rb`
 
 ---
 
@@ -654,7 +650,7 @@ cd /Users/vlad/code/m/multibuzz && bin/rails test test/integration/
 | 2026-01-13 | Phase 4: CurrentAttributes | ✅ Complete |
 | 2026-01-13 | Documentation updates | ✅ Complete |
 | 2026-01-14 | mbuzz-ruby version bump to 0.7.1 | ✅ Complete |
-| 2026-01-14 | Phase 5: SDK E2E Tests | ⏳ Pending |
+| 2026-01-14 | Phase 5: SDK E2E Tests | ✅ Complete |
 
 ### Phase 4 Notes
 
@@ -680,14 +676,15 @@ Core specification is **fully implemented** and ready for production:
 - ✅ pet_resorts: no changes needed (CurrentAttributes handles it automatically)
 - ✅ mbuzz-ruby v0.7.1 released with all changes
 
-### Pending: Phase 5 SDK E2E Tests
+### Phase 5: SDK E2E Tests Complete
 
-Integration test endpoints and scenarios needed for:
-- ⏳ PHP SDK background job tests
-- ⏳ Node.js SDK background job tests
-- ⏳ Python SDK background job tests
+Integration test endpoints added to all SDKs:
+- ✅ PHP SDK background job endpoints
+- ✅ Node.js SDK background job endpoints
+- ✅ Python SDK background job endpoints
 
-Note: Unit tests pass for all SDKs. E2E tests are for additional coverage.
+All SDKs use the same SDK-agnostic test file (`background_job_visitor_test.rb`)
+controlled by the `SDK` environment variable.
 
 ---
 

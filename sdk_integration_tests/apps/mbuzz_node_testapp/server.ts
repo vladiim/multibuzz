@@ -316,6 +316,73 @@ app.post('/api/conversion', async (req: Request, res: Response) => {
   }
 });
 
+// -------------------------------------------------------------------
+// Background job simulation endpoints (no request context)
+// These test mbuzz.event/conversion called outside middleware scope
+// -------------------------------------------------------------------
+
+// BROKEN PATTERN: No visitor_id passed - should fail after SDK fix
+app.post('/api/background_event_no_visitor', async (req: Request, res: Response) => {
+  const { event_type, properties } = req.body;
+
+  try {
+    // Call without visitorId - simulates background job without context
+    const result = await mbuzz.event(event_type, properties || {});
+    res.json({ success: result !== false, result });
+  } catch (error) {
+    res.json({ success: false, error: String(error) });
+  }
+});
+
+// CORRECT PATTERN: Explicit visitor_id passed - should always work
+app.post('/api/background_event_with_visitor', async (req: Request, res: Response) => {
+  const { event_type, visitor_id, properties } = req.body;
+
+  try {
+    // Call with explicit visitorId - correct pattern for background jobs
+    const result = await mbuzz.event(event_type, {
+      ...properties,
+      visitorId: visitor_id,
+    });
+    res.json({ success: result !== false, result });
+  } catch (error) {
+    res.json({ success: false, error: String(error) });
+  }
+});
+
+// BROKEN PATTERN: No visitor_id for conversion - should fail
+app.post('/api/background_conversion_no_visitor', async (req: Request, res: Response) => {
+  const { conversion_type, revenue, properties } = req.body;
+
+  try {
+    // Call without visitorId - simulates background job without context
+    const result = await mbuzz.conversion(conversion_type, {
+      revenue,
+      properties: properties || {},
+    });
+    res.json({ success: result !== false, result });
+  } catch (error) {
+    res.json({ success: false, error: String(error) });
+  }
+});
+
+// CORRECT PATTERN: Explicit visitor_id for conversion - should work
+app.post('/api/background_conversion_with_visitor', async (req: Request, res: Response) => {
+  const { conversion_type, visitor_id, revenue, properties } = req.body;
+
+  try {
+    // Call with explicit visitorId - correct pattern for background jobs
+    const result = await mbuzz.conversion(conversion_type, {
+      visitorId: visitor_id,
+      revenue,
+      properties: properties || {},
+    });
+    res.json({ success: result !== false, result });
+  } catch (error) {
+    res.json({ success: false, error: String(error) });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Mbuzz Node.js test app running on http://localhost:${PORT}`);
 });

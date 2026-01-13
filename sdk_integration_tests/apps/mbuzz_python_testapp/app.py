@@ -355,5 +355,97 @@ def track_conversion():
     })
 
 
+# -------------------------------------------------------------------
+# Background job simulation endpoints (no request context)
+# These test mbuzz.event/conversion called outside middleware scope
+# -------------------------------------------------------------------
+
+@app.route("/api/background_event_no_visitor", methods=["POST"])
+def background_event_no_visitor():
+    """BROKEN PATTERN: Event without visitor_id - should fail."""
+    data = request.get_json()
+    event_type = data.get("event_type", "background_test")
+    properties = data.get("properties", {})
+
+    # Call without visitor_id - simulates background job without context
+    result = mbuzz.event(event_type, **properties)
+
+    return jsonify({
+        "success": result.success,
+        "result": {
+            "event_id": result.event_id,
+            "visitor_id": result.visitor_id,
+        } if result.success else None,
+    })
+
+
+@app.route("/api/background_event_with_visitor", methods=["POST"])
+def background_event_with_visitor():
+    """CORRECT PATTERN: Event with explicit visitor_id - should work."""
+    data = request.get_json()
+    event_type = data.get("event_type", "background_test")
+    visitor_id = data.get("visitor_id")
+    properties = data.get("properties", {})
+
+    # Call with explicit visitor_id - correct pattern for background jobs
+    result = mbuzz.event(event_type, visitor_id=visitor_id, **properties)
+
+    return jsonify({
+        "success": result.success,
+        "result": {
+            "event_id": result.event_id,
+            "visitor_id": result.visitor_id,
+        } if result.success else None,
+    })
+
+
+@app.route("/api/background_conversion_no_visitor", methods=["POST"])
+def background_conversion_no_visitor():
+    """BROKEN PATTERN: Conversion without visitor_id - should fail."""
+    data = request.get_json()
+    conversion_type = data.get("conversion_type", "background_purchase")
+    revenue = data.get("revenue")
+    properties = data.get("properties", {})
+
+    # Call without visitor_id - simulates background job without context
+    result = mbuzz.conversion(
+        conversion_type,
+        revenue=revenue,
+        properties=properties,
+    )
+
+    return jsonify({
+        "success": result.success,
+        "result": {
+            "conversion_id": result.conversion_id,
+        } if result.success else None,
+    })
+
+
+@app.route("/api/background_conversion_with_visitor", methods=["POST"])
+def background_conversion_with_visitor():
+    """CORRECT PATTERN: Conversion with explicit visitor_id - should work."""
+    data = request.get_json()
+    conversion_type = data.get("conversion_type", "background_purchase")
+    visitor_id = data.get("visitor_id")
+    revenue = data.get("revenue")
+    properties = data.get("properties", {})
+
+    # Call with explicit visitor_id - correct pattern for background jobs
+    result = mbuzz.conversion(
+        conversion_type,
+        visitor_id=visitor_id,
+        revenue=revenue,
+        properties=properties,
+    )
+
+    return jsonify({
+        "success": result.success,
+        "result": {
+            "conversion_id": result.conversion_id,
+        } if result.success else None,
+    })
+
+
 if __name__ == "__main__":
     app.run(port=4003, debug=True)
