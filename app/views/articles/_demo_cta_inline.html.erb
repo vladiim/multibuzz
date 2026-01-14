@@ -1,0 +1,14 @@
+<div class="my-8 p-6 bg-gradient-to-r from-blue-50 to-white rounded-lg border border-blue-100 not-prose">
+  <div class="sm:flex sm:items-center sm:justify-between">
+    <div class="mb-4 sm:mb-0">
+      <p class="font-semibold text-gray-900">See mbuzz in action</p>
+      <p class="text-gray-600 text-sm">Explore with sample data — no signup needed</p>
+    </div>
+    <%= link_to demo_path, class: "inline-flex items-center px-4 py-2 bg-white border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition font-medium text-sm" do %>
+      Try Demo
+      <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+      </svg>
+    <% end %>
+  </div>
+</div>

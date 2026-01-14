@@ -4,9 +4,10 @@
     <p class="text-slate-600 text-sm mt-2 mb-4">
       Set up server-side attribution in 10 minutes. Free up to <%= free_event_limit_display %> records/month.
     </p>
-    <div class="flex gap-3">
+    <div class="flex flex-wrap gap-3">
       <%= link_to "Get Started Free", signup_path, class: "bg-slate-900 text-white px-4 py-2 rounded hover:bg-slate-800" %>
-      <%= link_to "View Docs", "/docs", class: "text-slate-600 hover:text-slate-900" %>
+      <%= link_to "Try Demo", demo_path, class: "bg-white text-slate-700 border border-slate-300 px-4 py-2 rounded hover:bg-slate-100 hover:border-slate-400" %>
+      <%= link_to "View Docs", "/docs", class: "text-slate-600 hover:text-slate-900 px-4 py-2" %>
     </div>
   </div>
 </div>
