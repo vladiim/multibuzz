@@ -84,7 +84,7 @@
               <%= render "demo/dashboard/clv_toggle" %>
 
               <%= turbo_frame_tag "demo_conversions",
-                src: demo_dashboard_conversions_path(models: params[:models]),
+                src: demo_dashboard_conversions_path(request.query_parameters.slice(:models, :metric)),
                 loading: :lazy do %>
                 <%= render "dashboard/conversions/skeleton" %>
               <% end %>
