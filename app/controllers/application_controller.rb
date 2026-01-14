@@ -5,13 +5,15 @@ class ApplicationController < ActionController::Base
   allow_browser versions: :modern
   after_action :track_page_view, if: :should_track_page_view?
 
-  helper_method :view_mode, :test_mode?, :clv_mode, :clv_mode?
+  helper_method :view_mode, :test_mode?, :clv_mode, :clv_mode?, :demo_mode?
 
   VALID_VIEW_MODES = %w[production test].freeze
   DEFAULT_VIEW_MODE = "production"
 
   VALID_CLV_MODES = %w[transactions clv].freeze
   DEFAULT_CLV_MODE = "transactions"
+
+  VALID_DEMO_MODES = %w[true false].freeze
 
   private
 
@@ -43,6 +45,12 @@ class ApplicationController < ActionController::Base
 
   def clv_mode?
     clv_mode == "clv"
+  end
+
+  # Demo mode - uses dummy data for screenshots and demos
+  # Enable with ?demo=true query param
+  def demo_mode?
+    params[:demo] == "true"
   end
 
   # Dogfooding: Track page views

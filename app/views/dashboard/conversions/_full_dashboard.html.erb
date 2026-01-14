@@ -59,9 +59,19 @@
       </div>
     </div>
   </div>
+  <%
+  time_series_metric = case selected_metric
+    when "revenue", "aov" then "revenue"
+    when "avg_channels" then "avg_channels"
+    when "avg_visits" then "avg_visits"
+    when "avg_days" then "avg_days"
+    else "credits"
+    end
+  %>
   <div id="time-series-chart"
     data-controller="chart"
     data-chart-type-value="line"
+    data-chart-metric-value="<%= time_series_metric %>"
     data-chart-data-value="<%= data[:time_series].to_json %>"
     class="h-48 sm:h-64 lg:h-72">
   </div>
