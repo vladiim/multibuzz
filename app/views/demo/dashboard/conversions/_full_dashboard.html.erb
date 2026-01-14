@@ -1,7 +1,6 @@
 <% data = result[:data] %>
 <% totals = data[:totals] %>
 <% prior = totals[:prior_period] %>
-<% selected_metric = @filter_params[:metric] %>
 
 <!-- KPI Cards: Match real dashboard layout -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
@@ -67,22 +66,22 @@
 
 <!-- Attribution Chart (metric-driven) -->
 <%
-chart_metric = case selected_metric
+metric_key = @filter_params[:metric].to_s
+chart_metric = case metric_key
   when "revenue", "aov" then "revenue"
   when "avg_channels" then "avg_channels"
   when "avg_visits" then "avg_visits"
   when "avg_days" then "avg_days"
   else "credits"
   end
-chart_titles = {
-  "conversions" => "Conversions",
-  "revenue" => "Revenue",
-  "aov" => "Revenue",
-  "avg_channels" => "Avg Channels",
-  "avg_visits" => "Avg Visits",
-  "avg_days" => "Avg Days"
-}
-chart_title = chart_titles[selected_metric] || "Conversions"
+chart_title = case metric_key
+  when "revenue" then "Revenue"
+  when "aov" then "Revenue"
+  when "avg_channels" then "Avg Channels"
+  when "avg_visits" then "Avg Visits"
+  when "avg_days" then "Avg Days"
+  else "Conversions"
+  end
 %>
 <div class="bg-white p-4 sm:p-6 rounded-lg shadow mb-6">
   <div class="flex items-center justify-between mb-4">
