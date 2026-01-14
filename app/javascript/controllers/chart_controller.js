@@ -158,6 +158,14 @@ export default class extends Controller {
         formatValue: (y) => `$${Highcharts.numberFormat(y, 2)}`,
         drilldownable: false
       },
+      clv: {
+        dataKey: "clv",
+        yAxisTitle: "Customer Lifetime Value ($)",
+        seriesName: "CLV",
+        dataLabelFormat: "${y:,.0f}",
+        formatValue: (y) => `$${Highcharts.numberFormat(y, 2)}`,
+        drilldownable: false
+      },
       credits: {
         dataKey: "credits",
         yAxisTitle: "Conversions",
@@ -233,6 +241,12 @@ export default class extends Controller {
     const data = this.parseData()
     if (!data) return
 
+    // Handle smiling curve format (months + revenue_per_customer)
+    if (data.months && data.revenue_per_customer) {
+      this.renderSmilingCurve(data)
+      return
+    }
+
     const dates = data.dates || []
     const seriesData = data.series || []
     const metric = this.metricValue
@@ -274,6 +288,49 @@ export default class extends Controller {
         }
       },
       series: series,
+      credits: { enabled: false }
+    })
+  }
+
+  renderSmilingCurve(data) {
+    const categories = data.months.map(m => `M${m}`)
+    const values = data.revenue_per_customer
+
+    this.chart = Highcharts.chart(this.chartElement, {
+      chart: { type: "area" },
+      title: { text: null },
+      xAxis: {
+        categories: categories,
+        labels: { style: { fontSize: "11px" } }
+      },
+      yAxis: {
+        title: { text: "Revenue per Customer ($)" },
+        min: 0
+      },
+      legend: { enabled: false },
+      tooltip: {
+        formatter: function() {
+          return `<b>Month ${this.x.replace("M", "")}</b><br/>$${Highcharts.numberFormat(this.y, 2)} per customer`
+        }
+      },
+      plotOptions: {
+        area: {
+          fillColor: {
+            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+            stops: [
+              [0, "#6366F1"],
+              [1, "rgba(99, 102, 241, 0.1)"]
+            ]
+          },
+          marker: { enabled: true, radius: 4 },
+          lineWidth: 2,
+          color: "#6366F1"
+        }
+      },
+      series: [{
+        name: "Revenue per Customer",
+        data: values
+      }],
       credits: { enabled: false }
     })
   }
