@@ -39,6 +39,16 @@ Rails.application.routes.draw do
   get "demo", to: "demo#show"
   get "demo/attribution", to: "demo#attribution", as: :demo_attribution
 
+  # Public demo dashboard (full dashboard experience, no auth)
+  namespace :demo do
+    get "dashboard", to: "dashboard#show"
+    scope :dashboard, as: :dashboard do
+      get "conversions", to: "dashboard/conversions#show"
+      get "funnel", to: "dashboard/funnel#show"
+      patch "clv_mode", to: "dashboard/clv_mode#update"
+    end
+  end
+
   # Public pages
   get "home", to: "pages#home"
   get "about", to: "pages#about"

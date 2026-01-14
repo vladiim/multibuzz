@@ -1,0 +1,12 @@
+<%= turbo_frame_tag "demo_conversions" do %>
+  <div class="dashboard-section">
+    <% if @clv_mode %>
+      <%= render "demo/dashboard/conversions/clv_dashboard" %>
+    <% else %>
+      <% item = @results.first %>
+      <% if item[:result][:success] %>
+        <%= render "demo/dashboard/conversions/transactions_dashboard", result: item[:result] %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

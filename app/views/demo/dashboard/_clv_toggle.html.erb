@@ -1,0 +1,17 @@
+<div class="flex items-center gap-2 mb-4">
+  <span class="text-sm font-medium text-gray-500">View:</span>
+  <div class="inline-flex rounded-lg p-1 bg-gray-100">
+    <%= form_with url: demo_dashboard_clv_mode_path, method: :patch, data: { turbo_frame: "_top" } do %>
+      <input type="hidden" name="mode" value="transactions">
+      <button type="submit" class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors <%= @clv_mode ? 'text-gray-600 hover:bg-gray-200' : 'bg-white text-gray-900 shadow-sm' %>">
+        Transactions
+      </button>
+    <% end %>
+    <%= form_with url: demo_dashboard_clv_mode_path, method: :patch, data: { turbo_frame: "_top" } do %>
+      <input type="hidden" name="mode" value="clv">
+      <button type="submit" class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors <%= @clv_mode ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:bg-gray-200' %>">
+        Customer LTV
+      </button>
+    <% end %>
+  </div>
+</div>

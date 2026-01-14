@@ -1,0 +1,48 @@
+<% data = result[:data] %>
+<% totals = data[:totals] %>
+<% prior = totals[:prior_period] %>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
+  <%= render "dashboard/conversions/kpi_card",
+    metric: "conversions",
+    label: "Conversions",
+    value: totals[:conversions],
+    prior_value: prior[:conversions] %>
+
+  <%= render "dashboard/conversions/kpi_card",
+    metric: "revenue",
+    label: "Revenue",
+    value: totals[:revenue],
+    prior_value: prior[:revenue],
+    type: :currency %>
+
+  <%= render "dashboard/conversions/kpi_card",
+    metric: "aov",
+    label: "Avg Order Value",
+    value: totals[:aov],
+    prior_value: prior[:aov],
+    type: :currency %>
+</div>
+
+<div class="bg-white p-4 sm:p-6 rounded-lg shadow mb-6">
+  <h3 class="text-lg font-medium text-gray-900 mb-4">Channel Performance Over Time</h3>
+  <div id="time-series-chart"
+    data-controller="chart"
+    data-chart-type-value="line"
+    data-chart-data-value="<%= data[:time_series].to_json %>"
+    class="h-48 sm:h-64 lg:h-72">
+  </div>
+</div>
+
+<div class="bg-white p-4 sm:p-6 rounded-lg shadow">
+  <h3 class="text-base sm:text-lg font-medium text-gray-900 mb-4">Conversions by Channel</h3>
+  <div id="channel-chart"
+    data-controller="chart"
+    data-chart-type-value="bar"
+    data-chart-metric-value="credits"
+    data-chart-drilldown-value="true"
+    data-chart-campaigns-value="<%= data[:top_campaigns].to_json %>"
+    data-chart-data-value="<%= data[:by_channel].to_json %>"
+    class="h-56 sm:h-72 lg:h-80">
+  </div>
+</div>

@@ -1,0 +1,41 @@
+<%= turbo_frame_tag "demo_funnel" do %>
+  <div class="dashboard-section">
+    <% if @result[:success] %>
+      <% data = @result[:data] %>
+
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-semibold text-gray-900">Conversion Funnel</h2>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-2 mb-6 sm:overflow-x-auto">
+        <% data[:stages].each_with_index do |stage, index| %>
+          <div class="flex-shrink-0 bg-white px-4 py-3 rounded-lg shadow sm:min-w-[140px]">
+            <div class="text-xs sm:text-sm font-medium text-gray-500"><%= stage[:stage] %></div>
+            <div class="text-lg sm:text-xl font-semibold text-gray-900"><%= number_with_delimiter(stage[:total]) %></div>
+            <% if stage[:conversion_rate] %>
+              <div class="text-xs text-gray-500"><%= stage[:conversion_rate] %>% from previous</div>
+            <% end %>
+          </div>
+          <% unless index == data[:stages].length - 1 %>
+            <div class="hidden sm:flex items-center text-gray-400">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+
+      <div class="bg-white p-4 sm:p-6 rounded-lg shadow" data-controller="chart" data-chart-type-value="funnel" data-chart-data-value="<%= data[:stages].to_json %>">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-base sm:text-lg font-medium text-gray-900">Funnel by Channel</h3>
+          <label class="flex items-center gap-2 text-xs sm:text-sm text-gray-600 cursor-pointer">
+            <input type="checkbox" data-action="change->chart#toggleLogScale" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+            Log scale
+          </label>
+        </div>
+        <div data-chart-target="canvas" class="h-64 sm:h-80 lg:h-96"></div>
+      </div>
+    <% end %>
+  </div>
+<% end %>
