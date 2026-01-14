@@ -97,6 +97,54 @@ multibuzz/
 
 ---
 
+## Core Architecture
+
+### Server-Side Session Management
+
+**CRITICAL: Sessions are managed SERVER-SIDE, not by SDKs.**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        SDK Responsibility                        │
+├─────────────────────────────────────────────────────────────────┤
+│  1. Generate visitor_id (client-side, stored in cookie)         │
+│  2. Call POST /api/v1/sessions for NEW visitors                 │
+│  3. Send visitor_id with all event/conversion calls             │
+│  4. DO NOT manage session cookies (_mbuzz_sid)                  │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                       Server Responsibility                      │
+├─────────────────────────────────────────────────────────────────┤
+│  1. Create Visitor record on POST /api/v1/sessions              │
+│  2. Resolve session using device_fingerprint                    │
+│     - fingerprint = SHA256(ip|user_agent)[0:32]                 │
+│  3. Create new session OR extend existing (30-min window)       │
+│  4. Store session_id server-side (not in cookies)               │
+│  5. Validate visitor exists before accepting events             │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Session Resolution Flow:**
+1. SDK calls `POST /api/v1/sessions` with `visitor_id` + request metadata
+2. Server computes `device_fingerprint = SHA256(ip|user_agent)[0:32]`
+3. Server finds or creates session for that visitor + fingerprint
+4. 30-minute sliding window via `last_activity_at` timestamp
+5. Events automatically associate with the resolved session
+
+**Why Server-Side?**
+- Works across all platforms (Ruby, Node, Python, PHP, mobile)
+- No cookie sync issues between SDK and server
+- Single source of truth for session state
+- Supports true sliding window (cookies can't slide)
+
+### Visitor Requirement
+
+**`require_existing_visitor` is ENABLED** - Events and conversions are rejected if the visitor doesn't exist. SDKs MUST call `POST /api/v1/sessions` before tracking events.
+
+---
+
 ## Key Features
 
 ### ✅ Implemented

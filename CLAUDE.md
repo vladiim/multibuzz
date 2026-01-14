@@ -79,6 +79,65 @@ This applies to:
 
 ---
 
+## Core Architecture - Server-Side Sessions
+
+**CRITICAL: Sessions are managed SERVER-SIDE, not by SDKs. Never forget this.**
+
+### SDK vs Server Responsibilities
+
+| Component | SDK Responsibility | Server Responsibility |
+|-----------|-------------------|----------------------|
+| Visitor ID | Generate + store in cookie (`_mbuzz_vid`) | Create Visitor record |
+| Session ID | **DO NOT MANAGE** | Create, store, resolve via fingerprint |
+| Session Cookie | **DO NOT SET** | Not used - sessions resolved server-side |
+| Events | Send with `visitor_id` | Validate visitor exists, associate session |
+
+### Session Resolution Flow
+
+```
+1. SDK middleware detects new visitor (no _mbuzz_vid cookie)
+2. SDK generates visitor_id, stores in cookie
+3. SDK calls POST /api/v1/sessions with:
+   - visitor_id
+   - url
+   - referrer
+   - (ip + user_agent extracted server-side)
+4. Server computes device_fingerprint = SHA256(ip|user_agent)[0:32]
+5. Server creates Visitor record
+6. Server finds/creates Session for visitor + fingerprint
+7. 30-minute sliding window via last_activity_at
+```
+
+### Why Server-Side Sessions?
+
+- **Cross-platform consistency**: Same logic for Ruby, Node, Python, PHP, mobile
+- **No cookie sync issues**: Server is single source of truth
+- **True sliding window**: `last_activity_at` updated on each request
+- **Fingerprint-based**: Sessions survive cookie issues
+
+### require_existing_visitor
+
+**This is ENABLED in production.** Events and conversions are REJECTED if the visitor doesn't exist.
+
+```ruby
+# Server rejects events for unknown visitors
+return error_result(["Visitor not found"]) unless visitor.present?
+```
+
+**Implication**: SDKs MUST call `POST /api/v1/sessions` before tracking any events. If they don't, all events fail.
+
+### Debugging Session Issues
+
+If events/conversions are being rejected:
+1. Check SDK version - must be recent enough to call `/sessions`
+2. Check server logs for `POST /api/v1/sessions` requests
+3. Verify User-Agent header shows correct SDK version
+4. Query visitor creation: `Visitor.where("created_at > ?", 7.days.ago).group("DATE(created_at)").count`
+
+See `lib/specs/incidents/2026-01-15-visitor-creation-drop.md` for a real incident caused by stale SDK deployment.
+
+---
+
 ## Ruby Style Philosophy
 
 ### Write Prosaic Ruby, Not PHP
