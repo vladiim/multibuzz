@@ -150,6 +150,14 @@ export default class extends Controller {
         formatValue: (y) => `$${Highcharts.numberFormat(y, 0)}`,
         drilldownable: true
       },
+      aov: {
+        dataKey: "aov",
+        yAxisTitle: "Avg Order Value ($)",
+        seriesName: "AOV",
+        dataLabelFormat: "${y:,.0f}",
+        formatValue: (y) => `$${Highcharts.numberFormat(y, 2)}`,
+        drilldownable: false
+      },
       credits: {
         dataKey: "credits",
         yAxisTitle: "Conversions",
@@ -227,11 +235,14 @@ export default class extends Controller {
 
     const dates = data.dates || []
     const seriesData = data.series || []
+    const metric = this.metricValue
+    const metricConfig = this.getMetricConfig(metric)
 
     const series = seriesData.map(s => ({
       name: this.formatChannelName(s.channel),
       color: CHANNEL_COLORS[s.channel] || CHANNEL_COLORS.other,
-      data: s.data
+      // Handle both old format (array of numbers) and new format (array of objects with metrics)
+      data: s.data.map(d => typeof d === "object" ? (d[metricConfig.dataKey] || 0) : d)
     }))
 
     this.chart = Highcharts.chart(this.chartElement, {
@@ -248,7 +259,7 @@ export default class extends Controller {
         }
       },
       yAxis: {
-        title: { text: "Conversions" },
+        title: { text: metricConfig.yAxisTitle },
         min: 0
       },
       legend: {
@@ -283,6 +294,8 @@ export default class extends Controller {
 
   renderConversionsByChannelChart(data) {
     const categories = data.map(d => d.channel) // conversion name/type
+    const metric = this.metricValue
+    const metricConfig = this.getMetricConfig(metric)
 
     // Get all unique channels across all rows
     const allChannels = [...new Set(
@@ -295,7 +308,7 @@ export default class extends Controller {
       color: CHANNEL_COLORS[channel] || CHANNEL_COLORS.other,
       data: data.map(d => {
         const channelData = (d.by_channel || []).find(c => c.channel === channel)
-        return channelData ? channelData.credits : 0
+        return channelData ? (channelData[metricConfig.dataKey] || 0) : 0
       })
     }))
 
@@ -308,10 +321,10 @@ export default class extends Controller {
       },
       yAxis: {
         min: 0,
-        title: { text: "Conversions" },
+        title: { text: metricConfig.yAxisTitle },
         stackLabels: {
           enabled: true,
-          format: "{total:.1f}"
+          format: (metric === "revenue" || metric === "aov") ? "${total:,.0f}" : "{total:.1f}"
         }
       },
       legend: {
@@ -324,11 +337,15 @@ export default class extends Controller {
         formatter: function() {
           let html = `<b>${this.x}</b><br/>`
           let total = 0
+          const yAxisTitle = this.series.chart.options.yAxis[0].title.text
+          const isCurrency = yAxisTitle.includes("$")
           this.points.forEach(point => {
             total += point.y
-            html += `<span style="color:${point.color}">●</span> ${point.series.name}: ${Highcharts.numberFormat(point.y, 1)}<br/>`
+            const formatted = isCurrency ? `$${Highcharts.numberFormat(point.y, 0)}` : Highcharts.numberFormat(point.y, 1)
+            html += `<span style="color:${point.color}">●</span> ${point.series.name}: ${formatted}<br/>`
           })
-          html += `<b>Total: ${Highcharts.numberFormat(total, 1)}</b>`
+          const totalFormatted = isCurrency ? `$${Highcharts.numberFormat(total, 0)}` : Highcharts.numberFormat(total, 1)
+          html += `<b>Total: ${totalFormatted}</b>`
           return html
         },
         shared: true

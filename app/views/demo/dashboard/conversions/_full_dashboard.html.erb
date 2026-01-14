@@ -2,6 +2,27 @@
 <% totals = data[:totals] %>
 <% prior = totals[:prior_period] %>
 
+<%# Calculate metric-driven values upfront %>
+<%
+metric_key = @filter_params[:metric].to_s
+chart_metric = case metric_key
+  when "revenue" then "revenue"
+  when "aov" then "aov"
+  when "avg_channels" then "avg_channels"
+  when "avg_visits" then "avg_visits"
+  when "avg_days" then "avg_days"
+  else "credits"
+  end
+chart_title = case metric_key
+  when "revenue" then "Revenue"
+  when "aov" then "Avg Order Value"
+  when "avg_channels" then "Avg Channels"
+  when "avg_visits" then "Avg Visits"
+  when "avg_days" then "Avg Days"
+  else "Conversions"
+  end
+%>
+
 <!-- KPI Cards: Match real dashboard layout -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
   <%= render "demo/dashboard/conversions/kpi_card",
@@ -46,43 +67,26 @@
 <!-- Time Series Chart -->
 <div class="bg-white p-4 sm:p-6 rounded-lg shadow mb-6">
   <div class="flex items-center justify-between mb-4">
-    <h3 class="text-lg font-medium text-gray-900">Channel Performance Over Time</h3>
+    <h3 class="text-lg font-medium text-gray-900"><%= chart_title %> Over Time</h3>
     <div class="group relative">
       <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
       <div class="hidden group-hover:block absolute z-10 w-56 p-2 text-xs text-gray-600 bg-white border border-gray-200 rounded shadow-lg right-0 top-6">
-        Daily conversions by channel. Shows top 5 channels for clarity.
+        Daily <%= chart_title.downcase %> by channel. Shows top 5 channels for clarity.
       </div>
     </div>
   </div>
   <div id="time-series-chart"
     data-controller="chart"
     data-chart-type-value="line"
+    data-chart-metric-value="<%= chart_metric %>"
     data-chart-data-value="<%= data[:time_series].to_json %>"
     class="h-48 sm:h-64 lg:h-72">
   </div>
 </div>
 
 <!-- Attribution Chart (metric-driven) -->
-<%
-metric_key = @filter_params[:metric].to_s
-chart_metric = case metric_key
-  when "revenue", "aov" then "revenue"
-  when "avg_channels" then "avg_channels"
-  when "avg_visits" then "avg_visits"
-  when "avg_days" then "avg_days"
-  else "credits"
-  end
-chart_title = case metric_key
-  when "revenue" then "Revenue"
-  when "aov" then "Revenue"
-  when "avg_channels" then "Avg Channels"
-  when "avg_visits" then "Avg Visits"
-  when "avg_days" then "Avg Days"
-  else "Conversions"
-  end
-%>
 <div class="bg-white p-4 sm:p-6 rounded-lg shadow mb-6">
   <div class="flex items-center justify-between mb-4">
     <h3 class="text-base sm:text-lg font-medium text-gray-900"><%= chart_title %> by Channel</h3>
@@ -111,20 +115,20 @@ chart_title = case metric_key
 <% if data[:by_conversion_name].present? %>
   <div class="bg-white p-6 rounded-lg shadow mb-6">
     <div class="flex items-center justify-between mb-4">
-      <h3 class="text-lg font-medium text-gray-900">Conversions by Type</h3>
+      <h3 class="text-lg font-medium text-gray-900"><%= chart_title %> by Type</h3>
       <div class="group relative">
         <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <div class="hidden group-hover:block absolute z-10 w-56 p-2 text-xs text-gray-600 bg-white border border-gray-200 rounded shadow-lg right-0 top-6">
-          Shows conversion attribution credits grouped by conversion type.
+          Shows <%= chart_title.downcase %> grouped by conversion type.
         </div>
       </div>
     </div>
     <div id="conversion-name-chart"
       data-controller="chart"
       data-chart-type-value="stacked-bar"
-      data-chart-metric-value="credits"
+      data-chart-metric-value="<%= chart_metric %>"
       data-chart-data-value="<%= data[:by_conversion_name].to_json %>"
       class="h-64">
     </div>
