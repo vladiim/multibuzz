@@ -35,11 +35,8 @@ Rails.application.routes.draw do
     end
   end
 
-  # Demo (public, no auth required)
-  get "demo", to: "demo#show"
-  get "demo/attribution", to: "demo#attribution", as: :demo_attribution
-
   # Public demo dashboard (full dashboard experience, no auth)
+  get "demo", to: redirect("/demo/dashboard")
   namespace :demo do
     get "dashboard", to: "dashboard#show"
     scope :dashboard, as: :dashboard do
