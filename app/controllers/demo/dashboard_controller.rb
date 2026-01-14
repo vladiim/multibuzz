@@ -3,6 +3,7 @@ module Demo
     def show
       @demo_mode = true
       @clv_mode = demo_clv_mode?
+      @selected_model = params[:model] || "linear"
     end
 
     private

@@ -1,18 +1,8 @@
 <% totals = @clv_data[:totals] %>
 <% coverage = @clv_data[:coverage] %>
+<% @filter_params ||= { date_range: "30d" } %>
 
-<div class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
-  <%= render "dashboard/conversions/kpi_card_compact", metric: "clv", label: "Avg CLV", value: totals[:clv], type: :currency, clickable: false %>
-  <%= render "dashboard/conversions/kpi_card_compact", metric: "customers", label: "Customers", value: totals[:customers], clickable: false %>
-  <%= render "dashboard/conversions/kpi_card_compact", metric: "purchases", label: "Purchases", value: totals[:purchases], clickable: false %>
-  <%= render "dashboard/conversions/kpi_card_compact", metric: "revenue", label: "Total Revenue", value: totals[:revenue], type: :currency, clickable: false %>
-  <%= render "dashboard/conversions/kpi_card_compact", metric: "duration", label: "Avg Lifespan", value: totals[:avg_duration], clickable: false %>
-  <%= render "dashboard/conversions/kpi_card_compact", metric: "frequency", label: "Purchases/Customer", value: totals[:repurchase_frequency], clickable: false %>
-</div>
-
-<div class="mb-4 text-sm text-gray-500">
-  Identity coverage: <%= coverage[:percentage] %>% (<%= number_with_delimiter(coverage[:identified]) %> of <%= number_with_delimiter(coverage[:total]) %> conversions)
-</div>
+<%= render "dashboard/conversions/clv_kpi_cards", totals: totals, coverage: coverage %>
 
 <div class="bg-white p-6 rounded-lg shadow mb-6">
   <h3 class="text-lg font-medium text-gray-900 mb-4">CLV by Acquisition Channel</h3>

@@ -4,26 +4,32 @@
   data-toggle-inactive-class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
 
   <div class="border-b border-gray-200">
-    <nav class="-mb-px flex gap-4 sm:gap-6">
-      <button type="button" data-toggle-target="trigger" data-action="toggle#select" data-value="conversions"
-        class="py-3 px-1 text-sm font-medium border-b-2 whitespace-nowrap">
-        Conversions
-      </button>
-      <button type="button" data-toggle-target="trigger" data-action="toggle#select" data-value="funnel"
-        class="py-3 px-1 text-sm font-medium border-b-2 whitespace-nowrap">
-        Funnel
-      </button>
-      <button type="button" disabled
-        class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-400 whitespace-nowrap cursor-not-allowed">
-        Events <span class="text-xs">(Live only)</span>
-      </button>
-    </nav>
+    <div class="flex flex-col sm:flex-row sm:flex-nowrap sm:items-center sm:justify-between">
+      <nav class="-mb-px flex gap-4 sm:gap-6">
+        <button type="button" data-toggle-target="trigger" data-action="toggle#select" data-value="conversions"
+          class="py-3 px-1 text-sm font-medium border-b-2 whitespace-nowrap">
+          Conversions
+        </button>
+        <button type="button" data-toggle-target="trigger" data-action="toggle#select" data-value="funnel"
+          class="py-3 px-1 text-sm font-medium border-b-2 whitespace-nowrap">
+          Funnel
+        </button>
+        <button type="button" disabled
+          class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-400 whitespace-nowrap cursor-not-allowed">
+          Events <span class="text-xs">(Live only)</span>
+        </button>
+      </nav>
+
+      <div class="flex items-center gap-2 pt-2 pb-3 sm:pt-0">
+        <%= render "demo/dashboard/model_switcher" %>
+      </div>
+    </div>
   </div>
 
   <div class="mt-6">
     <div data-toggle-target="content" data-value="conversions">
       <%= render "demo/dashboard/clv_toggle" %>
-      <%= turbo_frame_tag "demo_conversions", src: demo_dashboard_conversions_path, loading: :lazy do %>
+      <%= turbo_frame_tag "demo_conversions", src: demo_dashboard_conversions_path(model: @selected_model), loading: :lazy do %>
         <%= render "dashboard/conversions/skeleton" %>
       <% end %>
     </div>

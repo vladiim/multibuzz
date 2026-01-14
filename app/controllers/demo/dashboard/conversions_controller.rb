@@ -4,7 +4,8 @@ module Demo
       def show
         @demo_mode = true
         @clv_mode = demo_clv_mode?
-        @filter_params = { models: [ default_model ] }
+        @selected_model = selected_model
+        @filter_params = { models: [ @selected_model ], metric: params[:metric] }
 
         @clv_mode ? load_clv_data : load_transactions_data
       end
@@ -25,12 +26,24 @@ module Demo
       end
 
       def single_result
-        { model: default_model, result: ::Dashboard::Dummy::ConversionsDataService.new.call }
+        { model: @selected_model, result: ::Dashboard::Dummy::ConversionsDataService.new.call }
       end
 
-      def default_model
-        @default_model ||= AttributionModel.new(name: "linear", algorithm: AttributionAlgorithms::LINEAR)
+      def selected_model
+        model_param = params[:model] || "linear"
+        algorithm = DEMO_MODELS[model_param] || AttributionAlgorithms::LINEAR
+        AttributionModel.new(name: model_param, algorithm: algorithm)
       end
+
+      DEMO_MODELS = {
+        "first_touch" => AttributionAlgorithms::FIRST_TOUCH,
+        "last_touch" => AttributionAlgorithms::LAST_TOUCH,
+        "linear" => AttributionAlgorithms::LINEAR,
+        "time_decay" => AttributionAlgorithms::TIME_DECAY,
+        "u_shaped" => AttributionAlgorithms::U_SHAPED,
+        "markov_chain" => AttributionAlgorithms::MARKOV_CHAIN,
+        "shapley_value" => AttributionAlgorithms::SHAPLEY_VALUE
+      }.freeze
     end
   end
 end

@@ -1,0 +1,33 @@
+<%
+  models = [
+    { key: "first_touch", name: "First Touch" },
+    { key: "last_touch", name: "Last Touch" },
+    { key: "linear", name: "Linear" },
+    { key: "time_decay", name: "Time Decay" },
+    { key: "u_shaped", name: "U-Shaped" },
+    { key: "markov_chain", name: "Markov Chain" },
+    { key: "shapley_value", name: "Shapley Value" }
+  ]
+  current_model = @selected_model || "linear"
+%>
+
+<div data-controller="toggle" data-toggle-close-on-click-outside-value="true" class="relative">
+  <label class="block text-xs font-medium text-gray-500 mb-1">Attribution Model</label>
+  <button type="button"
+    data-action="click->toggle#toggle"
+    class="w-44 px-3 py-2 text-sm text-left border border-gray-300 rounded bg-white flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-indigo-500">
+    <span><%= models.find { |m| m[:key] == current_model }&.dig(:name) || "Linear" %></span>
+    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+    </svg>
+  </button>
+  <div data-toggle-target="content" class="hidden absolute z-10 mt-1 w-44 bg-white border border-gray-300 rounded shadow-lg">
+    <% models.each do |model| %>
+      <%= link_to demo_dashboard_path(model: model[:key]),
+        data: { turbo_frame: "_top" },
+        class: "block px-3 py-2 text-sm hover:bg-gray-50 #{model[:key] == current_model ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-700'}" do %>
+        <%= model[:name] %>
+      <% end %>
+    <% end %>
+  </div>
+</div>

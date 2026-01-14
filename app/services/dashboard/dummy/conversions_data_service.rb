@@ -14,6 +14,9 @@ module Dashboard
             revenue: 147_230,
             conversion_rate: 3.2,
             aov: 61.81,
+            avg_days_to_convert: 4.2,
+            avg_channels_to_convert: 2.8,
+            avg_visits_to_convert: 5.1,
             prior_period: {
               conversions: 2120,
               revenue: 135_400,
@@ -22,6 +25,7 @@ module Dashboard
             }
           },
           by_channel: channel_data,
+          by_conversion_name: by_conversion_name_data,
           time_series: time_series_data,
           top_campaigns: top_campaigns_data
         }
@@ -79,6 +83,40 @@ module Dashboard
             { name: "Win-back Campaign", conversions: 40, revenue: 2_400 }
           ]
         }
+      end
+
+      def by_conversion_name_data
+        [
+          {
+            conversion_type: "Purchase",
+            by_channel: {
+              Channels::PAID_SEARCH => { credits: 320, revenue: 19_200 },
+              Channels::ORGANIC_SEARCH => { credits: 280, revenue: 16_800 },
+              Channels::EMAIL => { credits: 240, revenue: 14_400 },
+              Channels::PAID_SOCIAL => { credits: 180, revenue: 10_800 },
+              Channels::DIRECT => { credits: 160, revenue: 9_600 }
+            }
+          },
+          {
+            conversion_type: "Signup",
+            by_channel: {
+              Channels::ORGANIC_SEARCH => { credits: 100, revenue: 0 },
+              Channels::PAID_SOCIAL => { credits: 80, revenue: 0 },
+              Channels::REFERRAL => { credits: 70, revenue: 0 },
+              Channels::DIRECT => { credits: 60, revenue: 0 },
+              Channels::PAID_SEARCH => { credits: 50, revenue: 0 }
+            }
+          },
+          {
+            conversion_type: "Trial Start",
+            by_channel: {
+              Channels::PAID_SEARCH => { credits: 80, revenue: 0 },
+              Channels::EMAIL => { credits: 60, revenue: 0 },
+              Channels::ORGANIC_SEARCH => { credits: 50, revenue: 0 },
+              Channels::DIRECT => { credits: 30, revenue: 0 }
+            }
+          }
+        ]
       end
     end
   end

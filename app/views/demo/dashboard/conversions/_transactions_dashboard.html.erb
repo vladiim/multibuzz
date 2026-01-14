@@ -2,30 +2,66 @@
 <% totals = data[:totals] %>
 <% prior = totals[:prior_period] %>
 
+<!-- KPI Cards: Match real dashboard layout -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
   <%= render "dashboard/conversions/kpi_card",
     metric: "conversions",
     label: "Conversions",
     value: totals[:conversions],
-    prior_value: prior[:conversions] %>
+    prior_value: prior[:conversions],
+    clickable: false %>
 
   <%= render "dashboard/conversions/kpi_card",
     metric: "revenue",
     label: "Revenue",
     value: totals[:revenue],
     prior_value: prior[:revenue],
-    type: :currency %>
+    type: :currency,
+    clickable: false %>
 
   <%= render "dashboard/conversions/kpi_card",
     metric: "aov",
     label: "Avg Order Value",
     value: totals[:aov],
     prior_value: prior[:aov],
-    type: :currency %>
+    type: :currency,
+    clickable: false %>
+
+  <%= render "dashboard/conversions/kpi_card",
+    metric: "avg_days",
+    label: "Avg Days to Convert",
+    value: totals[:avg_days_to_convert],
+    subtitle: "from first touch",
+    clickable: false %>
+
+  <%= render "dashboard/conversions/kpi_card",
+    metric: "avg_channels",
+    label: "Avg Channels",
+    value: totals[:avg_channels_to_convert],
+    subtitle: "per conversion",
+    clickable: false %>
+
+  <%= render "dashboard/conversions/kpi_card",
+    metric: "avg_visits",
+    label: "Avg Visits",
+    value: totals[:avg_visits_to_convert],
+    subtitle: "per conversion",
+    clickable: false %>
 </div>
 
+<!-- Time Series Chart -->
 <div class="bg-white p-4 sm:p-6 rounded-lg shadow mb-6">
-  <h3 class="text-lg font-medium text-gray-900 mb-4">Channel Performance Over Time</h3>
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="text-lg font-medium text-gray-900">Channel Performance Over Time</h3>
+    <div class="group relative">
+      <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <div class="hidden group-hover:block absolute z-10 w-56 p-2 text-xs text-gray-600 bg-white border border-gray-200 rounded shadow-lg right-0 top-6">
+        Daily conversions by channel. Shows top 5 channels for clarity.
+      </div>
+    </div>
+  </div>
   <div id="time-series-chart"
     data-controller="chart"
     data-chart-type-value="line"
@@ -34,8 +70,20 @@
   </div>
 </div>
 
-<div class="bg-white p-4 sm:p-6 rounded-lg shadow">
-  <h3 class="text-base sm:text-lg font-medium text-gray-900 mb-4">Conversions by Channel</h3>
+<!-- Channel Attribution Chart -->
+<div class="bg-white p-4 sm:p-6 rounded-lg shadow mb-6">
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="text-base sm:text-lg font-medium text-gray-900">Conversions by Channel</h3>
+    <div class="group relative">
+      <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <div class="hidden group-hover:block absolute z-10 w-56 p-2 text-xs text-gray-600 bg-white border border-gray-200 rounded shadow-lg right-0 top-6">
+        <strong><%= @filter_params[:models]&.first&.name&.titleize || "Linear" %></strong>:
+        <%= attribution_model_description(@filter_params[:models]&.first&.algorithm || AttributionAlgorithms::LINEAR) %>
+      </div>
+    </div>
+  </div>
   <div id="channel-chart"
     data-controller="chart"
     data-chart-type-value="bar"
@@ -46,3 +94,27 @@
     class="h-56 sm:h-72 lg:h-80">
   </div>
 </div>
+
+<!-- Conversions by Type Chart (simplified - no dimension selector in demo) -->
+<% if data[:by_conversion_name].present? %>
+  <div class="bg-white p-6 rounded-lg shadow mb-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-medium text-gray-900">Conversions by Type</h3>
+      <div class="group relative">
+        <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <div class="hidden group-hover:block absolute z-10 w-56 p-2 text-xs text-gray-600 bg-white border border-gray-200 rounded shadow-lg right-0 top-6">
+          Shows conversion attribution credits grouped by conversion type.
+        </div>
+      </div>
+    </div>
+    <div id="conversion-name-chart"
+      data-controller="chart"
+      data-chart-type-value="stacked-bar"
+      data-chart-metric-value="credits"
+      data-chart-data-value="<%= data[:by_conversion_name].to_json %>"
+      class="h-64">
+    </div>
+  </div>
+<% end %>
