@@ -4,49 +4,43 @@
 
 <!-- KPI Cards: Match real dashboard layout -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
-  <%= render "dashboard/conversions/kpi_card",
+  <%= render "demo/dashboard/conversions/kpi_card",
     metric: "conversions",
     label: "Conversions",
     value: totals[:conversions],
-    prior_value: prior[:conversions],
-    clickable: false %>
+    prior_value: prior[:conversions] %>
 
-  <%= render "dashboard/conversions/kpi_card",
+  <%= render "demo/dashboard/conversions/kpi_card",
     metric: "revenue",
     label: "Revenue",
     value: totals[:revenue],
     prior_value: prior[:revenue],
-    type: :currency,
-    clickable: false %>
+    type: :currency %>
 
-  <%= render "dashboard/conversions/kpi_card",
+  <%= render "demo/dashboard/conversions/kpi_card",
     metric: "aov",
     label: "Avg Order Value",
     value: totals[:aov],
     prior_value: prior[:aov],
-    type: :currency,
-    clickable: false %>
+    type: :currency %>
 
-  <%= render "dashboard/conversions/kpi_card",
+  <%= render "demo/dashboard/conversions/kpi_card",
     metric: "avg_days",
     label: "Avg Days to Convert",
     value: totals[:avg_days_to_convert],
-    subtitle: "from first touch",
-    clickable: false %>
+    subtitle: "from first touch" %>
 
-  <%= render "dashboard/conversions/kpi_card",
+  <%= render "demo/dashboard/conversions/kpi_card",
     metric: "avg_channels",
     label: "Avg Channels",
     value: totals[:avg_channels_to_convert],
-    subtitle: "per conversion",
-    clickable: false %>
+    subtitle: "per conversion" %>
 
-  <%= render "dashboard/conversions/kpi_card",
+  <%= render "demo/dashboard/conversions/kpi_card",
     metric: "avg_visits",
     label: "Avg Visits",
     value: totals[:avg_visits_to_convert],
-    subtitle: "per conversion",
-    clickable: false %>
+    subtitle: "per conversion" %>
 </div>
 
 <!-- Time Series Chart -->

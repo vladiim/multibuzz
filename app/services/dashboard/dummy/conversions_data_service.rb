@@ -88,33 +88,33 @@ module Dashboard
       def by_conversion_name_data
         [
           {
-            conversion_type: "Purchase",
-            by_channel: {
-              Channels::PAID_SEARCH => { credits: 320, revenue: 19_200 },
-              Channels::ORGANIC_SEARCH => { credits: 280, revenue: 16_800 },
-              Channels::EMAIL => { credits: 240, revenue: 14_400 },
-              Channels::PAID_SOCIAL => { credits: 180, revenue: 10_800 },
-              Channels::DIRECT => { credits: 160, revenue: 9_600 }
-            }
+            channel: "Purchase",
+            by_channel: [
+              { channel: Channels::PAID_SEARCH, credits: 320 },
+              { channel: Channels::ORGANIC_SEARCH, credits: 280 },
+              { channel: Channels::EMAIL, credits: 240 },
+              { channel: Channels::PAID_SOCIAL, credits: 180 },
+              { channel: Channels::DIRECT, credits: 160 }
+            ]
           },
           {
-            conversion_type: "Signup",
-            by_channel: {
-              Channels::ORGANIC_SEARCH => { credits: 100, revenue: 0 },
-              Channels::PAID_SOCIAL => { credits: 80, revenue: 0 },
-              Channels::REFERRAL => { credits: 70, revenue: 0 },
-              Channels::DIRECT => { credits: 60, revenue: 0 },
-              Channels::PAID_SEARCH => { credits: 50, revenue: 0 }
-            }
+            channel: "Signup",
+            by_channel: [
+              { channel: Channels::ORGANIC_SEARCH, credits: 100 },
+              { channel: Channels::PAID_SOCIAL, credits: 80 },
+              { channel: Channels::REFERRAL, credits: 70 },
+              { channel: Channels::DIRECT, credits: 60 },
+              { channel: Channels::PAID_SEARCH, credits: 50 }
+            ]
           },
           {
-            conversion_type: "Trial Start",
-            by_channel: {
-              Channels::PAID_SEARCH => { credits: 80, revenue: 0 },
-              Channels::EMAIL => { credits: 60, revenue: 0 },
-              Channels::ORGANIC_SEARCH => { credits: 50, revenue: 0 },
-              Channels::DIRECT => { credits: 30, revenue: 0 }
-            }
+            channel: "Trial Start",
+            by_channel: [
+              { channel: Channels::PAID_SEARCH, credits: 80 },
+              { channel: Channels::EMAIL, credits: 60 },
+              { channel: Channels::ORGANIC_SEARCH, credits: 50 },
+              { channel: Channels::DIRECT, credits: 30 }
+            ]
           }
         ]
       end

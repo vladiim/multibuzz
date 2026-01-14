@@ -1,0 +1,17 @@
+<%# Required locals: metric, label, value %>
+<%# Optional locals: prior_value, type, subtitle %>
+<% type = local_assigns[:type] %>
+<% subtitle = local_assigns[:subtitle] %>
+<% prior_value = local_assigns[:prior_value] %>
+<% selected = @filter_params[:metric] == metric %>
+
+<%= link_to demo_dashboard_path(request.query_parameters.merge(metric: metric)),
+    data: { turbo_frame: "_top" },
+    class: "bg-white p-3 sm:p-5 rounded-lg shadow transition-all hover:shadow-md #{selected ? 'ring-2 ring-indigo-500' : 'cursor-pointer'}" do %>
+  <%= render "dashboard/conversions/kpi_card_content",
+    label: label,
+    value: value,
+    prior_value: prior_value,
+    type: type,
+    subtitle: subtitle %>
+<% end %>
