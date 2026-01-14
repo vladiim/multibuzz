@@ -29,16 +29,18 @@ class MbuzzRubyTestapp < Sinatra::Base
     }.to_json
   end
 
-  # Trigger an event - use Client.track directly with explicit IDs from cookies
+  # Trigger an event - use Client.track directly with explicit visitor_id from cookie
+  # Session is now resolved server-side (v0.7.0+)
   post "/api/event" do
     content_type :json
     data = JSON.parse(request.body.read)
 
     result = Mbuzz::Client.track(
       visitor_id: current_visitor_id,
-      session_id: current_session_id,
       event_type: data["event_type"],
-      properties: symbolize_keys(data["properties"] || {})
+      properties: symbolize_keys(data["properties"] || {}),
+      ip: request.ip,
+      user_agent: request.user_agent
     )
 
     {

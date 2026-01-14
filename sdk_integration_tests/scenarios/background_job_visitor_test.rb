@@ -12,10 +12,16 @@ class BackgroundJobVisitorTest < SdkIntegrationTest
   # -------------------------------------------------------------------
 
   def test_background_event_without_visitor_id_fails
-    # First, visit the app to establish a session (creates visitor via middleware)
+    # Visit the app to get a visitor_id from the cookie
     visit "/"
     track_visitor_id!
-    wait_for_async(2)
+
+    # Create a session to register the visitor in Multibuzz
+    session_result = create_session_for_visitor(@visitor_id)
+    assert_equal "accepted", session_result["status"],
+      "Session creation should succeed. Got: #{session_result.inspect}"
+
+    wait_for_async(1)
 
     # Now call the background endpoint WITHOUT visitor_id
     # This simulates a background job calling Mbuzz.event() without context
@@ -29,14 +35,20 @@ class BackgroundJobVisitorTest < SdkIntegrationTest
   end
 
   def test_background_event_with_explicit_visitor_id_succeeds
-    # First, visit the app to establish a session and get visitor_id
+    # Visit the app to get a visitor_id from the cookie
     visit "/"
     track_visitor_id!
     stored_visitor_id = @visitor_id
-    wait_for_async(2)
 
     # Verify we have a visitor_id
-    assert stored_visitor_id && !stored_visitor_id.empty?, "Should have visitor_id from session"
+    assert stored_visitor_id && !stored_visitor_id.empty?, "Should have visitor_id from cookie"
+
+    # Create a session to register the visitor in Multibuzz
+    session_result = create_session_for_visitor(stored_visitor_id)
+    assert_equal "accepted", session_result["status"],
+      "Session creation should succeed. Got: #{session_result.inspect}"
+
+    wait_for_async(1)
 
     # Call background endpoint WITH explicit visitor_id
     # This is the correct pattern for background jobs
@@ -65,7 +77,13 @@ class BackgroundJobVisitorTest < SdkIntegrationTest
   def test_background_conversion_without_visitor_id_fails
     visit "/"
     track_visitor_id!
-    wait_for_async(2)
+
+    # Create session to register visitor
+    session_result = create_session_for_visitor(@visitor_id)
+    assert_equal "accepted", session_result["status"],
+      "Session creation should succeed. Got: #{session_result.inspect}"
+
+    wait_for_async(1)
 
     response = post_json("/api/background_conversion_no_visitor", {
       conversion_type: "background_purchase_no_vid",
@@ -80,9 +98,15 @@ class BackgroundJobVisitorTest < SdkIntegrationTest
     visit "/"
     track_visitor_id!
     stored_visitor_id = @visitor_id
-    wait_for_async(2)
 
-    assert stored_visitor_id && !stored_visitor_id.empty?, "Should have visitor_id from session"
+    assert stored_visitor_id && !stored_visitor_id.empty?, "Should have visitor_id from cookie"
+
+    # Create session to register visitor
+    session_result = create_session_for_visitor(stored_visitor_id)
+    assert_equal "accepted", session_result["status"],
+      "Session creation should succeed. Got: #{session_result.inspect}"
+
+    wait_for_async(1)
 
     response = post_json("/api/background_conversion_with_visitor", {
       conversion_type: "background_purchase_with_vid",
@@ -95,6 +119,31 @@ class BackgroundJobVisitorTest < SdkIntegrationTest
   end
 
   private
+
+  # Create a session via the API to register the visitor
+  # Visitors must exist before events can be tracked (require_existing_visitor spec)
+  def create_session_for_visitor(visitor_id)
+    session_id = SecureRandom.hex(32)
+    uri = URI.parse("#{TestConfig.api_url}/sessions")
+    http = Net::HTTP.new(uri.host, uri.port)
+
+    request = Net::HTTP::Post.new(uri.path)
+    request["Content-Type"] = "application/json"
+    request["Authorization"] = "Bearer #{TestConfig.api_key}"
+    request.body = {
+      session: {
+        visitor_id: visitor_id,
+        session_id: session_id,
+        url: "http://localhost:4001/",
+        started_at: Time.now.utc.iso8601
+      }
+    }.to_json
+
+    response = http.request(request)
+    JSON.parse(response.body)
+  rescue => e
+    { "status" => "error", "error" => e.message }
+  end
 
   # HTTP helper to POST JSON directly to test app (bypasses browser/cookies)
   def post_json(path, data)

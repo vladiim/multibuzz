@@ -14,7 +14,18 @@ This test suite:
 
 - Ruby 3.x
 - Node.js 18+
-- Main multibuzz app running locally (`rails server`)
+- **Main multibuzz app must be running** (`bin/dev` or `rails server`)
+
+**IMPORTANT**: The SDK integration tests require the main Multibuzz Rails app to be running on `localhost:3000`. Without it, tests will fail with "Connection refused" or "404 Not Found" errors. The main app provides:
+- Test account setup endpoint (`POST /api/v1/test/setup`)
+- Test data verification endpoint (`GET /api/v1/test/verification`)
+- Event/conversion API endpoints
+
+Start the main app first:
+```bash
+cd /path/to/multibuzz
+bin/dev
+```
 
 ## Directory Structure
 
@@ -60,13 +71,15 @@ cd apps/mbuzz_node_testapp && npm install && cd ../..
 npx playwright install chromium
 ```
 
-### 2. Start Main App
+### 2. Start Main Multibuzz App
 
-In a separate terminal:
+**This step is required.** In a separate terminal:
 ```bash
 cd /path/to/multibuzz
-rails server
+bin/dev  # or: rails server
 ```
+
+Wait until you see "Listening on http://localhost:3000" before proceeding.
 
 ### 3. Start Test Apps
 
@@ -127,6 +140,7 @@ The test account slug starts with `sdk-test-` and is automatically cleaned up.
 | `utm_capture_test.rb` | UTM parameter capture, referrer tracking |
 | `returning_visit_test.rb` | Visitor persistence, session management |
 | `concurrent_test.rb` | Multiple sessions, rapid events |
+| `background_job_visitor_test.rb` | Background job context, explicit visitor_id |
 
 ## Test Apps
 
