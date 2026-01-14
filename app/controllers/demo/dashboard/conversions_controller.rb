@@ -4,8 +4,9 @@ module Demo
       def show
         @demo_mode = true
         @clv_mode = demo_clv_mode?
-        @selected_model = selected_model
-        @filter_params = { models: [ @selected_model ], metric: params[:metric] }
+        @selected_models = selected_models
+        @comparison_mode = @selected_models.length > 1
+        @filter_params = { models: @selected_models, metric: params[:metric] }
 
         @clv_mode ? load_clv_data : load_transactions_data
       end
@@ -21,18 +22,24 @@ module Demo
       end
 
       def load_transactions_data
-        @comparison_mode = false
-        @results = [ single_result ]
+        @results = @selected_models.map do |model|
+          { model: model, result: ::Dashboard::Dummy::ConversionsDataService.new.call }
+        end
       end
 
-      def single_result
-        { model: @selected_model, result: ::Dashboard::Dummy::ConversionsDataService.new.call }
+      def selected_models
+        model_params = Array(params[:models]).reject(&:blank?)
+        model_params = ["linear"] if model_params.empty?
+
+        model_params.take(2).map do |model_key|
+          build_demo_model(model_key)
+        end
       end
 
-      def selected_model
-        model_param = params[:model] || "linear"
-        algorithm = DEMO_MODELS[model_param] || AttributionAlgorithms::LINEAR
-        AttributionModel.new(name: model_param, algorithm: algorithm)
+      def build_demo_model(model_key)
+        algorithm = DEMO_MODELS[model_key] || AttributionAlgorithms::LINEAR
+        # Create a struct-like object that responds to the same interface as AttributionModel
+        DemoModel.new(model_key, algorithm)
       end
 
       DEMO_MODELS = {
@@ -44,6 +51,13 @@ module Demo
         "markov_chain" => AttributionAlgorithms::MARKOV_CHAIN,
         "shapley_value" => AttributionAlgorithms::SHAPLEY_VALUE
       }.freeze
+
+      # Simple struct to mimic AttributionModel interface for demo purposes
+      DemoModel = Struct.new(:name, :algorithm) do
+        def prefix_id
+          name
+        end
+      end
     end
   end
 end

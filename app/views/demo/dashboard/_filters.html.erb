@@ -1,0 +1,166 @@
+<%
+  # Demo attribution models
+  demo_models = [
+    { key: "first_touch", name: "First Touch" },
+    { key: "last_touch", name: "Last Touch" },
+    { key: "linear", name: "Linear" },
+    { key: "time_decay", name: "Time Decay" },
+    { key: "u_shaped", name: "U-Shaped" },
+    { key: "markov_chain", name: "Markov Chain" },
+    { key: "shapley_value", name: "Shapley Value" }
+  ]
+
+  # Parse selected models from params
+  selected_model_keys = Array(params[:models]).reject(&:blank?)
+  selected_model_keys = ["linear"] if selected_model_keys.empty?
+
+  # Demo channels
+  demo_channels = %w[paid_search organic_search paid_social organic_social email direct referral affiliate]
+%>
+
+<div class="dashboard-filters bg-white p-4 rounded-lg shadow">
+  <form action="<%= demo_dashboard_path %>" method="get" data-turbo-frame="_top" class="flex flex-wrap gap-4 items-end">
+
+    <!-- Date Range Dropdown -->
+    <div class="filter-group" data-controller="toggle">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+      <div class="flex items-center gap-2">
+        <select name="date_range"
+          data-action="change->toggle#handleDateRange"
+          class="block w-36 px-3 py-2 text-sm border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <option value="7d">Last 7 Days</option>
+          <option value="30d" selected>Last 30 Days</option>
+          <option value="90d">Last 90 Days</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Attribution Models (multi-select, max 2 for comparison) -->
+    <div class="filter-group"
+      data-controller="toggle limited-checkbox"
+      data-toggle-close-on-click-outside-value="true"
+      data-limited-checkbox-max-value="2"
+      data-limited-checkbox-singular-value="model"
+      data-limited-checkbox-plural-value="models">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Attribution Model</label>
+      <div class="relative">
+        <button type="button"
+          data-action="click->toggle#toggle"
+          class="w-48 px-3 py-2 text-sm text-left border border-gray-300 rounded bg-white flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <span data-limited-checkbox-target="label">
+            <%= selected_model_keys.length > 0 ? "#{selected_model_keys.length} model#{'s' if selected_model_keys.length > 1}" : "Select models" %>
+          </span>
+          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        <div data-toggle-target="content" class="hidden absolute z-10 mt-1 w-56 bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-auto">
+          <% demo_models.each do |model| %>
+            <div class="flex items-center justify-between px-3 py-2 hover:bg-gray-50 group">
+              <label class="flex items-center cursor-pointer flex-1">
+                <input type="checkbox"
+                  name="models[]"
+                  value="<%= model[:key] %>"
+                  data-limited-checkbox-target="checkbox"
+                  data-action="change->limited-checkbox#change"
+                  <%= 'checked' if selected_model_keys.include?(model[:key]) %>
+                  class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                <span class="ml-2 text-sm text-gray-700"><%= model[:name] %></span>
+              </label>
+            </div>
+          <% end %>
+          <div class="border-t border-gray-200">
+            <span class="flex items-center px-3 py-2 text-sm text-gray-400">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              Manage Models (Login)
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Channels Multi-select -->
+    <div class="filter-group"
+      data-controller="toggle checkbox-group"
+      data-toggle-close-on-click-outside-value="true"
+      data-checkbox-group-all-label-value="All Channels"
+      data-checkbox-group-none-label-value="None selected"
+      data-checkbox-group-selected-label-value="{count} selected">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Channels</label>
+      <div class="relative">
+        <button type="button"
+          data-action="click->toggle#toggle"
+          class="w-44 px-3 py-2 text-sm text-left border border-gray-300 rounded bg-white flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <span data-checkbox-group-target="label">All Channels</span>
+          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        <div data-toggle-target="content" class="hidden absolute z-10 mt-1 w-44 bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-auto">
+          <div class="flex border-b border-gray-200 px-3 py-1.5 gap-2 sticky top-0 bg-white">
+            <button type="button" data-action="checkbox-group#selectAll" class="text-xs text-indigo-600 hover:text-indigo-800">All</button>
+            <span class="text-gray-300">|</span>
+            <button type="button" data-action="checkbox-group#selectNone" class="text-xs text-indigo-600 hover:text-indigo-800">None</button>
+          </div>
+          <% demo_channels.each do |channel| %>
+            <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer">
+              <input type="checkbox"
+                name="channels[]"
+                value="<%= channel %>"
+                data-checkbox-group-target="checkbox"
+                data-action="change->checkbox-group#change"
+                checked
+                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+              <span class="ml-2 text-sm text-gray-700"><%= channel.titleize %></span>
+            </label>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conversion Filters (decorative) -->
+    <div class="filter-group"
+      data-controller="toggle"
+      data-toggle-close-on-click-outside-value="true">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Filters</label>
+      <div class="relative">
+        <button type="button"
+          data-action="click->toggle#toggle"
+          class="w-36 px-3 py-2 text-sm text-left border border-gray-300 rounded bg-white flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <span>All conversions</span>
+          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        <div data-toggle-target="content" class="hidden absolute z-10 mt-1 w-64 bg-white border border-gray-300 rounded shadow-lg p-3">
+          <p class="text-xs text-gray-500 mb-2">Filter by conversion attributes:</p>
+          <div class="space-y-2">
+            <div class="flex items-center gap-2">
+              <select class="flex-1 px-2 py-1 text-xs border border-gray-300 rounded">
+                <option>conversion_name</option>
+                <option>plan</option>
+                <option>value</option>
+              </select>
+              <select class="w-16 px-2 py-1 text-xs border border-gray-300 rounded">
+                <option>=</option>
+                <option>!=</option>
+              </select>
+              <input type="text" placeholder="value" class="flex-1 px-2 py-1 text-xs border border-gray-300 rounded">
+            </div>
+          </div>
+          <p class="text-xs text-gray-400 mt-2 italic">Demo only - filters not applied</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Apply Button -->
+    <div class="filter-group">
+      <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        Apply
+      </button>
+    </div>
+  </form>
+</div>

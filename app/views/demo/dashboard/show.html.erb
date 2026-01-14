@@ -5,7 +5,107 @@
   <div class="py-6">
     <main>
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <%= render "demo/dashboard/tabs" %>
+        <!-- Main Dashboard Container -->
+        <div data-controller="toggle"
+          data-toggle-default-value="conversions"
+          data-toggle-active-class="border-indigo-500 text-indigo-600"
+          data-toggle-inactive-class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+
+          <!-- Tab Bar -->
+          <div class="border-b border-gray-200">
+            <div class="flex flex-col sm:flex-row sm:flex-nowrap sm:items-center sm:justify-between">
+              <!-- Tab Navigation -->
+              <nav class="-mb-px flex gap-4 sm:gap-6">
+                <button type="button"
+                  data-toggle-target="trigger"
+                  data-action="toggle#select"
+                  data-value="conversions"
+                  class="py-3 px-1 text-sm font-medium border-b-2 whitespace-nowrap">
+                  Conversions
+                </button>
+                <button type="button"
+                  data-toggle-target="trigger"
+                  data-action="toggle#select"
+                  data-value="funnel"
+                  class="py-3 px-1 text-sm font-medium border-b-2 whitespace-nowrap">
+                  Funnel
+                </button>
+                <button type="button" disabled
+                  class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-400 whitespace-nowrap cursor-not-allowed">
+                  Events <span class="text-xs">(Live only)</span>
+                </button>
+              </nav>
+
+              <!-- Filters & Export Buttons -->
+              <div class="flex items-center gap-2 pt-2 pb-3 sm:pt-0">
+                <!-- Filters Toggle -->
+                <button type="button"
+                  data-action="click->toggle#toggleFilters"
+                  data-toggle-target="filtersButton"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                  </svg>
+                  Filters
+                </button>
+                <!-- Export Dropdown (Coming Soon) -->
+                <div data-controller="toggle" data-toggle-close-on-click-outside-value="true" class="relative">
+                  <button type="button" data-action="click->toggle#toggle" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Export
+                    <span class="ml-1 px-1.5 py-0.5 text-xs bg-amber-100 text-amber-700 rounded">Soon</span>
+                  </button>
+                  <div data-toggle-target="content" class="hidden absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10 p-2">
+                    <p class="px-2 py-1 text-xs text-gray-500 mb-2">Coming soon! Sign up to be notified:</p>
+                    <button type="button" class="block w-full text-left px-3 py-2 text-sm text-gray-400 cursor-not-allowed">
+                      CSV Export
+                    </button>
+                    <button type="button" class="block w-full text-left px-3 py-2 text-sm text-gray-400 cursor-not-allowed">
+                      API Extract
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Collapsible Filters Bar -->
+          <div data-toggle-target="filters" class="hidden py-4">
+            <%= render "demo/dashboard/filters" %>
+          </div>
+
+          <!-- Tab Content -->
+          <div class="mt-6">
+            <!-- Conversions Tab -->
+            <div data-toggle-target="content" data-value="conversions">
+              <!-- CLV Mode Toggle -->
+              <%= render "demo/dashboard/clv_toggle" %>
+
+              <%= turbo_frame_tag "demo_conversions",
+                src: demo_dashboard_conversions_path(models: params[:models]),
+                loading: :lazy do %>
+                <%= render "dashboard/conversions/skeleton" %>
+              <% end %>
+            </div>
+
+            <!-- Funnel Tab -->
+            <div data-toggle-target="content" data-value="funnel" class="hidden">
+              <%= turbo_frame_tag "demo_funnel",
+                src: demo_dashboard_funnel_path,
+                loading: :lazy do %>
+                <%= render "dashboard/funnel/skeleton" %>
+              <% end %>
+            </div>
+
+            <!-- Events Tab (Disabled) -->
+            <div data-toggle-target="content" data-value="events" class="hidden">
+              <%= render "demo/dashboard/events_placeholder" %>
+            </div>
+          </div>
+        </div>
+
         <%= render "demo/dashboard/cta_banner" %>
       </div>
     </main>
