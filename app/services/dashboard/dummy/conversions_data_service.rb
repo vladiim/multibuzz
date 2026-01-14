@@ -33,16 +33,16 @@ module Dashboard
 
       def channel_data
         [
-          { channel: Channels::PAID_SEARCH, credits: 450, revenue: 27_000, percentage: 18.9 },
-          { channel: Channels::ORGANIC_SEARCH, credits: 380, revenue: 22_800, percentage: 16.0 },
-          { channel: Channels::EMAIL, credits: 320, revenue: 19_200, percentage: 13.4 },
-          { channel: Channels::PAID_SOCIAL, credits: 280, revenue: 16_800, percentage: 11.8 },
-          { channel: Channels::DIRECT, credits: 250, revenue: 15_000, percentage: 10.5 },
-          { channel: Channels::REFERRAL, credits: 220, revenue: 13_200, percentage: 9.2 },
-          { channel: Channels::ORGANIC_SOCIAL, credits: 180, revenue: 10_800, percentage: 7.6 },
-          { channel: Channels::DISPLAY, credits: 150, revenue: 9_000, percentage: 6.3 },
-          { channel: Channels::AFFILIATE, credits: 100, revenue: 6_000, percentage: 4.2 },
-          { channel: Channels::VIDEO, credits: 52, revenue: 3_120, percentage: 2.2 }
+          { channel: Channels::PAID_SEARCH, credits: 450, revenue: 27_000, percentage: 18.9, avg_channels: 3.2, avg_visits: 6.1, avg_days: 3.8 },
+          { channel: Channels::ORGANIC_SEARCH, credits: 380, revenue: 22_800, percentage: 16.0, avg_channels: 2.8, avg_visits: 5.4, avg_days: 4.2 },
+          { channel: Channels::EMAIL, credits: 320, revenue: 19_200, percentage: 13.4, avg_channels: 2.5, avg_visits: 4.8, avg_days: 3.1 },
+          { channel: Channels::PAID_SOCIAL, credits: 280, revenue: 16_800, percentage: 11.8, avg_channels: 3.1, avg_visits: 5.9, avg_days: 4.5 },
+          { channel: Channels::DIRECT, credits: 250, revenue: 15_000, percentage: 10.5, avg_channels: 1.8, avg_visits: 3.2, avg_days: 2.1 },
+          { channel: Channels::REFERRAL, credits: 220, revenue: 13_200, percentage: 9.2, avg_channels: 2.4, avg_visits: 4.1, avg_days: 3.5 },
+          { channel: Channels::ORGANIC_SOCIAL, credits: 180, revenue: 10_800, percentage: 7.6, avg_channels: 2.9, avg_visits: 5.2, avg_days: 4.8 },
+          { channel: Channels::DISPLAY, credits: 150, revenue: 9_000, percentage: 6.3, avg_channels: 3.4, avg_visits: 6.8, avg_days: 5.2 },
+          { channel: Channels::AFFILIATE, credits: 100, revenue: 6_000, percentage: 4.2, avg_channels: 2.2, avg_visits: 3.9, avg_days: 2.8 },
+          { channel: Channels::VIDEO, credits: 52, revenue: 3_120, percentage: 2.2, avg_channels: 3.6, avg_visits: 7.2, avg_days: 5.8 }
         ]
       end
 
