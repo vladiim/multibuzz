@@ -4,7 +4,7 @@ module Api
       def create
         return render_bad_request("Missing 'session' parameter") unless session_param_present?
 
-        creation_result[:success] ? render_accepted : render_unprocessable(creation_result)
+        creation_result[:success] ? render_accepted : render_failure
       end
 
       private
@@ -36,6 +36,11 @@ module Api
         render json: accepted_response, status: :accepted
       end
 
+      def render_failure
+        log_session_failure
+        render_unprocessable(creation_result)
+      end
+
       def accepted_response
         {
           status: "accepted",
@@ -43,6 +48,15 @@ module Api
           session_id: creation_result[:session_id],
           channel: creation_result[:channel]
         }
+      end
+
+      def log_session_failure
+        log_request_failure(
+          error_type: :validation_missing_param,
+          error_message: creation_result[:errors].join(", "),
+          http_status: 422,
+          error_details: session_params.to_h
+        )
       end
     end
   end

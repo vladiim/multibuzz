@@ -21,6 +21,7 @@ module Api
       def process_events
         set_cookies
         result = ingestion_result
+        log_rejections(result[:rejected])
         process_identifiers
         render_accepted(result)
       end
@@ -112,6 +113,29 @@ module Api
 
       def render_accepted(result)
         render json: result, status: :accepted
+      end
+
+      def log_rejections(rejected)
+        rejected.each { |rejection| log_rejection(rejection) }
+      end
+
+      def log_rejection(rejection)
+        log_request_failure(
+          error_type: rejection_error_type(rejection),
+          error_message: rejection[:errors].join(", "),
+          http_status: 422,
+          error_details: {
+            index: rejection[:index],
+            event_type: rejection[:event_type]
+          }
+        )
+      end
+
+      def rejection_error_type(rejection)
+        error_text = rejection[:errors].join(" ")
+        return :visitor_not_found if error_text.include?("Visitor not found")
+
+        :validation_invalid_format
       end
     end
   end

@@ -10,10 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_10_090440) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_15_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
-  enable_extension "timescaledb"
+  # NOTE: timescaledb extension excluded for test environment compatibility
 
   create_table "account_memberships", force: :cascade do |t|
     t.bigint "user_id", null: false
@@ -99,6 +99,33 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_10_090440) do
     t.index ["key_digest"], name: "index_api_keys_on_key_digest", unique: true
     t.index ["key_prefix"], name: "index_api_keys_on_key_prefix"
     t.index ["revoked_at"], name: "index_api_keys_on_revoked_at"
+  end
+
+  create_table "api_request_logs", force: :cascade do |t|
+    t.bigint "account_id"
+    t.string "request_id", null: false
+    t.string "endpoint", null: false
+    t.string "http_method", null: false
+    t.integer "http_status", null: false
+    t.integer "error_type", null: false
+    t.string "error_code"
+    t.text "error_message"
+    t.jsonb "error_details", default: {}
+    t.string "sdk_name"
+    t.string "sdk_version"
+    t.string "ip_address"
+    t.string "user_agent"
+    t.jsonb "request_params", default: {}
+    t.integer "response_time_ms"
+    t.datetime "occurred_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "occurred_at"], name: "index_api_request_logs_on_account_id_and_occurred_at"
+    t.index ["account_id"], name: "index_api_request_logs_on_account_id"
+    t.index ["endpoint", "http_status", "occurred_at"], name: "idx_on_endpoint_http_status_occurred_at_2515f4d5ab"
+    t.index ["error_type", "occurred_at"], name: "index_api_request_logs_on_error_type_and_occurred_at"
+    t.index ["request_id"], name: "index_api_request_logs_on_request_id"
+    t.index ["sdk_name", "sdk_version", "occurred_at"], name: "idx_on_sdk_name_sdk_version_occurred_at_52764bb946"
   end
 
   create_table "attribution_credits", force: :cascade do |t|
@@ -382,6 +409,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_10_090440) do
   add_foreign_key "account_memberships", "users"
   add_foreign_key "accounts", "plans"
   add_foreign_key "api_keys", "accounts"
+  add_foreign_key "api_request_logs", "accounts"
   add_foreign_key "attribution_credits", "accounts"
   add_foreign_key "attribution_credits", "attribution_models"
   add_foreign_key "attribution_credits", "conversions"
@@ -401,11 +429,11 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_10_090440) do
   add_foreign_key "visitors", "accounts"
   add_foreign_key "visitors", "identities"
 
-  # TimescaleDB features excluded from schema.rb (test environments don't support them).
-  # Production uses db:migrate which runs the migrations with TimescaleDB calls.
-  # Excluded:
-  # - create_hypertable "events" (7 day chunks, compression)
-  # - create_hypertable "sessions" (7 day chunks, compression)
-  # - create_continuous_aggregate "channel_attribution_daily"
-  # - create_continuous_aggregate "source_attribution_daily"
+  # NOTE: TimescaleDB features excluded from schema.rb (used by test environment)
+  # Production uses db:migrate which includes:
+  # - create_hypertable for events and sessions
+  # - create_continuous_aggregate for channel_attribution_daily
+  # - create_continuous_aggregate for source_attribution_daily
+  # - compression policies
+  # See migrations: 20251119030317, 20251119030319, 20251119032705, 20251119032739
 end
