@@ -1,0 +1,558 @@
+# Competitor data for comparison articles and dynamic tools
+# Used by: comparison articles, comparison engine, marketing pages
+
+competitors:
+  triple_whale:
+    name: Triple Whale
+    slug: triple-whale
+    website: https://triplewhale.com
+    logo: /images/competitors/triple-whale/logo.png
+    category: dtc
+    tagline: "Shopify-native attribution"
+
+    pricing:
+      starting: 129
+      currency: USD
+      period: month
+      has_free_tier: false
+      pricing_model: flat
+      notes: "Shopify only"
+
+    features:
+      tracking_method: client_side
+      platforms: [shopify]
+      attribution_models: 3
+      custom_models: false
+      view_through: false
+      ltv_tracking: false
+      server_side: false
+      setup_time: "minutes"
+
+    best_for:
+      - "Shopify stores"
+      - "Easy setup"
+      - "Beginners"
+
+    not_for:
+      - "Non-Shopify platforms"
+      - "Custom attribution needs"
+      - "View-through attribution"
+
+    strengths:
+      - "Dead-simple Shopify setup"
+      - "Clean UI"
+      - "Good community"
+
+    weaknesses:
+      - "Shopify only"
+      - "Limited models"
+      - "No view-through"
+      - "Client-side tracking gaps"
+
+  northbeam:
+    name: Northbeam
+    slug: northbeam
+    website: https://northbeam.io
+    logo: /images/competitors/northbeam/logo.png
+    category: dtc
+    tagline: "ML-powered DTC attribution"
+
+    pricing:
+      starting: 400
+      currency: USD
+      period: month
+      has_free_tier: false
+      pricing_model: traffic_based
+      notes: "Scales with pageviews, can reach $2-5K+"
+
+    features:
+      tracking_method: ml_fractional
+      platforms: [shopify, custom]
+      attribution_models: 1
+      custom_models: false
+      view_through: true
+      ltv_tracking: false
+      server_side: false
+      setup_time: "1-2 weeks"
+
+    best_for:
+      - "Enterprise DTC ($40M+)"
+      - "Dedicated media buyers"
+      - "ML believers"
+
+    not_for:
+      - "Small brands"
+      - "Teams wanting transparency"
+      - "Budget-conscious"
+
+    strengths:
+      - "ML prevents overcounting"
+      - "Good for complex funnels"
+      - "Enterprise features"
+
+    weaknesses:
+      - "Black box ML"
+      - "Expensive"
+      - "Steep learning curve"
+      - "No custom models"
+
+  hockeystack:
+    name: HockeyStack
+    slug: hockeystack
+    website: https://hockeystack.com
+    logo: /images/competitors/hockeystack/logo.png
+    category: b2b
+    tagline: "All-in-one B2B attribution"
+
+    pricing:
+      starting: 2200
+      currency: USD
+      period: month
+      has_free_tier: false
+      pricing_model: flat
+      notes: "Enterprise pricing"
+
+    features:
+      tracking_method: client_side
+      platforms: [any]
+      attribution_models: 3
+      custom_models: false
+      view_through: true
+      ltv_tracking: false
+      server_side: false
+      setup_time: "2 weeks"
+      bundled_analytics: true
+      bundled_surveys: true
+
+    best_for:
+      - "B2B SaaS"
+      - "Series A-C"
+      - "Fast deployment"
+
+    not_for:
+      - "Budget-conscious"
+      - "Custom model needs"
+      - "Best-of-breed stack"
+
+    strengths:
+      - "All-in-one platform"
+      - "Fast setup"
+      - "Good B2B features"
+
+    weaknesses:
+      - "Very expensive"
+      - "No custom models"
+      - "Bundled features add cost"
+
+  dreamdata:
+    name: Dreamdata
+    slug: dreamdata
+    website: https://dreamdata.io
+    logo: /images/competitors/dreamdata/logo.png
+    category: b2b
+    tagline: "B2B revenue attribution"
+
+    pricing:
+      starting: 999
+      currency: USD
+      period: month
+      has_free_tier: true
+      pricing_model: flat
+      notes: "Free tier available"
+
+    features:
+      tracking_method: client_side
+      platforms: [any]
+      attribution_models: 3
+      custom_models: false
+      view_through: true
+      ltv_tracking: false
+      server_side: false
+      setup_time: "4-8 weeks"
+      journey_visualization: true
+
+    best_for:
+      - "B2B mid-market"
+      - "Journey visualization"
+      - "Salesforce users"
+
+    not_for:
+      - "Fast deployment needs"
+      - "Custom models"
+      - "Enterprise ABM"
+
+    strengths:
+      - "Great journey visualization"
+      - "Free tier"
+      - "Good integrations"
+
+    weaknesses:
+      - "Long setup time"
+      - "Limited ABM"
+      - "No custom models"
+
+  rockerbox:
+    name: Rockerbox
+    slug: rockerbox
+    website: https://rockerbox.com
+    logo: /images/competitors/rockerbox/logo.png
+    category: multi_channel
+    tagline: "Multi-channel attribution with MMM"
+
+    pricing:
+      starting: 200
+      currency: USD
+      period: month
+      has_free_tier: true
+      pricing_model: flat
+      notes: "Free tier available"
+
+    features:
+      tracking_method: client_side
+      platforms: [any]
+      attribution_models: 3
+      custom_models: false
+      view_through: true
+      ltv_tracking: false
+      server_side: false
+      setup_time: "2-4 weeks"
+      podcast_tracking: true
+      tv_tracking: true
+      mmm_included: true
+
+    best_for:
+      - "Multi-channel brands"
+      - "Podcast/TV advertisers"
+      - "Strategic CMOs"
+
+    not_for:
+      - "Digital-only brands"
+      - "Custom model needs"
+      - "Tactical optimization"
+
+    strengths:
+      - "Best podcast/TV tracking"
+      - "Includes MMM"
+      - "Multi-channel view"
+
+    weaknesses:
+      - "Strategic not tactical"
+      - "Limited custom models"
+      - "Complex for simple needs"
+
+  ruler_analytics:
+    name: Ruler Analytics
+    slug: ruler-analytics
+    website: https://ruleranalytics.com
+    logo: /images/competitors/ruler-analytics/logo.png
+    category: lead_gen
+    tagline: "Call tracking + attribution"
+
+    pricing:
+      starting: 349
+      currency: GBP
+      period: month
+      has_free_tier: false
+      pricing_model: flat
+      notes: "UK-based pricing"
+
+    features:
+      tracking_method: client_side
+      platforms: [any]
+      attribution_models: 3
+      custom_models: false
+      view_through: false
+      ltv_tracking: false
+      server_side: false
+      setup_time: "1-2 weeks"
+      call_tracking: true
+      form_tracking: true
+
+    best_for:
+      - "Lead gen businesses"
+      - "Call-heavy industries"
+      - "UK/EU companies"
+
+    not_for:
+      - "E-commerce"
+      - "Custom model needs"
+      - "Non-call businesses"
+
+    strengths:
+      - "Built-in call tracking"
+      - "Good for lead gen"
+      - "Form tracking"
+
+    weaknesses:
+      - "Limited attribution depth"
+      - "No custom models"
+      - "UK-focused"
+
+  hyros:
+    name: Hyros
+    slug: hyros
+    website: https://hyros.com
+    logo: /images/competitors/hyros/logo.png
+    category: dtc
+    tagline: "High-ticket attribution"
+
+    pricing:
+      starting: 500
+      currency: USD
+      period: month
+      has_free_tier: false
+      pricing_model: flat
+      notes: "Focus on high-ticket"
+
+    features:
+      tracking_method: client_side
+      platforms: [any]
+      attribution_models: 3
+      custom_models: false
+      view_through: false
+      ltv_tracking: true
+      server_side: false
+      setup_time: "1-2 weeks"
+
+    best_for:
+      - "High-ticket sales"
+      - "Info products"
+      - "Long sales cycles"
+
+    not_for:
+      - "Low AOV e-commerce"
+      - "Simple funnels"
+      - "Budget-conscious"
+
+    strengths:
+      - "High-ticket focus"
+      - "Extended tracking window"
+      - "Phone sale tracking"
+
+    weaknesses:
+      - "Expensive"
+      - "Niche use case"
+      - "Limited models"
+
+  bizible:
+    name: Bizible (Adobe)
+    slug: bizible
+    website: https://business.adobe.com/products/marketo/bizible.html
+    logo: /images/competitors/bizible/logo.png
+    category: enterprise
+    tagline: "Enterprise Salesforce attribution"
+
+    pricing:
+      starting: null
+      currency: USD
+      period: month
+      has_free_tier: false
+      pricing_model: enterprise
+      notes: "Enterprise pricing, typically $50K+/year"
+
+    features:
+      tracking_method: client_side
+      platforms: [salesforce]
+      attribution_models: 5
+      custom_models: false
+      view_through: true
+      ltv_tracking: false
+      server_side: false
+      setup_time: "3-6 months"
+      salesforce_native: true
+
+    best_for:
+      - "Enterprise B2B"
+      - "Salesforce-heavy orgs"
+      - "Adobe ecosystem"
+
+    not_for:
+      - "SMBs"
+      - "Non-Salesforce"
+      - "Fast deployment"
+
+    strengths:
+      - "Deep Salesforce integration"
+      - "Enterprise features"
+      - "Adobe ecosystem"
+
+    weaknesses:
+      - "Very expensive"
+      - "Long implementation"
+      - "Salesforce required"
+
+  lifesight:
+    name: Lifesight
+    slug: lifesight
+    website: https://lifesight.io
+    logo: /images/competitors/lifesight/logo.png
+    category: unified
+    tagline: "Unified measurement platform"
+
+    pricing:
+      starting: null
+      currency: USD
+      period: month
+      has_free_tier: false
+      pricing_model: enterprise
+      notes: "Enterprise pricing"
+
+    features:
+      tracking_method: mixed
+      platforms: [any]
+      attribution_models: 5
+      custom_models: false
+      view_through: true
+      ltv_tracking: true
+      server_side: false
+      setup_time: "4-8 weeks"
+      mmm_included: true
+      incrementality: true
+
+    best_for:
+      - "Enterprise brands"
+      - "Full measurement stack"
+      - "Data science teams"
+
+    not_for:
+      - "SMBs"
+      - "Simple needs"
+      - "Budget-conscious"
+
+    strengths:
+      - "Complete measurement"
+      - "MMM + MTA"
+      - "Incrementality testing"
+
+    weaknesses:
+      - "Expensive"
+      - "Complex"
+      - "Long setup"
+
+  ga4:
+    name: Google Analytics 4
+    slug: ga4
+    website: https://analytics.google.com
+    logo: /images/competitors/google/logo.png
+    category: free
+    tagline: "Free web analytics"
+
+    pricing:
+      starting: 0
+      currency: USD
+      period: month
+      has_free_tier: true
+      pricing_model: free
+      notes: "Free, GA360 for enterprise"
+
+    features:
+      tracking_method: client_side
+      platforms: [any]
+      attribution_models: 2
+      custom_models: false
+      view_through: false
+      ltv_tracking: false
+      server_side: false
+      setup_time: "hours"
+
+    best_for:
+      - "Getting started"
+      - "Budget zero"
+      - "Basic needs"
+
+    not_for:
+      - "Serious attribution"
+      - "Custom models"
+      - "Privacy-focused"
+
+    strengths:
+      - "Free"
+      - "Ubiquitous"
+      - "Google integration"
+
+    weaknesses:
+      - "Limited models (removed most in 2023)"
+      - "Data sampling"
+      - "Privacy concerns"
+      - "Client-side only"
+
+# Categories for grouping
+categories:
+  dtc:
+    name: E-commerce / DTC
+    description: Tools focused on direct-to-consumer brands
+  b2b:
+    name: B2B SaaS
+    description: Tools focused on B2B sales cycles
+  enterprise:
+    name: Enterprise
+    description: Large-scale enterprise solutions
+  multi_channel:
+    name: Multi-Channel
+    description: Tools for diverse channel mixes
+  lead_gen:
+    name: Lead Generation
+    description: Tools for lead-based businesses
+  unified:
+    name: Unified Measurement
+    description: Complete measurement stacks
+  free:
+    name: Free Tools
+    description: Free or freemium options
+
+# mbuzz data for comparison
+mbuzz:
+  name: mbuzz
+  slug: mbuzz
+  website: https://mbuzz.co
+  logo: /images/mbuzz-logo.svg
+  category: unified
+  categories: [dtc, b2b, multi_channel, lead_gen, unified]
+  tagline: "Server-side attribution with model flexibility"
+
+  pricing:
+    starting: 0
+    currency: USD
+    period: month
+    has_free_tier: true
+    pricing_model: flat
+    tiers:
+      - name: Free
+        price: 0
+        records: 100000
+      - name: Starter
+        price: 29
+        records: 1000000
+      - name: Growth
+        price: 99
+        records: 5000000
+      - name: Pro
+        price: 299
+        records: 25000000
+
+  features:
+    tracking_method: server_side
+    platforms: [shopify, rails, django, laravel, node, any]
+    attribution_models: 8
+    custom_models: true
+    view_through: true
+    ltv_tracking: true
+    server_side: true
+    setup_time: "10 minutes"
+    model_names:
+      - First Touch
+      - Last Touch
+      - Linear
+      - Time Decay
+      - U-Shaped
+      - W-Shaped
+      - Markov Chain
+      - Shapley Value
+
+  differentiators:
+    - "Server-side tracking (95%+ event capture)"
+    - "8 attribution models side-by-side"
+    - "Custom rule editor"
+    - "LTV attribution built-in"
+    - "Transparent, flat pricing"
+    - "No vendor lock-in"

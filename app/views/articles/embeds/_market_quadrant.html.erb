@@ -1,0 +1,130 @@
+<%# Attribution Market Quadrant - Transparency vs Sophistication %>
+
+<div class="my-12 not-prose" data-controller="vendor-popover">
+  <div class="market-quadrant w-full">
+
+    <%# Row 1: Empty corner + X-axis labels %>
+    <div></div>
+    <div class="text-center pb-3 text-sm font-semibold text-gray-500">Black Box</div>
+    <div class="text-center pb-3 text-sm font-semibold text-gray-500">Inspectable</div>
+
+    <%# Row 2: Y-label + Top quadrants %>
+    <div class="y-label pr-3 text-sm font-semibold text-gray-500 flex items-center justify-center" style="grid-row: span 2;">
+      <span>← Sophistication →</span>
+    </div>
+
+    <%# Top-Left: Sophisticated + Black Box - violet tint %>
+    <div class="bg-gradient-to-br from-violet-50 to-slate-100 border-2 border-slate-200 rounded-tl-xl p-5 flex flex-col justify-between">
+      <div>
+        <div class="text-sm font-bold text-slate-700 uppercase tracking-wide">Trust the Algorithm</div>
+        <div class="text-xs text-slate-500 mt-1">Sophisticated ML you can't inspect</div>
+      </div>
+      <div class="flex flex-wrap gap-3 items-center justify-center py-4">
+        <% %w[northbeam bizible lifesight].each do |slug| %>
+          <% c = competitor(slug) %>
+          <%= image_tag competitor_logo_path(slug),
+              alt: c&.dig("name") || slug,
+              class: "w-10 h-10 md:w-12 md:h-12 rounded-lg object-contain bg-white p-1.5 shadow-sm hover:shadow-md hover:scale-110 transition-all duration-200 cursor-pointer",
+              loading: "lazy",
+              data: {
+                action: "click->vendor-popover#show",
+                vendor_popover_name_param: c&.dig("name") || slug.titleize,
+                vendor_popover_tagline_param: c&.dig("tagline"),
+                vendor_popover_price_param: c ? format_competitor_price(c) : nil,
+                vendor_popover_best_for_param: c&.dig("best_for")&.first(2)&.join(", "),
+                vendor_popover_url_param: has_alternatives_article?(slug) ? competitor_alternatives_path(slug) : nil
+              } %>
+        <% end %>
+      </div>
+    </div>
+
+    <%# Top-Right: Sophisticated + Transparent (MBUZZ) - indigo gradient %>
+    <div class="bg-gradient-to-br from-indigo-100 via-indigo-50 to-white border-2 border-indigo-300 rounded-tr-xl p-5 flex flex-col justify-between ring-4 ring-indigo-200/50 animate-breathe">
+      <div>
+        <div class="text-sm font-bold text-indigo-700 uppercase tracking-wide">Best of Both Worlds ★</div>
+        <div class="text-xs text-indigo-600 mt-1">Sophisticated AND transparent</div>
+      </div>
+      <div class="flex items-center justify-center py-4">
+        <% m = mbuzz_data %>
+        <%= image_tag "/images/competitors/mbuzz/logo.svg",
+            alt: "mbuzz",
+            class: "w-20 h-20 md:w-28 md:h-28 rounded-xl object-contain bg-white p-3 shadow-lg ring-2 ring-indigo-100 cursor-pointer hover:shadow-xl transition-all duration-200",
+            loading: "lazy",
+            data: {
+              action: "click->vendor-popover#show",
+              vendor_popover_name_param: "mbuzz",
+              vendor_popover_tagline_param: m&.dig("tagline"),
+              vendor_popover_price_param: "Free to start",
+              vendor_popover_best_for_param: "Technical marketers, custom attribution needs",
+              vendor_popover_url_param: "/signup"
+            } %>
+      </div>
+    </div>
+
+
+    <%# Row 3: Bottom quadrants %>
+    <%# Bottom-Left: Basic + Black Box - amber tint %>
+    <div class="bg-gradient-to-br from-amber-50/50 to-slate-50 border-2 border-slate-200 border-t-0 rounded-bl-xl p-5 flex flex-col justify-between">
+      <div>
+        <div class="text-sm font-bold text-slate-600 uppercase tracking-wide">Platform Native</div>
+        <div class="text-xs text-slate-500 mt-1">Built-in defaults, limited visibility</div>
+      </div>
+      <div class="flex flex-wrap gap-3 items-center justify-center py-4">
+        <% %w[ga4 triple-whale hockeystack].each do |slug| %>
+          <% c = competitor(slug) %>
+          <%= image_tag competitor_logo_path(slug == "ga4" ? "google" : slug),
+              alt: c&.dig("name") || slug,
+              class: "w-10 h-10 md:w-12 md:h-12 rounded-lg object-contain bg-white p-1.5 shadow-sm hover:shadow-md hover:scale-110 transition-all duration-200 cursor-pointer",
+              loading: "lazy",
+              data: {
+                action: "click->vendor-popover#show",
+                vendor_popover_name_param: c&.dig("name") || slug.titleize,
+                vendor_popover_tagline_param: c&.dig("tagline"),
+                vendor_popover_price_param: c ? format_competitor_price(c) : nil,
+                vendor_popover_best_for_param: c&.dig("best_for")&.first(2)&.join(", "),
+                vendor_popover_url_param: has_alternatives_article?(slug) ? competitor_alternatives_path(slug) : nil
+              } %>
+        <% end %>
+      </div>
+    </div>
+
+    <%# Bottom-Right: Basic + Transparent - emerald tint %>
+    <div class="bg-gradient-to-br from-emerald-50/50 to-slate-50 border-2 border-slate-200 border-t-0 rounded-br-xl p-5 flex flex-col justify-between">
+      <div>
+        <div class="text-sm font-bold text-slate-600 uppercase tracking-wide">Simple & Clear</div>
+        <div class="text-xs text-slate-500 mt-1">Easy to understand, limited depth</div>
+      </div>
+      <div class="flex flex-wrap gap-3 items-center justify-center py-4">
+        <% %w[dreamdata ruler-analytics rockerbox].each do |slug| %>
+          <% c = competitor(slug) %>
+          <%= image_tag competitor_logo_path(slug),
+              alt: c&.dig("name") || slug,
+              class: "w-10 h-10 md:w-12 md:h-12 rounded-lg object-contain bg-white p-1.5 shadow-sm hover:shadow-md hover:scale-110 transition-all duration-200 cursor-pointer",
+              loading: "lazy",
+              data: {
+                action: "click->vendor-popover#show",
+                vendor_popover_name_param: c&.dig("name") || slug.titleize,
+                vendor_popover_tagline_param: c&.dig("tagline"),
+                vendor_popover_price_param: c ? format_competitor_price(c) : nil,
+                vendor_popover_best_for_param: c&.dig("best_for")&.first(2)&.join(", "),
+                vendor_popover_url_param: has_alternatives_article?(slug) ? competitor_alternatives_path(slug) : nil
+              } %>
+        <% end %>
+      </div>
+    </div>
+
+    <%# Row 4: X-axis title %>
+    <div></div>
+    <div class="col-span-2 flex justify-center pt-3 text-sm font-semibold text-gray-500">
+      ← Transparency →
+    </div>
+
+  </div>
+
+  <%# Insight %>
+  <p class="text-base text-gray-600 text-center mt-8 max-w-2xl mx-auto">
+    <span class="font-semibold text-indigo-600">The market gap:</span>
+    Most sophisticated tools are black boxes. Most transparent tools are basic.
+    <span class="font-semibold">mbuzz gives you both.</span>
+  </p>
+</div>

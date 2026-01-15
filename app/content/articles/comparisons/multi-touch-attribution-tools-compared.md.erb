@@ -57,139 +57,21 @@ The multi-touch attribution market has exploded. There are now 50+ tools claimin
 
 This guide cuts through the noise. We've categorized the major players, compared their features and pricing, and identified which tools work best for different business types. Full disclosure: mbuzz is one of the tools in this comparison. We'll be upfront about where we excel (server-side tracking, transparent pricing, technical teams) and where competitors are the better choice (Shopify-native, enterprise Salesforce, mobile apps).
 
-### The 2x2: Where Each Tool Fits
+### The Market Gap: Validated Attribution Costs Too Much
 
-<div class="my-8 not-prose">
-  <div class="grid grid-cols-3 text-sm">
-    <div></div>
-    <div class="text-center font-semibold text-slate-600 pb-2">Attribution-Only</div>
-    <div class="text-center font-semibold text-slate-600 pb-2">Validated / Unified</div>
-  </div>
-  <div class="grid grid-cols-3 gap-0.5">
-    <div class="flex items-center justify-end pr-4 font-semibold text-slate-600 text-sm">Accessible Pricing</div>
-    <div class="bg-slate-100 rounded-tl-lg p-4 border border-slate-200">
-      <ul class="space-y-1 text-sm text-slate-700">
-        <li>Triple Whale</li>
-        <li>GA4</li>
-        <li>Ruler Analytics</li>
-        <li>Wicked Reports</li>
-      </ul>
-      <p class="text-xs text-slate-500 mt-3 italic">"Getting Started" - Simple attribution for small teams</p>
-    </div>
-    <div class="bg-indigo-100 rounded-tr-lg p-4 border border-indigo-200">
-      <ul class="space-y-1 text-sm text-indigo-900">
-        <li class="font-semibold">mbuzz ⭐</li>
-      </ul>
-      <p class="text-xs text-indigo-700 mt-3 italic">"Best Value" - Model flexibility without enterprise pricing</p>
-    </div>
-    <div class="flex items-center justify-end pr-4 font-semibold text-slate-600 text-sm">Enterprise Pricing</div>
-    <div class="bg-slate-100 rounded-bl-lg p-4 border border-slate-200">
-      <ul class="space-y-1 text-sm text-slate-700">
-        <li>Northbeam</li>
-        <li>HockeyStack</li>
-        <li>Rockerbox</li>
-        <li>Bizible</li>
-      </ul>
-      <p class="text-xs text-slate-500 mt-3 italic">"Enterprise MTA" - Sophisticated but unvalidated</p>
-    </div>
-    <div class="bg-slate-50 rounded-br-lg p-4 border border-slate-200">
-      <ul class="space-y-1 text-sm text-slate-700">
-        <li>Lifesight</li>
-        <li>SegmentStream</li>
-        <li>Funnel</li>
-      </ul>
-      <p class="text-xs text-slate-500 mt-3 italic">"Enterprise Unified" - Full measurement stack for big budgets</p>
-    </div>
-  </div>
-</div>
+Most attribution tools cluster in one of two places: affordable but basic (top-left), or sophisticated but expensive (bottom-left). The bottom-right quadrant—enterprise unified measurement—exists but requires $50K+ budgets.
 
-**Our take:** Most tools sit in the bottom-left—sophisticated attribution without validation, at enterprise prices. mbuzz exists because we saw a gap: validated, unified measurement shouldn't require a $50K+ budget.
+**The gap:** Almost no one offers validated, multi-model attribution at accessible prices. That's where mbuzz sits.
+
+<%= render "articles/embeds/market_quadrant" %>
+
+**Click any logo** to explore alternatives. Notice how crowded the bottom-left is—enterprise pricing for attribution-only tools. mbuzz exists to fill the top-right gap.
 
 <%= render "articles/demo_cta_inline" %>
 
-<div class="my-8 not-prose">
-  <div class="grid md:grid-cols-3 gap-4">
-    <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
-      <h4 class="font-semibold text-slate-800 mb-3 text-sm">Enterprise</h4>
-      <ul class="space-y-1 text-sm text-slate-600">
-        <li>Adobe Bizible</li>
-        <li>Google GA360</li>
-        <li>Neustar</li>
-        <li>Nielsen</li>
-      </ul>
-    </div>
-    <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
-      <h4 class="font-semibold text-slate-800 mb-3 text-sm">B2B SaaS</h4>
-      <ul class="space-y-1 text-sm text-slate-600">
-        <li>HockeyStack</li>
-        <li>Dreamdata</li>
-        <li>Factors.ai</li>
-        <li>CaliberMind</li>
-        <li>Terminus</li>
-      </ul>
-    </div>
-    <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
-      <h4 class="font-semibold text-slate-800 mb-3 text-sm">E-commerce/DTC</h4>
-      <ul class="space-y-1 text-sm text-slate-600">
-        <li>Triple Whale</li>
-        <li>Northbeam</li>
-        <li>Hyros</li>
-        <li>Rockerbox</li>
-        <li>Wicked Reports</li>
-        <li>Cometly</li>
-      </ul>
-    </div>
-    <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
-      <h4 class="font-semibold text-slate-800 mb-3 text-sm">Web/General</h4>
-      <ul class="space-y-1 text-sm text-slate-600">
-        <li>Ruler Analytics</li>
-        <li>Attribution</li>
-        <li>Windsor.ai</li>
-        <li>Growify</li>
-      </ul>
-    </div>
-    <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
-      <h4 class="font-semibold text-slate-800 mb-3 text-sm">Mobile</h4>
-      <ul class="space-y-1 text-sm text-slate-600">
-        <li>AppsFlyer</li>
-        <li>Adjust</li>
-        <li>Branch</li>
-        <li>Singular</li>
-        <li>Kochava</li>
-      </ul>
-    </div>
-    <div class="bg-indigo-50 rounded-lg p-4 border border-indigo-200">
-      <h4 class="font-semibold text-indigo-800 mb-3 text-sm">Unified Measurement</h4>
-      <ul class="space-y-1 text-sm text-indigo-900">
-        <li class="font-medium">mbuzz ⭐</li>
-        <li>Lifesight</li>
-        <li>Funnel</li>
-        <li>SegmentStream</li>
-      </ul>
-    </div>
-  </div>
-</div>
+## Find Your Attribution Tool
 
-## Quick Comparison: Top MTA Tools
-
-| Tool | Best For | Starting Price | Key Strength |
-|------|----------|----------------|--------------|
-| **mbuzz** | Model flexibility | Free / $29/mo | Server-side + 8 models + custom rules |
-| **Triple Whale** | Shopify stores | $129/mo | Shopify-native, easy setup |
-| **Northbeam** | Enterprise DTC | $400/mo | ML-powered, no overcounting |
-| **HockeyStack** | B2B SaaS | $2,200/mo | All-in-one, fast setup |
-| **Dreamdata** | B2B mid-market | $999/mo | Journey visualization |
-| **Bizible** | Enterprise B2B | Custom | Salesforce-native |
-| **Rockerbox** | Multi-channel brands | $200/mo | Podcast/TV tracking |
-| **Ruler Analytics** | SMBs with calls | £349/mo | Call tracking included |
-| **Hyros** | High-ticket sales | $500/mo | AI optimization |
-| **Wicked Reports** | E-commerce + B2B | $250/mo | LTV tracking |
-| **Factors.ai** | B2B teams | $399/mo | AI-powered insights |
-| **AppsFlyer** | Mobile apps | Custom | Fraud prevention |
-| **Adjust** | Mobile apps | Custom | Privacy-focused |
-| **Lifesight** | Unified measurement | Custom | MTA + MMM + model flexibility |
-| **SegmentStream** | Cookieless future | Custom | AI visit scoring |
-| **Funnel** | Data-driven teams | Custom | MTA + MMM combined |
+<%= render "articles/embeds/comparison_engine" %>
 
 ---
 
@@ -197,7 +79,7 @@ This guide cuts through the noise. We've categorized the major players, compared
 
 These tools are designed for large organizations with complex tech stacks, significant budgets, and dedicated analytics teams.
 
-### Adobe Marketo Measure (Bizible)
+<%= render "articles/embeds/competitor_section", competitor: "bizible", level: 3, custom_name: "Adobe Marketo Measure (Bizible)" %>
 
 **Best for:** Enterprise B2B companies in the Adobe/Salesforce ecosystem
 
@@ -224,7 +106,7 @@ These tools are designed for large organizations with complex tech stacks, signi
 
 ---
 
-### Google Attribution 360 (GA360)
+<%= render "articles/embeds/competitor_section", competitor: "google", level: 3, custom_name: "Google Attribution 360 (GA360)" %>
 
 **Best for:** Large organizations in the Google ecosystem
 
@@ -255,7 +137,7 @@ These tools are designed for large organizations with complex tech stacks, signi
 
 These platforms focus on long sales cycles, multiple stakeholders, and CRM integration.
 
-### HockeyStack
+<%= render "articles/embeds/competitor_section", competitor: "hockeystack", level: 3 %>
 
 **Best for:** B2B SaaS companies wanting all-in-one revenue analytics
 
@@ -284,7 +166,7 @@ These platforms focus on long sales cycles, multiple stakeholders, and CRM integ
 
 ---
 
-### Dreamdata
+<%= render "articles/embeds/competitor_section", competitor: "dreamdata", level: 3 %>
 
 **Best for:** Data-driven B2B marketing teams focused on pipeline
 
@@ -313,7 +195,7 @@ These platforms focus on long sales cycles, multiple stakeholders, and CRM integ
 
 ---
 
-### Factors.ai
+<%= render "articles/embeds/competitor_section", competitor: "factors-ai", level: 3, custom_name: "Factors.ai" %>
 
 **Best for:** B2B teams wanting AI-powered insights
 
@@ -343,7 +225,7 @@ These platforms focus on long sales cycles, multiple stakeholders, and CRM integ
 
 These platforms specialize in ad tracking, ROAS measurement, and e-commerce integrations.
 
-### Triple Whale
+<%= render "articles/embeds/competitor_section", competitor: "triple-whale", level: 3 %>
 
 **Best for:** Shopify stores of all sizes
 
@@ -372,7 +254,7 @@ These platforms specialize in ad tracking, ROAS measurement, and e-commerce inte
 
 ---
 
-### Northbeam
+<%= render "articles/embeds/competitor_section", competitor: "northbeam", level: 3 %>
 
 **Best for:** Enterprise DTC brands with sophisticated media buying
 
@@ -401,7 +283,7 @@ These platforms specialize in ad tracking, ROAS measurement, and e-commerce inte
 
 ---
 
-### Rockerbox
+<%= render "articles/embeds/competitor_section", competitor: "rockerbox", level: 3 %>
 
 **Best for:** Multi-channel brands including offline
 
@@ -428,7 +310,7 @@ These platforms specialize in ad tracking, ROAS measurement, and e-commerce inte
 
 ---
 
-### Hyros
+<%= render "articles/embeds/competitor_section", competitor: "hyros", level: 3 %>
 
 **Best for:** High-ticket e-commerce and info products
 
@@ -454,7 +336,7 @@ These platforms specialize in ad tracking, ROAS measurement, and e-commerce inte
 
 ---
 
-### Wicked Reports
+<%= render "articles/embeds/competitor_section", competitor: "wicked-reports", level: 3 %>
 
 **Best for:** E-commerce brands focused on LTV
 
@@ -483,7 +365,7 @@ These platforms specialize in ad tracking, ROAS measurement, and e-commerce inte
 
 These tools go beyond MTA to include MMM and model flexibility—the triangulation approach.
 
-### mbuzz
+<%= render "articles/embeds/competitor_section", competitor: "mbuzz", level: 3 %>
 
 **Best for:** Teams wanting flexible, server-side attribution without enterprise pricing
 
@@ -537,7 +419,7 @@ Let's be honest—mbuzz isn't right for everyone:
 
 ---
 
-### Lifesight
+<%= render "articles/embeds/competitor_section", competitor: "lifesight", level: 3 %>
 
 **Best for:** Brands wanting complete measurement stack
 
@@ -562,7 +444,7 @@ Let's be honest—mbuzz isn't right for everyone:
 
 ---
 
-### SegmentStream
+<%= render "articles/embeds/competitor_section", competitor: "segmentstream", level: 3 %>
 
 **Best for:** Privacy-first, cookieless attribution
 
@@ -587,7 +469,7 @@ Let's be honest—mbuzz isn't right for everyone:
 
 ---
 
-### Funnel
+<%= render "articles/embeds/competitor_section", competitor: "funnel", level: 3 %>
 
 **Best for:** Data teams wanting MTA + MMM
 
@@ -616,7 +498,7 @@ Let's be honest—mbuzz isn't right for everyone:
 
 These tools specialize in mobile app measurement, including install attribution, deep linking, and fraud prevention.
 
-### AppsFlyer
+<%= render "articles/embeds/competitor_section", competitor: "appsflyer", level: 3 %>
 
 **Best for:** Mobile-first companies needing comprehensive attribution
 
@@ -641,7 +523,7 @@ These tools specialize in mobile app measurement, including install attribution,
 
 ---
 
-### Adjust
+<%= render "articles/embeds/competitor_section", competitor: "adjust", level: 3 %>
 
 **Best for:** Privacy-conscious mobile apps
 
@@ -666,7 +548,7 @@ These tools specialize in mobile app measurement, including install attribution,
 
 ---
 
-### Branch
+<%= render "articles/embeds/competitor_section", competitor: "branch", level: 3 %>
 
 **Best for:** Cross-platform user experiences
 
@@ -695,7 +577,7 @@ These tools specialize in mobile app measurement, including install attribution,
 
 These tools work for a variety of businesses without being specialized for B2B or DTC.
 
-### Ruler Analytics
+<%= render "articles/embeds/competitor_section", competitor: "ruler-analytics", level: 3 %>
 
 **Best for:** SMBs with significant phone leads
 
@@ -722,7 +604,7 @@ These tools work for a variety of businesses without being specialized for B2B o
 
 ---
 
-### Growify
+<%= render "articles/embeds/competitor_section", competitor: "growify", level: 3 %>
 
 **Best for:** E-commerce brands wanting flexibility
 
@@ -786,11 +668,6 @@ These tools work for a variety of businesses without being specialized for B2B o
 | **Google Ads heavy** | GA4, Google Attribution 360 |
 | **Mobile apps** | AppsFlyer, Adjust, Branch |
 | **Modern data stack** | mbuzz, Funnel, SegmentStream |
-
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Interactive Comparison Tool</p>
-  <p class="text-yellow-700 text-sm">Add mbuzz interactive tool: Select your business type, budget, tech stack, and key requirements → get personalized MTA tool recommendations with pros/cons for each.</p>
-</div>
 
 ## The Future: Where MTA is Headed
 

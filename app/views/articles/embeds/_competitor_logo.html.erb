@@ -1,0 +1,26 @@
+<%# Inline competitor logo for articles %>
+<%# Usage: render "articles/embeds/competitor_logo", competitor: "triple-whale", size: :small %>
+<%# Sizes: :tiny (16px), :small (24px), :medium (32px), :large (48px) %>
+
+<% competitor = local_assigns[:competitor] %>
+<% size = local_assigns[:size] || :small %>
+<% show_name = local_assigns[:show_name] != false %>
+
+<%
+  sizes = { tiny: 16, small: 24, medium: 32, large: 48 }
+  px = sizes[size] || 24
+  name = competitor.to_s.titleize.gsub("-", " ")
+  png_path = Rails.root.join("public/images/competitors/#{competitor}/logo.png")
+  logo_ext = File.exist?(png_path) ? "png" : "svg"
+%>
+
+<span class="inline-flex items-center gap-1.5">
+  <%= image_tag "/images/competitors/#{competitor}/logo.#{logo_ext}",
+      alt: "#{name} logo",
+      class: "rounded-sm",
+      style: "width: #{px}px; height: #{px}px;",
+      loading: "lazy" %>
+  <% if show_name %>
+    <span><%= name %></span>
+  <% end %>
+</span>

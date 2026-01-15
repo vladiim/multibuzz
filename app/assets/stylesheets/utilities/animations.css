@@ -105,3 +105,32 @@
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
+
+/* Breathing pulse for market quadrant highlight */
+@keyframes breathe {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+}
+
+.animate-breathe {
+  animation: breathe 3s ease-in-out infinite;
+}
+
+/* Market quadrant grid layout */
+.market-quadrant {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr;
+  grid-template-rows: auto 1fr 1fr auto;
+  gap: 0;
+  min-height: 500px;
+}
+
+.market-quadrant .y-label {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  text-align: center;
+}

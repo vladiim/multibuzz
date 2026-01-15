@@ -1,0 +1,254 @@
+<%# Filterable comparison engine for attribution tools %>
+<%# Usage: render "articles/embeds/comparison_engine", preset: "triple-whale" %>
+
+<% preset = local_assigns[:preset] %>
+<% show_filters = local_assigns[:show_filters] != false %>
+<% competitors = all_competitors %>
+
+<div data-controller="comparison-filter" class="my-8 not-prose">
+  <% if show_filters %>
+    <%# Filter Bar %>
+    <div class="bg-gray-50 rounded-lg p-4 mb-6 space-y-4">
+      <%# Row 1: Preset + Price %>
+      <div class="flex flex-wrap gap-4 items-center">
+        <%# Alternatives Preset %>
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-700">Alternatives for:</label>
+          <select
+            data-comparison-filter-target="preset"
+            data-action="change->comparison-filter#filter"
+            class="text-sm border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+            <option value="">All tools</option>
+            <% competitors.each do |c| %>
+              <% if has_alternatives_article?(c["slug"]) || c["slug"] == "mbuzz" %>
+                <option value="<%= c["slug"] %>" <%= "selected" if preset == c["slug"] %>><%= c["name"] %></option>
+              <% end %>
+            <% end %>
+          </select>
+        </div>
+
+        <%# Price Filter %>
+        <div class="flex items-center gap-2">
+          <span class="text-sm font-medium text-gray-700">Price:</span>
+          <div class="flex gap-1">
+            <button
+              data-comparison-filter-target="priceFilter"
+              data-price-max="0"
+              data-action="click->comparison-filter#togglePrice"
+              class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition">
+              Free
+            </button>
+            <button
+              data-comparison-filter-target="priceFilter"
+              data-price-max="200"
+              data-action="click->comparison-filter#togglePrice"
+              class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition">
+              &lt;$200
+            </button>
+            <button
+              data-comparison-filter-target="priceFilter"
+              data-price-max="500"
+              data-action="click->comparison-filter#togglePrice"
+              class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition">
+              &lt;$500
+            </button>
+            <button
+              data-comparison-filter-target="priceFilter"
+              data-price-max="2000"
+              data-action="click->comparison-filter#togglePrice"
+              class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition">
+              &lt;$2000
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <%# Row 2: Categories %>
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="text-sm font-medium text-gray-700">Market:</span>
+        <% ["dtc", "b2b", "enterprise", "multi_channel", "lead_gen", "unified"].each do |cat| %>
+          <button
+            data-comparison-filter-target="categoryFilter"
+            data-category="<%= cat %>"
+            data-action="click->comparison-filter#toggleCategory"
+            class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition">
+            <%= category_display_name(cat) %>
+          </button>
+        <% end %>
+      </div>
+
+      <%# Row 3: Features %>
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="text-sm font-medium text-gray-700">Features:</span>
+        <button
+          data-comparison-filter-target="feature"
+          data-feature="free_tier"
+          data-action="click->comparison-filter#toggleFeature"
+          class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition">
+          Free tier
+        </button>
+        <button
+          data-comparison-filter-target="feature"
+          data-feature="custom_models"
+          data-action="click->comparison-filter#toggleFeature"
+          class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition">
+          Custom models
+        </button>
+        <button
+          data-comparison-filter-target="feature"
+          data-feature="server_side"
+          data-action="click->comparison-filter#toggleFeature"
+          class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition">
+          Server-side
+        </button>
+        <button
+          data-comparison-filter-target="feature"
+          data-feature="ltv_tracking"
+          data-action="click->comparison-filter#toggleFeature"
+          class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition">
+          LTV tracking
+        </button>
+        <button
+          data-comparison-filter-target="feature"
+          data-feature="mmm"
+          data-action="click->comparison-filter#toggleFeature"
+          class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition">
+          MMM
+        </button>
+        <button
+          data-comparison-filter-target="feature"
+          data-feature="call_tracking"
+          data-action="click->comparison-filter#toggleFeature"
+          class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition">
+          Call tracking
+        </button>
+      </div>
+
+      <%# Row 4: Setup Time %>
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="text-sm font-medium text-gray-700">Setup time:</span>
+        <button
+          data-comparison-filter-target="setupTimeFilter"
+          data-setup-max="1"
+          data-action="click->comparison-filter#toggleSetupTime"
+          class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition">
+          &lt; 1 hour
+        </button>
+        <button
+          data-comparison-filter-target="setupTimeFilter"
+          data-setup-max="24"
+          data-action="click->comparison-filter#toggleSetupTime"
+          class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition">
+          &lt; 1 day
+        </button>
+        <button
+          data-comparison-filter-target="setupTimeFilter"
+          data-setup-max="336"
+          data-action="click->comparison-filter#toggleSetupTime"
+          class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition">
+          &lt; 2 weeks
+        </button>
+        <button
+          data-comparison-filter-target="setupTimeFilter"
+          data-setup-max="1344"
+          data-action="click->comparison-filter#toggleSetupTime"
+          class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition">
+          &lt; 2 months
+        </button>
+      </div>
+
+      <%# Clear + Count %>
+      <div class="flex items-center justify-between pt-2 border-t border-gray-200">
+        <button
+          data-action="click->comparison-filter#clearFilters"
+          class="text-sm text-gray-500 hover:text-gray-700">
+          Clear filters
+        </button>
+        <span data-comparison-filter-target="count" class="text-sm text-gray-500"><%= competitors.size %> tools</span>
+      </div>
+    </div>
+  <% end %>
+
+  <%# Results Table %>
+  <div class="overflow-x-auto rounded-lg border border-gray-200">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tool</th>
+          <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Best For</th>
+          <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Starting Price</th>
+          <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Key Features</th>
+          <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        <% competitors.each do |c| %>
+          <tr
+            data-comparison-filter-target="row"
+            data-slug="<%= c["slug"] %>"
+            data-price="<%= c.dig("pricing", "starting") || 99999 %>"
+            data-has-free-tier="<%= c.dig("pricing", "has_free_tier") %>"
+            data-categories="<%= (c["categories"] || [c["category"]]).join(",") %>"
+            data-features="<%= competitor_features_string(c) %>"
+            data-setup-hours="<%= setup_time_hours(c) %>"
+            class="hover:bg-gray-50">
+            <td class="px-4 py-4 whitespace-nowrap">
+              <div class="flex items-center gap-3">
+                <%= image_tag competitor_logo_path(c["slug"]),
+                    alt: "#{c["name"]} logo",
+                    class: "w-8 h-8 rounded",
+                    loading: "lazy" %>
+                <div>
+                  <div class="font-medium text-gray-900"><%= c["name"] %></div>
+                  <div class="text-xs text-gray-500"><%= c["tagline"] %></div>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-4">
+              <div class="text-sm text-gray-600 max-w-xs">
+                <%= (c["best_for"] || []).first(2).join(", ") %>
+              </div>
+            </td>
+            <td class="px-4 py-4 whitespace-nowrap">
+              <span class="text-sm font-medium <%= c.dig("pricing", "starting") == 0 ? "text-emerald-600" : "text-gray-900" %>">
+                <%= format_competitor_price(c) %>
+              </span>
+              <% if c.dig("pricing", "has_free_tier") && c.dig("pricing", "starting").to_i > 0 %>
+                <span class="ml-1 text-xs text-emerald-600">(free tier)</span>
+              <% end %>
+            </td>
+            <td class="px-4 py-4">
+              <div class="flex flex-wrap gap-1">
+                <% badges = key_feature_badges(c) %>
+                <% badges.each do |badge| %>
+                  <span class="px-2 py-0.5 text-xs rounded-full <%= badge[:bg_class] %> <%= badge[:text_class] %>"><%= badge[:name] %></span>
+                <% end %>
+                <% models = c.dig("features", "attribution_models") || 0 %>
+                <% if models > 0 && badges.size < 3 %>
+                  <span class="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600"><%= models %> model<%= models > 1 ? "s" : "" %></span>
+                <% end %>
+              </div>
+            </td>
+            <td class="px-4 py-4 whitespace-nowrap text-right">
+              <% if has_alternatives_article?(c["slug"]) %>
+                <%= link_to competitor_alternatives_path(c["slug"]), class: "text-sm text-indigo-600 hover:text-indigo-800" do %>
+                  Alternatives →
+                <% end %>
+              <% elsif c["slug"] == "mbuzz" %>
+                <%= link_to "/signup", class: "text-sm text-indigo-600 hover:text-indigo-800 font-medium" do %>
+                  Try Free →
+                <% end %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <%# No Results Message %>
+    <div data-comparison-filter-target="noResults" class="hidden p-8 text-center text-gray-500">
+      <p class="text-lg font-medium">No tools match your filters</p>
+      <p class="text-sm mt-1">Try adjusting your criteria or <button data-action="click->comparison-filter#clearFilters" class="text-indigo-600 hover:underline">clear all filters</button></p>
+    </div>
+  </div>
+</div>

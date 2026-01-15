@@ -1,0 +1,32 @@
+<%# Section header with competitor logo for articles %>
+<%# Usage: render "articles/embeds/competitor_section", competitor: "triple-whale", number: 1, title: "Best for Model Flexibility" %>
+<%# Options: level: 2 (h2, default) or 3 (h3), custom_name: override default name %>
+
+<% competitor = local_assigns[:competitor] %>
+<% number = local_assigns[:number] %>
+<% title = local_assigns[:title] %>
+<% level = local_assigns[:level] || 2 %>
+<% name = local_assigns[:custom_name] || competitor.to_s.titleize.gsub("-", " ") %>
+<%
+  png_path = Rails.root.join("public/images/competitors/#{competitor}/logo.png")
+  logo_ext = File.exist?(png_path) ? "png" : "svg"
+  heading_class = level == 3 ? "text-lg" : "text-xl"
+%>
+
+<div class="flex items-center gap-3 mb-4 not-prose">
+  <%= image_tag "/images/competitors/#{competitor}/logo.#{logo_ext}",
+      alt: "#{name} logo",
+      class: "w-10 h-10 rounded-lg shadow-sm border border-gray-200",
+      loading: "lazy" %>
+  <div>
+    <% if level == 3 %>
+      <h3 class="<%= heading_class %> font-bold text-gray-900 m-0">
+        <% if number %><%= number %>. <% end %><%= name %><% if title %> — <%= title %><% end %>
+      </h3>
+    <% else %>
+      <h2 class="<%= heading_class %> font-bold text-gray-900 m-0">
+        <% if number %><%= number %>. <% end %><%= name %><% if title %> — <%= title %><% end %>
+      </h2>
+    <% end %>
+  </div>
+</div>

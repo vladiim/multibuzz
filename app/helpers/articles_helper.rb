@@ -1,5 +1,6 @@
 module ArticlesHelper
   include DocsHelper
+  include CompetitorsHelper
 
   def render_article_content(article)
     markdown_content = erb_template(article.content).render(self, {})

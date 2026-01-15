@@ -1,0 +1,70 @@
+<%# Comparison table with competitor logos %>
+<%# Usage: render "articles/embeds/comparison_table", competitors: [...], columns: [...] %>
+
+<% competitors = local_assigns[:competitors] || [] %>
+<% columns = local_assigns[:columns] || [:best_for, :starting_price, :platform_support, :custom_models] %>
+<%
+  column_headers = {
+    best_for: "Best For",
+    starting_price: "Starting Price",
+    platform_support: "Platform Support",
+    custom_models: "Custom Models",
+    setup_time: "Setup Time",
+    unique_feature: "Unique Feature",
+    key_strength: "Key Strength",
+    podcast_tv: "Podcast/TV",
+    call_tracking: "Call Tracking",
+    all_in_one: "All-in-One",
+    learning_curve: "Learning Curve"
+  }
+
+  def logo_path_for(slug)
+    png = Rails.root.join("public/images/competitors/#{slug}/logo.png")
+    File.exist?(png) ? "/images/competitors/#{slug}/logo.png" : "/images/competitors/#{slug}/logo.svg"
+  end
+%>
+
+<div class="my-6 overflow-x-auto">
+  <table class="min-w-full divide-y divide-gray-200">
+    <thead class="bg-gray-50">
+      <tr>
+        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tool</th>
+        <% columns.each do |col| %>
+          <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><%= column_headers[col] || col.to_s.titleize %></th>
+        <% end %>
+      </tr>
+    </thead>
+    <tbody class="bg-white divide-y divide-gray-200">
+      <% competitors.each do |c| %>
+        <tr class="hover:bg-gray-50">
+          <td class="px-4 py-3 whitespace-nowrap">
+            <%
+              alt_path = "/articles/#{c[:slug]}-alternatives"
+              has_alt = File.exist?(Rails.root.join("app/content/articles/comparisons/#{c[:slug]}-alternatives.md.erb"))
+            %>
+            <% if has_alt %>
+              <%= link_to alt_path, class: "flex items-center gap-2 group" do %>
+                <%= image_tag logo_path_for(c[:slug]),
+                    alt: "#{c[:name]} logo",
+                    class: "w-6 h-6 rounded",
+                    loading: "lazy" %>
+                <span class="font-medium text-gray-900 group-hover:text-indigo-600"><%= c[:name] %></span>
+              <% end %>
+            <% else %>
+              <div class="flex items-center gap-2">
+                <%= image_tag logo_path_for(c[:slug]),
+                    alt: "#{c[:name]} logo",
+                    class: "w-6 h-6 rounded",
+                    loading: "lazy" %>
+                <span class="font-medium text-gray-900"><%= c[:name] %></span>
+              </div>
+            <% end %>
+          </td>
+          <% columns.each do |col| %>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600"><%= c[col] %></td>
+          <% end %>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

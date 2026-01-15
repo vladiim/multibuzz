@@ -1,6 +1,30 @@
 <%# Embeddable model comparison for articles %>
 <%# Shows two attribution models side-by-side with demo data %>
 
+<%
+  # Define data once - notice text is generated from this
+  linear_channels = [
+    { name: "Paid Search", pct: 28, color: "indigo" },
+    { name: "Organic", pct: 24, color: "emerald" },
+    { name: "Email", pct: 19, color: "pink" },
+    { name: "Paid Social", pct: 17, color: "amber" },
+    { name: "Direct", pct: 12, color: "slate" }
+  ]
+
+  markov_channels = [
+    { name: "Paid Search", pct: 22, color: "indigo" },
+    { name: "Organic", pct: 31, color: "emerald" },
+    { name: "Email", pct: 14, color: "pink" },
+    { name: "Paid Social", pct: 21, color: "amber" },
+    { name: "Direct", pct: 12, color: "slate" }
+  ]
+
+  # Calculate the biggest difference for the notice
+  linear_organic = linear_channels.find { |c| c[:name] == "Organic" }[:pct]
+  markov_organic = markov_channels.find { |c| c[:name] == "Organic" }[:pct]
+  organic_diff = markov_organic - linear_organic
+%>
+
 <div class="my-8 not-prose">
   <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
     <div class="bg-gradient-to-r from-slate-800 to-slate-900 px-6 py-4">
@@ -31,13 +55,7 @@
 
         <div class="space-y-2">
           <p class="text-xs text-gray-500 uppercase tracking-wide mb-2">Credit by Channel</p>
-          <% [
-            { name: "Paid Search", pct: 28, color: "indigo" },
-            { name: "Organic", pct: 24, color: "emerald" },
-            { name: "Email", pct: 19, color: "pink" },
-            { name: "Paid Social", pct: 17, color: "amber" },
-            { name: "Direct", pct: 12, color: "slate" }
-          ].each do |channel| %>
+          <% linear_channels.each do |channel| %>
             <div class="flex items-center gap-3">
               <div class="w-24 text-sm text-gray-600 truncate"><%= channel[:name] %></div>
               <div class="flex-1 bg-gray-100 rounded-full h-2">
@@ -69,13 +87,7 @@
 
         <div class="space-y-2">
           <p class="text-xs text-gray-500 uppercase tracking-wide mb-2">Credit by Channel</p>
-          <% [
-            { name: "Paid Search", pct: 22, color: "indigo" },
-            { name: "Organic", pct: 31, color: "emerald" },
-            { name: "Email", pct: 14, color: "pink" },
-            { name: "Paid Social", pct: 21, color: "amber" },
-            { name: "Direct", pct: 12, color: "slate" }
-          ].each do |channel| %>
+          <% markov_channels.each do |channel| %>
             <div class="flex items-center gap-3">
               <div class="w-24 text-sm text-gray-600 truncate"><%= channel[:name] %></div>
               <div class="flex-1 bg-gray-100 rounded-full h-2">
@@ -90,7 +102,7 @@
 
     <div class="bg-indigo-50 px-6 py-3 border-t border-indigo-100">
       <p class="text-sm text-indigo-700">
-        <strong>Notice:</strong> Markov Chain credits Organic +7% more than Linear. Same data, different truth.
+        <strong>Notice:</strong> Markov Chain credits Organic +<%= organic_diff %>% more than Linear. Same data, different truth.
       </p>
     </div>
   </div>
