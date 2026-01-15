@@ -6,6 +6,7 @@ published_at:
 section: comparisons
 section_order: 4
 status: draft
+last_updated: 2026-01-16
 priority: P1
 category: "Tool Comparisons"
 tags:
@@ -65,6 +66,8 @@ HockeyStack is a strong B2B attribution platform—all-in-one, fast to deploy, w
 | **Vendor lock-in** | Deep integration makes switching costly |
 
 If any of these resonate, here are your best options.
+
+<%= render "articles/demo_cta_inline" %>
 
 ---
 
@@ -158,12 +161,41 @@ Same deal, different models show different stories:
 └── See how each model allocates pipeline credit
 ```
 
+### Pros & Cons
+
+**Pros:**
+- ✓ 8 attribution models + custom DSL for B2B-specific logic
+- ✓ Server-side tracking captures long B2B buyer journeys
+- ✓ LTV attribution for SaaS recurring revenue
+- ✓ Transparent pricing vs HockeyStack's $2,200+/mo
+- ✓ Strong enterprise governance and data controls
+
+**Cons:**
+- ✗ Not all-in-one (no bundled web analytics or surveys)
+- ✗ Requires SDK integration (not a pixel drop-in)
+- ✗ No built-in AI assistant like HockeyStack's Odin
+
+### Who mbuzz is NOT For
+
+Let's be honest—mbuzz isn't right for everyone:
+
+- **Teams wanting all-in-one simplicity** — HockeyStack bundles analytics, surveys, and attribution together
+- **Those without developer resources** — SDK integration requires technical implementation
+- **Teams wanting AI to interpret data** — mbuzz shows you the models; you interpret them
+- **Early-stage startups without technical resources** — GA4 or Dreamdata's free tier may be simpler to start
+
 ### Best For
 
 - B2B teams wanting to compare multiple attribution models
 - Enterprise companies needing strong governance
 - Those who want custom B2B attribution logic
 - Companies wanting transparent, inspectable models
+
+<%= render "articles/cta_banner",
+  title: "B2B attribution without the $2,200/mo price tag",
+  description: "Compare 8 models side-by-side. Build custom B2B attribution logic. Start free.",
+  cta_text: "Try mbuzz Free →",
+  style: :light %>
 
 ---
 

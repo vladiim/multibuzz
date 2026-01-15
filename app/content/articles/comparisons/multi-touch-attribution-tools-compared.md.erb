@@ -6,6 +6,7 @@ published_at:
 section: comparisons
 section_order: 1
 status: draft
+last_updated: 2026-01-16
 priority: P1
 category: "Tool Comparisons"
 tags:
@@ -84,6 +85,8 @@ This guide cuts through the noise. We've categorized the major players, compared
 ```
 
 **Our take:** Most tools sit in the bottom-left—sophisticated attribution without validation, at enterprise prices. mbuzz exists because we saw a gap: validated, unified measurement shouldn't require a $50K+ budget.
+
+<%= render "articles/demo_cta_inline" %>
 
 <div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
   <p class="text-yellow-800 font-bold mb-2">📌 TODO: 2x2 Visual with Logos</p>
@@ -458,7 +461,22 @@ These tools go beyond MTA to include MMM and model flexibility—the triangulati
 - No built-in podcast/TV proxy tracking (digital-focused)
 - Server-side approach requires SDK integration (platform SDKs take minutes; custom setups need developer involvement)
 
+**Who mbuzz is NOT For:**
+
+Let's be honest—mbuzz isn't right for everyone:
+
+- **Heavy podcast/TV advertisers** — Rockerbox's offline channel tracking is better
+- **Shopify stores wanting zero-code setup** — Triple Whale's app store install is simpler
+- **Teams without any developer resources** — You'll need to integrate the SDK
+- **Those who want a single "magic number"** — mbuzz shows you multiple models; you decide
+
 **Best fit:** Technical teams who want flexible attribution with multiple models and custom logic, without enterprise pricing. Especially strong for SaaS, e-commerce, and any business wanting transparent, inspectable models.
+
+<%= render "articles/cta_banner",
+  title: "See how 8 attribution models compare",
+  description: "Server-side tracking, custom DSL, transparent pricing. Free up to #{free_event_limit_display} records/month.",
+  cta_text: "Try mbuzz Free →",
+  style: :light %>
 
 ---
 
