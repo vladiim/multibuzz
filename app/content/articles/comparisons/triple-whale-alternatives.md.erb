@@ -23,11 +23,11 @@ seo:
   title: "7 Best Triple Whale Attribution Alternatives (2026) - Beyond Shopify-Only"
 aeo:
   target_query: "Triple Whale alternatives"
-  tldr: "The best Triple Whale alternatives are: mbuzz (8 models + custom DSL), Northbeam (ML-powered for enterprise DTC), Rockerbox (multi-channel including podcasts/TV), Hyros (high-ticket sales), Wicked Reports (LTV focus), Growify (flexible models), and Cometly (budget-friendly). Choose based on: platform support (Triple Whale is Shopify-only), model flexibility, and budget."
+  tldr: "The best Triple Whale alternatives are: mbuzz (8 models + custom rules), Northbeam (ML-powered for enterprise DTC), Rockerbox (multi-channel including podcasts/TV), Hyros (high-ticket sales), Wicked Reports (LTV focus), Growify (flexible models), and Cometly (budget-friendly). Choose based on: platform support (Triple Whale is Shopify-only), model flexibility, and budget."
   key_takeaways:
     - "Triple Whale only works with Shopify—alternatives support WooCommerce, Magento, and custom platforms"
     - "Triple Whale lacks view-through attribution—some alternatives track ad impressions, not just clicks"
-    - "Triple Whale offers limited models—mbuzz includes 8 models plus custom DSL for your own logic"
+    - "Triple Whale offers limited models—mbuzz includes 8 models plus custom rules for your own logic"
     - "Enterprise brands ($40M+) often need more sophisticated modeling than Triple Whale offers"
     - "Alternatives range from $200/mo (Rockerbox) to $2,000+/mo (Northbeam enterprise)"
   faq:
@@ -67,6 +67,12 @@ Triple Whale is popular for good reason—it's simple, affordable, and works wel
 
 If any of these apply, here are your best options.
 
+<%= render "articles/embeds/competitor_screenshot",
+  competitor: "triple-whale",
+  image: "dashboard.png",
+  alt: "Triple Whale dashboard interface",
+  caption: "Triple Whale's Shopify-focused dashboard" %>
+
 <%= render "articles/demo_cta_inline" %>
 
 ---
@@ -75,7 +81,7 @@ If any of these apply, here are your best options.
 
 | Tool | Best For | Starting Price | Platform Support | Custom Models |
 |------|----------|----------------|------------------|---------------|
-| **mbuzz** | Model flexibility + custom DSL | Free tier | All platforms | ✓ 8 + DSL |
+| **mbuzz** | Model flexibility + custom rules | Free tier | All platforms | ✓ 8 + custom rules |
 | **Northbeam** | Enterprise DTC | $400/mo | All platforms | ML only |
 | **Rockerbox** | Multi-channel brands | $200/mo | All platforms | Limited |
 | **Hyros** | High-ticket sales | ~$500/mo | All platforms | Limited |
@@ -87,7 +93,7 @@ If any of these apply, here are your best options.
 
 ## 1. mbuzz — Best for Model Flexibility
 
-**Why consider mbuzz:** Most attribution tools give you 3 models and call it a day. mbuzz gives you 8 built-in models plus a custom DSL to build your own logic.
+**Why consider mbuzz:** Most attribution tools give you 3 models and call it a day. mbuzz gives you 8 built-in models plus a custom rules to build your own logic.
 
 ### What mbuzz Offers
 
@@ -95,34 +101,15 @@ If any of these apply, here are your best options.
 
 **8 attribution models, not 3.** Compare first-touch, last-touch, linear, time-decay, U-shaped, W-shaped, plus data-driven Markov Chain and Shapley Value models side-by-side. See how credit shifts between channels under different models.
 
-<figure class="my-8">
-  <%= image_tag "/images/product/attribution/model-comparison.png", alt: "mbuzz model comparison showing Linear vs Markov Chain attribution side-by-side", class: "rounded-lg border border-gray-200 shadow-sm w-full" %>
-  <figcaption class="text-sm text-gray-500 mt-2 text-center">Compare how different models allocate credit to the same conversion</figcaption>
-</figure>
+<%= render "articles/embeds/model_comparison" %>
 
-**Custom models via simple DSL.** Don't wait for feature requests—write your own attribution logic in minutes:
+**Custom models via simple rule editor.** Don't wait for feature requests—write your own attribution logic in minutes:
 
-```ruby
-# Weight branded search lower, boost first organic touch
-model "my_custom_model" do
-  if channel == "organic" && position == :first
-    weight 1.5
-  elsif channel == "paid_search" && query.branded?
-    weight 0.25
-  else
-    weight :linear
-  end
-end
-```
-
-<figure class="my-8">
-  <%= image_tag "/images/product/attribution/custom-dsl-editor.png", alt: "mbuzz custom DSL editor with time-decay attribution logic", class: "rounded-lg border border-gray-200 shadow-sm w-full" %>
-  <figcaption class="text-sm text-gray-500 mt-2 text-center">Build custom attribution logic with the mbuzz DSL</figcaption>
-</figure>
+<%= render "articles/embeds/dsl_editor" %>
 
 **LTV attribution built-in.** mbuzz tracks every recurring payment back to its original acquisition source. That Facebook campaign might look great at first purchase but terrible at 12-month LTV—you'll know the difference.
 
-<figure class="my-8">
+<figure class="my-8 max-w-2xl mx-auto">
   <%= image_tag "/images/product/clv/clv-overview.png", alt: "mbuzz Customer LTV dashboard showing lifetime value by acquisition channel", class: "rounded-lg border border-gray-200 shadow-sm w-full" %>
   <figcaption class="text-sm text-gray-500 mt-2 text-center">See which channels acquire your highest-value customers</figcaption>
 </figure>
@@ -143,7 +130,7 @@ end
 | Factor | Triple Whale | mbuzz |
 |--------|-------------|-------|
 | Platform support | Shopify only | All platforms |
-| Attribution models | 3 basic | 8 + custom DSL |
+| Attribution models | 3 basic | 8 + custom rules |
 | View-through | ✗ No | ✓ Yes |
 | Click attribution | ✓ Yes | ✓ Yes |
 | Setup complexity | Easy | Moderate (SDK) |
@@ -152,32 +139,36 @@ end
 
 **The core difference:** Triple Whale gives you limited models and no way to customize. mbuzz lets you compare 8 models side-by-side and build your own logic when the built-in models don't fit.
 
-```
-The Model Comparison Advantage:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Same conversion, different models:
-├── First Touch: 100% credit to Facebook
-├── Last Touch: 100% credit to Google
-├── Linear: 33% each to FB, Email, Google
-├── U-Shaped: 40% FB, 20% Email, 40% Google
-├── Custom DSL: Your rules (e.g., weight branded search lower)
-└── See exactly how credit shifts—then decide what's right
-```
+<%= render "articles/embeds/model_comparison" %>
 
 ### Pros & Cons
 
-**Pros:**
-- ✓ 8 attribution models + custom DSL for your own logic
-- ✓ Server-side tracking captures 95%+ of events (ad blockers can't block)
-- ✓ Transparent, flat pricing—no surprise bills as traffic grows
-- ✓ Works with any platform, not just Shopify
-- ✓ LTV attribution built-in from day one
-
-**Cons:**
-- ✗ Requires SDK integration (not plug-and-play like Triple Whale)
-- ✗ More technical setup—best for teams with developer access
-- ✗ Younger product than established competitors
+<div class="my-6 not-prose grid md:grid-cols-2 gap-6">
+  <div class="bg-emerald-50 rounded-lg p-5 border border-emerald-200">
+    <h4 class="font-semibold text-emerald-800 mb-3 flex items-center gap-2">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+      Pros
+    </h4>
+    <ul class="space-y-2 text-sm text-emerald-900">
+      <li>8 attribution models + custom rules for your own logic</li>
+      <li>Server-side tracking captures 95%+ of events</li>
+      <li>Transparent, flat pricing—no surprise bills</li>
+      <li>Works with any platform, not just Shopify</li>
+      <li>LTV attribution built-in from day one</li>
+    </ul>
+  </div>
+  <div class="bg-red-50 rounded-lg p-5 border border-red-200">
+    <h4 class="font-semibold text-red-800 mb-3 flex items-center gap-2">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+      Cons
+    </h4>
+    <ul class="space-y-2 text-sm text-red-900">
+      <li>Requires SDK integration (not plug-and-play)</li>
+      <li>More technical setup—needs developer access</li>
+      <li>Younger product than established competitors</li>
+    </ul>
+  </div>
+</div>
 
 ### Who mbuzz is NOT For
 
@@ -206,6 +197,12 @@ Let's be honest—mbuzz isn't right for everyone:
 ## 2. Northbeam — Best for Enterprise DTC
 
 **Why consider Northbeam:** ML-powered attribution that prevents over-counting. Best for brands spending $500K+/month on paid media.
+
+<%= render "articles/embeds/competitor_screenshot",
+  competitor: "northbeam",
+  image: "dashboard.png",
+  alt: "Northbeam dashboard showing ML-powered attribution",
+  caption: "Northbeam's ML-powered attribution dashboard" %>
 
 ### Northbeam vs Triple Whale
 
@@ -238,6 +235,12 @@ The tradeoff: it's complex, expensive, and designed for dedicated media buying t
 ## 3. Rockerbox — Best for Multi-Channel Brands
 
 **Why consider Rockerbox:** If you run podcasts, TV, direct mail, or influencer campaigns, Rockerbox measures what other tools can't.
+
+<%= render "articles/embeds/competitor_screenshot",
+  competitor: "rockerbox",
+  image: "dashboard.png",
+  alt: "Rockerbox multi-channel attribution dashboard",
+  caption: "Rockerbox tracks channels that other tools can't measure" %>
 
 ### Rockerbox vs Triple Whale
 
@@ -398,7 +401,7 @@ For smaller brands or those heavily focused on Facebook/Meta advertising, Cometl
 |--------------------|------------------|
 | View-through attribution | mbuzz, Northbeam, Rockerbox |
 | Multiple attribution models | mbuzz, Growify |
-| Custom attribution logic | mbuzz (DSL) |
+| Custom attribution logic | mbuzz (rule editor) |
 | Podcast/TV tracking | Rockerbox |
 | Extended sales cycles | Hyros, mbuzz |
 | LTV attribution | Wicked Reports |
@@ -432,7 +435,7 @@ For smaller brands or those heavily focused on Facebook/Meta advertising, Cometl
 
 | Alternative | Primary Strength | Starting Price |
 |-------------|------------------|----------------|
-| **mbuzz** | 8 models + custom DSL | Free tier |
+| **mbuzz** | 8 models + custom rules | Free tier |
 | **Northbeam** | ML-powered enterprise attribution | $400/mo |
 | **Rockerbox** | Podcast, TV, multi-channel tracking | $200/mo |
 | **Hyros** | High-ticket, long sales cycles | ~$500/mo |

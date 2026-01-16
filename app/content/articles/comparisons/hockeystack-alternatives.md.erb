@@ -23,7 +23,7 @@ seo:
   title: "7 Best HockeyStack Attribution Alternatives (2026) - B2B Platforms"
 aeo:
   target_query: "HockeyStack alternatives"
-  tldr: "The best HockeyStack alternatives are: mbuzz (8 models + custom DSL), Dreamdata (better pricing with free tier), Bizible (enterprise Salesforce-native), Factors.ai (AI-powered, more affordable), Terminus (ABM-focused), CaliberMind (enterprise B2B), and GA4 (free but limited). Choose based on: budget (HockeyStack is $2,200+/mo), model flexibility needs, enterprise requirements, and CRM integration depth."
+  tldr: "The best HockeyStack alternatives are: mbuzz (8 models + custom rules), Dreamdata (better pricing with free tier), Bizible (enterprise Salesforce-native), Factors.ai (AI-powered, more affordable), Terminus (ABM-focused), CaliberMind (enterprise B2B), and GA4 (free but limited). Choose based on: budget (HockeyStack is $2,200+/mo), model flexibility needs, enterprise requirements, and CRM integration depth."
   key_takeaways:
     - "HockeyStack is expensive ($2,200+/mo)—Dreamdata offers similar features from $999/mo with a free tier"
     - "HockeyStack lacks custom attribution models—mbuzz validates B2B attribution with experiments"
@@ -75,7 +75,7 @@ If any of these resonate, here are your best options.
 
 | Tool | Best For | Starting Price | Custom Models | All-in-One |
 |------|----------|----------------|---------------|------------|
-| **mbuzz** | Model flexibility | Custom | ✓ 8 + DSL | No |
+| **mbuzz** | Model flexibility | Custom | ✓ 8 + custom rules | No |
 | **Dreamdata** | Budget-conscious B2B | Free / $999/mo | ✗ No | No |
 | **Bizible** | Enterprise Salesforce | Enterprise | ✗ No | No |
 | **Factors.ai** | AI-powered attribution | $399/mo | ✗ No | Partial |
@@ -95,12 +95,12 @@ If any of these resonate, here are your best options.
 
 **8 attribution models for long sales cycles.** Compare first-touch (who opened the door?), last-touch (who closed?), linear, time-decay, U-shaped, W-shaped, Markov Chain, and Shapley Value side-by-side. See how each model credits the same deal differently.
 
-<figure class="my-8">
+<figure class="my-8 max-w-2xl mx-auto">
   <%= image_tag "/images/product/attribution/model-comparison.png", alt: "mbuzz model comparison showing Linear vs Markov Chain attribution side-by-side", class: "rounded-lg border border-gray-200 shadow-sm w-full" %>
   <figcaption class="text-sm text-gray-500 mt-2 text-center">Compare attribution models side-by-side for B2B sales cycles</figcaption>
 </figure>
 
-**Custom attribution rules via DSL.** Weight touchpoints by stage, channel, or engagement depth:
+**Custom attribution rules via rule editor.** Weight touchpoints by stage, channel, or engagement depth:
 
 ```ruby
 # B2B-optimized: Heavy credit to first and opportunity-stage touches
@@ -119,7 +119,7 @@ end
 
 **LTV attribution for recurring revenue.** Your best first-month CAC channel might be your worst LTV channel. mbuzz tracks every renewal, upsell, and expansion back to original acquisition source—see which campaigns drive customers who renew at 130% NDR vs 80%.
 
-<figure class="my-8">
+<figure class="my-8 max-w-2xl mx-auto">
   <%= image_tag "/images/product/clv/clv-cohort-analysis.png", alt: "mbuzz cohort analysis showing customer lifetime value progression by month", class: "rounded-lg border border-gray-200 shadow-sm w-full" %>
   <figcaption class="text-sm text-gray-500 mt-2 text-center">Track LTV progression by cohort—essential for B2B SaaS</figcaption>
 </figure>
@@ -139,7 +139,7 @@ end
 
 | Factor | HockeyStack | mbuzz |
 |--------|-------------|-------|
-| Attribution method | MTA | 8 models + DSL |
+| Attribution method | MTA | 8 models + custom rules |
 | Validation | Trust the model | Experimental proof |
 | Web analytics | ✓ Included | Integration |
 | Built-in surveys | ✓ Yes | Integration |
@@ -148,23 +148,12 @@ end
 
 ### B2B Model Comparison Example
 
-```
-The B2B Attribution Challenge:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Same deal, different models show different stories:
-├── First Touch: 100% credit to cold outreach
-├── Last Touch: 100% credit to demo request
-├── W-Shaped: 30% outreach, 30% content, 40% demo
-├── Markov Chain: Data-driven probability analysis
-├── Custom DSL: Your rules (e.g., weight webinars higher)
-└── See how each model allocates pipeline credit
-```
+<%= render "articles/embeds/model_comparison" %>
 
 ### Pros & Cons
 
 **Pros:**
-- ✓ 8 attribution models + custom DSL for B2B-specific logic
+- ✓ 8 attribution models + custom rules for B2B-specific logic
 - ✓ Server-side tracking captures long B2B buyer journeys
 - ✓ LTV attribution for SaaS recurring revenue
 - ✓ Transparent pricing vs HockeyStack's $2,200+/mo
@@ -405,36 +394,50 @@ If you're bootstrapped or early-stage, GA4's free attribution is better than not
 
 HockeyStack bundles attribution + web analytics + surveys. Is that what you want?
 
-```
-All-in-One (HockeyStack):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Pros:
-├── Single vendor
-├── Pre-integrated data
-├── Faster deployment
-└── Unified interface
-
-Cons:
-├── Paying for features you may not need
-├── Not best-in-class at each component
-├── Harder to swap pieces
-└── Vendor lock-in
-
-
-Best-of-Breed (mbuzz + other tools):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Pros:
-├── Best tool for each job
-├── Swap components as needed
-├── Pay only for what you need
-└── Deep expertise per area
-
-Cons:
-├── More vendors to manage
-├── Integration work required
-├── Potentially longer setup
-└── Data stitching needed
-```
+<div class="my-6 not-prose grid md:grid-cols-2 gap-4">
+  <div class="bg-slate-50 rounded-lg p-5 border border-slate-200">
+    <h4 class="font-semibold text-slate-800 mb-4">All-in-One (HockeyStack)</h4>
+    <div class="mb-4">
+      <p class="text-xs text-emerald-600 font-medium uppercase mb-2">Pros</p>
+      <ul class="space-y-1 text-sm text-slate-700">
+        <li>Single vendor</li>
+        <li>Pre-integrated data</li>
+        <li>Faster deployment</li>
+        <li>Unified interface</li>
+      </ul>
+    </div>
+    <div>
+      <p class="text-xs text-rose-600 font-medium uppercase mb-2">Cons</p>
+      <ul class="space-y-1 text-sm text-slate-700">
+        <li>Paying for features you may not need</li>
+        <li>Not best-in-class at each component</li>
+        <li>Harder to swap pieces</li>
+        <li>Vendor lock-in</li>
+      </ul>
+    </div>
+  </div>
+  <div class="bg-indigo-50 rounded-lg p-5 border border-indigo-200">
+    <h4 class="font-semibold text-indigo-800 mb-4">Best-of-Breed (mbuzz + tools)</h4>
+    <div class="mb-4">
+      <p class="text-xs text-emerald-600 font-medium uppercase mb-2">Pros</p>
+      <ul class="space-y-1 text-sm text-indigo-900">
+        <li>Best tool for each job</li>
+        <li>Swap components as needed</li>
+        <li>Pay only for what you need</li>
+        <li>Deep expertise per area</li>
+      </ul>
+    </div>
+    <div>
+      <p class="text-xs text-rose-600 font-medium uppercase mb-2">Cons</p>
+      <ul class="space-y-1 text-sm text-indigo-900">
+        <li>More vendors to manage</li>
+        <li>Integration work required</li>
+        <li>Potentially longer setup</li>
+        <li>Data stitching needed</li>
+      </ul>
+    </div>
+  </div>
+</div>
 
 If you already have web analytics (GA4, Heap, Amplitude), HockeyStack's bundled analytics is redundant cost.
 
@@ -444,7 +447,7 @@ If you already have web analytics (GA4, Heap, Amplitude), HockeyStack's bundled 
 
 | Alternative | Primary Strength | Starting Price |
 |-------------|------------------|----------------|
-| **mbuzz** | 8 models + custom DSL | Custom |
+| **mbuzz** | 8 models + custom rules | Custom |
 | **Dreamdata** | Budget-friendly with free tier | Free / $999/mo |
 | **Bizible** | Enterprise Salesforce-native | Enterprise |
 | **Factors.ai** | AI-powered on budget | $399/mo |

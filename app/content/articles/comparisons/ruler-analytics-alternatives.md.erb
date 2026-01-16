@@ -23,7 +23,7 @@ seo:
   title: "6 Best Ruler Analytics Attribution Alternatives (2026) - Call Tracking"
 aeo:
   target_query: "Ruler Analytics alternatives"
-  tldr: "The best Ruler Analytics alternatives are: mbuzz (8 models + custom DSL), CallRail (call tracking specialist), WhatConverts (lead tracking focus), Invoca (enterprise call intelligence), HubSpot (all-in-one marketing hub), and GA4 (free basics). Choose based on: call tracking importance, attribution depth, budget, and whether you need custom attribution models."
+  tldr: "The best Ruler Analytics alternatives are: mbuzz (8 models + custom rules), CallRail (call tracking specialist), WhatConverts (lead tracking focus), Invoca (enterprise call intelligence), HubSpot (all-in-one marketing hub), and GA4 (free basics). Choose based on: call tracking importance, attribution depth, budget, and whether you need custom attribution models."
   key_takeaways:
     - "Ruler Analytics combines call tracking with marketing attribution—alternatives may separate these"
     - "CallRail and Invoca specialize in call tracking with less attribution depth"
@@ -75,7 +75,7 @@ If any of these resonate, here are your best options.
 
 | Tool | Best For | Starting Price | Call Tracking | Custom Models |
 |------|----------|----------------|---------------|---------------|
-| **mbuzz** | Model flexibility | Custom | Integration | ✓ 8 + DSL |
+| **mbuzz** | Model flexibility | Custom | Integration | ✓ 8 + custom rules |
 | **CallRail** | Call tracking depth | ~$40/mo | ✓ Core | ✗ No |
 | **WhatConverts** | Lead tracking | ~$30/mo | ✓ Yes | ✗ No |
 | **Invoca** | Enterprise calls | Custom | ✓ Core | Limited |
@@ -94,7 +94,7 @@ If any of these resonate, here are your best options.
 
 **8 attribution models for multi-touch lead gen.** Compare First Touch (who found you?), Last Touch (what converted them?), Linear, Time Decay, U-Shaped, W-Shaped, plus data-driven Markov Chain and Shapley Value. See which model best reflects your lead-to-customer journey.
 
-<figure class="my-8">
+<figure class="my-8 max-w-2xl mx-auto">
   <%= image_tag "/images/product/attribution/model-comparison.png", alt: "mbuzz model comparison showing Linear vs Markov Chain attribution side-by-side", class: "rounded-lg border border-gray-200 shadow-sm w-full" %>
   <figcaption class="text-sm text-gray-500 mt-2 text-center">Compare models to find what best reflects your lead journey</figcaption>
 </figure>
@@ -136,29 +136,18 @@ end
 | Call tracking | ✓ Built-in | Integration |
 | Form tracking | ✓ Built-in | ✓ Built-in |
 | Attribution depth | Good | Advanced |
-| Custom models | Limited | ✓ 8 + DSL |
+| Custom models | Limited | ✓ 8 + custom rules |
 | CRM integration | ✓ Yes | ✓ Yes |
 | Pricing | £349/mo+ | Custom |
 
 ### The Model Comparison Advantage
 
-```
-Service Business Attribution Challenge:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Same lead, different models:
-├── First Touch: 100% credit to Google Ads
-├── Last Touch: 100% credit to referral
-├── Linear: 33% each to Google, Email, Referral
-├── U-Shaped: 40% Google, 20% Email, 40% Referral
-├── Custom DSL: Your rules (e.g., weight branded search lower)
-└── See exactly how credit shifts—then decide what's right
-```
+<%= render "articles/embeds/model_comparison" %>
 
 ### Pros & Cons
 
 **Pros:**
-- ✓ 8 attribution models + custom DSL for your own logic
+- ✓ 8 attribution models + custom rules for your own logic
 - ✓ Server-side tracking captures 95%+ of events
 - ✓ Revenue attribution beyond just lead tracking
 - ✓ Transparent, affordable pricing vs £349/mo
@@ -187,7 +176,7 @@ Let's be honest—mbuzz isn't right for everyone:
 
 <%= render "articles/cta_banner",
   title: "Attribution that goes beyond basic MTA",
-  description: "8 models side-by-side. Custom DSL for your own rules. See how credit really shifts.",
+  description: "8 models side-by-side. Custom rules for your own logic. See how credit really shifts.",
   cta_text: "Try mbuzz Free →",
   style: :light %>
 
@@ -388,35 +377,49 @@ If you're an SMB service business wanting simple, integrated call + web attribut
 
 You have two architectural choices:
 
-```
-Option 1: Integrated (Ruler Analytics approach)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Pros:
-├── Single tool, single vendor
-├── Pre-integrated data
-├── Simpler setup
-└── Unified reporting
-
-Cons:
-├── May not be best-in-class at either
-├── Vendor lock-in
-└── Less flexibility
-
-
-Option 2: Separate (mbuzz + CallRail approach)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Pros:
-├── Best-in-class at each function
-├── Flexibility to swap components
-├── Deeper capabilities per tool
-└── Can add model flexibility (mbuzz)
-
-Cons:
-├── Integration required
-├── Multiple vendors
-├── More complex setup
-└── Higher total cost potentially
-```
+<div class="my-6 not-prose grid md:grid-cols-2 gap-4">
+  <div class="bg-slate-50 rounded-lg p-5 border border-slate-200">
+    <h4 class="font-semibold text-slate-800 mb-4">Integrated (Ruler Analytics)</h4>
+    <div class="mb-4">
+      <p class="text-xs text-emerald-600 font-medium uppercase mb-2">Pros</p>
+      <ul class="space-y-1 text-sm text-slate-700">
+        <li>Single tool, single vendor</li>
+        <li>Pre-integrated data</li>
+        <li>Simpler setup</li>
+        <li>Unified reporting</li>
+      </ul>
+    </div>
+    <div>
+      <p class="text-xs text-rose-600 font-medium uppercase mb-2">Cons</p>
+      <ul class="space-y-1 text-sm text-slate-700">
+        <li>May not be best-in-class at either</li>
+        <li>Vendor lock-in</li>
+        <li>Less flexibility</li>
+      </ul>
+    </div>
+  </div>
+  <div class="bg-indigo-50 rounded-lg p-5 border border-indigo-200">
+    <h4 class="font-semibold text-indigo-800 mb-4">Separate (mbuzz + CallRail)</h4>
+    <div class="mb-4">
+      <p class="text-xs text-emerald-600 font-medium uppercase mb-2">Pros</p>
+      <ul class="space-y-1 text-sm text-indigo-900">
+        <li>Best-in-class at each function</li>
+        <li>Flexibility to swap components</li>
+        <li>Deeper capabilities per tool</li>
+        <li>Can add model flexibility (mbuzz)</li>
+      </ul>
+    </div>
+    <div>
+      <p class="text-xs text-rose-600 font-medium uppercase mb-2">Cons</p>
+      <ul class="space-y-1 text-sm text-indigo-900">
+        <li>Integration required</li>
+        <li>Multiple vendors</li>
+        <li>More complex setup</li>
+        <li>Higher total cost potentially</li>
+      </ul>
+    </div>
+  </div>
+</div>
 
 For most businesses, the question is: **How important is call tracking vs. attribution accuracy?**
 

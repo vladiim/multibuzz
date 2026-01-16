@@ -59,65 +59,122 @@ This guide cuts through the noise. We've categorized the major players, compared
 
 ### The 2x2: Where Each Tool Fits
 
-```
-                      ATTRIBUTION-ONLY              VALIDATED / UNIFIED
-                 ┌─────────────────────────────┬─────────────────────────────┐
-                 │                             │                             │
-   ACCESSIBLE    │  Triple Whale               │  mbuzz ⭐                   │
-   PRICING       │  GA4                        │                             │
-                 │  Ruler Analytics            │  "Best Value"               │
-                 │  Wicked Reports             │  Model flexibility      │
-                 │                             │  without enterprise pricing │
-                 │  "Getting Started"          │                             │
-                 │  Simple attribution for     │                             │
-                 │  small teams                │                             │
-                 ├─────────────────────────────┼─────────────────────────────┤
-                 │                             │                             │
-   ENTERPRISE    │  Northbeam                  │  Lifesight                  │
-   PRICING       │  HockeyStack                │  SegmentStream              │
-                 │  Rockerbox                  │  Funnel                     │
-                 │  Bizible                    │                             │
-                 │                             │  "Enterprise Unified"       │
-                 │  "Enterprise MTA"           │  Full measurement stack     │
-                 │  Sophisticated but          │  for big budgets            │
-                 │  unvalidated                │                             │
-                 └─────────────────────────────┴─────────────────────────────┘
-```
+<div class="my-8 not-prose">
+  <div class="grid grid-cols-3 text-sm">
+    <div></div>
+    <div class="text-center font-semibold text-slate-600 pb-2">Attribution-Only</div>
+    <div class="text-center font-semibold text-slate-600 pb-2">Validated / Unified</div>
+  </div>
+  <div class="grid grid-cols-3 gap-0.5">
+    <div class="flex items-center justify-end pr-4 font-semibold text-slate-600 text-sm">Accessible Pricing</div>
+    <div class="bg-slate-100 rounded-tl-lg p-4 border border-slate-200">
+      <ul class="space-y-1 text-sm text-slate-700">
+        <li>Triple Whale</li>
+        <li>GA4</li>
+        <li>Ruler Analytics</li>
+        <li>Wicked Reports</li>
+      </ul>
+      <p class="text-xs text-slate-500 mt-3 italic">"Getting Started" - Simple attribution for small teams</p>
+    </div>
+    <div class="bg-indigo-100 rounded-tr-lg p-4 border border-indigo-200">
+      <ul class="space-y-1 text-sm text-indigo-900">
+        <li class="font-semibold">mbuzz ⭐</li>
+      </ul>
+      <p class="text-xs text-indigo-700 mt-3 italic">"Best Value" - Model flexibility without enterprise pricing</p>
+    </div>
+    <div class="flex items-center justify-end pr-4 font-semibold text-slate-600 text-sm">Enterprise Pricing</div>
+    <div class="bg-slate-100 rounded-bl-lg p-4 border border-slate-200">
+      <ul class="space-y-1 text-sm text-slate-700">
+        <li>Northbeam</li>
+        <li>HockeyStack</li>
+        <li>Rockerbox</li>
+        <li>Bizible</li>
+      </ul>
+      <p class="text-xs text-slate-500 mt-3 italic">"Enterprise MTA" - Sophisticated but unvalidated</p>
+    </div>
+    <div class="bg-slate-50 rounded-br-lg p-4 border border-slate-200">
+      <ul class="space-y-1 text-sm text-slate-700">
+        <li>Lifesight</li>
+        <li>SegmentStream</li>
+        <li>Funnel</li>
+      </ul>
+      <p class="text-xs text-slate-500 mt-3 italic">"Enterprise Unified" - Full measurement stack for big budgets</p>
+    </div>
+  </div>
+</div>
 
 **Our take:** Most tools sit in the bottom-left—sophisticated attribution without validation, at enterprise prices. mbuzz exists because we saw a gap: validated, unified measurement shouldn't require a $50K+ budget.
 
 <%= render "articles/demo_cta_inline" %>
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 TODO: 2x2 Visual with Logos</p>
-  <p class="text-yellow-700 text-sm">Replace ASCII 2x2 above with designed visual showing tool logos in each quadrant. mbuzz logo prominent in top-right "Best Value" quadrant. Include quadrant labels and axis labels.</p>
+<div class="my-8 not-prose">
+  <div class="grid md:grid-cols-3 gap-4">
+    <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+      <h4 class="font-semibold text-slate-800 mb-3 text-sm">Enterprise</h4>
+      <ul class="space-y-1 text-sm text-slate-600">
+        <li>Adobe Bizible</li>
+        <li>Google GA360</li>
+        <li>Neustar</li>
+        <li>Nielsen</li>
+      </ul>
+    </div>
+    <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+      <h4 class="font-semibold text-slate-800 mb-3 text-sm">B2B SaaS</h4>
+      <ul class="space-y-1 text-sm text-slate-600">
+        <li>HockeyStack</li>
+        <li>Dreamdata</li>
+        <li>Factors.ai</li>
+        <li>CaliberMind</li>
+        <li>Terminus</li>
+      </ul>
+    </div>
+    <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+      <h4 class="font-semibold text-slate-800 mb-3 text-sm">E-commerce/DTC</h4>
+      <ul class="space-y-1 text-sm text-slate-600">
+        <li>Triple Whale</li>
+        <li>Northbeam</li>
+        <li>Hyros</li>
+        <li>Rockerbox</li>
+        <li>Wicked Reports</li>
+        <li>Cometly</li>
+      </ul>
+    </div>
+    <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+      <h4 class="font-semibold text-slate-800 mb-3 text-sm">Web/General</h4>
+      <ul class="space-y-1 text-sm text-slate-600">
+        <li>Ruler Analytics</li>
+        <li>Attribution</li>
+        <li>Windsor.ai</li>
+        <li>Growify</li>
+      </ul>
+    </div>
+    <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+      <h4 class="font-semibold text-slate-800 mb-3 text-sm">Mobile</h4>
+      <ul class="space-y-1 text-sm text-slate-600">
+        <li>AppsFlyer</li>
+        <li>Adjust</li>
+        <li>Branch</li>
+        <li>Singular</li>
+        <li>Kochava</li>
+      </ul>
+    </div>
+    <div class="bg-indigo-50 rounded-lg p-4 border border-indigo-200">
+      <h4 class="font-semibold text-indigo-800 mb-3 text-sm">Unified Measurement</h4>
+      <ul class="space-y-1 text-sm text-indigo-900">
+        <li class="font-medium">mbuzz ⭐</li>
+        <li>Lifesight</li>
+        <li>Funnel</li>
+        <li>SegmentStream</li>
+      </ul>
+    </div>
+  </div>
 </div>
-
-```
-MTA Market Categories:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Enterprise           B2B SaaS            E-commerce/DTC
-├── Adobe Bizible    ├── HockeyStack     ├── Triple Whale
-├── Google GA360     ├── Dreamdata       ├── Northbeam
-├── Neustar          ├── Factors.ai      ├── Hyros
-└── Nielsen          ├── CaliberMind     ├── Rockerbox
-                     └── Terminus        ├── Wicked Reports
-                                         └── Cometly
-
-Web/General          Mobile              Unified Measurement
-├── Ruler Analytics  ├── AppsFlyer       ├── mbuzz ⭐
-├── Attribution      ├── Adjust          ├── Lifesight
-├── Windsor.ai       ├── Branch          ├── Funnel
-└── Growify          ├── Singular        └── SegmentStream
-                     └── Kochava
-```
 
 ## Quick Comparison: Top MTA Tools
 
 | Tool | Best For | Starting Price | Key Strength |
 |------|----------|----------------|--------------|
-| **mbuzz** | Model flexibility | Free / $29/mo | Server-side + 8 models + DSL |
+| **mbuzz** | Model flexibility | Free / $29/mo | Server-side + 8 models + custom rules |
 | **Triple Whale** | Shopify stores | $129/mo | Shopify-native, easy setup |
 | **Northbeam** | Enterprise DTC | $400/mo | ML-powered, no overcounting |
 | **HockeyStack** | B2B SaaS | $2,200/mo | All-in-one, fast setup |
@@ -435,23 +492,23 @@ These tools go beyond MTA to include MMM and model flexibility—the triangulati
 | **Pricing** | Free (<%= free_event_limit_display %> events), $29/mo (1M), $99/mo (5M), $299/mo (25M) |
 | **Setup Time** | 10 minutes |
 | **Tracking** | Server-side (95%+ event capture) |
-| **Unique Feature** | 8 attribution models + custom DSL |
+| **Unique Feature** | 8 attribution models + custom rules |
 
 **Strengths:**
 - Server-side tracking bypasses ad blockers—captures 95%+ of events vs 70% with client-side
 - 8 built-in models: First Touch, Last Touch, Linear, Time Decay, U-Shaped, W-Shaped, Markov Chain, Shapley Value
-- Custom attribution models via simple DSL—define your own logic in minutes
+- Custom attribution models via simple rule editor—define your own logic in minutes
 - Side-by-side model comparison shows how credit shifts between channels
 - LTV attribution tracks recurring revenue back to original acquisition
 - Native SDKs for Shopify, Rails, Django, Laravel, Node.js—no tag manager required
 - Transparent pricing, no sales calls, export everything anytime
 
-<figure class="my-8">
+<figure class="my-8 max-w-2xl mx-auto">
   <%= image_tag "/images/product/attribution/model-comparison.png", alt: "mbuzz model comparison showing Linear vs Markov Chain attribution side-by-side", class: "rounded-lg border border-gray-200 shadow-sm w-full" %>
   <figcaption class="text-sm text-gray-500 mt-2 text-center">Compare 8 attribution models side-by-side</figcaption>
 </figure>
 
-<figure class="my-8">
+<figure class="my-8 max-w-2xl mx-auto">
   <%= image_tag "/images/product/clv/clv-overview.png", alt: "mbuzz Customer LTV dashboard showing lifetime value by acquisition channel", class: "rounded-lg border border-gray-200 shadow-sm w-full" %>
   <figcaption class="text-sm text-gray-500 mt-2 text-center">Track customer lifetime value by acquisition channel</figcaption>
 </figure>
@@ -474,7 +531,7 @@ Let's be honest—mbuzz isn't right for everyone:
 
 <%= render "articles/cta_banner",
   title: "See how 8 attribution models compare",
-  description: "Server-side tracking, custom DSL, transparent pricing. Free up to #{free_event_limit_display} records/month.",
+  description: "Server-side tracking, custom rules, transparent pricing. Free up to #{free_event_limit_display} records/month.",
   cta_text: "Try mbuzz Free →",
   style: :light %>
 
@@ -777,7 +834,7 @@ The MTA market is crowded, but the right choice depends on your specific situati
 
 <%= render "articles/cta_banner",
     title: "Try mbuzz Free",
-    description: "Server-side tracking (95%+ event capture), 8 attribution models + custom DSL. Free up to #{free_event_limit_display} records/month.",
+    description: "Server-side tracking (95%+ event capture), 8 attribution models + custom rules. Free up to #{free_event_limit_display} records/month.",
     cta_text: "Start Free →",
     style: :light %>
 

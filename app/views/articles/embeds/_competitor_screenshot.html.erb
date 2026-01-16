@@ -1,0 +1,29 @@
+<%# Embeddable competitor screenshot for articles %>
+<%# Usage: render "articles/embeds/competitor_screenshot", competitor: "triple-whale", image: "dashboard.png", alt: "...", caption: "..." %>
+
+<% competitor = local_assigns[:competitor] %>
+<% image = local_assigns[:image] %>
+<% alt = local_assigns[:alt] || "#{competitor.titleize} dashboard" %>
+<% caption = local_assigns[:caption] %>
+
+<figure class="my-8 not-prose">
+  <div class="max-w-2xl mx-auto">
+    <div class="rounded-xl overflow-hidden shadow-lg border border-gray-200 bg-white">
+      <div class="bg-gray-100 px-4 py-2 border-b border-gray-200 flex items-center gap-2">
+        <div class="flex gap-1.5">
+          <div class="w-2.5 h-2.5 rounded-full bg-red-400"></div>
+          <div class="w-2.5 h-2.5 rounded-full bg-yellow-400"></div>
+          <div class="w-2.5 h-2.5 rounded-full bg-green-400"></div>
+        </div>
+        <span class="text-gray-600 text-xs font-medium"><%= competitor.to_s.titleize %></span>
+      </div>
+      <%= image_tag "/images/competitors/#{competitor}/#{image}",
+          alt: alt,
+          class: "w-full h-auto",
+          loading: "lazy" %>
+    </div>
+  </div>
+  <% if caption %>
+    <figcaption class="text-sm text-gray-500 mt-3 text-center"><%= caption %></figcaption>
+  <% end %>
+</figure>

@@ -36,6 +36,7 @@ class Article
   attribute :section_order, :integer, default: DEFAULT_SECTION_ORDER
   attribute :status, :string, default: DEFAULT_STATUS
   attribute :priority, :string, default: DEFAULT_PRIORITY
+  attribute :last_updated, :date
   attribute :category, :string
   attribute :tags, default: -> { [] }
   attribute :related_articles, default: -> { [] }

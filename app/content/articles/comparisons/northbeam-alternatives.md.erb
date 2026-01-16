@@ -23,10 +23,10 @@ seo:
   title: "6 Best Northbeam Attribution Alternatives (2026) - Enterprise DTC"
 aeo:
   target_query: "Northbeam alternatives"
-  tldr: "The best Northbeam alternatives are: mbuzz (8 models + custom DSL with transparent pricing), Rockerbox (multi-channel with MMM), Triple Whale (simpler and cheaper for Shopify), Lifesight (unified measurement), SegmentStream (AI-driven cookieless), and Hyros (high-ticket focus). Choose based on: budget constraints, model flexibility needs, channel mix complexity, and team sophistication."
+  tldr: "The best Northbeam alternatives are: mbuzz (8 models + custom rules with transparent pricing), Rockerbox (multi-channel with MMM), Triple Whale (simpler and cheaper for Shopify), Lifesight (unified measurement), SegmentStream (AI-driven cookieless), and Hyros (high-ticket focus). Choose based on: budget constraints, model flexibility needs, channel mix complexity, and team sophistication."
   key_takeaways:
     - "Northbeam is expensive and complex—alternatives range from $129/mo to enterprise pricing"
-    - "Northbeam's ML is a black box—mbuzz offers 8 transparent models plus custom DSL"
+    - "Northbeam's ML is a black box—mbuzz offers 8 transparent models plus custom rules"
     - "Northbeam requires dedicated media buyers—simpler tools suit smaller teams"
     - "Northbeam pricing scales with traffic—mbuzz has transparent, flat pricing"
     - "For smaller brands, Northbeam is overkill—Triple Whale or Rockerbox may suffice"
@@ -38,7 +38,7 @@ aeo:
     - q: "What's the best cheap alternative to Northbeam?"
       a: "Triple Whale (from $129/mo for Shopify) or Rockerbox (free tier available, $200/mo paid) offer accessible entry points. They're less sophisticated but suitable for many growing brands."
     - q: "Which Northbeam alternative offers the most model flexibility?"
-      a: "mbuzz includes 8 attribution models (First Touch, Last Touch, Linear, Time Decay, U-Shaped, W-Shaped, Markov Chain, Shapley Value) plus a custom DSL to build your own logic. Most competitors offer 3-4 models with no customization."
+      a: "mbuzz includes 8 attribution models (First Touch, Last Touch, Linear, Time Decay, U-Shaped, W-Shaped, Markov Chain, Shapley Value) plus a custom rules to build your own logic. Most competitors offer 3-4 models with no customization."
     - q: "Can I use Northbeam and another tool together?"
       a: "Some brands run multiple attribution tools for comparison. However, this adds cost and complexity. Consider whether one tool with more model flexibility (like mbuzz) could serve both needs."
 schema:
@@ -75,7 +75,7 @@ If any of these resonate, here are your best options.
 
 | Tool | Best For | Starting Price | Custom Models | Learning Curve |
 |------|----------|----------------|---------------|----------------|
-| **mbuzz** | Model flexibility + transparent pricing | Free tier | ✓ 8 + DSL | Moderate |
+| **mbuzz** | Model flexibility + transparent pricing | Free tier | ✓ 8 + custom rules | Moderate |
 | **Rockerbox** | Multi-channel brands | $200/mo | Limited | Moderate |
 | **Triple Whale** | Shopify simplicity | $129/mo | Basic | Low |
 | **Lifesight** | Unified measurement | Custom | Limited | Higher |
@@ -86,17 +86,17 @@ If any of these resonate, here are your best options.
 
 ## 1. mbuzz — Best for Model Flexibility + Transparent Pricing
 
-**Why consider mbuzz:** Northbeam gives you one ML-generated number. mbuzz gives you 8 models to compare, plus a DSL to build your own logic—at a fraction of the price.
+**Why consider mbuzz:** Northbeam gives you one ML-generated number. mbuzz gives you 8 models to compare, plus a rule editor to build your own logic—at a fraction of the price.
 
 ### What mbuzz Offers
 
-**Transparent attribution you can actually understand.** No black-box ML—just clear models with logic you can inspect and customize. 8 built-in models including Markov Chain and Shapley Value, plus a DSL for custom rules.
+**Transparent attribution you can actually understand.** No black-box ML—just clear models with logic you can inspect and customize. 8 built-in models including Markov Chain and Shapley Value, plus a rule editor for custom rules.
 
 **Server-side tracking that captures 95%+ of events.** Northbeam still relies on client-side pixels that ad blockers defeat. mbuzz tracks on your backend—no missing data.
 
 **Side-by-side model comparison.** See how First Touch, Last Touch, Linear, Time Decay, U-Shaped, and data-driven models credit the same conversions differently. Northbeam gives you one number; mbuzz shows you the range.
 
-<figure class="my-8">
+<figure class="my-8 max-w-2xl mx-auto">
   <%= image_tag "/images/product/attribution/model-comparison.png", alt: "mbuzz model comparison showing Linear vs Markov Chain attribution side-by-side", class: "rounded-lg border border-gray-200 shadow-sm w-full" %>
   <figcaption class="text-sm text-gray-500 mt-2 text-center">Compare how different models allocate credit—no more black-box ML</figcaption>
 </figure>
@@ -120,35 +120,40 @@ Compare to Northbeam's pageview-based pricing that can hit $2-5K/month for high-
 
 | Factor | Northbeam | mbuzz |
 |--------|-----------|-------|
-| Attribution method | ML fractional credit | 8 models + custom DSL |
+| Attribution method | ML fractional credit | 8 models + custom rules |
 | Transparency | Black box | Inspect any model |
-| Custom logic | ✗ No | ✓ DSL |
+| Custom logic | ✗ No | ✓ custom rules |
 | Pricing | $400+/mo, scales with traffic | Free tier, $29-299/mo |
 | Target size | $40M+ brands | All sizes |
 
 ### The Transparency Difference
 
-```
-Northbeam Approach:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-├── ML assigns fractional credit
-├── Total sums to 100% (no over-attribution)
-├── But why does Facebook get 30% vs Google's 25%?
-└── "Trust the algorithm"
-
-mbuzz Approach:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-├── Pick your model (or compare all 8)
-├── See exactly how each model assigns credit
-├── Build custom logic: "weight branded search lower"
-└── Understand why—not just what
-```
+<div class="my-6 not-prose grid md:grid-cols-2 gap-4">
+  <div class="bg-slate-100 rounded-lg p-5 border border-slate-200">
+    <h4 class="font-semibold text-slate-800 mb-3">Northbeam Approach</h4>
+    <ul class="space-y-2 text-sm text-slate-700">
+      <li>ML assigns fractional credit</li>
+      <li>Total sums to 100% (no over-attribution)</li>
+      <li>But why does Facebook get 30% vs Google's 25%?</li>
+      <li class="italic">"Trust the algorithm"</li>
+    </ul>
+  </div>
+  <div class="bg-indigo-50 rounded-lg p-5 border border-indigo-200">
+    <h4 class="font-semibold text-indigo-800 mb-3">mbuzz Approach</h4>
+    <ul class="space-y-2 text-sm text-indigo-900">
+      <li>Pick your model (or compare all 8)</li>
+      <li>See exactly how each model assigns credit</li>
+      <li>Build custom logic: "weight branded search lower"</li>
+      <li class="font-medium">Understand why—not just what</li>
+    </ul>
+  </div>
+</div>
 
 ### Pros & Cons
 
 **Pros:**
 - ✓ 8 transparent models you can inspect and understand
-- ✓ Custom DSL to build your own attribution logic
+- ✓ Custom rule editor to build your own attribution logic
 - ✓ Flat pricing—no traffic-based surprises ($29-299/mo vs $2-5K+)
 - ✓ Server-side tracking captures data client-side pixels miss
 - ✓ Works for any size brand, not just enterprise
@@ -365,7 +370,7 @@ Northbeam is platform-agnostic. Hyros is purpose-built for info products, coachi
 
 | Alternative | Primary Strength | Starting Price |
 |-------------|------------------|----------------|
-| **mbuzz** | 8 models + custom DSL + transparent pricing | Free tier |
+| **mbuzz** | 8 models + custom rules + transparent pricing | Free tier |
 | **Rockerbox** | Multi-channel + MMM | $200/mo |
 | **Triple Whale** | Simple + affordable | $129/mo |
 | **Lifesight** | Unified measurement stack | Custom |
