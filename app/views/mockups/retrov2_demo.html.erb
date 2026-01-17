@@ -1,0 +1,645 @@
+<% content_for :title, "mbuzz Demo Dashboard - Retro V2" %>
+
+<%# ========================================
+    V2 DEMO BANNER - Enhanced
+    ======================================== %>
+<div class="bg-gradient-to-r from-retro-red via-retro-rust to-retro-red py-4 px-6 relative overflow-hidden">
+  <%# Subtle pattern %>
+  <div class="absolute inset-0 pattern-waves opacity-30"></div>
+
+  <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 relative z-10">
+    <div class="flex items-center gap-4">
+      <span class="badge-retro badge-sample animate-pulse-glow">Sample Data</span>
+      <span class="text-sm text-retro-cream">
+        This is a demo dashboard with sample data. Your real data will look even better.
+      </span>
+    </div>
+    <a href="#" class="btn-retro py-2 px-5 text-sm bg-retro-cream text-retro-red border-retro-deep">
+      Sign Up Free
+    </a>
+  </div>
+</div>
+
+<%# ========================================
+    V2 DASHBOARD HEADER
+    ======================================== %>
+<header class="nav-retro">
+  <div class="max-w-7xl mx-auto px-6 py-5">
+    <div class="flex items-center justify-between">
+      <%# Logo %>
+      <a href="/mockups/retrov2/homepage" class="flex items-center gap-2">
+        <%= image_tag "mockups/mbuzz_retro_logo.png", alt: "mbuzz", class: "h-12" %>
+        <span class="icon-bee">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="text-retro-mustard">
+            <ellipse cx="12" cy="12" rx="6" ry="8" stroke-width="2"/>
+            <line x1="6" y1="9" x2="18" y2="9" stroke-width="2"/>
+            <line x1="6" y1="12" x2="18" y2="12" stroke-width="2"/>
+            <line x1="6" y1="15" x2="18" y2="15" stroke-width="2"/>
+            <path d="M8 4 L6 1 M16 4 L18 1" stroke-width="2"/>
+          </svg>
+        </span>
+      </a>
+
+      <%# Nav %>
+      <div class="flex items-center gap-5">
+        <a href="/mockups/retrov2/homepage" class="text-sm text-retro-cream/70 hover:text-retro-cream transition-colors">
+          &larr; Back to Home
+        </a>
+        <a href="#" class="btn-retro py-2 px-5 text-sm">Get Started</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<%# ========================================
+    V2 MAIN DASHBOARD - Graph paper background
+    ======================================== %>
+<main class="max-w-7xl mx-auto px-6 py-10 relative">
+  <%# Graph paper texture overlay %>
+  <div class="fixed inset-0 texture-graph-paper pointer-events-none opacity-50 z-0"></div>
+
+  <div class="relative z-10">
+    <%# Dashboard Title & Controls %>
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
+      <div>
+        <div class="flex items-center gap-3 mb-2">
+          <h1 class="font-display text-3xl md:text-4xl text-retro-deep">Attribution Dashboard</h1>
+          <span class="icon-bee">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="text-retro-orange">
+              <ellipse cx="12" cy="12" rx="6" ry="8" stroke-width="2"/>
+              <line x1="6" y1="9" x2="18" y2="9" stroke-width="2"/>
+              <line x1="6" y1="12" x2="18" y2="12" stroke-width="2"/>
+              <line x1="6" y1="15" x2="18" y2="15" stroke-width="2"/>
+              <path d="M8 4 L6 1 M16 4 L18 1" stroke-width="2"/>
+            </svg>
+          </span>
+        </div>
+        <p class="text-sm text-retro-brown tracking-wide">Acme Corp &bull; Last 30 days</p>
+      </div>
+
+      <%# Controls %>
+      <div class="flex flex-wrap items-center gap-4">
+        <%# Date Range %>
+        <div class="card-retro py-3 px-5 flex items-center gap-3">
+          <svg class="w-5 h-5 text-retro-brown" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          <select class="bg-transparent text-sm text-retro-deep focus:outline-none cursor-pointer font-medium">
+            <option>Last 7 days</option>
+            <option selected>Last 30 days</option>
+            <option>Last 90 days</option>
+            <option>This year</option>
+          </select>
+        </div>
+
+        <%# Attribution Model Selector - Enhanced %>
+        <div class="card-retro py-3 px-5 flex items-center gap-3 border-retro-orange relative starburst starburst-sm" style="border-width: 3px;">
+          <div class="icon-dial w-8 h-8" style="--dial-angle: 45deg;"></div>
+          <select id="attribution-model" class="bg-transparent text-sm text-retro-deep focus:outline-none cursor-pointer font-bold">
+            <option value="linear">Linear Attribution</option>
+            <option value="first">First Touch</option>
+            <option value="last">Last Touch</option>
+            <option value="time">Time Decay</option>
+            <option value="position">Position Based</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <%# Top Stats Row - Analog dials %>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+      <div class="card-retro offset-up">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs text-retro-brown uppercase tracking-wider">Conversions</span>
+          <span class="text-retro-green text-xs font-bold badge-retro badge-live py-1 px-2">+12%</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="icon-dial w-12 h-12" style="--dial-angle: 60deg;"></div>
+          <div class="font-display text-3xl text-retro-deep" data-counter="conversions">847</div>
+        </div>
+      </div>
+
+      <div class="card-retro">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs text-retro-brown uppercase tracking-wider">Revenue</span>
+          <span class="text-retro-green text-xs font-bold badge-retro badge-live py-1 px-2">+18%</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="icon-dial w-12 h-12" style="--dial-angle: 75deg;"></div>
+          <div class="font-display text-3xl text-retro-deep" data-counter="revenue">$143,291</div>
+        </div>
+      </div>
+
+      <div class="card-retro offset-up">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs text-retro-brown uppercase tracking-wider">Avg Order Value</span>
+          <span class="text-retro-green text-xs font-bold badge-retro badge-live py-1 px-2">+5%</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="icon-dial w-12 h-12" style="--dial-angle: 30deg;"></div>
+          <div class="font-display text-3xl text-retro-deep" data-counter="aov">$169</div>
+        </div>
+      </div>
+
+      <div class="card-retro">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs text-retro-brown uppercase tracking-wider">ROAS</span>
+          <span class="text-retro-green text-xs font-bold badge-retro badge-live py-1 px-2">+8%</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="icon-dial w-12 h-12" style="--dial-angle: 45deg;"></div>
+          <div class="font-display text-3xl text-retro-deep" data-counter="roas">4.2x</div>
+        </div>
+      </div>
+    </div>
+
+    <%# Main Content Grid %>
+    <div class="grid lg:grid-cols-3 gap-8 mb-10">
+      <%# Channel Attribution Chart - Takes 2 columns %>
+      <div class="lg:col-span-2 card-retro">
+        <div class="flex items-center justify-between mb-8">
+          <h2 class="font-display text-xl text-retro-deep">Revenue by Channel</h2>
+          <div class="flex items-center gap-2">
+            <button class="text-xs px-4 py-2 bg-retro-brown text-retro-cream rounded-lg border-2 border-retro-deep shadow-[2px_2px_0_var(--retro-deep)]">Revenue</button>
+            <button class="text-xs px-4 py-2 text-retro-brown border-2 border-retro-brown rounded-lg hover:bg-retro-brown hover:text-retro-cream transition-colors">Conversions</button>
+          </div>
+        </div>
+
+        <%# Enhanced Chart Area %>
+        <div class="h-72 flex items-end justify-around gap-5 border-b-4 border-retro-brown pb-5 mb-5 relative" id="channel-chart">
+          <%# Y-axis labels %>
+          <div class="absolute left-0 top-0 bottom-5 flex flex-col justify-between text-xs text-retro-brown/50 pr-2">
+            <span>$50k</span>
+            <span>$25k</span>
+            <span>$0</span>
+          </div>
+
+          <div class="flex flex-col items-center gap-3 flex-1 pl-8">
+            <div class="chart-bar w-full transition-all duration-700 rounded-t-lg" style="height: 85%;" data-channel="paid_search" data-value="42850"></div>
+            <span class="text-xs text-retro-brown text-center">Paid Search</span>
+          </div>
+          <div class="flex flex-col items-center gap-3 flex-1">
+            <div class="chart-bar-green w-full transition-all duration-700 rounded-t-lg" style="height: 72%;" data-channel="email" data-value="38200"></div>
+            <span class="text-xs text-retro-brown text-center">Email</span>
+          </div>
+          <div class="flex flex-col items-center gap-3 flex-1">
+            <div class="chart-bar w-full transition-all duration-700 rounded-t-lg" style="height: 58%;" data-channel="organic_social" data-value="28400"></div>
+            <span class="text-xs text-retro-brown text-center">Social</span>
+          </div>
+          <div class="flex flex-col items-center gap-3 flex-1">
+            <div class="chart-bar-green w-full transition-all duration-700 rounded-t-lg" style="height: 45%;" data-channel="direct" data-value="21100"></div>
+            <span class="text-xs text-retro-brown text-center">Direct</span>
+          </div>
+          <div class="flex flex-col items-center gap-3 flex-1">
+            <div class="chart-bar w-full transition-all duration-700 rounded-t-lg" style="height: 32%;" data-channel="referral" data-value="12450"></div>
+            <span class="text-xs text-retro-brown text-center">Referral</span>
+          </div>
+        </div>
+
+        <%# Legend %>
+        <div class="flex flex-wrap items-center justify-center gap-8 text-sm">
+          <div class="flex items-center gap-3">
+            <div class="w-5 h-5 bg-gradient-to-b from-retro-orange to-retro-red rounded-lg border-2 border-retro-brown"></div>
+            <span class="text-retro-brown">Paid Channels</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="w-5 h-5 bg-gradient-to-b from-retro-green-light to-retro-green rounded-lg border-2 border-retro-brown"></div>
+            <span class="text-retro-brown">Organic Channels</span>
+          </div>
+        </div>
+      </div>
+
+      <%# Attribution Breakdown - Pie Style with circuit pattern %>
+      <div class="card-retro card-circuit">
+        <h2 class="font-display text-xl text-retro-deep mb-8 relative z-10">Attribution Split</h2>
+
+        <%# Donut Chart Visualization %>
+        <div class="relative w-52 h-52 mx-auto mb-8 z-10">
+          <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+            <%# Background circle %>
+            <circle cx="50" cy="50" r="38" fill="none" stroke="#5A3D2B" stroke-width="10" opacity="0.15"/>
+            <%# Paid Search segment %>
+            <circle cx="50" cy="50" r="38" fill="none" stroke="#D93F2B" stroke-width="10"
+              stroke-dasharray="89.5 149.2" stroke-dashoffset="0" class="transition-all duration-700"/>
+            <%# Email segment %>
+            <circle cx="50" cy="50" r="38" fill="none" stroke="#8B9A6D" stroke-width="10"
+              stroke-dasharray="71.6 166.9" stroke-dashoffset="-89.5" class="transition-all duration-700"/>
+            <%# Social segment %>
+            <circle cx="50" cy="50" r="38" fill="none" stroke="#F2A950" stroke-width="10"
+              stroke-dasharray="47.7 190.8" stroke-dashoffset="-161.1" class="transition-all duration-700"/>
+            <%# Other segment %>
+            <circle cx="50" cy="50" r="38" fill="none" stroke="#5A3D2B" stroke-width="10"
+              stroke-dasharray="29.8 208.7" stroke-dashoffset="-208.8" class="transition-all duration-700"/>
+          </svg>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <div class="text-center">
+              <div class="font-display text-3xl text-retro-deep">$143k</div>
+              <div class="text-xs text-retro-brown tracking-wide">Total</div>
+            </div>
+          </div>
+        </div>
+
+        <%# Legend List %>
+        <div class="space-y-4 relative z-10">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-4 h-4 bg-retro-red rounded-full border-2 border-retro-brown"></div>
+              <span class="text-sm text-retro-brown">Paid Search</span>
+            </div>
+            <span class="text-sm font-bold text-retro-deep flip-counter">37.5%</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-4 h-4 bg-retro-green rounded-full border-2 border-retro-brown"></div>
+              <span class="text-sm text-retro-brown">Email</span>
+            </div>
+            <span class="text-sm font-bold text-retro-deep flip-counter">30%</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-4 h-4 bg-retro-orange rounded-full border-2 border-retro-brown"></div>
+              <span class="text-sm text-retro-brown">Social</span>
+            </div>
+            <span class="text-sm font-bold text-retro-deep flip-counter">20%</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-4 h-4 bg-retro-brown rounded-full border-2 border-retro-deep"></div>
+              <span class="text-sm text-retro-brown">Other</span>
+            </div>
+            <span class="text-sm font-bold text-retro-deep flip-counter">12.5%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%# Customer Journey Section - Enhanced timeline %>
+    <div class="card-retro mb-10">
+      <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-4">
+          <h2 class="font-display text-xl text-retro-deep">Sample Customer Journey</h2>
+          <span class="icon-bee">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="text-retro-orange">
+              <ellipse cx="12" cy="12" rx="6" ry="8" stroke-width="2"/>
+              <line x1="6" y1="9" x2="18" y2="9" stroke-width="2"/>
+              <line x1="6" y1="12" x2="18" y2="12" stroke-width="2"/>
+              <line x1="6" y1="15" x2="18" y2="15" stroke-width="2"/>
+              <path d="M8 4 L6 1 M16 4 L18 1" stroke-width="2"/>
+            </svg>
+          </span>
+        </div>
+        <div class="relative starburst starburst-sm">
+          <span class="badge-retro badge-live">Conversion: $429</span>
+        </div>
+      </div>
+
+      <%# Journey Timeline - Enhanced %>
+      <div class="relative">
+        <%# Timeline Line %>
+        <div class="absolute top-8 left-0 right-0 h-1 bg-gradient-to-r from-retro-orange via-retro-mustard to-retro-green hidden lg:block rounded-full"></div>
+
+        <%# Journey Steps %>
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <%# Step 1 %>
+          <div class="relative">
+            <div class="lg:absolute lg:top-0 lg:left-1/2 lg:-translate-x-1/2 w-14 h-14 bg-gradient-to-br from-retro-orange to-retro-red rounded-full border-4 border-retro-brown flex items-center justify-center mb-4 lg:mb-0 z-10 shadow-[3px_3px_0_var(--retro-brown)]">
+              <span class="font-display text-xl text-retro-cream">1</span>
+            </div>
+            <div class="lg:pt-20">
+              <div class="card-retro-dark text-center">
+                <div class="text-xs text-retro-cream/50 mb-2 tracking-wide">Dec 15, 2:34 PM</div>
+                <div class="font-display text-sm text-retro-orange mb-2">Google Ads</div>
+                <div class="text-xs text-retro-cream/70 mb-3">Clicked "attribution software"</div>
+                <div class="text-xs text-retro-green font-bold flip-counter" data-credit="first">Credit: 20%</div>
+              </div>
+            </div>
+          </div>
+
+          <%# Step 2 %>
+          <div class="relative">
+            <div class="lg:absolute lg:top-0 lg:left-1/2 lg:-translate-x-1/2 w-14 h-14 bg-gradient-to-br from-retro-green-light to-retro-green rounded-full border-4 border-retro-brown flex items-center justify-center mb-4 lg:mb-0 z-10 shadow-[3px_3px_0_var(--retro-brown)]">
+              <span class="font-display text-xl text-retro-deep">2</span>
+            </div>
+            <div class="lg:pt-20">
+              <div class="card-retro-dark text-center">
+                <div class="text-xs text-retro-cream/50 mb-2 tracking-wide">Dec 18, 10:15 AM</div>
+                <div class="font-display text-sm text-retro-green-light mb-2">Email</div>
+                <div class="text-xs text-retro-cream/70 mb-3">Opened welcome sequence</div>
+                <div class="text-xs text-retro-green font-bold flip-counter" data-credit="linear">Credit: 20%</div>
+              </div>
+            </div>
+          </div>
+
+          <%# Step 3 %>
+          <div class="relative">
+            <div class="lg:absolute lg:top-0 lg:left-1/2 lg:-translate-x-1/2 w-14 h-14 bg-gradient-to-br from-retro-orange to-retro-mustard rounded-full border-4 border-retro-brown flex items-center justify-center mb-4 lg:mb-0 z-10 shadow-[3px_3px_0_var(--retro-brown)]">
+              <span class="font-display text-xl text-retro-deep">3</span>
+            </div>
+            <div class="lg:pt-20">
+              <div class="card-retro-dark text-center">
+                <div class="text-xs text-retro-cream/50 mb-2 tracking-wide">Dec 22, 4:45 PM</div>
+                <div class="font-display text-sm text-retro-orange mb-2">LinkedIn Ad</div>
+                <div class="text-xs text-retro-cream/70 mb-3">Retargeting campaign</div>
+                <div class="text-xs text-retro-green font-bold flip-counter" data-credit="linear">Credit: 20%</div>
+              </div>
+            </div>
+          </div>
+
+          <%# Step 4 %>
+          <div class="relative">
+            <div class="lg:absolute lg:top-0 lg:left-1/2 lg:-translate-x-1/2 w-14 h-14 bg-gradient-to-br from-retro-brown to-retro-deep rounded-full border-4 border-retro-deep flex items-center justify-center mb-4 lg:mb-0 z-10 shadow-[3px_3px_0_var(--retro-deep)]">
+              <span class="font-display text-xl text-retro-cream">4</span>
+            </div>
+            <div class="lg:pt-20">
+              <div class="card-retro-dark text-center">
+                <div class="text-xs text-retro-cream/50 mb-2 tracking-wide">Dec 28, 9:20 AM</div>
+                <div class="font-display text-sm text-retro-cream mb-2">Direct</div>
+                <div class="text-xs text-retro-cream/70 mb-3">Typed mbuzz.co directly</div>
+                <div class="text-xs text-retro-green font-bold flip-counter" data-credit="linear">Credit: 20%</div>
+              </div>
+            </div>
+          </div>
+
+          <%# Step 5 - Conversion with starburst %>
+          <div class="relative">
+            <div class="lg:absolute lg:top-0 lg:left-1/2 lg:-translate-x-1/2 w-14 h-14 bg-gradient-to-br from-retro-red to-retro-rust rounded-full border-4 border-retro-deep flex items-center justify-center mb-4 lg:mb-0 z-10 shadow-[3px_3px_0_var(--retro-deep)] animate-pulse-glow">
+              <svg class="w-7 h-7 text-retro-cream" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+            <div class="lg:pt-20">
+              <div class="card-retro border-retro-red text-center relative starburst starburst-sm" style="border-width: 4px;">
+                <div class="text-xs text-retro-brown mb-2 tracking-wide">Dec 28, 9:35 AM</div>
+                <div class="font-display text-sm text-retro-red mb-2">Conversion!</div>
+                <div class="text-xs text-retro-brown mb-3">Purchased Pro Plan</div>
+                <div class="font-display text-xl text-retro-green" data-credit="last">$429</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%# Recent Conversions Table - Enhanced %>
+    <div class="card-retro mb-10">
+      <div class="flex items-center justify-between mb-8">
+        <h2 class="font-display text-xl text-retro-deep">Recent Conversions</h2>
+        <a href="#" class="text-sm text-retro-red hover:underline font-medium">View All &rarr;</a>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="table-retro">
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Conversion</th>
+              <th>Revenue</th>
+              <th>First Touch</th>
+              <th>Last Touch</th>
+              <th>Touchpoints</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-gradient-to-br from-retro-orange to-retro-red rounded-full flex items-center justify-center border-2 border-retro-brown">
+                    <span class="font-display text-xs text-retro-cream">JD</span>
+                  </div>
+                  <span>John D.</span>
+                </div>
+              </td>
+              <td>Pro Plan</td>
+              <td><span class="font-bold text-retro-green flip-counter">$429</span></td>
+              <td><span class="badge-retro badge-coming">Google Ads</span></td>
+              <td><span class="badge-retro badge-live">Direct</span></td>
+              <td class="text-center">
+                <span class="flip-counter text-lg">5</span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-gradient-to-br from-retro-green-light to-retro-green rounded-full flex items-center justify-center border-2 border-retro-brown">
+                    <span class="font-display text-xs text-retro-deep">SM</span>
+                  </div>
+                  <span>Sarah M.</span>
+                </div>
+              </td>
+              <td>Scale Plan</td>
+              <td><span class="font-bold text-retro-green flip-counter">$2,388</span></td>
+              <td><span class="badge-retro badge-coming">LinkedIn</span></td>
+              <td><span class="badge-retro badge-live">Email</span></td>
+              <td class="text-center">
+                <span class="flip-counter text-lg">8</span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-gradient-to-br from-retro-red to-retro-rust rounded-full flex items-center justify-center border-2 border-retro-brown">
+                    <span class="font-display text-xs text-retro-cream">RK</span>
+                  </div>
+                  <span>Robert K.</span>
+                </div>
+              </td>
+              <td>Pro Plan</td>
+              <td><span class="font-bold text-retro-green flip-counter">$429</span></td>
+              <td><span class="badge-retro badge-coming">Twitter</span></td>
+              <td><span class="badge-retro badge-live">Blog</span></td>
+              <td class="text-center">
+                <span class="flip-counter text-lg">3</span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-gradient-to-br from-retro-brown to-retro-deep rounded-full flex items-center justify-center border-2 border-retro-deep">
+                    <span class="font-display text-xs text-retro-cream">AL</span>
+                  </div>
+                  <span>Amy L.</span>
+                </div>
+              </td>
+              <td>Starter</td>
+              <td><span class="font-bold text-retro-brown flip-counter">$0</span></td>
+              <td><span class="badge-retro badge-coming">Organic</span></td>
+              <td><span class="badge-retro badge-live">Direct</span></td>
+              <td class="text-center">
+                <span class="flip-counter text-lg">2</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <%# Bottom CTA - Enhanced %>
+    <div class="card-retro-dark card-circuit text-center py-16 relative overflow-hidden">
+      <%# Decorative elements %>
+      <div class="absolute top-4 left-4 icon-starburst opacity-20"></div>
+      <div class="absolute bottom-4 right-4 icon-starburst opacity-20" style="background: var(--retro-green);"></div>
+
+      <div class="relative z-10">
+        <div class="flex items-center justify-center gap-3 mb-6">
+          <span class="icon-bee">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="text-retro-orange">
+              <ellipse cx="12" cy="12" rx="6" ry="8" stroke-width="2"/>
+              <line x1="6" y1="9" x2="18" y2="9" stroke-width="2"/>
+              <line x1="6" y1="12" x2="18" y2="12" stroke-width="2"/>
+              <line x1="6" y1="15" x2="18" y2="15" stroke-width="2"/>
+              <path d="M8 4 L6 1 M16 4 L18 1" stroke-width="2"/>
+            </svg>
+          </span>
+          <h2 class="font-display text-3xl md:text-4xl text-retro-cream">
+            Ready to See Your Real Data?
+          </h2>
+        </div>
+        <p class="text-retro-cream/60 mb-8 max-w-xl mx-auto text-lg leading-relaxed">
+          Set up in under 5 minutes. No credit card required.
+          Start with 10,000 free events.
+        </p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-5">
+          <div class="relative starburst starburst-sm">
+            <a href="#" class="btn-retro bg-retro-cream text-retro-red text-lg">
+              Start Free Today
+            </a>
+          </div>
+          <a href="/mockups/retrov2/homepage" class="text-retro-cream underline underline-offset-4 hover:text-retro-orange transition-colors">
+            Learn more about mbuzz
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<%# ========================================
+    V2 FOOTER
+    ======================================== %>
+<footer class="bg-retro-deep py-10 mt-16 relative">
+  <div class="absolute inset-0 pattern-circuit opacity-10"></div>
+
+  <div class="max-w-7xl mx-auto px-6 relative z-10">
+    <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="flex items-center gap-2">
+        <%= image_tag "mockups/mbuzz_retro_logo.png", alt: "mbuzz", class: "h-10" %>
+        <span class="icon-bee">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="text-retro-mustard">
+            <ellipse cx="12" cy="12" rx="6" ry="8" stroke-width="2"/>
+            <line x1="6" y1="9" x2="18" y2="9" stroke-width="2"/>
+            <line x1="6" y1="12" x2="18" y2="12" stroke-width="2"/>
+            <line x1="6" y1="15" x2="18" y2="15" stroke-width="2"/>
+            <path d="M8 4 L6 1 M16 4 L18 1" stroke-width="2"/>
+          </svg>
+        </span>
+      </div>
+      <p class="text-sm text-retro-cream/30">
+        &copy; 2026 mbuzz. Server-side attribution you own.
+      </p>
+    </div>
+  </div>
+</footer>
+
+<%# ========================================
+    V2 INTERACTIVE JAVASCRIPT - Enhanced
+    ======================================== %>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Attribution model data sets
+  const attributionData = {
+    linear: {
+      bars: { paid_search: 85, email: 72, organic_social: 58, direct: 45, referral: 32 },
+      journey: ['20%', '20%', '20%', '20%'],
+      pie: { paid: 37.5, email: 30, social: 20, other: 12.5 }
+    },
+    first: {
+      bars: { paid_search: 95, email: 40, organic_social: 35, direct: 20, referral: 10 },
+      journey: ['100%', '0%', '0%', '0%'],
+      pie: { paid: 55, email: 20, social: 15, other: 10 }
+    },
+    last: {
+      bars: { paid_search: 30, email: 85, organic_social: 45, direct: 90, referral: 50 },
+      journey: ['0%', '0%', '0%', '100%'],
+      pie: { paid: 20, email: 35, social: 15, other: 30 }
+    },
+    time: {
+      bars: { paid_search: 50, email: 75, organic_social: 55, direct: 80, referral: 40 },
+      journey: ['10%', '15%', '25%', '50%'],
+      pie: { paid: 28, email: 32, social: 18, other: 22 }
+    },
+    position: {
+      bars: { paid_search: 90, email: 50, organic_social: 45, direct: 85, referral: 30 },
+      journey: ['40%', '10%', '10%', '40%'],
+      pie: { paid: 42, email: 25, social: 13, other: 20 }
+    }
+  };
+
+  const modelSelect = document.getElementById('attribution-model');
+
+  if (modelSelect) {
+    modelSelect.addEventListener('change', function() {
+      const model = this.value;
+      const data = attributionData[model];
+
+      // Update bar chart with animation
+      const chartBars = document.querySelectorAll('#channel-chart [data-channel]');
+      chartBars.forEach(bar => {
+        const channel = bar.dataset.channel;
+        if (data.bars[channel]) {
+          bar.style.height = data.bars[channel] + '%';
+        }
+      });
+
+      // Update journey credits
+      const credits = document.querySelectorAll('[data-credit]');
+      credits.forEach((credit, index) => {
+        if (data.journey[index]) {
+          credit.textContent = 'Credit: ' + data.journey[index];
+        }
+      });
+
+      // Update dial angle on model selector
+      const dial = modelSelect.closest('.card-retro').querySelector('.icon-dial');
+      if (dial) {
+        const angles = { linear: 45, first: 0, last: 90, time: 60, position: 30 };
+        dial.style.setProperty('--dial-angle', angles[model] + 'deg');
+      }
+    });
+  }
+
+  // Animate counters on page load with tick effect
+  const counters = document.querySelectorAll('[data-counter]');
+  counters.forEach((counter, index) => {
+    counter.style.opacity = '0';
+    counter.style.transform = 'translateY(15px)';
+
+    setTimeout(() => {
+      counter.style.transition = 'all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
+      counter.style.opacity = '1';
+      counter.style.transform = 'translateY(0)';
+    }, 150 * index);
+  });
+
+  // Animate chart bars on load
+  const chartBars = document.querySelectorAll('#channel-chart [data-channel]');
+  chartBars.forEach((bar, index) => {
+    const targetHeight = bar.style.height;
+    bar.style.height = '0%';
+
+    setTimeout(() => {
+      bar.style.height = targetHeight;
+    }, 300 + (index * 100));
+  });
+
+  // Pulse effect on live badges
+  const liveBadges = document.querySelectorAll('.badge-live');
+  liveBadges.forEach(badge => {
+    setInterval(() => {
+      badge.style.transform = 'scale(1.05)';
+      setTimeout(() => {
+        badge.style.transform = 'scale(1)';
+      }, 200);
+    }, 3000);
+  });
+});
+</script>

@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= content_for(:title) || "mbuzz Retro V3 Mockup" %></title>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%# Google Fonts - Bree Serif (Cooper-like) + Roboto Mono for EVERYTHING else %>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Roboto+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+
+    <style>
+      /* ========================================
+         RETRO 70s V3 - FULL ANALOG DEPTH
+         True avocado green, film grain, wavy patterns
+         ======================================== */
+      :root {
+        /* Core palette */
+        --retro-red: #D93F2B;
+        --retro-orange: #F2A950;
+        --retro-brown: #5A3D2B;
+        --retro-cream: #FFECB4;
+        --retro-deep: #4D2C1A;
+
+        /* V3: TRUE AVOCADO GREEN - warm olive with yellow undertone */
+        --retro-green: #7B8B3D;
+        --retro-green-light: #9AAB5A;
+        --retro-green-dark: #5C6B2D;
+
+        /* V3: Additional warmth */
+        --retro-mustard: #C9A227;
+        --retro-rust: #B5503C;
+        --retro-tan: #D4B896;
+        --retro-gold: #B8941F;
+
+        /* Extended tints */
+        --retro-red-light: #e85d4a;
+        --retro-orange-light: #f5bc73;
+        --retro-brown-light: #7a5d4b;
+        --retro-cream-dark: #E8D89A;
+      }
+
+      /* ========================================
+         V3 TYPOGRAPHY - ROBOTO MONO EVERYWHERE
+         ======================================== */
+      .font-display {
+        font-family: 'Bree Serif', Georgia, serif;
+      }
+
+      .font-body {
+        font-family: 'Roboto Mono', ui-monospace, SFMono-Regular, monospace;
+      }
+
+      body {
+        font-family: 'Roboto Mono', ui-monospace, SFMono-Regular, monospace;
+        background-color: var(--retro-cream);
+        color: var(--retro-deep);
+        letter-spacing: 0.025em;
+        line-height: 1.75;
+      }
+
+      h1, h2, h3, h4, h5, h6 {
+        font-family: 'Bree Serif', Georgia, serif;
+        letter-spacing: -0.01em;
+      }
+
+      code, pre, .mono {
+        font-family: 'Roboto Mono', monospace;
+        font-weight: 500;
+      }
+
+      /* ========================================
+         V3: ENHANCED TEXTURES - More visible
+         ======================================== */
+      .bg-retro-cream { background-color: var(--retro-cream); }
+      .bg-retro-red { background-color: var(--retro-red); }
+      .bg-retro-orange { background-color: var(--retro-orange); }
+      .bg-retro-brown { background-color: var(--retro-brown); }
+      .bg-retro-green { background-color: var(--retro-green); }
+      .bg-retro-deep { background-color: var(--retro-deep); }
+      .bg-retro-mustard { background-color: var(--retro-mustard); }
+
+      .text-retro-red { color: var(--retro-red); }
+      .text-retro-orange { color: var(--retro-orange); }
+      .text-retro-brown { color: var(--retro-brown); }
+      .text-retro-green { color: var(--retro-green); }
+      .text-retro-cream { color: var(--retro-cream); }
+      .text-retro-deep { color: var(--retro-deep); }
+      .text-retro-mustard { color: var(--retro-mustard); }
+
+      .border-retro-red { border-color: var(--retro-red); }
+      .border-retro-orange { border-color: var(--retro-orange); }
+      .border-retro-brown { border-color: var(--retro-brown); }
+      .border-retro-green { border-color: var(--retro-green); }
+      .border-retro-deep { border-color: var(--retro-deep); }
+
+      /* V3: Paper texture with more grain */
+      .texture-paper {
+        background-image:
+          url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E");
+      }
+
+      /* V3: Film grain overlay - MORE VISIBLE */
+      .texture-film-grain::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9999;
+        opacity: 0.045;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch' result='noise'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)'/%3E%3C/svg%3E");
+      }
+
+      /* V3: Wood panel texture - more pronounced */
+      .texture-wood {
+        background-image:
+          repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 3px,
+            rgba(90, 61, 43, 0.04) 3px,
+            rgba(90, 61, 43, 0.04) 6px
+          ),
+          repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 50px,
+            rgba(90, 61, 43, 0.03) 50px,
+            rgba(90, 61, 43, 0.03) 100px
+          );
+      }
+
+      /* V3: Graph paper texture */
+      .texture-graph-paper {
+        background-image:
+          linear-gradient(rgba(123, 139, 61, 0.18) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(123, 139, 61, 0.18) 1px, transparent 1px);
+        background-size: 20px 20px;
+      }
+
+      /* V3: SQUIGGLY WAVE PATTERN - New! */
+      .pattern-squiggle {
+        background-image: url("data:image/svg+xml,%3Csvg width='120' height='30' viewBox='0 0 120 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 15 C10 5, 20 25, 30 15 S50 5, 60 15 S80 25, 90 15 S110 5, 120 15' stroke='%23F2A950' fill='none' stroke-width='2.5' opacity='0.35'/%3E%3Cpath d='M0 20 C10 10, 20 30, 30 20 S50 10, 60 20 S80 30, 90 20 S110 10, 120 20' stroke='%23D93F2B' fill='none' stroke-width='2' opacity='0.25'/%3E%3Cpath d='M0 25 C10 15, 20 35, 30 25 S50 15, 60 25 S80 35, 90 25 S110 15, 120 25' stroke='%237B8B3D' fill='none' stroke-width='1.5' opacity='0.2'/%3E%3C/svg%3E");
+        background-repeat: repeat-x;
+      }
+
+      /* V3: Circuit board pattern */
+      .pattern-circuit {
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0 L30 15 M30 45 L30 60 M0 30 L15 30 M45 30 L60 30' stroke='%235A3D2B' fill='none' stroke-width='1' opacity='0.12'/%3E%3Ccircle cx='30' cy='30' r='3' fill='%235A3D2B' opacity='0.12'/%3E%3Ccircle cx='30' cy='15' r='2' fill='%235A3D2B' opacity='0.1'/%3E%3Ccircle cx='30' cy='45' r='2' fill='%235A3D2B' opacity='0.1'/%3E%3Ccircle cx='15' cy='30' r='2' fill='%235A3D2B' opacity='0.1'/%3E%3Ccircle cx='45' cy='30' r='2' fill='%235A3D2B' opacity='0.1'/%3E%3C/svg%3E");
+      }
+
+      /* V3: Enhanced groovy background with more color */
+      .bg-groovy-waves {
+        background-image:
+          radial-gradient(ellipse at 10% 90%, rgba(123, 139, 61, 0.25) 0%, transparent 35%),
+          radial-gradient(ellipse at 90% 10%, rgba(242, 169, 80, 0.25) 0%, transparent 35%),
+          radial-gradient(ellipse at 50% 50%, rgba(217, 63, 43, 0.12) 0%, transparent 50%),
+          radial-gradient(ellipse at 25% 25%, rgba(201, 162, 39, 0.15) 0%, transparent 30%),
+          radial-gradient(ellipse at 75% 75%, rgba(181, 80, 60, 0.1) 0%, transparent 30%);
+      }
+
+      /* ========================================
+         V3: STARBURST DECORATIONS - More mustard
+         ======================================== */
+      .starburst {
+        position: relative;
+      }
+
+      .starburst::before {
+        content: '';
+        position: absolute;
+        top: -15px;
+        right: -15px;
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, var(--retro-mustard) 0%, var(--retro-gold) 100%);
+        clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+        z-index: 1;
+      }
+
+      .starburst-sm::before {
+        width: 30px;
+        height: 30px;
+        top: -8px;
+        right: -8px;
+      }
+
+      .icon-starburst {
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+        background: linear-gradient(135deg, var(--retro-orange) 0%, var(--retro-mustard) 100%);
+        clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+      }
+
+      /* ========================================
+         V3: BUZZING BEE ICON - Enhanced buzz
+         ======================================== */
+      .icon-bee {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .icon-bee svg {
+        animation: buzz 0.25s ease-in-out infinite;
+      }
+
+      @keyframes buzz {
+        0%, 100% { transform: translateX(0) rotate(0deg); }
+        25% { transform: translateX(1.5px) rotate(3deg); }
+        75% { transform: translateX(-1.5px) rotate(-3deg); }
+      }
+
+      /* ========================================
+         V3: BUTTONS - More gradient depth
+         ======================================== */
+      .btn-retro {
+        background: linear-gradient(180deg, var(--retro-red) 0%, var(--retro-rust) 100%);
+        color: var(--retro-cream);
+        padding: 0.875rem 1.75rem;
+        border-radius: 10px;
+        font-family: 'Bree Serif', serif;
+        font-size: 1.1rem;
+        border: 3px solid var(--retro-deep);
+        box-shadow:
+          5px 5px 0 var(--retro-deep),
+          inset 0 1px 0 rgba(255,255,255,0.25);
+        transition: all 0.15s ease;
+        display: inline-block;
+        text-decoration: none;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .btn-retro:hover {
+        background: linear-gradient(180deg, var(--retro-orange) 0%, var(--retro-red) 100%);
+        transform: translate(2px, 2px);
+        box-shadow:
+          3px 3px 0 var(--retro-deep),
+          inset 0 1px 0 rgba(255,255,255,0.25);
+      }
+
+      .btn-retro:active {
+        transform: translate(4px, 4px);
+        box-shadow:
+          1px 1px 0 var(--retro-deep),
+          inset 0 1px 0 rgba(255,255,255,0.25);
+      }
+
+      .btn-retro-outline {
+        background: transparent;
+        color: var(--retro-deep);
+        padding: 0.875rem 1.75rem;
+        border-radius: 10px;
+        font-family: 'Bree Serif', serif;
+        font-size: 1.1rem;
+        border: 3px solid var(--retro-brown);
+        box-shadow: 3px 3px 0 var(--retro-brown);
+        transition: all 0.15s ease;
+        display: inline-block;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .btn-retro-outline:hover {
+        background: var(--retro-brown);
+        color: var(--retro-cream);
+        transform: translate(1px, 1px);
+        box-shadow: 2px 2px 0 var(--retro-deep);
+      }
+
+      /* ========================================
+         V3: CARDS - Slight asymmetry by default
+         ======================================== */
+      .card-retro {
+        background: linear-gradient(180deg, var(--retro-cream) 0%, var(--retro-cream-dark) 100%);
+        border: 3px solid var(--retro-brown);
+        border-radius: 14px;
+        box-shadow:
+          7px 7px 0 var(--retro-brown),
+          inset 0 1px 0 rgba(255,255,255,0.5);
+        padding: 1.75rem;
+        position: relative;
+      }
+
+      .card-retro-dark {
+        background: linear-gradient(180deg, var(--retro-deep) 0%, #3a2015 100%);
+        color: var(--retro-cream);
+        border: 3px solid var(--retro-brown);
+        border-radius: 14px;
+        box-shadow:
+          7px 7px 0 var(--retro-brown),
+          inset 0 1px 0 rgba(255,255,255,0.1);
+        padding: 1.75rem;
+      }
+
+      .card-circuit {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .card-circuit::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0 L30 15 M30 45 L30 60 M0 30 L15 30 M45 30 L60 30' stroke='%23FFECB4' fill='none' stroke-width='1' opacity='0.12'/%3E%3Ccircle cx='30' cy='30' r='3' fill='%23FFECB4' opacity='0.12'/%3E%3C/svg%3E");
+        pointer-events: none;
+      }
+
+      /* ========================================
+         V3: CODE BLOCKS - CRT effect
+         ======================================== */
+      .code-retro {
+        background: linear-gradient(180deg, var(--retro-deep) 0%, #2a1a0f 100%);
+        color: var(--retro-cream);
+        border: 3px solid var(--retro-brown);
+        border-radius: 10px;
+        padding: 1.25rem;
+        font-family: 'Roboto Mono', monospace;
+        font-size: 0.875rem;
+        overflow-x: auto;
+        position: relative;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+      }
+
+      .code-retro::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background:
+          repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(0,0,0,0.12) 2px,
+            rgba(0,0,0,0.12) 4px
+          );
+        pointer-events: none;
+        border-radius: 7px;
+      }
+
+      .code-retro .highlight-orange { color: var(--retro-orange); }
+      .code-retro .highlight-green { color: var(--retro-green-light); }
+      .code-retro .highlight-red { color: var(--retro-red-light); }
+      .code-retro .highlight-mustard { color: var(--retro-mustard); }
+
+      /* ========================================
+         V3: CHARTS - Warmer green
+         ======================================== */
+      .chart-bar {
+        background: linear-gradient(180deg, var(--retro-orange) 0%, var(--retro-red) 100%);
+        border-radius: 6px 6px 0 0;
+        border: 2px solid var(--retro-green-dark);
+        border-bottom: none;
+        position: relative;
+        box-shadow: inset 2px 0 0 rgba(255,255,255,0.2);
+      }
+
+      .chart-bar-green {
+        background: linear-gradient(180deg, var(--retro-green-light) 0%, var(--retro-green-dark) 100%);
+        border-radius: 6px 6px 0 0;
+        border: 2px solid var(--retro-green-dark);
+        border-bottom: none;
+        box-shadow: inset 2px 0 0 rgba(255,255,255,0.2);
+      }
+
+      /* ========================================
+         V3: NAVIGATION - Enhanced with texture
+         ======================================== */
+      .nav-retro {
+        background: linear-gradient(180deg, var(--retro-brown) 0%, var(--retro-deep) 100%);
+        border-bottom: 4px solid var(--retro-deep);
+        box-shadow: 0 4px 8px rgba(77, 44, 26, 0.3);
+        position: relative;
+        transition: all 0.3s ease;
+      }
+
+      /* Wood-grain/film-grain texture on nav */
+      .nav-retro::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image:
+          url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)' opacity='0.15'/%3E%3C/svg%3E");
+        pointer-events: none;
+        opacity: 0.12;
+      }
+
+      /* Scrolled state - compact nav */
+      .nav-retro.scrolled {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+      }
+
+      .nav-retro a {
+        color: var(--retro-cream);
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+        font-family: 'Roboto Mono', monospace;
+        font-size: 0.875rem;
+        letter-spacing: 0.05em;
+        position: relative;
+      }
+
+      /* Enhanced hover: color shift with buzz vibration */
+      .nav-retro a:hover {
+        background: rgba(255, 236, 180, 0.15);
+        color: var(--retro-orange);
+        animation: nav-buzz 0.3s ease;
+      }
+
+      @keyframes nav-buzz {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-1px); }
+        75% { transform: translateX(1px); }
+      }
+
+      /* ========================================
+         V3: LOGO - Two-row with scroll animation
+         ======================================== */
+      .logo-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        position: relative;
+      }
+
+      /* M row - fades out on scroll */
+      .logo-m-row {
+        overflow: hidden;
+        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      .logo-m {
+        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      .nav-retro.scrolled .logo-m-row {
+        height: 0;
+        opacity: 0;
+        margin-bottom: 0;
+      }
+
+      .nav-retro.scrolled .logo-m {
+        transform: translateY(-100%) scale(0.8);
+        opacity: 0;
+      }
+
+      /* ========================================
+         V3: BEE - Enhanced with muted mustard
+         ======================================== */
+      .icon-bee {
+        display: inline-flex;
+        align-items: center;
+        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      .icon-bee svg {
+        color: #F2A950; /* Muted mustard for 70s flair */
+        filter: drop-shadow(1px 1px 0 rgba(77, 44, 26, 0.3));
+      }
+
+      /* Micro-vibration on hover and load */
+      .icon-bee:hover svg,
+      .icon-bee.buzzing svg {
+        animation: bee-micro-buzz 0.4s ease-in-out;
+      }
+
+      @keyframes bee-micro-buzz {
+        0%, 100% { transform: translate(0, 0) rotate(0deg); }
+        10% { transform: translate(0.5px, -0.5px) rotate(1deg); }
+        20% { transform: translate(-0.5px, 0.5px) rotate(-1deg); }
+        30% { transform: translate(0.5px, 0.5px) rotate(0deg); }
+        40% { transform: translate(-0.5px, -0.5px) rotate(1deg); }
+        50% { transform: translate(0.5px, 0px) rotate(-1deg); }
+        60% { transform: translate(-0.5px, 0px) rotate(0deg); }
+        70% { transform: translate(0px, 0.5px) rotate(1deg); }
+        80% { transform: translate(0px, -0.5px) rotate(-1deg); }
+        90% { transform: translate(0.5px, 0.5px) rotate(0deg); }
+      }
+
+      /* Bee flies into position on scroll */
+      .nav-retro.scrolled .icon-bee {
+        transform: translateX(-8px);
+      }
+
+      /* Dot trail effect for bee */
+      .icon-bee::after {
+        content: '';
+        position: absolute;
+        right: -8px;
+        width: 4px;
+        height: 4px;
+        background: var(--retro-mustard);
+        border-radius: 50%;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .nav-retro.scrolled .icon-bee::after {
+        opacity: 0.5;
+        animation: dot-trail 1s ease-out;
+      }
+
+      @keyframes dot-trail {
+        0% { opacity: 0; transform: translateX(10px); }
+        50% { opacity: 0.7; }
+        100% { opacity: 0.3; transform: translateX(0); }
+      }
+
+      /* ========================================
+         V3: WAVY STRIPED NAV DIVIDER
+         ======================================== */
+      .nav-wave-divider {
+        height: 12px;
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='12' viewBox='0 0 60 12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 6 Q15 0 30 6 T60 6' stroke='%23F2A950' fill='none' stroke-width='3' opacity='0.8'/%3E%3Cpath d='M0 9 Q15 3 30 9 T60 9' stroke='%23D93F2B' fill='none' stroke-width='2' opacity='0.6'/%3E%3C/svg%3E");
+        background-repeat: repeat-x;
+        background-size: 60px 12px;
+        margin-top: -2px;
+      }
+
+      /* ========================================
+         V3: MOBILE HAMBURGER
+         ======================================== */
+      .hamburger-btn {
+        display: none;
+        flex-direction: column;
+        gap: 4px;
+        padding: 8px;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .hamburger-btn span {
+        width: 24px;
+        height: 3px;
+        background: var(--retro-cream);
+        border-radius: 2px;
+        transition: all 0.3s ease;
+      }
+
+      .hamburger-btn .bee-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .hamburger-btn:hover .bee-overlay {
+        opacity: 1;
+        animation: bee-micro-buzz 0.4s ease-in-out infinite;
+      }
+
+      .hamburger-btn:hover span {
+        opacity: 0.3;
+      }
+
+      @media (max-width: 768px) {
+        .hamburger-btn {
+          display: flex;
+        }
+      }
+
+      /* ========================================
+         V3: WAVE DIVIDERS - Enhanced squiggly
+         ======================================== */
+      .wave-divider {
+        height: 8px;
+        background:
+          linear-gradient(90deg,
+            var(--retro-orange) 0%,
+            var(--retro-red) 35%,
+            var(--retro-mustard) 65%,
+            var(--retro-brown) 100%
+          );
+        border-radius: 4px;
+        position: relative;
+      }
+
+      .wave-divider-wavy {
+        height: 35px;
+        background-image: url("data:image/svg+xml,%3Csvg width='120' height='35' viewBox='0 0 120 35' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 18 C15 8, 30 28, 45 18 S75 8, 90 18 S120 28, 135 18 L135 35 L0 35 Z' fill='%235A3D2B'/%3E%3Cpath d='M0 22 C15 12, 30 32, 45 22 S75 12, 90 22 S120 32, 135 22 L135 35 L0 35 Z' fill='%234D2C1A'/%3E%3C/svg%3E");
+        background-repeat: repeat-x;
+        background-size: 120px 35px;
+      }
+
+      /* V3: Squiggly section break */
+      .wave-divider-squiggle {
+        height: 40px;
+        background-image: url("data:image/svg+xml,%3Csvg width='200' height='40' viewBox='0 0 200 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 20 C25 5, 50 35, 75 20 S125 5, 150 20 S200 35, 225 20' stroke='%23F2A950' fill='none' stroke-width='4' stroke-linecap='round'/%3E%3Cpath d='M0 25 C25 10, 50 40, 75 25 S125 10, 150 25 S200 40, 225 25' stroke='%23D93F2B' fill='none' stroke-width='3' stroke-linecap='round' opacity='0.7'/%3E%3C/svg%3E");
+        background-repeat: repeat-x;
+        background-size: 200px 40px;
+        background-position: center;
+      }
+
+      /* ========================================
+         V3: ANIMATIONS
+         ======================================== */
+      @keyframes buzz-in {
+        0% {
+          opacity: 0;
+          transform: translateX(-4px);
+        }
+        20% { transform: translateX(4px); }
+        40% { transform: translateX(-3px); }
+        60% { transform: translateX(3px); }
+        80% { transform: translateX(-2px); }
+        100% {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      .animate-buzz-in {
+        animation: buzz-in 0.6s ease-out forwards;
+      }
+
+      @keyframes fade-up {
+        from {
+          opacity: 0;
+          transform: translateY(30px) scale(0.98);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .animate-fade-up {
+        animation: fade-up 0.7s ease-out forwards;
+      }
+
+      @keyframes wave-in {
+        0% {
+          opacity: 0;
+          transform: translateY(20px) rotate(-2deg);
+        }
+        50% {
+          transform: translateY(-5px) rotate(1deg);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0) rotate(0deg);
+        }
+      }
+
+      .animate-wave-in {
+        animation: wave-in 0.8s ease-out forwards;
+      }
+
+      /* V3: Bounce entrance */
+      @keyframes bounce-in {
+        0% {
+          opacity: 0;
+          transform: scale(0.8) translateY(20px);
+        }
+        60% {
+          transform: scale(1.05) translateY(-5px);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
+      }
+
+      .animate-bounce-in {
+        animation: bounce-in 0.6s ease-out forwards;
+      }
+
+      .delay-100 { animation-delay: 0.1s; }
+      .delay-200 { animation-delay: 0.2s; }
+      .delay-300 { animation-delay: 0.3s; }
+      .delay-400 { animation-delay: 0.4s; }
+      .delay-500 { animation-delay: 0.5s; }
+      .delay-600 { animation-delay: 0.6s; }
+
+      @keyframes pulse-glow {
+        0%, 100% {
+          box-shadow: 0 0 0 0 rgba(123, 139, 61, 0.5);
+        }
+        50% {
+          box-shadow: 0 0 0 10px rgba(123, 139, 61, 0);
+        }
+      }
+
+      .animate-pulse-glow {
+        animation: pulse-glow 2s ease-in-out infinite;
+      }
+
+      /* V3: Dial tick animation */
+      @keyframes dial-tick {
+        0% { --dial-angle: -60deg; }
+        100% { --dial-angle: var(--dial-target, 45deg); }
+      }
+
+      .animate-dial {
+        animation: dial-tick 1s ease-out forwards;
+      }
+
+      /* ========================================
+         V3: FLIP COUNTER
+         ======================================== */
+      .flip-counter {
+        font-family: 'Roboto Mono', monospace;
+        font-weight: 700;
+        background: linear-gradient(180deg, var(--retro-deep) 0%, #2a1a0f 50%, var(--retro-deep) 50%, #1a0f08 100%);
+        color: var(--retro-cream);
+        padding: 0.375rem 0.625rem;
+        border-radius: 6px;
+        border: 2px solid var(--retro-brown);
+        display: inline-block;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,0.1),
+          inset 0 -1px 0 rgba(0,0,0,0.2);
+      }
+
+      /* ========================================
+         V3: BADGES
+         ======================================== */
+      .badge-retro {
+        display: inline-block;
+        padding: 0.3rem 0.875rem;
+        border-radius: 999px;
+        font-family: 'Roboto Mono', monospace;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .badge-live {
+        background: linear-gradient(180deg, var(--retro-green-light) 0%, var(--retro-green) 100%);
+        color: var(--retro-deep);
+        border: 2px solid var(--retro-brown);
+        box-shadow: 2px 2px 0 var(--retro-brown);
+      }
+
+      .badge-coming {
+        background: linear-gradient(180deg, var(--retro-orange-light) 0%, var(--retro-orange) 100%);
+        color: var(--retro-deep);
+        border: 2px solid var(--retro-brown);
+        box-shadow: 2px 2px 0 var(--retro-brown);
+      }
+
+      .badge-sample {
+        background: linear-gradient(180deg, var(--retro-mustard) 0%, var(--retro-gold) 100%);
+        color: var(--retro-deep);
+        border: 2px solid var(--retro-brown);
+        box-shadow: 2px 2px 0 var(--retro-brown);
+      }
+
+      /* ========================================
+         V3: TABLES
+         ======================================== */
+      .table-retro {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        border: 3px solid var(--retro-brown);
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 5px 5px 0 var(--retro-brown);
+      }
+
+      .table-retro th {
+        background: linear-gradient(180deg, var(--retro-brown) 0%, var(--retro-deep) 100%);
+        color: var(--retro-cream);
+        padding: 1rem 1.25rem;
+        text-align: left;
+        font-family: 'Bree Serif', serif;
+        letter-spacing: 0.02em;
+      }
+
+      .table-retro td {
+        padding: 1rem 1.25rem;
+        border-bottom: 2px solid var(--retro-brown);
+        font-family: 'Roboto Mono', monospace;
+        font-size: 0.875rem;
+      }
+
+      .table-retro tr:nth-child(even) td {
+        background: rgba(123, 139, 61, 0.12);
+      }
+
+      .table-retro tr:last-child td {
+        border-bottom: none;
+      }
+
+      /* ========================================
+         V3: HERO
+         ======================================== */
+      .hero-retro {
+        background:
+          linear-gradient(135deg, var(--retro-cream) 0%, #ffe5a0 30%, var(--retro-cream) 70%, #fff0c0 100%);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero-retro::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image:
+          radial-gradient(circle at 5% 15%, rgba(217, 63, 43, 0.18) 0%, transparent 20%),
+          radial-gradient(circle at 95% 85%, rgba(242, 169, 80, 0.22) 0%, transparent 25%),
+          radial-gradient(circle at 50% 50%, rgba(201, 162, 39, 0.12) 0%, transparent 40%),
+          radial-gradient(circle at 80% 20%, rgba(123, 139, 61, 0.18) 0%, transparent 20%);
+        pointer-events: none;
+      }
+
+      .deco-circle {
+        position: absolute;
+        border-radius: 50%;
+        border: 4px solid var(--retro-orange);
+        opacity: 0.3;
+      }
+
+      .deco-circle-double {
+        position: absolute;
+        border-radius: 50%;
+        border: 3px solid var(--retro-orange);
+        opacity: 0.25;
+      }
+
+      .deco-circle-double::before {
+        content: '';
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+        border-radius: 50%;
+        border: 2px solid var(--retro-red);
+      }
+
+      /* ========================================
+         V3: ANALOG DIAL ICON
+         ======================================== */
+      .icon-dial {
+        position: relative;
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(180deg, var(--retro-cream) 0%, var(--retro-cream-dark) 100%);
+        border: 3px solid var(--retro-brown);
+        border-radius: 50%;
+        box-shadow:
+          3px 3px 0 var(--retro-brown),
+          inset 0 2px 4px rgba(0,0,0,0.1);
+      }
+
+      .icon-dial::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 4px;
+        height: 16px;
+        background: var(--retro-red);
+        transform-origin: bottom center;
+        transform: translate(-50%, -100%) rotate(var(--dial-angle, 45deg));
+        border-radius: 2px;
+      }
+
+      .icon-dial::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 8px;
+        height: 8px;
+        background: var(--retro-brown);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      /* ========================================
+         V3: MOCKUP BANNER
+         ======================================== */
+      .mockup-banner {
+        background:
+          repeating-linear-gradient(
+            45deg,
+            var(--retro-red),
+            var(--retro-red) 12px,
+            var(--retro-deep) 12px,
+            var(--retro-deep) 24px
+          );
+        color: var(--retro-cream);
+        text-align: center;
+        padding: 0.625rem;
+        font-family: 'Roboto Mono', monospace;
+        font-size: 0.75rem;
+        font-weight: bold;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        border-bottom: 3px solid var(--retro-deep);
+      }
+
+      /* ========================================
+         V3: ASYMMETRIC LAYOUTS - More pronounced
+         ======================================== */
+      .offset-left {
+        transform: translateX(-10px);
+      }
+
+      .offset-right {
+        transform: translateX(10px);
+      }
+
+      .offset-up {
+        transform: translateY(-10px);
+      }
+
+      .tilt-left {
+        transform: rotate(-1.5deg);
+      }
+
+      .tilt-right {
+        transform: rotate(1.5deg);
+      }
+
+      /* ========================================
+         V3: RESPONSIVE
+         ======================================== */
+      @media (max-width: 768px) {
+        .card-retro {
+          box-shadow: 5px 5px 0 var(--retro-brown);
+        }
+
+        .btn-retro {
+          box-shadow: 4px 4px 0 var(--retro-deep);
+        }
+
+        .offset-left,
+        .offset-right,
+        .offset-up {
+          transform: none;
+        }
+
+        .tilt-left,
+        .tilt-right {
+          transform: none;
+        }
+      }
+
+      /* ========================================
+         V3: REDUCED MOTION
+         ======================================== */
+      @media (prefers-reduced-motion: reduce) {
+        .animate-buzz-in,
+        .animate-fade-up,
+        .animate-wave-in,
+        .animate-bounce-in,
+        .animate-pulse-glow,
+        .animate-dial,
+        .icon-bee svg {
+          animation: none;
+          opacity: 1;
+          transform: none;
+        }
+      }
+    </style>
+    <%= yield :head %>
+  </head>
+
+  <body class="texture-paper texture-wood bg-groovy-waves min-h-screen texture-film-grain">
+    <%# Mockup indicator banner %>
+    <div class="mockup-banner">
+      Design Mockup V3 - Full Analog Depth - For Internal Review Only
+    </div>
+
+    <%= yield %>
+  </body>
+</html>

@@ -112,8 +112,15 @@ Rails.application.routes.draw do
 
   # Design mockups (admin-only, returns 404 for non-admins)
   scope :mockups do
+    # V1 - Original retro
     get "retro/homepage", to: "mockups#retro_homepage", as: :mockups_retro_homepage
     get "retro/demo", to: "mockups#retro_demo", as: :mockups_retro_demo
+    # V2 - Enhanced retro with deeper 70s motifs
+    get "retrov2/homepage", to: "mockups#retrov2_homepage", as: :mockups_retrov2_homepage
+    get "retrov2/demo", to: "mockups#retrov2_demo", as: :mockups_retrov2_demo
+    # V3 - Full analog depth: warmer avocado green, film grain, wavy patterns
+    get "retrov3/homepage", to: "mockups#retrov3_homepage", as: :mockups_retrov3_homepage
+    get "retrov3/demo", to: "mockups#retrov3_demo", as: :mockups_retrov3_demo
   end
 
   # Account settings
