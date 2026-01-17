@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= content_for(:title) || "mbuzz Retro Mockup" %></title>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%# Google Fonts - Cooper-like font (Bree Serif as Cooper BT isn't on Google) + Roboto Mono %>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Roboto+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+
+    <style>
+      /* ========================================
+         RETRO 70s COLOR PALETTE
+         ======================================== */
+      :root {
+        --retro-red: #D93F2B;
+        --retro-orange: #F2A950;
+        --retro-brown: #5A3D2B;
+        --retro-green: #75C8AE;
+        --retro-cream: #FFECB4;
+        --retro-deep: #4D2C1A;
+        --retro-red-light: #e85d4a;
+        --retro-orange-light: #f5bc73;
+        --retro-brown-light: #7a5d4b;
+      }
+
+      /* ========================================
+         TYPOGRAPHY
+         ======================================== */
+      .font-display {
+        font-family: 'Bree Serif', Georgia, serif;
+      }
+
+      .font-body {
+        font-family: 'Roboto Mono', ui-monospace, SFMono-Regular, monospace;
+      }
+
+      body {
+        font-family: 'Roboto Mono', ui-monospace, SFMono-Regular, monospace;
+        background-color: var(--retro-cream);
+        color: var(--retro-deep);
+      }
+
+      h1, h2, h3, h4, h5, h6 {
+        font-family: 'Bree Serif', Georgia, serif;
+      }
+
+      /* ========================================
+         TEXTURES & BACKGROUNDS
+         ======================================== */
+      .bg-retro-cream { background-color: var(--retro-cream); }
+      .bg-retro-red { background-color: var(--retro-red); }
+      .bg-retro-orange { background-color: var(--retro-orange); }
+      .bg-retro-brown { background-color: var(--retro-brown); }
+      .bg-retro-green { background-color: var(--retro-green); }
+      .bg-retro-deep { background-color: var(--retro-deep); }
+
+      .text-retro-red { color: var(--retro-red); }
+      .text-retro-orange { color: var(--retro-orange); }
+      .text-retro-brown { color: var(--retro-brown); }
+      .text-retro-green { color: var(--retro-green); }
+      .text-retro-cream { color: var(--retro-cream); }
+      .text-retro-deep { color: var(--retro-deep); }
+
+      .border-retro-red { border-color: var(--retro-red); }
+      .border-retro-orange { border-color: var(--retro-orange); }
+      .border-retro-brown { border-color: var(--retro-brown); }
+      .border-retro-green { border-color: var(--retro-green); }
+      .border-retro-deep { border-color: var(--retro-deep); }
+
+      /* Paper texture effect */
+      .texture-paper {
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      }
+
+      /* 70s wave pattern */
+      .wave-divider {
+        background: linear-gradient(90deg, var(--retro-orange) 0%, var(--retro-red) 50%, var(--retro-brown) 100%);
+        height: 4px;
+        border-radius: 2px;
+      }
+
+      /* ========================================
+         BUTTONS & INTERACTIVE ELEMENTS
+         ======================================== */
+      .btn-retro {
+        background-color: var(--retro-red);
+        color: var(--retro-cream);
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-family: 'Bree Serif', serif;
+        font-size: 1.1rem;
+        border: 3px solid var(--retro-deep);
+        box-shadow: 4px 4px 0 var(--retro-deep);
+        transition: all 0.2s ease;
+        display: inline-block;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .btn-retro:hover {
+        background-color: var(--retro-orange);
+        transform: translate(2px, 2px);
+        box-shadow: 2px 2px 0 var(--retro-deep);
+      }
+
+      .btn-retro-outline {
+        background-color: transparent;
+        color: var(--retro-deep);
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-family: 'Bree Serif', serif;
+        font-size: 1.1rem;
+        border: 3px solid var(--retro-brown);
+        transition: all 0.2s ease;
+        display: inline-block;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .btn-retro-outline:hover {
+        background-color: var(--retro-brown);
+        color: var(--retro-cream);
+      }
+
+      /* ========================================
+         CARDS
+         ======================================== */
+      .card-retro {
+        background-color: var(--retro-cream);
+        border: 3px solid var(--retro-brown);
+        border-radius: 12px;
+        box-shadow: 6px 6px 0 var(--retro-brown);
+        padding: 1.5rem;
+      }
+
+      .card-retro-dark {
+        background-color: var(--retro-deep);
+        color: var(--retro-cream);
+        border: 3px solid var(--retro-brown);
+        border-radius: 12px;
+        box-shadow: 6px 6px 0 var(--retro-brown);
+        padding: 1.5rem;
+      }
+
+      /* ========================================
+         CODE BLOCKS
+         ======================================== */
+      .code-retro {
+        background-color: var(--retro-deep);
+        color: var(--retro-cream);
+        border: 3px solid var(--retro-brown);
+        border-radius: 8px;
+        padding: 1rem;
+        font-family: 'Roboto Mono', monospace;
+        font-size: 0.875rem;
+        overflow-x: auto;
+      }
+
+      .code-retro .highlight-orange {
+        color: var(--retro-orange);
+      }
+
+      .code-retro .highlight-green {
+        color: var(--retro-green);
+      }
+
+      .code-retro .highlight-red {
+        color: var(--retro-red);
+      }
+
+      /* ========================================
+         CHARTS & DATA VIZ
+         ======================================== */
+      .chart-bar {
+        background: linear-gradient(180deg, var(--retro-orange) 0%, var(--retro-red) 100%);
+        border-radius: 4px 4px 0 0;
+        border: 2px solid var(--retro-brown);
+        border-bottom: none;
+      }
+
+      .chart-bar-green {
+        background: linear-gradient(180deg, var(--retro-green) 0%, #5aa892 100%);
+        border-radius: 4px 4px 0 0;
+        border: 2px solid var(--retro-brown);
+        border-bottom: none;
+      }
+
+      /* ========================================
+         NAVIGATION
+         ======================================== */
+      .nav-retro {
+        background-color: var(--retro-brown);
+        border-bottom: 4px solid var(--retro-deep);
+      }
+
+      .nav-retro a {
+        color: var(--retro-cream);
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+      }
+
+      .nav-retro a:hover {
+        background-color: var(--retro-deep);
+      }
+
+      /* ========================================
+         GROOVY DECORATIONS
+         ======================================== */
+      .starburst {
+        position: relative;
+      }
+
+      .starburst::before {
+        content: '';
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        width: 40px;
+        height: 40px;
+        background: var(--retro-orange);
+        clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+      }
+
+      /* Groovy wave background */
+      .bg-groovy-waves {
+        background-image:
+          radial-gradient(ellipse at 20% 80%, rgba(117, 200, 174, 0.15) 0%, transparent 50%),
+          radial-gradient(ellipse at 80% 20%, rgba(242, 169, 80, 0.15) 0%, transparent 50%),
+          radial-gradient(ellipse at 50% 50%, rgba(217, 63, 43, 0.08) 0%, transparent 70%);
+      }
+
+      /* ========================================
+         ANIMATIONS
+         ======================================== */
+      @keyframes buzz-in {
+        0% {
+          opacity: 0;
+          transform: translateX(-3px);
+        }
+        25% {
+          transform: translateX(3px);
+        }
+        50% {
+          transform: translateX(-2px);
+        }
+        75% {
+          transform: translateX(2px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      .animate-buzz-in {
+        animation: buzz-in 0.5s ease-out forwards;
+      }
+
+      @keyframes fade-up {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .animate-fade-up {
+        animation: fade-up 0.6s ease-out forwards;
+      }
+
+      /* Staggered delays */
+      .delay-100 { animation-delay: 0.1s; }
+      .delay-200 { animation-delay: 0.2s; }
+      .delay-300 { animation-delay: 0.3s; }
+      .delay-400 { animation-delay: 0.4s; }
+      .delay-500 { animation-delay: 0.5s; }
+
+      /* ========================================
+         FLIP COUNTER ANIMATION
+         ======================================== */
+      .flip-counter {
+        font-family: 'Roboto Mono', monospace;
+        font-weight: 700;
+        background: var(--retro-deep);
+        color: var(--retro-cream);
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        border: 2px solid var(--retro-brown);
+        display: inline-block;
+      }
+
+      /* ========================================
+         TIMELINE / JOURNEY STEPS
+         ======================================== */
+      .journey-step {
+        position: relative;
+        padding-left: 3rem;
+      }
+
+      .journey-step::before {
+        content: attr(data-step);
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 2rem;
+        height: 2rem;
+        background: var(--retro-orange);
+        color: var(--retro-deep);
+        border: 2px solid var(--retro-brown);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Bree Serif', serif;
+        font-weight: bold;
+      }
+
+      .journey-step::after {
+        content: '';
+        position: absolute;
+        left: 0.9375rem;
+        top: 2.25rem;
+        width: 3px;
+        height: calc(100% - 1rem);
+        background: var(--retro-brown);
+      }
+
+      .journey-step:last-child::after {
+        display: none;
+      }
+
+      /* ========================================
+         BADGES / PILLS
+         ======================================== */
+      .badge-retro {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .badge-live {
+        background-color: var(--retro-green);
+        color: var(--retro-deep);
+        border: 2px solid var(--retro-brown);
+      }
+
+      .badge-coming {
+        background-color: var(--retro-orange);
+        color: var(--retro-deep);
+        border: 2px solid var(--retro-brown);
+      }
+
+      /* ========================================
+         TABLES
+         ======================================== */
+      .table-retro {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        border: 3px solid var(--retro-brown);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .table-retro th {
+        background-color: var(--retro-brown);
+        color: var(--retro-cream);
+        padding: 1rem;
+        text-align: left;
+        font-family: 'Bree Serif', serif;
+      }
+
+      .table-retro td {
+        padding: 1rem;
+        border-bottom: 2px solid var(--retro-brown);
+      }
+
+      .table-retro tr:nth-child(even) td {
+        background-color: rgba(117, 200, 174, 0.15);
+      }
+
+      .table-retro tr:last-child td {
+        border-bottom: none;
+      }
+
+      /* ========================================
+         HERO SPECIFIC
+         ======================================== */
+      .hero-retro {
+        background: linear-gradient(135deg, var(--retro-cream) 0%, #ffe8a3 50%, var(--retro-cream) 100%);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero-retro::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image:
+          radial-gradient(circle at 10% 20%, rgba(217, 63, 43, 0.1) 0%, transparent 25%),
+          radial-gradient(circle at 90% 80%, rgba(242, 169, 80, 0.15) 0%, transparent 25%);
+        pointer-events: none;
+      }
+
+      /* Decorative circles */
+      .deco-circle {
+        position: absolute;
+        border-radius: 50%;
+        border: 3px solid var(--retro-orange);
+        opacity: 0.3;
+      }
+
+      /* ========================================
+         MOCKUP INDICATOR
+         ======================================== */
+      .mockup-banner {
+        background: repeating-linear-gradient(
+          45deg,
+          var(--retro-red),
+          var(--retro-red) 10px,
+          var(--retro-deep) 10px,
+          var(--retro-deep) 20px
+        );
+        color: var(--retro-cream);
+        text-align: center;
+        padding: 0.5rem;
+        font-size: 0.75rem;
+        font-weight: bold;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      /* ========================================
+         RESPONSIVE
+         ======================================== */
+      @media (max-width: 768px) {
+        .card-retro {
+          box-shadow: 4px 4px 0 var(--retro-brown);
+        }
+
+        .btn-retro {
+          box-shadow: 3px 3px 0 var(--retro-deep);
+        }
+      }
+    </style>
+    <%= yield :head %>
+  </head>
+
+  <body class="texture-paper bg-groovy-waves min-h-screen">
+    <%# Mockup indicator banner %>
+    <div class="mockup-banner">
+      Design Mockup - Retro 70s Theme - For Internal Review Only
+    </div>
+
+    <%= yield %>
+  </body>
+</html>

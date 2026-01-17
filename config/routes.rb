@@ -110,6 +110,12 @@ Rails.application.routes.draw do
     resources :submissions, only: [:index, :show]
   end
 
+  # Design mockups (admin-only, returns 404 for non-admins)
+  scope :mockups do
+    get "retro/homepage", to: "mockups#retro_homepage", as: :mockups_retro_homepage
+    get "retro/demo", to: "mockups#retro_demo", as: :mockups_retro_demo
+  end
+
   # Account settings
   resource :account, only: [:show, :update], controller: "account" do
     scope module: :accounts do

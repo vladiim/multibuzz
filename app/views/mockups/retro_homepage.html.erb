@@ -1,0 +1,723 @@
+<% content_for :title, "mbuzz - Stop Renting Your Attribution. Own It." %>
+
+<%# ========================================
+    NAVIGATION
+    ======================================== %>
+<nav class="nav-retro sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-6 py-4">
+    <div class="flex items-center justify-between">
+      <%# Logo %>
+      <div class="flex items-center gap-2">
+        <div class="w-10 h-10 bg-retro-red rounded-lg flex items-center justify-center border-2 border-retro-deep">
+          <span class="text-retro-cream font-display text-xl font-bold">M</span>
+        </div>
+        <span class="font-display text-2xl text-retro-cream tracking-tight">BUZZ</span>
+      </div>
+
+      <%# Nav Links %>
+      <div class="hidden md:flex items-center gap-2">
+        <a href="#features" class="font-body text-sm">Features</a>
+        <a href="#pricing" class="font-body text-sm">Pricing</a>
+        <a href="#" class="font-body text-sm">Docs</a>
+        <a href="/mockups/retro/demo" class="font-body text-sm">Demo</a>
+      </div>
+
+      <%# CTA %>
+      <div class="flex items-center gap-3">
+        <a href="#" class="text-retro-cream font-body text-sm hover:underline hidden sm:block">Log In</a>
+        <a href="#" class="btn-retro text-sm py-2 px-4">Start Free</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<%# ========================================
+    HERO SECTION
+    ======================================== %>
+<section class="hero-retro py-20 md:py-32 relative">
+  <%# Decorative elements %>
+  <div class="deco-circle w-64 h-64 -top-32 -right-32"></div>
+  <div class="deco-circle w-48 h-48 bottom-10 -left-24 border-retro-green"></div>
+
+  <div class="max-w-7xl mx-auto px-6 relative z-10">
+    <div class="max-w-4xl mx-auto text-center">
+      <%# Tagline %>
+      <div class="inline-block mb-6 animate-buzz-in">
+        <span class="badge-retro badge-live">Server-Side Attribution</span>
+      </div>
+
+      <%# Main Headline %>
+      <h1 class="font-display text-5xl md:text-7xl text-retro-deep mb-6 leading-tight animate-fade-up">
+        Stop Renting Your Attribution.
+        <span class="text-retro-red">Own It.</span>
+      </h1>
+
+      <%# Subheadline %>
+      <p class="font-body text-lg md:text-xl text-retro-brown mb-8 max-w-2xl mx-auto animate-fade-up delay-100" style="opacity: 0;">
+        Black-box models. Walled gardens. Platforms grading their own homework.
+        <strong>There's a better way.</strong>
+      </p>
+
+      <%# CTA Buttons %>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 animate-fade-up delay-200" style="opacity: 0;">
+        <a href="#" class="btn-retro text-lg">
+          Get Started Free
+        </a>
+        <a href="/mockups/retro/demo" class="btn-retro-outline text-lg">
+          See Live Demo
+        </a>
+      </div>
+
+      <%# Quick Stats Cards %>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto animate-fade-up delay-300" style="opacity: 0;">
+        <div class="card-retro text-center">
+          <div class="font-display text-3xl text-retro-red mb-1">127</div>
+          <div class="font-body text-sm text-retro-brown">Conversions Today</div>
+        </div>
+        <div class="card-retro text-center">
+          <div class="font-display text-3xl text-retro-green mb-1">$24,891</div>
+          <div class="font-body text-sm text-retro-brown">Revenue Tracked</div>
+        </div>
+        <div class="card-retro text-center">
+          <div class="font-display text-3xl text-retro-orange mb-1">4.2x</div>
+          <div class="font-body text-sm text-retro-brown">Avg ROAS</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%# Wave Divider %>
+<div class="wave-divider"></div>
+
+<%# ========================================
+    NO MORE BLACK BOXES SECTION
+    ======================================== %>
+<section class="py-20 bg-retro-deep">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="grid md:grid-cols-2 gap-12 items-center">
+      <%# Left: Content %>
+      <div>
+        <h2 class="font-display text-4xl md:text-5xl text-retro-cream mb-6">
+          No More <span class="text-retro-orange">Black Boxes</span>
+        </h2>
+        <p class="font-body text-retro-cream/80 mb-6 leading-relaxed">
+          Every conversion. Every touchpoint. Every attribution decision.
+          <strong class="text-retro-orange">Completely transparent.</strong>
+        </p>
+        <p class="font-body text-retro-cream/70 mb-8 leading-relaxed">
+          Build your own models, or use ours. First-touch, last-touch, linear,
+          time-decay, position-based, or fully custom. You decide what matters.
+        </p>
+
+        <%# Attribution Model Card %>
+        <div class="card-retro-dark">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-3 h-3 rounded-full bg-retro-green"></div>
+            <span class="font-body text-sm text-retro-cream/60">Linear Attribution Model</span>
+          </div>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="font-body text-sm text-retro-cream">Google Ads</span>
+              <span class="font-body text-sm text-retro-orange font-bold">33%</span>
+            </div>
+            <div class="h-2 bg-retro-brown rounded-full overflow-hidden">
+              <div class="h-full bg-retro-orange rounded-full" style="width: 33%"></div>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="font-body text-sm text-retro-cream">Email Campaign</span>
+              <span class="font-body text-sm text-retro-green font-bold">33%</span>
+            </div>
+            <div class="h-2 bg-retro-brown rounded-full overflow-hidden">
+              <div class="h-full bg-retro-green rounded-full" style="width: 33%"></div>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="font-body text-sm text-retro-cream">Direct Visit</span>
+              <span class="font-body text-sm text-retro-red font-bold">34%</span>
+            </div>
+            <div class="h-2 bg-retro-brown rounded-full overflow-hidden">
+              <div class="h-full bg-retro-red rounded-full" style="width: 34%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <%# Right: Code Block %>
+      <div>
+        <div class="code-retro">
+          <pre><code><span class="highlight-green">// Your data. Your rules.</span>
+<span class="highlight-orange">mbuzz</span>.track(<span class="highlight-red">'purchase'</span>, {
+  revenue: <span class="highlight-orange">149.99</span>,
+  orderId: <span class="highlight-red">'ORD-2847'</span>,
+  products: [
+    { sku: <span class="highlight-red">'WIDGET-PRO'</span>, qty: <span class="highlight-orange">2</span> }
+  ]
+});
+
+<span class="highlight-green">// Attribution happens server-side</span>
+<span class="highlight-green">// No client-side cookies needed</span>
+<span class="highlight-green">// Works with any ad blocker</span></code></pre>
+        </div>
+        <p class="font-body text-sm text-retro-cream/50 mt-4 text-center">
+          One line of code. Full attribution visibility.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%# ========================================
+    WHY ATTRIBUTION IS BROKEN
+    ======================================== %>
+<section class="py-20">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center mb-16">
+      <h2 class="font-display text-4xl md:text-5xl text-retro-deep mb-4">
+        Why Attribution is <span class="text-retro-red">Broken</span>
+      </h2>
+      <p class="font-body text-retro-brown max-w-2xl mx-auto">
+        The tools you rely on are designed to keep you in the dark.
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <%# Problem 1 %>
+      <div class="card-retro">
+        <div class="w-12 h-12 bg-retro-red/20 rounded-lg flex items-center justify-center mb-4">
+          <svg class="w-6 h-6 text-retro-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+          </svg>
+        </div>
+        <h3 class="font-display text-xl text-retro-deep mb-2">Walled Gardens</h3>
+        <p class="font-body text-sm text-retro-brown">
+          Facebook, Google, TikTok all claim credit for the same conversion. Who's right?
+        </p>
+      </div>
+
+      <%# Problem 2 %>
+      <div class="card-retro">
+        <div class="w-12 h-12 bg-retro-orange/20 rounded-lg flex items-center justify-center mb-4">
+          <svg class="w-6 h-6 text-retro-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 12h.01M12 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <h3 class="font-display text-xl text-retro-deep mb-2">GA4 Confusion</h3>
+        <p class="font-body text-sm text-retro-brown">
+          Complex setup, data sampling, and attribution windows you can't control.
+        </p>
+      </div>
+
+      <%# Problem 3 %>
+      <div class="card-retro">
+        <div class="w-12 h-12 bg-retro-green/20 rounded-lg flex items-center justify-center mb-4">
+          <svg class="w-6 h-6 text-retro-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <h3 class="font-display text-xl text-retro-deep mb-2">Enterprise Pricing</h3>
+        <p class="font-body text-sm text-retro-brown">
+          Good tools exist, but they cost $50k+/year. SMBs get spreadsheets.
+        </p>
+      </div>
+
+      <%# Problem 4 %>
+      <div class="card-retro">
+        <div class="w-12 h-12 bg-retro-brown/20 rounded-lg flex items-center justify-center mb-4">
+          <svg class="w-6 h-6 text-retro-brown" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <h3 class="font-display text-xl text-retro-deep mb-2">Data Lock-In</h3>
+        <p class="font-body text-sm text-retro-brown">
+          Your customer data, trapped in someone else's database. Forever.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%# ========================================
+    ACCURATE. AFFORDABLE. YOURS.
+    ======================================== %>
+<section class="py-20 bg-retro-brown/10" id="features">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center mb-16">
+      <h2 class="font-display text-4xl md:text-5xl text-retro-deep mb-4">
+        Accurate. Affordable. <span class="text-retro-green">Yours.</span>
+      </h2>
+      <p class="font-body text-retro-brown max-w-2xl mx-auto">
+        Server-side tracking that actually works. Built for teams who want answers, not dashboards.
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8">
+      <%# Feature 1 %>
+      <div class="card-retro group hover:-translate-y-1 transition-transform">
+        <div class="w-16 h-16 bg-retro-red rounded-xl flex items-center justify-center mb-6 group-hover:rotate-3 transition-transform">
+          <svg class="w-8 h-8 text-retro-cream" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <h3 class="font-display text-2xl text-retro-deep mb-3">Server-Side Accuracy</h3>
+        <p class="font-body text-retro-brown leading-relaxed">
+          No more blocked pixels. No more lost conversions. Track everything that matters, even with ad blockers.
+        </p>
+      </div>
+
+      <%# Feature 2 %>
+      <div class="card-retro group hover:-translate-y-1 transition-transform">
+        <div class="w-16 h-16 bg-retro-orange rounded-xl flex items-center justify-center mb-6 group-hover:rotate-3 transition-transform">
+          <svg class="w-8 h-8 text-retro-cream" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+          </svg>
+        </div>
+        <h3 class="font-display text-2xl text-retro-deep mb-3">5-Minute Setup</h3>
+        <p class="font-body text-retro-brown leading-relaxed">
+          Install our SDK. Track events. See attribution. No consultants needed. No 6-month implementations.
+        </p>
+      </div>
+
+      <%# Feature 3 %>
+      <div class="card-retro group hover:-translate-y-1 transition-transform">
+        <div class="w-16 h-16 bg-retro-green rounded-xl flex items-center justify-center mb-6 group-hover:rotate-3 transition-transform">
+          <svg class="w-8 h-8 text-retro-cream" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+          </svg>
+        </div>
+        <h3 class="font-display text-2xl text-retro-deep mb-3">Your Data, Your Rules</h3>
+        <p class="font-body text-retro-brown leading-relaxed">
+          Export anytime. Build custom reports. Connect to your data warehouse. No lock-in, ever.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%# ========================================
+    CHANNEL PERFORMANCE VISUALIZATION
+    ======================================== %>
+<section class="py-20">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="grid lg:grid-cols-2 gap-12 items-center">
+      <%# Left: Content %>
+      <div>
+        <h2 class="font-display text-4xl md:text-5xl text-retro-deep mb-6">
+          Your "Worst" Channel Might Be Your
+          <span class="text-retro-orange">Best</span>
+        </h2>
+        <p class="font-body text-retro-brown mb-6 leading-relaxed">
+          Last-click attribution lies to you. That email campaign that "only" got 12 conversions?
+          It actually influenced <strong>47% of your revenue</strong>.
+        </p>
+        <p class="font-body text-retro-brown mb-8 leading-relaxed">
+          See true customer lifetime value by channel. Understand which touchpoints actually matter.
+          Make decisions based on reality, not platform propaganda.
+        </p>
+        <a href="/mockups/retro/demo" class="btn-retro">
+          See LTV by Channel
+        </a>
+      </div>
+
+      <%# Right: Chart %>
+      <div class="card-retro">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="font-display text-xl text-retro-deep">Revenue by Channel (30d)</h3>
+          <span class="badge-retro badge-live">Live Data</span>
+        </div>
+
+        <%# Bar Chart %>
+        <div class="space-y-4">
+          <div>
+            <div class="flex justify-between mb-1">
+              <span class="font-body text-sm text-retro-brown">Paid Search</span>
+              <span class="font-body text-sm font-bold text-retro-deep">$42,850</span>
+            </div>
+            <div class="h-8 bg-retro-brown/20 rounded overflow-hidden">
+              <div class="h-full chart-bar" style="width: 85%"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between mb-1">
+              <span class="font-body text-sm text-retro-brown">Email</span>
+              <span class="font-body text-sm font-bold text-retro-deep">$38,200</span>
+            </div>
+            <div class="h-8 bg-retro-brown/20 rounded overflow-hidden">
+              <div class="h-full chart-bar-green" style="width: 76%"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between mb-1">
+              <span class="font-body text-sm text-retro-brown">Organic Social</span>
+              <span class="font-body text-sm font-bold text-retro-deep">$28,400</span>
+            </div>
+            <div class="h-8 bg-retro-brown/20 rounded overflow-hidden">
+              <div class="h-full chart-bar" style="width: 56%"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between mb-1">
+              <span class="font-body text-sm text-retro-brown">Direct</span>
+              <span class="font-body text-sm font-bold text-retro-deep">$21,100</span>
+            </div>
+            <div class="h-8 bg-retro-brown/20 rounded overflow-hidden">
+              <div class="h-full chart-bar-green" style="width: 42%"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between mb-1">
+              <span class="font-body text-sm text-retro-brown">Referral</span>
+              <span class="font-body text-sm font-bold text-retro-deep">$12,450</span>
+            </div>
+            <div class="h-8 bg-retro-brown/20 rounded overflow-hidden">
+              <div class="h-full chart-bar" style="width: 25%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%# ========================================
+    EVERYTHING YOU NEED
+    ======================================== %>
+<section class="py-20 bg-retro-deep">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center mb-16">
+      <h2 class="font-display text-4xl md:text-5xl text-retro-cream mb-4">
+        Everything You Need
+      </h2>
+      <p class="font-body text-retro-cream/70 max-w-2xl mx-auto">
+        No modules to unlock. No enterprise tiers hiding features. Everything, for everyone.
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <% [
+        { icon: "chart-bar", title: "Multi-Touch Attribution", desc: "First-touch, last-touch, linear, time-decay, position-based, or custom." },
+        { icon: "users", title: "Customer Journeys", desc: "See every touchpoint that led to conversion. Full funnel visibility." },
+        { icon: "cog", title: "Custom Models", desc: "Build attribution models that match your business logic. No limits." },
+        { icon: "lightning-bolt", title: "Real-Time Data", desc: "See conversions as they happen. No 24-hour delays." },
+        { icon: "database", title: "Data Export", desc: "Your data, exportable anytime. CSV, JSON, or direct warehouse sync." },
+        { icon: "shield-check", title: "Privacy-First", desc: "Server-side tracking. No third-party cookies. GDPR/CCPA ready." }
+      ].each do |feature| %>
+        <div class="card-retro-dark">
+          <div class="w-10 h-10 bg-retro-orange/20 rounded-lg flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-retro-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <% case feature[:icon] %>
+              <% when "chart-bar" %>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+              <% when "users" %>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+              <% when "cog" %>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              <% when "lightning-bolt" %>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+              <% when "database" %>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
+              <% when "shield-check" %>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+              <% end %>
+            </svg>
+          </div>
+          <h3 class="font-display text-xl text-retro-cream mb-2"><%= feature[:title] %></h3>
+          <p class="font-body text-sm text-retro-cream/70"><%= feature[:desc] %></p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</section>
+
+<%# ========================================
+    PLUG & PLAY SDKs
+    ======================================== %>
+<section class="py-20">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center mb-12">
+      <h2 class="font-display text-4xl md:text-5xl text-retro-deep mb-4">
+        Plug & Play SDKs
+      </h2>
+      <p class="font-body text-retro-brown max-w-2xl mx-auto">
+        For your favorite stack. More coming soon.
+      </p>
+    </div>
+
+    <div class="flex flex-wrap justify-center gap-4">
+      <% [
+        { name: "JavaScript", status: "live" },
+        { name: "React", status: "live" },
+        { name: "Next.js", status: "live" },
+        { name: "Ruby", status: "live" },
+        { name: "Python", status: "coming" },
+        { name: "PHP", status: "coming" },
+        { name: "Node.js", status: "coming" },
+        { name: "Go", status: "coming" }
+      ].each do |sdk| %>
+        <div class="card-retro flex items-center gap-3 py-3 px-5">
+          <span class="font-body font-bold text-retro-deep"><%= sdk[:name] %></span>
+          <span class="badge-retro <%= sdk[:status] == 'live' ? 'badge-live' : 'badge-coming' %>">
+            <%= sdk[:status] == 'live' ? 'Live' : 'Coming Soon' %>
+          </span>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</section>
+
+<%# ========================================
+    PRICING
+    ======================================== %>
+<section class="py-20 bg-retro-brown/10" id="pricing">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center mb-16">
+      <h2 class="font-display text-4xl md:text-5xl text-retro-deep mb-4">
+        Simple, Honest Pricing
+      </h2>
+      <p class="font-body text-retro-brown max-w-2xl mx-auto">
+        No hidden fees. No "contact sales." Start free, upgrade when you need to.
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+      <%# Free Tier %>
+      <div class="card-retro">
+        <div class="text-center mb-6">
+          <h3 class="font-display text-2xl text-retro-deep mb-2">Starter</h3>
+          <div class="font-display text-5xl text-retro-green mb-1">$0</div>
+          <p class="font-body text-sm text-retro-brown">/month forever</p>
+        </div>
+        <ul class="space-y-3 mb-8">
+          <li class="flex items-center gap-2 font-body text-sm">
+            <span class="text-retro-green">&#10003;</span>
+            <span>10,000 events/month</span>
+          </li>
+          <li class="flex items-center gap-2 font-body text-sm">
+            <span class="text-retro-green">&#10003;</span>
+            <span>All attribution models</span>
+          </li>
+          <li class="flex items-center gap-2 font-body text-sm">
+            <span class="text-retro-green">&#10003;</span>
+            <span>30-day data retention</span>
+          </li>
+          <li class="flex items-center gap-2 font-body text-sm">
+            <span class="text-retro-green">&#10003;</span>
+            <span>1 team member</span>
+          </li>
+        </ul>
+        <a href="#" class="btn-retro-outline w-full text-center block">Get Started</a>
+      </div>
+
+      <%# Pro Tier %>
+      <div class="card-retro relative border-retro-red" style="border-width: 4px;">
+        <div class="absolute -top-4 left-1/2 -translate-x-1/2">
+          <span class="badge-retro badge-live px-4 py-1 text-sm">Popular</span>
+        </div>
+        <div class="text-center mb-6">
+          <h3 class="font-display text-2xl text-retro-deep mb-2">Pro</h3>
+          <div class="font-display text-5xl text-retro-red mb-1">$49</div>
+          <p class="font-body text-sm text-retro-brown">/month</p>
+        </div>
+        <ul class="space-y-3 mb-8">
+          <li class="flex items-center gap-2 font-body text-sm">
+            <span class="text-retro-green">&#10003;</span>
+            <span>100,000 events/month</span>
+          </li>
+          <li class="flex items-center gap-2 font-body text-sm">
+            <span class="text-retro-green">&#10003;</span>
+            <span>Custom attribution models</span>
+          </li>
+          <li class="flex items-center gap-2 font-body text-sm">
+            <span class="text-retro-green">&#10003;</span>
+            <span>1-year data retention</span>
+          </li>
+          <li class="flex items-center gap-2 font-body text-sm">
+            <span class="text-retro-green">&#10003;</span>
+            <span>5 team members</span>
+          </li>
+          <li class="flex items-center gap-2 font-body text-sm">
+            <span class="text-retro-green">&#10003;</span>
+            <span>Data export</span>
+          </li>
+        </ul>
+        <a href="#" class="btn-retro w-full text-center block">Start Free Trial</a>
+      </div>
+
+      <%# Scale Tier %>
+      <div class="card-retro">
+        <div class="text-center mb-6">
+          <h3 class="font-display text-2xl text-retro-deep mb-2">Scale</h3>
+          <div class="font-display text-5xl text-retro-orange mb-1">$199</div>
+          <p class="font-body text-sm text-retro-brown">/month</p>
+        </div>
+        <ul class="space-y-3 mb-8">
+          <li class="flex items-center gap-2 font-body text-sm">
+            <span class="text-retro-green">&#10003;</span>
+            <span>1M events/month</span>
+          </li>
+          <li class="flex items-center gap-2 font-body text-sm">
+            <span class="text-retro-green">&#10003;</span>
+            <span>Everything in Pro</span>
+          </li>
+          <li class="flex items-center gap-2 font-body text-sm">
+            <span class="text-retro-green">&#10003;</span>
+            <span>Unlimited data retention</span>
+          </li>
+          <li class="flex items-center gap-2 font-body text-sm">
+            <span class="text-retro-green">&#10003;</span>
+            <span>Unlimited team members</span>
+          </li>
+          <li class="flex items-center gap-2 font-body text-sm">
+            <span class="text-retro-green">&#10003;</span>
+            <span>Warehouse sync</span>
+          </li>
+        </ul>
+        <a href="#" class="btn-retro-outline w-full text-center block">Get Started</a>
+      </div>
+    </div>
+
+    <p class="text-center font-body text-sm text-retro-brown mt-8">
+      Need more? Overages billed at $0.001/event. No surprise invoices.
+    </p>
+  </div>
+</section>
+
+<%# ========================================
+    COMPARISON TABLE
+    ======================================== %>
+<section class="py-20">
+  <div class="max-w-5xl mx-auto px-6">
+    <div class="text-center mb-12">
+      <h2 class="font-display text-4xl text-retro-deep mb-4">
+        How We Compare
+      </h2>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="table-retro">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>mbuzz</th>
+            <th>GA4</th>
+            <th>Enterprise Tools</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="font-body">Server-side tracking</td>
+            <td class="text-retro-green font-bold">&#10003;</td>
+            <td class="text-retro-red">Limited</td>
+            <td class="text-retro-green font-bold">&#10003;</td>
+          </tr>
+          <tr>
+            <td class="font-body">Custom attribution models</td>
+            <td class="text-retro-green font-bold">&#10003;</td>
+            <td class="text-retro-red">&#10007;</td>
+            <td class="text-retro-green font-bold">&#10003;</td>
+          </tr>
+          <tr>
+            <td class="font-body">Real-time data</td>
+            <td class="text-retro-green font-bold">&#10003;</td>
+            <td class="text-retro-orange">24h delay</td>
+            <td class="text-retro-green font-bold">&#10003;</td>
+          </tr>
+          <tr>
+            <td class="font-body">Data export</td>
+            <td class="text-retro-green font-bold">&#10003;</td>
+            <td class="text-retro-orange">Limited</td>
+            <td class="text-retro-green font-bold">&#10003;</td>
+          </tr>
+          <tr>
+            <td class="font-body">Starting price</td>
+            <td class="font-bold text-retro-green">Free</td>
+            <td class="font-bold">Free</td>
+            <td class="text-retro-red">$50k+/yr</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<%# ========================================
+    FINAL CTA
+    ======================================== %>
+<section class="py-20 bg-retro-red">
+  <div class="max-w-4xl mx-auto px-6 text-center">
+    <h2 class="font-display text-4xl md:text-5xl text-retro-cream mb-6">
+      Ready to Own Your Attribution?
+    </h2>
+    <p class="font-body text-retro-cream/80 text-lg mb-8 max-w-2xl mx-auto">
+      Stop guessing which channels drive revenue. Start with 10,000 free events.
+      No credit card required.
+    </p>
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+      <a href="#" class="bg-retro-cream text-retro-red font-display text-lg py-4 px-8 rounded-lg border-3 border-retro-deep shadow-[4px_4px_0_var(--retro-deep)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_var(--retro-deep)] transition-all">
+        Start Free Today
+      </a>
+      <a href="/mockups/retro/demo" class="text-retro-cream font-body text-lg underline underline-offset-4 hover:text-retro-orange transition-colors">
+        or see the demo first
+      </a>
+    </div>
+  </div>
+</section>
+
+<%# ========================================
+    FOOTER
+    ======================================== %>
+<footer class="bg-retro-deep py-16">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="grid md:grid-cols-4 gap-12 mb-12">
+      <%# Logo & Description %>
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-10 h-10 bg-retro-red rounded-lg flex items-center justify-center border-2 border-retro-brown">
+            <span class="text-retro-cream font-display text-xl font-bold">M</span>
+          </div>
+          <span class="font-display text-2xl text-retro-cream tracking-tight">BUZZ</span>
+        </div>
+        <p class="font-body text-retro-cream/60 max-w-sm">
+          Server-side multi-touch attribution you own. Track customer journeys, measure marketing ROI, and understand what drives conversions.
+        </p>
+      </div>
+
+      <%# Product Links %>
+      <div>
+        <h4 class="font-display text-lg text-retro-cream mb-4">Product</h4>
+        <ul class="space-y-2">
+          <li><a href="#" class="font-body text-sm text-retro-cream/60 hover:text-retro-orange">Features</a></li>
+          <li><a href="#" class="font-body text-sm text-retro-cream/60 hover:text-retro-orange">Pricing</a></li>
+          <li><a href="#" class="font-body text-sm text-retro-cream/60 hover:text-retro-orange">Documentation</a></li>
+          <li><a href="#" class="font-body text-sm text-retro-cream/60 hover:text-retro-orange">Changelog</a></li>
+        </ul>
+      </div>
+
+      <%# Company Links %>
+      <div>
+        <h4 class="font-display text-lg text-retro-cream mb-4">Company</h4>
+        <ul class="space-y-2">
+          <li><a href="#" class="font-body text-sm text-retro-cream/60 hover:text-retro-orange">About</a></li>
+          <li><a href="#" class="font-body text-sm text-retro-cream/60 hover:text-retro-orange">Blog</a></li>
+          <li><a href="#" class="font-body text-sm text-retro-cream/60 hover:text-retro-orange">Privacy</a></li>
+          <li><a href="#" class="font-body text-sm text-retro-cream/60 hover:text-retro-orange">Terms</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="wave-divider mb-8"></div>
+
+    <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+      <p class="font-body text-sm text-retro-cream/40">
+        &copy; 2026 mbuzz. All rights reserved.
+      </p>
+      <p class="font-body text-sm text-retro-cream/40">
+        Made with groovy vibes in the analog era
+      </p>
+    </div>
+  </div>
+</footer>
