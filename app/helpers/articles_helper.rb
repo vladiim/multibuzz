@@ -11,7 +11,7 @@ module ArticlesHelper
     return "" unless text.present?
 
     content_tag(:div, class: "bg-blue-50 border-l-4 border-blue-500 p-4 my-6 not-prose") do
-      content_tag(:p, text, class: "text-blue-900 font-medium")
+      content_tag(:p, text.html_safe, class: "text-blue-900 font-medium")
     end
   end
 

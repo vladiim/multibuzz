@@ -22,16 +22,6 @@
 
 ***
 
-# Marketing
-
-https://x.com/ZedNilm1/status/2007437093425799501?s=20
-https://x.com/codyschneiderxx/status/2008282361167757453?s=20
-Reddit marketing https://x.com/hridoyreh/status/2008441471813476672?s=20
-Viral insta https://x.com/aigleeson/status/2008487775272882222?s=20
-
-
-***
-
 ## Notes
 
 https://app.burnerapp.com -> for phone number (607) 236-8693
@@ -43,7 +33,7 @@ https://app.burnerapp.com -> for phone number (607) 236-8693
 * Econsultancy guys, mumberella etc
 * Sales - find people like those in https://page.funnel.io/2026-marketing-intelligence-report#access-report; reach out for advice - thoughts on MTA - soft sell
 * Launch SDK listings + associated newsletters (first being rubygems) - research the best way to get traction in the specific SDK community are there people to engage with?
-* CA, Rebel etc (grant), boris clients, audi, others?
+* CA, Rebel etc (grant), boris clients, audi, others?, People: phil (adobe)
 * Waitlist for SDK - 1st to implement get 3 months free and priority support
 * Reach out: key ICPs, intro LI then email then call
 * Content: docs, video demo dropbox style, how to for each SDK, video - what is MTA?, MTA Lenny-style guide, survey potential users w/ LinkedIn / email outreach - compile

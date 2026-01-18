@@ -6,7 +6,7 @@ published_at:
 section: comparisons
 section_order: 2
 status: draft
-last_updated: 2026-01-16
+last_updated: 2026-01-19
 priority: P1
 category: "Tool Comparisons"
 tags:
@@ -51,11 +51,33 @@ has_download: false
 
 <%= render_tldr(@article.tldr) %>
 
-## Why Look for Triple Whale Alternatives?
+## The Real Question
 
-Triple Whale is popular for good reason—it's simple, affordable, and works well for Shopify stores. But it's not for everyone. (Full disclosure: mbuzz is one of the alternatives we cover. If you're a small Shopify store wanting the simplest possible setup, Triple Whale may genuinely be your best bet—we'll help you decide.)
+You're here because Triple Whale isn't working—or you're worried it won't scale. Let's cut to it.
 
-**Common reasons to switch:**
+### Quick Answer
+
+**Not on Shopify?** Triple Whale won't work. Period.
+→ **mbuzz** or **Northbeam** for multi-platform
+
+**Scaling past $30M revenue?** Triple Whale struggles at scale.
+→ **Northbeam** for enterprise DTC, **mbuzz** for model flexibility
+
+**Need view-through attribution?** Triple Whale only tracks clicks.
+→ **mbuzz**, **Rockerbox**, or **Northbeam**
+
+**Want to compare attribution models?** Triple Whale gives you one view.
+→ **mbuzz**—8 models side-by-side + custom rules
+
+### The Uncomfortable Truth
+
+Triple Whale is fine for small Shopify stores that just want "a number." But it's a walled garden. The moment you add WooCommerce, go headless, or want to understand *why* a channel gets credit—you're stuck.
+
+The bigger issue: Triple Whale only tracks clicks. In a world of YouTube ads, podcast mentions, and display impressions, that's leaving 30-40% of your attribution story on the table.
+
+*If you're a small Shopify store wanting zero-code simplicity, Triple Whale might genuinely be your best bet. This guide is for everyone else.*
+
+### Common Reasons to Switch
 
 | Limitation | Impact |
 |------------|--------|
@@ -63,7 +85,6 @@ Triple Whale is popular for good reason—it's simple, affordable, and works wel
 | **Click-tracking only** | Misses view-through conversions from display, video, and social ads |
 | **Limited at scale** | Users report issues above $30-50M revenue |
 | **Limited models** | Only basic attribution models, no custom logic |
-| **Basic modeling** | Enterprise needs often exceed Triple Whale's capabilities |
 
 If any of these apply, here are your best options.
 
@@ -101,10 +122,7 @@ If any of these apply, here are your best options.
 
 **LTV attribution built-in.** mbuzz tracks every recurring payment back to its original acquisition source. That Facebook campaign might look great at first purchase but terrible at 12-month LTV—you'll know the difference.
 
-<figure class="my-8 max-w-2xl mx-auto">
-  <%= image_tag "/images/product/clv/clv-overview.png", alt: "mbuzz Customer LTV dashboard showing lifetime value by acquisition channel", class: "rounded-lg border border-gray-200 shadow-sm w-full" %>
-  <figcaption class="text-sm text-gray-500 mt-2 text-center">See which channels acquire your highest-value customers</figcaption>
-</figure>
+<%= render "articles/embeds/mbuzz_showcase" %>
 
 **Pricing that makes sense:**
 
@@ -156,7 +174,7 @@ If any of these apply, here are your best options.
     </h4>
     <ul class="space-y-2 text-sm text-red-900">
       <li>Requires SDK integration (not plug-and-play)</li>
-      <li>More technical setup—needs developer access</li>
+      <li>Shopify app is plug-and-play; other platforms need SDK</li>
       <li>Younger product than established competitors</li>
     </ul>
   </div>
@@ -166,9 +184,8 @@ If any of these apply, here are your best options.
 
 Let's be honest—mbuzz isn't right for everyone:
 
-- **Pure Shopify stores wanting zero-code setup** — Triple Whale's app store install is simpler
-- **Teams without any developer resources** — You'll need to integrate the SDK
-- **Those who want a single "magic number"** — mbuzz shows you multiple models; you decide
+- **Teams who want a single dashboard number** — mbuzz shows multiple models, not one answer
+- **Heavy podcast/TV advertisers** — mbuzz focuses on digital channels
 - **Brands happy with platform-reported ROAS** — If you trust Meta's numbers, you don't need us
 
 ### Best For
