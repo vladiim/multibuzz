@@ -5,7 +5,12 @@ class AccountController < ApplicationController
   end
 
   def update
-    current_account.update(account_params) ? redirect_to_success : render_errors
+    if current_account.update(account_params)
+      clear_view_mode_if_live_mode_enabled
+      redirect_to_success
+    else
+      render_errors
+    end
   end
 
   private
@@ -26,6 +31,12 @@ class AccountController < ApplicationController
 
   def live_mode_changed?
     params.dig(:account, :live_mode_enabled).present?
+  end
+
+  def clear_view_mode_if_live_mode_enabled
+    return unless current_account.live_mode_enabled?
+
+    session.delete(:view_mode)
   end
 
   def live_mode_message
