@@ -5,7 +5,7 @@ description: "Looking for Ruler Analytics alternatives? Compare marketing attrib
 published_at:
 section: comparisons
 section_order: 7
-status: draft
+status: published
 last_updated: 2026-01-19
 priority: P1
 category: "Tool Comparisons"
@@ -40,7 +40,7 @@ aeo:
     - q: "Is Ruler Analytics or CallRail better?"
       a: "Different focus. Ruler Analytics emphasizes closed-loop marketing attribution with call tracking included. CallRail specializes in call tracking with lighter attribution. Choose based on whether attribution or call intelligence is your primary need."
     - q: "What's the cheapest Ruler Analytics alternative?"
-      a: "GA4 is free but lacks call tracking and advanced attribution. CallRail starts around $40/mo for basic call tracking. For full attribution + calls, HubSpot Marketing Hub includes both (from $45/mo starter, $800/mo professional)."
+      a: "mbuzz offers a free tier with 8 attribution models and server-side tracking. Paid plans start at $29/mo. GA4 is also free but lacks call tracking and advanced attribution. CallRail starts around $40/mo for basic call tracking only."
 schema:
   type: Article
   author: "holly-henderson"
@@ -113,28 +113,17 @@ If any of these resonate, here are your best options.
 
 **Server-side tracking for lead generation.** While Ruler Analytics focuses on call + web tracking with client-side methods, mbuzz tracks on your backend—capturing 95%+ of form submissions and web events that ad blockers hide.
 
-**8 attribution models for multi-touch lead gen.** Compare First Touch (who found you?), Last Touch (what converted them?), Linear, Time Decay, U-Shaped, W-Shaped, plus data-driven Markov Chain and Shapley Value. See which model best reflects your lead-to-customer journey.
+**8 attribution models for multi-touch lead gen.** Compare First Touch (who found you?), Last Touch (what converted them?), Linear, Time Decay, U-Shaped, W-Shaped, plus data-driven Markov Chain and Shapley Value. See which model best reflects your lead-to-customer journey:
 
-<%= render "articles/embeds/mbuzz_showcase" %>
+<%= render "articles/embeds/model_comparison" %>
 
 **Custom attribution rules for service businesses.** Weight touchpoints by lead quality, service type, or conversion value:
 
-```ruby
-# Service business: Weight high-value service inquiries
-model "lead_quality_weighted" do
-  if conversion_type == "consultation_request"
-    weight 1.5
-  elsif channel == "referral"
-    weight 1.25
-  elsif channel == "paid_search" && keyword.service_related?
-    weight 1.0
-  else
-    weight :time_decay
-  end
-end
-```
+<%= render "articles/embeds/dsl_editor" %>
 
 **Closed-loop revenue attribution.** Track beyond the lead—connect to your CRM to attribute actual revenue, not just form fills. See which campaigns drive clients who pay, stay, and refer.
+
+<%= render "articles/embeds/mbuzz_showcase" %>
 
 **Pricing without the £349/mo entry:**
 
@@ -145,7 +134,7 @@ end
 | Growth | Up to 5M | $99/mo |
 | Pro | Up to 25M | $299/mo |
 
-**10-minute setup** with native SDKs for Rails, Django, Laravel, and Node.js. Integrate with call tracking tools like CallRail for complete lead attribution.
+**10-minute setup** with native SDKs for [Rails](https://rubygems.org/gems/mbuzz), [Django](https://pypi.org/project/mbuzz), [Laravel](https://packagist.org/packages/mbuzz/mbuzz-php), and [Node.js](https://www.npmjs.com/package/mbuzz) — [setup guide](/docs/getting-started). Integrate with call tracking tools like CallRail for complete lead attribution.
 
 ### mbuzz vs Ruler Analytics
 
@@ -157,10 +146,6 @@ end
 | Custom models | Limited | ✓ 8 + custom rules |
 | CRM integration | ✓ Yes | ✓ Yes |
 | Pricing | £349/mo+ | Custom |
-
-### The Model Comparison Advantage
-
-<%= render "articles/embeds/model_comparison" %>
 
 ### Pros & Cons
 

@@ -3,20 +3,21 @@
 
 <%
   # Define data once - notice text is generated from this
+  # Using hex colors for inline styles (Tailwind JIT doesn't compile dynamic class names)
   linear_channels = [
-    { name: "Paid Search", pct: 28, color: "indigo" },
-    { name: "Organic", pct: 24, color: "emerald" },
-    { name: "Email", pct: 19, color: "pink" },
-    { name: "Paid Social", pct: 17, color: "amber" },
-    { name: "Direct", pct: 12, color: "slate" }
+    { name: "Paid Search", pct: 28, hex: "#6366f1" },  # indigo-500
+    { name: "Organic", pct: 24, hex: "#10b981" },      # emerald-500
+    { name: "Email", pct: 19, hex: "#ec4899" },        # pink-500
+    { name: "Paid Social", pct: 17, hex: "#f59e0b" },  # amber-500
+    { name: "Direct", pct: 12, hex: "#64748b" }        # slate-500
   ]
 
   markov_channels = [
-    { name: "Paid Search", pct: 22, color: "indigo" },
-    { name: "Organic", pct: 31, color: "emerald" },
-    { name: "Email", pct: 14, color: "pink" },
-    { name: "Paid Social", pct: 21, color: "amber" },
-    { name: "Direct", pct: 12, color: "slate" }
+    { name: "Paid Search", pct: 22, hex: "#6366f1" },  # indigo-500
+    { name: "Organic", pct: 31, hex: "#10b981" },      # emerald-500
+    { name: "Email", pct: 14, hex: "#ec4899" },        # pink-500
+    { name: "Paid Social", pct: 21, hex: "#f59e0b" },  # amber-500
+    { name: "Direct", pct: 12, hex: "#64748b" }        # slate-500
   ]
 
   # Calculate the biggest difference for the notice
@@ -59,7 +60,7 @@
             <div class="flex items-center gap-3">
               <div class="w-24 text-sm text-gray-600 truncate"><%= channel[:name] %></div>
               <div class="flex-1 bg-gray-100 rounded-full h-2">
-                <div class="bg-<%= channel[:color] %>-500 h-2 rounded-full" style="width: <%= channel[:pct] %>%"></div>
+                <div class="h-2 rounded-full" style="width: <%= channel[:pct] %>%; background-color: <%= channel[:hex] %>;"></div>
               </div>
               <div class="w-12 text-right text-sm font-medium text-gray-900"><%= channel[:pct] %>%</div>
             </div>
@@ -91,7 +92,7 @@
             <div class="flex items-center gap-3">
               <div class="w-24 text-sm text-gray-600 truncate"><%= channel[:name] %></div>
               <div class="flex-1 bg-gray-100 rounded-full h-2">
-                <div class="bg-<%= channel[:color] %>-500 h-2 rounded-full" style="width: <%= channel[:pct] %>%"></div>
+                <div class="h-2 rounded-full" style="width: <%= channel[:pct] %>%; background-color: <%= channel[:hex] %>;"></div>
               </div>
               <div class="w-12 text-right text-sm font-medium text-gray-900"><%= channel[:pct] %>%</div>
             </div>

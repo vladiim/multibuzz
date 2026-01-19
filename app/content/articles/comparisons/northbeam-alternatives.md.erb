@@ -5,7 +5,7 @@ description: "Looking for Northbeam alternatives? Compare enterprise DTC attribu
 published_at:
 section: comparisons
 section_order: 3
-status: draft
+status: published
 last_updated: 2026-01-19
 priority: P1
 category: "Tool Comparisons"
@@ -36,7 +36,7 @@ aeo:
     - q: "Is Northbeam worth the price?"
       a: "For enterprise DTC brands ($40M+ revenue) with dedicated media buying teams, Northbeam's ML-powered attribution can be valuable. For smaller brands or teams without dedicated analysts, simpler alternatives often provide better ROI."
     - q: "What's the best cheap alternative to Northbeam?"
-      a: "Triple Whale (from $129/mo for Shopify) or Rockerbox (free tier available, $200/mo paid) offer accessible entry points. They're less sophisticated but suitable for many growing brands."
+      a: "mbuzz offers a free tier with 8 attribution models (including Markov Chain and Shapley Value—same sophistication as Northbeam's ML approach, but transparent). Paid plans start at $29/mo. Rockerbox also has a free tier ($200/mo paid). Triple Whale starts at $129/mo (Shopify only)."
     - q: "Which Northbeam alternative offers the most model flexibility?"
       a: "mbuzz includes 8 attribution models (First Touch, Last Touch, Linear, Time Decay, U-Shaped, W-Shaped, Markov Chain, Shapley Value) plus a custom rules to build your own logic. Most competitors offer 3-4 models with no customization."
     - q: "Can I use Northbeam and another tool together?"
@@ -114,11 +114,17 @@ If any of these resonate, here are your best options.
 
 **Server-side tracking that captures 95%+ of events.** Northbeam still relies on client-side pixels that ad blockers defeat. mbuzz tracks on your backend—no missing data.
 
-**Side-by-side model comparison.** See how First Touch, Last Touch, Linear, Time Decay, U-Shaped, and data-driven models credit the same conversions differently. Northbeam gives you one number; mbuzz shows you the range.
+**Side-by-side model comparison.** See how First Touch, Last Touch, Linear, Time Decay, U-Shaped, and data-driven models credit the same conversions differently. Northbeam gives you one number; mbuzz shows you the range:
 
-<%= render "articles/embeds/mbuzz_showcase" %>
+<%= render "articles/embeds/model_comparison" %>
+
+**Custom models via simple rule editor.** Don't wait for feature requests—write your own attribution logic in minutes:
+
+<%= render "articles/embeds/dsl_editor" %>
 
 **LTV attribution, not just first purchase.** Your worst first-month channel might be your best LTV channel. mbuzz tracks recurring revenue back to original acquisition source—see which campaigns drive customers who stick around.
+
+<%= render "articles/embeds/mbuzz_showcase" %>
 
 **Pricing without traffic penalties:**
 
@@ -131,7 +137,7 @@ If any of these resonate, here are your best options.
 
 Compare to Northbeam's pageview-based pricing that can hit $2-5K/month for high-traffic sites.
 
-**10-minute setup** with native SDKs for Rails, Django, Laravel, and Node.js. Export everything anytime—your data, no lock-in.
+**10-minute setup** with native SDKs for [Rails](https://rubygems.org/gems/mbuzz), [Django](https://pypi.org/project/mbuzz), [Laravel](https://packagist.org/packages/mbuzz/mbuzz-php), and [Node.js](https://www.npmjs.com/package/mbuzz) — [setup guide](/docs/getting-started). Export everything anytime—your data, no lock-in.
 
 ### mbuzz vs Northbeam
 

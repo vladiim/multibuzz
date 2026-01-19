@@ -5,7 +5,7 @@ description: "25+ multi-touch attribution platforms compared—from enterprise g
 published_at:
 section: comparisons
 section_order: 1
-status: draft
+status: published
 last_updated: 2026-01-19
 priority: P1
 category: "Tool Comparisons"
@@ -118,13 +118,21 @@ Most sophisticated attribution tools are black boxes. You trust the algorithm or
 
 We wanted both: sophisticated models (Markov chains, Shapley values, time decay) that you can actually inspect. Plus the ability to define your own attribution logic.
 
+**8 attribution models, not 3.** Compare first-touch, last-touch, linear, time-decay, U-shaped, W-shaped, plus data-driven Markov Chain and Shapley Value models side-by-side. See how credit shifts between channels under different models:
+
+<%= render "articles/embeds/model_comparison" %>
+
+**Custom models via simple rule editor.** Don't wait for feature requests—write your own attribution logic in minutes:
+
+<%= render "articles/embeds/dsl_editor" %>
+
 **Strengths:**
 - Server-side tracking captures 95%+ of events (vs 60-70% with client-side)
 - 8 built-in models including Markov Chain and Shapley Value
 - Custom attribution rules via simple DSL—define your own logic
 - Side-by-side model comparison shows how credit shifts
 - LTV attribution tracks recurring revenue to acquisition source
-- Native SDKs for Shopify, Rails, Django, Laravel, Node.js
+- Native SDKs for [Shopify](/docs/platforms-shopify), [Rails](https://rubygems.org/gems/mbuzz), [Django](https://pypi.org/project/mbuzz), [Laravel](https://packagist.org/packages/mbuzz/mbuzz-php), [Node.js](https://www.npmjs.com/package/mbuzz) — [setup guide](/docs/getting-started)
 - Transparent pricing, no sales calls, export everything
 
 <%= render "articles/embeds/mbuzz_showcase" %>
@@ -678,7 +686,7 @@ These tools work for a variety of businesses without being specialized for B2B o
 
 | If You Use... | Consider |
 |--------------|----------|
-| **Rails, Django, Laravel, Node.js** | mbuzz (native SDKs) |
+| **[Rails](https://rubygems.org/gems/mbuzz), [Django](https://pypi.org/project/mbuzz), [Laravel](https://packagist.org/packages/mbuzz/mbuzz-php), [Node.js](https://www.npmjs.com/package/mbuzz)** | mbuzz ([native SDKs](/docs/getting-started)) |
 | **Shopify** | mbuzz, Triple Whale, Northbeam |
 | **Salesforce** | Bizible, HockeyStack, Dreamdata |
 | **HubSpot** | mbuzz, HockeyStack, Factors.ai |
