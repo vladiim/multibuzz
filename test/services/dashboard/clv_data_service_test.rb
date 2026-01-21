@@ -178,8 +178,8 @@ module Dashboard
     # Date Range Filtering Tests
     # ==========================================
 
-    test "filters customers by acquisition date not purchase date" do
-      # Create an old customer acquired 60 days ago (outside 30d range)
+    test "includes all historical customers for cohort analysis" do
+      # Create an old customer acquired 60 days ago
       old_identity = account.identities.create!(
         external_id: "old_customer",
         first_identified_at: 60.days.ago,
@@ -195,7 +195,7 @@ module Dashboard
         is_test: false
       )
 
-      # Recent payment from old customer (should NOT be included)
+      # Recent payment from old customer
       account.conversions.create!(
         visitor: visitors(:one),
         identity: old_identity,
@@ -205,14 +205,15 @@ module Dashboard
         is_test: false
       )
 
-      # New customer acquired 10 days ago (within range)
+      # New customer acquired 10 days ago
       create_clv_test_data
 
       result = service.call
       totals = result[:data][:totals]
 
-      # Only the new customer should be counted
-      assert_equal 1, totals[:customers]
+      # Both customers should be included for proper cohort analysis
+      # CLV analysis needs all historical cohorts, not filtered by date range
+      assert_equal 2, totals[:customers]
     end
 
     private

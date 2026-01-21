@@ -3,9 +3,10 @@ module Dashboard
     class CohortAnalysisQuery
       MAX_MONTHS_SINCE_ACQUISITION = 12
 
-      def initialize(account:, acquisition_conversions:, test_mode: false)
+      def initialize(account:, acquisition_conversions:, attribution_model: nil, test_mode: false)
         @account = account
         @acquisition_conversions = acquisition_conversions
+        @attribution_model = attribution_model
         @test_mode = test_mode
       end
 

@@ -1,9 +1,10 @@
 module Dashboard
   module Queries
     class ClvByChannelQuery
-      def initialize(account:, acquisition_conversions:, test_mode: false)
+      def initialize(account:, acquisition_conversions:, attribution_model: nil, test_mode: false)
         @account = account
         @acquisition_conversions = acquisition_conversions
+        @attribution_model = attribution_model
         @test_mode = test_mode
       end
 
@@ -15,7 +16,7 @@ module Dashboard
 
       private
 
-      attr_reader :account, :acquisition_conversions, :test_mode
+      attr_reader :account, :acquisition_conversions, :attribution_model, :test_mode
 
       def channels_with_clv
         channel_groups.map { |channel, identity_ids| build_channel_stats(channel, identity_ids) }
@@ -64,7 +65,8 @@ module Dashboard
       end
 
       def primary_model
-        @primary_model ||= account.attribution_models.active.find_by(is_default: true) ||
+        @primary_model ||= attribution_model ||
+          account.attribution_models.active.find_by(is_default: true) ||
           account.attribution_models.active.first
       end
     end

@@ -1,0 +1,93 @@
+<% data = local_assigns[:data] %>
+<% model = local_assigns[:model] %>
+<% panel_index = local_assigns.fetch(:panel_index, 0) %>
+<% panel_id = model&.prefix_id || "default" %>
+<% accent_color = panel_index.zero? ? "indigo" : "teal" %>
+<% border_class = panel_index.zero? ? "border-l-4 border-indigo-500" : "border-l-4 border-teal-500" %>
+
+<div class="clv-panel <%= border_class %> pl-4">
+  <% if model %>
+    <h3 class="text-lg font-semibold text-gray-900 mb-4"><%= model.name.titleize %></h3>
+  <% end %>
+
+  <% if data&.dig(:has_data) %>
+    <% totals = data[:totals] %>
+    <% coverage = data[:coverage] %>
+
+    <!-- Compact KPI Cards -->
+    <div class="grid grid-cols-2 gap-3 mb-4">
+      <!-- CLV -->
+      <div class="bg-white p-3 rounded-lg shadow">
+        <div class="text-xs font-medium text-gray-500 mb-1">Avg CLV</div>
+        <div class="text-lg font-bold text-gray-900"><%= number_to_currency(totals[:clv], precision: 0) %></div>
+      </div>
+
+      <!-- Customers -->
+      <div class="bg-white p-3 rounded-lg shadow">
+        <div class="text-xs font-medium text-gray-500 mb-1">Customers</div>
+        <div class="text-lg font-bold text-gray-900"><%= number_with_delimiter(totals[:customers]) %></div>
+      </div>
+
+      <!-- Purchases -->
+      <div class="bg-white p-3 rounded-lg shadow">
+        <div class="text-xs font-medium text-gray-500 mb-1">Purchases</div>
+        <div class="text-lg font-bold text-gray-900"><%= number_with_delimiter(totals[:purchases]) %></div>
+      </div>
+
+      <!-- Revenue -->
+      <div class="bg-white p-3 rounded-lg shadow">
+        <div class="text-xs font-medium text-gray-500 mb-1">Total Revenue</div>
+        <div class="text-lg font-bold text-gray-900"><%= number_to_currency(totals[:revenue], precision: 0) %></div>
+      </div>
+
+      <!-- Avg Lifespan -->
+      <div class="bg-white p-3 rounded-lg shadow">
+        <div class="text-xs font-medium text-gray-500 mb-1">Avg Lifespan</div>
+        <div class="text-lg font-bold text-gray-900"><%= totals[:avg_duration] %> days</div>
+      </div>
+
+      <!-- Repurchase Freq -->
+      <div class="bg-white p-3 rounded-lg shadow">
+        <div class="text-xs font-medium text-gray-500 mb-1">Repurchase Freq</div>
+        <div class="text-lg font-bold text-gray-900"><%= totals[:repurchase_frequency] %>x</div>
+      </div>
+    </div>
+
+    <!-- CLV by Channel Chart -->
+    <div class="bg-white p-4 rounded-lg shadow mb-4">
+      <h4 class="text-sm font-medium text-gray-900 mb-3">CLV by Channel</h4>
+      <div id="clv-by-channel-chart-<%= panel_id %>"
+        data-controller="chart"
+        data-chart-type-value="bar"
+        data-chart-metric-value="clv"
+        data-chart-data-value="<%= data[:by_channel].to_json %>"
+        class="h-48">
+      </div>
+    </div>
+
+    <!-- Smiling Curve Chart -->
+    <% if data[:smiling_curve].present? %>
+      <div class="bg-white p-4 rounded-lg shadow mb-4">
+        <h4 class="text-sm font-medium text-gray-900 mb-3">Revenue by Lifecycle Month</h4>
+        <div id="smiling-curve-chart-<%= panel_id %>"
+          data-controller="chart"
+          data-chart-type-value="line"
+          data-chart-data-value="<%= data[:smiling_curve].to_json %>"
+          class="h-48">
+        </div>
+      </div>
+    <% end %>
+
+    <!-- Cohort Analysis (compact) -->
+    <% if data[:cohort_analysis].present? %>
+      <div class="bg-white p-4 rounded-lg shadow">
+        <h4 class="text-sm font-medium text-gray-900 mb-3">Cohort Analysis</h4>
+        <%= render "dashboard/conversions/cohort_table", cohorts: data[:cohort_analysis] %>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
+      No CLV data available for this model
+    </div>
+  <% end %>
+</div>

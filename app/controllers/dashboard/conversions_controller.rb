@@ -11,11 +11,34 @@ module Dashboard
     private
 
     def load_clv_data
-      @clv_data = if demo_mode?
-        Dashboard::Dummy::ClvDataService.call[:data]
-      else
-        Dashboard::ClvDataService.new(current_account, filter_params).call[:data]
-      end
+      @comparison_mode = comparison_mode?
+      @clv_results = @comparison_mode ? clv_comparison_results : [ single_clv_result ]
+    end
+
+    def clv_comparison_results
+      selected_attribution_models.map { |model| clv_result_for_model(model) }
+    end
+
+    def single_clv_result
+      clv_result_for_model(selected_attribution_models.first)
+    end
+
+    def clv_result_for_model(model)
+      {
+        model: model,
+        result: demo_mode? ? dummy_clv_result : real_clv_result(model)
+      }
+    end
+
+    def dummy_clv_result
+      Dashboard::Dummy::ClvDataService.call
+    end
+
+    def real_clv_result(model)
+      Dashboard::ClvDataService.new(
+        current_account,
+        filter_params.merge(models: [ model ])
+      ).call
     end
 
     def load_transactions_data

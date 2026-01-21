@@ -241,8 +241,8 @@ export default class extends Controller {
     const data = this.parseData()
     if (!data) return
 
-    // Handle smiling curve format (months + revenue_per_customer)
-    if (data.months && data.revenue_per_customer) {
+    // Handle smiling curve format (months + series by channel)
+    if (data.months && data.series) {
       this.renderSmilingCurve(data)
       return
     }
@@ -294,10 +294,16 @@ export default class extends Controller {
 
   renderSmilingCurve(data) {
     const categories = data.months.map(m => `M${m}`)
-    const values = data.revenue_per_customer
+
+    // Build series for each channel
+    const series = data.series.map(s => ({
+      name: this.formatChannelName(s.channel),
+      color: CHANNEL_COLORS[s.channel] || CHANNEL_COLORS.other,
+      data: s.data
+    }))
 
     this.chart = Highcharts.chart(this.chartElement, {
-      chart: { type: "area" },
+      chart: { type: "line" },
       title: { text: null },
       xAxis: {
         categories: categories,
@@ -307,30 +313,29 @@ export default class extends Controller {
         title: { text: "Revenue per Customer ($)" },
         min: 0
       },
-      legend: { enabled: false },
+      legend: {
+        align: "right",
+        verticalAlign: "top",
+        layout: "horizontal",
+        itemStyle: { fontSize: "11px" }
+      },
       tooltip: {
+        shared: true,
         formatter: function() {
-          return `<b>Month ${this.x.replace("M", "")}</b><br/>$${Highcharts.numberFormat(this.y, 2)} per customer`
+          let html = `<b>Month ${this.x.replace("M", "")}</b><br/>`
+          this.points.forEach(point => {
+            html += `<span style="color:${point.color}">●</span> ${point.series.name}: $${Highcharts.numberFormat(point.y, 2)}<br/>`
+          })
+          return html
         }
       },
       plotOptions: {
-        area: {
-          fillColor: {
-            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
-            stops: [
-              [0, "#6366F1"],
-              [1, "rgba(99, 102, 241, 0.1)"]
-            ]
-          },
-          marker: { enabled: true, radius: 4 },
-          lineWidth: 2,
-          color: "#6366F1"
+        line: {
+          marker: { enabled: true, radius: 3 },
+          lineWidth: 2
         }
       },
-      series: [{
-        name: "Revenue per Customer",
-        data: values
-      }],
+      series: series,
       credits: { enabled: false }
     })
   }

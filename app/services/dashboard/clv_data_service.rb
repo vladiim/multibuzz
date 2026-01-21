@@ -40,7 +40,7 @@ module Dashboard
 
     def cache_params
       {
-        models: filter_params[:models].map(&:id).sort,
+        model_id: attribution_model&.id,
         date_range: filter_params[:date_range],
         channels: filter_params[:channels].sort,
         test_mode: test_mode
@@ -59,6 +59,7 @@ module Dashboard
       Queries::ClvByChannelQuery.new(
         account: account,
         acquisition_conversions: acquisition_conversions,
+        attribution_model: attribution_model,
         test_mode: test_mode
       ).call
     end
@@ -67,6 +68,7 @@ module Dashboard
       Queries::SmilingCurveQuery.new(
         account: account,
         acquisition_conversions: acquisition_conversions,
+        attribution_model: attribution_model,
         test_mode: test_mode
       ).call
     end
@@ -75,6 +77,7 @@ module Dashboard
       Queries::CohortAnalysisQuery.new(
         account: account,
         acquisition_conversions: acquisition_conversions,
+        attribution_model: attribution_model,
         test_mode: test_mode
       ).call
     end
@@ -94,7 +97,6 @@ module Dashboard
     def acquisition_conversions
       @acquisition_conversions ||= account.conversions
         .where(is_acquisition: true)
-        .where(converted_at: date_range.to_range)
         .then { |scope| test_mode ? scope.test_data : scope.production }
     end
 
@@ -110,6 +112,12 @@ module Dashboard
 
     def date_range
       @date_range ||= DateRangeParser.new(filter_params[:date_range])
+    end
+
+    def attribution_model
+      @attribution_model ||= filter_params[:models]&.first ||
+        account.attribution_models.active.find_by(is_default: true) ||
+        account.attribution_models.active.first
     end
   end
 end

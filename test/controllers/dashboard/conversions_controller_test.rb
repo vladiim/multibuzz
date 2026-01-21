@@ -157,10 +157,123 @@ module Dashboard
       assert_select "h3", text: "Avg Visits by Channel"
     end
 
+    # ==========================================
+    # CLV Comparison Mode Tests
+    # ==========================================
+
+    test "clv mode renders single model view by default" do
+      create_clv_test_data
+      enable_clv_mode
+
+      get dashboard_conversions_path(account_id: account.prefix_id)
+
+      assert_response :success
+      assert controller.instance_variable_get(:@clv_mode)
+      assert_not controller.instance_variable_get(:@comparison_mode)
+      assert_equal 1, controller.instance_variable_get(:@clv_results).length
+    end
+
+    test "clv mode renders comparison mode with two models" do
+      create_clv_test_data
+      enable_clv_mode
+      first_touch = attribution_models(:first_touch)
+      last_touch = attribution_models(:last_touch)
+
+      get dashboard_conversions_path(
+        account_id: account.prefix_id,
+        models: [first_touch.prefix_id, last_touch.prefix_id]
+      )
+
+      assert_response :success
+      assert controller.instance_variable_get(:@clv_mode)
+      assert controller.instance_variable_get(:@comparison_mode)
+      assert_equal 2, controller.instance_variable_get(:@clv_results).length
+    end
+
+    test "clv comparison results contain model and data" do
+      create_clv_test_data
+      enable_clv_mode
+      first_touch = attribution_models(:first_touch)
+      last_touch = attribution_models(:last_touch)
+
+      get dashboard_conversions_path(
+        account_id: account.prefix_id,
+        models: [first_touch.prefix_id, last_touch.prefix_id]
+      )
+
+      clv_results = controller.instance_variable_get(:@clv_results)
+      assert clv_results.first[:model].present?
+      assert clv_results.first[:result][:success]
+      assert clv_results.first[:result][:data].present?
+    end
+
+    test "clv comparison panels show model names" do
+      create_clv_test_data
+      enable_clv_mode
+      first_touch = attribution_models(:first_touch)
+      last_touch = attribution_models(:last_touch)
+
+      get dashboard_conversions_path(
+        account_id: account.prefix_id,
+        models: [first_touch.prefix_id, last_touch.prefix_id]
+      )
+
+      assert_response :success
+      assert_select "h3", text: first_touch.name.titleize
+      assert_select "h3", text: last_touch.name.titleize
+    end
+
+    test "clv comparison panels have different border colors" do
+      create_clv_test_data
+      enable_clv_mode
+      first_touch = attribution_models(:first_touch)
+      last_touch = attribution_models(:last_touch)
+
+      get dashboard_conversions_path(
+        account_id: account.prefix_id,
+        models: [first_touch.prefix_id, last_touch.prefix_id]
+      )
+
+      assert_response :success
+      assert_select ".clv-panel.border-indigo-500", count: 1
+      assert_select ".clv-panel.border-teal-500", count: 1
+    end
+
+    test "clv comparison mode uses side-by-side grid layout" do
+      create_clv_test_data
+      enable_clv_mode
+      first_touch = attribution_models(:first_touch)
+      last_touch = attribution_models(:last_touch)
+
+      get dashboard_conversions_path(
+        account_id: account.prefix_id,
+        models: [first_touch.prefix_id, last_touch.prefix_id]
+      )
+
+      assert_response :success
+      assert_select "[data-testid='clv-dashboard'] > .grid.grid-cols-1.sm\\:grid-cols-2"
+    end
+
+    test "clv single model view does not use comparison grid" do
+      create_clv_test_data
+      enable_clv_mode
+
+      get dashboard_conversions_path(account_id: account.prefix_id)
+
+      assert_response :success
+      # Single model view should not have a direct child grid inside clv-dashboard
+      assert_select "[data-testid='clv-dashboard'] > .grid.grid-cols-1.sm\\:grid-cols-2", count: 0
+    end
+
     private
 
     def sign_in_as(user)
       post login_path, params: { email: user.email, password: "password123" }
+    end
+
+    def enable_clv_mode
+      # Use account_id param to explicitly select account(:one)
+      patch dashboard_clv_mode_path, params: { mode: "clv", account_id: account.prefix_id }
     end
 
     def account
@@ -258,6 +371,59 @@ module Dashboard
         credit: 1.0,
         is_test: false
       )
+    end
+
+    def create_clv_test_data
+      identity = account.identities.create!(
+        external_id: "clv_test_customer",
+        first_identified_at: 30.days.ago,
+        last_identified_at: Time.current
+      )
+
+      # Create acquisition conversion
+      acquisition = account.conversions.create!(
+        visitor: visitors(:one),
+        identity: identity,
+        conversion_type: "signup",
+        is_acquisition: true,
+        converted_at: 20.days.ago,
+        is_test: false
+      )
+
+      # Create attribution credits for both models
+      [first_touch_model, attribution_models(:last_touch)].each do |model|
+        account.attribution_credits.create!(
+          conversion: acquisition,
+          attribution_model: model,
+          session_id: rand(1000..9999),
+          channel: Channels::ORGANIC_SEARCH,
+          credit: 1.0,
+          revenue_credit: 0,
+          is_test: false
+        )
+      end
+
+      # Create a payment
+      payment = account.conversions.create!(
+        visitor: visitors(:one),
+        identity: identity,
+        conversion_type: "payment",
+        revenue: 100,
+        converted_at: 10.days.ago,
+        is_test: false
+      )
+
+      [first_touch_model, attribution_models(:last_touch)].each do |model|
+        account.attribution_credits.create!(
+          conversion: payment,
+          attribution_model: model,
+          session_id: rand(1000..9999),
+          channel: Channels::ORGANIC_SEARCH,
+          credit: 1.0,
+          revenue_credit: 100,
+          is_test: false
+        )
+      end
     end
   end
 end

@@ -59,9 +59,11 @@ module Dashboard
         conversion_ids = scope.distinct.pluck(:conversion_id)
         return [] if conversion_ids.empty?
 
-        # Query conversions with their journey timing
+        # Query ACQUISITION conversions with their journey timing
+        # Repeat purchases have 0-day journeys which would skew the metric
         Conversion
           .where(id: conversion_ids)
+          .where(is_acquisition: true)
           .where.not(journey_session_ids: [])
           .joins(
             "INNER JOIN LATERAL (

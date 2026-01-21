@@ -3,7 +3,35 @@
     <% if @clv_mode %>
       <!-- CLV Mode -->
       <div data-testid="clv-dashboard">
-        <%= render "dashboard/conversions/clv_dashboard" %>
+        <% if @comparison_mode %>
+          <!-- CLV Comparison Mode - side by side -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            <% @clv_results.each_with_index do |item, index| %>
+              <% if item[:result][:success] %>
+                <%= render "dashboard/conversions/clv_dashboard_panel",
+                  data: item[:result][:data],
+                  model: item[:model],
+                  panel_index: index %>
+              <% else %>
+                <div class="bg-red-50 p-4 rounded-lg">
+                  <h3 class="font-semibold text-red-900 mb-2"><%= item[:model].name.titleize %></h3>
+                  <p class="text-red-700">Error: <%= item[:result][:errors].join(', ') %></p>
+                </div>
+              <% end %>
+            <% end %>
+          </div>
+        <% else %>
+          <!-- CLV Single Model View -->
+          <% item = @clv_results.first %>
+          <% if item[:result][:success] %>
+            <% @clv_data = item[:result][:data] %>
+            <%= render "dashboard/conversions/clv_dashboard" %>
+          <% else %>
+            <div class="bg-red-50 p-4 rounded-lg">
+              <p class="text-red-700">Error loading CLV data: <%= item[:result][:errors].join(', ') %></p>
+            </div>
+          <% end %>
+        <% end %>
       </div>
     <% elsif @comparison_mode %>
       <!-- Side-by-side comparison mode - stacks on mobile -->

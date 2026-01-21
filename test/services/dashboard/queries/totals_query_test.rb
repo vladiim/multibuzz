@@ -118,7 +118,8 @@ module Dashboard
         session = create_session(started_at: 5.days.ago)
         conversion = create_conversion_with_journey(
           converted_at: Time.current,
-          journey_session_ids: [session.id]
+          journey_session_ids: [session.id],
+          is_acquisition: true
         )
         create_credit_for_conversion(conversion)
 
@@ -130,7 +131,8 @@ module Dashboard
         session1 = create_session(started_at: 3.days.ago)
         conv1 = create_conversion_with_journey(
           converted_at: Time.current,
-          journey_session_ids: [session1.id]
+          journey_session_ids: [session1.id],
+          is_acquisition: true
         )
         create_credit_for_conversion(conv1)
 
@@ -138,7 +140,8 @@ module Dashboard
         session2 = create_session(started_at: 7.days.ago)
         conv2 = create_conversion_with_journey(
           converted_at: Time.current,
-          journey_session_ids: [session2.id]
+          journey_session_ids: [session2.id],
+          is_acquisition: true
         )
         create_credit_for_conversion(conv2)
 
@@ -154,7 +157,8 @@ module Dashboard
 
         conversion = create_conversion_with_journey(
           converted_at: Time.current,
-          journey_session_ids: [session_first.id, session_second.id, session_third.id]
+          journey_session_ids: [session_first.id, session_second.id, session_third.id],
+          is_acquisition: true
         )
         create_credit_for_conversion(conversion)
 
@@ -167,7 +171,8 @@ module Dashboard
         session = create_session(started_at: now)
         conversion = create_conversion_with_journey(
           converted_at: now,
-          journey_session_ids: [session.id]
+          journey_session_ids: [session.id],
+          is_acquisition: true
         )
         create_credit_for_conversion(conversion)
 
@@ -179,14 +184,16 @@ module Dashboard
         session = create_session(started_at: 5.days.ago)
         conv1 = create_conversion_with_journey(
           converted_at: Time.current,
-          journey_session_ids: [session.id]
+          journey_session_ids: [session.id],
+          is_acquisition: true
         )
         create_credit_for_conversion(conv1)
 
-        # Conversion 2: Empty journey (should be skipped)
+        # Conversion 2: Empty journey (should be skipped) - still acquisition to test empty journey handling
         conv2 = create_conversion_with_journey(
           converted_at: Time.current,
-          journey_session_ids: []
+          journey_session_ids: [],
+          is_acquisition: true
         )
         create_credit_for_conversion(conv2)
 
@@ -223,21 +230,23 @@ module Dashboard
       test "uses median for avg_days_to_convert to resist outliers" do
         now = Time.current
 
-        # 4 conversions with 1-day journey
+        # 4 acquisition conversions with 1-day journey
         4.times do
           s = create_session(started_at: 1.day.ago)
           conv = create_conversion_with_journey(
             converted_at: now,
-            journey_session_ids: [s.id]
+            journey_session_ids: [s.id],
+            is_acquisition: true
           )
           create_credit_for_conversion(conv)
         end
 
-        # 1 outlier with 100-day journey
+        # 1 outlier acquisition with 100-day journey
         outlier_session = create_session(started_at: 100.days.ago)
         outlier = create_conversion_with_journey(
           converted_at: now,
-          journey_session_ids: [outlier_session.id]
+          journey_session_ids: [outlier_session.id],
+          is_acquisition: true
         )
         create_credit_for_conversion(outlier)
 
@@ -290,6 +299,33 @@ module Dashboard
 
         # Sorted: [2, 2, 4, 4] -> median = (2 + 4) / 2 = 3.0
         assert_equal 3.0, result[:avg_visits_to_convert]
+      end
+
+      test "avg_days_to_convert only considers acquisition conversions" do
+        # Acquisition conversion: 10-day journey
+        acquisition_session = create_session(started_at: 10.days.ago)
+        acquisition = create_conversion_with_journey(
+          converted_at: Time.current,
+          journey_session_ids: [acquisition_session.id],
+          is_acquisition: true
+        )
+        create_credit_for_conversion(acquisition)
+
+        # Repeat purchases: 0-day journeys (same-session)
+        3.times do
+          now = Time.current
+          repeat_session = create_session(started_at: now)
+          repeat = create_conversion_with_journey(
+            converted_at: now,
+            journey_session_ids: [repeat_session.id],
+            is_acquisition: false
+          )
+          create_credit_for_conversion(repeat)
+        end
+
+        # Without filtering, median of [0, 0, 0, 10] = 0
+        # With acquisition-only filtering, should be ~10 days
+        assert_in_delta 10.0, result[:avg_days_to_convert], 0.5
       end
 
       private
@@ -352,12 +388,23 @@ module Dashboard
         )
       end
 
-      def create_conversion_with_journey(converted_at:, journey_session_ids:)
-        account.conversions.create!(
+      def create_conversion_with_journey(converted_at:, journey_session_ids:, is_acquisition: false)
+        attrs = {
           visitor: visitor,
           conversion_type: "purchase",
           converted_at: converted_at,
-          journey_session_ids: journey_session_ids
+          journey_session_ids: journey_session_ids,
+          is_acquisition: is_acquisition
+        }
+        attrs[:identity] = create_identity if is_acquisition
+        account.conversions.create!(attrs)
+      end
+
+      def create_identity
+        account.identities.create!(
+          external_id: "test_#{SecureRandom.hex(8)}",
+          first_identified_at: Time.current,
+          last_identified_at: Time.current
         )
       end
 
