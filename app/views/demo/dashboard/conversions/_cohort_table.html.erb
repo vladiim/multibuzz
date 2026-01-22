@@ -28,7 +28,7 @@
           </td>
           <% cohort[:months].each do |month_data| %>
             <% ltv = month_data[:cumulative_ltv] %>
-            <td class="px-3 py-2 whitespace-nowrap text-sm text-center">
+            <td class="px-3 py-2 whitespace-nowrap text-sm text-center <%= cohort_cell_class(ltv, cohorts) %>">
               <% if ltv.nil? %>
                 <span class="text-gray-300">—</span>
               <% else %>
