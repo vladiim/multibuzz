@@ -15,7 +15,7 @@ module Dashboard
         end
 
         def column_conditions
-          @column_conditions ||= values.map { "conversions.#{field} ILIKE ?" }.join(" OR ")
+          @column_conditions ||= values.map { "#{column_path(field)} ILIKE ?" }.join(" OR ")
         end
 
         def property_conditions

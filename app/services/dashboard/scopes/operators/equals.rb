@@ -7,7 +7,7 @@ module Dashboard
         private
 
         def apply_to_column(scope)
-          scope.where(conversions: { field => values })
+          scope.where(column_hash)
         end
 
         def apply_to_property(scope)

@@ -7,7 +7,7 @@ module Dashboard
         private
 
         def apply_to_column(scope)
-          scope.where.not(conversions: { field => values })
+          scope.where.not(column_hash)
         end
 
         def apply_to_property(scope)

@@ -265,6 +265,85 @@ module Dashboard
       assert_select "[data-testid='clv-dashboard'] > .grid.grid-cols-1.sm\\:grid-cols-2", count: 0
     end
 
+    # ==========================================
+    # CLV Filter Tests
+    # ==========================================
+
+    test "clv date range filter limits cohort to acquisitions in range" do
+      enable_clv_mode
+      create_clv_acquisitions_at_different_dates
+
+      # Request with 30d range - should only include acquisition from 10 days ago
+      get dashboard_conversions_path(
+        account_id: account.prefix_id,
+        date_range: "30d"
+      )
+
+      assert_response :success
+      clv_result = controller.instance_variable_get(:@clv_results).first[:result]
+      totals = clv_result[:data][:totals]
+
+      # Only the acquisition from 10 days ago should be included
+      assert_equal 1, totals[:customers]
+    end
+
+    test "clv channel filter limits cohort to acquisitions via selected channels" do
+      enable_clv_mode
+      create_clv_acquisitions_via_different_channels
+
+      # Request with only organic_search channel
+      get dashboard_conversions_path(
+        account_id: account.prefix_id,
+        channels: Channels::ORGANIC_SEARCH
+      )
+
+      assert_response :success
+      clv_result = controller.instance_variable_get(:@clv_results).first[:result]
+      totals = clv_result[:data][:totals]
+
+      # Only the organic acquisition should be included
+      assert_equal 1, totals[:customers]
+    end
+
+    test "clv conversion filter limits cohort to matching acquisitions" do
+      enable_clv_mode
+      create_clv_acquisitions_with_different_types
+
+      # Request with conversion_type=signup filter
+      get dashboard_conversions_path(
+        account_id: account.prefix_id,
+        conversion_filters: {
+          "0" => { field: "conversion_type", operator: "equals", values: ["signup"] }
+        }
+      )
+
+      assert_response :success
+      clv_result = controller.instance_variable_get(:@clv_results).first[:result]
+      totals = clv_result[:data][:totals]
+
+      # Only the signup acquisition should be included
+      assert_equal 1, totals[:customers]
+    end
+
+    test "clv filters combine correctly" do
+      enable_clv_mode
+      create_clv_acquisitions_for_combined_filter_test
+
+      # Apply date + channel filter
+      get dashboard_conversions_path(
+        account_id: account.prefix_id,
+        date_range: "30d",
+        channels: Channels::ORGANIC_SEARCH
+      )
+
+      assert_response :success
+      clv_result = controller.instance_variable_get(:@clv_results).first[:result]
+      totals = clv_result[:data][:totals]
+
+      # Only acquisitions matching BOTH date range AND channel
+      assert_equal 1, totals[:customers]
+    end
+
     private
 
     def sign_in_as(user)
@@ -424,6 +503,239 @@ module Dashboard
           is_test: false
         )
       end
+    end
+
+    def create_clv_acquisitions_at_different_dates
+      # Customer acquired 40 days ago (outside 30d range)
+      old_identity = account.identities.create!(
+        external_id: "old_customer",
+        first_identified_at: 40.days.ago,
+        last_identified_at: Time.current
+      )
+
+      old_acquisition = account.conversions.create!(
+        visitor: visitors(:one),
+        identity: old_identity,
+        conversion_type: "signup",
+        is_acquisition: true,
+        converted_at: 40.days.ago,
+        is_test: false
+      )
+
+      account.attribution_credits.create!(
+        conversion: old_acquisition,
+        attribution_model: first_touch_model,
+        session_id: rand(1000..9999),
+        channel: Channels::ORGANIC_SEARCH,
+        credit: 1.0,
+        is_test: false
+      )
+
+      # Customer acquired 10 days ago (inside 30d range)
+      recent_identity = account.identities.create!(
+        external_id: "recent_customer",
+        first_identified_at: 10.days.ago,
+        last_identified_at: Time.current
+      )
+
+      recent_acquisition = account.conversions.create!(
+        visitor: visitors(:one),
+        identity: recent_identity,
+        conversion_type: "signup",
+        is_acquisition: true,
+        converted_at: 10.days.ago,
+        is_test: false
+      )
+
+      account.attribution_credits.create!(
+        conversion: recent_acquisition,
+        attribution_model: first_touch_model,
+        session_id: rand(1000..9999),
+        channel: Channels::ORGANIC_SEARCH,
+        credit: 1.0,
+        is_test: false
+      )
+    end
+
+    def create_clv_acquisitions_via_different_channels
+      # Customer acquired via organic search
+      organic_identity = account.identities.create!(
+        external_id: "organic_customer",
+        first_identified_at: 10.days.ago,
+        last_identified_at: Time.current
+      )
+
+      organic_acquisition = account.conversions.create!(
+        visitor: visitors(:one),
+        identity: organic_identity,
+        conversion_type: "signup",
+        is_acquisition: true,
+        converted_at: 10.days.ago,
+        is_test: false
+      )
+
+      account.attribution_credits.create!(
+        conversion: organic_acquisition,
+        attribution_model: first_touch_model,
+        session_id: rand(1000..9999),
+        channel: Channels::ORGANIC_SEARCH,
+        credit: 1.0,
+        is_test: false
+      )
+
+      # Customer acquired via paid search
+      paid_identity = account.identities.create!(
+        external_id: "paid_customer",
+        first_identified_at: 10.days.ago,
+        last_identified_at: Time.current
+      )
+
+      paid_acquisition = account.conversions.create!(
+        visitor: visitors(:one),
+        identity: paid_identity,
+        conversion_type: "signup",
+        is_acquisition: true,
+        converted_at: 10.days.ago,
+        is_test: false
+      )
+
+      account.attribution_credits.create!(
+        conversion: paid_acquisition,
+        attribution_model: first_touch_model,
+        session_id: rand(1000..9999),
+        channel: Channels::PAID_SEARCH,
+        credit: 1.0,
+        is_test: false
+      )
+    end
+
+    def create_clv_acquisitions_with_different_types
+      # Customer with signup acquisition
+      signup_identity = account.identities.create!(
+        external_id: "signup_customer",
+        first_identified_at: 10.days.ago,
+        last_identified_at: Time.current
+      )
+
+      signup_acquisition = account.conversions.create!(
+        visitor: visitors(:one),
+        identity: signup_identity,
+        conversion_type: "signup",
+        is_acquisition: true,
+        converted_at: 10.days.ago,
+        is_test: false
+      )
+
+      account.attribution_credits.create!(
+        conversion: signup_acquisition,
+        attribution_model: first_touch_model,
+        session_id: rand(1000..9999),
+        channel: Channels::ORGANIC_SEARCH,
+        credit: 1.0,
+        is_test: false
+      )
+
+      # Customer with trial_start acquisition
+      trial_identity = account.identities.create!(
+        external_id: "trial_customer",
+        first_identified_at: 10.days.ago,
+        last_identified_at: Time.current
+      )
+
+      trial_acquisition = account.conversions.create!(
+        visitor: visitors(:one),
+        identity: trial_identity,
+        conversion_type: "trial_start",
+        is_acquisition: true,
+        converted_at: 10.days.ago,
+        is_test: false
+      )
+
+      account.attribution_credits.create!(
+        conversion: trial_acquisition,
+        attribution_model: first_touch_model,
+        session_id: rand(1000..9999),
+        channel: Channels::ORGANIC_SEARCH,
+        credit: 1.0,
+        is_test: false
+      )
+    end
+
+    def create_clv_acquisitions_for_combined_filter_test
+      # Customer 1: Inside date range, organic (MATCHES BOTH)
+      match_identity = account.identities.create!(
+        external_id: "matching_customer",
+        first_identified_at: 10.days.ago,
+        last_identified_at: Time.current
+      )
+
+      match_acquisition = account.conversions.create!(
+        visitor: visitors(:one),
+        identity: match_identity,
+        conversion_type: "signup",
+        is_acquisition: true,
+        converted_at: 10.days.ago,
+        is_test: false
+      )
+
+      account.attribution_credits.create!(
+        conversion: match_acquisition,
+        attribution_model: first_touch_model,
+        session_id: rand(1000..9999),
+        channel: Channels::ORGANIC_SEARCH,
+        credit: 1.0,
+        is_test: false
+      )
+
+      # Customer 2: Inside date range, paid (date matches, channel doesn't)
+      paid_identity = account.identities.create!(
+        external_id: "paid_recent_customer",
+        first_identified_at: 10.days.ago,
+        last_identified_at: Time.current
+      )
+
+      paid_acquisition = account.conversions.create!(
+        visitor: visitors(:one),
+        identity: paid_identity,
+        conversion_type: "signup",
+        is_acquisition: true,
+        converted_at: 10.days.ago,
+        is_test: false
+      )
+
+      account.attribution_credits.create!(
+        conversion: paid_acquisition,
+        attribution_model: first_touch_model,
+        session_id: rand(1000..9999),
+        channel: Channels::PAID_SEARCH,
+        credit: 1.0,
+        is_test: false
+      )
+
+      # Customer 3: Outside date range, organic (channel matches, date doesn't)
+      old_organic_identity = account.identities.create!(
+        external_id: "old_organic_customer",
+        first_identified_at: 40.days.ago,
+        last_identified_at: Time.current
+      )
+
+      old_organic_acquisition = account.conversions.create!(
+        visitor: visitors(:one),
+        identity: old_organic_identity,
+        conversion_type: "signup",
+        is_acquisition: true,
+        converted_at: 40.days.ago,
+        is_test: false
+      )
+
+      account.attribution_credits.create!(
+        conversion: old_organic_acquisition,
+        attribution_model: first_touch_model,
+        session_id: rand(1000..9999),
+        channel: Channels::ORGANIC_SEARCH,
+        credit: 1.0,
+        is_test: false
+      )
     end
   end
 end

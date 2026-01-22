@@ -42,7 +42,8 @@ module Dashboard
       {
         model_id: attribution_model&.id,
         date_range: filter_params[:date_range],
-        channels: filter_params[:channels].sort,
+        channels: channels.is_a?(Array) ? channels.sort : channels,
+        conversion_filters: conversion_filters,
         test_mode: test_mode
       }
     end
@@ -95,15 +96,28 @@ module Dashboard
     end
 
     def acquisition_conversions
-      @acquisition_conversions ||= account.conversions
-        .where(is_acquisition: true)
-        .then { |scope| test_mode ? scope.test_data : scope.production }
+      @acquisition_conversions ||= Scopes::FilteredAcquisitionsScope.new(
+        account: account,
+        date_range: date_range,
+        channels: channels,
+        attribution_model: attribution_model,
+        conversion_filters: conversion_filters,
+        test_mode: test_mode
+      ).call
     end
 
     def conversions_in_range
       @conversions_in_range ||= account.conversions
         .where(converted_at: date_range.to_range)
         .then { |scope| test_mode ? scope.test_data : scope.production }
+    end
+
+    def channels
+      @channels ||= filter_params[:channels] || Channels::ALL
+    end
+
+    def conversion_filters
+      @conversion_filters ||= filter_params[:conversion_filters] || []
     end
 
     def test_mode

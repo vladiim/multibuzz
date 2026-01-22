@@ -178,11 +178,11 @@ module Dashboard
     # Date Range Filtering Tests
     # ==========================================
 
-    test "includes all historical customers for cohort analysis" do
-      # Create an old customer acquired 60 days ago
+    test "date range filter limits acquisition cohort" do
+      # Customer acquired 40 days ago (outside 30d range)
       old_identity = account.identities.create!(
         external_id: "old_customer",
-        first_identified_at: 60.days.ago,
+        first_identified_at: 40.days.ago,
         last_identified_at: Time.current
       )
 
@@ -191,35 +191,284 @@ module Dashboard
         identity: old_identity,
         conversion_type: "signup",
         is_acquisition: true,
-        converted_at: 60.days.ago,
+        converted_at: 40.days.ago,
         is_test: false
       )
 
-      # Recent payment from old customer
+      # Customer acquired 10 days ago (inside 30d range)
+      recent_identity = account.identities.create!(
+        external_id: "recent_customer",
+        first_identified_at: 10.days.ago,
+        last_identified_at: Time.current
+      )
+
       account.conversions.create!(
         visitor: visitors(:one),
-        identity: old_identity,
-        conversion_type: "payment",
-        revenue: 100,
-        converted_at: 2.days.ago,
+        identity: recent_identity,
+        conversion_type: "signup",
+        is_acquisition: true,
+        converted_at: 10.days.ago,
         is_test: false
       )
-
-      # New customer acquired 10 days ago
-      create_clv_test_data
 
       result = service.call
       totals = result[:data][:totals]
 
-      # Both customers should be included for proper cohort analysis
-      # CLV analysis needs all historical cohorts, not filtered by date range
-      assert_equal 2, totals[:customers]
+      # Only the customer acquired in the last 30 days should be included
+      assert_equal 1, totals[:customers]
+    end
+
+    # ==========================================
+    # Channel Filtering Tests
+    # ==========================================
+
+    test "channel filter limits acquisitions by acquisition channel" do
+      # Customer acquired via organic search
+      organic_identity = account.identities.create!(
+        external_id: "organic_customer",
+        first_identified_at: 10.days.ago,
+        last_identified_at: Time.current
+      )
+
+      organic_acquisition = account.conversions.create!(
+        visitor: visitors(:one),
+        identity: organic_identity,
+        conversion_type: "signup",
+        is_acquisition: true,
+        converted_at: 10.days.ago,
+        is_test: false
+      )
+
+      account.attribution_credits.create!(
+        conversion: organic_acquisition,
+        attribution_model: first_touch_model,
+        session_id: rand(1000..9999),
+        channel: Channels::ORGANIC_SEARCH,
+        credit: 1.0,
+        is_test: false
+      )
+
+      # Customer acquired via paid search
+      paid_identity = account.identities.create!(
+        external_id: "paid_customer",
+        first_identified_at: 10.days.ago,
+        last_identified_at: Time.current
+      )
+
+      paid_acquisition = account.conversions.create!(
+        visitor: visitors(:one),
+        identity: paid_identity,
+        conversion_type: "signup",
+        is_acquisition: true,
+        converted_at: 10.days.ago,
+        is_test: false
+      )
+
+      account.attribution_credits.create!(
+        conversion: paid_acquisition,
+        attribution_model: first_touch_model,
+        session_id: rand(1000..9999),
+        channel: Channels::PAID_SEARCH,
+        credit: 1.0,
+        is_test: false
+      )
+
+      # Filter to only organic search
+      result = service_with_channels([Channels::ORGANIC_SEARCH]).call
+      totals = result[:data][:totals]
+
+      assert_equal 1, totals[:customers]
+    end
+
+    # ==========================================
+    # Conversion Filter Tests
+    # ==========================================
+
+    test "conversion filters limit acquisitions by conversion properties" do
+      # Customer with signup acquisition
+      signup_identity = account.identities.create!(
+        external_id: "signup_customer",
+        first_identified_at: 10.days.ago,
+        last_identified_at: Time.current
+      )
+
+      account.conversions.create!(
+        visitor: visitors(:one),
+        identity: signup_identity,
+        conversion_type: "signup",
+        is_acquisition: true,
+        converted_at: 10.days.ago,
+        is_test: false
+      )
+
+      # Customer with trial_start acquisition
+      trial_identity = account.identities.create!(
+        external_id: "trial_customer",
+        first_identified_at: 10.days.ago,
+        last_identified_at: Time.current
+      )
+
+      account.conversions.create!(
+        visitor: visitors(:one),
+        identity: trial_identity,
+        conversion_type: "trial_start",
+        is_acquisition: true,
+        converted_at: 10.days.ago,
+        is_test: false
+      )
+
+      # Filter to only signup conversions
+      conversion_filters = [
+        { field: "conversion_type", operator: "equals", values: ["signup"] }
+      ]
+      result = service_with_conversion_filters(conversion_filters).call
+      totals = result[:data][:totals]
+
+      assert_equal 1, totals[:customers]
+    end
+
+    test "all filters combine correctly" do
+      # Customer 1: Inside date range, organic, signup (MATCHES ALL)
+      match_identity = account.identities.create!(
+        external_id: "matching_customer",
+        first_identified_at: 10.days.ago,
+        last_identified_at: Time.current
+      )
+
+      match_acquisition = account.conversions.create!(
+        visitor: visitors(:one),
+        identity: match_identity,
+        conversion_type: "signup",
+        is_acquisition: true,
+        converted_at: 10.days.ago,
+        is_test: false
+      )
+
+      account.attribution_credits.create!(
+        conversion: match_acquisition,
+        attribution_model: first_touch_model,
+        session_id: rand(1000..9999),
+        channel: Channels::ORGANIC_SEARCH,
+        credit: 1.0,
+        is_test: false
+      )
+
+      # Customer 2: Inside date range, paid search, signup
+      paid_identity = account.identities.create!(
+        external_id: "paid_customer",
+        first_identified_at: 10.days.ago,
+        last_identified_at: Time.current
+      )
+
+      paid_acquisition = account.conversions.create!(
+        visitor: visitors(:one),
+        identity: paid_identity,
+        conversion_type: "signup",
+        is_acquisition: true,
+        converted_at: 10.days.ago,
+        is_test: false
+      )
+
+      account.attribution_credits.create!(
+        conversion: paid_acquisition,
+        attribution_model: first_touch_model,
+        session_id: rand(1000..9999),
+        channel: Channels::PAID_SEARCH,
+        credit: 1.0,
+        is_test: false
+      )
+
+      # Customer 3: Outside date range, organic, signup
+      old_identity = account.identities.create!(
+        external_id: "old_customer",
+        first_identified_at: 40.days.ago,
+        last_identified_at: Time.current
+      )
+
+      old_acquisition = account.conversions.create!(
+        visitor: visitors(:one),
+        identity: old_identity,
+        conversion_type: "signup",
+        is_acquisition: true,
+        converted_at: 40.days.ago,
+        is_test: false
+      )
+
+      account.attribution_credits.create!(
+        conversion: old_acquisition,
+        attribution_model: first_touch_model,
+        session_id: rand(1000..9999),
+        channel: Channels::ORGANIC_SEARCH,
+        credit: 1.0,
+        is_test: false
+      )
+
+      # Apply date (30d) + channel (organic) filters
+      result = service_with_channels([Channels::ORGANIC_SEARCH]).call
+      totals = result[:data][:totals]
+
+      # Only customer 1 should match both filters
+      assert_equal 1, totals[:customers]
+    end
+
+    test "includes full lifetime revenue for customers acquired in date range" do
+      # Create customer acquired within date range (10 days ago)
+      recent_identity = account.identities.create!(
+        external_id: "recent_customer",
+        first_identified_at: 10.days.ago,
+        last_identified_at: Time.current
+      )
+
+      account.conversions.create!(
+        visitor: visitors(:one),
+        identity: recent_identity,
+        conversion_type: "signup",
+        is_acquisition: true,
+        converted_at: 10.days.ago,
+        is_test: false
+      )
+
+      # Payment from this customer (within range)
+      account.conversions.create!(
+        visitor: visitors(:one),
+        identity: recent_identity,
+        conversion_type: "payment",
+        revenue: 100,
+        converted_at: 5.days.ago,
+        is_test: false
+      )
+
+      # Payment from this customer (recent - still included as it's lifetime value)
+      account.conversions.create!(
+        visitor: visitors(:one),
+        identity: recent_identity,
+        conversion_type: "payment",
+        revenue: 50,
+        converted_at: 2.days.ago,
+        is_test: false
+      )
+
+      result = service.call
+      totals = result[:data][:totals]
+
+      # 1 customer acquired in range
+      assert_equal 1, totals[:customers]
+      # Full lifetime revenue: $100 + $50 = $150
+      assert_equal 150.0, totals[:revenue]
     end
 
     private
 
     def service
       @service ||= Dashboard::ClvDataService.new(account, filter_params)
+    end
+
+    def service_with_channels(channels)
+      Dashboard::ClvDataService.new(account, filter_params.merge(channels: channels))
+    end
+
+    def service_with_conversion_filters(conversion_filters)
+      Dashboard::ClvDataService.new(account, filter_params.merge(conversion_filters: conversion_filters))
     end
 
     def account
@@ -231,6 +480,7 @@ module Dashboard
         date_range: "30d",
         models: [attribution_models(:first_touch)],
         channels: Channels::ALL,
+        conversion_filters: [],
         test_mode: false
       }
     end

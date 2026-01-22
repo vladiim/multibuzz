@@ -6,9 +6,11 @@ module Dashboard
       class Base
         COLUMN_FIELDS = %w[conversion_type funnel revenue].freeze
 
-        def initialize(field:, values:)
+        # table_name: nil for direct conversion queries, "conversions" for joined scopes
+        def initialize(field:, values:, table_name: "conversions")
           @field = field.to_s
           @values = Array(values)
+          @table_name = table_name
         end
 
         def call(scope)
@@ -19,7 +21,7 @@ module Dashboard
 
         private
 
-        attr_reader :field, :values
+        attr_reader :field, :values, :table_name
 
         def column_field?
           COLUMN_FIELDS.include?(field)
@@ -32,7 +34,15 @@ module Dashboard
         def property_path
           # Properties are stored flat at root level: { "location" => "Sydney" }
           # NOT nested: { "properties" => { "location" => "Sydney" } }
-          "conversions.properties->>'#{sanitized_field}'"
+          table_name ? "#{table_name}.properties->>'#{sanitized_field}'" : "properties->>'#{sanitized_field}'"
+        end
+
+        def column_hash
+          table_name ? { table_name.to_sym => { field => values } } : { field => values }
+        end
+
+        def column_path(column)
+          table_name ? "#{table_name}.#{column}" : column
         end
 
         def apply_to_column(scope)

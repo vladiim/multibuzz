@@ -7,7 +7,7 @@ module Dashboard
         private
 
         def apply_to_column(scope)
-          scope.where("conversions.#{field} > ?", numeric_value)
+          scope.where("#{column_path(field)} > ?", numeric_value)
         end
 
         def apply_to_property(scope)

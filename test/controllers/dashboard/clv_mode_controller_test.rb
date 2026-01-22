@@ -159,7 +159,7 @@ module Dashboard
       follow_redirect!
       get dashboard_conversions_path
 
-      clv_data = controller.instance_variable_get(:@clv_data)
+      clv_data = clv_results_data
 
       assert clv_data[:totals].key?(:clv)
       assert clv_data[:totals].key?(:customers)
@@ -175,7 +175,7 @@ module Dashboard
       follow_redirect!
       get dashboard_conversions_path
 
-      clv_data = controller.instance_variable_get(:@clv_data)
+      clv_data = clv_results_data
 
       assert clv_data.key?(:by_channel)
       assert clv_data[:by_channel].is_a?(Array)
@@ -187,13 +187,18 @@ module Dashboard
       follow_redirect!
       get dashboard_conversions_path
 
-      clv_data = controller.instance_variable_get(:@clv_data)
+      clv_data = clv_results_data
 
       assert clv_data.key?(:coverage)
       assert clv_data[:coverage].key?(:percentage)
     end
 
     private
+
+    def clv_results_data
+      clv_results = controller.instance_variable_get(:@clv_results)
+      clv_results&.first&.dig(:result, :data)
+    end
 
     def user
       @user ||= users(:one)
@@ -228,13 +233,14 @@ module Dashboard
       AttributionCredit.delete_all
       Conversion.where(account: account).delete_all
 
-      # Create acquisition conversion (30 days ago)
+      # Create acquisition conversion (20 days ago - within 30d range)
+      # Note: "30d" means 29.days.ago..today, so 30.days.ago is outside range
       acquisition = account.conversions.create!(
         visitor: visitors(:one),
         identity: identity,
         conversion_type: "signup",
         is_acquisition: true,
-        converted_at: 30.days.ago,
+        converted_at: 20.days.ago,
         is_test: false
       )
 
