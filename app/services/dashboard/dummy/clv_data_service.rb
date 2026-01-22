@@ -44,24 +44,32 @@ module Dashboard
       end
 
       def smiling_curve
-        # "Smiling curve" - revenue per customer by lifecycle month
-        # High month 1 (initial purchase), dip months 2-6 (churn), rise months 7-12 (loyal customers)
+        # "Smiling curve" - revenue per customer by lifecycle month, broken down by acquisition channel
+        # High month 0 (initial purchase), dip months 1-5 (churn), rise months 6-12 (loyal customers)
+        # Different channels show different retention/loyalty patterns
         {
           months: (0..12).to_a,
-          revenue_per_customer: [
-            89.50,  # M0: First purchase
-            12.30,  # M1: Drop-off begins
-            8.70,   # M2
-            7.20,   # M3
-            6.80,   # M4
-            7.10,   # M5: Slight uptick
-            9.40,   # M6: Returning customers
-            14.20,  # M7
-            18.60,  # M8
-            22.30,  # M9
-            26.80,  # M10
-            31.40,  # M11
-            38.20   # M12: Loyal customer peak
+          series: [
+            {
+              channel: Channels::REFERRAL,
+              data: [95.20, 18.40, 14.60, 12.80, 12.20, 13.50, 16.80, 22.40, 28.60, 35.20, 42.80, 51.40, 62.30]
+            },
+            {
+              channel: Channels::ORGANIC_SEARCH,
+              data: [89.50, 12.30, 8.70, 7.20, 6.80, 7.10, 9.40, 14.20, 18.60, 22.30, 26.80, 31.40, 38.20]
+            },
+            {
+              channel: Channels::EMAIL,
+              data: [82.40, 14.80, 10.20, 8.40, 7.90, 8.60, 11.20, 16.40, 21.80, 27.60, 33.80, 40.20, 48.60]
+            },
+            {
+              channel: Channels::PAID_SEARCH,
+              data: [78.30, 8.20, 5.40, 4.20, 3.80, 4.10, 5.60, 8.20, 10.80, 13.40, 16.20, 19.40, 23.80]
+            },
+            {
+              channel: Channels::DIRECT,
+              data: [72.60, 10.40, 7.20, 5.80, 5.40, 5.90, 7.80, 11.60, 15.20, 18.80, 22.60, 27.20, 32.80]
+            }
           ]
         }
       end
