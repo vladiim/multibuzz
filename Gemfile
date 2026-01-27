@@ -52,6 +52,9 @@ gem "front_matter_parser"
 # Ruby AST parser for AML DSL validation [https://github.com/whitequark/parser]
 gem "parser"
 
+# CSV processing (no longer default gem in Ruby 3.4+)
+gem "csv"
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 

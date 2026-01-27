@@ -75,9 +75,11 @@ module DashboardHelper
   end
 
   def hidden_filter_params(except: [])
-    params_to_preserve = @filter_params.except(*Array(except))
+    hidden_params_for(@filter_params.except(*Array(except)))
+  end
 
-    safe_join(params_to_preserve.flat_map { |key, value| hidden_inputs_for(key, value) })
+  def hidden_params_for(params_hash)
+    safe_join(params_hash.flat_map { |key, value| hidden_inputs_for(key, value) })
   end
 
   private

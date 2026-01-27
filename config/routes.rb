@@ -167,6 +167,8 @@ Rails.application.routes.draw do
     get "conversions", to: "conversions#show"
     get "funnel", to: "funnel#show"
 
+    resource :export, only: [:create], controller: "exports"
+
     # Conversion filter endpoints
     namespace :conversion_filters do
       get :dimensions

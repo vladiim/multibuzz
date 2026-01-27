@@ -162,4 +162,41 @@ class DashboardHelperTest < ActionView::TestCase
     assert_includes result, 'name="date_range"'
     refute_includes result, 'breakdown_dimension'
   end
+
+  # hidden_params_for tests
+  test "hidden_params_for generates hidden fields from a hash" do
+    result = hidden_params_for(date_range: "7d", metric: "revenue")
+
+    assert_includes result, 'name="date_range"'
+    assert_includes result, 'value="7d"'
+    assert_includes result, 'name="metric"'
+    assert_includes result, 'value="revenue"'
+  end
+
+  test "hidden_params_for handles nested hashes" do
+    result = hidden_params_for(
+      "conversion_filters" => {
+        "0" => { "field" => "location", "operator" => "equals", "values" => ["Sydney"] }
+      }
+    )
+
+    assert_includes result, 'name="conversion_filters[0][field]"'
+    assert_includes result, 'value="location"'
+    assert_includes result, 'name="conversion_filters[0][values][]"'
+    assert_includes result, 'value="Sydney"'
+  end
+
+  test "hidden_params_for handles arrays" do
+    result = hidden_params_for("channels" => ["paid_search", "email"])
+
+    assert_includes result, 'name="channels[]"'
+    assert_includes result, 'value="paid_search"'
+    assert_includes result, 'value="email"'
+  end
+
+  test "hidden_params_for returns empty string for empty hash" do
+    result = hidden_params_for({})
+
+    assert_equal "", result
+  end
 end
