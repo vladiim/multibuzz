@@ -56,6 +56,9 @@ Rails.application.routes.draw do
   post "contact", to: "contacts#create"
   get "contact/thank-you", to: "contacts#show", as: :contact_thank_you
 
+  # Sitemap
+  get "sitemap", to: "sitemap#show", defaults: { format: :xml }
+
   # Feature waitlist
   post "feature_waitlist", to: "feature_waitlist#create"
 

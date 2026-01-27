@@ -24,9 +24,9 @@ class Article
   PRIORITY_FEATURED = "P0".freeze
 
   SCHEMA_CONTEXT = "https://schema.org".freeze
-  PUBLISHER_URL = "https://mbuzz.co".freeze
+  PUBLISHER_URL = App::BASE_URL
   LOGO_URL = "#{PUBLISHER_URL}/logo.svg".freeze
-  PUBLISHER_NAME = "mbuzz".freeze
+  PUBLISHER_NAME = App::PUBLISHER_NAME
 
   attribute :title, :string
   attribute :slug, :string

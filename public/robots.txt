@@ -1,1 +1,36 @@
-# See https://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
+# See https://www.robotstxt.org/robotstxt.html for documentation
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://mbuzz.co/sitemap.xml
+
+# Disallow authenticated/private routes
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /login
+Disallow: /signup
+Disallow: /onboarding/
+Disallow: /account/
+Disallow: /admin/
+Disallow: /users/
+
+# Allow demo for indexing
+Allow: /demo/dashboard
+
+# AI Crawlers - Allow for discoverability
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
