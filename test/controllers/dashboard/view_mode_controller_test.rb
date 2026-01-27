@@ -103,6 +103,24 @@ module Dashboard
       assert_select "[data-testid='test-mode-banner']", count: 0
     end
 
+    test "switching to production mode enables live_mode on account" do
+      current_account.update!(live_mode_enabled: false)
+
+      patch dashboard_view_mode_path, params: { mode: "production" }
+
+      assert current_account.reload.live_mode_enabled?,
+        "live_mode_enabled should be true after switching to production"
+    end
+
+    test "switching to test mode disables live_mode on account" do
+      current_account.update!(live_mode_enabled: true)
+
+      patch dashboard_view_mode_path, params: { mode: "test" }
+
+      assert_not current_account.reload.live_mode_enabled?,
+        "live_mode_enabled should be false after switching to test"
+    end
+
     test "user can still switch to production mode even when live_mode is disabled" do
       reset!
       Account.find(account.id).update!(live_mode_enabled: false)
@@ -124,6 +142,10 @@ module Dashboard
 
     def account
       @account ||= accounts(:one)
+    end
+
+    def current_account
+      user.primary_account
     end
 
     def sign_in_as(user)
