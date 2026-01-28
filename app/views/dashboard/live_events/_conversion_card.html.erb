@@ -1,33 +1,27 @@
-<% event = feed_item.record %>
+<% conversion = feed_item.record %>
 <div data-action="click->event-panel#open"
   data-event-json="<%= feed_item_json(feed_item) %>"
   class="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors">
   <div class="flex items-center justify-between">
     <div class="flex items-center gap-3">
-      <span class="<%= feed_badge_class(:event) %>">
-        <%= event.event_type.first.upcase %>
-      </span>
+      <span class="<%= feed_badge_class(:conversion) %>">$</span>
 
       <div>
         <div class="flex items-center gap-2">
-          <span class="font-medium text-gray-900"><%= event.event_type %></span>
-          <% if event.is_test %>
+          <span class="font-medium text-gray-900">conversion: <%= conversion.conversion_type %></span>
+          <% if conversion.is_test %>
             <span class="px-1.5 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 rounded">TEST</span>
           <% end %>
         </div>
         <div class="text-sm text-gray-500">
-          <%= event_primary_info(event) %>
-          <% if event.session&.channel %>
-            <span class="mx-1">&bull;</span>
-            <span><%= event.session.channel.titleize %></span>
-          <% end %>
+          <%= conversion_primary_info(conversion) %>
         </div>
       </div>
     </div>
 
     <div class="flex items-center gap-3">
-      <span class="text-sm text-gray-500" title="<%= event.occurred_at.iso8601 %>">
-        <%= time_ago_in_words(event.occurred_at) %> ago
+      <span class="text-sm text-gray-500" title="<%= conversion.converted_at.iso8601 %>">
+        <%= time_ago_in_words(conversion.converted_at) %> ago
       </span>
       <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />

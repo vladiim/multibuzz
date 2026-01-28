@@ -12,11 +12,12 @@ module Event::Broadcasts
   private
 
   def broadcast_to_account
+    feed_item = FeedItem.new(feed_type: :event, occurred_at: occurred_at, record: self)
     broadcast_prepend_to(
       "account_#{account.prefix_id}_events",
       target: "events-list",
-      partial: "dashboard/live_events/event_card",
-      locals: { event: self }
+      partial: "dashboard/live_events/feed_item",
+      locals: { feed_item: feed_item }
     )
   end
 
