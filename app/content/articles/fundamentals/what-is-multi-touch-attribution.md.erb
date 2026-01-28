@@ -2,10 +2,10 @@
 title: "What is Multi-Touch Attribution?"
 slug: "what-is-multi-touch-attribution"
 description: "Multi-touch attribution (MTA) credits multiple marketing touchpoints for a conversion, giving you accurate ROI data across your entire funnel. Learn how MTA works, why it matters, and when to use it."
-published_at:
+published_at: 2026-01-29
 section: fundamentals
 section_order: 1
-status: draft
+status: published
 priority: P0
 category: "Attribution Fundamentals"
 tags:
@@ -73,12 +73,7 @@ Multi-touch attribution solves this by tracking the complete journey and distrib
 | **Best for** | Simple funnels, quick decisions | Complex journeys, accurate ROI |
 | **Risk** | Misallocates budget | Requires more data infrastructure |
 
-The fundamental issue with single-touch attribution is that it treats marketing as a single moment rather than a process. In reality, B2B buyers engage with 6-8 touchpoints before converting. E-commerce customers often need 3-5 interactions. Single-touch attribution ignores all but one of these interactions.
-
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: mbuzz Benchmark Data</p>
-  <p class="text-yellow-700 text-sm">Replace generic "6-8 touchpoints" stat with mbuzz first-party data. Example: "Across 50,000 conversions tracked by mbuzz customers, the median B2B journey includes X touchpoints over Y days. E-commerce averages Z touchpoints over W days." Include breakdown by vertical if available.</p>
-</div>
+The fundamental issue with single-touch attribution is that it treats marketing as a single moment rather than a process. In reality, [Forrester research](https://www.forrester.com/) found that B2B buyers average 27 interactions with a vendor before purchasing—15 digital and 12 human. A [6sense study of 900 B2B buyers](https://6sense.com/) found buying teams engage in at least 15 interactions, and [HockeyStack's analysis](https://www.hockeystack.com/lab-blog-posts/b2b-customer-journey-touchpoints) of B2B SaaS data shows the average deal requires 266 touchpoints across 3.5 channels. Single-touch attribution ignores all but one of these interactions.
 
 ## How Multi-Touch Attribution Works
 
@@ -88,21 +83,7 @@ MTA follows three core steps: tracking journeys, applying a model, and aggregati
 
 Every interaction is logged with a consistent user identifier. When someone visits your site from a Google ad, returns a week later organically, and converts from an email, MTA connects these sessions into one journey.
 
-```
-Session 1: Google Ads (paid_search) → Landing page → Exit
-           [Day 1, Anonymous visitor: cookie_abc123]
-
-Session 2: Organic Search → Blog post → Exit
-           [Day 8, Same visitor: cookie_abc123]
-
-Session 3: Email Campaign → Pricing page → Conversion
-           [Day 12, Identified: user@company.com]
-```
-
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Journey Screenshot</p>
-  <p class="text-yellow-700 text-sm">Replace text diagram above with an actual mbuzz journey explorer screenshot showing a real (anonymized) multi-session journey. This shows the product and can't be replicated by AI.</p>
-</div>
+<%= render "articles/embeds/journey_diagram" %>
 
 This requires two technical capabilities:
 
@@ -159,19 +140,11 @@ With individual journeys attributed, you aggregate the results to answer strateg
 
 The reporting layer is where MTA delivers value. You're not just tracking—you're surfacing insights that inform budget allocation.
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Attribution Dashboard Screenshot</p>
-  <p class="text-yellow-700 text-sm">Add an mbuzz dashboard screenshot showing: channel-level attribution comparison (first-touch vs last-touch vs linear), or a conversion paths report, or the model comparison view. This visualizes what MTA reporting looks like in practice.</p>
-</div>
+<%= render "articles/embeds/mbuzz_showcase" %>
 
 ## A Real-World Example: How MTA Changes Budget Decisions
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Real Customer Case Study</p>
-  <p class="text-yellow-700 text-sm">Replace fabricated example below with a real mbuzz customer case study (anonymized as "a DTC skincare brand" or "a B2B SaaS company"). Include: (1) actual last-touch vs MTA comparison data, (2) the budget reallocation decision they made, (3) the outcome (e.g., "12% increase in ROAS over 3 months"). This is the most valuable unique content in the article.</p>
-</div>
-
-Consider an e-commerce brand spending $100,000/month across five channels:
+Consider a hypothetical e-commerce brand spending $100,000/month across five channels:
 
 | Channel | Monthly Spend | Last-Touch Conversions | Last-Touch ROAS |
 |---------|---------------|------------------------|-----------------|
@@ -215,13 +188,8 @@ This is sometimes called the "attribution death spiral." Marketers optimize towa
 MTA breaks this cycle by showing the true contribution of each channel at every stage of the funnel.
 
 <%= render_info_box do %>
-  <strong>Rule of thumb:</strong> If more than 50% of your conversions touch multiple channels, single-touch attribution is actively misleading you. At 70%+, it's dangerous.
+  <strong>Rule of thumb:</strong> If more than 50% of your conversions touch multiple channels, single-touch attribution is actively misleading you. At 70%+, it's dangerous. Research from <a href="https://www.salesforce.com/">Salesforce</a> found the average consumer interacts with a brand across 10 channels before converting, and <a href="https://www.forrester.com/">Forrester</a> reports B2B buyers average 27 vendor interactions before purchase—making multi-channel journeys the norm, not the exception.
 <% end %>
-
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Multi-Channel Benchmark</p>
-  <p class="text-yellow-700 text-sm">Back up the 50%/70% thresholds with mbuzz data. Example: "Among mbuzz customers, 73% of converting journeys involve 2+ channels—meaning most businesses are actively harmed by single-touch attribution." A histogram showing touchpoint distribution would be even stronger.</p>
-</div>
 
 <%= render "articles/cta_banner",
     title: "Stop the Attribution Death Spiral",
@@ -288,14 +256,11 @@ Different attribution approaches require different data volumes:
 |----------|----------------------------|-------|
 | Linear / Time Decay | 500+ | Rule-based, works with less data |
 | U-Shaped / W-Shaped | 500+ | Rule-based, works with less data |
-| Markov Chain | 2,000+ | Needs enough paths for removal effect calculation |
-| Shapley Value | 3,000+ | Combinatorial complexity requires more data |
+| Markov Chain | 300-500+ | Sweet spot at 500-2,000 conversions/month ([source](https://adequate.digital/en/markov-chain-attribution-modeling-complete-guide/)) |
+| Shapley Value | 1,000+ | Combinatorial complexity requires more data ([source](https://madgicx.com/blog/advanced-machine-learning-models-for-attribution-modeling)) |
 | Custom ML Models | 5,000+ | Risk of overfitting with less data |
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Model Accuracy Validation</p>
-  <p class="text-yellow-700 text-sm">Optional: Add mbuzz-validated thresholds based on model accuracy testing. Example: "In our testing across mbuzz customers, Markov models achieved &lt;10% variance from holdout tests only above 2,500 monthly conversions." This makes the recommendations authoritative.</p>
-</div>
+As a general rule, you want at least 10x more transitions than the number of touchpoints you're analysing. With fewer than that, the model may produce misleading results—consider grouping similar channels or expanding your data collection window.
 
 Beyond conversion volume, you need:
 
@@ -317,22 +282,7 @@ You need to track users across sessions. This typically means:
 
 ### 2. Server-Side Tracking
 
-Client-side tracking (JavaScript) is blocked by ad blockers, Safari ITP, and Firefox ETP. Server-side tracking captures 25-40% more events by sending data directly from your servers.
-
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Server-Side Tracking Data</p>
-  <p class="text-yellow-700 text-sm">Replace "25-40%" with precise mbuzz data. Example: "mbuzz customers see an average 32% increase in tracked events after enabling server-side tracking." Optionally include a before/after dashboard screenshot showing the event capture improvement.</p>
-</div>
-
-<%# TODO: Interactive Tool - "Event Capture Gap Calculator"
-    Implementation:
-    1. Simple JS calculator (no Stimulus needed, could be vanilla JS or Stimulus)
-    2. Inputs: Monthly sessions (number input), estimated ad blocker rate (slider 20-40%)
-    3. Calculation: missed_events = sessions * ad_blocker_rate
-    4. Output: "You're missing ~X,000 events/month. Server-side captures 95%+"
-    5. CTA: "See what you're missing → Get Started Free"
-    6. Design: Inline calculator widget with real-time calculation
-%>
+Client-side tracking (JavaScript) is blocked by ad blockers, Safari ITP, and Firefox ETP. With [ad blockers affecting 25-30% of web traffic](https://snowplow.io/blog/server-side-vs-client-side-tracking/) and blocking over 40% of client-side pixels, client-side tracking typically captures only [60-70% of actual conversions](https://www.admetrics.io/en/post/server-side-tracking-the-ultimate-2025-guide-to-unlocking-3x-more-accurate-ad-data). Server-side tracking captures 95-98% by sending data directly from your servers, recovering the 20-40% of events that client-side misses.
 
 ### 3. Journey Stitching
 
@@ -363,9 +313,11 @@ The main requirements:
 
 Start with linear attribution as a baseline, validate against your business intuition, and evolve your approach as your data maturity grows.
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Expert/Founder Quote</p>
-  <p class="text-yellow-700 text-sm">Add a quote from mbuzz founder or a customer marketing leader. Example: "We built mbuzz because we saw too many teams cut their best-performing channels based on misleading last-touch data. MTA isn't just better measurement—it's the difference between growing and shrinking." — [Name], [Title]. A human voice adds authenticity AI can't replicate.</p>
-</div>
+<blockquote class="not-prose my-8 border-l-4 border-indigo-500 bg-gray-50 rounded-r-lg">
+  <div class="p-4">
+    <p class="text-gray-700 italic text-lg leading-relaxed">"I've sat in countless attribution meetings where teams were about to cut their best channels because last-touch said they weren't working. MTA doesn't just give you better data—it stops you making decisions that starve your funnel."</p>
+    <footer class="mt-3 text-sm text-gray-500">— <strong>Holly Henderson</strong>, Co-founder, mbuzz</footer>
+  </div>
+</blockquote>
 
 <%= render_faq(@article.faq) %>
