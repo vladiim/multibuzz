@@ -2,6 +2,7 @@
   <div class="dashboard-filters bg-white p-4 rounded-lg shadow">
     <form action="<%= dashboard_path %>" method="get" data-turbo-frame="_top" class="flex flex-wrap gap-4 items-end">
       <!-- Preserve params not controlled by this form -->
+      <%= hidden_field_tag :tab, params[:tab] %>
       <%= hidden_field_tag :metric, @filter_params[:metric] %>
       <%= hidden_field_tag :journey_position, @filter_params[:journey_position] %>
 

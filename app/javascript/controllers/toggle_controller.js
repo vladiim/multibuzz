@@ -25,6 +25,7 @@ export default class extends Controller {
   static values = {
     default: String,
     persist: String,  // localStorage key (optional)
+    urlParam: String, // URL search param to sync (optional)
     closeOnClickOutside: Boolean
   }
 
@@ -121,6 +122,7 @@ export default class extends Controller {
     const value = event.currentTarget.dataset.value
     this.switchTo(value)
     this.savePreference(value)
+    this.updateUrlParam(value)
     this.broadcastSync(value)
   }
 
@@ -198,6 +200,27 @@ export default class extends Controller {
     } catch {
       // Silently fail if localStorage unavailable
     }
+  }
+
+  updateUrlParam(value) {
+    if (!this.hasUrlParamValue) return
+
+    const param = this.urlParamValue
+    const url = new URL(window.location.href)
+    url.searchParams.set(param, value)
+    history.replaceState(history.state, "", url.toString())
+
+    // Sync hidden inputs in any already-loaded forms
+    this.element.querySelectorAll(`input[type="hidden"][name="${param}"]`).forEach(input => {
+      input.value = value
+    })
+
+    // Update turbo frame src attributes so lazy-loaded frames pick up the new param
+    this.element.querySelectorAll("turbo-frame[src]").forEach(frame => {
+      const frameUrl = new URL(frame.src, window.location.origin)
+      frameUrl.searchParams.set(param, value)
+      frame.src = frameUrl.toString()
+    })
   }
 
   get hiddenClass() {

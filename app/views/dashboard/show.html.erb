@@ -9,8 +9,10 @@
     <main>
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Main Dashboard Container -->
+        <% active_tab = %w[conversions funnel events].include?(params[:tab]) ? params[:tab] : "conversions" %>
         <div data-controller="toggle"
-          data-toggle-default-value="conversions"
+          data-toggle-default-value="<%= active_tab %>"
+          data-toggle-url-param-value="tab"
           data-toggle-active-class="border-indigo-500 text-indigo-600"
           data-toggle-inactive-class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
 
@@ -148,7 +150,7 @@
               <!-- Header with filter -->
               <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-3">
-                  <span class="text-sm text-gray-600">Showing last <%= @live_events.size %> events</span>
+                  <span class="text-sm text-gray-600">Showing last <%= @feed_items.size %> activities</span>
                   <% if @test_only %>
                     <span class="px-2 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 rounded">Test only</span>
                   <% end %>
@@ -174,17 +176,17 @@
                 </div>
               </div>
 
-              <!-- Events List -->
+              <!-- Activity Feed -->
               <div class="bg-white shadow rounded-lg overflow-hidden">
                 <div id="events-list" class="divide-y divide-gray-200">
-                  <% @live_events.each do |event| %>
-                    <%= render "dashboard/live_events/event_card", event: event %>
+                  <% @feed_items.each do |feed_item| %>
+                    <%= render "dashboard/live_events/feed_item", feed_item: feed_item %>
                   <% end %>
 
-                  <% if @live_events.empty? %>
+                  <% if @feed_items.empty? %>
                     <div class="px-4 py-12 text-center text-gray-500">
-                      <p class="text-lg">No events yet</p>
-                      <p class="text-sm mt-1">Events will appear here in real-time as they're received</p>
+                      <p class="text-lg">No activity yet</p>
+                      <p class="text-sm mt-1">Events, conversions, and sessions will appear here in real-time</p>
                     </div>
                   <% end %>
                 </div>
