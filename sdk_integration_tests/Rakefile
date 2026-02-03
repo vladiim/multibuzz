@@ -10,7 +10,7 @@ namespace :sdk do
     begin
       TestSetupHelper.setup!
 
-      %w[ruby node].each do |sdk|
+      %w[ruby node python php symfony].each do |sdk|
         puts "\n#{'=' * 50}"
         puts "Testing #{sdk.upcase} SDK"
         puts "=" * 50

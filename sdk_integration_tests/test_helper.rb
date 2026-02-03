@@ -92,9 +92,26 @@ class SdkIntegrationTest < Minitest::Test
     )
   end
 
-  # Wait for async operations to complete
+  # Wait for async session creation by polling until visitor exists.
+  # Falls back to a simple sleep when no visitor_id is tracked.
+  ASYNC_POLL_ATTEMPTS = 8
+  ASYNC_POLL_INTERVAL = 1
+
   def wait_for_async(seconds = 2)
-    sleep seconds
+    return sleep(seconds) unless @visitor_id
+
+    poll_until_visitor_exists(@visitor_id, seconds)
+  end
+
+  def poll_until_visitor_exists(visitor_id, min_wait)
+    sleep min_wait
+
+    ASYNC_POLL_ATTEMPTS.times do |i|
+      data = VerificationHelper.verify(visitor_id: visitor_id)
+      return if data&.dig(:visitor, :visitor_id)
+
+      sleep ASYNC_POLL_INTERVAL unless i == ASYNC_POLL_ATTEMPTS - 1
+    end
   end
 
   # Clean up test data after the test
