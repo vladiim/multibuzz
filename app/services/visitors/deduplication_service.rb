@@ -3,11 +3,13 @@
 module Visitors
   class DeduplicationService < ApplicationService
     BURST_WINDOW = 30 # seconds
+    DEFAULT_SINCE = 90 # days
 
-    def initialize(account, dry_run: false, window: BURST_WINDOW)
+    def initialize(account, dry_run: false, window: BURST_WINDOW, since_days: DEFAULT_SINCE)
       @account = account
       @dry_run = dry_run
       @window = window
+      @since = since_days.days.ago
       @stats = {
         fingerprints_checked: 0,
         groups_merged: 0,
@@ -20,7 +22,7 @@ module Visitors
 
     private
 
-    attr_reader :account, :dry_run, :window, :stats
+    attr_reader :account, :dry_run, :window, :since, :stats
 
     def run
       each_duplicate_group do |canonical, duplicates|
@@ -31,28 +33,32 @@ module Visitors
     end
 
     def each_duplicate_group
-      fingerprints_with_multiple_visitors.each do |fingerprint, visitor_ids|
+      duplicates = fingerprints_with_multiple_visitors
+      total = duplicates.size
+      $stdout.print "Found #{total} fingerprints with multiple visitors\n" if total > 0
+
+      duplicates.each do |fingerprint, visitor_ids|
         stats[:fingerprints_checked] += 1
+        print "\rProcessing fingerprint #{stats[:fingerprints_checked]}/#{total}" if (stats[:fingerprints_checked] % 50).zero?
+
         burst_groups_for(fingerprint, visitor_ids).each do |group|
           canonical = group.first
           duplicates = group[1..]
           yield canonical, duplicates if duplicates.any?
         end
       end
+
+      print "\r" + (" " * 60) + "\r" if total > 0
     end
 
     def fingerprints_with_multiple_visitors
       account.sessions
         .where.not(device_fingerprint: nil)
+        .where("started_at > ?", since)
         .group(:device_fingerprint)
         .having("COUNT(DISTINCT visitor_id) > 1")
-        .pluck(:device_fingerprint)
-        .each_with_object({}) do |fp, hash|
-          hash[fp] = account.sessions
-            .where(device_fingerprint: fp)
-            .distinct
-            .pluck(:visitor_id)
-        end
+        .pluck(:device_fingerprint, Arel.sql("array_agg(DISTINCT visitor_id)"))
+        .to_h
     end
 
     def burst_groups_for(_fingerprint, visitor_ids)

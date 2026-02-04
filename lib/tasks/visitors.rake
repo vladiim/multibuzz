@@ -6,23 +6,30 @@ namespace :visitors do
     account_id = ENV["ACCOUNT_ID"]
     dry_run = ENV["DRY_RUN"] != "false"
     window = (ENV["WINDOW"] || 30).to_i
+    since_days = (ENV["SINCE_DAYS"] || 90).to_i
 
     unless account_id
-      puts "Usage: bin/rails visitors:deduplicate ACCOUNT_ID=123 [DRY_RUN=true] [WINDOW=30]"
+      puts "Usage: bin/rails visitors:deduplicate ACCOUNT_ID=123 [DRY_RUN=true] [WINDOW=30] [SINCE_DAYS=90]"
       puts ""
       puts "  ACCOUNT_ID  - Required. The account to deduplicate."
       puts "  DRY_RUN     - Default: true. Set DRY_RUN=false to execute changes."
       puts "  WINDOW      - Default: 30. Seconds within which visitors are considered duplicates."
+      puts "  SINCE_DAYS  - Default: 90. Only scan sessions from the last N days."
       exit 1
     end
 
     account = Account.find(account_id)
     puts "=" * 70
     puts "VISITOR DEDUPLICATION — #{account.name} (ID: #{account.id})"
-    puts "Window: #{window}s | Mode: #{dry_run ? 'DRY RUN' : '⚠️  LIVE'}"
+    puts "Window: #{window}s | Since: #{since_days} days | Mode: #{dry_run ? 'DRY RUN' : '⚠️  LIVE'}"
     puts "=" * 70
 
-    result = Visitors::DeduplicationService.new(account, dry_run: dry_run, window: window).call
+    puts "\nQuerying duplicate fingerprints (last #{since_days} days)..."
+    $stdout.flush
+
+    result = Visitors::DeduplicationService.new(
+      account, dry_run: dry_run, window: window, since_days: since_days
+    ).call
 
     if result[:success]
       stats = result[:stats]
