@@ -2,10 +2,10 @@
 title: "Why Did GA4 Remove Most Attribution Models?"
 slug: "ga4-attribution-models-removed"
 description: "Google Analytics 4 removed first-touch, linear, time-decay, and position-based attribution—keeping only last-click and data-driven. Learn why Google made this change, how their Shapley-based algorithm works, and what your alternatives are."
-published_at:
+published_at: 2026-02-05
 section: fundamentals
-section_order: 10
-status: draft
+section_order: 2
+status: published
 priority: P0
 category: "Attribution Models"
 tags:
@@ -97,19 +97,20 @@ In attribution terms:
 - The "output" = the conversion
 - Shapley values = fair credit distribution
 
-```
-Shapley Value Concept:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-For each touchpoint, calculate:
-1. Consider every possible subset of touchpoints
-2. For each subset, measure conversion rate WITH the touchpoint
-3. For each subset, measure conversion rate WITHOUT the touchpoint
-4. The touchpoint's "marginal contribution" = the difference
-5. Average across all possible subsets = Shapley value
-
-This ensures "fair" distribution based on actual contribution.
-```
+<div class="my-6 not-prose">
+  <div class="bg-slate-50 border border-slate-200 rounded-lg p-6">
+    <h4 class="text-sm font-semibold text-slate-900 uppercase tracking-wide mb-4">How Shapley Values Work</h4>
+    <p class="text-sm text-slate-600 mb-4">For each touchpoint, calculate its marginal contribution:</p>
+    <ol class="space-y-2 text-sm text-slate-700">
+      <li class="flex gap-3"><span class="font-mono text-indigo-600 font-semibold shrink-0">1.</span> Consider every possible subset of touchpoints</li>
+      <li class="flex gap-3"><span class="font-mono text-indigo-600 font-semibold shrink-0">2.</span> For each subset, measure conversion rate <strong>with</strong> the touchpoint</li>
+      <li class="flex gap-3"><span class="font-mono text-indigo-600 font-semibold shrink-0">3.</span> For each subset, measure conversion rate <strong>without</strong> the touchpoint</li>
+      <li class="flex gap-3"><span class="font-mono text-indigo-600 font-semibold shrink-0">4.</span> The touchpoint's "marginal contribution" = the difference</li>
+      <li class="flex gap-3"><span class="font-mono text-indigo-600 font-semibold shrink-0">5.</span> Average across all possible subsets = <strong>Shapley value</strong></li>
+    </ol>
+    <p class="text-sm text-slate-500 mt-4 pt-3 border-t border-slate-200">This ensures "fair" credit distribution based on actual contribution — the same math used to split profits among team members in cooperative game theory.</p>
+  </div>
+</div>
 
 ### What Makes It Different from Markov Chains
 
@@ -161,10 +162,6 @@ class ShapleyAttribution
 end
 ```
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Shapley Calculation Visualization</p>
-  <p class="text-yellow-700 text-sm">Create animated diagram showing how Shapley values are calculated: Start with journey A→B→C→Convert, show all possible subsets (A, B, C, AB, AC, BC, ABC, none), calculate marginal contribution for each channel by comparing WITH vs WITHOUT.</p>
-</div>
 
 ## Why the Removal Matters
 
@@ -207,10 +204,6 @@ While Google states DDA is unbiased, the algorithm is a black box. You can't:
 - Check for channel bias
 - Customize the algorithm
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: GA4 DDA Bias Analysis</p>
-  <p class="text-yellow-700 text-sm">Add mbuzz analysis comparing Google's DDA credit allocation vs independent Shapley calculation on the same data. If there's systematic difference in how Google channels are credited, this is a significant finding.</p>
-</div>
 
 <%= render "articles/cta_banner",
     title: "Get Back the Models GA4 Removed",
@@ -304,10 +297,9 @@ Several tools provide the attribution models GA4 removed:
 | **Supermetrics** | Rule-based reconstruction | Mid-market |
 | **Triple Whale** | DTC-focused, all models | E-commerce |
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: mbuzz Attribution Model Comparison</p>
-  <p class="text-yellow-700 text-sm">Add screenshot showing mbuzz's model selector with all available models (first-touch, linear, time-decay, position-based, Markov, Shapley). Show side-by-side comparison view and emphasize transparency of calculations.</p>
-</div>
+<%= render "articles/embeds/model_comparison" %>
+
+<%= render "articles/embeds/mbuzz_showcase" %>
 
 ### Option 3: Run Multiple Tools in Parallel
 
@@ -324,15 +316,16 @@ If you're going to use GA4's data-driven attribution, here's how to get the most
 
 ### 1. Ensure You Meet Volume Thresholds
 
-Track whether you have enough conversions:
+Each conversion type needs its own volume. Here's how it plays out in practice:
 
-| Conversion Type | Your Volume | Status |
-|----------------|-------------|--------|
-| Purchase | ? per month | Need 400+ |
-| Signup | ? per month | Need 400+ |
-| Lead form | ? per month | Need 400+ |
+| Business Type | Monthly Conversions | DDA Status |
+|--------------|-------------------|------------|
+| Early-stage SaaS (50 signups/mo) | 50 | Falls back to last-click |
+| Mid-market e-comm (300 purchases/mo) | 300 | Falls back to last-click |
+| Scaling DTC (800 purchases/mo) | 800 | DDA active |
+| Enterprise lead gen (150 MQLs/mo) | 150 | Falls back to last-click |
 
-If you're below threshold, DDA is actually last-click. Don't be fooled.
+Most startups and mid-market companies don't hit the threshold. If you're under 400 monthly conversions per type, GA4's "data-driven" attribution is actually just last-click with a fancier name.
 
 ### 2. Use DDA for Direction, Not Precision
 
@@ -367,10 +360,6 @@ DDA is still correlational. Validate with incrementality:
 3. Compare attributed lift to incremental lift
 4. Calibrate your trust in DDA accordingly
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: DDA Validation Case Study</p>
-  <p class="text-yellow-700 text-sm">Add mbuzz customer example: "Company X validated GA4 DDA with a geo-holdout test on Paid Social. DDA attributed $150K in revenue; incrementality test showed $180K true lift. This 1.2x calibration factor informed their budget allocation."</p>
-</div>
 
 ## What This Means for the Future
 
@@ -396,10 +385,6 @@ No single tool will do everything. Expect tech stacks to include:
 - MMM tool (for long-term planning)
 - Experimentation platform (for validation)
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Industry Expert Quote</p>
-  <p class="text-yellow-700 text-sm">Add quote from marketing measurement expert on Google's attribution model removal. <strong>Outreach targets:</strong> Simo Ahava (GA4 expert), Krista Seiden (former Google Analytics advocate), Kevin Hillstrom (MineThatData—critical of platform attribution).</p>
-</div>
 
 ## Summary
 
@@ -434,9 +419,8 @@ Google removed first-touch, linear, time-decay, and position-based attribution f
 - [Stacktonic: Build DDA with BigQuery and Python](https://stacktonic.com/article/build-a-data-driven-attribution-model-using-google-analytics-4-big-query-and-python) — Technical tutorial
 
 **Related Articles:**
-- [How to Choose the Right Attribution Model](/articles/how-to-choose-attribution-model) — Framework for model selection
-- [First-Touch Attribution](/articles/first-touch-attribution) — Understanding what you lost
-- [Last-Touch Attribution](/articles/last-touch-attribution) — What's still available
+- [What is Multi-Touch Attribution?](/articles/what-is-multi-touch-attribution) — The complete MTA guide
+- [Multi-Touch Attribution Tools Compared](/articles/multi-touch-attribution-tools-compared) — Find the right tool for your needs
 
 <%= render_key_takeaways(@article.key_takeaways) %>
 
