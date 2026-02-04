@@ -6,6 +6,7 @@ module ReferrerSources
     VIDEO = "video"
     SHOPPING = "shopping"
     NEWS = "news"
+    AI = "ai"
 
     ALL = [
       SEARCH,
@@ -13,7 +14,8 @@ module ReferrerSources
       EMAIL,
       VIDEO,
       SHOPPING,
-      NEWS
+      NEWS,
+      AI
     ].freeze
   end
 end

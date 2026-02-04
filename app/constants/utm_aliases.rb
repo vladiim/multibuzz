@@ -61,6 +61,11 @@ module UtmAliases
     # organic
     "organic" => "organic",
     # referral
-    "referral" => "referral"
+    "referral" => "referral",
+    # ai
+    "ai" => "ai",
+    "aeo" => "ai",
+    "ai-search" => "ai",
+    "ai_search" => "ai"
   }.freeze
 end

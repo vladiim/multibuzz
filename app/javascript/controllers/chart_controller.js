@@ -12,6 +12,7 @@ const CHANNEL_COLORS = {
   affiliate: "#14B8A6",       // teal
   referral: "#F97316",        // orange
   video: "#EF4444",           // red
+  ai: "#06B6D4",              // cyan
   direct: "#6B7280",          // gray
   other: "#9CA3AF"            // gray-400
 }

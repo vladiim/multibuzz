@@ -444,6 +444,99 @@ class Sessions::ChannelAttributionServiceTest < ActiveSupport::TestCase
     assert_equal Channels::REFERRAL, result
   end
 
+  # ==========================================
+  # AI Channel Attribution Tests
+  # ==========================================
+
+  test "returns ai for chatgpt.com referrer via regex fallback" do
+    assert_equal Channels::AI, service({}, "https://chatgpt.com/").call
+  end
+
+  test "returns ai for perplexity.ai referrer via regex fallback" do
+    assert_equal Channels::AI, service({}, "https://perplexity.ai/search").call
+  end
+
+  test "returns ai for claude.ai referrer via regex fallback" do
+    assert_equal Channels::AI, service({}, "https://claude.ai/chat").call
+  end
+
+  test "returns ai for gemini.google.com referrer via regex fallback" do
+    # Must match AI_ENGINES before SEARCH_ENGINES catches "google"
+    assert_equal Channels::AI, service({}, "https://gemini.google.com/app").call
+  end
+
+  test "returns ai for copilot.microsoft.com referrer via regex fallback" do
+    assert_equal Channels::AI, service({}, "https://copilot.microsoft.com/").call
+  end
+
+  test "returns ai for meta.ai referrer via regex fallback" do
+    assert_equal Channels::AI, service({}, "https://meta.ai/").call
+  end
+
+  test "returns ai for chat.openai.com referrer via regex fallback" do
+    assert_equal Channels::AI, service({}, "https://chat.openai.com/chat").call
+  end
+
+  test "returns ai for utm_medium=ai" do
+    utm_data = { utm_medium: "ai" }
+
+    assert_equal Channels::AI, service(utm_data).call
+  end
+
+  test "returns ai for utm_source=chatgpt without utm_medium" do
+    utm_data = { utm_source: "chatgpt" }
+
+    assert_equal Channels::AI, service(utm_data).call
+  end
+
+  test "returns ai for utm_source=perplexity without utm_medium" do
+    utm_data = { utm_source: "perplexity" }
+
+    assert_equal Channels::AI, service(utm_data).call
+  end
+
+  test "utm_medium overrides ai referrer" do
+    # Explicit UTM tagging takes priority over referrer
+    utm_data = { utm_medium: "cpc", utm_source: "google" }
+
+    assert_equal Channels::PAID_SEARCH, service(utm_data, "https://chatgpt.com/").call
+  end
+
+  test "click_id overrides ai referrer" do
+    assert_equal Channels::PAID_SOCIAL, service({}, "https://chatgpt.com/", { fbclid: "abc123" }).call
+  end
+
+  test "returns ai from database lookup with ai medium" do
+    ReferrerSource.create!(
+      domain: "chatgpt.com",
+      source_name: "ChatGPT",
+      medium: ReferrerSources::Mediums::AI,
+      data_origin: ReferrerSources::DataOrigins::CUSTOM
+    )
+
+    assert_equal Channels::AI, service({}, "https://chatgpt.com/share/abc").call
+  end
+
+  test "gemini.google.com database lookup returns ai not organic_search" do
+    ReferrerSource.create!(
+      domain: "gemini.google.com",
+      source_name: "Gemini",
+      medium: ReferrerSources::Mediums::AI,
+      data_origin: ReferrerSources::DataOrigins::CUSTOM
+    )
+
+    assert_equal Channels::AI, service({}, "https://gemini.google.com/app").call
+  end
+
+  test "regular google.com still returns organic_search" do
+    # Ensure AI additions don't break existing google classification
+    assert_equal Channels::ORGANIC_SEARCH, service({}, "https://www.google.com/search?q=test").call
+  end
+
+  test "regular bing.com still returns organic_search" do
+    assert_equal Channels::ORGANIC_SEARCH, service({}, "https://www.bing.com/search").call
+  end
+
   private
 
   def service(utm_data = {}, referrer = nil, click_ids = {}, page_host: nil)

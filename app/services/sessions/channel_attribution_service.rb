@@ -15,11 +15,13 @@ module Sessions
       /^(affiliate|affiliates)$/i => Channels::AFFILIATE,
       /^(referral|partner)$/i => Channels::REFERRAL,
       /^organic$/i => Channels::ORGANIC_SEARCH,
-      /^video$/i => Channels::VIDEO
+      /^video$/i => Channels::VIDEO,
+      /^ai$/i => Channels::AI
     }.freeze
 
     # Referrer domain patterns mapped to channels (fallback)
     REFERRER_DOMAIN_PATTERNS = {
+      Channels::AI_ENGINES => Channels::AI,
       Channels::SEARCH_ENGINES => Channels::ORGANIC_SEARCH,
       Channels::SOCIAL_NETWORKS => Channels::ORGANIC_SOCIAL,
       Channels::VIDEO_PLATFORMS => Channels::VIDEO
@@ -32,7 +34,8 @@ module Sessions
       ReferrerSources::Mediums::EMAIL => Channels::EMAIL,
       ReferrerSources::Mediums::VIDEO => Channels::VIDEO,
       ReferrerSources::Mediums::SHOPPING => Channels::REFERRAL,
-      ReferrerSources::Mediums::NEWS => Channels::REFERRAL
+      ReferrerSources::Mediums::NEWS => Channels::REFERRAL,
+      ReferrerSources::Mediums::AI => Channels::AI
     }.freeze
 
     def initialize(utm_data, referrer, click_ids = {}, page_host: nil)
@@ -82,6 +85,7 @@ module Sessions
 
     def channel_from_utm_source
       # When only utm_source is present (no utm_medium), infer channel from source
+      return Channels::AI if utm_source.match?(Channels::AI_ENGINES)
       return Channels::ORGANIC_SEARCH if utm_source.match?(Channels::SEARCH_ENGINES)
       return Channels::ORGANIC_SOCIAL if utm_source.match?(Channels::SOCIAL_NETWORKS)
       return Channels::VIDEO if utm_source.match?(Channels::VIDEO_PLATFORMS)

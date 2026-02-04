@@ -62,7 +62,7 @@ class ReferrerSourceTest < ActiveSupport::TestCase
   # ==========================================
 
   test "mediums constant contains all valid values" do
-    expected = %w[search social email video shopping news]
+    expected = %w[search social email video shopping news ai]
     assert_equal expected, ReferrerSources::Mediums::ALL
   end
 
