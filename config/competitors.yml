@@ -519,16 +519,16 @@ mbuzz:
     tiers:
       - name: Free
         price: 0
-        records: 100000
+        records: <%= Billing::FREE_EVENT_LIMIT %>
       - name: Starter
         price: 29
-        records: 1000000
+        records: <%= Billing::STARTER_EVENT_LIMIT %>
       - name: Growth
         price: 99
-        records: 5000000
+        records: <%= Billing::GROWTH_EVENT_LIMIT %>
       - name: Pro
         price: 299
-        records: 25000000
+        records: <%= Billing::PRO_EVENT_LIMIT %>
 
   features:
     tracking_method: server_side

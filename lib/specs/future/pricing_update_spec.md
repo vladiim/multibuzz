@@ -10,7 +10,7 @@ Update Multibuzz pricing tiers to be right-sized for attribution use case (not g
 
 | Tier | Monthly | Events Included | Overage Block | Block Price | Effective $/1K |
 |------|---------|-----------------|---------------|-------------|----------------|
-| **Free** | $0 | 50K | Hard cap | — | — |
+| **Free** | $0 | 30K | Hard cap | — | — |
 | **Starter** | $29 | 1M | 250K | $5 | $0.029 (included), $20/1M (overage) |
 | **Growth** | $99 | 5M | 1M | $15 | $0.020 (included), $15/1M (overage) |
 | **Pro** | $299 | 25M | 5M | $50 | $0.012 (included), $10/1M (overage) |
@@ -22,7 +22,7 @@ Update Multibuzz pricing tiers to be right-sized for attribution use case (not g
 
 | Aspect | Previous | New |
 |--------|----------|-----|
-| Free events | 10K | 50K |
+| Free events | 10K | 30K |
 | Starter events | 50K | 1M |
 | Growth events | 250K | 5M |
 | Pro events | 1M | 25M |
@@ -67,7 +67,7 @@ Built-in volume discount makes upgrading tier always better than buying many ove
 # app/constants/billing.rb
 
 # Event limits
-FREE_EVENT_LIMIT = 50_000           # was 10_000
+FREE_EVENT_LIMIT = 30_000           # was 100_000
 STARTER_EVENT_LIMIT = 1_000_000     # was 50_000
 GROWTH_EVENT_LIMIT = 5_000_000      # was 250_000
 PRO_EVENT_LIMIT = 25_000_000        # was 1_000_000

@@ -547,7 +547,7 @@
         <ul class="space-y-4 mb-10">
           <li class="flex items-start gap-3 text-sm">
             <span class="text-retro-green text-lg leading-none">&#10003;</span>
-            <span>10,000 events/month</span>
+            <span><%= number_with_delimiter(Billing::FREE_EVENT_LIMIT) %> events/month</span>
           </li>
           <li class="flex items-start gap-3 text-sm">
             <span class="text-retro-green text-lg leading-none">&#10003;</span>
@@ -578,7 +578,7 @@
         <ul class="space-y-4 mb-10">
           <li class="flex items-start gap-3 text-sm">
             <span class="text-retro-green text-lg leading-none">&#10003;</span>
-            <span>100,000 events/month</span>
+            <span><%= number_with_delimiter(Billing::STARTER_EVENT_LIMIT) %> events/month</span>
           </li>
           <li class="flex items-start gap-3 text-sm">
             <span class="text-retro-green text-lg leading-none">&#10003;</span>
@@ -610,7 +610,7 @@
         <ul class="space-y-4 mb-10">
           <li class="flex items-start gap-3 text-sm">
             <span class="text-retro-green text-lg leading-none">&#10003;</span>
-            <span>1M events/month</span>
+            <span><%= format_event_limit(Billing::GROWTH_EVENT_LIMIT) %> events/month</span>
           </li>
           <li class="flex items-start gap-3 text-sm">
             <span class="text-retro-green text-lg leading-none">&#10003;</span>

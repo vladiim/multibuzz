@@ -154,7 +154,10 @@ module CompetitorsHelper
   private
 
   def competitors_yaml
-    @competitors_yaml ||= YAML.load_file(Rails.root.join("config/competitors.yml"))
+    @competitors_yaml ||= begin
+      path = Rails.root.join("config/competitors.yml")
+      YAML.safe_load(ERB.new(File.read(path)).result, permitted_classes: [Symbol])
+    end
   end
 
   def load_competitors_data
