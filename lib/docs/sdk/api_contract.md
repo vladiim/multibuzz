@@ -526,6 +526,25 @@ _mbuzz_vid=<64 hex chars>; Max-Age=63072000; Path=/; HttpOnly; SameSite=Lax; Sec
 - ✅ Navigation detection (`Sec-Fetch-*` whitelist + framework blacklist fallback) - v0.7.3+
 - ✅ Device fingerprint (`SHA256(ip|user_agent)[0:32]`) in session creation - v0.7.3+
 
+### Tag Manager (sGTM)
+
+sGTM tag templates implement the same 4-call model as server-side SDKs, but run inside the customer's sGTM container rather than application middleware. The tag template:
+
+- ✅ Visitor ID generation and cookie management (`setCookie` / `getCookieValues`)
+- ✅ Session creation (`POST /sessions`) on page_view trigger
+- ✅ Event tracking (`POST /events`) on custom event triggers
+- ✅ Conversion tracking (`POST /conversions`) on conversion triggers
+- ✅ User identification (`POST /identify`) on identify triggers
+- ✅ Device fingerprint (`SHA256(ip|user_agent)[0:32]`) via `getRemoteAddress()` + request headers
+- ✅ Authentication (Bearer token via template field)
+- ✅ Error handling (`gtmOnSuccess` / `gtmOnFailure`)
+- ⬜ Navigation detection — handled by GTM trigger configuration, not tag logic
+- ⬜ Middleware integration — not applicable (sGTM is the middleware)
+
+**Key difference**: sGTM tags use GTM's sandboxed JavaScript APIs (`sendHttpRequest`, `setCookie`, `getRemoteAddress`) instead of native HTTP libraries. The API payloads are identical to server-side SDKs.
+
+See [SDK Registry — Tag Manager Integrations](./sdk_registry.md) for setup details.
+
 ### Legacy (Deprecated)
 
 - ⚠️ Client-side session ID generation - replaced by server-side resolution
