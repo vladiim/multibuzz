@@ -79,10 +79,28 @@ namespace :sdk do
     end
   end
 
+  desc "Run SDK integration tests for sGTM simulation only"
+  task :sgtm do
+    begin
+      TestSetupHelper.setup!
+      ENV["SDK"] = "sgtm"
+      Rake::Task["sdk:test:sgtm_scenarios"].invoke
+    ensure
+      TestSetupHelper.teardown!
+    end
+  end
+
   namespace :test do
     Rake::TestTask.new(:scenarios) do |t|
       t.libs << "."
-      t.test_files = FileList["scenarios/*_test.rb"]
+      t.test_files = FileList["scenarios/*_test.rb"] - FileList["scenarios/sgtm_*_test.rb"]
+      t.verbose = true
+      t.warning = false
+    end
+
+    Rake::TestTask.new(:sgtm_scenarios) do |t|
+      t.libs << "."
+      t.test_files = FileList["scenarios/sgtm_*_test.rb"]
       t.verbose = true
       t.warning = false
     end
@@ -130,6 +148,15 @@ namespace :sdk do
     puts "Note: Set MBUZZ_API_KEY and MBUZZ_API_URL environment variables"
     Dir.chdir("apps/mbuzz_symfony_testapp") do
       sh "php -S localhost:4005 -t public"
+    end
+  end
+
+  desc "Start sGTM simulation test app (port 4006)"
+  task :app_sgtm do
+    puts "Starting sGTM simulation test app on http://localhost:4006"
+    puts "Note: Set MBUZZ_API_KEY and MBUZZ_API_URL environment variables"
+    Dir.chdir("apps/mbuzz_sgtm_testapp") do
+      sh "npx tsx server.ts"
     end
   end
 
@@ -204,8 +231,15 @@ namespace :sdk do
       sh "npx playwright install chromium"
     end
 
+    desc "Install dependencies for sGTM simulation test app"
+    task :sgtm_app do
+      Dir.chdir("apps/mbuzz_sgtm_testapp") do
+        sh "npm install"
+      end
+    end
+
     desc "Install all dependencies"
-    task all: [:ruby_app, :node_app, :python_app, :php_app, :symfony_app, :playwright]
+    task all: [:ruby_app, :node_app, :python_app, :php_app, :symfony_app, :sgtm_app, :playwright]
   end
 end
 

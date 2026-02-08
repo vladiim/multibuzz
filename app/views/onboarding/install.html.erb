@@ -28,7 +28,7 @@
       </div>
       <p class="text-gray-600 mb-6">Follow these steps to start tracking events.</p>
 
-      <% if current_sdk.platform? %>
+      <% if current_sdk.custom_install? %>
         <%= render "onboarding/install_#{current_sdk.key}" %>
       <% else %>
         <%= render "onboarding/install_server_side" %>

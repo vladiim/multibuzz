@@ -158,6 +158,38 @@ gem 'mbuzz'
 
 ---
 
+## Tag Manager Integrations
+
+### Server-Side GTM (sGTM)
+
+**Repository**: `https://github.com/mbuzzco/mbuzz-sgtm`
+**Status**: ✅ Live
+**Category**: `tag_manager`
+
+**How it works**: An sGTM tag template that runs inside the customer's server-side GTM container. Makes HTTP calls to mbuzz's existing API — no new endpoints, no backend access required on the customer's site.
+
+**Features**:
+- ✅ Visitor ID management (server-set `_mbuzz_vid` cookie, survives ITP)
+- ✅ Session creation (`POST /sessions`) with UTM/referrer/channel capture
+- ✅ Event tracking (`POST /events`) with custom properties
+- ✅ Conversion tracking (`POST /conversions`) with revenue/currency
+- ✅ Identity linking (`POST /identify`) for cross-device attribution
+- ✅ Device fingerprint (`SHA256(ip|user_agent)[0:32]`) for session resolution
+- ✅ GTM consent mode support
+
+**Supported Platforms** (any site with GTM):
+- Webflow
+- Squarespace
+- WordPress
+- Custom builds
+- Any website with a GTM container
+
+**Distribution**: GTM Community Template Gallery
+
+**Documentation**: [mbuzz.co/docs/integrations-sgtm](/docs/integrations-sgtm)
+
+---
+
 ## Planned SDKs
 
 ### Magento 2 Extension

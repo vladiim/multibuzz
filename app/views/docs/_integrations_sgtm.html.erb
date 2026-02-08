@@ -1,0 +1,256 @@
+<%= render_markdown <<~MD
+  # Server-Side GTM Integration
+
+  Multi-touch attribution via server-side Google Tag Manager. No backend access needed — works with any site that has GTM.
+
+  ---
+
+  ## How It Works
+
+  The mbuzz sGTM tag template runs inside your server-side GTM container. It makes server-to-server HTTP calls to the mbuzz API, bypassing ad blockers and Safari ITP.
+
+  ```text
+  Browser (your website)
+    → Client-side GTM (fires dataLayer events)
+      → Server-side GTM (your cloud, your domain)
+        → mbuzz tag: POST /api/v1/sessions   (visitor + attribution)
+        → mbuzz tag: POST /api/v1/events      (custom events)
+        → mbuzz tag: POST /api/v1/conversions (conversions + revenue)
+        → Also forwards to GA4, Facebook CAPI, etc.
+  ```
+
+  ### Why Server-Side?
+
+  | Benefit | How |
+  |---------|-----|
+  | **No ad blockers** | sGTM runs on your domain, not a third-party script |
+  | **No Safari ITP** | Cookies are set server-side as true first-party |
+  | **30-40% more data** | Captures traffic that client-side tools miss |
+  | **No backend needed** | Works with Webflow, Squarespace, WordPress, any site |
+
+  ---
+
+  ## Prerequisites
+
+  You need a server-side GTM container running on your domain. If you don't have one:
+
+  - [Google's sGTM setup guide](https://developers.google.com/tag-platform/tag-manager/server-side)
+  - [Stape.io](https://stape.io) (managed sGTM hosting)
+  - [Addingwell](https://www.addingwell.com) (managed sGTM hosting)
+
+  Your sGTM container should be accessible on a subdomain like `gtm.yourdomain.com`.
+
+  ---
+
+  ## Installation
+
+  ### Step 1: Import the Tag Template
+
+  1. Open your **server-side** GTM container
+  2. Go to **Templates** → **Tag Templates** → **Search Gallery**
+  3. Search for **mbuzz** and click **Add to workspace**
+
+  Or import manually from [github.com/mbuzzco/mbuzz-sgtm](https://github.com/mbuzzco/mbuzz-sgtm).
+
+  ### Step 2: Create the Session Tag
+
+  This tag fires on every page view. It creates visitors and sessions, and captures UTM parameters, referrer, and channel.
+
+  1. Go to **Tags** → **New**
+  2. Name: `mbuzz - Session`
+  3. Tag type: **mbuzz - Server-Side Attribution**
+  4. Configuration:
+
+  | Field | Value |
+  |-------|-------|
+  | API Key | Your mbuzz API key |
+  | Call Type | `Session` |
+
+  5. Trigger: **Page View** (the default "All Pages" trigger)
+
+  > **Important:** The session tag must fire **before** any event or conversion tags. Use GTM's [tag sequencing](https://support.google.com/tagmanager/answer/6238868) to enforce this.
+
+  ### Step 3: Create Event Tags (Optional)
+
+  Track custom events like form submissions or button clicks.
+
+  1. Go to **Tags** → **New**
+  2. Name: `mbuzz - Form Submit` (or any descriptive name)
+  3. Tag type: **mbuzz - Server-Side Attribution**
+  4. Configuration:
+
+  | Field | Value |
+  |-------|-------|
+  | API Key | Your mbuzz API key |
+  | Call Type | `Event` |
+  | Event Type | `form_submit` (or your event name) |
+
+  5. Trigger: Your custom trigger for this event
+  6. **Tag Sequencing**: Set `mbuzz - Session` as a setup tag
+
+  Repeat for each event type.
+
+  ### Step 4: Create Conversion Tag
+
+  Track conversions to trigger multi-touch attribution.
+
+  1. Go to **Tags** → **New**
+  2. Name: `mbuzz - Conversion`
+  3. Tag type: **mbuzz - Server-Side Attribution**
+  4. Configuration:
+
+  | Field | Value |
+  |-------|-------|
+  | API Key | Your mbuzz API key |
+  | Call Type | `Conversion` |
+  | Conversion Type | `purchase`, `lead`, `signup`, etc. |
+  | Revenue | Revenue amount (use a GTM variable) |
+  | Currency | `USD`, `NZD`, etc. |
+
+  5. Trigger: Your conversion trigger (e.g. `purchase` event)
+  6. **Tag Sequencing**: Set `mbuzz - Session` as a setup tag
+
+  ### Step 5: Test in Preview Mode
+
+  1. Click **Preview** in your sGTM container
+  2. Visit your website in a new tab
+  3. Verify in the preview panel that the mbuzz tags fire
+  4. Check your mbuzz dashboard for the new session
+  5. Trigger a conversion and verify it appears
+  6. **Submit** to publish when ready
+
+  ---
+
+  ## Tag Configuration Reference
+
+  ### Common Fields
+
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | API Key | Text | Yes | Your `sk_live_*` or `sk_test_*` key |
+  | API URL | Text | No | Default: `https://mbuzz.co/api/v1` |
+  | Call Type | Dropdown | Yes | `Session`, `Event`, `Conversion`, or `Identify` |
+  | Debug | Checkbox | No | Log requests to sGTM console |
+
+  ### Event Fields
+
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | Event Type | Text | Yes | Name of the event (e.g. `form_submit`) |
+  | Custom Properties | Key-Value | No | Additional event metadata |
+
+  ### Conversion Fields
+
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | Conversion Type | Text | Yes | Type of conversion (e.g. `purchase`) |
+  | Revenue | Text | No | Revenue amount |
+  | Currency | Text | No | Currency code (default: `USD`) |
+  | Custom Properties | Key-Value | No | Additional conversion metadata |
+
+  ### Identify Fields
+
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | User ID | Text | Yes | Your application's user identifier |
+  | Custom Properties | Key-Value | No | User traits (email, name, plan) |
+
+  ---
+
+  ## What the Tag Does
+
+  ### Visitor Tracking
+
+  The tag manages a `_mbuzz_vid` cookie (first-party, server-set, 2-year expiry):
+
+  - **New visitor**: Generates a random 64-character hex ID, sets cookie
+  - **Returning visitor**: Reads existing ID from cookie
+
+  Because the cookie is set server-side via sGTM, it survives Safari ITP restrictions that would kill client-side cookies.
+
+  ### Session Resolution
+
+  Sessions are resolved server-side using device fingerprinting:
+
+  1. Tag computes `device_fingerprint = SHA256(ip|user_agent)[0:32]`
+  2. Server finds active session for visitor + fingerprint (30-min sliding window)
+  3. If no active session, creates a new one with UTM/referrer/channel data
+
+  ### Channel Attribution
+
+  The server automatically classifies traffic into channels:
+
+  | Traffic Source | Classification |
+  |---------------|---------------|
+  | `utm_medium=cpc` | Paid Search |
+  | Google referrer, no UTM | Organic Search |
+  | Facebook referrer | Organic Social |
+  | `utm_medium=email` | Email |
+  | ChatGPT referrer | AI |
+  | No referrer, no UTM | Direct |
+
+  Full channel list: `paid_search`, `organic_search`, `paid_social`, `organic_social`, `email`, `display`, `affiliate`, `referral`, `video`, `ai`, `direct`, `other`.
+
+  ---
+
+  ## Platform Guides
+
+  ### Webflow
+
+  1. Add your client-side GTM container to Webflow (Project Settings → Custom Code)
+  2. Configure sGTM as your GTM server container
+  3. Add mbuzz tags to sGTM following the steps above
+  4. Use Webflow's form submission events as triggers for event/conversion tags
+
+  ### WordPress
+
+  1. Install a GTM plugin (e.g. GTM4WP)
+  2. Configure sGTM as your server container
+  3. Add mbuzz tags to sGTM
+  4. Use WooCommerce dataLayer events for purchase conversions
+
+  ### Squarespace
+
+  1. Add client-side GTM via Code Injection (Settings → Developer Tools)
+  2. Configure sGTM
+  3. Add mbuzz tags to sGTM
+  4. Use form submission triggers for lead conversions
+
+  ---
+
+  ## Consent Mode
+
+  If you use a Consent Management Platform (CMP), the mbuzz tag respects GTM's consent mode:
+
+  - **Consent granted**: Tag fires normally, cookie set
+  - **Consent denied**: Tag does not fire, no cookie set
+
+  Configure consent in your GTM container's consent settings. The mbuzz tag inherits the container's consent configuration.
+
+  ---
+
+  ## Troubleshooting
+
+  ### Tags Not Firing
+
+  - Verify your **client-side** GTM container is loading (check browser DevTools)
+  - Verify your sGTM container is receiving events (check sGTM preview mode)
+  - Check that the mbuzz tag template is imported and the tag is published
+
+  ### No Data in Dashboard
+
+  - Check the API key is correct (test with the `/api/v1/health` endpoint)
+  - Ensure the Session tag fires **before** Event/Conversion tags
+  - Enable debug mode on the tag and check sGTM logs for errors
+
+  ### Events Rejected
+
+  If events return errors about "Visitor not found", the Session tag is not firing before the Event tag. Use GTM tag sequencing to set the Session tag as a setup tag.
+
+  ### Cookie Not Set
+
+  - Verify your sGTM container is on the same root domain as your website
+  - Check that the cookie domain setting is correct (or leave as auto-detect)
+  - Ensure your sGTM container has HTTPS enabled
+MD
+%>

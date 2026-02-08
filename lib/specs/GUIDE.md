@@ -364,3 +364,69 @@ Scopes: auth, event, visitor, session, api, dashboard, export
 5. **Archive** -- move to `old/` when complete
 
 Specs in `lib/specs/` should only be active work. If it's done, move it. If it's not scheduled, it belongs in `future/`.
+
+---
+
+## Integration / SDK Lifecycle Checklist
+
+**When creating, modifying, or deleting an SDK or integration, every item below must be addressed.** This list exists because integrations touch many surfaces — missing one creates a broken experience.
+
+### On Create (New Integration)
+
+| # | Touchpoint | File(s) | Action |
+|---|-----------|---------|--------|
+| 1 | **SDK Registry YAML** | `config/sdk_registry.yml` | Add entry with all fields (key, name, display_name, icon, category, sort_order, status, code snippets) |
+| 2 | **SDK Category** | `app/constants/sdk_categories.rb` | Add new category constant if needed (e.g. `TAG_MANAGER`). Update `ALL` array. |
+| 3 | **SDK Registry Model** | `app/models/sdk_registry.rb` | Add predicate method if new category (e.g. `tag_manager?`) |
+| 4 | **Homepage Logo** | `app/views/pages/home/_sdks.html.erb` | Automatic — renders from `SdkRegistry.for_homepage`. Add SVG icon to assets. |
+| 5 | **Icon/Logo Asset** | `app/assets/images/sdks/` or icon helper | Add SVG icon. Ensure `sdk_icon_for` helper handles the new icon key. |
+| 6 | **Onboarding Flow** | `app/views/onboarding/install.html.erb` | Add install partial (`_install_{key}.html.erb`) if setup differs from server-side pattern. Update conditional rendering. |
+| 7 | **API Documentation** | `app/views/docs/`, `app/views/layouts/docs.html.erb` | Add docs tab/page. Add code examples to getting started code tabs. |
+| 8 | **SDK Registry Doc** | `lib/docs/sdk/sdk_registry.md` | Add section with status, features, version, repository link. Update compatibility matrix. |
+| 9 | **API Contract Doc** | `lib/docs/sdk/api_contract.md` | Update "SDK Feature Requirements" noting which features the new integration implements. |
+| 10 | **E2E Integration Tests** | `sdk_integration_tests/` | Add test app in `apps/`, add port to `TestConfig::SDK_PORTS`, add rake task, write scenario tests. |
+| 11 | **Spec** | `lib/specs/` | Write spec following this guide. Reference this checklist in implementation tasks. |
+
+### On Modify (Update Existing)
+
+| # | Touchpoint | Action |
+|---|-----------|--------|
+| 1 | **SDK Registry YAML** | Update version, status, code snippets, released_at |
+| 2 | **SDK Registry Doc** | Update version, features list, changelog notes |
+| 3 | **API Contract Doc** | Update if API requirements changed |
+| 4 | **API Documentation** | Update code examples if API usage changed |
+| 5 | **Onboarding Flow** | Update install instructions if setup steps changed |
+| 6 | **E2E Integration Tests** | Update/add tests for changed behavior |
+| 7 | **Version Compatibility Matrix** | Update in `sdk_registry.md` |
+
+### On Delete (Remove Integration)
+
+| # | Touchpoint | Action |
+|---|-----------|--------|
+| 1 | **SDK Registry YAML** | Remove entry (or set `status: deprecated`) |
+| 2 | **Homepage** | Automatic — removed from grid when entry removed |
+| 3 | **Onboarding** | Remove install partial. Ensure onboarding doesn't break if accounts had this SDK selected. |
+| 4 | **API Documentation** | Remove docs tab/page. Remove from code tabs. |
+| 5 | **SDK Registry Doc** | Move to "Deprecated" section with deprecation date and migration guide |
+| 6 | **E2E Integration Tests** | Remove test app and scenario files. Remove from Rakefile. |
+
+### Quick Validation
+
+After any integration change, verify:
+
+```bash
+# All tests pass
+bin/rails test
+
+# SDK registry loads without errors
+bin/rails runner "pp SdkRegistry.all.map(&:key)"
+
+# Homepage renders
+curl -s http://localhost:3000 | grep -c "sdk"
+
+# Onboarding renders for the integration
+# (manual: visit /onboarding/setup, select the integration, verify install page)
+
+# E2E tests pass (if test app exists)
+cd sdk_integration_tests && rake sdk:{key}
+```

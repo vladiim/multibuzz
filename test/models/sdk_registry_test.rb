@@ -137,4 +137,55 @@ class SdkRegistryTest < ActiveSupport::TestCase
     assert_nil sdk.init_code
     assert_nil sdk.event_code
   end
+
+  # Tag manager tests
+  test ".tag_manager returns only tag_manager SDKs" do
+    sdks = SdkRegistry.tag_manager
+
+    assert sdks.any?
+    assert sdks.all?(&:tag_manager?)
+  end
+
+  test "Sdk#tag_manager? returns true for tag_manager category" do
+    sdk = SdkRegistry.find(:sgtm)
+
+    assert sdk.tag_manager?
+    assert_not sdk.server_side?
+    assert_not sdk.platform?
+    assert_not sdk.api?
+  end
+
+  test ".find returns sGTM SDK by key" do
+    sdk = SdkRegistry.find(:sgtm)
+
+    assert_equal "sgtm", sdk.key
+    assert_equal "Google Tag Manager", sdk.name
+    assert_equal "Server-Side GTM", sdk.display_name
+    assert_equal "tag_manager", sdk.category
+  end
+
+  test "sGTM has nil code snippets" do
+    sdk = SdkRegistry.find(:sgtm)
+
+    assert_nil sdk.init_code
+    assert_nil sdk.event_code
+    assert_nil sdk.conversion_code
+  end
+
+  # custom_install? tests
+  test "Sdk#custom_install? returns true for platform SDKs" do
+    assert SdkRegistry.find(:shopify).custom_install?
+  end
+
+  test "Sdk#custom_install? returns true for tag_manager SDKs" do
+    assert SdkRegistry.find(:sgtm).custom_install?
+  end
+
+  test "Sdk#custom_install? returns false for server_side SDKs" do
+    assert_not SdkRegistry.find(:ruby).custom_install?
+  end
+
+  test "Sdk#custom_install? returns false for api SDKs" do
+    assert_not SdkRegistry.find(:rest_api).custom_install?
+  end
 end

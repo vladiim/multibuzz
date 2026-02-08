@@ -255,6 +255,28 @@ nodejs:
     app.use(mbuzz.middleware());
   verification_command: "mbuzz.event('test', { url: 'https://test.com' });"
 
+sgtm:
+  key: sgtm
+  name: Google Tag Manager
+  display_name: Server-Side GTM
+  icon: gtm
+  package_name: null
+  package_manager: GTM Community Template Gallery
+  package_url: null
+  github_url: https://github.com/mbuzzco/mbuzz-sgtm
+  docs_url: /docs/integrations-sgtm
+  status: live
+  released_at: null
+  category: tag_manager
+  sort_order: 5
+  install_command: null
+  init_code: null
+  event_code: null
+  conversion_code: null
+  identify_code: null
+  middleware_code: null
+  verification_command: null
+
 shopify:
   key: shopify
   name: Shopify
@@ -269,50 +291,6 @@ shopify:
   released_at: '2025-12-19'
   category: platform
   sort_order: 6
-  install_command: null
-  init_code: null
-  event_code: null
-  conversion_code: null
-  identify_code: null
-  middleware_code: null
-  verification_command: null
-
-magento:
-  key: magento
-  name: Magento
-  display_name: Magento / Adobe Commerce
-  icon: magento
-  package_name: null
-  package_manager: Magento Marketplace
-  package_url: null
-  github_url: null
-  docs_url: /docs/platforms/magento
-  status: coming_soon
-  released_at: null
-  category: platform
-  sort_order: 7
-  install_command: null
-  init_code: null
-  event_code: null
-  conversion_code: null
-  identify_code: null
-  middleware_code: null
-  verification_command: null
-
-woocommerce:
-  key: woocommerce
-  name: WooCommerce
-  display_name: WooCommerce
-  icon: woocommerce
-  package_name: null
-  package_manager: WordPress Plugin
-  package_url: null
-  github_url: null
-  docs_url: /docs/platforms/woocommerce
-  status: coming_soon
-  released_at: null
-  category: platform
-  sort_order: 8
   install_command: null
   init_code: null
   event_code: null

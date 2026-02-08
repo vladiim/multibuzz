@@ -31,6 +31,14 @@ class SdkRegistry
       category == SdkCategories::API
     end
 
+    def tag_manager?
+      category == SdkCategories::TAG_MANAGER
+    end
+
+    def custom_install?
+      !(server_side? || api?)
+    end
+
     def status_badge
       SdkStatuses::BADGES[status]
     end
@@ -64,6 +72,10 @@ class SdkRegistry
 
     def api
       all.select(&:api?)
+    end
+
+    def tag_manager
+      all.select(&:tag_manager?)
     end
 
     def for_onboarding
