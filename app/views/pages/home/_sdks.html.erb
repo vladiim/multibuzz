@@ -1,13 +1,13 @@
 <section id="sdks" class="py-20 px-6 bg-gray-50">
   <div class="max-w-4xl mx-auto text-center">
-    <h2 class="text-3xl font-bold text-gray-900 mb-4 scroll-animate" data-controller="scroll-reveal">Plug & Play SDKs</h2>
-    <p class="text-lg text-gray-600 mb-12 scroll-animate" data-controller="scroll-reveal">
+    <h2 class="text-3xl font-bold text-gray-900 mb-4 scroll-animate" data-controller="scroll-reveal" style="transition-delay: 0ms">Plug & Play SDKs</h2>
+    <p class="text-lg text-gray-600 mb-12 scroll-animate" data-controller="scroll-reveal" style="transition-delay: 100ms">
       Server-side integration in minutes. No client-side scripts to block.
     </p>
 
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-      <% SdkRegistry.for_homepage.each do |sdk| %>
-        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm scroll-animate" data-controller="scroll-reveal">
+    <div class="flex flex-wrap justify-center gap-6">
+      <% SdkRegistry.for_homepage.each_with_index do |sdk, i| %>
+        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm scroll-animate w-[calc(50%-0.75rem)] md:w-[calc(25%-1.125rem)]" data-controller="scroll-reveal" style="transition-delay: <%= 200 + (i * 100) %>ms">
           <div class="w-12 h-12 mx-auto mb-4 flex items-center justify-center">
             <%= sdk_icon_for(sdk) %>
           </div>

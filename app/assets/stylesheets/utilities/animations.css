@@ -86,6 +86,10 @@
 .scroll-animate:nth-child(4) { transition-delay: 300ms; }
 .scroll-animate:nth-child(5) { transition-delay: 400ms; }
 .scroll-animate:nth-child(6) { transition-delay: 500ms; }
+.scroll-animate:nth-child(7) { transition-delay: 600ms; }
+.scroll-animate:nth-child(8) { transition-delay: 700ms; }
+.scroll-animate:nth-child(9) { transition-delay: 800ms; }
+.scroll-animate:nth-child(10) { transition-delay: 900ms; }
 
 /* Parallax effect (subtle movement on scroll) */
 .parallax-slow {
