@@ -12,7 +12,15 @@ module Dashboard
     private
 
     def csv_data
-      @csv_data ||= CsvExportService.new(current_account, filter_params).call
+      @csv_data ||= CsvExportService.new(current_account, export_params).call
+    end
+
+    def export_params
+      filter_params.merge(
+        models: current_account.attribution_models.active,
+        channels: Channels::ALL,
+        conversion_filters: []
+      )
     end
   end
 end
