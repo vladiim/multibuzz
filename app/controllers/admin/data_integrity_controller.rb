@@ -15,7 +15,10 @@ module Admin
     private
 
     def account_health(account)
-      latest = account.data_integrity_checks.recent.worst_first.first
+      latest = account.data_integrity_checks
+        .where("created_at >= ?", 24.hours.ago)
+        .worst_first
+        .first
       {
         account: account,
         status: latest&.status || "unknown",
