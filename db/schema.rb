@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_09_064816) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_10_042959) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   # enable_extension "timescaledb" — excluded for test env compatibility
@@ -200,6 +200,20 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_09_064816) do
     t.index ["account_id"], name: "index_conversion_property_keys_on_account_id"
   end
 
+  create_table "data_integrity_checks", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "check_name", null: false
+    t.string "status", null: false
+    t.float "value", null: false
+    t.float "warning_threshold", null: false
+    t.float "critical_threshold", null: false
+    t.jsonb "details", default: {}
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "check_name", "created_at"], name: "idx_integrity_checks_account_check_time"
+    t.index ["account_id"], name: "index_data_integrity_checks_on_account_id"
+  end
+
   create_table "conversions", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.bigint "visitor_id", null: false
@@ -229,6 +243,20 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_09_064816) do
     t.index ["is_test"], name: "index_conversions_on_is_test"
     t.index ["visitor_id", "converted_at"], name: "index_conversions_on_visitor_id_and_converted_at"
     t.index ["visitor_id"], name: "index_conversions_on_visitor_id"
+  end
+
+  create_table "data_integrity_checks", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "check_name", null: false
+    t.string "status", null: false
+    t.float "value", null: false
+    t.float "warning_threshold", null: false
+    t.float "critical_threshold", null: false
+    t.jsonb "details", default: {}
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "check_name", "created_at"], name: "idx_integrity_checks_account_check_time"
+    t.index ["account_id"], name: "index_data_integrity_checks_on_account_id"
   end
 
   create_table "events", primary_key: ["id", "occurred_at"], force: :cascade do |t|
@@ -421,6 +449,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_09_064816) do
   add_foreign_key "conversions", "accounts"
   add_foreign_key "conversions", "identities"
   add_foreign_key "conversions", "visitors"
+  add_foreign_key "data_integrity_checks", "accounts"
   add_foreign_key "events", "accounts"
   add_foreign_key "events", "visitors"
   add_foreign_key "identities", "accounts"
@@ -430,9 +459,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_09_064816) do
   add_foreign_key "sessions", "visitors"
   add_foreign_key "visitors", "accounts"
   add_foreign_key "visitors", "identities"
-  # TimescaleDB features excluded from schema.rb (test env incompatible).
-  # Production uses db:migrate which creates these via guarded migrations.
-  # Excluded: create_hypertable (events, sessions), compression policies,
-  #           continuous aggregates (channel_attribution_daily, source_attribution_daily)
 
+  # TimescaleDB hypertables and continuous aggregates excluded from schema.rb
+  # for test env compatibility. Production uses db:migrate which runs these.
+  # See: create_hypertable for events (occurred_at) and sessions (started_at)
+  # See: channel_attribution_daily, source_attribution_daily continuous aggregates
 end

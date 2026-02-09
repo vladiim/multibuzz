@@ -2,8 +2,8 @@
 
 **Date:** 2026-02-09
 **Priority:** P1
-**Status:** Draft
-**Branch:** TBD (after `fix/session-continuity`)
+**Status:** In Progress
+**Branch:** `feature/e1s4-content`
 
 ---
 
@@ -62,8 +62,7 @@ Admin::DataIntegrityController
 | **Self-Referral Rate** | % of "referral" sessions where referrer = page_host (7d) | > 15% | > 40% |
 | **Attribution Mismatch** | % of conversions where conv_channel != landing_channel (7d) | > 25% | > 50% |
 | **Sessions Per Converter** | Avg sessions for visitors with conversions (7d) | > 5 | > 15 |
-| **Event Volume Drop** | % decrease vs previous equivalent period | > 30% drop | > 60% drop |
-| **Event Volume Spike** | % increase vs previous equivalent period | > 200% spike | > 500% spike |
+| **Event Volume** | % change vs previous equivalent period (bi-directional) | > 30% drop OR > 200% spike | > 60% drop OR > 500% spike |
 | **Fingerprint Instability** | % of visitors with 2+ distinct fingerprints in a single day (7d) | > 10% | > 25% |
 | **Missing Fingerprint Rate** | % of sessions with nil device_fingerprint (24h) | > 5% | > 20% |
 | **Extreme Session Visitors** | Visitors with > 50 sessions in 30 days | > 1% of visitors | > 5% of visitors |
@@ -100,7 +99,9 @@ Derived from the worst check result:
 | `app/services/data_integrity/checks/missing_fingerprint_rate.rb` | Sessions without device fingerprint |
 | `app/services/data_integrity/checks/extreme_session_visitors.rb` | Visitors with 50+ sessions in 30 days |
 | `app/jobs/data_integrity/surveillance_job.rb` | Scheduled job (thin wrapper) |
-| `app/controllers/admin/data_integrity_controller.rb` | Admin dashboard |
+| `app/jobs/data_integrity/surveillance_scheduler_job.rb` | Enqueues one SurveillanceJob per active account |
+| `app/jobs/data_integrity/cleanup_job.rb` | Purges check results older than 30 days |
+| `app/controllers/admin/data_integrity_controller.rb` | Admin dashboard (inherits `Admin::BaseController`) |
 | `app/views/admin/data_integrity/index.html.erb` | Account list with health status |
 | `app/views/admin/data_integrity/show.html.erb` | Account detail with check history |
 
@@ -224,11 +225,15 @@ module DataIntegrity
 end
 ```
 
+**Note on ghost definition:** The ghost check is intentionally narrow — sessions with 0 events AND nil referrer AND empty UTM AND empty click_ids. Self-referral sessions are caught separately by the `SelfReferralRate` check. This avoids double-counting.
+
 ### CheckRunner (Orchestrator)
+
+Inherits `ApplicationService` — persists to DB, can fail.
 
 ```ruby
 module DataIntegrity
-  class CheckRunner
+  class CheckRunner < ApplicationService
     CHECKS = [
       Checks::GhostSessionRate,
       Checks::SessionInflation,
@@ -246,15 +251,15 @@ module DataIntegrity
       @account = account
     end
 
-    def call
-      results = CHECKS.map { |check_class| check_class.new(account).call }
-      persist_results(results)
-      results
-    end
-
     private
 
     attr_reader :account
+
+    def run
+      results = CHECKS.map { |check_class| check_class.new(account).call }
+      persist_results(results)
+      success_result(results: results)
+    end
 
     def persist_results(results)
       results.each do |result|
@@ -290,12 +295,21 @@ end
 Scheduled via Solid Queue recurring config in `config/recurring.yml`:
 
 ```yaml
-data_integrity_surveillance:
-  class: DataIntegrity::SurveillanceSchedulerJob
-  schedule: every 6 hours
+production:
+  # ... existing jobs ...
+
+  data_integrity_surveillance:
+    class: DataIntegrity::SurveillanceSchedulerJob
+    schedule: every 6 hours
+
+  data_integrity_cleanup:
+    class: DataIntegrity::CleanupJob
+    schedule: at 3am every day
 ```
 
 The scheduler job enqueues one `SurveillanceJob` per active account.
+
+**Note:** `Account` model needs `has_many :data_integrity_checks, dependent: :destroy` in its relationships concern.
 
 ---
 
@@ -367,24 +381,24 @@ Each check links to the relevant diagnostic query from the data integrity runboo
 
 ### Phase 1: Data Model + Base Infrastructure
 
-- [ ] **1.1** Create migration for `data_integrity_checks` table
-- [ ] **1.2** Create `DataIntegrityCheck` model with validations
-- [ ] **1.3** Create `DataIntegrity::Checks::BaseCheck` base class
-- [ ] **1.4** Create `DataIntegrity::CheckRunner` orchestrator
-- [ ] **1.5** Write tests for BaseCheck and CheckRunner
+- [x] **1.1** Create migration for `data_integrity_checks` table
+- [x] **1.2** Create `DataIntegrityCheck` model with validations
+- [x] **1.3** Create `DataIntegrity::Checks::BaseCheck` base class
+- [x] **1.4** Create `DataIntegrity::CheckRunner` orchestrator
+- [x] **1.5** Write tests for BaseCheck and CheckRunner
 
 ### Phase 2: Individual Checks
 
-- [ ] **2.1** `GhostSessionRate` check + tests
-- [ ] **2.2** `SessionInflation` check + tests
-- [ ] **2.3** `VisitorInflation` check + tests
-- [ ] **2.4** `SelfReferralRate` check + tests
-- [ ] **2.5** `AttributionMismatch` check + tests
-- [ ] **2.6** `SessionsPerConverter` check + tests
-- [ ] **2.7** `EventVolume` check + tests
-- [ ] **2.8** `FingerprintInstability` check + tests
-- [ ] **2.9** `MissingFingerprintRate` check + tests
-- [ ] **2.10** `ExtremeSessionVisitors` check + tests
+- [x] **2.1** `GhostSessionRate` check + tests (7 tests)
+- [x] **2.2** `SessionInflation` check + tests (7 tests)
+- [x] **2.3** `VisitorInflation` check + tests (7 tests)
+- [x] **2.4** `SelfReferralRate` check + tests (7 tests)
+- [x] **2.5** `AttributionMismatch` check + tests (6 tests)
+- [x] **2.6** `SessionsPerConverter` check + tests (6 tests)
+- [x] **2.7** `EventVolume` check + tests (9 tests, bi-directional)
+- [x] **2.8** `FingerprintInstability` check + tests (6 tests)
+- [x] **2.9** `MissingFingerprintRate` check + tests (6 tests)
+- [x] **2.10** `ExtremeSessionVisitors` check + tests (6 tests)
 
 ### Phase 3: Scheduled Job
 
@@ -413,6 +427,14 @@ Each check links to the relevant diagnostic query from the data integrity runboo
 | Ghost check returns warning at 25% | same | Between warning and critical |
 | Ghost check returns critical at 60% | same | Above critical threshold |
 | Ghost check returns healthy with 0 sessions | same | Division by zero handled |
+| Session inflation returns healthy at 1.2x | `test/services/data_integrity/checks/session_inflation_test.rb` | Below warning threshold |
+| Session inflation returns critical at 6x | same | Above critical threshold |
+| Visitor inflation returns healthy at 1.1x | `test/services/data_integrity/checks/visitor_inflation_test.rb` | Below warning threshold |
+| Visitor inflation returns critical at 4x | same | Above critical threshold |
+| Self-referral returns healthy at 5% | `test/services/data_integrity/checks/self_referral_rate_test.rb` | Below warning threshold |
+| Self-referral returns critical at 50% | same | Above critical threshold |
+| Sessions per converter returns healthy at 3 | `test/services/data_integrity/checks/sessions_per_converter_test.rb` | Below warning threshold |
+| Sessions per converter returns critical at 20 | same | Above critical threshold |
 | CheckRunner runs all checks | `test/services/data_integrity/check_runner_test.rb` | All checks executed and persisted |
 | CheckRunner persists results | same | Records created in DB |
 | Attribution mismatch compares sessions | `test/services/data_integrity/checks/attribution_mismatch_test.rb` | Conversion vs landing session comparison |
