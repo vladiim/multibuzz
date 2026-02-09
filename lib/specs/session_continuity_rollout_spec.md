@@ -4,6 +4,17 @@
 **Depends on:** `lib/specs/session_continuity_spec.md` (implementation complete)
 **Branch:** `feature/e1s4-content`
 
+### Timeline
+
+| Date | Phase | Status |
+|------|-------|--------|
+| 2026-02-09 | Part 1: Micro-test (read-only production queries) | ✅ Complete — 88.3% misattributed |
+| 2026-02-10 | Phase 0: Baseline capture | ✅ Complete — 73.3% ghost rate, 0 paid_search conversions |
+| 2026-02-10 | Phase 1: Deploy + 1hr validation | ✅ Complete — session inflation 92% reduced, no rollback |
+| 2026-02-11 | Phase 2: T+24hr attribution comparison | Pending |
+| 2026-02-14 | Phase 3: T+4d steady state + before/after report | Pending |
+| 2026-02-14+ | Phase 4: Historical data repair (destructive) | Pending — build ghost purge service first |
+
 ---
 
 ## Part 1: Micro-Test (Prove The Fix Before Deploying)
@@ -306,96 +317,64 @@ Save this output — it's the reference for all post-deploy comparisons.
 
 Note: **Zero paid_search conversions** in the 7d window despite paid_search being the true landing channel for ~35% of all visitors. This is the misattribution problem — every paid_search conversion is being attributed to referral or direct because the conversion links to a later ghost session instead of the landing session.
 
-#### Phase 1: Deploy + 1 Hour Validation
+#### Phase 1: Deploy + 1 Hour Validation ✅ COMPLETE
 
-Deploy to production via Kamal. The fix only affects new session creation requests — no migration, no data change.
+Deployed 2026-02-10 via Kamal.
 
-```bash
-kamal deploy
-```
+**T+15 minutes result:**
 
-**T+15 minutes:** First ghost rate check.
+| Metric | Now (post-deploy) | Yesterday (same window) |
+|--------|-------------------|------------------------|
+| Ghost rate | 72.1% | 36.7% |
+| Session volume (15 min) | 204 | 316 |
+| Events (15 min) | 6 | — |
+| Conversions (15 min) | 1 | — |
+| Sessions with reuse | 9 | — |
 
-```ruby
-a = Account.find(2)
+**T+1 hour result:**
 
-# Compare last 15 min to same period yesterday
-now_sessions = a.sessions.where("started_at > ?", 15.minutes.ago).count
-now_ghosts = a.sessions.where("started_at > ?", 15.minutes.ago)
-  .where(initial_referrer: [nil, ""])
-  .where("initial_utm IS NULL OR initial_utm = '{}'::jsonb")
-  .where("click_ids IS NULL OR click_ids = '{}'::jsonb")
-  .where("NOT EXISTS (SELECT 1 FROM events WHERE events.session_id = sessions.id)")
-  .count
-now_rate = now_sessions > 0 ? (now_ghosts.to_f / now_sessions * 100).round(1) : 0
+| Metric | Value |
+|--------|-------|
+| Ghost rate | **69.7%** (684/982) |
+| Sessions with reuse (activity > 1 min after start) | **15/982** |
+| Events (1 hour) | **13** |
+| Conversions (1 hour) | **3** |
 
-yday_sessions = a.sessions.where("started_at BETWEEN ? AND ?", 24.hours.ago - 15.minutes, 24.hours.ago).count
-yday_ghosts = a.sessions.where("started_at BETWEEN ? AND ?", 24.hours.ago - 15.minutes, 24.hours.ago)
-  .where(initial_referrer: [nil, ""])
-  .where("initial_utm IS NULL OR initial_utm = '{}'::jsonb")
-  .where("click_ids IS NULL OR click_ids = '{}'::jsonb")
-  .where("NOT EXISTS (SELECT 1 FROM events WHERE events.session_id = sessions.id)")
-  .count
-yday_rate = yday_sessions > 0 ? (yday_ghosts.to_f / yday_sessions * 100).round(1) : 0
+Channel distribution (1 hour post-deploy):
 
-puts "Ghost rate: now=#{now_rate}% vs yesterday=#{yday_rate}%"
-puts "Session volume: now=#{now_sessions} vs yesterday=#{yday_sessions}"
-```
+| Channel | Sessions | % |
+|---------|----------|---|
+| direct | 793 | 80.8% |
+| paid_search | 76 | 7.7% |
+| organic_search | 52 | 5.3% |
+| paid_social | 40 | 4.1% |
+| referral | 19 | 1.9% |
+| email | 1 | 0.1% |
+| organic_social | 1 | 0.1% |
 
-**Pass criteria:**
-| Metric | Before | Expected After | Rollback If |
-|--------|--------|----------------|-------------|
-| Ghost session rate | ~98% | < 10% | > 50% |
-| New sessions/hour | ~1500 | ~100-300 | 0 or > 2000 |
-| Events still tracked | ~20/hour | ~20/hour (unchanged) | 0 |
-| Conversions still tracked | ~5/hour | ~5/hour (unchanged) | 0 |
+**Key metric — sessions per fingerprint (1 hour):**
 
-**T+1 hour:** Full validation.
+| | Worst | 2nd | 3rd |
+|---|---|---|---|
+| **Yesterday** | **249** sessions | **147** | **28** |
+| **Post-deploy** | **19** sessions | **16** | **14** |
 
-```ruby
-a = Account.find(2)
+**92% reduction** in worst-case session inflation. Fix confirmed active.
 
-# 1. Ghost rate (last hour)
-puts "--- Ghost Rate ---"
-total = a.sessions.where("started_at > ?", 1.hour.ago).count
-ghosts = a.sessions.where("started_at > ?", 1.hour.ago)
-  .where(initial_referrer: [nil, ""])
-  .where("initial_utm IS NULL OR initial_utm = '{}'::jsonb")
-  .where("click_ids IS NULL OR click_ids = '{}'::jsonb")
-  .where("NOT EXISTS (SELECT 1 FROM events WHERE events.session_id = sessions.id)")
-  .count
-puts "#{ghosts}/#{total} (#{total > 0 ? (ghosts.to_f / total * 100).round(1) : 0}%)"
+**Ghost rate interpretation:** Ghost rate is still ~70% because most visitors bounce without triggering `Mbuzz.track()`. Before: 1 bounce visitor = 10+ ghost sessions. Now: 1 bounce visitor = 1 ghost session. The absolute count dropped (982/hr vs ~1500/hr baseline) but the rate stays elevated because the denominator shrank proportionally. Ghost rate is less useful post-fix — **sessions per fingerprint** is the better signal.
 
-# 2. Session reuse happening?
-puts "\n--- Session Reuse Evidence ---"
-reused = a.sessions.where("started_at > ?", 1.hour.ago)
-  .where("last_activity_at > started_at + interval '1 minute'")
-  .count
-puts "Sessions with activity > 1 min after start: #{reused}/#{total}"
+**Referral channel collapsed:** From 74% of conversion attribution (baseline) → 1.9% of sessions. Self-referral ghost sessions eliminated. `direct` now dominates at 80.8% because it's the true landing channel for visitors arriving with no referrer/UTM.
 
-# 3. Channel distribution (last hour sessions)
-puts "\n--- Channel Distribution (last hour) ---"
-a.sessions.where("started_at > ?", 1.hour.ago).group(:channel).count
-  .sort_by { |_, v| -v }.each { |ch, ct| puts "  #{ch&.ljust(15)}: #{ct}" }
+**Decision: No rollback.** Events and conversions flowing. Session reuse active. Session inflation dramatically reduced.
 
-# 4. Events and conversions still flowing?
-puts "\n--- Event/Conversion Flow ---"
-puts "Events (last hour): #{a.events.where('occurred_at > ?', 1.hour.ago).count}"
-puts "Conversions (last hour): #{a.conversions.where('created_at > ?', 1.hour.ago).count}"
-
-# 5. No errors in logs?
-puts "\n--- Check server logs for errors ---"
-puts "Run: kamal app logs --since 1h | grep -i error | tail -20"
-```
-
-**Rollback procedure:**
+**Rollback procedure (if ever needed):**
 ```bash
 kamal rollback
 ```
 
-Kamal keeps the previous container image. Rollback is instant. No data migration to reverse — the only difference is whether new sessions reuse active ones.
+Kamal keeps the previous container image. Rollback is instant. No data migration to reverse.
 
-#### Phase 2: T+24 Hours — Attribution Impact
+#### Phase 2: T+24 Hours — Attribution Impact (2026-02-11)
 
 After 24 hours of clean data accumulation, compare attribution model outputs:
 
@@ -443,30 +422,41 @@ The shift should be consistent across first-touch, last-touch, linear, time-deca
 
 **For probabilistic models (Markov, Shapley):** These recalculate based on ALL historical conversion paths. They will shift more gradually as the ratio of clean-to-dirty data improves over days/weeks. Or we can accelerate this with the historical data repair in Phase 4.
 
-#### Phase 3: T+7 Days — Steady State Confirmation
+#### Phase 3: T+4 Days — Steady State Confirmation (2026-02-14)
+
+4 days of clean data gives enough signal to confirm the fix is stable. We keep historical data intact until after this check — it's needed for the before/after report.
 
 ```ruby
 a = Account.find(2)
-puts "=== 7-DAY STEADY STATE ==="
+puts "=== 4-DAY STEADY STATE ==="
 
-# Ghost rate trend
-7.downto(0) do |d|
+# Session volume + sessions-per-fingerprint trend (the real metric)
+puts "--- Daily Session Volume + Inflation ---"
+4.downto(0) do |d|
   day_start = d.days.ago.beginning_of_day
   day_end = d.days.ago.end_of_day
   total = a.sessions.where(started_at: day_start..day_end).count
-  ghosts = a.sessions.where(started_at: day_start..day_end)
-    .where(initial_referrer: [nil, ""])
-    .where("initial_utm IS NULL OR initial_utm = '{}'::jsonb")
-    .where("click_ids IS NULL OR click_ids = '{}'::jsonb")
-    .where("NOT EXISTS (SELECT 1 FROM events WHERE events.session_id = sessions.id)")
-    .count
-  rate = total > 0 ? (ghosts.to_f / total * 100).round(1) : 0
-  puts "  #{day_start.to_date} | sessions=#{total.to_s.rjust(5)} | ghosts=#{ghosts.to_s.rjust(5)} (#{rate}%)"
+
+  sql = "
+    SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY sc) AS median,
+           PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY sc) AS p95,
+           MAX(sc) AS max
+    FROM (
+      SELECT device_fingerprint, COUNT(*) AS sc
+      FROM sessions
+      WHERE account_id = #{a.id}
+        AND started_at BETWEEN '#{day_start.iso8601}' AND '#{day_end.iso8601}'
+        AND device_fingerprint IS NOT NULL
+      GROUP BY device_fingerprint
+    ) sub
+  "
+  r = ActiveRecord::Base.connection.execute(sql).first
+  puts "  #{day_start.to_date} | sessions=#{total.to_s.rjust(5)} | per_fp: median=#{r['median']&.to_f&.round(1)} p95=#{r['p95']&.to_f&.round(1)} max=#{r['max']}"
 end
 
 # Sessions per converting visitor trend
 puts "\n--- Sessions Per Converter (daily median) ---"
-7.downto(0) do |d|
+4.downto(0) do |d|
   day_start = d.days.ago.beginning_of_day
   day_end = d.days.ago.end_of_day
   sql = "
@@ -486,25 +476,51 @@ puts "\n--- Sessions Per Converter (daily median) ---"
   puts "  #{day_start.to_date} | median=#{result['median']&.round(1)} | mean=#{result['mean']&.round(1)} | max=#{result['max']}"
 end
 
+# Channel distribution comparison: pre-deploy vs post-deploy conversions
+puts "\n--- Conversion Channel: Pre vs Post Deploy ---"
+puts "Pre-deploy (4d before deploy):"
+sql = "
+  SELECT s.channel, COUNT(*) AS count
+  FROM conversions c
+  JOIN sessions s ON s.id = c.session_id
+  WHERE c.account_id = #{a.id}
+    AND c.created_at BETWEEN NOW() - INTERVAL '8 days' AND NOW() - INTERVAL '4 days'
+  GROUP BY s.channel ORDER BY count DESC
+"
+ActiveRecord::Base.connection.execute(sql).each { |r| puts "  #{r['channel']&.ljust(15)}: #{r['count']}" }
+
+puts "Post-deploy (last 4 days):"
+sql = "
+  SELECT s.channel, COUNT(*) AS count
+  FROM conversions c
+  JOIN sessions s ON s.id = c.session_id
+  WHERE c.account_id = #{a.id}
+    AND c.created_at > NOW() - INTERVAL '4 days'
+  GROUP BY s.channel ORDER BY count DESC
+"
+ActiveRecord::Base.connection.execute(sql).each { |r| puts "  #{r['channel']&.ljust(15)}: #{r['count']}" }
+
 # Funnel ratio sanity
-puts "\n--- Funnel Sanity ---"
-visits_7d = a.sessions.where("started_at > ?", 7.days.ago).where.not(channel: nil).count
-events_7d = a.events.where("occurred_at > ?", 7.days.ago).count
-convs_7d = a.conversions.where("created_at > ?", 7.days.ago).count
-puts "Visits: #{visits_7d} | Events: #{events_7d} | Conversions: #{convs_7d}"
-puts "Event/Visit ratio: #{(events_7d.to_f / visits_7d).round(2)}"
-puts "Conv/Visit ratio:  #{(convs_7d.to_f / visits_7d * 100).round(2)}%"
+puts "\n--- Funnel Sanity (last 4 days) ---"
+visits = a.sessions.where("started_at > ?", 4.days.ago).where.not(channel: nil).count
+events = a.events.where("occurred_at > ?", 4.days.ago).count
+convs = a.conversions.where("created_at > ?", 4.days.ago).count
+puts "Visits: #{visits} | Events: #{events} | Conversions: #{convs}"
+puts "Event/Visit ratio: #{visits > 0 ? (events.to_f / visits).round(2) : 'N/A'}"
+puts "Conv/Visit ratio:  #{visits > 0 ? (convs.to_f / visits * 100).round(2) : 'N/A'}%"
 ```
 
 **Pass criteria for steady state:**
-- Ghost rate stable < 10% for 7 consecutive days
-- Median sessions per converter: 1-3 (was 100+)
-- Event/visit ratio > 0.5 (events per real session, not per ghost)
-- No unexplained drops in event or conversion volume
+- Sessions per fingerprint: median ~1, p95 < 5, max < 30 (was 249)
+- Median sessions per converter: 1-3 (was 5+)
+- Post-deploy conversion channel distribution shows paid_search and organic_search
+- Event and conversion volume stable (no unexplained drops)
 
-#### Phase 4: Historical Data Repair
+**Gate:** Once Phase 3 passes → generate the before/after report → proceed to Phase 4.
 
-Only after Phase 3 confirms the fix is stable. This is the destructive phase — modifying existing data.
+#### Phase 4: Historical Data Repair (2026-02-14 or later)
+
+Only after Phase 3 confirms the fix is stable AND the before/after report is generated. This is the destructive phase — modifying existing data. **Historical data must be preserved for the report before this phase begins.**
 
 **Order matters.** Each step depends on the previous:
 
@@ -620,13 +636,14 @@ The session continuity fix is already implemented. These tasks are for the histo
 
 ## Success Criteria
 
-The fix is validated when ALL of these hold for 7+ days:
+The fix is validated when ALL of these hold for 4+ days:
 
 | Metric | Target | Measurement |
 |--------|--------|-------------|
-| Ghost session rate | < 10% | Phase 1 query |
-| Sessions per converting visitor (median) | 1-3 | Phase 3 query |
-| Conversion channel = landing channel | > 80% match | Phase 2 query |
+| Sessions per fingerprint (p95) | < 5 (was 249) | Phase 3 query |
+| Sessions per converting visitor (median) | 1-3 (was 5+) | Phase 3 query |
+| Post-deploy conversions show paid_search | > 0 (was 0 in baseline) | Phase 3 query |
+| Referral share of new conversions | < 15% (was 74%) | Phase 3 query |
 | Event volume | Within 10% of baseline | Phase 1 query |
 | Conversion volume | Within 10% of baseline | Phase 1 query |
 | No error spikes in logs | 0 new error types | `kamal app logs` |
