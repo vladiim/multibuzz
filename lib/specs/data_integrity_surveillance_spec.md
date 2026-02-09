@@ -13,6 +13,17 @@ We've been blindsided by data quality issues multiple times (see incidents: `202
 
 This spec adds automated data health checks per account, run on a schedule, surfaced on an admin dashboard with warning/critical severity. The goal: never be surprised by data rot again.
 
+### Production Evidence (2026-02-09, Account 2)
+
+These thresholds and checks are calibrated from real production data:
+- **Ghost session rate**: 98.6% (all 48 hours sampled)
+- **Attribution mismatch**: 88.3% of conversions (1,355/1,534 in 30 days)
+- **Session inflation**: 1 visitor had 1,259 sessions over 42 days
+- **Fingerprint instability**: Worst-case visitor had 434 distinct fingerprints + 348 nil-fingerprint sessions
+- **Channel shift**: 956 conversions misattributed as referral/direct that should be paid_search/organic_search
+
+If this surveillance system had existed, every one of these would have triggered **critical** alerts within the first 6-hour check window.
+
 ---
 
 ## Current State
@@ -53,6 +64,9 @@ Admin::DataIntegrityController
 | **Sessions Per Converter** | Avg sessions for visitors with conversions (7d) | > 5 | > 15 |
 | **Event Volume Drop** | % decrease vs previous equivalent period | > 30% drop | > 60% drop |
 | **Event Volume Spike** | % increase vs previous equivalent period | > 200% spike | > 500% spike |
+| **Fingerprint Instability** | % of visitors with 2+ distinct fingerprints in a single day (7d) | > 10% | > 25% |
+| **Missing Fingerprint Rate** | % of sessions with nil device_fingerprint (24h) | > 5% | > 20% |
+| **Extreme Session Visitors** | Visitors with > 50 sessions in 30 days | > 1% of visitors | > 5% of visitors |
 
 ### Health Status Per Account
 
@@ -82,6 +96,9 @@ Derived from the worst check result:
 | `app/services/data_integrity/checks/attribution_mismatch.rb` | Conversion attribution check |
 | `app/services/data_integrity/checks/sessions_per_converter.rb` | Session count per converter |
 | `app/services/data_integrity/checks/event_volume.rb` | Volume anomaly detection |
+| `app/services/data_integrity/checks/fingerprint_instability.rb` | Visitors with multiple fingerprints per day |
+| `app/services/data_integrity/checks/missing_fingerprint_rate.rb` | Sessions without device fingerprint |
+| `app/services/data_integrity/checks/extreme_session_visitors.rb` | Visitors with 50+ sessions in 30 days |
 | `app/jobs/data_integrity/surveillance_job.rb` | Scheduled job (thin wrapper) |
 | `app/controllers/admin/data_integrity_controller.rb` | Admin dashboard |
 | `app/views/admin/data_integrity/index.html.erb` | Account list with health status |
@@ -219,7 +236,10 @@ module DataIntegrity
       Checks::SelfReferralRate,
       Checks::AttributionMismatch,
       Checks::SessionsPerConverter,
-      Checks::EventVolume
+      Checks::EventVolume,
+      Checks::FingerprintInstability,
+      Checks::MissingFingerprintRate,
+      Checks::ExtremeSessionVisitors
     ].freeze
 
     def initialize(account)
@@ -310,8 +330,11 @@ All checks for a single account with current values and sparkline history:
 |-------|--------|---------|-----------------|------------|
 | Ghost Session Rate | Critical | 98.6% | 20% / 50% | [sparkline] |
 | Session Inflation | Critical | 37x | 2x / 5x | [sparkline] |
-| Attribution Mismatch | Critical | 86% | 25% / 50% | [sparkline] |
+| Attribution Mismatch | Critical | 88.3% | 25% / 50% | [sparkline] |
 | Self-Referral Rate | Critical | 72% | 15% / 40% | [sparkline] |
+| Fingerprint Instability | Critical | 34% | 10% / 25% | [sparkline] |
+| Missing Fingerprint Rate | Critical | 27.6% | 5% / 20% | [sparkline] |
+| Extreme Session Visitors | Critical | 8.2% | 1% / 5% | [sparkline] |
 | Event Volume | Healthy | +5% | -30% / -60% | [sparkline] |
 
 Each check links to the relevant diagnostic query from the data integrity runbook.
@@ -334,6 +357,9 @@ Each check links to the relevant diagnostic query from the data integrity runboo
 | 10 | Inactive account | No sessions in 30 days | Skip surveillance (no job enqueued) |
 | 11 | Multiple warnings | Several checks at warning | Account status = warning (worst wins) |
 | 12 | Mixed warning+critical | Some warning, some critical | Account status = critical (worst wins) |
+| 13 | Fingerprint instability | Visitor IP/UA changing mid-session (mobile networks, proxies) | fingerprint_instability → warning/critical |
+| 14 | Missing fingerprints | SDK not sending IP/UA, old SDK version, or proxy stripping headers | missing_fingerprint_rate → warning/critical |
+| 15 | Suspicious dedup merge | Visitor with 50+ distinct fingerprints — likely incorrect merge of multiple real visitors | extreme_session_visitors → investigate dedup logic |
 
 ---
 
@@ -356,6 +382,9 @@ Each check links to the relevant diagnostic query from the data integrity runboo
 - [ ] **2.5** `AttributionMismatch` check + tests
 - [ ] **2.6** `SessionsPerConverter` check + tests
 - [ ] **2.7** `EventVolume` check + tests
+- [ ] **2.8** `FingerprintInstability` check + tests
+- [ ] **2.9** `MissingFingerprintRate` check + tests
+- [ ] **2.10** `ExtremeSessionVisitors` check + tests
 
 ### Phase 3: Scheduled Job
 
@@ -389,6 +418,11 @@ Each check links to the relevant diagnostic query from the data integrity runboo
 | Attribution mismatch compares sessions | `test/services/data_integrity/checks/attribution_mismatch_test.rb` | Conversion vs landing session comparison |
 | Event volume detects drop | `test/services/data_integrity/checks/event_volume_test.rb` | Period-over-period comparison |
 | Event volume detects spike | same | Spike detection |
+| Fingerprint instability detects multi-fp visitors | `test/services/data_integrity/checks/fingerprint_instability_test.rb` | Visitors with 2+ fingerprints per day |
+| Fingerprint instability healthy when stable | same | All visitors have 1 fingerprint |
+| Missing fingerprint detects nil fp sessions | `test/services/data_integrity/checks/missing_fingerprint_rate_test.rb` | Sessions without device_fingerprint |
+| Extreme session visitors detects outliers | `test/services/data_integrity/checks/extreme_session_visitors_test.rb` | Visitors with 50+ sessions flagged |
+| Extreme session visitors healthy when normal | same | All visitors have < 50 sessions |
 
 ### Controller Tests
 

@@ -10,6 +10,10 @@
 
 Before deploying a single line of code, we simulate the fix against live data to prove the impact is what we expect. This is a read-only exercise using production console queries.
 
+### Production Micro-Test Results (2026-02-09, Account 2)
+
+> **Bottom line:** 88.3% of conversions are misattributed. The biggest shift is `referral → paid_search` (540 conversions) and `referral → organic_search` (416). Session continuity will prevent new ghost sessions, but historical data repair (Phase 4) is essential.
+
 ### 1.1 Pick A Converting Visitor With The Bug
 
 Find a visitor who has a conversion attributed to "referral" where their first session was actually from search:
@@ -39,7 +43,7 @@ candidate = ActiveRecord::Base.connection.execute(sql).first
 puts candidate.inspect
 ```
 
-**Expected:** A visitor with 100+ sessions where the conversion session is "referral" but the landing session is "paid_search" or "organic_search".
+**Result:** `conv_id=2879`, visitor with 6 sessions. Conversion channel = `referral`, landing channel = `paid_search` with Google UTM (`utm_medium=cpc, utm_source=google`).
 
 ### 1.2 Map The Visitor's Full Session Timeline
 
@@ -56,10 +60,9 @@ sessions.each_with_index do |s, i|
 end
 ```
 
-**What to look for:**
-- Session 1 has the real traffic source (paid_search with Google UTM)
-- Sessions 2-N are ghost sessions created seconds apart, most with self-referral channel
-- The conversion session is somewhere deep in the list, not session 1
+**Result:** 6 sessions for this visitor. Key finding: **fingerprint switching** — sessions 2-3 had fingerprint `e0b4f44c` but session 4 switched to `9ab3a578`. This means session continuity wouldn't have prevented this specific misattribution because the fingerprint changed mid-visit (likely mobile network switch or proxy).
+
+**Implication:** Session continuity fixes the common case (same fingerprint, rapid-fire ghost sessions), but fingerprint instability creates a long tail of cases it can't fix. The `FingerprintInstability` surveillance check was added to catch this pattern.
 
 ### 1.3 Simulate The Fix: Which Sessions Would Survive?
 
@@ -114,6 +117,8 @@ end
 ```
 
 **Expected:** 90%+ reduction. Surviving sessions should be the landing session + any with genuine new traffic sources (e.g., email click, new Google ad).
+
+**Note:** We tested a worst-case visitor (`conv_id=3157`): **1,259 sessions** over 42 days, **434 distinct fingerprints**, **348 nil-fingerprint sessions**. Channel distribution: 728 direct, 223 paid_search, 131 organic_search, 59 paid_social, 55 referral, 48 organic_social, 11 email, 4 other. This is likely a multi-location business (staff accessing from different networks) or an incorrect dedup merge. The `ExtremeSessionVisitors` surveillance check was added to flag these.
 
 ### 1.4 Simulate Reattribution
 
@@ -193,10 +198,27 @@ ActiveRecord::Base.connection.execute(sql).each do |r|
 end
 ```
 
-**Expected:**
-- 60-80% of conversions are misattributed
-- Biggest shift: `referral → paid_search` and `referral → organic_search`
-- This is the "before vs after" proof for the client
+**Result (2026-02-09):**
+- Total conversions (30d): **1,534**
+- Misattributed (conv_channel != landing_channel): **1,355 (88.3%)**
+- Channel shift:
+
+| From | To | Count |
+|------|----|-------|
+| referral | paid_search | 540 |
+| referral | organic_search | 416 |
+| direct | paid_search | 164 |
+| direct | organic_search | 139 |
+| referral | direct | 39 |
+| referral | paid_social | 20 |
+| referral | organic_social | 14 |
+| direct | organic_social | 9 |
+| direct | email | 5 |
+| referral | email | 4 |
+| direct | paid_social | 3 |
+| organic_search | paid_search | 2 |
+
+**Key insight:** 956/1,355 (70.5%) of misattributed conversions should have been `paid_search` or `organic_search` — the channels that actually brought the visitor in. This is the core attribution corruption that session continuity fixes going forward, and historical repair fixes retroactively.
 
 ---
 
@@ -245,9 +267,16 @@ sql = "
 baseline[:sessions_per_converter] = ActiveRecord::Base.connection.execute(sql).first['median']
 
 # Channel distribution (7d conversions)
-baseline[:channel_dist] = a.conversions.joins(:session)
-  .where("conversions.created_at > ?", 7.days.ago)
-  .group("sessions.channel").count
+sql = "
+  SELECT s.channel, COUNT(*) AS count
+  FROM conversions c
+  JOIN sessions s ON s.id = c.session_id
+  WHERE c.account_id = #{a.id}
+    AND c.created_at > NOW() - INTERVAL '7 days'
+  GROUP BY s.channel
+  ORDER BY count DESC
+"
+baseline[:channel_dist] = ActiveRecord::Base.connection.execute(sql).to_a
 
 # Attribution model outputs (latest)
 a.attribution_models.active.each do |model|
@@ -262,6 +291,20 @@ puts JSON.pretty_generate(baseline)
 ```
 
 Save this output — it's the reference for all post-deploy comparisons.
+
+**Baseline captured 2026-02-10 (pre-deploy):**
+
+| Metric | Value |
+|--------|-------|
+| Ghost session rate (24h) | **73.3%** |
+| Sessions per converter (7d median) | **5.0** |
+| Channel dist — referral | **270** (73.9%) |
+| Channel dist — direct | **92** (25.2%) |
+| Channel dist — email | **2** (0.5%) |
+| Channel dist — organic_search | **1** (0.3%) |
+| Channel dist — paid_search | **0** (0.0%) |
+
+Note: **Zero paid_search conversions** in the 7d window despite paid_search being the true landing channel for ~35% of all visitors. This is the misattribution problem — every paid_search conversion is being attributed to referral or direct because the conversion links to a later ghost session instead of the landing session.
 
 #### Phase 1: Deploy + 1 Hour Validation
 
@@ -384,15 +427,17 @@ a.attribution_models.active.each do |model|
 end
 ```
 
-**Expected shifts across ALL attribution models:**
+**Expected shifts across ALL attribution models (calibrated from micro-test 1.5):**
 
-| Channel | Before (estimated) | After (expected) | Why |
-|---------|-------------------|------------------|-----|
-| referral | ~60-70% of credit | ~10-15% | Self-referral sessions eliminated |
-| paid_search | ~5-10% | ~30-40% | Conversions now link to landing session |
-| organic_search | ~5-10% | ~25-35% | Same — landing session preserved |
-| direct | ~10% | ~10-15% | Slight increase (some "referral" was actually direct) |
-| email | ~2% | ~5% | Real email clicks now survive as sessions |
+| Channel | Before (actual 30d) | After (projected) | Why |
+|---------|--------------------|--------------------|-----|
+| referral | ~67% of conversions | ~10-15% | 956 self-referral misattributions eliminated |
+| paid_search | ~8% | ~45-50% | 704 conversions shift here (540 from referral + 164 from direct) |
+| organic_search | ~6% | ~35-40% | 555 conversions shift here (416 from referral + 139 from direct) |
+| direct | ~15% | ~5-8% | Net decrease — 303 move out, 39 move in from referral |
+| paid_social | ~1% | ~2-3% | 23 conversions shift here from referral/direct |
+| organic_social | ~1% | ~2-3% | 23 conversions shift here |
+| email | ~1% | ~1-2% | 9 conversions shift here |
 
 The shift should be consistent across first-touch, last-touch, linear, time-decay, u-shaped — because the underlying session data is what changed, not the algorithm logic.
 
@@ -586,11 +631,13 @@ The fix is validated when ALL of these hold for 7+ days:
 | Conversion volume | Within 10% of baseline | Phase 1 query |
 | No error spikes in logs | 0 new error types | `kamal app logs` |
 
-After historical repair (Phase 4):
+After historical repair (Phase 4), calibrated from micro-test 1.5:
 
 | Metric | Target | Measurement |
 |--------|--------|-------------|
-| 90-day visit count | ~15-20k (was 73k) | `sessions.where.not(channel: nil).count` |
+| 90-day visit count | ~15-20k (was 73k+) | `sessions.where.not(channel: nil).count` |
 | 90-day conversion rate | ~2-3% (was ~0.5%) | `conversions.count / sessions.count` |
-| referral channel share | < 15% (was ~60%) | Attribution credit breakdown |
-| paid_search + organic_search share | > 50% (was ~15%) | Attribution credit breakdown |
+| referral channel share | < 15% (was ~67%) | Attribution credit breakdown |
+| paid_search share | ~45-50% (was ~8%) | 704 conversions shift here |
+| organic_search share | ~35-40% (was ~6%) | 555 conversions shift here |
+| Attribution mismatch rate | < 25% (was 88.3%) | Surveillance check threshold |
