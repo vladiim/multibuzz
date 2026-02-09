@@ -402,18 +402,18 @@ Each check links to the relevant diagnostic query from the data integrity runboo
 
 ### Phase 3: Scheduled Job
 
-- [ ] **3.1** Create `SurveillanceJob` (thin wrapper)
-- [ ] **3.2** Create `SurveillanceSchedulerJob` (enqueues per account)
-- [ ] **3.3** Add to `config/recurring.yml`
-- [ ] **3.4** Add cleanup job for old check results (>30 days)
+- [x] **3.1** Create `SurveillanceJob` (thin wrapper)
+- [x] **3.2** Create `SurveillanceSchedulerJob` (enqueues per account)
+- [x] **3.3** Add to `config/recurring.yml` (surveillance every 6h, cleanup at 3am daily)
+- [x] **3.4** Create `CleanupJob` — deletes checks older than 30 days
 
 ### Phase 4: Admin Dashboard
 
-- [ ] **4.1** Add routes for `admin/data_integrity`
-- [ ] **4.2** Create `Admin::DataIntegrityController` (index + show)
-- [ ] **4.3** Create index view (account list with health status)
-- [ ] **4.4** Create show view (check detail with history)
-- [ ] **4.5** Add navigation link in admin layout
+- [x] **4.1** Add routes for `admin/data_integrity`
+- [x] **4.2** Create `Admin::DataIntegrityController` (index + show)
+- [x] **4.3** Create index view (account list with health status, sorted critical-first)
+- [x] **4.4** Create show view (current checks + 7-day history with details)
+- [x] **4.5** Add navigation links in billing + submissions admin pages
 
 ---
 

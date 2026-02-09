@@ -1,0 +1,97 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="mb-4">
+    <%= link_to "← Back to Data Integrity", admin_data_integrity_index_path, class: "text-indigo-600 hover:text-indigo-900 text-sm" %>
+  </div>
+
+  <h1 class="text-2xl font-bold text-gray-900 mb-8"><%= @account.name %> — Data Integrity</h1>
+
+  <% if @current_checks.any? %>
+    <div class="bg-white shadow rounded-lg overflow-hidden mb-8" data-testid="checks-table">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h2 class="text-lg font-semibold text-gray-900">Current Checks</h2>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Check</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Warning</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Critical</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Run</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <% @current_checks.each do |check| %>
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  <%= check.check_name.humanize %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <%= render "admin/data_integrity/status_badge", status: check.status %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
+                  <%= number_with_precision(check.value, precision: 1) %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
+                  <%= number_with_precision(check.warning_threshold, precision: 1) %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
+                  <%= number_with_precision(check.critical_threshold, precision: 1) %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <%= time_ago_in_words(check.created_at) %> ago
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% else %>
+    <div class="bg-white shadow rounded-lg p-6 mb-8 text-center text-gray-500" data-testid="checks-table">
+      No checks have been run for this account yet.
+    </div>
+  <% end %>
+
+  <% if @latest_checks.any? %>
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h2 class="text-lg font-semibold text-gray-900">Check History (7 days)</h2>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Check</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Run At</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <% @latest_checks.each do |check| %>
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><%= check.check_name.humanize %></td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <%= render "admin/data_integrity/status_badge", status: check.status %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
+                  <%= number_with_precision(check.value, precision: 1) %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <%= check.created_at.strftime("%b %d %H:%M") %>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-500 font-mono">
+                  <%= check.details.map { |k, v| "#{k}: #{v}" }.join(", ") %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% end %>
+</div>

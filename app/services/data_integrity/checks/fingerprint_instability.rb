@@ -24,15 +24,19 @@ module DataIntegrity
       end
 
       def unstable_visitors
-        @unstable_visitors ||= account.sessions.production
-          .where("started_at > ?", WINDOW.ago)
-          .where.not(device_fingerprint: nil)
-          .group(:visitor_id, Arel.sql("DATE(started_at)"))
-          .having("COUNT(DISTINCT device_fingerprint) > 1")
-          .select(:visitor_id)
-          .distinct
-          .count(:visitor_id)
-          .size
+        @unstable_visitors ||= ActiveRecord::Base.connection.select_value(<<~SQL.squish)
+          SELECT COUNT(DISTINCT visitor_id)
+          FROM (
+            SELECT visitor_id
+            FROM sessions
+            WHERE account_id = #{account.id}
+              AND is_test = false
+              AND started_at > '#{WINDOW.ago.utc.iso8601}'
+              AND device_fingerprint IS NOT NULL
+            GROUP BY visitor_id, DATE(started_at)
+            HAVING COUNT(DISTINCT device_fingerprint) > 1
+          ) AS unstable
+        SQL
       end
 
       def fingerprinted_sessions

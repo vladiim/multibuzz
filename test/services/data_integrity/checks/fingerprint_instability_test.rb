@@ -9,8 +9,8 @@ module DataIntegrity
 
       test "returns healthy when all visitors have stable fingerprints" do
         v = create_visitor
-        create_session(visitor: v, fingerprint: "fp_aaa", started_at: 1.day.ago)
-        create_session(visitor: v, fingerprint: "fp_aaa", started_at: 1.day.ago + 1.hour)
+        create_session(visitor: v, fingerprint: "fp_aaa", started_at: same_day_morning)
+        create_session(visitor: v, fingerprint: "fp_aaa", started_at: same_day_afternoon)
 
         result = check.call
 
@@ -21,12 +21,12 @@ module DataIntegrity
       test "returns warning when instability rate between thresholds" do
         # 1 unstable out of 5 = 20%
         unstable = create_visitor
-        create_session(visitor: unstable, fingerprint: "fp_aaa", started_at: 1.day.ago)
-        create_session(visitor: unstable, fingerprint: "fp_bbb", started_at: 1.day.ago + 1.hour)
+        create_session(visitor: unstable, fingerprint: "fp_aaa", started_at: same_day_morning)
+        create_session(visitor: unstable, fingerprint: "fp_bbb", started_at: same_day_afternoon)
 
         4.times do
           v = create_visitor
-          create_session(visitor: v, fingerprint: "fp_#{SecureRandom.hex(4)}", started_at: 1.day.ago)
+          create_session(visitor: v, fingerprint: "fp_#{SecureRandom.hex(4)}", started_at: same_day_morning)
         end
 
         result = check.call
@@ -39,13 +39,13 @@ module DataIntegrity
         # 3 unstable out of 5 = 60%
         3.times do
           v = create_visitor
-          create_session(visitor: v, fingerprint: "fp_aaa_#{SecureRandom.hex(2)}", started_at: 1.day.ago)
-          create_session(visitor: v, fingerprint: "fp_bbb_#{SecureRandom.hex(2)}", started_at: 1.day.ago + 1.hour)
+          create_session(visitor: v, fingerprint: "fp_aaa_#{SecureRandom.hex(2)}", started_at: same_day_morning)
+          create_session(visitor: v, fingerprint: "fp_bbb_#{SecureRandom.hex(2)}", started_at: same_day_afternoon)
         end
 
         2.times do
           v = create_visitor
-          create_session(visitor: v, fingerprint: "fp_stable_#{SecureRandom.hex(4)}", started_at: 1.day.ago)
+          create_session(visitor: v, fingerprint: "fp_stable_#{SecureRandom.hex(4)}", started_at: same_day_morning)
         end
 
         result = check.call
@@ -63,8 +63,8 @@ module DataIntegrity
 
       test "only detects instability within same day" do
         v = create_visitor
-        create_session(visitor: v, fingerprint: "fp_aaa", started_at: 2.days.ago)
-        create_session(visitor: v, fingerprint: "fp_bbb", started_at: 1.day.ago)
+        create_session(visitor: v, fingerprint: "fp_aaa", started_at: 3.days.ago.middle_of_day)
+        create_session(visitor: v, fingerprint: "fp_bbb", started_at: 1.day.ago.middle_of_day)
 
         result = check.call
 
@@ -83,6 +83,10 @@ module DataIntegrity
 
       def account = @account ||= accounts(:one)
       def check = DataIntegrity::Checks::FingerprintInstability.new(account)
+
+      # Use explicit mid-day times to avoid midnight boundary issues
+      def same_day_morning = 2.days.ago.middle_of_day
+      def same_day_afternoon = 2.days.ago.middle_of_day + 4.hours
 
       def create_visitor
         account.visitors.create!(

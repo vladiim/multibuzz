@@ -1,0 +1,51 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="flex items-center justify-between mb-8">
+    <h1 class="text-2xl font-bold text-gray-900">Data Integrity</h1>
+    <nav class="flex gap-4 text-sm">
+      <%= link_to "Billing", admin_billing_path, class: "text-indigo-600 hover:text-indigo-800" %>
+      <%= link_to "Submissions", admin_submissions_path, class: "text-indigo-600 hover:text-indigo-800" %>
+    </nav>
+  </div>
+
+  <div class="bg-white shadow rounded-lg overflow-hidden" data-testid="accounts-table">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Worst Check</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Run</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <% @accounts.sort_by { |a| { "critical" => 0, "warning" => 1, "healthy" => 2, "unknown" => 3 }[a[:status]] || 4 }.each do |entry| %>
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900"><%= entry[:account].name %></div>
+                <div class="text-sm text-gray-500"><%= entry[:account].slug %></div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <%= render "admin/data_integrity/status_badge", status: entry[:status] %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <%= entry[:worst_check].to_s.humanize %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
+                <%= entry[:worst_value] ? number_with_precision(entry[:worst_value], precision: 1) : "—" %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <%= entry[:last_run] ? time_ago_in_words(entry[:last_run]) + " ago" : "Never" %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                <%= link_to "Details", admin_data_integrity_path(entry[:account]), class: "text-indigo-600 hover:text-indigo-900" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

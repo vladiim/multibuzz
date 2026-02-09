@@ -111,6 +111,7 @@ Rails.application.routes.draw do
     get "billing", to: "billing#show", as: :billing
     resources :accounts, only: [:show, :update]
     resources :submissions, only: [:index, :show]
+    resources :data_integrity, only: [:index, :show]
   end
 
   # Design mockups (admin-only, returns 404 for non-admins)
