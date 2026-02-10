@@ -55,14 +55,18 @@ class ReturningVisitTest < SdkIntegrationTest
 
     wait_for_async(2)
 
-    # Create an additional session via API for the same visitor
-    create_session_for_visitor(first_visitor_id, url: "#{sdk_app_url}/page2")
+    # Create a second session via API with an external referrer (new traffic source)
+    # Session continuity reuses sessions for internal navigation, so we need
+    # a new traffic source to force a genuinely new session
+    create_session_for_visitor(first_visitor_id,
+      url: "#{sdk_app_url}/page2",
+      referrer: "https://www.google.com/")
 
     wait_for_async(2)
 
     data = verify_test_data
 
-    # Middleware auto-created one session on visit, plus the manual one above
+    # Middleware auto-created one session on visit, plus the external-referrer one above
     assert data[:sessions].length >= 2, "Should have at least 2 sessions for same visitor"
     assert_equal first_visitor_id, data[:visitor][:visitor_id]
   end
