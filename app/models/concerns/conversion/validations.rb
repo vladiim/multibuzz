@@ -7,7 +7,7 @@ module Conversion::Validations
     validates :conversion_type, presence: true
     validates :converted_at, presence: true
     validates :revenue,
-      numericality: { greater_than: 0 },
+      numericality: { greater_than_or_equal_to: 0 },
       allow_nil: true
 
     validate :identity_required_for_acquisition

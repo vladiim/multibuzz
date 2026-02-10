@@ -20,19 +20,22 @@ module Conversions
       @inherit_acquisition = params[:inherit_acquisition] || false
       @ip = params[:ip]
       @user_agent = params[:user_agent]
+      @idempotency_key = params[:idempotency_key]
     end
 
     private
 
     attr_reader :account, :event_id, :visitor_id_param, :conversion_type, :revenue, :currency,
-      :funnel, :properties, :is_test, :user_id, :is_acquisition, :inherit_acquisition, :ip, :user_agent
+      :funnel, :properties, :is_test, :user_id, :is_acquisition, :inherit_acquisition, :ip, :user_agent,
+      :idempotency_key
 
     def run
       return validation_error if validation_error
 
+      conversion # resolve before side-effects so duplicate? is set
       update_session_activity
-      increment_usage!
-      success_result(conversion: conversion)
+      increment_usage! unless duplicate?
+      success_result(conversion: conversion, duplicate: duplicate?)
     end
 
     def update_session_activity
@@ -106,7 +109,25 @@ module Conversions
     end
 
     def conversion
-      @conversion ||= Conversion.create!(
+      @conversion ||= existing_idempotent_conversion || create_conversion
+    end
+
+    def existing_idempotent_conversion
+      return nil unless idempotency_key.present?
+
+      existing = account.conversions.find_by(idempotency_key: idempotency_key)
+      return nil unless existing
+
+      @duplicate = true
+      existing
+    end
+
+    def duplicate?
+      @duplicate || false
+    end
+
+    def create_conversion
+      Conversion.create!(
         account: account,
         visitor_id: resolved_visitor.id,
         session_id: resolved_session&.id,
@@ -120,7 +141,8 @@ module Conversions
         journey_session_ids: [],
         is_test: is_test,
         identity_id: resolved_identity&.id,
-        is_acquisition: is_acquisition
+        is_acquisition: is_acquisition,
+        idempotency_key: idempotency_key
       ).tap { |c| c.inherit_acquisition = inherit_acquisition }
     end
 
@@ -150,7 +172,7 @@ module Conversions
 
     def normalized_revenue
       return nil if revenue.nil?
-      return nil if revenue.to_f.zero?
+      return nil if revenue.to_f.negative?
 
       revenue
     rescue ArgumentError, TypeError, NoMethodError

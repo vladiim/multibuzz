@@ -10,10 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_15_090000) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_09_064816) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
-  # NOTE: timescaledb extension excluded for test environment compatibility
+  # enable_extension "timescaledb" — excluded for test env compatibility
 
   create_table "account_memberships", force: :cascade do |t|
     t.bigint "user_id", null: false
@@ -217,8 +217,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_15_090000) do
     t.string "currency", default: "USD"
     t.boolean "is_acquisition", default: false, null: false
     t.bigint "identity_id"
+    t.string "idempotency_key"
     t.index ["account_id", "converted_at"], name: "index_conversions_on_account_id_and_converted_at"
     t.index ["account_id", "funnel"], name: "index_conversions_on_account_funnel"
+    t.index ["account_id", "idempotency_key"], name: "index_conversions_on_account_idempotency_key", unique: true, where: "(idempotency_key IS NOT NULL)"
     t.index ["account_id", "identity_id", "is_acquisition"], name: "index_conversions_on_acquisition_lookup"
     t.index ["account_id"], name: "index_conversions_on_account_id"
     t.index ["conversion_type"], name: "index_conversions_on_conversion_type"
@@ -428,12 +430,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_15_090000) do
   add_foreign_key "sessions", "visitors"
   add_foreign_key "visitors", "accounts"
   add_foreign_key "visitors", "identities"
+  # TimescaleDB features excluded from schema.rb (test env incompatible).
+  # Production uses db:migrate which creates these via guarded migrations.
+  # Excluded: create_hypertable (events, sessions), compression policies,
+  #           continuous aggregates (channel_attribution_daily, source_attribution_daily)
 
-  # NOTE: TimescaleDB features excluded from schema.rb (used by test environment)
-  # Production uses db:migrate which includes:
-  # - create_hypertable for events and sessions
-  # - create_continuous_aggregate for channel_attribution_daily
-  # - create_continuous_aggregate for source_attribution_daily
-  # - compression policies
-  # See migrations: 20251119030317, 20251119030319, 20251119032705, 20251119032739
 end

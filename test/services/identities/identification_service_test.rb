@@ -55,6 +55,53 @@ module Identities
       assert_includes result[:errors], "user_id is required"
     end
 
+    # Traits merge tests
+
+    test "merges new traits with existing traits" do
+      existing = create_test_identity(external_id: "merge_user", traits: { plan: "pro", role: "admin" })
+
+      result = service(user_id: "merge_user", traits: { email: "a@b.com" }).call
+
+      assert result[:success]
+      reloaded = existing.reload.traits
+      assert_equal "pro", reloaded["plan"]
+      assert_equal "admin", reloaded["role"]
+      assert_equal "a@b.com", reloaded["email"]
+    end
+
+    test "overwrites matching trait keys on merge" do
+      existing = create_test_identity(external_id: "overwrite_user", traits: { plan: "free" })
+
+      result = service(user_id: "overwrite_user", traits: { plan: "pro" }).call
+
+      assert result[:success]
+      assert_equal "pro", existing.reload.traits["plan"]
+    end
+
+    test "preserves traits when empty traits provided" do
+      existing = create_test_identity(external_id: "empty_traits_user", traits: { plan: "pro" })
+
+      result = service(user_id: "empty_traits_user", traits: {}).call
+
+      assert result[:success]
+      assert_equal "pro", existing.reload.traits["plan"]
+    end
+
+    test "deep merges nested trait hashes" do
+      existing = create_test_identity(
+        external_id: "nested_user",
+        traits: { address: { city: "New York", state: "NY" } }
+      )
+
+      result = service(user_id: "nested_user", traits: { address: { zip: "10001" } }).call
+
+      assert result[:success]
+      address = existing.reload.traits["address"]
+      assert_equal "New York", address["city"]
+      assert_equal "NY", address["state"]
+      assert_equal "10001", address["zip"]
+    end
+
     # Retroactive attribution detection tests
 
     test "identifies conversions needing reattribution when new sessions in lookback" do

@@ -194,15 +194,22 @@ module Conversions
     # Revenue normalization tests
     # ==========================================
 
-    test "normalizes zero revenue to nil" do
+    test "preserves zero revenue" do
       result = build_service(event_id: event.prefix_id, revenue: 0).call
 
       assert result[:success]
-      assert_nil result[:conversion].revenue
+      assert_equal 0.0, result[:conversion].revenue.to_f
     end
 
-    test "normalizes string zero revenue to nil" do
+    test "preserves string zero revenue" do
       result = build_service(event_id: event.prefix_id, revenue: "0").call
+
+      assert result[:success]
+      assert_equal 0.0, result[:conversion].revenue.to_f
+    end
+
+    test "normalizes negative revenue to nil" do
+      result = build_service(event_id: event.prefix_id, revenue: -5).call
 
       assert result[:success]
       assert_nil result[:conversion].revenue
@@ -559,6 +566,65 @@ module Conversions
     end
 
     # ==========================================
+    # Idempotency key tests
+    # ==========================================
+
+    test "creates conversion with idempotency key" do
+      result = build_service(event_id: event.prefix_id, idempotency_key: "idem_new_123").call
+
+      assert result[:success]
+      assert_equal "idem_new_123", result[:conversion].idempotency_key
+      assert_equal false, result[:duplicate]
+    end
+
+    test "returns existing conversion for duplicate idempotency key" do
+      first = build_service(event_id: event.prefix_id, idempotency_key: "idem_dup_456").call
+      assert first[:success]
+
+      second = build_service(event_id: event.prefix_id, idempotency_key: "idem_dup_456").call
+      assert second[:success]
+      assert_equal true, second[:duplicate]
+      assert_equal first[:conversion].id, second[:conversion].id
+    end
+
+    test "does not increment usage for duplicate idempotency key" do
+      build_service(event_id: event.prefix_id, idempotency_key: "idem_billing_789").call
+
+      assert_no_difference -> { usage_counter.current_usage } do
+        build_service(event_id: event.prefix_id, idempotency_key: "idem_billing_789").call
+      end
+    end
+
+    test "same idempotency key in different account creates new conversion" do
+      first = build_service(event_id: event.prefix_id, idempotency_key: "idem_cross_acct").call
+      assert first[:success]
+
+      other_event = events(:three)
+      other_account = accounts(:two)
+      second = Conversions::TrackingService.new(
+        other_account,
+        {
+          event_id: other_event.prefix_id,
+          conversion_type: "signup",
+          idempotency_key: "idem_cross_acct"
+        }
+      ).call
+
+      assert second[:success]
+      assert_not_equal first[:conversion].id, second[:conversion].id
+    end
+
+    test "nil idempotency key does not trigger dedup" do
+      first = build_service(event_id: event.prefix_id, idempotency_key: nil).call
+      second = build_service(event_id: event.prefix_id, idempotency_key: nil).call
+
+      assert first[:success]
+      assert second[:success]
+      assert_not_equal first[:conversion].id, second[:conversion].id
+      assert_equal false, second[:duplicate]
+    end
+
+    # ==========================================
     # Session Activity Tracking tests
     # ==========================================
 
@@ -625,7 +691,8 @@ module Conversions
       is_acquisition: nil,
       inherit_acquisition: nil,
       ip: nil,
-      user_agent: nil
+      user_agent: nil,
+      idempotency_key: nil
     )
       Conversions::TrackingService.new(
         account,
@@ -640,7 +707,8 @@ module Conversions
           is_acquisition: is_acquisition,
           inherit_acquisition: inherit_acquisition,
           ip: ip,
-          user_agent: user_agent
+          user_agent: user_agent,
+          idempotency_key: idempotency_key
         }.compact
       )
     end

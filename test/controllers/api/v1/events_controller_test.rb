@@ -131,6 +131,16 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Account suspended", json_response["error"]
   end
 
+  test "should return 402 when account billing is blocked" do
+    account.update_column(:billing_status, Account.billing_statuses[:cancelled])
+
+    post api_v1_events_path, params: events_payload, headers: auth_headers, as: :json
+
+    assert_response :payment_required
+    assert_equal "Account cannot accept events", json_response["error"]
+    assert_equal true, json_response["billing_blocked"]
+  end
+
   test "should preserve visitor_id from SDK payload" do
     sdk_session_id = "sdk_session_#{SecureRandom.hex(16)}"
 

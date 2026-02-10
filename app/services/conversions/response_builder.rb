@@ -4,18 +4,20 @@ module Conversions
   class ResponseBuilder
     def initialize(tracking_result)
       @conversion = tracking_result[:conversion]
+      @duplicate = tracking_result[:duplicate] || false
     end
 
     def call
       {
         conversion: conversion_response,
-        attribution: attribution_response
+        attribution: attribution_response,
+        duplicate: duplicate
       }
     end
 
     private
 
-    attr_reader :conversion
+    attr_reader :conversion, :duplicate
 
     def conversion_response
       {

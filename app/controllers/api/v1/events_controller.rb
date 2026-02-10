@@ -19,11 +19,23 @@ module Api
       end
 
       def process_events
+        return render_billing_blocked unless current_account.can_ingest_events?
+
         set_cookies
         result = ingestion_result
         log_rejections(result[:rejected])
         process_identifiers
         render_accepted(result)
+      end
+
+      def render_billing_blocked
+        log_request_failure(
+          error_type: :billing_blocked,
+          error_message: "Account cannot accept events",
+          http_status: 402
+        )
+        render json: { error: "Account cannot accept events", billing_blocked: true },
+          status: :payment_required
       end
 
       def set_cookies

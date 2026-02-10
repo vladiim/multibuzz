@@ -35,7 +35,8 @@ module Identities
     end
 
     def persist_identity
-      identity.traits = traits
+      new_traits = traits.respond_to?(:to_unsafe_h) ? traits.to_unsafe_h : traits.to_h
+      identity.traits = (identity.traits || {}).deep_merge(new_traits.deep_stringify_keys)
       identity.last_identified_at = Time.current
       identity.save!
     end

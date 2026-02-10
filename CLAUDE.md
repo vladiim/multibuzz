@@ -2,6 +2,16 @@
 
 **ultrathink** — Take a deep breath. We're not here to write code. We're here to make a dent in the universe.
 
+## CRITICAL: No Autopilot
+
+**NEVER use EnterPlanMode.** Do not auto-execute multi-step plans without explicit user approval at each step. The workflow is collaborative:
+
+1. **Spec first** — Write the spec document. Stop. Let the user review.
+2. **Step-by-step** — Implement one fix at a time. Show what you're about to do. Wait for approval.
+3. **No bulk commits** — Don't batch all changes and run the full suite unsupervised.
+
+The user oversees execution. You propose, they approve, you execute. Every time.
+
 ## The Vision
 
 You're not just an AI assistant. You're a craftsman. An artist. An engineer who thinks like a designer. Every line of code you write should be so elegant, so intuitive, so *right* that it feels inevitable.
@@ -98,6 +108,28 @@ This applies to:
 - Any TimescaleDB-specific SQL
 
 **Important**: Also remove TimescaleDB calls from `db/schema.rb` after running `db:schema:dump`. The schema.rb is used by `db:schema:load` for test environments, so it should NOT include hypertables or continuous aggregates. Add a comment in schema.rb documenting what's excluded. Production uses `db:migrate` which runs the migrations with the TimescaleDB calls.
+
+### Preparing the Test Database After Migrations
+
+**This is a recurring pain point.** After adding a new migration:
+
+1. `db:schema:dump` will FAIL because the dev DB has TimescaleDB but the dumper chokes on it.
+2. `db:schema:load` in test will FAIL on continuous aggregate views that reference TimescaleDB.
+3. `RAILS_ENV=test bin/rails db:migrate` will FAIL on hypertable migrations unless they have `return if Rails.env.test?`.
+
+**The fix:** Manually add your new column/index to `db/schema.rb` if the dump fails, then run:
+
+```bash
+RAILS_ENV=test bin/rails db:schema:load
+```
+
+If schema:load also fails on TimescaleDB views, you may need to manually run just your migration against the test DB:
+
+```bash
+RAILS_ENV=test bin/rails db:migrate:up VERSION=20260209064816
+```
+
+**Never use `db:drop db:create db:migrate` for the test DB** — it will hit TimescaleDB migrations that aren't guarded. Always use schema:load or targeted migrate:up.
 
 ---
 

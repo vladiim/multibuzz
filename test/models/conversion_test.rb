@@ -44,13 +44,13 @@ class ConversionTest < ActiveSupport::TestCase
     assert conversion.valid?
   end
 
-  test "should require positive revenue when present" do
+  test "should require non-negative revenue when present" do
     conversion.revenue = 0
-    assert_not conversion.valid?
-    assert_includes conversion.errors[:revenue], "must be greater than 0"
+    assert conversion.valid?, "Zero revenue should be valid"
 
     conversion.revenue = -10
     assert_not conversion.valid?
+    assert_includes conversion.errors[:revenue], "must be greater than or equal to 0"
 
     conversion.revenue = 0.01
     assert conversion.valid?

@@ -9,7 +9,7 @@ module Api
           return render_unprocessable(tracking_result)
         end
 
-        render json: Conversions::ResponseBuilder.new(tracking_result).call, status: :created
+        render json: Conversions::ResponseBuilder.new(tracking_result).call, status: response_status
       end
 
       private
@@ -22,11 +22,15 @@ module Api
         ).call
       end
 
+      def response_status
+        @response_status ||= tracking_result[:duplicate] ? :ok : :created
+      end
+
       def conversion_params
         params.require(:conversion).permit(
           :event_id, :visitor_id, :conversion_type, :revenue, :currency,
           :user_id, :is_acquisition, :inherit_acquisition, :ip, :user_agent,
-          properties: {}
+          :idempotency_key, properties: {}
         )
       end
 

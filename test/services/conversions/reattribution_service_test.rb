@@ -44,6 +44,20 @@ module Conversions
       assert_includes result[:credits_by_model].keys, "Last Touch"
     end
 
+    test "double reattribution produces same credit count not duplicates" do
+      first_result = service.call
+      assert first_result[:success]
+
+      credits_after_first = conversion.attribution_credits.reload.count
+
+      second_result = Conversions::ReattributionService.new(conversion).call
+      assert second_result[:success]
+
+      credits_after_second = conversion.attribution_credits.reload.count
+      assert_equal credits_after_first, credits_after_second,
+        "Second reattribution should replace, not duplicate credits"
+    end
+
     private
 
     def service

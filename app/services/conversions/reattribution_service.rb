@@ -13,12 +13,20 @@ module Conversions
     def run
       return error_result(["Conversion has no identity"]) unless identity
 
-      ActiveRecord::Base.transaction do
+      with_conversion_lock do
         delete_existing_credits
         calculate_new_credits
       end
 
       success_result(credits_by_model: credits_by_model)
+    end
+
+    def with_conversion_lock
+      lock_key = conversion.id % (2**31)
+      ActiveRecord::Base.transaction do
+        ActiveRecord::Base.connection.execute("SELECT pg_advisory_xact_lock(#{lock_key})")
+        yield
+      end
     end
 
     def identity
