@@ -158,12 +158,21 @@ module Sessions
     end
 
     def create_or_update_session
+      return update_activity! if session_reused?
       return if session.persisted? && session.initial_utm.present?
 
       session.assign_attributes(session_attributes)
       session.save!
     rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid
       handle_session_race_condition
+    end
+
+    def session_reused?
+      active_visitor_session.present? && session.id == active_visitor_session.id
+    end
+
+    def update_activity!
+      session.update!(last_activity_at: started_at)
     end
 
     def handle_session_race_condition
@@ -192,6 +201,8 @@ module Sessions
 
       existing_any = recent_session_with_same_id
       return adopt_existing_session(existing_any) if existing_any
+
+      return active_visitor_session if reuse_active_session?
 
       account.sessions.new(
         session_id: session_id,
@@ -244,9 +255,58 @@ module Sessions
     end
 
     def page_host
-      @page_host ||= URI.parse(url).host
+      @page_host ||= URI.parse(url).host || host_from_referrer
+    rescue URI::InvalidURIError
+      host_from_referrer
+    end
+
+    def host_from_referrer
+      return nil unless referrer.present?
+
+      ref_url = referrer.include?("://") ? referrer : "https://#{referrer}"
+      URI.parse(ref_url).host
     rescue URI::InvalidURIError
       nil
+    end
+
+    def reuse_active_session?
+      active_visitor_session.present? && !new_traffic_source?
+    end
+
+    def active_visitor_session
+      @active_visitor_session ||= find_active_visitor_session
+    end
+
+    def find_active_visitor_session
+      return unless device_fingerprint.present?
+
+      account.sessions
+        .where(visitor_id: visitor.id)
+        .where(device_fingerprint: device_fingerprint)
+        .where(ended_at: nil)
+        .where("last_activity_at > ?", 30.minutes.ago)
+        .order(last_activity_at: :desc)
+        .first
+    end
+
+    def new_traffic_source?
+      normalized_utm.values.any?(&:present?) || click_ids.any? || external_referrer?
+    end
+
+    def external_referrer?
+      return false unless referrer.present?
+
+      referrer_host = URI.parse(referrer).host
+      return false unless referrer_host.present?
+      return false unless page_host.present?
+
+      normalize_host(referrer_host) != normalize_host(page_host)
+    rescue URI::InvalidURIError
+      false
+    end
+
+    def normalize_host(host)
+      host.to_s.downcase.sub(/^www\./, "").sub(/:\d+$/, "")
     end
   end
 end

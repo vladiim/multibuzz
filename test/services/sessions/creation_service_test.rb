@@ -121,8 +121,11 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
     refute account.visitors.exists?(visitor_id: "vis_fp_concurrent_2"),
       "Second request with same fingerprint should reuse first visitor, not create new one"
 
-    assert_equal first_visitor, account.sessions.find_by(session_id: "sess_random_uuid_2").visitor,
-      "Second session should belong to the first visitor (canonical via fingerprint)"
+    # With session continuity, second request reuses the first session entirely
+    assert_nil account.sessions.find_by(session_id: "sess_random_uuid_2"),
+      "Second request should reuse existing session, not create sess_random_uuid_2"
+    assert_equal 1, account.sessions.where(device_fingerprint: fingerprint).count,
+      "Same fingerprint should result in one session"
   end
 
   test "requests with same fingerprint but different session_ids create only one visitor" do
@@ -187,6 +190,290 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
     assert account.visitors.exists?(visitor_id: "vis_device_a")
     assert account.visitors.exists?(visitor_id: "vis_device_b"),
       "Different fingerprints (different devices) should create separate visitors"
+  end
+
+  # --- Session Continuity (reuse active sessions) ---
+
+  test "internal navigation reuses existing active session instead of creating new" do
+    fingerprint = Digest::SHA256.hexdigest("10.0.0.1|Chrome/120")[0, 32]
+
+    # Landing from Google — creates Session A
+    landing = {
+      visitor_id: visitor.visitor_id,
+      session_id: "sess_landing_uuid",
+      device_fingerprint: fingerprint,
+      url: "https://example.com/?utm_source=google&utm_medium=cpc",
+      referrer: "https://www.google.com/"
+    }
+    Sessions::CreationService.new(account, landing).call
+
+    session_a = account.sessions.find_by(session_id: "sess_landing_uuid")
+    assert session_a
+    assert_equal "paid_search", session_a.channel
+
+    # Age the session past 30-second dedup window but within 30-minute session window
+    session_a.update_columns(last_activity_at: 2.minutes.ago, created_at: 2.minutes.ago)
+
+    # Internal navigation — same visitor, same fingerprint, self-referral
+    internal_nav = {
+      visitor_id: visitor.visitor_id,
+      session_id: "sess_internal_uuid",
+      device_fingerprint: fingerprint,
+      url: "https://example.com/search",
+      referrer: "https://example.com/"
+    }
+    result = Sessions::CreationService.new(account, internal_nav).call
+
+    assert result[:success]
+    # Should NOT create a new session
+    assert_nil account.sessions.find_by(session_id: "sess_internal_uuid"),
+      "Internal navigation should reuse existing session, not create new one"
+    # Should still have only the landing session
+    assert_equal "paid_search", result[:channel],
+      "Should return the reused session's channel (paid_search), not self-referral"
+  end
+
+  test "new UTM params create new session even with active session" do
+    fingerprint = Digest::SHA256.hexdigest("10.0.0.1|Chrome/120")[0, 32]
+
+    # First visit — direct
+    Sessions::CreationService.new(account, {
+      visitor_id: visitor.visitor_id,
+      session_id: "sess_direct_uuid",
+      device_fingerprint: fingerprint,
+      url: "https://example.com/"
+    }).call
+
+    session_a = account.sessions.find_by(session_id: "sess_direct_uuid")
+    session_a.update_columns(last_activity_at: 5.minutes.ago, created_at: 5.minutes.ago)
+
+    # New visit from Google Ad — has UTM
+    result = Sessions::CreationService.new(account, {
+      visitor_id: visitor.visitor_id,
+      session_id: "sess_google_uuid",
+      device_fingerprint: fingerprint,
+      url: "https://example.com/?utm_source=google&utm_medium=cpc",
+      referrer: "https://www.google.com/"
+    }).call
+
+    assert result[:success]
+    # SHOULD create a new session (new traffic source)
+    assert account.sessions.find_by(session_id: "sess_google_uuid"),
+      "New UTM params should create a new session, not reuse existing"
+    assert_equal "paid_search", result[:channel]
+  end
+
+  test "new click_id creates new session even with active session" do
+    fingerprint = Digest::SHA256.hexdigest("10.0.0.1|Chrome/120")[0, 32]
+
+    Sessions::CreationService.new(account, {
+      visitor_id: visitor.visitor_id,
+      session_id: "sess_existing_uuid",
+      device_fingerprint: fingerprint,
+      url: "https://example.com/"
+    }).call
+
+    account.sessions.find_by(session_id: "sess_existing_uuid")
+      .update_columns(last_activity_at: 5.minutes.ago, created_at: 5.minutes.ago)
+
+    result = Sessions::CreationService.new(account, {
+      visitor_id: visitor.visitor_id,
+      session_id: "sess_gclid_uuid",
+      device_fingerprint: fingerprint,
+      url: "https://example.com/?gclid=abc123"
+    }).call
+
+    assert result[:success]
+    assert account.sessions.find_by(session_id: "sess_gclid_uuid"),
+      "Click ID should create a new session (new traffic source)"
+  end
+
+  test "external referrer creates new session even with active session" do
+    fingerprint = Digest::SHA256.hexdigest("10.0.0.1|Chrome/120")[0, 32]
+
+    Sessions::CreationService.new(account, {
+      visitor_id: visitor.visitor_id,
+      session_id: "sess_first_uuid",
+      device_fingerprint: fingerprint,
+      url: "https://example.com/"
+    }).call
+
+    account.sessions.find_by(session_id: "sess_first_uuid")
+      .update_columns(last_activity_at: 5.minutes.ago, created_at: 5.minutes.ago)
+
+    result = Sessions::CreationService.new(account, {
+      visitor_id: visitor.visitor_id,
+      session_id: "sess_ext_ref_uuid",
+      device_fingerprint: fingerprint,
+      url: "https://example.com/landing",
+      referrer: "https://facebook.com/post/123"
+    }).call
+
+    assert result[:success]
+    assert account.sessions.find_by(session_id: "sess_ext_ref_uuid"),
+      "External referrer should create a new session"
+  end
+
+  test "no referrer reuses existing active session" do
+    fingerprint = Digest::SHA256.hexdigest("10.0.0.1|Chrome/120")[0, 32]
+
+    Sessions::CreationService.new(account, {
+      visitor_id: visitor.visitor_id,
+      session_id: "sess_orig_uuid",
+      device_fingerprint: fingerprint,
+      url: "https://example.com/",
+      referrer: "https://www.google.com/"
+    }).call
+
+    session_a = account.sessions.find_by(session_id: "sess_orig_uuid")
+    session_a.update_columns(last_activity_at: 5.minutes.ago, created_at: 5.minutes.ago)
+
+    # Next request has no referrer (e.g., direct navigation within the site)
+    result = Sessions::CreationService.new(account, {
+      visitor_id: visitor.visitor_id,
+      session_id: "sess_no_ref_uuid",
+      device_fingerprint: fingerprint,
+      url: "https://example.com/page"
+    }).call
+
+    assert result[:success]
+    assert_nil account.sessions.find_by(session_id: "sess_no_ref_uuid"),
+      "No referrer should reuse existing session (continuation)"
+  end
+
+  test "expired session creates new session even for internal navigation" do
+    fingerprint = Digest::SHA256.hexdigest("10.0.0.1|Chrome/120")[0, 32]
+
+    Sessions::CreationService.new(account, {
+      visitor_id: visitor.visitor_id,
+      session_id: "sess_old_uuid",
+      device_fingerprint: fingerprint,
+      url: "https://example.com/"
+    }).call
+
+    # Age past 30-minute session window
+    account.sessions.find_by(session_id: "sess_old_uuid")
+      .update_columns(last_activity_at: 31.minutes.ago, created_at: 31.minutes.ago)
+
+    result = Sessions::CreationService.new(account, {
+      visitor_id: visitor.visitor_id,
+      session_id: "sess_after_timeout_uuid",
+      device_fingerprint: fingerprint,
+      url: "https://example.com/page",
+      referrer: "https://example.com/"
+    }).call
+
+    assert result[:success]
+    assert account.sessions.find_by(session_id: "sess_after_timeout_uuid"),
+      "Expired session (>30 min) should create new even for internal nav"
+  end
+
+  test "reused session preserves original attribution" do
+    fingerprint = Digest::SHA256.hexdigest("10.0.0.1|Chrome/120")[0, 32]
+
+    Sessions::CreationService.new(account, {
+      visitor_id: visitor.visitor_id,
+      session_id: "sess_preserve_uuid",
+      device_fingerprint: fingerprint,
+      url: "https://example.com/?utm_source=google&utm_medium=cpc",
+      referrer: "https://www.google.com/"
+    }).call
+
+    session_a = account.sessions.find_by(session_id: "sess_preserve_uuid")
+    session_a.update_columns(last_activity_at: 2.minutes.ago, created_at: 2.minutes.ago)
+
+    original_utm = session_a.initial_utm
+    original_referrer = session_a.initial_referrer
+    original_channel = session_a.channel
+
+    # Internal navigation with self-referral
+    Sessions::CreationService.new(account, {
+      visitor_id: visitor.visitor_id,
+      session_id: "sess_reuse_uuid",
+      device_fingerprint: fingerprint,
+      url: "https://example.com/search",
+      referrer: "https://example.com/"
+    }).call
+
+    session_a.reload
+    assert_equal original_utm, session_a.initial_utm,
+      "Reused session should preserve original UTM"
+    assert_equal original_referrer, session_a.initial_referrer,
+      "Reused session should preserve original referrer"
+    assert_equal original_channel, session_a.channel,
+      "Reused session should preserve original channel"
+  end
+
+  test "reused session updates last_activity_at" do
+    fingerprint = Digest::SHA256.hexdigest("10.0.0.1|Chrome/120")[0, 32]
+
+    Sessions::CreationService.new(account, {
+      visitor_id: visitor.visitor_id,
+      session_id: "sess_activity_uuid",
+      device_fingerprint: fingerprint,
+      url: "https://example.com/"
+    }).call
+
+    session_a = account.sessions.find_by(session_id: "sess_activity_uuid")
+    session_a.update_columns(last_activity_at: 10.minutes.ago, created_at: 10.minutes.ago)
+    old_activity = session_a.last_activity_at
+
+    Sessions::CreationService.new(account, {
+      visitor_id: visitor.visitor_id,
+      session_id: "sess_activity2_uuid",
+      device_fingerprint: fingerprint,
+      url: "https://example.com/page",
+      referrer: "https://example.com/"
+    }).call
+
+    session_a.reload
+    assert session_a.last_activity_at > old_activity,
+      "Reused session should update last_activity_at"
+  end
+
+  test "reused session does not increment billing usage" do
+    fingerprint = Digest::SHA256.hexdigest("10.0.0.1|Chrome/120")[0, 32]
+
+    Sessions::CreationService.new(account, {
+      visitor_id: visitor.visitor_id,
+      session_id: "sess_billing_uuid",
+      device_fingerprint: fingerprint,
+      url: "https://example.com/"
+    }).call
+
+    account.sessions.find_by(session_id: "sess_billing_uuid")
+      .update_columns(last_activity_at: 2.minutes.ago, created_at: 2.minutes.ago)
+
+    assert_no_difference -> { usage_counter.current_usage } do
+      Sessions::CreationService.new(account, {
+        visitor_id: visitor.visitor_id,
+        session_id: "sess_billing2_uuid",
+        device_fingerprint: fingerprint,
+        url: "https://example.com/page",
+        referrer: "https://example.com/"
+      }).call
+    end
+  end
+
+  test "no fingerprint skips session continuity and creates new session" do
+    Sessions::CreationService.new(account, {
+      visitor_id: visitor.visitor_id,
+      session_id: "sess_nofp_1",
+      url: "https://example.com/"
+    }).call
+
+    account.sessions.find_by(session_id: "sess_nofp_1")
+      .update_columns(last_activity_at: 2.minutes.ago, created_at: 2.minutes.ago)
+
+    Sessions::CreationService.new(account, {
+      visitor_id: visitor.visitor_id,
+      session_id: "sess_nofp_2",
+      url: "https://example.com/page",
+      referrer: "https://example.com/"
+    }).call
+
+    assert account.sessions.find_by(session_id: "sess_nofp_2"),
+      "Without fingerprint, session continuity is skipped — new session created"
   end
 
   # --- Billing Usage ---
