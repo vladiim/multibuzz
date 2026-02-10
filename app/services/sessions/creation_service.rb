@@ -278,15 +278,16 @@ module Sessions
     end
 
     def find_active_visitor_session
-      return unless device_fingerprint.present?
-
-      account.sessions
+      scope = account.sessions
         .where(visitor_id: visitor.id)
-        .where(device_fingerprint: device_fingerprint)
         .where(ended_at: nil)
         .where("last_activity_at > ?", 30.minutes.ago)
         .order(last_activity_at: :desc)
-        .first
+
+      return scope.first unless device_fingerprint.present?
+
+      # Prefer fingerprint match, fall back to visitor_id only
+      scope.where(device_fingerprint: device_fingerprint).first || scope.first
     end
 
     def new_traffic_source?

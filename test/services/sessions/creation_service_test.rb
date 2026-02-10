@@ -455,25 +455,150 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
     end
   end
 
-  test "no fingerprint skips session continuity and creates new session" do
+  test "no fingerprint falls back to visitor_id matching and reuses session" do
     Sessions::CreationService.new(account, {
       visitor_id: visitor.visitor_id,
       session_id: "sess_nofp_1",
-      url: "https://example.com/"
+      url: "https://example.com/?utm_source=google&utm_medium=cpc",
+      referrer: "https://www.google.com/"
     }).call
 
-    account.sessions.find_by(session_id: "sess_nofp_1")
-      .update_columns(last_activity_at: 2.minutes.ago, created_at: 2.minutes.ago)
+    session_a = account.sessions.find_by(session_id: "sess_nofp_1")
+    session_a.update_columns(last_activity_at: 2.minutes.ago, created_at: 2.minutes.ago)
 
-    Sessions::CreationService.new(account, {
+    result = Sessions::CreationService.new(account, {
       visitor_id: visitor.visitor_id,
       session_id: "sess_nofp_2",
       url: "https://example.com/page",
       referrer: "https://example.com/"
     }).call
 
-    assert account.sessions.find_by(session_id: "sess_nofp_2"),
-      "Without fingerprint, session continuity is skipped — new session created"
+    assert result[:success]
+    assert_nil account.sessions.find_by(session_id: "sess_nofp_2"),
+      "Without fingerprint, visitor_id fallback should reuse existing session"
+    assert_equal "paid_search", result[:channel],
+      "Should return the reused session's channel"
+  end
+
+  # --- Fingerprint Fallback (visitor_id-only matching) ---
+
+  test "different fingerprint with same visitor_id reuses session via fallback" do
+    fp_landing = Digest::SHA256.hexdigest("10.0.0.1|Chrome/120")[0, 32]
+    fp_changed = Digest::SHA256.hexdigest("10.0.0.99|Chrome/120")[0, 32]
+
+    Sessions::CreationService.new(account, {
+      visitor_id: visitor.visitor_id,
+      session_id: "sess_fp_land",
+      device_fingerprint: fp_landing,
+      url: "https://example.com/?utm_source=google&utm_medium=organic",
+      referrer: "https://www.google.com/"
+    }).call
+
+    session_a = account.sessions.find_by(session_id: "sess_fp_land")
+    session_a.update_columns(last_activity_at: 2.minutes.ago, created_at: 2.minutes.ago)
+
+    result = Sessions::CreationService.new(account, {
+      visitor_id: visitor.visitor_id,
+      session_id: "sess_fp_nav",
+      device_fingerprint: fp_changed,
+      url: "https://example.com/search",
+      referrer: "https://example.com/"
+    }).call
+
+    assert result[:success]
+    assert_nil account.sessions.find_by(session_id: "sess_fp_nav"),
+      "Different fingerprint should fall back to visitor_id and reuse session"
+    assert_equal "organic_search", result[:channel],
+      "Should return the reused session's channel, not self-referral"
+  end
+
+  test "different fingerprint fallback preserves original attribution" do
+    fp_a = Digest::SHA256.hexdigest("10.0.0.1|Chrome/120")[0, 32]
+    fp_b = Digest::SHA256.hexdigest("10.0.0.50|Chrome/120")[0, 32]
+
+    Sessions::CreationService.new(account, {
+      visitor_id: visitor.visitor_id,
+      session_id: "sess_fp_preserve",
+      device_fingerprint: fp_a,
+      url: "https://example.com/?utm_source=google&utm_medium=cpc",
+      referrer: "https://www.google.com/"
+    }).call
+
+    session_a = account.sessions.find_by(session_id: "sess_fp_preserve")
+    session_a.update_columns(last_activity_at: 2.minutes.ago, created_at: 2.minutes.ago)
+
+    original_utm = session_a.initial_utm
+    original_channel = session_a.channel
+
+    Sessions::CreationService.new(account, {
+      visitor_id: visitor.visitor_id,
+      session_id: "sess_fp_preserve_nav",
+      device_fingerprint: fp_b,
+      url: "https://example.com/search",
+      referrer: "https://example.com/"
+    }).call
+
+    session_a.reload
+    assert_equal original_utm, session_a.initial_utm,
+      "Fallback-reused session should preserve original UTM"
+    assert_equal original_channel, session_a.channel,
+      "Fallback-reused session should preserve original channel"
+  end
+
+  test "different fingerprint with new UTM creates new session" do
+    fp_a = Digest::SHA256.hexdigest("10.0.0.1|Chrome/120")[0, 32]
+    fp_b = Digest::SHA256.hexdigest("10.0.0.50|Chrome/120")[0, 32]
+
+    Sessions::CreationService.new(account, {
+      visitor_id: visitor.visitor_id,
+      session_id: "sess_fp_first",
+      device_fingerprint: fp_a,
+      url: "https://example.com/"
+    }).call
+
+    account.sessions.find_by(session_id: "sess_fp_first")
+      .update_columns(last_activity_at: 5.minutes.ago, created_at: 5.minutes.ago)
+
+    result = Sessions::CreationService.new(account, {
+      visitor_id: visitor.visitor_id,
+      session_id: "sess_fp_new_utm",
+      device_fingerprint: fp_b,
+      url: "https://example.com/?utm_source=facebook&utm_medium=paid_social",
+      referrer: "https://facebook.com/ad/123"
+    }).call
+
+    assert result[:success]
+    assert account.sessions.find_by(session_id: "sess_fp_new_utm"),
+      "New traffic source should create new session even with visitor_id fallback"
+  end
+
+  test "visitor_id fallback does not match sessions from different visitors" do
+    fp_a = Digest::SHA256.hexdigest("10.0.0.1|Chrome/120")[0, 32]
+    fp_b = Digest::SHA256.hexdigest("10.0.0.99|Chrome/120")[0, 32]
+
+    # Visitor A creates a session
+    Sessions::CreationService.new(account, {
+      visitor_id: visitor.visitor_id,
+      session_id: "sess_visitor_a",
+      device_fingerprint: fp_a,
+      url: "https://example.com/?utm_source=google&utm_medium=cpc"
+    }).call
+
+    account.sessions.find_by(session_id: "sess_visitor_a")
+      .update_columns(last_activity_at: 2.minutes.ago, created_at: 2.minutes.ago)
+
+    # Visitor B (different visitor_id) should NOT reuse Visitor A's session
+    result = Sessions::CreationService.new(account, {
+      visitor_id: "vis_totally_different",
+      session_id: "sess_visitor_b",
+      device_fingerprint: fp_b,
+      url: "https://example.com/page",
+      referrer: "https://example.com/"
+    }).call
+
+    assert result[:success]
+    assert account.sessions.find_by(session_id: "sess_visitor_b"),
+      "Different visitor_id should create new session, not reuse another visitor's"
   end
 
   # --- Billing Usage ---
