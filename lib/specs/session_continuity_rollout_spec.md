@@ -15,9 +15,9 @@ Before deploying a single line of code, we simulate the fix against live data to
 Find a visitor who has a conversion attributed to "referral" where their first session was actually from search:
 
 ```ruby
-a = Account.find(ACCOUNT_ID)
-# Find a conversion with referral channel whose visitor's first session is paid_search
-candidate = ActiveRecord::Base.connection.execute(<<~SQL).first
+a = Account.find(2)
+
+sql = "
   SELECT c.id AS conv_id, c.visitor_id, c.session_id AS conv_session_id,
     cs.channel AS conv_channel, cs.initial_referrer AS conv_ref,
     fs.id AS landing_session_id, fs.channel AS landing_channel,
@@ -34,7 +34,8 @@ candidate = ActiveRecord::Base.connection.execute(<<~SQL).first
     AND fs.channel IN ('paid_search', 'organic_search')
     AND c.created_at > NOW() - INTERVAL '30 days'
   LIMIT 1
-SQL
+"
+candidate = ActiveRecord::Base.connection.execute(sql).first
 puts candidate.inspect
 ```
 
@@ -94,7 +95,6 @@ sessions.each do |id, sid, ch, ref, start, last, session_fp|
       active_session = { id: id, last_activity: last }
     else
       # This session would be REUSED (not created) — it's a ghost
-      # Don't update active_session — it stays on the real session
       active_session[:last_activity] = [active_session[:last_activity], start].max
     end
   else
@@ -155,7 +155,8 @@ puts "Last-touch:  #{journey.last&.channel}"
 ```ruby
 # Count how many conversions would change attribution
 total = a.conversions.where("created_at > ?", 30.days.ago).count
-misattributed = ActiveRecord::Base.connection.execute(<<~SQL).first['count']
+
+sql = "
   SELECT COUNT(*) FROM conversions c
   JOIN sessions cs ON cs.id = c.session_id
   JOIN LATERAL (
@@ -165,14 +166,15 @@ misattributed = ActiveRecord::Base.connection.execute(<<~SQL).first['count']
   WHERE c.account_id = #{a.id}
     AND c.created_at > NOW() - INTERVAL '30 days'
     AND cs.channel != fs.channel
-SQL
+"
+misattributed = ActiveRecord::Base.connection.execute(sql).first['count']
 
 puts "Total conversions (30d): #{total}"
 puts "Misattributed (conv_ch != landing_ch): #{misattributed} (#{(misattributed.to_f / total * 100).round(1)}%)"
 
 # Channel shift projection
 puts "\nProjected channel shift (conversion sessions → landing sessions):"
-ActiveRecord::Base.connection.execute(<<~SQL).each do |r|
+sql = "
   SELECT cs.channel AS from_channel, fs.channel AS to_channel, COUNT(*) AS count
   FROM conversions c
   JOIN sessions cs ON cs.id = c.session_id
@@ -185,7 +187,8 @@ ActiveRecord::Base.connection.execute(<<~SQL).each do |r|
     AND cs.channel != fs.channel
   GROUP BY cs.channel, fs.channel
   ORDER BY count DESC
-SQL
+"
+ActiveRecord::Base.connection.execute(sql).each do |r|
   puts "  #{r['from_channel']&.ljust(15)} → #{r['to_channel']&.ljust(15)} : #{r['count']}"
 end
 ```
@@ -215,9 +218,7 @@ We don't have feature flag infrastructure, and adding one for this specific chan
 Capture current metrics in production console. These are our "before" numbers.
 
 ```ruby
-a = Account.find(ACCOUNT_ID)
-
-# Baseline: current state
+a = Account.find(2)
 baseline = {}
 
 # Ghost session rate (24h)
@@ -231,7 +232,7 @@ ghosts_24h = a.sessions.where("started_at > ?", 24.hours.ago)
 baseline[:ghost_rate] = (ghosts_24h.to_f / total_24h * 100).round(1)
 
 # Sessions per converting visitor (7d)
-baseline[:sessions_per_converter] = ActiveRecord::Base.connection.execute(<<~SQL).first['median']
+sql = "
   SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY session_count) AS median
   FROM (
     SELECT COUNT(DISTINCT s.id) AS session_count
@@ -240,7 +241,8 @@ baseline[:sessions_per_converter] = ActiveRecord::Base.connection.execute(<<~SQL
     WHERE c.account_id = #{a.id} AND c.created_at > NOW() - INTERVAL '7 days'
     GROUP BY c.visitor_id
   ) sub
-SQL
+"
+baseline[:sessions_per_converter] = ActiveRecord::Base.connection.execute(sql).first['median']
 
 # Channel distribution (7d conversions)
 baseline[:channel_dist] = a.conversions.joins(:session)
@@ -272,6 +274,8 @@ kamal deploy
 **T+15 minutes:** First ghost rate check.
 
 ```ruby
+a = Account.find(2)
+
 # Compare last 15 min to same period yesterday
 now_sessions = a.sessions.where("started_at > ?", 15.minutes.ago).count
 now_ghosts = a.sessions.where("started_at > ?", 15.minutes.ago)
@@ -280,9 +284,8 @@ now_ghosts = a.sessions.where("started_at > ?", 15.minutes.ago)
   .where("click_ids IS NULL OR click_ids = '{}'::jsonb")
   .where("NOT EXISTS (SELECT 1 FROM events WHERE events.session_id = sessions.id)")
   .count
-now_rate = (now_ghosts.to_f / now_sessions * 100).round(1)
+now_rate = now_sessions > 0 ? (now_ghosts.to_f / now_sessions * 100).round(1) : 0
 
-# Same period yesterday
 yday_sessions = a.sessions.where("started_at BETWEEN ? AND ?", 24.hours.ago - 15.minutes, 24.hours.ago).count
 yday_ghosts = a.sessions.where("started_at BETWEEN ? AND ?", 24.hours.ago - 15.minutes, 24.hours.ago)
   .where(initial_referrer: [nil, ""])
@@ -290,7 +293,7 @@ yday_ghosts = a.sessions.where("started_at BETWEEN ? AND ?", 24.hours.ago - 15.m
   .where("click_ids IS NULL OR click_ids = '{}'::jsonb")
   .where("NOT EXISTS (SELECT 1 FROM events WHERE events.session_id = sessions.id)")
   .count
-yday_rate = (yday_ghosts.to_f / yday_sessions * 100).round(1)
+yday_rate = yday_sessions > 0 ? (yday_ghosts.to_f / yday_sessions * 100).round(1) : 0
 
 puts "Ghost rate: now=#{now_rate}% vs yesterday=#{yday_rate}%"
 puts "Session volume: now=#{now_sessions} vs yesterday=#{yday_sessions}"
@@ -307,6 +310,8 @@ puts "Session volume: now=#{now_sessions} vs yesterday=#{yday_sessions}"
 **T+1 hour:** Full validation.
 
 ```ruby
+a = Account.find(2)
+
 # 1. Ghost rate (last hour)
 puts "--- Ghost Rate ---"
 total = a.sessions.where("started_at > ?", 1.hour.ago).count
@@ -316,7 +321,7 @@ ghosts = a.sessions.where("started_at > ?", 1.hour.ago)
   .where("click_ids IS NULL OR click_ids = '{}'::jsonb")
   .where("NOT EXISTS (SELECT 1 FROM events WHERE events.session_id = sessions.id)")
   .count
-puts "#{ghosts}/#{total} (#{(ghosts.to_f / total * 100).round(1)}%)"
+puts "#{ghosts}/#{total} (#{total > 0 ? (ghosts.to_f / total * 100).round(1) : 0}%)"
 
 # 2. Session reuse happening?
 puts "\n--- Session Reuse Evidence ---"
@@ -352,7 +357,7 @@ Kamal keeps the previous container image. Rollback is instant. No data migration
 After 24 hours of clean data accumulation, compare attribution model outputs:
 
 ```ruby
-# Compare last 24h attribution to the 24h before deploy
+a = Account.find(2)
 puts "=== ATTRIBUTION COMPARISON ==="
 
 a.attribution_models.active.each do |model|
@@ -374,7 +379,7 @@ a.attribution_models.active.each do |model|
     post = post_credits[ch] || 0
     delta = post - pre
     pct = pre > 0 ? ((delta / pre) * 100).round(1) : "new"
-    puts "  #{ch.ljust(15)} | pre: #{pre.to_s.rjust(8)} | post: #{post.to_s.rjust(8)} | Δ: #{delta > 0 ? '+' : ''}#{delta.round(2)} (#{pct}%)"
+    puts "  #{ch.ljust(15)} | pre: #{pre.to_s.rjust(8)} | post: #{post.to_s.rjust(8)} | delta: #{delta > 0 ? '+' : ''}#{delta.round(2)} (#{pct}%)"
   end
 end
 ```
@@ -396,7 +401,7 @@ The shift should be consistent across first-touch, last-touch, linear, time-deca
 #### Phase 3: T+7 Days — Steady State Confirmation
 
 ```ruby
-# Full week comparison
+a = Account.find(2)
 puts "=== 7-DAY STEADY STATE ==="
 
 # Ghost rate trend
@@ -419,7 +424,7 @@ puts "\n--- Sessions Per Converter (daily median) ---"
 7.downto(0) do |d|
   day_start = d.days.ago.beginning_of_day
   day_end = d.days.ago.end_of_day
-  result = ActiveRecord::Base.connection.execute(<<~SQL).first
+  sql = "
     SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY sc) AS median,
            AVG(sc) AS mean, MAX(sc) AS max
     FROM (
@@ -431,7 +436,8 @@ puts "\n--- Sessions Per Converter (daily median) ---"
         AND c.created_at BETWEEN '#{day_start.iso8601}' AND '#{day_end.iso8601}'
       GROUP BY c.visitor_id
     ) sub
-  SQL
+  "
+  result = ActiveRecord::Base.connection.execute(sql).first
   puts "  #{day_start.to_date} | median=#{result['median']&.round(1)} | mean=#{result['mean']&.round(1)} | max=#{result['max']}"
 end
 
@@ -471,10 +477,10 @@ Ghost sessions have 0 events, nil referrer, empty UTM, empty click_ids. They ser
 
 ```bash
 # Preview
-bin/rails data_repair:purge_ghost_sessions ACCOUNT_ID=123 DRY_RUN=true SINCE_DAYS=90
+bin/rails data_repair:purge_ghost_sessions ACCOUNT_ID=2 DRY_RUN=true SINCE_DAYS=90
 
 # Execute (after reviewing preview)
-bin/rails data_repair:purge_ghost_sessions ACCOUNT_ID=123 DRY_RUN=false SINCE_DAYS=90
+bin/rails data_repair:purge_ghost_sessions ACCOUNT_ID=2 DRY_RUN=false SINCE_DAYS=90
 ```
 
 *Note: `GhostSessionPurgeService` needs to be created — it doesn't exist yet. See implementation task below.*
@@ -483,27 +489,27 @@ bin/rails data_repair:purge_ghost_sessions ACCOUNT_ID=123 DRY_RUN=false SINCE_DA
 
 ```bash
 # Preview
-bin/rails visitors:deduplicate ACCOUNT_ID=123 DRY_RUN=true SINCE_DAYS=90
+bin/rails visitors:deduplicate ACCOUNT_ID=2 DRY_RUN=true SINCE_DAYS=90
 
 # Execute
-bin/rails visitors:deduplicate ACCOUNT_ID=123 DRY_RUN=false SINCE_DAYS=90
+bin/rails visitors:deduplicate ACCOUNT_ID=2 DRY_RUN=false SINCE_DAYS=90
 ```
 
 **Step 3: Fix self-referral channels**
 
 ```bash
 # Preview
-bin/rails attribution:fix_internal_referrers ACCOUNT_ID=123 DRY_RUN=true
+bin/rails attribution:fix_internal_referrers ACCOUNT_ID=2 DRY_RUN=true
 
 # Execute
-bin/rails attribution:fix_internal_referrers ACCOUNT_ID=123 DRY_RUN=false
+bin/rails attribution:fix_internal_referrers ACCOUNT_ID=2 DRY_RUN=false
 ```
 
 **Step 4: Reattribute conversions**
 
 ```bash
 # This recalculates all attribution credits using the cleaned session data
-bin/rails attribution:reattribute_conversions ACCOUNT_ID=123 DRY_RUN=false
+bin/rails attribution:reattribute_conversions ACCOUNT_ID=2 DRY_RUN=false
 ```
 
 **Step 5: Rerun attribution models**
@@ -511,7 +517,7 @@ bin/rails attribution:reattribute_conversions ACCOUNT_ID=123 DRY_RUN=false
 Increment each model's version to mark all existing credits as stale, then trigger rerun:
 
 ```ruby
-a = Account.find(ACCOUNT_ID)
+a = Account.find(2)
 a.attribution_models.active.each do |model|
   model.increment!(:version)
   Attribution::RerunJob.perform_later(model.id)
@@ -522,8 +528,8 @@ end
 **Post-repair validation:**
 
 ```ruby
-# Compare attribution before/after repair
-# (Save the baseline output from Phase 0 to compare)
+a = Account.find(2)
+
 puts "=== POST-REPAIR ATTRIBUTION ==="
 a.attribution_models.active.each do |model|
   puts "\n--- #{model.name} ---"
