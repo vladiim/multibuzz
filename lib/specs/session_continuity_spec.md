@@ -2,8 +2,8 @@
 
 **Date:** 2026-02-09
 **Priority:** P0
-**Status:** Ready
-**Branch:** `fix/session-continuity`
+**Status:** Implementation complete — see `session_continuity_rollout_spec.md` for deploy plan
+**Branch:** `feature/e1s4-content`
 
 ---
 
