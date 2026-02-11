@@ -1,256 +1,947 @@
-<%= render_markdown <<~MD
-  # Server-Side GTM Integration
-
-  Multi-touch attribution via server-side Google Tag Manager. No backend access needed — works with any site that has GTM.
-
-  ---
-
-  ## How It Works
-
-  The mbuzz sGTM tag template runs inside your server-side GTM container. It makes server-to-server HTTP calls to the mbuzz API, bypassing ad blockers and Safari ITP.
-
-  ```text
-  Browser (your website)
-    → Client-side GTM (fires dataLayer events)
-      → Server-side GTM (your cloud, your domain)
-        → mbuzz tag: POST /api/v1/sessions   (visitor + attribution)
-        → mbuzz tag: POST /api/v1/events      (custom events)
-        → mbuzz tag: POST /api/v1/conversions (conversions + revenue)
-        → Also forwards to GA4, Facebook CAPI, etc.
-  ```
-
-  ### Why Server-Side?
-
-  | Benefit | How |
-  |---------|-----|
-  | **No ad blockers** | sGTM runs on your domain, not a third-party script |
-  | **No Safari ITP** | Cookies are set server-side as true first-party |
-  | **30-40% more data** | Captures traffic that client-side tools miss |
-  | **No backend needed** | Works with Webflow, Squarespace, WordPress, any site |
-
-  ---
-
-  ## Prerequisites
-
-  You need a server-side GTM container running on your domain. If you don't have one:
-
-  - [Google's sGTM setup guide](https://developers.google.com/tag-platform/tag-manager/server-side)
-  - [Stape.io](https://stape.io) (managed sGTM hosting)
-  - [Addingwell](https://www.addingwell.com) (managed sGTM hosting)
-
-  Your sGTM container should be accessible on a subdomain like `gtm.yourdomain.com`.
-
-  ---
-
-  ## Installation
-
-  ### Step 1: Import the Tag Template
-
-  1. Open your **server-side** GTM container
-  2. Go to **Templates** → **Tag Templates** → **Search Gallery**
-  3. Search for **mbuzz** and click **Add to workspace**
-
-  Or import manually from [github.com/mbuzzco/mbuzz-sgtm](https://github.com/mbuzzco/mbuzz-sgtm).
-
-  ### Step 2: Create the Session Tag
-
-  This tag fires on every page view. It creates visitors and sessions, and captures UTM parameters, referrer, and channel.
-
-  1. Go to **Tags** → **New**
-  2. Name: `mbuzz - Session`
-  3. Tag type: **mbuzz - Server-Side Attribution**
-  4. Configuration:
-
-  | Field | Value |
-  |-------|-------|
-  | API Key | Your mbuzz API key |
-  | Call Type | `Session` |
-
-  5. Trigger: **Page View** (the default "All Pages" trigger)
-
-  > **Important:** The session tag must fire **before** any event or conversion tags. Use GTM's [tag sequencing](https://support.google.com/tagmanager/answer/6238868) to enforce this.
-
-  ### Step 3: Create Event Tags (Optional)
-
-  Track custom events like form submissions or button clicks.
-
-  1. Go to **Tags** → **New**
-  2. Name: `mbuzz - Form Submit` (or any descriptive name)
-  3. Tag type: **mbuzz - Server-Side Attribution**
-  4. Configuration:
-
-  | Field | Value |
-  |-------|-------|
-  | API Key | Your mbuzz API key |
-  | Call Type | `Event` |
-  | Event Type | `form_submit` (or your event name) |
-
-  5. Trigger: Your custom trigger for this event
-  6. **Tag Sequencing**: Set `mbuzz - Session` as a setup tag
-
-  Repeat for each event type.
-
-  ### Step 4: Create Conversion Tag
-
-  Track conversions to trigger multi-touch attribution.
-
-  1. Go to **Tags** → **New**
-  2. Name: `mbuzz - Conversion`
-  3. Tag type: **mbuzz - Server-Side Attribution**
-  4. Configuration:
-
-  | Field | Value |
-  |-------|-------|
-  | API Key | Your mbuzz API key |
-  | Call Type | `Conversion` |
-  | Conversion Type | `purchase`, `lead`, `signup`, etc. |
-  | Revenue | Revenue amount (use a GTM variable) |
-  | Currency | `USD`, `NZD`, etc. |
-
-  5. Trigger: Your conversion trigger (e.g. `purchase` event)
-  6. **Tag Sequencing**: Set `mbuzz - Session` as a setup tag
-
-  ### Step 5: Test in Preview Mode
-
-  1. Click **Preview** in your sGTM container
-  2. Visit your website in a new tab
-  3. Verify in the preview panel that the mbuzz tags fire
-  4. Check your mbuzz dashboard for the new session
-  5. Trigger a conversion and verify it appears
-  6. **Submit** to publish when ready
-
-  ---
-
-  ## Tag Configuration Reference
-
-  ### Common Fields
-
-  | Field | Type | Required | Description |
-  |-------|------|----------|-------------|
-  | API Key | Text | Yes | Your `sk_live_*` or `sk_test_*` key |
-  | API URL | Text | No | Default: `https://mbuzz.co/api/v1` |
-  | Call Type | Dropdown | Yes | `Session`, `Event`, `Conversion`, or `Identify` |
-  | Debug | Checkbox | No | Log requests to sGTM console |
-
-  ### Event Fields
-
-  | Field | Type | Required | Description |
-  |-------|------|----------|-------------|
-  | Event Type | Text | Yes | Name of the event (e.g. `form_submit`) |
-  | Custom Properties | Key-Value | No | Additional event metadata |
-
-  ### Conversion Fields
-
-  | Field | Type | Required | Description |
-  |-------|------|----------|-------------|
-  | Conversion Type | Text | Yes | Type of conversion (e.g. `purchase`) |
-  | Revenue | Text | No | Revenue amount |
-  | Currency | Text | No | Currency code (default: `USD`) |
-  | Custom Properties | Key-Value | No | Additional conversion metadata |
-
-  ### Identify Fields
-
-  | Field | Type | Required | Description |
-  |-------|------|----------|-------------|
-  | User ID | Text | Yes | Your application's user identifier |
-  | Custom Properties | Key-Value | No | User traits (email, name, plan) |
-
-  ---
-
-  ## What the Tag Does
-
-  ### Visitor Tracking
-
-  The tag manages a `_mbuzz_vid` cookie (first-party, server-set, 2-year expiry):
-
-  - **New visitor**: Generates a random 64-character hex ID, sets cookie
-  - **Returning visitor**: Reads existing ID from cookie
-
-  Because the cookie is set server-side via sGTM, it survives Safari ITP restrictions that would kill client-side cookies.
-
-  ### Session Resolution
-
-  Sessions are resolved server-side using device fingerprinting:
-
-  1. Tag computes `device_fingerprint = SHA256(ip|user_agent)[0:32]`
-  2. Server finds active session for visitor + fingerprint (30-min sliding window)
-  3. If no active session, creates a new one with UTM/referrer/channel data
-
-  ### Channel Attribution
-
-  The server automatically classifies traffic into channels:
-
-  | Traffic Source | Classification |
-  |---------------|---------------|
-  | `utm_medium=cpc` | Paid Search |
-  | Google referrer, no UTM | Organic Search |
-  | Facebook referrer | Organic Social |
-  | `utm_medium=email` | Email |
-  | ChatGPT referrer | AI |
-  | No referrer, no UTM | Direct |
-
-  Full channel list: `paid_search`, `organic_search`, `paid_social`, `organic_social`, `email`, `display`, `affiliate`, `referral`, `video`, `ai`, `direct`, `other`.
-
-  ---
-
-  ## Platform Guides
-
-  ### Webflow
-
-  1. Add your client-side GTM container to Webflow (Project Settings → Custom Code)
-  2. Configure sGTM as your GTM server container
-  3. Add mbuzz tags to sGTM following the steps above
-  4. Use Webflow's form submission events as triggers for event/conversion tags
-
-  ### WordPress
-
-  1. Install a GTM plugin (e.g. GTM4WP)
-  2. Configure sGTM as your server container
-  3. Add mbuzz tags to sGTM
-  4. Use WooCommerce dataLayer events for purchase conversions
-
-  ### Squarespace
-
-  1. Add client-side GTM via Code Injection (Settings → Developer Tools)
-  2. Configure sGTM
-  3. Add mbuzz tags to sGTM
-  4. Use form submission triggers for lead conversions
-
-  ---
-
-  ## Consent Mode
-
-  If you use a Consent Management Platform (CMP), the mbuzz tag respects GTM's consent mode:
-
-  - **Consent granted**: Tag fires normally, cookie set
-  - **Consent denied**: Tag does not fire, no cookie set
-
-  Configure consent in your GTM container's consent settings. The mbuzz tag inherits the container's consent configuration.
-
-  ---
-
-  ## Troubleshooting
-
-  ### Tags Not Firing
-
-  - Verify your **client-side** GTM container is loading (check browser DevTools)
-  - Verify your sGTM container is receiving events (check sGTM preview mode)
-  - Check that the mbuzz tag template is imported and the tag is published
-
-  ### No Data in Dashboard
-
-  - Check the API key is correct (test with the `/api/v1/health` endpoint)
-  - Ensure the Session tag fires **before** Event/Conversion tags
-  - Enable debug mode on the tag and check sGTM logs for errors
-
-  ### Events Rejected
-
-  If events return errors about "Visitor not found", the Session tag is not firing before the Event tag. Use GTM tag sequencing to set the Session tag as a setup tag.
-
-  ### Cookie Not Set
-
-  - Verify your sGTM container is on the same root domain as your website
-  - Check that the cookie domain setting is correct (or leave as auto-detect)
-  - Ensure your sGTM container has HTTPS enabled
-MD
-%>
+<div class="max-w-4xl mx-auto">
+  <!-- Hero -->
+  <div class="mb-12">
+    <h1 class="text-3xl font-bold text-gray-900 mb-3">Server-Side GTM Integration</h1>
+    <p class="text-lg text-gray-600">
+      Multi-touch attribution for any website — no backend code needed.
+      Works with Webflow, WordPress, Squarespace, and any site with Google Tag Manager.
+    </p>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION: What is sGTM? -->
+  <!-- ============================================================ -->
+  <div class="mb-16">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">What is Server-Side GTM?</h2>
+
+    <p class="text-gray-700 mb-6">
+      Normally, Google Tag Manager runs in your visitor's browser. Every tracking tag (GA4, Facebook, etc.)
+      fires from the browser — where ad blockers can block it and Safari can expire your cookies after 7 days.
+    </p>
+
+    <p class="text-gray-700 mb-8">
+      <strong>Server-side GTM</strong> moves that processing to a server <em>you</em> control. Your website
+      sends one request to your server, and your server fans it out to all your analytics tools. Because the
+      server runs on <em>your domain</em>, cookies are first-party and ad blockers can't touch them.
+    </p>
+
+    <!-- Visual: Client-side vs Server-side -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <!-- Client-side (the old way) -->
+      <div class="border border-gray-200 rounded-lg p-6 bg-gray-50">
+        <div class="flex items-center gap-2 mb-4">
+          <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+          <h3 class="font-semibold text-gray-700">Client-Side (the old way)</h3>
+        </div>
+        <div class="space-y-3">
+          <div class="flex items-center gap-3">
+            <div class="w-32 bg-blue-100 text-blue-800 text-xs font-medium px-3 py-2 rounded text-center">Visitor's Browser</div>
+            <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <div class="w-32 bg-gray-200 text-gray-600 text-xs font-medium px-3 py-2 rounded text-center">GA4 (blocked)</div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="w-32"></div>
+            <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <div class="w-32 bg-gray-200 text-gray-600 text-xs font-medium px-3 py-2 rounded text-center">Facebook (blocked)</div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="w-32"></div>
+            <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <div class="w-32 bg-gray-200 text-gray-600 text-xs font-medium px-3 py-2 rounded text-center">mbuzz (blocked)</div>
+          </div>
+        </div>
+        <div class="mt-4 text-xs text-red-600">
+          Ad blockers block third-party requests. Safari expires cookies in 7 days. You lose 30-40% of data.
+        </div>
+      </div>
+
+      <!-- Server-side (the sGTM way) -->
+      <div class="border-2 border-indigo-200 rounded-lg p-6 bg-indigo-50">
+        <div class="flex items-center gap-2 mb-4">
+          <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          <h3 class="font-semibold text-gray-700">Server-Side GTM (the right way)</h3>
+        </div>
+        <div class="space-y-3">
+          <div class="flex items-center gap-3">
+            <div class="w-32 bg-blue-100 text-blue-800 text-xs font-medium px-3 py-2 rounded text-center">Visitor's Browser</div>
+            <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <div class="w-32 bg-indigo-200 text-indigo-800 text-xs font-medium px-3 py-2 rounded text-center">Your Server (sGTM)</div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="w-32"></div>
+            <div class="w-4 flex-shrink-0"></div>
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              <div class="bg-green-100 text-green-800 text-xs font-medium px-3 py-2 rounded text-center">GA4</div>
+              <div class="bg-green-100 text-green-800 text-xs font-medium px-3 py-2 rounded text-center">Facebook</div>
+              <div class="bg-green-100 text-green-800 text-xs font-medium px-3 py-2 rounded text-center font-bold">mbuzz</div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-4 text-xs text-green-700">
+          One first-party request to your server. Can't be blocked. Cookies last 2 years. Full data.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION: The 3 pieces you need -->
+  <!-- ============================================================ -->
+  <div class="mb-16">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">What You Need (3 Things)</h2>
+    <p class="text-gray-600 mb-6">Setting up sGTM with mbuzz requires three pieces. Here's what each one is and how they connect.</p>
+
+    <!-- Visual: The 3 pieces diagram -->
+    <div class="bg-white border border-gray-200 rounded-xl p-8 mb-8">
+      <div class="flex flex-col md:flex-row items-stretch gap-4">
+        <!-- Piece 1: Client GTM -->
+        <div class="flex-1 border-2 border-blue-200 rounded-lg p-5 bg-blue-50 relative">
+          <div class="absolute -top-3 left-4 bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded">1</div>
+          <h3 class="font-semibold text-blue-900 mb-2 mt-1">Client-Side GTM</h3>
+          <p class="text-sm text-blue-800 mb-3">A small JavaScript snippet on your website. Sends page views and events to your sGTM server.</p>
+          <div class="text-xs text-blue-600 bg-blue-100 rounded px-2 py-1 inline-block">
+            You probably already have this
+          </div>
+        </div>
+
+        <!-- Arrow -->
+        <div class="flex items-center justify-center md:flex-col">
+          <svg class="w-6 h-6 text-gray-400 rotate-90 md:rotate-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+          </svg>
+        </div>
+
+        <!-- Piece 2: sGTM hosting -->
+        <div class="flex-1 border-2 border-purple-200 rounded-lg p-5 bg-purple-50 relative">
+          <div class="absolute -top-3 left-4 bg-purple-600 text-white text-xs font-bold px-2 py-0.5 rounded">2</div>
+          <h3 class="font-semibold text-purple-900 mb-2 mt-1">sGTM Server</h3>
+          <p class="text-sm text-purple-800 mb-3">A server that receives data from your client GTM and runs tags server-side. Lives on your domain (e.g. <code class="bg-purple-100 px-1 rounded text-xs">gtm.yoursite.com</code>).</p>
+          <div class="text-xs text-purple-600 bg-purple-100 rounded px-2 py-1 inline-block">
+            5-min setup via Stape.io
+          </div>
+        </div>
+
+        <!-- Arrow -->
+        <div class="flex items-center justify-center md:flex-col">
+          <svg class="w-6 h-6 text-gray-400 rotate-90 md:rotate-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+          </svg>
+        </div>
+
+        <!-- Piece 3: mbuzz tag -->
+        <div class="flex-1 border-2 border-green-200 rounded-lg p-5 bg-green-50 relative">
+          <div class="absolute -top-3 left-4 bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded">3</div>
+          <h3 class="font-semibold text-green-900 mb-2 mt-1">mbuzz Tag Template</h3>
+          <p class="text-sm text-green-800 mb-3">A tag that runs inside your sGTM server. Sends visitor, session, and conversion data to mbuzz for attribution.</p>
+          <div class="text-xs text-green-600 bg-green-100 rounded px-2 py-1 inline-block">
+            Import in 2 clicks
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom: data flow summary -->
+      <div class="mt-6 pt-5 border-t border-gray-200">
+        <p class="text-sm text-gray-500 text-center">
+          <strong>Data flow:</strong>
+          Visitor loads your page
+          <span class="text-gray-400 mx-1">&rarr;</span>
+          Client GTM sends to your sGTM server
+          <span class="text-gray-400 mx-1">&rarr;</span>
+          mbuzz tag sends to mbuzz API
+          <span class="text-gray-400 mx-1">&rarr;</span>
+          Attribution calculated
+        </p>
+      </div>
+    </div>
+
+    <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800">
+      <strong>Already have sGTM?</strong> Skip to <a href="#step-3" class="underline font-medium">Step 3: Add the mbuzz tag</a>.
+      Most agencies already have sGTM running — you just need to add the mbuzz tag template.
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION: Step-by-step setup -->
+  <!-- ============================================================ -->
+  <div class="mb-16">
+    <h2 class="text-2xl font-bold text-gray-900 mb-8">Setup Guide</h2>
+
+    <!-- ========== Step 1: Get sGTM hosting ========== -->
+    <div id="step-1" class="mb-12 scroll-mt-24">
+      <div class="flex items-center gap-4 mb-4">
+        <div class="flex-shrink-0 w-10 h-10 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold text-lg">1</div>
+        <h3 class="text-xl font-semibold text-gray-900">Get an sGTM server</h3>
+      </div>
+      <div class="pl-14">
+        <p class="text-gray-600 mb-4">
+          You need a server to run your tags. The easiest option is <strong>Stape.io</strong> — it takes about 5 minutes,
+          costs ~$10/month, and handles all the infrastructure for you. You'll get a subdomain on your
+          own domain (like <code class="bg-gray-100 px-1 rounded text-sm">gtm.yoursite.com</code>).
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+          <a href="https://stape.io" target="_blank" rel="noopener" class="block border border-gray-200 rounded-lg p-4 hover:border-purple-300 hover:bg-purple-50 transition-colors">
+            <div class="font-semibold text-gray-900 mb-1">Stape.io</div>
+            <div class="text-xs text-green-600 font-medium mb-2">Recommended</div>
+            <div class="text-sm text-gray-500">Managed hosting. 5-min setup. Free tier available (10k requests/month).</div>
+          </a>
+          <a href="https://www.addingwell.com" target="_blank" rel="noopener" class="block border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors">
+            <div class="font-semibold text-gray-900 mb-1">Addingwell</div>
+            <div class="text-sm text-gray-500 mt-3">Managed hosting. EU-focused. Good for GDPR compliance.</div>
+          </a>
+          <a href="https://developers.google.com/tag-platform/tag-manager/server-side" target="_blank" rel="noopener" class="block border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors">
+            <div class="font-semibold text-gray-900 mb-1">Google Cloud</div>
+            <div class="text-xs text-gray-500 font-medium mb-2">DIY</div>
+            <div class="text-sm text-gray-500">Self-hosted on GCP. More setup work. Best for large-scale deployments.</div>
+          </a>
+        </div>
+
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm text-gray-600">
+          <strong>What you'll have after this step:</strong> An sGTM container URL (like <code class="bg-gray-100 px-1 rounded">https://gtm.yoursite.com</code>)
+          and a GTM server container ID (like <code class="bg-gray-100 px-1 rounded">GTM-XXXXXX</code>).
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== Step 2: Add client-side GTM ========== -->
+    <div id="step-2" class="mb-12 scroll-mt-24">
+      <div class="flex items-center gap-4 mb-4">
+        <div class="flex-shrink-0 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-lg">2</div>
+        <h3 class="text-xl font-semibold text-gray-900">Add client-side GTM to your website</h3>
+      </div>
+      <div class="pl-14">
+        <p class="text-gray-600 mb-4">
+          You need the regular Google Tag Manager snippet on your website. This is the piece that runs in the browser
+          and sends data to your sGTM server. <strong>If you already have GTM on your site, skip this step</strong> —
+          just make sure it's configured to send to your sGTM server.
+        </p>
+
+        <!-- Platform tabs -->
+        <div class="border border-gray-200 rounded-lg overflow-hidden mb-4">
+          <div class="bg-gray-50 border-b border-gray-200 px-4 py-3">
+            <p class="text-sm font-medium text-gray-700">Add the GTM snippet to your site:</p>
+          </div>
+          <div class="p-4 space-y-4">
+            <div>
+              <h4 class="font-medium text-gray-800 text-sm mb-1">Webflow</h4>
+              <p class="text-sm text-gray-600">Project Settings &rarr; Custom Code &rarr; paste in Head section</p>
+            </div>
+            <div class="border-t border-gray-100 pt-4">
+              <h4 class="font-medium text-gray-800 text-sm mb-1">WordPress</h4>
+              <p class="text-sm text-gray-600">Install the <a href="https://wordpress.org/plugins/duracelltomi-google-tag-manager/" target="_blank" rel="noopener" class="text-indigo-600 underline">GTM4WP plugin</a> and enter your container ID</p>
+            </div>
+            <div class="border-t border-gray-100 pt-4">
+              <h4 class="font-medium text-gray-800 text-sm mb-1">Squarespace</h4>
+              <p class="text-sm text-gray-600">Settings &rarr; Developer Tools &rarr; Code Injection &rarr; paste in Header</p>
+            </div>
+            <div class="border-t border-gray-100 pt-4">
+              <h4 class="font-medium text-gray-800 text-sm mb-1">Any other site</h4>
+              <p class="text-sm text-gray-600">Paste the GTM snippet into your HTML <code class="bg-gray-100 px-1 rounded text-xs">&lt;head&gt;</code> tag. <a href="https://support.google.com/tagmanager/answer/6103696" target="_blank" rel="noopener" class="text-indigo-600 underline">Google's installation guide</a></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
+          <strong>Important:</strong> Configure your client-side GTM container to send data to your sGTM server URL
+          (from Step 1). In GTM, go to <strong>Admin</strong> &rarr; <strong>Container Settings</strong> &rarr; set the
+          <strong>Server Container URL</strong> to your sGTM URL.
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== Step 3: Add the mbuzz tag ========== -->
+    <div id="step-3" class="mb-12 scroll-mt-24">
+      <div class="flex items-center gap-4 mb-4">
+        <div class="flex-shrink-0 w-10 h-10 bg-green-600 text-white rounded-full flex items-center justify-center font-bold text-lg">3</div>
+        <h3 class="text-xl font-semibold text-gray-900">Add the mbuzz tag to your sGTM container</h3>
+      </div>
+      <div class="pl-14">
+        <p class="text-gray-600 mb-6">
+          This is where mbuzz gets connected. You'll import our tag template, then create one tag per call type.
+          mbuzz uses a <strong>4-call model</strong>: Session, Event, Conversion, and Identify. Each tag is a separate
+          instance of the same template with different settings.
+        </p>
+
+        <div class="bg-white border border-gray-200 rounded-lg divide-y divide-gray-200">
+
+          <!-- ===== Sub-step 3a: Import the template ===== -->
+          <div class="p-5">
+            <div class="flex items-start gap-3">
+              <span class="flex-shrink-0 w-7 h-7 bg-green-100 text-green-700 rounded-full flex items-center justify-center text-xs font-bold">a</span>
+              <div class="flex-1">
+                <h4 class="font-semibold text-gray-900 mb-2">Import the mbuzz tag template</h4>
+                <ol class="list-decimal list-inside text-sm text-gray-600 space-y-1.5">
+                  <li>Open your <strong>server-side</strong> GTM container (not the client-side one)</li>
+                  <li>Click <strong>Templates</strong> in the left sidebar</li>
+                  <li>Under Tag Templates, click <strong>Search Gallery</strong></li>
+                  <li>Search for <strong>"mbuzz"</strong></li>
+                  <li>Click <strong>Add to workspace</strong>, then <strong>Add</strong></li>
+                </ol>
+                <div class="mt-3 bg-gray-50 border border-gray-200 rounded p-3 text-xs text-gray-500">
+                  <strong>Manual import:</strong> Download from
+                  <a href="https://github.com/mbuzzco/mbuzz-sgtm" target="_blank" rel="noopener" class="text-indigo-600 underline">github.com/mbuzzco/mbuzz-sgtm</a>.
+                  In GTM: Templates &rarr; New &rarr; Import &rarr; select the <code class="bg-gray-100 px-1 rounded">template.tpl</code> file.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== Sub-step 3b: Session tag ===== -->
+          <div class="p-5">
+            <div class="flex items-start gap-3">
+              <span class="flex-shrink-0 w-7 h-7 bg-green-100 text-green-700 rounded-full flex items-center justify-center text-xs font-bold">b</span>
+              <div class="flex-1">
+                <h4 class="font-semibold text-gray-900 mb-1">Create the Session tag</h4>
+                <p class="text-sm text-gray-500 mb-3">
+                  Fires on <strong>every page view</strong>. Creates visitors and sessions with full attribution (UTM params, referrer, channel).
+                  This is the foundation — all other tags depend on it.
+                </p>
+
+                <ol class="list-decimal list-inside text-sm text-gray-600 space-y-1.5 mb-4">
+                  <li>Go to <strong>Tags</strong> &rarr; <strong>New</strong></li>
+                  <li>Name it: <code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs">mbuzz - Session</code></li>
+                  <li>Tag type: <strong>mbuzz — Server-Side Attribution</strong></li>
+                  <li>Fill in the fields:</li>
+                </ol>
+
+                <!-- Tag config visual -->
+                <div class="bg-gray-50 rounded-lg border border-gray-200 p-4 mb-4">
+                  <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Tag Configuration</div>
+                  <div class="space-y-3">
+                    <div class="grid grid-cols-2 gap-3">
+                      <div>
+                        <div class="text-xs text-gray-500 mb-1">API Key <span class="text-red-400">*</span></div>
+                        <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-700 font-mono">sk_live_your_key_here</div>
+                      </div>
+                      <div>
+                        <div class="text-xs text-gray-500 mb-1">Call Type <span class="text-red-400">*</span></div>
+                        <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-700">Session</div>
+                      </div>
+                    </div>
+                    <div class="text-xs text-gray-400 italic">No other fields needed for Session tags. URL, referrer, and UTM params are captured automatically.</div>
+                  </div>
+                </div>
+
+                <ol start="5" class="list-decimal list-inside text-sm text-gray-600 space-y-1.5 mb-3">
+                  <li>Set the <strong>Trigger</strong> to <strong>All Pages</strong> (the default Page View trigger)</li>
+                  <li>Click <strong>Save</strong></li>
+                </ol>
+
+                <div class="bg-green-50 border border-green-200 rounded p-3 text-xs text-green-700">
+                  <strong>What this does:</strong> On every page view, the tag reads (or creates) a visitor ID cookie,
+                  computes a device fingerprint, and calls <code class="bg-green-100 px-1 rounded">POST /api/v1/sessions</code>.
+                  mbuzz extracts UTM params from the URL, classifies the traffic channel, and creates or continues a session.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== Sub-step 3c: Event tag ===== -->
+          <div class="p-5">
+            <div class="flex items-start gap-3">
+              <span class="flex-shrink-0 w-7 h-7 bg-green-100 text-green-700 rounded-full flex items-center justify-center text-xs font-bold">c</span>
+              <div class="flex-1">
+                <h4 class="font-semibold text-gray-900 mb-1">Create Event tags</h4>
+                <p class="text-sm text-gray-500 mb-3">
+                  Track mid-funnel actions: form submissions, button clicks, video plays, add-to-cart, etc.
+                  Create one tag per event type, or use a GTM variable for the event name.
+                </p>
+
+                <ol class="list-decimal list-inside text-sm text-gray-600 space-y-1.5 mb-4">
+                  <li>Go to <strong>Tags</strong> &rarr; <strong>New</strong></li>
+                  <li>Name it: <code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs">mbuzz - Event - Form Submit</code> (use your event name)</li>
+                  <li>Tag type: <strong>mbuzz — Server-Side Attribution</strong></li>
+                  <li>Fill in the fields:</li>
+                </ol>
+
+                <!-- Tag config visual -->
+                <div class="bg-gray-50 rounded-lg border border-gray-200 p-4 mb-4">
+                  <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Tag Configuration</div>
+                  <div class="space-y-3">
+                    <div class="grid grid-cols-2 gap-3">
+                      <div>
+                        <div class="text-xs text-gray-500 mb-1">API Key <span class="text-red-400">*</span></div>
+                        <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-700 font-mono">sk_live_your_key_here</div>
+                      </div>
+                      <div>
+                        <div class="text-xs text-gray-500 mb-1">Call Type <span class="text-red-400">*</span></div>
+                        <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-700">Event</div>
+                      </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                      <div>
+                        <div class="text-xs text-gray-500 mb-1">Event Type <span class="text-red-400">*</span></div>
+                        <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-700">form_submit</div>
+                      </div>
+                      <div>
+                        <div class="text-xs text-gray-500 mb-1">Custom Properties <span class="text-gray-400">(optional)</span></div>
+                        <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-400 italic">form_name = Contact Us</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <ol start="5" class="list-decimal list-inside text-sm text-gray-600 space-y-1.5 mb-3">
+                  <li>Set the <strong>Trigger</strong> to your custom event (e.g. a <code class="bg-gray-100 px-1 rounded text-xs">form_submit</code> custom event trigger)</li>
+                  <li>Click <strong>Advanced Settings</strong> &rarr; <strong>Tag Sequencing</strong></li>
+                  <li>Check <strong>"Fire a tag before this tag fires"</strong> &rarr; select <code class="bg-gray-100 px-1 rounded text-xs">mbuzz - Session</code></li>
+                  <li>Click <strong>Save</strong></li>
+                </ol>
+
+                <div class="bg-blue-50 border border-blue-200 rounded p-3 text-xs text-blue-700">
+                  <strong>Tag sequencing is critical.</strong> The Session tag must fire before any Event tag. Without it,
+                  mbuzz doesn't know who the visitor is, and the event will be rejected.
+                </div>
+
+                <div class="mt-3 bg-gray-50 border border-gray-200 rounded p-3 text-xs text-gray-500">
+                  <strong>Common event types:</strong>
+                  <code class="bg-gray-100 px-1 rounded">form_submit</code>,
+                  <code class="bg-gray-100 px-1 rounded">add_to_cart</code>,
+                  <code class="bg-gray-100 px-1 rounded">button_click</code>,
+                  <code class="bg-gray-100 px-1 rounded">video_play</code>,
+                  <code class="bg-gray-100 px-1 rounded">scroll_depth</code>,
+                  <code class="bg-gray-100 px-1 rounded">file_download</code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== Sub-step 3d: Conversion tag ===== -->
+          <div class="p-5">
+            <div class="flex items-start gap-3">
+              <span class="flex-shrink-0 w-7 h-7 bg-green-100 text-green-700 rounded-full flex items-center justify-center text-xs font-bold">d</span>
+              <div class="flex-1">
+                <h4 class="font-semibold text-gray-900 mb-1">Create the Conversion tag</h4>
+                <p class="text-sm text-gray-500 mb-3">
+                  Fires when a visitor completes a goal — purchase, signup, lead form, demo booking.
+                  This triggers multi-touch attribution calculation in mbuzz.
+                </p>
+
+                <ol class="list-decimal list-inside text-sm text-gray-600 space-y-1.5 mb-4">
+                  <li>Go to <strong>Tags</strong> &rarr; <strong>New</strong></li>
+                  <li>Name it: <code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs">mbuzz - Conversion - Purchase</code> (use your conversion name)</li>
+                  <li>Tag type: <strong>mbuzz — Server-Side Attribution</strong></li>
+                  <li>Fill in the fields:</li>
+                </ol>
+
+                <!-- Tag config visual -->
+                <div class="bg-gray-50 rounded-lg border border-gray-200 p-4 mb-4">
+                  <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Tag Configuration</div>
+                  <div class="space-y-3">
+                    <div class="grid grid-cols-2 gap-3">
+                      <div>
+                        <div class="text-xs text-gray-500 mb-1">API Key <span class="text-red-400">*</span></div>
+                        <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-700 font-mono">sk_live_your_key_here</div>
+                      </div>
+                      <div>
+                        <div class="text-xs text-gray-500 mb-1">Call Type <span class="text-red-400">*</span></div>
+                        <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-700">Conversion</div>
+                      </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                      <div>
+                        <div class="text-xs text-gray-500 mb-1">Conversion Type <span class="text-red-400">*</span></div>
+                        <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-700">purchase</div>
+                      </div>
+                      <div>
+                        <div class="text-xs text-gray-500 mb-1">Revenue <span class="text-gray-400">(optional)</span></div>
+                        <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-500 font-mono">{{Revenue}}</div>
+                      </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                      <div>
+                        <div class="text-xs text-gray-500 mb-1">Currency <span class="text-gray-400">(optional)</span></div>
+                        <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-700">USD</div>
+                      </div>
+                      <div>
+                        <div class="text-xs text-gray-500 mb-1">Custom Properties <span class="text-gray-400">(optional)</span></div>
+                        <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-400 italic">order_id = {{Order ID}}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <ol start="5" class="list-decimal list-inside text-sm text-gray-600 space-y-1.5 mb-3">
+                  <li>Set the <strong>Trigger</strong> to your conversion event (e.g. <code class="bg-gray-100 px-1 rounded text-xs">purchase</code> or <code class="bg-gray-100 px-1 rounded text-xs">generate_lead</code>)</li>
+                  <li>Click <strong>Advanced Settings</strong> &rarr; <strong>Tag Sequencing</strong></li>
+                  <li>Check <strong>"Fire a tag before this tag fires"</strong> &rarr; select <code class="bg-gray-100 px-1 rounded text-xs">mbuzz - Session</code></li>
+                  <li>Click <strong>Save</strong></li>
+                </ol>
+
+                <div class="bg-green-50 border border-green-200 rounded p-3 text-xs text-green-700">
+                  <strong>What this does:</strong> Calls <code class="bg-green-100 px-1 rounded">POST /api/v1/conversions</code>
+                  with the visitor ID, conversion type, and revenue. mbuzz looks at all sessions for this visitor and
+                  calculates multi-touch attribution credit across every channel that contributed.
+                </div>
+
+                <div class="mt-3 bg-gray-50 border border-gray-200 rounded p-3 text-xs text-gray-500">
+                  <strong>Common conversion types:</strong>
+                  <code class="bg-gray-100 px-1 rounded">purchase</code>,
+                  <code class="bg-gray-100 px-1 rounded">signup</code>,
+                  <code class="bg-gray-100 px-1 rounded">lead</code>,
+                  <code class="bg-gray-100 px-1 rounded">demo_booked</code>,
+                  <code class="bg-gray-100 px-1 rounded">trial_started</code>,
+                  <code class="bg-gray-100 px-1 rounded">subscription</code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== Sub-step 3e: Identify tag ===== -->
+          <div class="p-5 bg-gray-50">
+            <div class="flex items-start gap-3">
+              <span class="flex-shrink-0 w-7 h-7 bg-green-100 text-green-700 rounded-full flex items-center justify-center text-xs font-bold">e</span>
+              <div class="flex-1">
+                <h4 class="font-semibold text-gray-900 mb-1">Create the Identify tag <span class="text-sm font-normal text-gray-500">(optional)</span></h4>
+                <p class="text-sm text-gray-500 mb-3">
+                  Links an anonymous visitor to a known user from your CRM, auth system, or email list.
+                  Fire this when a user logs in, signs up, or submits their email.
+                </p>
+
+                <ol class="list-decimal list-inside text-sm text-gray-600 space-y-1.5 mb-4">
+                  <li>Go to <strong>Tags</strong> &rarr; <strong>New</strong></li>
+                  <li>Name it: <code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs">mbuzz - Identify</code></li>
+                  <li>Tag type: <strong>mbuzz — Server-Side Attribution</strong></li>
+                  <li>Fill in the fields:</li>
+                </ol>
+
+                <!-- Tag config visual -->
+                <div class="bg-white rounded-lg border border-gray-200 p-4 mb-4">
+                  <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Tag Configuration</div>
+                  <div class="space-y-3">
+                    <div class="grid grid-cols-2 gap-3">
+                      <div>
+                        <div class="text-xs text-gray-500 mb-1">API Key <span class="text-red-400">*</span></div>
+                        <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-700 font-mono">sk_live_your_key_here</div>
+                      </div>
+                      <div>
+                        <div class="text-xs text-gray-500 mb-1">Call Type <span class="text-red-400">*</span></div>
+                        <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-700">Identify</div>
+                      </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                      <div>
+                        <div class="text-xs text-gray-500 mb-1">User ID <span class="text-red-400">*</span></div>
+                        <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-500 font-mono">{{User ID}}</div>
+                      </div>
+                      <div>
+                        <div class="text-xs text-gray-500 mb-1">Custom Properties <span class="text-gray-400">(traits)</span></div>
+                        <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-400 italic">email = {{User Email}}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <ol start="5" class="list-decimal list-inside text-sm text-gray-600 space-y-1.5 mb-3">
+                  <li>Set the <strong>Trigger</strong> to your login or signup event</li>
+                  <li>Click <strong>Advanced Settings</strong> &rarr; <strong>Tag Sequencing</strong></li>
+                  <li>Check <strong>"Fire a tag before this tag fires"</strong> &rarr; select <code class="bg-gray-100 px-1 rounded text-xs">mbuzz - Session</code></li>
+                  <li>Click <strong>Save</strong></li>
+                </ol>
+
+                <div class="bg-blue-50 border border-blue-200 rounded p-3 text-xs text-blue-700">
+                  <strong>When to use Identify:</strong> Use a GTM variable (like a dataLayer variable) to get the User ID.
+                  For example, push <code class="bg-blue-100 px-1 rounded">dataLayer.push({event: 'login', userId: '12345'})</code>
+                  from your site, then use <code class="bg-blue-100 px-1 rounded">{{DLV - userId}}</code> as the User ID in the tag.
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Summary: what you should have -->
+        <div class="mt-6 bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+          <p class="text-sm text-indigo-800 font-medium mb-2">After Step 3, you should have these tags:</p>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div class="bg-white rounded px-3 py-2 text-xs text-center border border-indigo-100">
+              <div class="font-semibold text-indigo-900">mbuzz - Session</div>
+              <div class="text-indigo-500">All Pages trigger</div>
+            </div>
+            <div class="bg-white rounded px-3 py-2 text-xs text-center border border-indigo-100">
+              <div class="font-semibold text-indigo-900">mbuzz - Event</div>
+              <div class="text-indigo-500">Custom event triggers</div>
+            </div>
+            <div class="bg-white rounded px-3 py-2 text-xs text-center border border-indigo-100">
+              <div class="font-semibold text-indigo-900">mbuzz - Conversion</div>
+              <div class="text-indigo-500">Conversion triggers</div>
+            </div>
+            <div class="bg-white rounded px-3 py-2 text-xs text-center border border-indigo-100">
+              <div class="font-semibold text-indigo-900">mbuzz - Identify</div>
+              <div class="text-indigo-500">Login/signup trigger</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== Step 4: Test ========== -->
+    <div id="step-4" class="mb-12 scroll-mt-24">
+      <div class="flex items-center gap-4 mb-4">
+        <div class="flex-shrink-0 w-10 h-10 bg-amber-500 text-white rounded-full flex items-center justify-center font-bold text-lg">4</div>
+        <h3 class="text-xl font-semibold text-gray-900">Test before publishing</h3>
+      </div>
+      <div class="pl-14">
+        <p class="text-gray-600 mb-4">
+          GTM has a built-in preview mode that lets you verify everything works before going live.
+        </p>
+
+        <div class="space-y-4">
+          <div class="flex items-start gap-3">
+            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-bold">1</div>
+            <div class="text-sm text-gray-700">
+              In your sGTM container, click <strong>Preview</strong> (top right). Enter your website URL.
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-bold">2</div>
+            <div class="text-sm text-gray-700">
+              Visit your website in the new tab. Browse a few pages.
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-bold">3</div>
+            <div class="text-sm text-gray-700">
+              In the GTM preview panel, you should see the <code class="bg-gray-100 px-1 rounded text-xs">mbuzz - Session</code> tag
+              firing with a <span class="text-green-600 font-medium">green checkmark</span> on each page view.
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-bold">4</div>
+            <div class="text-sm text-gray-700">
+              Open your <strong>mbuzz dashboard</strong>. Go to the <strong>Events</strong> tab. You should see your session appear within seconds.
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-bold">5</div>
+            <div class="text-sm text-gray-700">
+              Trigger a conversion (e.g. submit a test order). Verify it appears in the <strong>Conversions</strong> tab.
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-bold">6</div>
+            <div class="text-sm text-gray-700">
+              Everything working? Click <strong>Submit</strong> in GTM to publish your changes.
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
+          <p class="text-sm text-green-800">
+            <strong>Tip:</strong> Use a <code class="bg-green-100 px-1 rounded text-xs">sk_test_*</code> API key during testing.
+            Switch to <code class="bg-green-100 px-1 rounded text-xs">sk_live_*</code> when you're ready to go live.
+            Test data stays separate from production data.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION: How it works under the hood -->
+  <!-- ============================================================ -->
+  <div class="mb-16">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">How It Works Under the Hood</h2>
+    <p class="text-gray-600 mb-6">You don't need to know this to use the integration. But if you're curious about what the mbuzz tag actually does:</p>
+
+    <!-- Visual: What happens on each page view -->
+    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden mb-8">
+      <div class="bg-gray-50 border-b border-gray-200 px-6 py-3">
+        <h3 class="font-medium text-gray-700">What happens on every page view</h3>
+      </div>
+      <div class="p-6">
+        <div class="space-y-4">
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-700 rounded-lg flex items-center justify-center text-xs font-bold">1</div>
+            <div>
+              <div class="font-medium text-gray-900 text-sm">Cookie check</div>
+              <div class="text-sm text-gray-500">Tag looks for the <code class="bg-gray-100 px-1 rounded text-xs">_mbuzz_vid</code> cookie. If it's a new visitor, generates a random 64-character ID and sets the cookie (first-party, 2-year expiry, HttpOnly).</div>
+            </div>
+          </div>
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-700 rounded-lg flex items-center justify-center text-xs font-bold">2</div>
+            <div>
+              <div class="font-medium text-gray-900 text-sm">Device fingerprint</div>
+              <div class="text-sm text-gray-500">Computes a fingerprint from the visitor's IP and browser: <code class="bg-gray-100 px-1 rounded text-xs">SHA256(ip|user_agent)</code>. This is how mbuzz links sessions to the same device.</div>
+            </div>
+          </div>
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-700 rounded-lg flex items-center justify-center text-xs font-bold">3</div>
+            <div>
+              <div class="font-medium text-gray-900 text-sm">Session creation</div>
+              <div class="text-sm text-gray-500">Sends the visitor ID, page URL, referrer, and fingerprint to mbuzz. The server extracts UTM parameters, classifies the traffic channel (paid search, organic, social, etc.), and creates or continues a session.</div>
+            </div>
+          </div>
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-700 rounded-lg flex items-center justify-center text-xs font-bold">4</div>
+            <div>
+              <div class="font-medium text-gray-900 text-sm">Attribution</div>
+              <div class="text-sm text-gray-500">When a conversion fires, mbuzz looks at all sessions for that visitor and calculates multi-touch attribution credit across channels.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Channel attribution -->
+    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      <div class="bg-gray-50 border-b border-gray-200 px-6 py-3">
+        <h3 class="font-medium text-gray-700">Automatic channel classification</h3>
+      </div>
+      <div class="p-6">
+        <p class="text-sm text-gray-600 mb-4">mbuzz automatically classifies every session into a channel based on UTM parameters and referrer:</p>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <div class="bg-blue-50 text-blue-800 text-xs font-medium px-3 py-2 rounded text-center">Paid Search</div>
+          <div class="bg-green-50 text-green-800 text-xs font-medium px-3 py-2 rounded text-center">Organic Search</div>
+          <div class="bg-purple-50 text-purple-800 text-xs font-medium px-3 py-2 rounded text-center">Paid Social</div>
+          <div class="bg-pink-50 text-pink-800 text-xs font-medium px-3 py-2 rounded text-center">Organic Social</div>
+          <div class="bg-amber-50 text-amber-800 text-xs font-medium px-3 py-2 rounded text-center">Email</div>
+          <div class="bg-cyan-50 text-cyan-800 text-xs font-medium px-3 py-2 rounded text-center">Display</div>
+          <div class="bg-orange-50 text-orange-800 text-xs font-medium px-3 py-2 rounded text-center">Affiliate</div>
+          <div class="bg-indigo-50 text-indigo-800 text-xs font-medium px-3 py-2 rounded text-center">Referral</div>
+          <div class="bg-red-50 text-red-800 text-xs font-medium px-3 py-2 rounded text-center">Video</div>
+          <div class="bg-violet-50 text-violet-800 text-xs font-medium px-3 py-2 rounded text-center">AI</div>
+          <div class="bg-gray-100 text-gray-700 text-xs font-medium px-3 py-2 rounded text-center">Direct</div>
+          <div class="bg-gray-100 text-gray-500 text-xs font-medium px-3 py-2 rounded text-center">Other</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION: Tag reference -->
+  <!-- ============================================================ -->
+  <div class="mb-16">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Tag Configuration Reference</h2>
+
+    <div class="space-y-6">
+      <!-- Common fields -->
+      <div class="border border-gray-200 rounded-lg overflow-hidden">
+        <div class="bg-gray-50 border-b border-gray-200 px-5 py-3">
+          <h3 class="font-medium text-gray-700">Fields for all tag types</h3>
+        </div>
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="text-left px-5 py-2 text-gray-600 font-medium">Field</th>
+              <th class="text-left px-5 py-2 text-gray-600 font-medium">Required</th>
+              <th class="text-left px-5 py-2 text-gray-600 font-medium">Description</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr>
+              <td class="px-5 py-3 font-mono text-xs text-gray-800">API Key</td>
+              <td class="px-5 py-3 text-green-700 text-xs font-medium">Yes</td>
+              <td class="px-5 py-3 text-gray-600">Your mbuzz key (<code class="bg-gray-100 px-1 rounded text-xs">sk_live_*</code> or <code class="bg-gray-100 px-1 rounded text-xs">sk_test_*</code>)</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 font-mono text-xs text-gray-800">Call Type</td>
+              <td class="px-5 py-3 text-green-700 text-xs font-medium">Yes</td>
+              <td class="px-5 py-3 text-gray-600">Session, Event, Conversion, or Identify</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 font-mono text-xs text-gray-800">API URL</td>
+              <td class="px-5 py-3 text-gray-400 text-xs">No</td>
+              <td class="px-5 py-3 text-gray-600">Default: <code class="bg-gray-100 px-1 rounded text-xs">https://mbuzz.co/api/v1</code>. Only change for testing.</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 font-mono text-xs text-gray-800">Debug</td>
+              <td class="px-5 py-3 text-gray-400 text-xs">No</td>
+              <td class="px-5 py-3 text-gray-600">Log requests to sGTM console (disable in production)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Event-specific fields -->
+      <div class="border border-gray-200 rounded-lg overflow-hidden">
+        <div class="bg-gray-50 border-b border-gray-200 px-5 py-3">
+          <h3 class="font-medium text-gray-700">Additional fields for Event tags</h3>
+        </div>
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="text-left px-5 py-2 text-gray-600 font-medium">Field</th>
+              <th class="text-left px-5 py-2 text-gray-600 font-medium">Required</th>
+              <th class="text-left px-5 py-2 text-gray-600 font-medium">Description</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr>
+              <td class="px-5 py-3 font-mono text-xs text-gray-800">Event Type</td>
+              <td class="px-5 py-3 text-green-700 text-xs font-medium">Yes</td>
+              <td class="px-5 py-3 text-gray-600">Name of event (e.g. <code class="bg-gray-100 px-1 rounded text-xs">form_submit</code>, <code class="bg-gray-100 px-1 rounded text-xs">add_to_cart</code>)</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 font-mono text-xs text-gray-800">Custom Properties</td>
+              <td class="px-5 py-3 text-gray-400 text-xs">No</td>
+              <td class="px-5 py-3 text-gray-600">Key-value pairs (e.g. form name, button label)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Conversion-specific fields -->
+      <div class="border border-gray-200 rounded-lg overflow-hidden">
+        <div class="bg-gray-50 border-b border-gray-200 px-5 py-3">
+          <h3 class="font-medium text-gray-700">Additional fields for Conversion tags</h3>
+        </div>
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="text-left px-5 py-2 text-gray-600 font-medium">Field</th>
+              <th class="text-left px-5 py-2 text-gray-600 font-medium">Required</th>
+              <th class="text-left px-5 py-2 text-gray-600 font-medium">Description</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr>
+              <td class="px-5 py-3 font-mono text-xs text-gray-800">Conversion Type</td>
+              <td class="px-5 py-3 text-green-700 text-xs font-medium">Yes</td>
+              <td class="px-5 py-3 text-gray-600"><code class="bg-gray-100 px-1 rounded text-xs">purchase</code>, <code class="bg-gray-100 px-1 rounded text-xs">lead</code>, <code class="bg-gray-100 px-1 rounded text-xs">signup</code>, etc.</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 font-mono text-xs text-gray-800">Revenue</td>
+              <td class="px-5 py-3 text-gray-400 text-xs">No</td>
+              <td class="px-5 py-3 text-gray-600">Revenue amount (use a GTM variable like <code class="bg-gray-100 px-1 rounded text-xs">{{Revenue}}</code>)</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 font-mono text-xs text-gray-800">Currency</td>
+              <td class="px-5 py-3 text-gray-400 text-xs">No</td>
+              <td class="px-5 py-3 text-gray-600">Default: <code class="bg-gray-100 px-1 rounded text-xs">USD</code></td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 font-mono text-xs text-gray-800">Custom Properties</td>
+              <td class="px-5 py-3 text-gray-400 text-xs">No</td>
+              <td class="px-5 py-3 text-gray-600">Key-value pairs (e.g. order ID, product name)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Identify-specific fields -->
+      <div class="border border-gray-200 rounded-lg overflow-hidden">
+        <div class="bg-gray-50 border-b border-gray-200 px-5 py-3">
+          <h3 class="font-medium text-gray-700">Additional fields for Identify tags</h3>
+        </div>
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="text-left px-5 py-2 text-gray-600 font-medium">Field</th>
+              <th class="text-left px-5 py-2 text-gray-600 font-medium">Required</th>
+              <th class="text-left px-5 py-2 text-gray-600 font-medium">Description</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr>
+              <td class="px-5 py-3 font-mono text-xs text-gray-800">User ID</td>
+              <td class="px-5 py-3 text-green-700 text-xs font-medium">Yes</td>
+              <td class="px-5 py-3 text-gray-600">Your internal user ID (from CRM, auth, or email system)</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 font-mono text-xs text-gray-800">Custom Properties</td>
+              <td class="px-5 py-3 text-gray-400 text-xs">No</td>
+              <td class="px-5 py-3 text-gray-600">User traits as key-value pairs (e.g. email, name, plan)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION: Troubleshooting -->
+  <!-- ============================================================ -->
+  <div class="mb-16">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Troubleshooting</h2>
+
+    <div class="space-y-4">
+      <details class="border border-gray-200 rounded-lg overflow-hidden group">
+        <summary class="px-5 py-4 bg-white hover:bg-gray-50 cursor-pointer flex items-center justify-between">
+          <span class="font-medium text-gray-900">Tags not firing in preview mode</span>
+          <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </summary>
+        <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 text-sm text-gray-600 space-y-2">
+          <p><strong>Check 1:</strong> Are you in the <em>server-side</em> GTM container? The mbuzz tag is an sGTM tag, not a client-side tag. You should see "Server" in the GTM header.</p>
+          <p><strong>Check 2:</strong> Is your client-side GTM configured to send to your sGTM server? Go to Admin &rarr; Container Settings and check the Server Container URL.</p>
+          <p><strong>Check 3:</strong> Is the tag published? Click Submit in GTM to publish. Preview mode uses the unpublished workspace, so it should work — but double-check the tag is saved.</p>
+        </div>
+      </details>
+
+      <details class="border border-gray-200 rounded-lg overflow-hidden group">
+        <summary class="px-5 py-4 bg-white hover:bg-gray-50 cursor-pointer flex items-center justify-between">
+          <span class="font-medium text-gray-900">No data appearing in mbuzz dashboard</span>
+          <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </summary>
+        <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 text-sm text-gray-600 space-y-2">
+          <p><strong>Check 1:</strong> Is the API key correct? Copy it again from your mbuzz dashboard. Make sure it starts with <code class="bg-gray-100 px-1 rounded text-xs">sk_live_</code> (or <code class="bg-gray-100 px-1 rounded text-xs">sk_test_</code> for test mode).</p>
+          <p><strong>Check 2:</strong> Enable <strong>Debug</strong> mode on your tag and check the sGTM logs. Look for HTTP response codes — <code class="bg-gray-100 px-1 rounded text-xs">401</code> means wrong API key, <code class="bg-gray-100 px-1 rounded text-xs">422</code> means bad data.</p>
+          <p><strong>Check 3:</strong> Make sure the <strong>Session</strong> tag fires before any Event or Conversion tags. Without a session, events are rejected.</p>
+        </div>
+      </details>
+
+      <details class="border border-gray-200 rounded-lg overflow-hidden group">
+        <summary class="px-5 py-4 bg-white hover:bg-gray-50 cursor-pointer flex items-center justify-between">
+          <span class="font-medium text-gray-900">Events being rejected ("Visitor not found")</span>
+          <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </summary>
+        <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 text-sm text-gray-600 space-y-2">
+          <p>The Session tag must fire <strong>before</strong> any Event or Conversion tag. The session call creates the visitor — without it, mbuzz doesn't know who the event belongs to.</p>
+          <p><strong>Fix:</strong> Use <strong>Tag Sequencing</strong>. Edit your Event/Conversion tag &rarr; Advanced Settings &rarr; Tag Sequencing &rarr; check "Fire a tag before" &rarr; select <code class="bg-gray-100 px-1 rounded text-xs">mbuzz - Session</code>.</p>
+        </div>
+      </details>
+
+      <details class="border border-gray-200 rounded-lg overflow-hidden group">
+        <summary class="px-5 py-4 bg-white hover:bg-gray-50 cursor-pointer flex items-center justify-between">
+          <span class="font-medium text-gray-900">Cookie not being set</span>
+          <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </summary>
+        <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 text-sm text-gray-600 space-y-2">
+          <p><strong>Check 1:</strong> Your sGTM container must be on the <strong>same root domain</strong> as your website. If your site is <code class="bg-gray-100 px-1 rounded text-xs">example.com</code>, your sGTM should be <code class="bg-gray-100 px-1 rounded text-xs">gtm.example.com</code> (not a different domain).</p>
+          <p><strong>Check 2:</strong> Your sGTM container must use HTTPS. Cookies with <code class="bg-gray-100 px-1 rounded text-xs">Secure</code> flag require HTTPS.</p>
+          <p><strong>Check 3:</strong> If you specified a custom cookie domain in the tag settings, make sure it matches your site's domain.</p>
+        </div>
+      </details>
+
+      <details class="border border-gray-200 rounded-lg overflow-hidden group">
+        <summary class="px-5 py-4 bg-white hover:bg-gray-50 cursor-pointer flex items-center justify-between">
+          <span class="font-medium text-gray-900">I already use GA4 in my sGTM — do I need to change anything?</span>
+          <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </summary>
+        <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 text-sm text-gray-600 space-y-2">
+          <p><strong>No.</strong> The mbuzz tag runs alongside your existing tags. It doesn't interfere with GA4, Facebook CAPI, or any other tag. Just add the mbuzz tags and attach them to the same triggers your GA4 tags use.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION: Consent mode -->
+  <!-- ============================================================ -->
+  <div class="mb-16">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Consent Mode</h2>
+    <div class="bg-white border border-gray-200 rounded-lg p-6">
+      <p class="text-gray-700 mb-4">
+        If you use a Consent Management Platform (CMP) like Cookiebot or OneTrust, the mbuzz tag respects GTM's consent settings automatically:
+      </p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="bg-green-50 rounded-lg p-4">
+          <div class="font-medium text-green-800 text-sm mb-1">Consent granted</div>
+          <div class="text-sm text-green-700">Tag fires, cookie set, data tracked</div>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-4">
+          <div class="font-medium text-gray-700 text-sm mb-1">Consent denied</div>
+          <div class="text-sm text-gray-500">Tag does not fire, no cookie, no data</div>
+        </div>
+      </div>
+      <p class="text-sm text-gray-500 mt-4">
+        No extra configuration needed in the mbuzz tag. It inherits your GTM container's consent settings.
+      </p>
+    </div>
+  </div>
+</div>

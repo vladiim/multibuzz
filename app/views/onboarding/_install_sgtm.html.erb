@@ -2,158 +2,269 @@
   <!-- Prerequisites -->
   <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
     <p class="text-amber-800 text-sm">
-      <strong>Prerequisite:</strong> You need a server-side GTM container running on your own domain (e.g. <code class="bg-amber-100 px-1 rounded">gtm.yourdomain.com</code>). If you don't have one yet, see
-      <a href="https://developers.google.com/tag-platform/tag-manager/server-side" target="_blank" rel="noopener" class="text-amber-900 underline">Google's sGTM setup guide</a>.
+      <strong>Prerequisite:</strong> You need a server-side GTM container running on your own domain
+      (e.g. <code class="bg-amber-100 px-1 rounded">gtm.yourdomain.com</code>). Don't have one?
+      <a href="https://stape.io" target="_blank" rel="noopener" class="text-amber-900 underline font-medium">Stape.io</a>
+      has a free tier and takes ~5 minutes to set up.
     </p>
   </div>
 
   <!-- Step 1: Import Tag Template -->
   <div class="border border-gray-200 rounded-lg p-6">
-    <div class="flex items-start gap-4">
+    <div class="flex items-center gap-3 mb-4">
       <div class="flex-shrink-0 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-semibold">1</div>
-      <div class="flex-1">
-        <h3 class="text-lg font-medium text-gray-900 mb-2">Import the mbuzz Tag Template</h3>
-        <p class="text-gray-600 mb-4">Add the mbuzz tag to your server-side GTM container.</p>
+      <h3 class="text-lg font-medium text-gray-900">Import the mbuzz tag template</h3>
+    </div>
+    <div class="pl-11">
+      <ol class="list-decimal list-inside space-y-2 text-gray-700 mb-4">
+        <li>Open your <strong>server-side</strong> GTM container</li>
+        <li>Go to <strong>Templates</strong> &rarr; <strong>Tag Templates</strong> &rarr; <strong>Search Gallery</strong></li>
+        <li>Search for <strong>mbuzz</strong> and click <strong>Add to workspace</strong></li>
+        <li>Click <strong>Add</strong> to confirm</li>
+      </ol>
 
-        <ol class="list-decimal list-inside space-y-2 text-gray-700 mb-4">
-          <li>Open your <strong>server-side</strong> GTM container</li>
-          <li>Go to <strong>Templates</strong> → <strong>Tag Templates</strong> → <strong>Search Gallery</strong></li>
-          <li>Search for <strong>mbuzz</strong> and click <strong>Add to workspace</strong></li>
-          <li>Click <strong>Add</strong> to confirm</li>
-        </ol>
-
-        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm text-gray-600">
-          <strong>Alternative:</strong> Import manually from
-          <a href="https://github.com/mbuzzco/mbuzz-sgtm" target="_blank" rel="noopener" class="text-indigo-600 hover:text-indigo-800">github.com/mbuzzco/mbuzz-sgtm</a>
-          using <strong>Templates</strong> → <strong>New</strong> → <strong>Import</strong>.
-        </div>
+      <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-gray-600">
+        <strong>Manual import:</strong> Download from
+        <a href="https://github.com/mbuzzco/mbuzz-sgtm" target="_blank" rel="noopener" class="text-indigo-600 hover:text-indigo-800">github.com/mbuzzco/mbuzz-sgtm</a>.
+        In GTM: Templates &rarr; New &rarr; Import &rarr; select the <code class="bg-gray-100 px-1 rounded text-xs">template.tpl</code> file.
       </div>
     </div>
   </div>
 
   <!-- Step 2: Create Session Tag -->
   <div class="border border-gray-200 rounded-lg p-6">
-    <div class="flex items-start gap-4">
+    <div class="flex items-center gap-3 mb-4">
       <div class="flex-shrink-0 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-semibold">2</div>
-      <div class="flex-1">
-        <h3 class="text-lg font-medium text-gray-900 mb-2">Create the Session Tag</h3>
-        <p class="text-gray-600 mb-4">This tag fires on every page view to create visitors and sessions with attribution data.</p>
+      <h3 class="text-lg font-medium text-gray-900">Create the Session tag</h3>
+    </div>
+    <div class="pl-11">
+      <p class="text-gray-600 mb-4">This tag fires on every page view to create visitors and sessions with attribution data. It's the foundation — all other tags depend on it.</p>
 
-        <ol class="list-decimal list-inside space-y-2 text-gray-700 mb-4">
-          <li>Go to <strong>Tags</strong> → <strong>New</strong></li>
-          <li>Name it <code class="bg-gray-100 px-1 rounded">mbuzz - Session</code></li>
-          <li>Choose <strong>mbuzz - Server-Side Attribution</strong> as the tag type</li>
-          <li>Configure:</li>
-        </ol>
+      <ol class="list-decimal list-inside space-y-2 text-gray-700 mb-4">
+        <li>Go to <strong>Tags</strong> &rarr; <strong>New</strong></li>
+        <li>Name it <code class="bg-gray-100 px-1 rounded">mbuzz - Session</code></li>
+        <li>Choose <strong>mbuzz — Server-Side Attribution</strong> as the tag type</li>
+        <li>Configure:</li>
+      </ol>
 
-        <div class="bg-gray-50 rounded-lg p-4 mb-4">
-          <table class="w-full text-sm">
-            <tbody>
-              <tr class="border-b border-gray-200">
-                <td class="py-2 font-medium text-gray-700 w-40">Call Type</td>
-                <td class="py-2"><code class="bg-gray-100 px-1 rounded">Session</code></td>
-              </tr>
-              <tr class="border-b border-gray-200">
-                <td class="py-2 font-medium text-gray-700">API Key</td>
-                <td class="py-2">Your mbuzz API key (below)</td>
-              </tr>
-              <tr>
-                <td class="py-2 font-medium text-gray-700">Trigger</td>
-                <td class="py-2"><code class="bg-gray-100 px-1 rounded">Page View</code> (the default "All Pages" trigger)</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <% if @plaintext_api_key.present? %>
-          <div class="bg-slate-900 rounded-lg p-4 mb-4" data-controller="clipboard">
-            <div class="flex items-center justify-between">
-              <code class="text-green-400 text-sm font-mono break-all" data-clipboard-target="source"><%= @plaintext_api_key %></code>
-              <button type="button" data-action="click->clipboard#copy" data-clipboard-target="button" class="ml-3 px-3 py-1 bg-slate-700 hover:bg-slate-600 text-white text-xs rounded">
-                <span data-clipboard-target="label">Copy</span>
-              </button>
-            </div>
+      <!-- Visual config -->
+      <div class="bg-gray-50 rounded-lg border border-gray-200 p-4 mb-4">
+        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Tag Configuration</div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <div class="text-xs text-gray-500 mb-1">API Key <span class="text-red-400">*</span></div>
+            <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-700 font-mono">Your API key (below)</div>
           </div>
-        <% else %>
-          <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
-            <p class="text-amber-800 text-sm mb-2">Your API key is hidden for security. Regenerate to see the full key.</p>
-            <%= button_to "Regenerate API Key", onboarding_regenerate_api_key_path, method: :post, class: "px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium rounded" %>
+          <div>
+            <div class="text-xs text-gray-500 mb-1">Call Type <span class="text-red-400">*</span></div>
+            <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-700">Session</div>
           </div>
-        <% end %>
-
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
-          <strong>Important:</strong> The session tag must fire <strong>before</strong> any event or conversion tags. Use tag sequencing or firing priority to ensure this.
         </div>
+        <div class="mt-2 text-xs text-gray-400 italic">No other fields needed. URL, referrer, and UTM params are captured automatically.</div>
+      </div>
+
+      <ol start="5" class="list-decimal list-inside space-y-2 text-gray-700 mb-4">
+        <li>Set the trigger to <strong>All Pages</strong> (Page View)</li>
+        <li>Click <strong>Save</strong></li>
+      </ol>
+
+      <% if @plaintext_api_key.present? %>
+        <div class="bg-slate-900 rounded-lg p-4 mb-4" data-controller="clipboard">
+          <div class="text-xs text-slate-400 mb-1">Your API Key</div>
+          <div class="flex items-center justify-between">
+            <code class="text-green-400 text-sm font-mono break-all" data-clipboard-target="source"><%= @plaintext_api_key %></code>
+            <button type="button" data-action="click->clipboard#copy" data-clipboard-target="button" class="ml-3 px-3 py-1 bg-slate-700 hover:bg-slate-600 text-white text-xs rounded">
+              <span data-clipboard-target="label">Copy</span>
+            </button>
+          </div>
+        </div>
+      <% else %>
+        <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
+          <p class="text-amber-800 text-sm mb-2">Your API key is hidden for security. Regenerate to see the full key.</p>
+          <%= button_to "Regenerate API Key", onboarding_regenerate_api_key_path, method: :post, class: "px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium rounded" %>
+        </div>
+      <% end %>
+
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
+        <strong>Important:</strong> The Session tag must fire <strong>before</strong> any Event, Conversion, or Identify tags.
+        Use tag sequencing (shown below) to ensure this.
       </div>
     </div>
   </div>
 
-  <!-- Step 3: Create Event Tag (optional) -->
+  <!-- Step 3: Create Event Tag -->
   <div class="border border-gray-200 rounded-lg p-6">
-    <div class="flex items-start gap-4">
+    <div class="flex items-center gap-3 mb-4">
       <div class="flex-shrink-0 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-semibold">3</div>
-      <div class="flex-1">
-        <h3 class="text-lg font-medium text-gray-900 mb-2">Create Event Tags <span class="text-sm font-normal text-gray-500">(optional)</span></h3>
-        <p class="text-gray-600 mb-4">Track custom events like form submissions, button clicks, or scroll depth.</p>
+      <h3 class="text-lg font-medium text-gray-900">Create Event tags <span class="text-sm font-normal text-gray-500">(optional)</span></h3>
+    </div>
+    <div class="pl-11">
+      <p class="text-gray-600 mb-4">Track mid-funnel actions like form submissions, button clicks, or add-to-cart.</p>
 
-        <ol class="list-decimal list-inside space-y-2 text-gray-700 mb-4">
-          <li>Go to <strong>Tags</strong> → <strong>New</strong></li>
-          <li>Name it <code class="bg-gray-100 px-1 rounded">mbuzz - Event</code></li>
-          <li>Choose <strong>mbuzz - Server-Side Attribution</strong></li>
-          <li>Set Call Type to <code class="bg-gray-100 px-1 rounded">Event</code></li>
-          <li>Set Event Type (e.g. <code class="bg-gray-100 px-1 rounded">form_submit</code>)</li>
-          <li>Add a trigger for the specific event</li>
-        </ol>
+      <ol class="list-decimal list-inside space-y-2 text-gray-700 mb-4">
+        <li>Go to <strong>Tags</strong> &rarr; <strong>New</strong></li>
+        <li>Name it <code class="bg-gray-100 px-1 rounded">mbuzz - Event - Form Submit</code></li>
+        <li>Choose <strong>mbuzz — Server-Side Attribution</strong></li>
+        <li>Configure:</li>
+      </ol>
 
-        <p class="text-sm text-gray-500">Repeat for each event type you want to track.</p>
+      <!-- Visual config -->
+      <div class="bg-gray-50 rounded-lg border border-gray-200 p-4 mb-4">
+        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Tag Configuration</div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <div class="text-xs text-gray-500 mb-1">API Key <span class="text-red-400">*</span></div>
+            <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-700 font-mono">sk_live_your_key</div>
+          </div>
+          <div>
+            <div class="text-xs text-gray-500 mb-1">Call Type <span class="text-red-400">*</span></div>
+            <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-700">Event</div>
+          </div>
+          <div>
+            <div class="text-xs text-gray-500 mb-1">Event Type <span class="text-red-400">*</span></div>
+            <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-700">form_submit</div>
+          </div>
+          <div>
+            <div class="text-xs text-gray-500 mb-1">Custom Properties</div>
+            <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-400 italic">form_name = Contact</div>
+          </div>
+        </div>
       </div>
+
+      <ol start="5" class="list-decimal list-inside space-y-2 text-gray-700 mb-4">
+        <li>Set the trigger to your custom event</li>
+        <li><strong>Advanced Settings</strong> &rarr; <strong>Tag Sequencing</strong> &rarr; fire <code class="bg-gray-100 px-1 rounded text-xs">mbuzz - Session</code> before</li>
+        <li>Click <strong>Save</strong></li>
+      </ol>
     </div>
   </div>
 
   <!-- Step 4: Create Conversion Tag -->
   <div class="border border-gray-200 rounded-lg p-6">
-    <div class="flex items-start gap-4">
+    <div class="flex items-center gap-3 mb-4">
       <div class="flex-shrink-0 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-semibold">4</div>
-      <div class="flex-1">
-        <h3 class="text-lg font-medium text-gray-900 mb-2">Create Conversion Tag</h3>
-        <p class="text-gray-600 mb-4">Track conversions to calculate multi-touch attribution.</p>
+      <h3 class="text-lg font-medium text-gray-900">Create the Conversion tag</h3>
+    </div>
+    <div class="pl-11">
+      <p class="text-gray-600 mb-4">Track conversions to trigger multi-touch attribution. This is how mbuzz knows which channels drove results.</p>
 
-        <ol class="list-decimal list-inside space-y-2 text-gray-700 mb-4">
-          <li>Go to <strong>Tags</strong> → <strong>New</strong></li>
-          <li>Name it <code class="bg-gray-100 px-1 rounded">mbuzz - Conversion</code></li>
-          <li>Choose <strong>mbuzz - Server-Side Attribution</strong></li>
-          <li>Set Call Type to <code class="bg-gray-100 px-1 rounded">Conversion</code></li>
-          <li>Set Conversion Type (e.g. <code class="bg-gray-100 px-1 rounded">purchase</code> or <code class="bg-gray-100 px-1 rounded">lead</code>)</li>
-          <li>Set Revenue and Currency if applicable</li>
-          <li>Add a trigger for your conversion event</li>
-        </ol>
+      <ol class="list-decimal list-inside space-y-2 text-gray-700 mb-4">
+        <li>Go to <strong>Tags</strong> &rarr; <strong>New</strong></li>
+        <li>Name it <code class="bg-gray-100 px-1 rounded">mbuzz - Conversion - Purchase</code></li>
+        <li>Choose <strong>mbuzz — Server-Side Attribution</strong></li>
+        <li>Configure:</li>
+      </ol>
+
+      <!-- Visual config -->
+      <div class="bg-gray-50 rounded-lg border border-gray-200 p-4 mb-4">
+        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Tag Configuration</div>
+        <div class="space-y-3">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <div class="text-xs text-gray-500 mb-1">API Key <span class="text-red-400">*</span></div>
+              <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-700 font-mono">sk_live_your_key</div>
+            </div>
+            <div>
+              <div class="text-xs text-gray-500 mb-1">Call Type <span class="text-red-400">*</span></div>
+              <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-700">Conversion</div>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <div class="text-xs text-gray-500 mb-1">Conversion Type <span class="text-red-400">*</span></div>
+              <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-700">purchase</div>
+            </div>
+            <div>
+              <div class="text-xs text-gray-500 mb-1">Revenue</div>
+              <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-500 font-mono">{{Revenue}}</div>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <div class="text-xs text-gray-500 mb-1">Currency</div>
+              <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-700">USD</div>
+            </div>
+            <div>
+              <div class="text-xs text-gray-500 mb-1">Custom Properties</div>
+              <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-400 italic">order_id = {{Order ID}}</div>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <ol start="5" class="list-decimal list-inside space-y-2 text-gray-700 mb-4">
+        <li>Set the trigger to your conversion event (e.g. <code class="bg-gray-100 px-1 rounded text-xs">purchase</code>)</li>
+        <li><strong>Advanced Settings</strong> &rarr; <strong>Tag Sequencing</strong> &rarr; fire <code class="bg-gray-100 px-1 rounded text-xs">mbuzz - Session</code> before</li>
+        <li>Click <strong>Save</strong></li>
+      </ol>
     </div>
   </div>
 
-  <!-- Step 5: Test -->
-  <div class="border border-gray-200 rounded-lg p-6">
-    <div class="flex items-start gap-4">
+  <!-- Step 5: Create Identify Tag -->
+  <div class="border border-gray-200 rounded-lg p-6 bg-gray-50">
+    <div class="flex items-center gap-3 mb-4">
       <div class="flex-shrink-0 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-semibold">5</div>
-      <div class="flex-1">
-        <h3 class="text-lg font-medium text-gray-900 mb-2">Test in Preview Mode</h3>
-        <p class="text-gray-600 mb-4">Verify everything works before publishing.</p>
+      <h3 class="text-lg font-medium text-gray-900">Create the Identify tag <span class="text-sm font-normal text-gray-500">(optional)</span></h3>
+    </div>
+    <div class="pl-11">
+      <p class="text-gray-600 mb-4">Link anonymous visitors to known users when they log in or sign up.</p>
 
-        <ol class="list-decimal list-inside space-y-2 text-gray-700">
-          <li>Click <strong>Preview</strong> in your sGTM container</li>
-          <li>Visit your website in a new tab</li>
-          <li>In the preview panel, confirm the mbuzz Session tag fired</li>
-          <li>Trigger a conversion and confirm the Conversion tag fired</li>
-          <li>Check your <strong>mbuzz dashboard</strong> for the new session and events</li>
-          <li>If everything looks good, click <strong>Submit</strong> to publish</li>
-        </ol>
+      <!-- Visual config -->
+      <div class="bg-white rounded-lg border border-gray-200 p-4 mb-4">
+        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Tag Configuration</div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <div class="text-xs text-gray-500 mb-1">API Key <span class="text-red-400">*</span></div>
+            <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-700 font-mono">sk_live_your_key</div>
+          </div>
+          <div>
+            <div class="text-xs text-gray-500 mb-1">Call Type <span class="text-red-400">*</span></div>
+            <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-700">Identify</div>
+          </div>
+          <div>
+            <div class="text-xs text-gray-500 mb-1">User ID <span class="text-red-400">*</span></div>
+            <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-500 font-mono">{{User ID}}</div>
+          </div>
+          <div>
+            <div class="text-xs text-gray-500 mb-1">Custom Properties (traits)</div>
+            <div class="bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-400 italic">email = {{User Email}}</div>
+          </div>
+        </div>
+      </div>
+
+      <p class="text-sm text-gray-600">
+        Set the trigger to your login/signup event.
+        Tag sequencing: fire <code class="bg-gray-100 px-1 rounded text-xs">mbuzz - Session</code> before this tag.
+      </p>
+    </div>
+  </div>
+
+  <!-- Step 6: Test -->
+  <div class="border border-gray-200 rounded-lg p-6">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="flex-shrink-0 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-semibold">6</div>
+      <h3 class="text-lg font-medium text-gray-900">Test in Preview Mode</h3>
+    </div>
+    <div class="pl-11">
+      <ol class="list-decimal list-inside space-y-2 text-gray-700">
+        <li>Click <strong>Preview</strong> in your sGTM container</li>
+        <li>Visit your website in a new tab, browse a few pages</li>
+        <li>In the preview panel, confirm the <code class="bg-gray-100 px-1 rounded text-xs">mbuzz - Session</code> tag fires with a green checkmark</li>
+        <li>Trigger a conversion and confirm the Conversion tag fires</li>
+        <li>Check your <strong>mbuzz dashboard</strong> for the new session and events</li>
+        <li>If everything looks good, click <strong>Submit</strong> to publish</li>
+      </ol>
+
+      <div class="mt-4 bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-800">
+        <strong>Tip:</strong> Use a <code class="bg-green-100 px-1 rounded text-xs">sk_test_*</code> API key during testing.
+        Test data stays separate from production.
       </div>
     </div>
   </div>
 
   <!-- Docs link -->
   <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm text-gray-700">
-    For detailed tag configuration, trigger setup, consent mode, and troubleshooting, see the
+    For architecture diagrams, consent mode, troubleshooting, and advanced configuration, see the
     <a href="<%= docs_path('integrations-sgtm') %>" class="text-indigo-600 hover:text-indigo-800 font-medium">full sGTM documentation</a>.
   </div>
 </div>
