@@ -1,0 +1,240 @@
+---
+title: "Meta Just Removed Your Attribution Windows. Here's What Broke."
+slug: "meta-removed-attribution-windows"
+description: "On January 12, 2026, Meta permanently removed 7-day and 28-day view-through attribution windows from the Ads Insights API. Some advertisers lost 30-40% of reported conversions overnight. Learn what changed, why it matters, and how to fix your measurement."
+published_at: 2026-02-12
+section: fundamentals
+section_order: 6
+status: published
+priority: P0
+category: "Attribution Fundamentals"
+tags:
+  - Meta Ads
+  - Facebook Ads
+  - attribution windows
+  - view-through conversions
+  - platform attribution
+  - marketing measurement
+  - server-side tracking
+related_articles:
+  - ga4-attribution-models-removed
+  - platform-reports-dont-match
+  - what-is-multi-touch-attribution
+  - server-side-vs-client-side-tracking
+seo:
+  title: "Meta Removed Attribution Windows (Jan 2026): What Changed & What To Do"
+aeo:
+  target_query: "Meta ads attribution window removed 2026"
+  tldr: "On January 12, 2026, Meta permanently removed 7-day and 28-day view-through attribution windows from the Ads Insights API. Only 1-day view remains. Some advertisers lost 30-40% of reported conversions overnight. Three days later, Meta also killed campaigns using deprecated targeting interests. This is the biggest disruption to Meta attribution since iOS 14.5—and most advertisers missed the 3-month advance notice."
+  key_takeaways:
+    - "Meta removed 7-day and 28-day view-through attribution windows on January 12, 2026"
+    - "Only 1-day click and 1-day view windows remain in the Ads Insights API"
+    - "Some advertisers lost 30-40% of reported conversions overnight"
+    - "Historical data using removed windows is no longer queryable"
+    - "This follows a pattern: platforms keep changing the rules on attribution"
+  faq:
+    - q: "What exactly did Meta remove?"
+      a: "Meta removed the 7-day view (7d_view) and 28-day view (28d_view) attribution windows from the Ads Insights API on January 12, 2026. These windows tracked conversions from users who saw—but didn't click—an ad within 7 or 28 days. Only the 1-day view and click-based windows remain."
+    - q: "Why did my Meta conversion numbers drop suddenly?"
+      a: "If your reporting used 7-day or 28-day view-through windows, those conversions are no longer counted. Users who saw your ad and converted between days 2-28 are now invisible. This can represent 30-40% of previously reported conversions depending on your funnel length and creative strategy."
+    - q: "Can I still see historical data with the old attribution windows?"
+      a: "No. Meta stopped returning data for these windows entirely. The API parameters 7d_view and 28d_view simply return nothing. Historical reports that relied on these windows cannot be regenerated."
+    - q: "Did Meta give advance notice?"
+      a: "Meta announced the change in October 2024, giving roughly 3 months notice. However, most advertisers missed it because it was buried in API documentation updates rather than communicated prominently in Ads Manager."
+    - q: "How do I measure view-through conversions now?"
+      a: "Meta only provides 1-day view attribution natively. For longer view-through measurement, you need an independent attribution tool that tracks users across touchpoints server-side—capturing conversions that Meta can no longer report."
+schema:
+  type: Article
+  author: "holly-henderson"
+has_code_examples: false
+has_calculator: false
+has_download: false
+---
+
+<%= render_tldr(@article.tldr) %>
+
+## What Happened on January 12
+
+Meta permanently removed two attribution windows from the Ads Insights API:
+
+| Removed | What It Measured | Impact |
+|---------|-----------------|--------|
+| **7-day view** (`7d_view`) | Conversions within 7 days of seeing (not clicking) an ad | Gone |
+| **28-day view** (`28d_view`) | Conversions within 28 days of seeing an ad | Gone |
+
+What remains:
+
+| Still Available | What It Measures |
+|----------------|-----------------|
+| **1-day click** | Conversions within 1 day of clicking an ad |
+| **7-day click** | Conversions within 7 days of clicking an ad |
+| **28-day click** | Conversions within 28 days of clicking an ad |
+| **1-day view** | Conversions within 1 day of seeing an ad |
+
+The API parameters `action_attribution_windows=7d_view` and `action_attribution_windows=28d_view` simply stopped returning data. No error message. No fallback. Just empty results.
+
+Three days later—on January 15—Meta also stopped delivering campaigns that used targeting interests deprecated in June 2025. If your campaigns weren't updated, they went dark without warning.
+
+## Why This Matters More Than You Think
+
+This isn't a minor API tweak. For many advertisers, it broke reporting, erased historical baselines, and set off false alarms about campaign performance.
+
+### 30-40% of Conversions Just Disappeared
+
+For advertisers with longer consideration cycles, view-through conversions between days 2 and 28 represented a significant share of reported performance:
+
+<%= render "articles/embeds/attribution_window_before_after" %>
+
+### Historical Data Is Gone Too
+
+This isn't just a forward-looking change. Historical reports that queried 7-day or 28-day view windows can no longer be regenerated. If you were tracking trends using these windows, your historical baselines are broken.
+
+### Budget Decisions Based on Incomplete Data
+
+If your media team optimizes based on Meta-reported ROAS, the numbers just changed underneath them:
+
+| Metric | Before Jan 12 | After Jan 12 | Reality |
+|--------|--------------|--------------|---------|
+| **Reported ROAS** | 3.2x | 2.1x | Unchanged |
+| **Reported conversions** | 1,000 | 650 | Unchanged |
+| **Reported CPA** | $50 | $77 | Unchanged |
+
+The actual performance of your campaigns is identical. Only Meta's ability to claim credit changed. But if someone is watching these numbers without context, they'll conclude Meta performance collapsed—and potentially cut budget from campaigns that are working fine.
+
+<%= render_warning_box do %>
+  <strong>The dangerous reaction:</strong> Teams that see a sudden ROAS drop may cut Meta spend or shift budget to other platforms. But the conversions didn't disappear—Meta just stopped counting them. Cutting budget based on a measurement change, not a performance change, is how you destroy a working channel.
+<% end %>
+
+## The Pattern: Platforms Keep Changing the Rules
+
+This is not an isolated event. It's part of a pattern:
+
+| Date | Platform | What Changed | Impact |
+|------|----------|-------------|--------|
+| **Apr 2021** | Apple | iOS 14.5 ATT opt-in required | Meta lost ~50% of tracking signal |
+| **Jun 2021** | Meta | Reduced default window from 28-day to 7-day click | Reported conversions dropped |
+| **Late 2023** | Google | Removed first-touch, linear, time-decay, position-based from GA4 | [4 attribution models gone](/articles/ga4-attribution-models-removed) |
+| **Jan 2026** | Meta | Removed 7-day and 28-day view-through windows | 30-40% of view conversions invisible |
+
+Every time a platform changes its attribution rules, advertisers lose data and have to recalibrate. This is the fundamental problem with platform-controlled measurement: **you don't own the ruler.**
+
+Google decides how to credit. Meta decides what to count. And they can change the definitions at any time—without your input, often without your awareness.
+
+## What to Do Now
+
+### 1. Don't Panic-Cut Meta Budget
+
+The most important thing: **separate measurement changes from performance changes.**
+
+If your Meta campaigns were profitable before January 12, they're almost certainly still profitable. The conversions are still happening—Meta just can't see them anymore.
+
+Before making any budget decisions:
+- Compare conversion volume in your own analytics (not Meta's)
+- Check your actual revenue numbers for the same period
+- Look at CRM data for lead quality and pipeline
+- If nothing changed on your end, the campaigns are fine
+
+### 2. Update Your Reporting Baselines
+
+If you were tracking Meta performance using view-through windows, your year-over-year comparisons are broken. You need new baselines:
+
+| What to Do | How |
+|-----------|-----|
+| **Document the break** | Note January 12, 2026 as a measurement discontinuity in all reports |
+| **Recalculate baselines** | Re-pull historical data using 1-day view + click windows only |
+| **Flag affected dashboards** | Any dashboard using 7d or 28d view windows needs updating |
+| **Communicate to stakeholders** | Explain the change before someone sees a "drop" in performance |
+
+### 3. Switch to Independent Attribution
+
+Platform attribution has a structural problem: the platform measuring your ads is the same platform selling you ads. When they change the rules—and they will keep changing them—your data breaks.
+
+Independent attribution solves this by:
+
+1. **Tracking touchpoints yourself** — Server-side, across all channels
+2. **Applying consistent models** — You choose the attribution logic, not the platform
+3. **Owning your data** — No one can remove your attribution windows
+4. **Seeing the full journey** — Not just what one platform can see
+
+<%= render "articles/embeds/platform_vs_independent" %>
+
+### 4. Measure View-Through Independently
+
+View-through conversions are real. Someone sees an ad, doesn't click, and converts later. That's a legitimate touchpoint. Meta just can't track it beyond 1 day anymore.
+
+Server-side tracking can capture these journeys independently:
+
+1. Track ad impressions via the Meta Conversions API
+2. Match to downstream conversions in your own system
+3. Apply your own attribution window (7 days, 28 days, whatever fits your business)
+4. No dependency on Meta's API limitations
+
+This is more work than relying on Meta's numbers. But it's also more accurate, more durable, and entirely under your control.
+
+### 5. Run Incrementality Tests
+
+If you're unsure whether Meta is actually driving value (now that the numbers look different), test it directly:
+
+<%= render "articles/embeds/geo_holdout_test" %>
+
+Incrementality tests are immune to platform attribution changes because they measure real-world outcomes, not platform-reported credit.
+
+<%= render "articles/cta_banner",
+    title: "Stop Building on Platform Sand",
+    description: "mbuzz tracks touchpoints server-side, applies your choice of attribution model, and doesn't change the rules. Free up to #{free_event_limit_display} records/month.",
+    cta_text: "Start Free →",
+    style: :light %>
+
+## The Bigger Picture
+
+Meta's attribution window removal is a symptom of a larger shift: **platforms are retreating from measurement.**
+
+- Apple made tracking opt-in (iOS 14.5)
+- Google removed attribution models from GA4
+- Meta is shrinking attribution windows
+- Chrome's Privacy Sandbox limits cross-site tracking
+
+Each change reduces what platforms can tell you about your marketing. The companies that thrive in this environment are the ones building their own measurement infrastructure—first-party data, server-side tracking, independent attribution.
+
+The companies that keep relying on platform-reported numbers will keep getting surprised when those numbers change.
+
+## Summary
+
+On January 12, 2026, Meta removed 7-day and 28-day view-through attribution windows from the Ads Insights API.
+
+**What broke:**
+- 30-40% of view-through conversions are no longer reported
+- Historical data using these windows is gone
+- Year-over-year baselines are broken
+- ROAS appears to drop even though actual performance hasn't changed
+
+**What to do:**
+
+| Action | Priority |
+|--------|----------|
+| Don't cut Meta budget based on the measurement change | Immediate |
+| Document the break and update reporting baselines | This week |
+| Communicate the change to stakeholders | This week |
+| Implement independent attribution | This month |
+| Run incrementality tests to measure true Meta impact | This quarter |
+
+**The lesson:** Every time you trust a platform to measure itself, you accept the risk that the rules change without warning. The only durable measurement is the measurement you control.
+
+## Further Reading
+
+**On Platform Attribution Problems:**
+- [Why Your Platform Reports Don't Match](/articles/platform-reports-dont-match) — Cross-platform reconciliation
+- [Why Did GA4 Remove Attribution Models?](/articles/ga4-attribution-models-removed) — Google's parallel move
+
+**On Building Independent Measurement:**
+- [What is Multi-Touch Attribution?](/articles/what-is-multi-touch-attribution) — The complete MTA guide
+- [Server-Side vs Client-Side Tracking](/articles/server-side-vs-client-side-tracking) — Why server-side captures more
+
+**Sources:**
+- [Meta Ads Attribution Window Changes (Dataslayer)](https://www.dataslayer.ai/blog/meta-ads-attribution-window-removed-january-2026)
+- [Facebook Ads: Attribution Window Removals (Supermetrics)](https://docs.supermetrics.com/docs/facebook-ads-new-historical-limitations-attribution-window-and-metric-removals-january-12-2026)
+- [Meta Restricts Attribution Windows (PPC Land)](https://ppc.land/meta-restricts-attribution-windows-and-data-retention-in-ads-insights-api/)
+
+<%= render_key_takeaways(@article.key_takeaways) %>
+
+<%= render_faq(@article.faq) %>

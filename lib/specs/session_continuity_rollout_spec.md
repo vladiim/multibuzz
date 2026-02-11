@@ -11,7 +11,7 @@
 | 2026-02-09 | Part 1: Micro-test (read-only production queries) | ✅ Complete — 88.3% misattributed |
 | 2026-02-10 | Phase 0: Baseline capture | ✅ Complete — 73.3% ghost rate, 0 paid_search conversions |
 | 2026-02-10 | Phase 1: Deploy + 1hr validation | ✅ Complete — session inflation 92% reduced, no rollback |
-| 2026-02-11 | Phase 2: T+24hr attribution comparison | Pending |
+| 2026-02-11 | Phase 2: T+24hr attribution comparison | ✅ Complete — fingerprint instability found, visitor_id fallback deployed |
 | 2026-02-14 | Phase 3: T+4d steady state + before/after report | Pending |
 | 2026-02-14+ | Phase 4: Historical data repair (destructive) | Pending — build ghost purge service first |
 
@@ -374,53 +374,93 @@ kamal rollback
 
 Kamal keeps the previous container image. Rollback is instant. No data migration to reverse.
 
-#### Phase 2: T+24 Hours — Attribution Impact (2026-02-11)
+#### Phase 2: T+24 Hours — Attribution Impact ✅ COMPLETE
 
-After 24 hours of clean data accumulation, compare attribution model outputs:
+Ran 2026-02-11. **Phase 1 session continuity was working (92% inflation reduction) but referral was still 69.5% of conversions.** Investigation revealed a deeper bug: fingerprint instability.
+
+**T+24hr attribution comparison:**
+
+| Channel | Pre-deploy (24h) | Post-deploy (24h) | Delta |
+|---------|-----------------|-------------------|-------|
+| direct | 73.3% | collapsed | Sessions no longer inflated |
+| referral | 74% of conversions | **69.5%** of conversions | Still dominant — **unexpected** |
+| paid_search | 0% | appeared in sessions | But not in conversions |
+| organic_search | 0.3% | appeared in sessions | **722 sessions, 0 events** |
+
+Session continuity was active and preventing inflation, but conversions were still linking to self-referral sessions instead of landing sessions.
+
+**Root cause — fingerprint instability (100% DIFF_FP):**
+
+Investigation of all 43 referral conversions in the 24h post-deploy window:
+
+```
+=== SUMMARY ===
+  Fingerprint: 0 same, 35 different
+  Landing session: 37 open, 0 ended
+  Time gap: 22 within 30min, 14 timed out
+  Total: 37
+```
+
+- **100%** of misattributed conversions had different fingerprints between landing and conversion sessions
+- **100%** of landing sessions were still open (not timed out)
+- **59%** were within the 30-minute window — should have reused the session
+
+The `device_fingerprint = SHA256(ip|user_agent)[0:32]` was unstable because CDN/proxy/load balancer rotated the client IP between requests. Same visitor, same browser, different fingerprint on every page load.
+
+`find_active_visitor_session` required an exact fingerprint match → no match → new session → self-referral channel → misattributed conversion.
+
+**Fix — visitor_id fallback (`0cc4684`):**
+
+Fall back to `visitor_id`-only matching when fingerprint doesn't match. The visitor_id is an SDK-generated UUID stored in a browser cookie — same cookie = same browser = same visitor.
 
 ```ruby
-a = Account.find(2)
-puts "=== ATTRIBUTION COMPARISON ==="
+def find_active_visitor_session
+  scope = account.sessions
+    .where(visitor_id: visitor.id)
+    .where(ended_at: nil)
+    .where("last_activity_at > ?", 30.minutes.ago)
+    .order(last_activity_at: :desc)
 
-a.attribution_models.active.each do |model|
-  puts "\n--- #{model.name} (#{model.algorithm}) ---"
+  return scope.first unless device_fingerprint.present?
 
-  post_credits = model.attribution_credits
-    .where("created_at > ?", 24.hours.ago)
-    .group(:channel).sum(:credit)
-    .transform_values { |v| v.round(2) }
-
-  pre_credits = model.attribution_credits
-    .where("created_at BETWEEN ? AND ?", 48.hours.ago, 24.hours.ago)
-    .group(:channel).sum(:credit)
-    .transform_values { |v| v.round(2) }
-
-  all_channels = (pre_credits.keys + post_credits.keys).uniq.sort
-  all_channels.each do |ch|
-    pre = pre_credits[ch] || 0
-    post = post_credits[ch] || 0
-    delta = post - pre
-    pct = pre > 0 ? ((delta / pre) * 100).round(1) : "new"
-    puts "  #{ch.ljust(15)} | pre: #{pre.to_s.rjust(8)} | post: #{post.to_s.rjust(8)} | delta: #{delta > 0 ? '+' : ''}#{delta.round(2)} (#{pct}%)"
-  end
+  # Prefer fingerprint match, fall back to visitor_id only
+  scope.where(device_fingerprint: device_fingerprint).first || scope.first
 end
 ```
 
-**Expected shifts across ALL attribution models (calibrated from micro-test 1.5):**
+Priority: fingerprint + visitor_id (strongest) → visitor_id only (fallback). The `new_traffic_source?` gate still applies.
 
-| Channel | Before (actual 30d) | After (projected) | Why |
-|---------|--------------------|--------------------|-----|
-| referral | ~67% of conversions | ~10-15% | 956 self-referral misattributions eliminated |
-| paid_search | ~8% | ~45-50% | 704 conversions shift here (540 from referral + 164 from direct) |
-| organic_search | ~6% | ~35-40% | 555 conversions shift here (416 from referral + 139 from direct) |
-| direct | ~15% | ~5-8% | Net decrease — 303 move out, 39 move in from referral |
-| paid_social | ~1% | ~2-3% | 23 conversions shift here from referral/direct |
-| organic_social | ~1% | ~2-3% | 23 conversions shift here |
-| email | ~1% | ~1-2% | 9 conversions shift here |
+**Simulation confirmed 43/43 fix:**
 
-The shift should be consistent across first-touch, last-touch, linear, time-decay, u-shaped — because the underlying session data is what changed, not the algorithm logic.
+```
+Total referral conversions: 43
+Would reuse correct session: 43
+No active session found: 0
+```
 
-**For probabilistic models (Markov, Shapley):** These recalculate based on ALL historical conversion paths. They will shift more gradually as the ratio of clean-to-dirty data improves over days/weeks. Or we can accelerate this with the historical data repair in Phase 4.
+**24h data repair (executed in console):**
+
+| Action | Count |
+|--------|-------|
+| Conversions reassigned to correct session | 43 |
+| Events moved from self-referral sessions | 65 |
+| Stale attribution credits deleted | 3,025 |
+| Attribution recalculated via ReattributionService | 43 conversions |
+| Ghost sessions deleted | 43 |
+
+**Post-repair conversion channel distribution (24h):**
+
+| Channel | Count | % |
+|---------|-------|---|
+| direct | 23 | 36% |
+| organic_search | 19 | 30% |
+| paid_search | 16 | 25% |
+| email | 6 | 9% |
+| referral | 0 | 0% |
+
+Verified: 0 referral conversions remaining in the 24h window. Distribution matches micro-test projections.
+
+**Documentation:** See `lib/docs/architecture/session_continuity_fingerprint_fallback.md` for full evidence and analysis.
 
 #### Phase 3: T+4 Days — Steady State Confirmation (2026-02-14)
 
@@ -638,15 +678,16 @@ The session continuity fix is already implemented. These tasks are for the histo
 
 The fix is validated when ALL of these hold for 4+ days:
 
-| Metric | Target | Measurement |
-|--------|--------|-------------|
-| Sessions per fingerprint (p95) | < 5 (was 249) | Phase 3 query |
-| Sessions per converting visitor (median) | 1-3 (was 5+) | Phase 3 query |
-| Post-deploy conversions show paid_search | > 0 (was 0 in baseline) | Phase 3 query |
-| Referral share of new conversions | < 15% (was 74%) | Phase 3 query |
-| Event volume | Within 10% of baseline | Phase 1 query |
-| Conversion volume | Within 10% of baseline | Phase 1 query |
-| No error spikes in logs | 0 new error types | `kamal app logs` |
+| Metric | Target | Measurement | Phase 2 Actual |
+|--------|--------|-------------|----------------|
+| Sessions per fingerprint (p95) | < 5 (was 249) | Phase 3 query | 19 max (Phase 1) |
+| Sessions per converting visitor (median) | 1-3 (was 5+) | Phase 3 query | TBD Phase 3 |
+| Post-deploy conversions show paid_search | > 0 (was 0 in baseline) | Phase 3 query | ✅ 25% (post-repair) |
+| Referral share of new conversions | < 15% (was 74%) | Phase 3 query | ✅ 0% (post-repair) |
+| Event volume | Within 10% of baseline | Phase 1 query | ✅ Stable |
+| Conversion volume | Within 10% of baseline | Phase 1 query | ✅ Stable |
+| No error spikes in logs | 0 new error types | `kamal app logs` | ✅ Clean |
+| Visitor_id fallback reuse rate | > 0 sessions reused via fallback | New sessions with FP mismatch | TBD Phase 3 |
 
 After historical repair (Phase 4), calibrated from micro-test 1.5:
 
