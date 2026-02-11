@@ -16,7 +16,7 @@ production:
 
   data_integrity_surveillance:
     class: DataIntegrity::SurveillanceSchedulerJob
-    schedule: every 6 hours
+    schedule: every hour
 
   data_integrity_cleanup:
     class: DataIntegrity::CleanupJob

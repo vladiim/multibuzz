@@ -229,8 +229,15 @@ module Sessions
         initial_utm: normalized_utm,
         initial_referrer: referrer,
         channel: channel,
-        click_ids: click_ids
+        click_ids: click_ids,
+        suspect: suspect_session?
       }.compact
+    end
+
+    def suspect_session?
+      referrer.blank? &&
+        normalized_utm.values.none?(&:present?) &&
+        click_ids.empty?
     end
 
     def raw_utm_data

@@ -4,6 +4,8 @@ class Dashboard::BillingBannerTest < ActionDispatch::IntegrationTest
   setup do
     # Enable live mode so default view mode is production (no test mode banner)
     accounts(:one).update!(live_mode_enabled: true)
+    # Clear surveillance checks so data quality banner doesn't interfere
+    accounts(:one).data_integrity_checks.destroy_all
     sign_in_as users(:one)
   end
 

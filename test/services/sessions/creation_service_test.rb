@@ -601,6 +601,57 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
       "Different visitor_id should create new session, not reuse another visitor's"
   end
 
+  # --- Suspect Flag ---
+
+  test "session flagged suspect when no referrer, no UTM, no click_ids" do
+    result = Sessions::CreationService.new(account, {
+      visitor_id: "vis_suspect_1",
+      session_id: "sess_suspect_1",
+      url: "https://example.com/page"
+    }).call
+
+    assert result[:success]
+    session = account.sessions.find_by(session_id: "sess_suspect_1")
+    assert session.suspect?, "Session with no referrer, no UTM, no click_ids should be suspect"
+  end
+
+  test "session not suspect when it has a referrer" do
+    result = Sessions::CreationService.new(account, {
+      visitor_id: "vis_not_suspect_ref",
+      session_id: "sess_not_suspect_ref",
+      url: "https://example.com/page",
+      referrer: "https://www.google.com/"
+    }).call
+
+    assert result[:success]
+    session = account.sessions.find_by(session_id: "sess_not_suspect_ref")
+    refute session.suspect?, "Session with referrer should not be suspect"
+  end
+
+  test "session not suspect when it has UTM params" do
+    result = Sessions::CreationService.new(account, {
+      visitor_id: "vis_not_suspect_utm",
+      session_id: "sess_not_suspect_utm",
+      url: "https://example.com/page?utm_source=google&utm_medium=cpc"
+    }).call
+
+    assert result[:success]
+    session = account.sessions.find_by(session_id: "sess_not_suspect_utm")
+    refute session.suspect?, "Session with UTM params should not be suspect"
+  end
+
+  test "session not suspect when it has click_ids" do
+    result = Sessions::CreationService.new(account, {
+      visitor_id: "vis_not_suspect_click",
+      session_id: "sess_not_suspect_click",
+      url: "https://example.com/page?gclid=abc123"
+    }).call
+
+    assert result[:success]
+    session = account.sessions.find_by(session_id: "sess_not_suspect_click")
+    refute session.suspect?, "Session with click_ids should not be suspect"
+  end
+
   # --- Billing Usage ---
 
   test "should increment usage counter when new session is created with existing visitor" do

@@ -2,7 +2,7 @@
 
 **Date:** 2026-02-09
 **Priority:** P1
-**Status:** In Progress
+**Status:** Complete
 **Branch:** `feature/e1s4-content`
 
 ---
@@ -41,7 +41,7 @@ If this surveillance system had existed, every one of these would have triggered
 
 ```
 Solid Queue (scheduled)
-  → DataIntegrity::SurveillanceJob (runs every 6 hours per account)
+  → DataIntegrity::SurveillanceJob (runs every hour per account)
     → DataIntegrity::CheckRunner.new(account).call
       → Runs each Check (service object)
       → Stores results in data_integrity_checks table
@@ -456,13 +456,136 @@ Each check links to the relevant diagnostic query from the data integrity runboo
 
 ---
 
+### Phase 5: Real-Time Data Quality
+
+**Problem:** With 6-hour check intervals, up to 6 hours of degraded data can flow into customer dashboards undetected. Customers see potentially unreliable data with no indication of quality issues.
+
+**Solution:** Three complementary changes that close the detection gap.
+
+- [x] **5.1** Tighten surveillance to hourly
+- [x] **5.2** Add ingestion-time suspect flag to sessions
+- [x] **5.3** Add customer-facing data quality banner
+
+#### 5.1 Hourly Surveillance
+
+Change `config/recurring.yml` from `every 6 hours` to `every hour`. Detection latency drops from 6h → 1h.
+
+Trade-off: 6x more check rows per day (10 checks × 24 runs × N accounts). Mitigated by existing 30-day cleanup job.
+
+#### 5.2 Ingestion-Time Suspect Flag
+
+Add `suspect` boolean to sessions. Set at creation time in `Sessions::CreationService` when a session has **all** of:
+- No referrer (nil or empty)
+- No UTM params (nil or empty jsonb)
+- No click_ids (nil or empty jsonb)
+
+These are the hallmarks of a ghost session (the only missing signal is "0 events", which can't be known at creation time). Flagging at ingestion gives immediate signal without waiting for the next surveillance run.
+
+```ruby
+# In Sessions::CreationService, when building session attributes:
+def suspect_session?
+  referrer.blank? &&
+    normalized_utm.values.none?(&:present?) &&
+    click_ids.empty?
+end
+```
+
+The `suspect` flag is informational — it doesn't block or hide anything. It enables:
+- Fast queries: `account.sessions.where(suspect: true).count` (no subquery)
+- Real-time dashboards can show "X% of recent sessions are suspect"
+- GhostSessionRate check can use it as a pre-filter for faster execution
+
+**Migration:**
+
+```ruby
+add_column :sessions, :suspect, :boolean, default: false, null: false
+```
+
+**Note:** TimescaleDB hypertable — must use `ALTER TABLE` directly, not `add_column` with index. Guard with `return if Rails.env.test?` for any TimescaleDB-specific DDL.
+
+#### 5.3 Customer-Facing Data Quality Banner
+
+Add `_data_quality_banner.html.erb` to `app/views/shared/`. Rendered on the customer dashboard (same pattern as `_billing_banner.html.erb`).
+
+Uses the latest surveillance results for the account:
+
+| Account Status | Banner |
+|----------------|--------|
+| `healthy` | None (hidden) |
+| `warning` | Amber: "Some data quality metrics are outside normal ranges. Recent data may be less reliable." |
+| `critical` | Red: "Data quality issues detected. Recent data may be unreliable. Our team has been notified." |
+| `unknown` | None (no checks run yet) |
+
+**Service:** `DataIntegrity::AccountHealthService` — thin query service that returns the account's current health status from the latest check run. Cached for 5 minutes via Solid Cache.
+
+```ruby
+module DataIntegrity
+  class AccountHealthService
+    def initialize(account)
+      @account = account
+    end
+
+    def call
+      Rails.cache.fetch(cache_key, expires_in: 5.minutes) do
+        latest_worst_status
+      end
+    end
+
+    private
+
+    attr_reader :account
+
+    def latest_worst_status
+      account.data_integrity_checks
+        .where("created_at >= ?", 2.hours.ago)
+        .order(Arel.sql("CASE status WHEN 'critical' THEN 0 WHEN 'warning' THEN 1 ELSE 2 END"))
+        .pick(:status) || "unknown"
+    end
+
+    def cache_key
+      "data_integrity/health/#{account.id}"
+    end
+  end
+end
+```
+
+**Key Files (Phase 5):**
+
+| File | Purpose |
+|------|---------|
+| `config/recurring.yml` | Change to hourly |
+| `db/migrate/xxx_add_suspect_to_sessions.rb` | Migration |
+| `app/services/sessions/creation_service.rb` | Set suspect flag |
+| `app/services/data_integrity/account_health_service.rb` | Query health status |
+| `app/views/shared/_data_quality_banner.html.erb` | Customer banner |
+| `app/views/dashboard/show.html.erb` | Render banner |
+| `app/controllers/dashboard_controller.rb` | Pass health status |
+
+**Tests (Phase 5):**
+
+| Test | File | Verifies |
+|------|------|----------|
+| Suspect flag set when no referrer/utm/click_ids | `test/services/sessions/creation_service_test.rb` | Flag set on ghost-like sessions |
+| Suspect flag false when session has referrer | same | Flag not set on normal sessions |
+| Suspect flag false when session has UTM | same | Flag not set on campaign sessions |
+| AccountHealthService returns critical | `test/services/data_integrity/account_health_service_test.rb` | Worst status surfaced |
+| AccountHealthService returns unknown with no checks | same | Graceful nil handling |
+| AccountHealthService caches result | same | Cache key used |
+| Data quality banner renders for critical | `test/views/shared/data_quality_banner_test.rb` or controller test | Banner visible |
+| Data quality banner hidden for healthy | same | Banner not rendered |
+
+---
+
 ## Definition of Done
 
-- [ ] All checks implemented with tests
-- [ ] Scheduled job runs every 6 hours
-- [ ] Admin dashboard shows account health
-- [ ] Critical accounts appear first
-- [ ] Check history visible for last 30 days
+- [x] All checks implemented with tests
+- [x] Scheduled job runs every 6 hours
+- [x] Scheduled job tightened to hourly
+- [x] Admin dashboard shows account health
+- [x] Critical accounts appear first
+- [x] Check history visible for last 30 days
+- [x] Ingestion-time suspect flag on sessions
+- [x] Customer-facing data quality banner
 - [ ] No performance impact on production (checks use read replicas if available)
 
 ---
@@ -471,8 +594,6 @@ Each check links to the relevant diagnostic query from the data integrity runboo
 
 - Email/Slack alerting (future: send notification when account goes critical)
 - Auto-remediation (future: trigger data repair when certain checks fail)
-- Client-facing health dashboard (this is admin-only)
-- Real-time monitoring (this is periodic — 6-hour intervals)
 - SDK version detection from User-Agent (useful but requires log parsing)
 
 ---
@@ -482,5 +603,6 @@ Each check links to the relevant diagnostic query from the data integrity runboo
 1. **Alerting**: Slack webhook when account status changes to critical
 2. **Trend analysis**: Detect gradual degradation (week-over-week comparison)
 3. **Auto-repair**: When ghost_session_rate > 80% and stable for 24h, auto-run ghost purge
-4. **Client health page**: Expose simplified version to account owners
-5. **SDK version tracking**: Parse `User-Agent: mbuzz-ruby/X.Y.Z` from API request logs
+4. **SDK version tracking**: Parse `User-Agent: mbuzz-ruby/X.Y.Z` from API request logs
+5. **Suspect session dashboard**: Admin view showing suspect session trends per account
+6. **Auto-exclude suspect**: Option to exclude suspect sessions from dashboard calculations
