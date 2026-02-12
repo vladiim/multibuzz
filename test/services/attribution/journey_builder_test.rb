@@ -102,6 +102,30 @@ module Attribution
       assert_not touchpoints.any? { |t| t[:session_id] == session_no_channel.id }
     end
 
+    # Ghost session filtering
+
+    test "should exclude suspect sessions from journey" do
+      session_one
+      suspect = build_session(days_ago: 5, channel: "direct", suspect: true)
+
+      touchpoints = service.call
+
+      session_ids = touchpoints.map { |t| t[:session_id] }
+      assert_includes session_ids, session_one.id
+      assert_not_includes session_ids, suspect.id
+    end
+
+    test "should only include non-suspect sessions in attribution journey" do
+      build_session(days_ago: 7, channel: "paid_search", suspect: true)
+      build_session(days_ago: 5, channel: "organic_search", suspect: true)
+      real = build_session(days_ago: 3, channel: "email")
+
+      touchpoints = service.call
+
+      assert_equal 1, touchpoints.size
+      assert_equal real.id, touchpoints[0][:session_id]
+    end
+
     private
 
     def service
@@ -135,7 +159,7 @@ module Attribution
       )
     end
 
-    def build_session(days_ago:, channel:, utm_source: nil, utm_medium: nil, utm_campaign: nil)
+    def build_session(days_ago:, channel:, utm_source: nil, utm_medium: nil, utm_campaign: nil, suspect: false)
       utm_data = {}
       utm_data["utm_source"] = utm_source if utm_source
       utm_data["utm_medium"] = utm_medium if utm_medium
@@ -147,7 +171,8 @@ module Attribution
         session_id: SecureRandom.hex(16),
         started_at: days_ago.days.ago,
         channel: channel,
-        initial_utm: utm_data
+        initial_utm: utm_data,
+        suspect: suspect
       )
     end
 

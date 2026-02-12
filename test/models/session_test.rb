@@ -133,6 +133,28 @@ class SessionTest < ActiveSupport::TestCase
     assert_includes recent, session
   end
 
+  # Ghost session filtering
+
+  test "qualified scope excludes suspect sessions" do
+    qualified = account.sessions.qualified
+
+    assert_includes qualified, session
+    assert_not_includes qualified, suspect_session
+  end
+
+  test "qualified scope includes non-suspect sessions" do
+    qualified = account.sessions.qualified
+
+    assert qualified.all? { |s| s.suspect == false }
+  end
+
+  test "qualified chains with production scope" do
+    result = account.sessions.production.qualified
+
+    assert_includes result, session
+    assert_not_includes result, suspect_session
+  end
+
   private
 
   def session
@@ -153,5 +175,9 @@ class SessionTest < ActiveSupport::TestCase
 
   def other_account
     @other_account ||= accounts(:two)
+  end
+
+  def suspect_session
+    @suspect_session ||= sessions(:suspect)
   end
 end

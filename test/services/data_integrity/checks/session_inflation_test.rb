@@ -71,19 +71,33 @@ module DataIntegrity
         assert_in_delta 5.0, result[:critical_threshold]
       end
 
+      test "excludes suspect sessions from inflation calculation" do
+        create_sessions_with_fingerprint("fp_aaa", count: 1)
+        create_sessions_with_fingerprint("fp_bbb", count: 1, suspect: true)
+        create_sessions_with_fingerprint("fp_bbb", count: 1, suspect: true)
+        create_sessions_with_fingerprint("fp_bbb", count: 1, suspect: true)
+
+        result = check.call
+
+        assert_equal :healthy, result[:status]
+        assert_equal 1, result[:details][:total_sessions]
+        assert_equal 1, result[:details][:unique_fingerprints]
+      end
+
       private
 
       def account = @account ||= accounts(:one)
       def visitor = @visitor ||= visitors(:one)
       def check = DataIntegrity::Checks::SessionInflation.new(account)
 
-      def create_sessions_with_fingerprint(fingerprint, count:, started_at: 1.day.ago)
+      def create_sessions_with_fingerprint(fingerprint, count:, started_at: 1.day.ago, suspect: false)
         count.times do
           account.sessions.create!(
             visitor: visitor,
             session_id: "sess_#{SecureRandom.hex(8)}",
             started_at: started_at,
-            device_fingerprint: fingerprint
+            device_fingerprint: fingerprint,
+            suspect: suspect
           )
         end
       end

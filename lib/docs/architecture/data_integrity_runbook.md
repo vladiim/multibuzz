@@ -175,8 +175,28 @@ All services support `dry_run: true` (default) and `since_days:` parameter.
 
 ---
 
+## Session Qualification
+
+Suspect sessions (bots, prefetch, noise) are **not deleted** — they're filtered via the `qualified` scope. All dashboard queries and attribution journeys use this scope automatically.
+
+```ruby
+# The scope
+Session.qualified  # where(suspect: false)
+
+# Dashboard queries inherit it
+Dashboard::Scopes::SessionsScope  # base_scope chains .qualified
+
+# Attribution journeys inherit it
+Attribution::JourneyBuilder       # sessions_in_window chains .qualified
+```
+
+See `lib/docs/architecture/session_qualification.md` for the full concept.
+
+---
+
 ## Related Specs
 
+- `lib/specs/ghost_session_filtering_spec.md` — Session qualification and ghost filtering (P0)
 - `lib/specs/session_continuity_spec.md` — Session continuity fix (P0)
 - `lib/specs/api_data_integrity_spec.md` — API-level data corruption fixes
 - `lib/specs/incidents/2026-01-29-visit-count-inflation-5x.md` — Original Turbo inflation incident

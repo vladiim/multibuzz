@@ -70,6 +70,26 @@ module DataIntegrity
         assert_in_delta 50.0, result[:critical_threshold]
       end
 
+      test "uses suspect flag as source of truth for ghost detection" do
+        # Session marked suspect but HAS an event — still counts as ghost
+        suspect_with_event = create_session(ghost: true)
+        account.events.create!(
+          visitor: visitor,
+          session: suspect_with_event,
+          event_type: "page_view",
+          occurred_at: 1.hour.ago,
+          properties: { url: "https://example.com" }
+        )
+
+        # Session NOT suspect but has no events — NOT a ghost
+        create_session(ghost: false, with_event: false)
+
+        result = check.call
+
+        assert_equal 1, result[:details][:ghost_sessions]
+        assert_equal 2, result[:details][:total_sessions]
+      end
+
       private
 
       def account
@@ -89,18 +109,19 @@ module DataIntegrity
         (total - ghost).times { create_session(ghost: false) }
       end
 
-      def create_session(ghost:, is_test: false, started_at: 1.hour.ago)
+      def create_session(ghost:, is_test: false, started_at: 1.hour.ago, with_event: !ghost)
         session = account.sessions.create!(
           visitor: visitor,
           session_id: "sess_test_#{SecureRandom.hex(8)}",
           started_at: started_at,
           is_test: is_test,
+          suspect: ghost,
           initial_referrer: ghost ? nil : "https://google.com",
           initial_utm: ghost ? {} : { utm_source: "google" },
           click_ids: {}
         )
 
-        unless ghost
+        if with_event
           account.events.create!(
             visitor: visitor,
             session: session,

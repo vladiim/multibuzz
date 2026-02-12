@@ -1,6 +1,10 @@
-# Claude Development Guide for Multibuzz
+# Claude Development Guide for mbuzz
 
 **ultrathink** — Take a deep breath. We're not here to write code. We're here to make a dent in the universe.
+
+## CRITICAL: Product Name
+
+The product name is **mbuzz** (lowercase). Not "Multibuzz." Use "mbuzz" in all documentation, comments, and user-facing text. The repo directory is `multibuzz` for legacy reasons — ignore it.
 
 ## CRITICAL: No Autopilot
 

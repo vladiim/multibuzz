@@ -25,7 +25,7 @@ module DataIntegrity
       end
 
       def fingerprinted_sessions
-        account.sessions.production
+        account.sessions.production.qualified
           .where("started_at > ?", WINDOW.ago)
           .where.not(device_fingerprint: nil)
       end

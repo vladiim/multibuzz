@@ -26,6 +26,15 @@ ended:
   ended_at: <%= 3.days.ago + 30.minutes %>
   page_view_count: 10
 
+suspect:
+  account: one
+  visitor: one
+  session_id: "sess_suspect_ghost"
+  started_at: <%= 1.hour.ago %>
+  ended_at: null
+  page_view_count: 0
+  suspect: true
+
 other_account_session:
   account: two
   visitor: other_account_visitor

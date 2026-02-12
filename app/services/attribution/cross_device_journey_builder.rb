@@ -23,6 +23,7 @@ module Attribution
       identity
         .account
         .sessions
+        .qualified
         .where(visitor: identity.visitors)
         .where("started_at >= ?", lookback_window_start)
         .where("started_at <= ?", converted_at)

@@ -22,6 +22,7 @@ module Dashboard
         account
           .sessions
           .then { |scope| test_mode ? scope.test_data : scope.production }
+          .qualified
       end
 
       def apply_date_range(scope)

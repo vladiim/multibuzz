@@ -23,14 +23,7 @@ module DataIntegrity
       end
 
       def ghost_sessions
-        @ghost_sessions ||= recent_sessions
-          .where(initial_referrer: [nil, ""])
-          .where("initial_utm IS NULL OR initial_utm = '{}'::jsonb")
-          .where("click_ids IS NULL OR click_ids = '{}'::jsonb")
-          .where(<<~SQL.squish)
-            NOT EXISTS (SELECT 1 FROM events WHERE events.session_id = sessions.id)
-          SQL
-          .count
+        @ghost_sessions ||= recent_sessions.where(suspect: true).count
       end
 
       def recent_sessions
