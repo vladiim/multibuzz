@@ -171,13 +171,13 @@ Retroactive:
 
 ### Phase 3: Retroactive Cleanup
 
-- [ ] **3.1** Build `DataIntegrity::GhostSessionCleanupService` to:
+- [x] **3.1** Build `DataIntegrity::GhostSessionCleanupService` to:
   - Find conversions where `journey_session_ids` contains suspect session IDs
   - Remove suspect session IDs from `journey_session_ids`
   - Delete `AttributionCredit` records linked to suspect sessions
   - Re-run `Conversions::AttributionCalculationService` for affected conversions
-- [ ] **3.2** Create rake task for one-time execution: `rake data_integrity:cleanup_ghost_journeys`
-- [ ] **3.3** Write unit tests for cleanup service
+- [x] **3.2** Create rake task for one-time execution: `rake data_integrity:cleanup_ghost_journeys`
+- [x] **3.3** Write unit tests for cleanup service
 - [ ] **3.4** Run against production data, verify visitor count aligns with GA4 range
 
 ---
