@@ -2,7 +2,7 @@
 
 **Date:** 2026-02-13
 **Priority:** P0
-**Status:** Complete (Phase 1)
+**Status:** Complete
 **Branch:** `feature/e1s4-content`
 **Depends on:** `session_continuity_spec.md` (complete), `ghost_session_filtering_spec.md` (complete)
 
@@ -138,11 +138,26 @@ For each touchpoint after the first:
 - [x] **1.3** Include in `Attribution::CrossDeviceJourneyBuilder`, pipe `call` through dedup
 - [x] **1.4** Write unit tests for all 10 states above — 9 new tests, all GREEN
 
-### Phase 2: Production Validation
+### Phase 2: Production Validation ✅
 
-- [ ] **2.1** Rerun attribution for Account 2 (6 non-probabilistic models)
-- [ ] **2.2** Verify linear model shows search > direct
-- [ ] **2.3** Verify first/last touch unchanged
+- [x] **2.1** Rerun attribution for Account 2 — 2,644 conversions across 6 non-probabilistic models
+- [x] **2.2** Verify linear model shows search > direct — **paid_search 35%, organic_search 29%, direct 28%**
+- [x] **2.3** Verify first/last touch unchanged — first_touch still search-dominant, last_touch still direct-dominant
+
+**Post-burst-dedup results (2026-02-15, Account 2, 90d window):**
+
+| Channel | first_touch | last_touch | linear | time_decay | u_shaped | participation |
+|---------|-------------|------------|--------|------------|----------|---------------|
+| paid_search | 1,108 (42%) | 791 (30%) | 916.6 (35%) | 914.8 (35%) | 937.8 (36%) | 1,232 (34%) |
+| organic_search | 796 (30%) | 723 (28%) | 770.8 (29%) | 767.4 (29%) | 761.9 (29%) | 1,009 (28%) |
+| direct | 543 (21%) | 920 (35%) | 727.6 (28%) | 731.3 (28%) | 736.0 (28%) | 692 (19%) |
+| email | 121 (5%) | 144 (5%) | 135.1 (5%) | 136.6 (5%) | 132.5 (5%) | 216 (6%) |
+| paid_social | 32 (1%) | 14 (1%) | 39.7 (2%) | 39.1 (1%) | 26.2 (1%) | 198 (5%) |
+| referral | 15 (1%) | 25 (1%) | 24.5 (1%) | 24.8 (1%) | 21.1 (1%) | 172 (5%) |
+
+**Key shift:** Linear direct dropped from **60% → 28%**. All 6 models now agree on the same top-3 order: paid_search > organic_search > direct.
+
+Markov/shapley not rerun (stale credits, separate `ConversionPathsQuery` performance issue).
 
 ---
 
@@ -165,7 +180,8 @@ Phase 3 (steady state validation) and Phase 4 (historical repair) from `session_
 - **Phase 4 (historical repair):** Partially done via production console:
   - [x] Backfilled `landing_page_host` on 9,995 sessions
   - [x] Reclassified 9,880 self-referral sessions from referral → direct
-  - [x] Reran attribution for 2,172 conversions (6 models)
+  - [x] Reran attribution for 2,172 conversions (6 models, pre-burst-dedup)
+  - [x] Reran attribution for 2,644 conversions (6 models, post-burst-dedup)
   - [ ] Ghost session purge service (`DataRepair::GhostSessionPurgeService`) — deferred, not critical now that `.qualified` filters them
   - [ ] Markov/Shapley performance fix — `ConversionPathsQuery` too slow, only covers 865/1,738 conversions. Separate investigation needed.
 
@@ -191,6 +207,6 @@ Phase 3 (steady state validation) and Phase 4 (historical repair) from `session_
 
 - [x] Burst deduplication implemented in both journey builders
 - [x] All unit tests pass (2445 tests, 0 failures)
-- [ ] Linear model shows search as primary channel (not direct) — requires production rerun
-- [x] First/last touch results unchanged (existing tests pass)
+- [x] Linear model shows search as primary channel — paid_search 35%, direct 28%
+- [x] First/last touch results unchanged
 - [x] Spec updated with final state
