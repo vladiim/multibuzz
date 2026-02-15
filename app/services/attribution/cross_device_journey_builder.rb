@@ -2,6 +2,8 @@
 
 module Attribution
   class CrossDeviceJourneyBuilder
+    include BurstDeduplication
+
     def initialize(identity:, converted_at:, lookback_days:)
       @identity = identity
       @converted_at = converted_at
@@ -9,15 +11,19 @@ module Attribution
     end
 
     def call
-      sessions_in_window
-        .where.not(channel: nil)
-        .order(started_at: :asc)
-        .map { |session| build_touchpoint(session) }
+      collapse_burst_sessions(touchpoints)
     end
 
     private
 
     attr_reader :identity, :converted_at, :lookback_days
+
+    def touchpoints
+      @touchpoints ||= sessions_in_window
+        .where.not(channel: nil)
+        .order(started_at: :asc)
+        .map { |session| build_touchpoint(session) }
+    end
 
     def sessions_in_window
       identity

@@ -102,6 +102,101 @@ module Attribution
       assert_not touchpoints.any? { |t| t[:session_id] == session_no_channel.id }
     end
 
+    # Burst deduplication
+
+    test "should collapse direct burst session within 5 minutes of previous touchpoint" do
+      search = build_session_at(10.minutes.ago, channel: "paid_search")
+      _nav = build_session_at(10.minutes.ago + 2.seconds, channel: "direct")
+
+      touchpoints = build_service(converted_at: Time.current).call
+
+      assert_equal 1, touchpoints.size
+      assert_equal search.id, touchpoints[0][:session_id]
+    end
+
+    test "should collapse multiple direct burst sessions" do
+      search = build_session_at(10.minutes.ago, channel: "paid_search")
+      _nav1 = build_session_at(10.minutes.ago + 2.seconds, channel: "direct")
+      _nav2 = build_session_at(10.minutes.ago + 30.seconds, channel: "direct")
+      _nav3 = build_session_at(10.minutes.ago + 3.minutes, channel: "direct")
+
+      touchpoints = build_service(converted_at: Time.current).call
+
+      assert_equal 1, touchpoints.size
+      assert_equal search.id, touchpoints[0][:session_id]
+    end
+
+    test "should not collapse non-direct burst sessions" do
+      search = build_session_at(10.minutes.ago, channel: "paid_search")
+      email = build_session_at(10.minutes.ago + 2.seconds, channel: "email")
+
+      touchpoints = build_service(converted_at: Time.current).call
+
+      assert_equal 2, touchpoints.size
+      assert_equal search.id, touchpoints[0][:session_id]
+      assert_equal email.id, touchpoints[1][:session_id]
+    end
+
+    test "should keep first touchpoint even if direct" do
+      direct = build_session_at(10.minutes.ago, channel: "direct")
+
+      touchpoints = build_service(converted_at: Time.current).call
+
+      assert_equal 1, touchpoints.size
+      assert_equal direct.id, touchpoints[0][:session_id]
+    end
+
+    test "should keep direct session outside burst window" do
+      search = build_session_at(2.hours.ago, channel: "paid_search")
+      direct = build_session_at(30.minutes.ago, channel: "direct")
+
+      touchpoints = build_service(converted_at: Time.current).call
+
+      assert_equal 2, touchpoints.size
+      assert_equal search.id, touchpoints[0][:session_id]
+      assert_equal direct.id, touchpoints[1][:session_id]
+    end
+
+    test "should collapse burst at boundary of 5 minutes" do
+      search = build_session_at(10.minutes.ago, channel: "paid_search")
+      _nav = build_session_at(10.minutes.ago + 4.minutes + 59.seconds, channel: "direct")
+
+      touchpoints = build_service(converted_at: Time.current).call
+
+      assert_equal 1, touchpoints.size
+    end
+
+    test "should keep direct session just outside 5 minute boundary" do
+      search = build_session_at(10.minutes.ago, channel: "paid_search")
+      direct = build_session_at(10.minutes.ago + 5.minutes + 1.second, channel: "direct")
+
+      touchpoints = build_service(converted_at: Time.current).call
+
+      assert_equal 2, touchpoints.size
+    end
+
+    test "should handle multiple independent bursts in one journey" do
+      search = build_session_at(2.hours.ago, channel: "paid_search")
+      _nav1 = build_session_at(2.hours.ago + 10.seconds, channel: "direct")
+      email = build_session_at(1.hour.ago, channel: "email")
+      _nav2 = build_session_at(1.hour.ago + 5.seconds, channel: "direct")
+
+      touchpoints = build_service(converted_at: Time.current).call
+
+      assert_equal 2, touchpoints.size
+      assert_equal search.id, touchpoints[0][:session_id]
+      assert_equal email.id, touchpoints[1][:session_id]
+    end
+
+    test "should not modify single session journey" do
+      search = build_session_at(10.minutes.ago, channel: "paid_search")
+
+      touchpoints = build_service(converted_at: Time.current).call
+
+      assert_equal 1, touchpoints.size
+      assert_equal search.id, touchpoints[0][:session_id]
+    end
+
     # Ghost session filtering
 
     test "should exclude suspect sessions from journey" do
@@ -160,6 +255,10 @@ module Attribution
     end
 
     def build_session(days_ago:, channel:, utm_source: nil, utm_medium: nil, utm_campaign: nil, suspect: false)
+      build_session_at(days_ago.days.ago, channel: channel, utm_source: utm_source, utm_medium: utm_medium, utm_campaign: utm_campaign, suspect: suspect)
+    end
+
+    def build_session_at(started_at, channel:, utm_source: nil, utm_medium: nil, utm_campaign: nil, suspect: false)
       utm_data = {}
       utm_data["utm_source"] = utm_source if utm_source
       utm_data["utm_medium"] = utm_medium if utm_medium
@@ -169,7 +268,7 @@ module Attribution
         account: default_visitor.account,
         visitor: default_visitor,
         session_id: SecureRandom.hex(16),
-        started_at: days_ago.days.ago,
+        started_at: started_at,
         channel: channel,
         initial_utm: utm_data,
         suspect: suspect
