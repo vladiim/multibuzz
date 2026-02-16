@@ -56,6 +56,25 @@ module Attribution
       assert_empty credits
     end
 
+    test "should use precomputed conversion_paths when provided" do
+      create_historical_conversion(%w[organic_search paid_search])
+      create_sessions!
+
+      precomputed = Attribution::Markov::ConversionPathsQuery.new(account).call
+
+      calculator = CrossDeviceCalculator.new(
+        conversion: conversion,
+        identity: identity,
+        attribution_model: markov_chain_model,
+        conversion_paths: precomputed
+      )
+
+      credits = calculator.call
+
+      assert_equal 2, credits.size
+      assert_in_delta 1.0, credits.sum { |c| c[:credit] }, 0.0001
+    end
+
     private
 
     def build_calculator(model:)

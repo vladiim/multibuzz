@@ -2,10 +2,11 @@
 
 module Attribution
   class CrossDeviceCalculator
-    def initialize(conversion:, identity:, attribution_model:)
+    def initialize(conversion:, identity:, attribution_model:, conversion_paths: nil)
       @conversion = conversion
       @identity = identity
       @attribution_model = attribution_model
+      @precomputed_conversion_paths = conversion_paths
     end
 
     def call
@@ -18,7 +19,7 @@ module Attribution
 
     private
 
-    attr_reader :conversion, :identity, :attribution_model
+    attr_reader :conversion, :identity, :attribution_model, :precomputed_conversion_paths
 
     def touchpoints
       @touchpoints ||= journey_builder.call
@@ -58,7 +59,7 @@ module Attribution
     end
 
     def conversion_paths
-      @conversion_paths ||= Markov::ConversionPathsQuery.new(account).call
+      @conversion_paths ||= precomputed_conversion_paths || Markov::ConversionPathsQuery.new(account).call
     end
 
     def account

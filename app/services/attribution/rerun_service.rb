@@ -76,8 +76,15 @@ module Attribution
       CrossDeviceCalculator.new(
         conversion: conversion,
         identity: identity_for(conversion),
-        attribution_model: attribution_model
+        attribution_model: attribution_model,
+        conversion_paths: precomputed_conversion_paths
       ).call
+    end
+
+    def precomputed_conversion_paths
+      return nil unless attribution_model.markov_chain? || attribution_model.shapley_value?
+
+      @precomputed_conversion_paths ||= Markov::ConversionPathsQuery.new(account).call
     end
 
     def identity_for(conversion)
