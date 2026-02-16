@@ -37,7 +37,32 @@ module Attribution
     end
 
     def algorithm
-      @algorithm ||= attribution_model.algorithm_class.new(touchpoints)
+      @algorithm ||= build_algorithm
+    end
+
+    def build_algorithm
+      return build_probabilistic_model if probabilistic_model?
+
+      attribution_model.algorithm_class.new(touchpoints)
+    end
+
+    def probabilistic_model?
+      attribution_model.markov_chain? || attribution_model.shapley_value?
+    end
+
+    def build_probabilistic_model
+      attribution_model.algorithm_class.new(
+        touchpoints,
+        conversion_paths: conversion_paths
+      )
+    end
+
+    def conversion_paths
+      @conversion_paths ||= Markov::ConversionPathsQuery.new(account).call
+    end
+
+    def account
+      conversion.account
     end
 
     def enrich_with_session_data(credit)

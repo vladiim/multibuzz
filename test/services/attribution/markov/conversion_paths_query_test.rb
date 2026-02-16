@@ -93,6 +93,85 @@ module Attribution
         assert_equal 4, paths.size
       end
 
+      test "should exclude suspect sessions from paths" do
+        qualified_session = create_session(channel: "paid_search", days_ago: 3)
+        suspect_session = create_session(channel: "direct", days_ago: 2, suspect: true)
+        qualified_session2 = create_session(channel: "email", days_ago: 1)
+
+        create_conversion(journey_session_ids: [
+          qualified_session.id,
+          suspect_session.id,
+          qualified_session2.id
+        ])
+
+        paths = query.call
+
+        assert_equal [%w[paid_search email]], paths
+      end
+
+      test "should collapse burst direct sessions in paths" do
+        search_session = create_session(channel: "paid_search", minutes_ago: 10)
+        burst_direct1 = create_session(channel: "direct", minutes_ago: 9)
+        burst_direct2 = create_session(channel: "direct", minutes_ago: 8)
+
+        create_conversion(journey_session_ids: [
+          search_session.id,
+          burst_direct1.id,
+          burst_direct2.id
+        ])
+
+        paths = query.call
+
+        assert_equal [%w[paid_search]], paths
+      end
+
+      test "should preserve direct sessions outside burst window" do
+        search_session = create_session(channel: "paid_search", minutes_ago: 120)
+        direct_session = create_session(channel: "direct", minutes_ago: 10)
+
+        create_conversion(journey_session_ids: [
+          search_session.id,
+          direct_session.id
+        ])
+
+        paths = query.call
+
+        assert_equal [%w[paid_search direct]], paths
+      end
+
+      test "should not collapse non-direct burst sessions" do
+        search_session = create_session(channel: "paid_search", minutes_ago: 10)
+        email_session = create_session(channel: "email", minutes_ago: 9)
+
+        create_conversion(journey_session_ids: [
+          search_session.id,
+          email_session.id
+        ])
+
+        paths = query.call
+
+        assert_equal [%w[paid_search email]], paths
+      end
+
+      test "should apply both qualified filter and burst dedup together" do
+        search_session = create_session(channel: "organic_search", minutes_ago: 30)
+        suspect_session = create_session(channel: "referral", minutes_ago: 25, suspect: true)
+        burst_direct = create_session(channel: "direct", minutes_ago: 29)
+        email_session = create_session(channel: "email", minutes_ago: 5)
+
+        create_conversion(journey_session_ids: [
+          search_session.id,
+          suspect_session.id,
+          burst_direct.id,
+          email_session.id
+        ])
+
+        paths = query.call
+
+        # suspect filtered, burst direct collapsed, email preserved (>5min gap)
+        assert_equal [%w[organic_search email]], paths
+      end
+
       private
 
       def query
@@ -126,13 +205,20 @@ module Attribution
         create_conversion(journey_session_ids: sessions.map(&:id))
       end
 
-      def create_session(channel:, days_ago:)
+      def create_session(channel:, days_ago: nil, minutes_ago: nil, suspect: false)
+        started_at = if minutes_ago
+          minutes_ago.minutes.ago
+        else
+          (days_ago || 1).days.ago
+        end
+
         Session.create!(
           account: account,
           visitor: visitor,
           session_id: SecureRandom.hex(16),
-          started_at: days_ago.days.ago,
-          channel: channel
+          started_at: started_at,
+          channel: channel,
+          suspect: suspect
         )
       end
 

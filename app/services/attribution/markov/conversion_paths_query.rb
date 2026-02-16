@@ -8,13 +8,15 @@ module Attribution
     #   [["organic_search", "email", "paid_search"], ["paid_search"], ...]
     #
     class ConversionPathsQuery
+      include BurstDeduplication
+
       def initialize(account)
         @account = account
       end
 
       def call
         conversions_with_journeys
-          .map { |conversion| channel_path_for(conversion) }
+          .map { |conversion| deduped_channel_path(conversion) }
           .reject(&:empty?)
       end
 
@@ -28,11 +30,14 @@ module Attribution
           .where.not(journey_session_ids: [])
       end
 
-      def channel_path_for(conversion)
-        sessions_for(conversion)
-          .order(started_at: :asc)
+      def deduped_channel_path(conversion)
+        touchpoints = sessions_for(conversion)
+          .qualified
           .where.not(channel: nil)
-          .pluck(:channel)
+          .order(started_at: :asc)
+          .map { |s| { session_id: s.id, channel: s.channel, occurred_at: s.started_at } }
+
+        collapse_burst_sessions(touchpoints).map { |tp| tp[:channel] }
       end
 
       def sessions_for(conversion)
