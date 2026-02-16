@@ -2,7 +2,7 @@
 
 **Date:** 2026-02-17
 **Priority:** P0
-**Status:** In Progress
+**Status:** Complete
 **Branch:** `feature/e1s4-content`
 **Depends on:** `attribution_accuracy_spec.md` (complete)
 
@@ -250,18 +250,24 @@ Actually — sessions don't store a `page_url` column. The `landing_page_host` i
 - [x] **2.2** Add `conversion_paths` and `account` methods
 - [x] **2.3** 5 new tests: linear works, markov works, shapley works, UTM enrichment, empty sessions
 
-### Phase 3: Backfill landing_page_host
+### Phase 2.5: Precompute conversion_paths in RerunService ✅
+
+- [x] **2.5.1** Add optional `conversion_paths:` kwarg to `CrossDeviceCalculator`
+- [x] **2.5.2** `RerunService` precomputes paths once for probabilistic models (O(n) vs O(n²))
+- [x] **2.5.3** Shapley rerun: minutes instead of hours
+
+### Phase 3: Backfill landing_page_host (deferred)
 
 - [ ] **3.1** Write backfill script: derive host from first event URL per session
 - [ ] **3.2** Run in production console
 - [ ] **3.3** Verify coverage improvement
 
-### Phase 4: Production validation
+### Phase 4: Production validation ✅
 
-- [ ] **4.1** Rerun Markov Chain model via UI
-- [ ] **4.2** Rerun Shapley Value model via UI
-- [ ] **4.3** Verify Markov/Shapley direct drops from 75.6% → ~28% range
-- [ ] **4.4** Verify all 8 models agree on top-3 order
+- [x] **4.1** Rerun Markov Chain — 2,691 conversions, ~90 min (pre-perf-fix)
+- [x] **4.2** Rerun Shapley Value — 2,714 conversions, minutes (post-perf-fix)
+- [x] **4.3** Markov direct: 75.6% → 13.4%, Shapley direct: 75.6% → 26.8%
+- [x] **4.4** All 8 models agree: paid_search > organic_search > direct
 
 ---
 
@@ -276,11 +282,23 @@ Actually — sessions don't store a `page_url` column. The `landing_page_host` i
 
 ---
 
+## Production Results (2026-02-17)
+
+| Channel | Markov Chain | Shapley Value |
+|---------|-------------|---------------|
+| paid_search | 38.8% | 38.6% |
+| organic_search | 35.2% | 29.8% |
+| direct | 13.4% | 26.8% |
+| referral | 11.3% | 0.8% |
+| email | 1.1% | 3.5% |
+| paid_social | 0.1% | 0.4% |
+
 ## Definition of Done
 
-- [ ] ConversionPathsQuery applies `.qualified` and burst dedup
-- [ ] CrossDeviceCalculator supports Markov Chain and Shapley Value
-- [ ] All unit tests pass
-- [ ] Markov/Shapley rerun in production shows direct ≤ 35%
-- [ ] All 8 attribution models agree on same top-3 channel order
-- [ ] landing_page_host backfilled on historical sessions
+- [x] ConversionPathsQuery applies `.qualified` and burst dedup
+- [x] CrossDeviceCalculator supports Markov Chain and Shapley Value
+- [x] RerunService precomputes conversion_paths (O(n) not O(n²))
+- [x] All unit tests pass (2,456 tests, 0 failures)
+- [x] Markov direct: 75.6% → 13.4%, Shapley direct: 75.6% → 26.8%
+- [x] All 8 attribution models agree: paid_search > organic_search > direct
+- [ ] landing_page_host backfilled on historical sessions (deferred, not blocking)
