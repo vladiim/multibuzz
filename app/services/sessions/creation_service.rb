@@ -230,7 +230,8 @@ module Sessions
         initial_referrer: referrer,
         channel: channel,
         click_ids: click_ids,
-        suspect: suspect_session?
+        suspect: suspect_session?,
+        landing_page_host: normalized_page_host
       }.compact
     end
 
@@ -257,7 +258,8 @@ module Sessions
         normalized_utm,
         referrer,
         click_ids,
-        page_host: page_host
+        page_host: page_host,
+        account_domains: account_domains
       ).call
     end
 
@@ -265,6 +267,17 @@ module Sessions
       @page_host ||= URI.parse(url).host || host_from_referrer
     rescue URI::InvalidURIError
       host_from_referrer
+    end
+
+    def normalized_page_host
+      @normalized_page_host ||= normalize_host(page_host) if page_host.present?
+    end
+
+    def account_domains
+      @account_domains ||= account.sessions
+        .where.not(landing_page_host: nil)
+        .distinct
+        .pluck(:landing_page_host)
     end
 
     def host_from_referrer

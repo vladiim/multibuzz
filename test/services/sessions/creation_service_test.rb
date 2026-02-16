@@ -688,6 +688,59 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
     end
   end
 
+  # --- Landing Page Host ---
+
+  test "stores landing_page_host from url on new session" do
+    params = {
+      visitor_id: "vis_landing_host",
+      session_id: "sess_landing_host",
+      url: "https://northshore.pettechpro.com.au/search?q=boarding"
+    }
+
+    Sessions::CreationService.new(account, params).call
+
+    session = account.sessions.find_by(session_id: "sess_landing_host")
+    assert_equal "northshore.pettechpro.com.au", session.landing_page_host
+  end
+
+  test "stores landing_page_host without www prefix" do
+    params = {
+      visitor_id: "vis_www_host",
+      session_id: "sess_www_host",
+      url: "https://www.petresortsaustralia.com.au/booking"
+    }
+
+    Sessions::CreationService.new(account, params).call
+
+    session = account.sessions.find_by(session_id: "sess_www_host")
+    assert_equal "petresortsaustralia.com.au", session.landing_page_host
+  end
+
+  # --- Self-Referral Detection ---
+
+  test "classifies cross-domain self-referral as direct" do
+    # First session establishes the domain
+    account.sessions.create!(
+      visitor: visitors(:one),
+      session_id: "sess_establish_domain",
+      started_at: 1.day.ago,
+      landing_page_host: "northshore.pettechpro.com.au"
+    )
+
+    # Second session from that domain as referrer → should be direct
+    params = {
+      visitor_id: "vis_self_ref",
+      session_id: "sess_self_ref",
+      url: "https://petresortsaustralia.com.au/booking",
+      referrer: "https://northshore.pettechpro.com.au/search"
+    }
+
+    Sessions::CreationService.new(account, params).call
+
+    session = account.sessions.find_by(session_id: "sess_self_ref")
+    assert_equal "direct", session.channel
+  end
+
   private
 
   def result

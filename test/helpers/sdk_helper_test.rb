@@ -8,11 +8,10 @@ class SdkHelperTest < ActionView::TestCase
     assert sdks.all?(&:live?)
   end
 
-  test "coming_soon_sdks returns coming_soon SDKs" do
+  test "coming_soon_sdks returns empty when no coming_soon SDKs exist" do
     sdks = coming_soon_sdks
 
-    assert sdks.any?
-    assert sdks.all?(&:coming_soon?)
+    assert_empty sdks
   end
 
   test "server_side_sdks returns server_side SDKs" do

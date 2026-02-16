@@ -38,11 +38,12 @@ module Sessions
       ReferrerSources::Mediums::AI => Channels::AI
     }.freeze
 
-    def initialize(utm_data, referrer, click_ids = {}, page_host: nil)
+    def initialize(utm_data, referrer, click_ids = {}, page_host: nil, account_domains: [])
       @utm_data = utm_data || {}
       @referrer = referrer
       @click_ids = click_ids || {}
       @page_host = page_host
+      @account_domains = account_domains || []
     end
 
     def call
@@ -55,6 +56,7 @@ module Sessions
       return channel_from_utm_or_fallback if utm_medium.present?
       return channel_from_utm_source if utm_source.present?
       return Channels::DIRECT if internal_referrer?
+      return Channels::DIRECT if self_referral?
       return channel_from_referrer if referrer_domain.present?
 
       Channels::DIRECT
@@ -71,7 +73,7 @@ module Sessions
 
     private
 
-    attr_reader :utm_data, :referrer, :click_ids, :page_host
+    attr_reader :utm_data, :referrer, :click_ids, :page_host, :account_domains
 
     def channel_from_utm_or_fallback
       match = UTM_MEDIUM_PATTERNS.find { |pattern, _| utm_medium.match?(pattern) }
@@ -154,6 +156,13 @@ module Sessions
       URI.parse(url).host
     rescue URI::InvalidURIError
       nil
+    end
+
+    def self_referral?
+      return false unless referrer_domain.present?
+      return false unless account_domains.any?
+
+      account_domains.any? { |domain| normalize_host(referrer_domain) == normalize_host(domain) }
     end
 
     def internal_referrer?

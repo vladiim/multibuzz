@@ -155,6 +155,7 @@ class SessionTest < ActiveSupport::TestCase
     assert_not_includes result, suspect_session
   end
 
+
   private
 
   def session
@@ -180,4 +181,5 @@ class SessionTest < ActiveSupport::TestCase
   def suspect_session
     @suspect_session ||= sessions(:suspect)
   end
+
 end

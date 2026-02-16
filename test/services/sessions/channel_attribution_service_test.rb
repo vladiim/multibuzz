@@ -537,9 +537,67 @@ class Sessions::ChannelAttributionServiceTest < ActiveSupport::TestCase
     assert_equal Channels::ORGANIC_SEARCH, service({}, "https://www.bing.com/search").call
   end
 
+  # Self-referral detection
+
+  test "returns direct when referrer is from account's own domain" do
+    own_domains = %w[northshore.pettechpro.com.au petresortsaustralia.com.au]
+
+    result = service(
+      {},
+      "https://northshore.pettechpro.com.au/search",
+      {},
+      page_host: "petresortsaustralia.com.au",
+      account_domains: own_domains
+    ).call
+
+    assert_equal Channels::DIRECT, result
+  end
+
+  test "returns referral when referrer is not in account domains" do
+    own_domains = %w[petresortsaustralia.com.au]
+
+    result = service(
+      {},
+      "https://binance.com",
+      {},
+      page_host: "petresortsaustralia.com.au",
+      account_domains: own_domains
+    ).call
+
+    assert_equal Channels::REFERRAL, result
+  end
+
+  test "self-referral detection is case insensitive and strips www" do
+    own_domains = %w[pettechpro.com.au]
+
+    result = service(
+      {},
+      "https://www.PetTechPro.com.au/booking",
+      {},
+      page_host: "other-site.com.au",
+      account_domains: own_domains
+    ).call
+
+    assert_equal Channels::DIRECT, result
+  end
+
+  test "utm parameters take priority over self-referral detection" do
+    own_domains = %w[northshore.pettechpro.com.au]
+
+    result = service(
+      { utm_medium: "cpc", utm_source: "google" },
+      "https://northshore.pettechpro.com.au/search",
+      {},
+      page_host: "petresortsaustralia.com.au",
+      account_domains: own_domains
+    ).call
+
+    assert_equal Channels::PAID_SEARCH, result
+  end
+
   private
 
-  def service(utm_data = {}, referrer = nil, click_ids = {}, page_host: nil)
-    Sessions::ChannelAttributionService.new(utm_data, referrer, click_ids, page_host: page_host)
+  def service(utm_data = {}, referrer = nil, click_ids = {}, page_host: nil, account_domains: [])
+    Sessions::ChannelAttributionService.new(utm_data, referrer, click_ids, page_host: page_host, account_domains: account_domains)
   end
 end

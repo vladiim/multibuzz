@@ -35,11 +35,11 @@ module Visitors
     def each_duplicate_group
       duplicates = fingerprints_with_multiple_visitors
       total = duplicates.size
-      $stdout.print "Found #{total} fingerprints with multiple visitors\n" if total > 0
+      Rails.logger.info "Found #{total} fingerprints with multiple visitors" if total > 0
 
       duplicates.each do |fingerprint, visitor_ids|
         stats[:fingerprints_checked] += 1
-        print "\rProcessing fingerprint #{stats[:fingerprints_checked]}/#{total}" if (stats[:fingerprints_checked] % 50).zero?
+        Rails.logger.info "Processing fingerprint #{stats[:fingerprints_checked]}/#{total}" if (stats[:fingerprints_checked] % 50).zero?
 
         burst_groups_for(fingerprint, visitor_ids).each do |group|
           canonical = group.first
@@ -48,7 +48,7 @@ module Visitors
         end
       end
 
-      print "\r" + (" " * 60) + "\r" if total > 0
+      Rails.logger.info "Deduplication scan complete" if total > 0
     end
 
     def fingerprints_with_multiple_visitors

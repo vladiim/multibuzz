@@ -27,11 +27,10 @@ class SdkRegistryTest < ActiveSupport::TestCase
     assert sdks.all?(&:live?)
   end
 
-  test ".coming_soon returns only coming_soon SDKs" do
+  test ".coming_soon returns empty when no coming_soon SDKs exist" do
     sdks = SdkRegistry.coming_soon
 
-    assert sdks.any?
-    assert sdks.all?(&:coming_soon?)
+    assert_empty sdks
   end
 
   test ".server_side returns only server_side SDKs" do
@@ -77,7 +76,7 @@ class SdkRegistryTest < ActiveSupport::TestCase
   end
 
   test "Sdk#coming_soon? returns true for coming_soon status" do
-    sdk = SdkRegistry.coming_soon.first
+    sdk = build_sdk(status: SdkStatuses::COMING_SOON)
 
     assert sdk.coming_soon?
     assert_not sdk.live?
@@ -107,7 +106,7 @@ class SdkRegistryTest < ActiveSupport::TestCase
 
   test "Sdk#status_badge returns human-readable badge" do
     live_sdk = SdkRegistry.live.first
-    coming_soon_sdk = SdkRegistry.coming_soon.first
+    coming_soon_sdk = build_sdk(status: SdkStatuses::COMING_SOON)
 
     assert_equal "Live", live_sdk.status_badge
     assert_equal "Coming Soon", coming_soon_sdk.status_badge
@@ -187,5 +186,18 @@ class SdkRegistryTest < ActiveSupport::TestCase
 
   test "Sdk#custom_install? returns false for api SDKs" do
     assert_not SdkRegistry.find(:rest_api).custom_install?
+  end
+
+  private
+
+  def build_sdk(status:, category: SdkCategories::SERVER_SIDE)
+    SdkRegistry::Sdk.new(
+      key: "test", name: "Test", display_name: "Test SDK", icon: "test",
+      package_name: nil, package_manager: nil, package_url: nil,
+      github_url: nil, docs_url: nil, status: status, released_at: nil,
+      category: category, sort_order: 99, install_command: nil,
+      init_code: nil, event_code: nil, conversion_code: nil,
+      identify_code: nil, middleware_code: nil, verification_command: nil
+    )
   end
 end
