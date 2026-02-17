@@ -147,9 +147,13 @@ module Conversions
     end
 
     def resolved_identity
+      @resolved_identity ||= identity_from_user_id || resolved_visitor&.identity
+    end
+
+    def identity_from_user_id
       return nil unless user_id.present?
 
-      @resolved_identity ||= account.identities.find_by(external_id: user_id)
+      account.identities.find_by(external_id: user_id)
     end
 
     # Flatten nested "properties" key if present

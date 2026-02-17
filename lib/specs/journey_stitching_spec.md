@@ -203,9 +203,10 @@ AttributionCalculationJob fires
   - Check SDK logs: `user_id` present in conversion API request payload
   - If identity has multiple visitors: verify `journey_session_ids` spans both
 
-### Phase 4: E2E Tests — "Identify Then Convert" Flow
+### Phase 4: Server-Side Identity Resolution + E2E Tests
 
-- [ ] **4.1** Add E2E scenario: `identify_then_convert_test.rb` — calls `identify(user_id)` then `conversion(type, revenue:)` WITHOUT explicit `user_id`, verifies server-side conversion has `identity_id` set
+- [x] **4.0** Server-side fix: `TrackingService#resolved_identity` falls back to `resolved_visitor.identity` when `user_id` not in payload — handles cross-request identify→convert (the common case)
+- [x] **4.1** Add E2E scenario: `identify_then_convert_test.rb` — calls `identify(user_id)` then `conversion(type, revenue:)` WITHOUT explicit `user_id`, verifies server-side conversion has `identity_id` set
 - [ ] **4.2** Run against Ruby test app (port 4001)
 - [ ] **4.3** Run against Node test app (port 4002)
 - [ ] **4.4** Run against Python test app (port 4003)

@@ -157,6 +157,8 @@ module Api
             revenue: conversion.revenue,
             currency: conversion.currency,
             is_acquisition: conversion.is_acquisition,
+            identity_id: conversion.identity_id,
+            journey_session_ids: conversion.journey_session_ids,
             properties: conversion.properties
           }
         end

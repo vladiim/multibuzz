@@ -271,11 +271,23 @@ module Conversions
       assert_equal identity.id, result[:conversion].identity_id
     end
 
-    test "conversion has nil identity_id when user_id not provided" do
+    test "conversion has nil identity_id when user_id not provided and visitor has no identity" do
       result = build_service(event_id: event.prefix_id).call
 
       assert result[:success]
       assert_nil result[:conversion].identity_id
+    end
+
+    test "resolves identity_id from visitor when user_id not provided" do
+      # Link visitor to identity
+      visitor.update!(identity: identity)
+
+      result = build_service(visitor_id: visitor.visitor_id).call
+
+      assert result[:success]
+      assert_equal identity.id, result[:conversion].identity_id
+    ensure
+      visitor.update!(identity_id: nil)
     end
 
     test "conversion has nil identity_id when user_id does not exist" do
