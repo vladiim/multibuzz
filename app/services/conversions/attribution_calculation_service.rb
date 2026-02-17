@@ -101,11 +101,29 @@ module Conversions
     end
 
     def touchpoints
-      @touchpoints ||= Attribution::JourneyBuilder.new(
+      @touchpoints ||= journey_builder.call
+    end
+
+    def journey_builder
+      return cross_device_journey_builder if identity.present?
+
+      Attribution::JourneyBuilder.new(
         visitor: conversion.visitor,
         converted_at: conversion.converted_at,
         lookback_days: AttributionAlgorithms::DEFAULT_LOOKBACK_DAYS
-      ).call
+      )
+    end
+
+    def cross_device_journey_builder
+      Attribution::CrossDeviceJourneyBuilder.new(
+        identity: identity,
+        converted_at: conversion.converted_at,
+        lookback_days: AttributionAlgorithms::DEFAULT_LOOKBACK_DAYS
+      )
+    end
+
+    def identity
+      @identity ||= conversion.identity || conversion.visitor.identity
     end
 
     def credits_by_model
@@ -117,8 +135,18 @@ module Conversions
     end
 
     def calculator_credits(model)
+      return cross_device_credits(model) if identity.present?
+
       Attribution::Calculator.new(
         conversion: conversion,
+        attribution_model: model
+      ).call
+    end
+
+    def cross_device_credits(model)
+      Attribution::CrossDeviceCalculator.new(
+        conversion: conversion,
+        identity: identity,
         attribution_model: model
       ).call
     end

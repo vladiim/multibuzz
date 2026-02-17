@@ -26,6 +26,7 @@ module Shopify
         Conversion.create!(
           account: account,
           visitor_id: visitor.id,
+          identity_id: visitor.identity&.id,
           session_id: latest_session&.id,
           conversion_type: Shopify::CONVERSION_TYPE_PURCHASE,
           revenue: total_price,

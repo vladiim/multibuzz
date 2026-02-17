@@ -153,15 +153,15 @@ AttributionCalculationJob fires
 - [x] **1.7** Test: inherited attribution path populates `journey_session_ids`
 - [x] **1.8** Test: `journey_session_ids` contains ALL touchpoint sessions (5), not just credited (2)
 
-### Phase 2: Identity-Aware Attribution (fixes cross-device)
+### Phase 2: Identity-Aware Attribution (fixes cross-device) ✅
 
-- [ ] **2.1** In `AttributionCalculationService`, resolve identity: prefer `conversion.identity`, fall back to `conversion.visitor.identity`
-- [ ] **2.2** When identity present, use `CrossDeviceCalculator`; otherwise fall back to `Calculator`
-- [ ] **2.3** In `Shopify::Handlers::OrderPaid#create_conversion`, add `identity_id: visitor.identity&.id`
-- [ ] **2.4** Write test: uses `CrossDeviceCalculator` when conversion has identity
-- [ ] **2.5** Write test: falls back to single-visitor `Calculator` when no identity
-- [ ] **2.6** Write test: cross-device journey includes sessions from multiple visitors
-- [ ] **2.7** Write test: OrderPaid sets identity_id when visitor has identity
+- [x] **2.1** In `AttributionCalculationService`, resolve identity: prefer `conversion.identity`, fall back to `conversion.visitor.identity`
+- [x] **2.2** When identity present, use `CrossDeviceCalculator`; otherwise fall back to `Calculator`
+- [x] **2.3** In `Shopify::Handlers::OrderPaid#create_conversion`, add `identity_id: visitor.identity&.id`
+- [x] **2.4** Write test: uses `CrossDeviceCalculator` when conversion has identity
+- [x] **2.5** Write test: falls back to single-visitor `Calculator` when no identity
+- [x] **2.6** Write test: cross-device journey includes sessions from multiple visitors
+- [x] **2.7** Write test: OrderPaid sets identity_id when visitor has identity
 
 ### Phase 3: SDK `user_id` Resolution (fixes all SDKs)
 

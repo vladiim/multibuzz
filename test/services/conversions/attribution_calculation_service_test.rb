@@ -207,6 +207,49 @@ module Conversions
     end
 
     # ==========================================
+    # Phase 2: Identity-aware attribution tests
+    # ==========================================
+
+    test "uses CrossDeviceCalculator when conversion has identity" do
+      conv = build_cross_device_conversion
+      result = build_service(conv).call
+
+      assert result[:success]
+
+      # Credits should span sessions from BOTH visitors
+      credited_session_ids = conv.attribution_credits.pluck(:session_id).uniq
+      visitor_ids = Session.where(id: credited_session_ids).pluck(:visitor_id).uniq
+
+      assert_operator visitor_ids.size, :>, 1,
+        "Cross-device attribution should credit sessions from multiple visitors"
+    end
+
+    test "falls back to single-visitor Calculator when no identity" do
+      conv = build_conversion
+      result = build_service(conv).call
+
+      assert result[:success]
+
+      # Credits should only come from the single visitor's sessions
+      credited_session_ids = conv.attribution_credits.pluck(:session_id).uniq
+      visitor_ids = Session.where(id: credited_session_ids).pluck(:visitor_id).uniq
+
+      assert_equal [conv.visitor_id], visitor_ids,
+        "Without identity, attribution should only use single visitor's sessions"
+    end
+
+    test "cross-device journey_session_ids includes sessions from multiple visitors" do
+      conv = build_cross_device_conversion
+      build_service(conv).call
+      conv.reload
+
+      visitor_ids = Session.where(id: conv.journey_session_ids).pluck(:visitor_id).uniq
+
+      assert_operator visitor_ids.size, :>, 1,
+        "Journey should span sessions from multiple identity-linked visitors"
+    end
+
+    # ==========================================
     # Phase 1: Attribution resilience tests
     # ==========================================
 
@@ -406,6 +449,48 @@ module Conversions
       }
 
       Attribution::Algorithms::ShapleyValue.stub(:new, fake, &block)
+    end
+
+    def build_cross_device_conversion
+      identity = identities(:one)
+
+      # Visitor A: desktop sessions
+      visitor_a = visitors(:two)
+      visitor_a.update!(identity: identity)
+      Session.create!(
+        account: visitor_a.account,
+        visitor: visitor_a,
+        session_id: SecureRandom.hex(16),
+        started_at: 10.days.ago,
+        channel: "organic_search",
+        initial_utm: { "utm_source" => "google" }
+      )
+
+      # Visitor B: mobile sessions (same identity, different device)
+      visitor_b = account.visitors.create!(
+        visitor_id: "vis_mobile_#{SecureRandom.hex(8)}",
+        identity: identity,
+        first_seen_at: 7.days.ago,
+        last_seen_at: 2.days.ago
+      )
+      Session.create!(
+        account: account,
+        visitor: visitor_b,
+        session_id: SecureRandom.hex(16),
+        started_at: 5.days.ago,
+        channel: "paid_search",
+        initial_utm: { "utm_source" => "facebook" }
+      )
+
+      Conversion.create!(
+        account: account,
+        visitor: visitor_a,
+        identity: identity,
+        conversion_type: "purchase",
+        revenue: 100.00,
+        converted_at: Time.current,
+        journey_session_ids: []
+      )
     end
 
     def create_multi_session_journey(visitor, count:)

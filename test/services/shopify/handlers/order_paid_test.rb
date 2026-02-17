@@ -88,6 +88,22 @@ module Shopify
         refute_equal older_session.id, conversion.session_id
       end
 
+      test "sets identity_id when visitor has identity" do
+        identity = account.identities.create!(
+          external_id: "shopify_buyer",
+          traits: { "email" => "buyer@example.com" },
+          first_identified_at: 1.day.ago,
+          last_identified_at: 1.hour.ago
+        )
+        create_visitor_and_session
+        visitor.update!(identity: identity)
+
+        handler.call
+
+        assert_equal identity.id, conversion.identity_id,
+          "Conversion should have identity_id when visitor has identity"
+      end
+
       test "handles missing currency by defaulting to USD" do
         create_visitor_and_session
         payload_without_currency = payload.except(:currency)
