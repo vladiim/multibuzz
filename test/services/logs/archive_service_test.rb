@@ -34,7 +34,7 @@ class Logs::ArchiveServiceTest < ActiveSupport::TestCase
     s3_client = MockS3Client.new
     service(s3_client: s3_client).call
 
-    expected = "logs/#{yesterday.strftime('%Y/%m/%d')}.log.gz"
+    expected = "mbuzz/logs/#{yesterday.strftime('%Y/%m/%d')}.log.gz"
     assert_equal expected, s3_client.uploads.first[:key]
   end
 
@@ -99,7 +99,7 @@ class Logs::ArchiveServiceTest < ActiveSupport::TestCase
   end
 
   def expected_key(date)
-    "logs/#{date.strftime('%Y/%m/%d')}.log.gz"
+    "mbuzz/logs/#{date.strftime('%Y/%m/%d')}.log.gz"
   end
 
   class MockS3Client

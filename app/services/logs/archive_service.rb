@@ -37,7 +37,7 @@ module Logs
     end
 
     def s3_key
-      "logs/#{date.strftime('%Y/%m/%d')}.log.gz"
+      "mbuzz/logs/#{date.strftime('%Y/%m/%d')}.log.gz"
     end
 
     def log_file
