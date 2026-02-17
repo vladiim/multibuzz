@@ -112,6 +112,7 @@ Rails.application.routes.draw do
     resources :accounts, only: [:show, :update]
     resources :submissions, only: [:index, :show]
     resources :data_integrity, only: [:index, :show]
+    mount SolidErrors::Engine, at: "/errors"
   end
 
   # Design mockups (admin-only, returns 404 for non-admins)

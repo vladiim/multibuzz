@@ -2,6 +2,8 @@ module Api
   module V1
     class BaseController < ActionController::API
       before_action :authenticate_api_key
+      rescue_from StandardError, with: :handle_unexpected_error
+      rescue_from ActionController::ParameterMissing, with: :handle_parameter_missing
       # Rate limiting disabled for MVP - usage tracked via Billing::UsageCounter
       # Re-enable with smarter limits when billing tiers are implemented
       # before_action :check_rate_limit
@@ -56,6 +58,20 @@ module Api
           error_message: auth_result[:error],
           http_status: 401
         )
+      end
+
+      def handle_parameter_missing(exception)
+        render json: { error: exception.message }, status: :bad_request
+      end
+
+      def handle_unexpected_error(exception)
+        Rails.error.report(exception, handled: true, context: {
+          path: request.path,
+          method: request.method,
+          account_id: current_account&.id,
+          request_id: request.request_id
+        })
+        render json: { error: "Internal server error" }, status: :internal_server_error
       end
 
       def log_request_failure(error_type:, error_message:, http_status:, error_details: {})
