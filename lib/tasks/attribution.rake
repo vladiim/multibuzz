@@ -180,6 +180,86 @@ namespace :attribution do
     puts "Errors: #{stats[:errors]}"
   end
 
+  desc "Backfill identity_id and recompute journeys for broken conversions"
+  task backfill_journeys: :environment do
+    account_id = ENV["ACCOUNT_ID"]
+    dry_run = ENV["DRY_RUN"] == "true"
+    limit = ENV["LIMIT"]&.to_i
+
+    unless account_id
+      puts "Usage: bin/rails attribution:backfill_journeys ACCOUNT_ID=123 [DRY_RUN=true] [LIMIT=100]"
+      exit 1
+    end
+
+    account = Account.find(account_id)
+    puts "Backfilling journeys for: #{account.name} (ID: #{account.id})"
+    puts "DRY RUN MODE — no changes will be made" if dry_run
+    puts "LIMIT: #{limit}" if limit
+
+    stats = { identity_stamped: 0, recomputed: 0, credits_cleared: 0, skipped: 0, errors: 0 }
+
+    # Step 1: Stamp identity_id on conversions where visitor has identity
+    stampable = account.conversions
+      .where(identity_id: nil)
+      .joins(:visitor)
+      .where.not(visitors: { identity_id: nil })
+
+    stamp_count = stampable.count
+    puts "\n=== Step 1: Stamp identity_id (#{stamp_count} conversions) ==="
+
+    unless dry_run
+      stampable.update_all(
+        "identity_id = (SELECT identity_id FROM visitors WHERE visitors.id = conversions.visitor_id)"
+      )
+    end
+
+    stats[:identity_stamped] = stamp_count
+    puts "  Stamped: #{stamp_count}"
+
+    # Step 2: Recompute attribution for conversions that need it
+    # - Empty journey_session_ids (40% — attribution job failed silently)
+    # - Has identity (upgrade single-visitor → cross-device journey)
+    # - Skip: no identity + journey already populated (already correct)
+    scope = account.conversions
+      .where("journey_session_ids = '[]' OR journey_session_ids IS NULL OR identity_id IS NOT NULL")
+    scope = scope.limit(limit) if limit
+
+    total = scope.count
+    puts "\n=== Step 2: Recompute attribution (#{total} conversions) ==="
+
+    scope.find_each do |conversion|
+      old_credits = conversion.attribution_credits.count
+
+      unless dry_run
+        conversion.attribution_credits.delete_all if old_credits > 0
+        stats[:credits_cleared] += old_credits
+
+        result = Conversions::AttributionCalculationService.new(conversion).call
+
+        if result[:success]
+          stats[:recomputed] += 1
+        else
+          stats[:errors] += 1
+          puts "\n  Error: conversion #{conversion.id}: #{result[:errors].join(', ')}"
+        end
+      else
+        stats[:recomputed] += 1
+        stats[:credits_cleared] += old_credits
+      end
+
+      print "\rProcessed: #{stats[:recomputed] + stats[:errors]}/#{total}" if ((stats[:recomputed] + stats[:errors]) % 10).zero?
+    rescue StandardError => e
+      stats[:errors] += 1
+      puts "\n  Error: conversion #{conversion.id}: #{e.message}"
+    end
+
+    puts "\n\n=== RESULTS ==="
+    puts "Identity stamped: #{stats[:identity_stamped]}"
+    puts "Recomputed: #{stats[:recomputed]}"
+    puts "Old credits cleared: #{stats[:credits_cleared]}"
+    puts "Errors: #{stats[:errors]}"
+  end
+
   desc "Full backfill: channels + reattribution"
   task full_backfill: :environment do
     account_id = ENV["ACCOUNT_ID"]

@@ -212,12 +212,12 @@ AttributionCalculationJob fires
 - [ ] **4.5** Run against PHP test app (port 4004)
 - [ ] **4.6** Verify `journey_session_ids` populated with cross-device sessions when identity has multiple visitors
 
-### Phase 5: Backfill Production Data
+### Phase 5: Backfill Production Data ✅
 
-- [ ] **5.1** Write rake task to recompute `journey_session_ids` for all conversions with empty arrays
-- [ ] **5.2** Task uses `CrossDeviceJourneyBuilder` when visitor has identity, `JourneyBuilder` otherwise
-- [ ] **5.3** Re-run failed attribution for conversions with orphaned credits (credits exist but `journey_session_ids` empty)
-- [ ] **5.4** Log progress and stats (total, updated, skipped, errors)
+- [x] **5.1** Rake task `attribution:backfill_journeys` — two-step backfill for broken conversions
+- [x] **5.2** Step 1: Stamp `identity_id` on conversions where `visitor.identity_id` exists (bulk SQL update) — fixes the SDK `user_id` gap retroactively
+- [x] **5.3** Step 2: Clear orphaned credits + re-run `AttributionCalculationService` for conversions with empty `journey_session_ids` OR identity present (upgrades single-visitor → cross-device)
+- [x] **5.4** Supports `DRY_RUN=true`, `LIMIT=N`; logs identity_stamped, recomputed, credits_cleared, errors
 
 ---
 
