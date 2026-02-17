@@ -163,30 +163,30 @@ AttributionCalculationJob fires
 - [x] **2.6** Write test: cross-device journey includes sessions from multiple visitors
 - [x] **2.7** Write test: OrderPaid sets identity_id when visitor has identity
 
-### Phase 3: SDK `user_id` Resolution (fixes all SDKs)
+### Phase 3: SDK `user_id` Resolution (fixes all SDKs) ✅
 
 #### 3A: Ruby SDK
 
-- [ ] **3A.1** Fix `Mbuzz.conversion` shadowing: resolve `user_id` from context when not explicitly passed (`resolved_user_id = user_id || self.user_id`)
-- [ ] **3A.2** `identify()` should store user_id in `Current.user_id` for same-request access (currently only middleware sets this from session)
-- [ ] **3A.3** Write unit test: `conversion()` picks up user_id after `identify()` in same request
-- [ ] **3A.4** Write unit test: explicit `user_id:` parameter still takes precedence over context
+- [x] **3A.1** Fix `Mbuzz.conversion` shadowing: resolve `user_id` from context when not explicitly passed (`resolved_user_id = user_id || self.user_id`)
+- [x] **3A.2** `identify()` should store user_id in `Current.user_id` for same-request access (currently only middleware sets this from session)
+- [x] **3A.3** Write unit test: `conversion()` picks up user_id after `identify()` in same request
+- [x] **3A.4** Write unit test: explicit `user_id:` parameter still takes precedence over context
 
 #### 3B: Node SDK
 
-- [ ] **3B.1** `identify()` should write `userId` back to the `AsyncLocalStorage` context after successful API call
-- [ ] **3B.2** Make `RequestContext.userId` mutable (currently `readonly`)
-- [ ] **3B.3** Write unit test: `conversion()` picks up userId after `identify()` in same request
+- [x] **3B.1** `identify()` should write `userId` back to the `AsyncLocalStorage` context after successful API call
+- [x] **3B.2** Make `RequestContext.userId` mutable (currently `readonly`)
+- [x] **3B.3** Write unit test: `conversion()` picks up userId after `identify()` in same request
 
 #### 3C: Python SDK
 
-- [ ] **3C.1** `identify()` should update the context's `user_id` after successful API call
-- [ ] **3C.2** Write unit test: `conversion()` picks up user_id after `identify()` in same request
+- [x] **3C.1** `identify()` should update the context's `user_id` after successful API call
+- [x] **3C.2** Write unit test: `conversion()` picks up user_id after `identify()` in same request
 
 #### 3D: PHP SDK (reference implementation — no changes needed)
 
-- [ ] **3D.1** Verify existing behavior: `identify()` calls `$this->context->setUserId()`, `conversion()` reads it back
-- [ ] **3D.2** Write unit test confirming this if not already covered
+- [x] **3D.1** Verify existing behavior: `identify()` calls `$this->context->setUserId()`, `conversion()` reads it back
+- [x] **3D.2** Write unit test confirming this if not already covered
 
 ### Phase 4: E2E Tests — "Identify Then Convert" Flow
 
