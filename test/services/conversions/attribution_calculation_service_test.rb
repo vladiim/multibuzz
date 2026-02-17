@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "test_helper"
+require "minitest/mock"
 
 module Conversions
   class AttributionCalculationServiceTest < ActiveSupport::TestCase
@@ -205,6 +206,92 @@ module Conversions
       assert result[:credits_by_model].key?("Last Touch")
     end
 
+    # ==========================================
+    # Phase 1: Attribution resilience tests
+    # ==========================================
+
+    test "isolates per-model failures and returns success" do
+      shapley_model = create_shapley_model
+      conv = build_conversion
+
+      stub_exploding_shapley do
+        result = build_service(conv).call
+
+        assert result[:success],
+          "Service should return success even when one model fails"
+      end
+    ensure
+      shapley_model&.destroy!
+    end
+
+    test "persists credits from successful models when one model fails" do
+      shapley_model = create_shapley_model
+      conv = build_conversion
+
+      stub_exploding_shapley do
+        build_service(conv).call
+
+        first_touch_credits = conv.attribution_credits
+          .where(attribution_model: attribution_models(:first_touch))
+        last_touch_credits = conv.attribution_credits
+          .where(attribution_model: attribution_models(:last_touch))
+        shapley_credits = conv.attribution_credits
+          .where(attribution_model: shapley_model)
+
+        assert first_touch_credits.any?, "First Touch credits should be persisted"
+        assert last_touch_credits.any?, "Last Touch credits should be persisted"
+        assert shapley_credits.empty?, "Shapley credits should not exist (model failed)"
+      end
+    ensure
+      shapley_model&.destroy!
+    end
+
+    test "populates journey_session_ids even when one model fails" do
+      shapley_model = create_shapley_model
+      conv = build_conversion
+
+      stub_exploding_shapley do
+        build_service(conv).call
+        conv.reload
+
+        assert_not_empty conv.journey_session_ids,
+          "Journey should be stored even when one model fails"
+      end
+    ensure
+      shapley_model&.destroy!
+    end
+
+    test "journey_session_ids contains all touchpoint sessions not just credited" do
+      visitor = visitors(:two)
+      create_multi_session_journey(visitor, count: 5)
+
+      conv = Conversion.create!(
+        account: visitor.account,
+        visitor: visitor,
+        conversion_type: "purchase",
+        converted_at: Time.current,
+        journey_session_ids: []
+      )
+
+      build_service(conv).call
+      conv.reload
+
+      assert_equal 5, conv.journey_session_ids.size,
+        "Journey should contain all 5 touchpoint sessions, not just credited ones"
+    end
+
+    test "inherited attribution populates journey_session_ids" do
+      acquisition_conversion = build_acquisition_conversion
+      calculate_attribution(acquisition_conversion)
+
+      payment_conversion = build_inheriting_conversion(acquisition_conversion)
+      build_service(payment_conversion).call
+      payment_conversion.reload
+
+      assert_not_empty payment_conversion.journey_session_ids,
+        "Inherited attribution should populate journey_session_ids"
+    end
+
     private
 
     def build_acquisition_conversion(revenue: nil)
@@ -294,6 +381,46 @@ module Conversions
 
     def default_visitor
       @default_visitor ||= visitors(:two)
+    end
+
+    def account
+      @account ||= accounts(:one)
+    end
+
+    def create_shapley_model
+      AttributionModel.create!(
+        account: account,
+        name: "Shapley Test",
+        model_type: :preset,
+        algorithm: :shapley_value,
+        is_active: true,
+        lookback_days: 30
+      )
+    end
+
+    def stub_exploding_shapley(&block)
+      fake = ->(*args, **kwargs) {
+        obj = Object.new
+        obj.define_singleton_method(:call) { raise "O(2^n) power_set explosion" }
+        obj
+      }
+
+      Attribution::Algorithms::ShapleyValue.stub(:new, fake, &block)
+    end
+
+    def create_multi_session_journey(visitor, count:)
+      channels = %w[organic_search email paid_search social direct]
+
+      count.times.map do |i|
+        Session.create!(
+          account: visitor.account,
+          visitor: visitor,
+          session_id: SecureRandom.hex(16),
+          started_at: (count - i).days.ago,
+          channel: channels[i % channels.size],
+          initial_utm: { "utm_source" => "source_#{i}" }
+        )
+      end
     end
   end
 end

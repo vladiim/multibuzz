@@ -38,6 +38,14 @@ module Conversions
       @credits_by_model = active_models.each_with_object({}) do |model, hash|
         hash[model.name] = inherit_credits_for_model(model)
       end
+
+      inherit_journey_session_ids
+    end
+
+    def inherit_journey_session_ids
+      return unless acquisition_conversion.journey_session_ids.any?
+
+      conversion.update_column(:journey_session_ids, acquisition_conversion.journey_session_ids)
     end
 
     def inherit_credits_for_model(model)
@@ -71,16 +79,33 @@ module Conversions
 
     # Fresh attribution calculation
     def calculate_fresh_attribution
-      @credits_by_model = active_models.each_with_object({}) do |model, hash|
-        hash[model.name] = calculate_and_persist_credits(model)
-      end
+      store_journey_session_ids
 
-      update_journey_session_ids
+      @credits_by_model = active_models.each_with_object({}) do |model, hash|
+        hash[model.name] = calculate_model_safely(model)
+      end
     end
 
-    def update_journey_session_ids
-      session_ids = @credits_by_model.values.flatten.map { |c| c[:session_id] }.compact.uniq
+    def calculate_model_safely(model)
+      calculate_and_persist_credits(model)
+    rescue StandardError => e
+      Rails.logger.error(
+        "[Attribution] #{model.name} failed for conversion #{conversion.id}: #{e.message}"
+      )
+      []
+    end
+
+    def store_journey_session_ids
+      session_ids = touchpoints.map { |t| t[:session_id] }
       conversion.update_column(:journey_session_ids, session_ids) if session_ids.any?
+    end
+
+    def touchpoints
+      @touchpoints ||= Attribution::JourneyBuilder.new(
+        visitor: conversion.visitor,
+        converted_at: conversion.converted_at,
+        lookback_days: AttributionAlgorithms::DEFAULT_LOOKBACK_DAYS
+      ).call
     end
 
     def credits_by_model
