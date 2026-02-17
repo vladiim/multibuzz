@@ -64,6 +64,9 @@ gem "solid_queue"
 gem "solid_cable"
 gem "solid_errors"
 
+# S3-compatible storage for log archival to DigitalOcean Spaces
+gem "aws-sdk-s3"
+
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 
