@@ -221,7 +221,7 @@ namespace :attribution do
     # - Has identity (upgrade single-visitor → cross-device journey)
     # - Skip: no identity + journey already populated (already correct)
     scope = account.conversions
-      .where("journey_session_ids = '[]' OR journey_session_ids IS NULL OR identity_id IS NOT NULL")
+      .where("journey_session_ids = '{}' OR journey_session_ids IS NULL OR identity_id IS NOT NULL")
     scope = scope.limit(limit) if limit
 
     total = scope.count
