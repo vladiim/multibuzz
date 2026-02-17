@@ -188,6 +188,21 @@ AttributionCalculationJob fires
 - [x] **3D.1** Verify existing behavior: `identify()` calls `$this->context->setUserId()`, `conversion()` reads it back
 - [x] **3D.2** Write unit test confirming this if not already covered
 
+### Phase 3.5: Publish SDKs & Verify Data Flow
+
+- [ ] **3.5.1** Publish Ruby SDK 0.7.4 to RubyGems
+- [ ] **3.5.2** Publish Node SDK 0.7.4 to npm
+- [ ] **3.5.3** Publish Python SDK 0.7.4 to PyPI
+- [ ] **3.5.4** Tag PHP SDK 0.7.4 on GitHub (Composer uses git tags)
+- [ ] **3.5.5** `bundle update mbuzz` in pet_resorts, deploy to staging
+- [ ] **3.5.6** Verify data flowing correctly in staging:
+  - Log in as test user → `identify()` fires
+  - Complete a booking → `conversion("estimate_accepted")` fires
+  - Check mbuzz console: `Conversion.last.identity_id` is set (not nil)
+  - Check mbuzz console: `Conversion.last.journey_session_ids` is populated
+  - Check SDK logs: `user_id` present in conversion API request payload
+  - If identity has multiple visitors: verify `journey_session_ids` spans both
+
 ### Phase 4: E2E Tests — "Identify Then Convert" Flow
 
 - [ ] **4.1** Add E2E scenario: `identify_then_convert_test.rb` — calls `identify(user_id)` then `conversion(type, revenue:)` WITHOUT explicit `user_id`, verifies server-side conversion has `identity_id` set
