@@ -22,7 +22,7 @@ class BillingMailer < ApplicationMailer
 
   def subscription_created(account)
     @account = account
-    mail(to: recipient(account), subject: "Welcome to multibuzz!")
+    mail(to: recipient(account), subject: "Welcome to mbuzz!")
   end
 
   def subscription_cancelled(account)
@@ -34,7 +34,7 @@ class BillingMailer < ApplicationMailer
   def free_until_granted(account)
     @account = account
     @days_remaining = account.days_until_free_expires
-    mail(to: recipient(account), subject: "Free access granted to multibuzz")
+    mail(to: recipient(account), subject: "Free access granted to mbuzz")
   end
 
   def free_until_expiring_soon(account)

@@ -4,7 +4,7 @@ module Dashboard
   class ExportsController < BaseController
     def create
       send_data csv_data,
-        filename: "multibuzz-export-#{Date.current}.csv",
+        filename: "mbuzz-export-#{Date.current}.csv",
         type: "text/csv",
         disposition: "attachment"
 

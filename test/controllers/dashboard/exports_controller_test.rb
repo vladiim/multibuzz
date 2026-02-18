@@ -20,7 +20,7 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
     sign_in
     post dashboard_export_path
 
-    assert_match "multibuzz-export-#{Date.current}.csv", response.headers["Content-Disposition"]
+    assert_match "mbuzz-export-#{Date.current}.csv", response.headers["Content-Disposition"]
   end
 
   test "requires authentication" do
