@@ -212,7 +212,7 @@ module Dashboard
         )
         create_credit_for_conversion(repeat)
 
-        # Median of [2, 10] = 6.0
+        # Mean of [2, 10] = 6.0
         assert_in_delta 6.0, result[:avg_days_to_convert], 0.5
       end
 
@@ -242,7 +242,7 @@ module Dashboard
         assert_equal 1.0, result[:avg_visits_to_convert]
       end
 
-      test "uses median for avg_days_to_convert to resist outliers" do
+      test "uses mean for avg_days_to_convert" do
         now = Time.current
 
         # 4 conversions with 1-day journey
@@ -255,17 +255,16 @@ module Dashboard
           create_credit_for_conversion(conv)
         end
 
-        # 1 outlier with 100-day journey
-        outlier_session = create_session(started_at: 100.days.ago)
-        outlier = create_conversion_with_journey(
+        # 1 conversion with 100-day journey
+        long_session = create_session(started_at: 100.days.ago)
+        long_conv = create_conversion_with_journey(
           converted_at: now,
-          journey_session_ids: [outlier_session.id]
+          journey_session_ids: [long_session.id]
         )
-        create_credit_for_conversion(outlier)
+        create_credit_for_conversion(long_conv)
 
-        # Median of [1, 1, 1, 1, 100] = 1 (middle value)
-        # Mean would be 20.8, but median is 1
-        assert_in_delta 1.0, result[:avg_days_to_convert], 0.1
+        # Mean of [1, 1, 1, 1, 100] = 104/5 = 20.8
+        assert_in_delta 20.8, result[:avg_days_to_convert], 0.1
       end
 
       test "uses median for avg_channels_to_convert to resist outliers" do

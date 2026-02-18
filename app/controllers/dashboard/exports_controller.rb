@@ -7,12 +7,21 @@ module Dashboard
         filename: "multibuzz-export-#{Date.current}.csv",
         type: "text/csv",
         disposition: "attachment"
+
+      broadcast_export_complete
     end
 
     private
 
     def csv_data
       @csv_data ||= CsvExportService.new(current_account, export_params).call
+    end
+
+    def broadcast_export_complete
+      Turbo::StreamsChannel.broadcast_remove_to(
+        "account_#{current_account.prefix_id}_exports",
+        target: "export-spinner"
+      )
     end
 
     def export_params

@@ -29,6 +29,25 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
     assert_response :redirect
   end
 
+  test "dashboard export form has spinner and stimulus controller" do
+    sign_in
+    get dashboard_path
+
+    assert_response :success
+    assert_select "[data-controller~='export']"
+    assert_select "#export-spinner"
+  end
+
+  test "broadcasts spinner removal after export" do
+    sign_in
+
+    assert_broadcasts("account_#{account.prefix_id}_exports", 1) do
+      post dashboard_export_path
+    end
+
+    assert_response :success
+  end
+
   test "returns 200 with empty data" do
     sign_in
     AttributionCredit.delete_all

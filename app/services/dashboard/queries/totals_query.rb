@@ -48,7 +48,7 @@ module Dashboard
         days = days_per_conversion
         return nil if days.empty?
 
-        median(days).round(DECIMAL_PRECISION)
+        (days.sum / days.size).round(DECIMAL_PRECISION)
       end
 
       def days_per_conversion

@@ -37,7 +37,7 @@ gem "stripe"
 gem "postmark-rails"
 
 # Mbuzz SDK for dogfooding [https://rubygems.org/gems/mbuzz]
-gem "mbuzz", '~> 0.7.2'
+gem "mbuzz", '~> 0.7.4'
 
 # Use prefixed IDs for customer-facing identifiers [https://github.com/excid3/prefixed_ids]
 gem "prefixed_ids"
