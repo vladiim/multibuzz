@@ -60,9 +60,13 @@ multibuzz/
 
 ### Architecture Documentation
 
+**Critical**:
+- [Session Intelligence](lib/docs/architecture/session_intelligence.md) - Server-side bot detection, session quality, and the multi-layer classification roadmap. Required reading before touching session creation, qualification, or SDK middleware.
+
 **Core Design**:
 - [Attribution Methodology](lib/docs/architecture/attribution_methodology.md) - Multi-touch attribution principles
 - [Server-Side Attribution Architecture](lib/docs/architecture/server_side_attribution_architecture.md) - System design
+- [Session Qualification](lib/docs/architecture/session_qualification.md) - Ghost session detection and filtering
 - [Code Highlighting Implementation](lib/docs/architecture/code_highlighting_implementation.md) - Stripe-style docs
 
 **Feature Documentation**:
