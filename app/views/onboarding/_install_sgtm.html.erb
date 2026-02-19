@@ -1,12 +1,36 @@
 <div class="space-y-8">
   <!-- Prerequisites -->
   <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
-    <p class="text-amber-800 text-sm">
-      <strong>Prerequisite:</strong> You need a server-side GTM container running on your own domain
-      (e.g. <code class="bg-amber-100 px-1 rounded">gtm.yourdomain.com</code>). Don't have one?
-      <a href="https://stape.io" target="_blank" rel="noopener" class="text-amber-900 underline font-medium">Stape.io</a>
-      has a free tier and takes ~5 minutes to set up.
+    <p class="text-amber-800 text-sm mb-2">
+      <strong>Prerequisite:</strong> You need a server-side GTM container running on <strong>your own domain</strong>
+      (e.g. <code class="bg-amber-100 px-1 rounded">sgtm.yourdomain.com</code>). This is what makes cookies first-party
+      so attribution works across Safari, ad blockers, and long conversion windows.
     </p>
+
+    <details class="mt-3 group">
+      <summary class="text-sm text-amber-900 font-medium cursor-pointer hover:underline flex items-center gap-1">
+        Don't have sGTM yet? Here's what you need to know
+        <svg class="w-4 h-4 text-amber-600 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      </summary>
+      <div class="mt-3 bg-white border border-amber-100 rounded-lg p-4 text-sm text-gray-700 space-y-3">
+        <p>
+          Setting up sGTM from scratch takes <strong>2-4 hours</strong> (most of that is DNS/domain verification,
+          which can take up to 72 hours depending on your provider). This is a one-time setup.
+        </p>
+        <div class="space-y-2">
+          <p class="font-medium text-gray-800">Recommended providers:</p>
+          <ul class="space-y-1 text-gray-600">
+            <li><a href="https://stape.io" target="_blank" rel="noopener" class="text-indigo-600 underline font-medium">Stape.io</a> — $20/month, best value, largest community. Free tier for testing.</li>
+            <li><a href="https://www.addingwell.com" target="_blank" rel="noopener" class="text-indigo-600 underline">Addingwell</a> — EUR 90/month, best guided onboarding, EU hosting.</li>
+            <li><a href="https://taggrs.io" target="_blank" rel="noopener" class="text-indigo-600 underline">TAGGRS</a> — EUR 22/month, European data residency.</li>
+          </ul>
+        </div>
+        <p>
+          Our <a href="<%= docs_path('integrations-sgtm') %>#step-1" class="text-indigo-600 underline font-medium">full sGTM setup guide</a>
+          has step-by-step walkthroughs for each provider, including DNS configuration and common pitfalls. Come back here once your server is running.
+        </p>
+      </div>
+    </details>
   </div>
 
   <!-- Step 1: Import Tag Template -->
@@ -264,7 +288,7 @@
 
   <!-- Docs link -->
   <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm text-gray-700">
-    For architecture diagrams, consent mode, troubleshooting, and advanced configuration, see the
-    <a href="<%= docs_path('integrations-sgtm') %>" class="text-indigo-600 hover:text-indigo-800 font-medium">full sGTM documentation</a>.
+    Need help? The <a href="<%= docs_path('integrations-sgtm') %>" class="text-indigo-600 hover:text-indigo-800 font-medium">full sGTM documentation</a>
+    has troubleshooting, DNS setup guides, video tutorials, and architecture details.
   </div>
 </div>

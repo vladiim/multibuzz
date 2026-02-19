@@ -9,6 +9,116 @@
   </div>
 
   <!-- ============================================================ -->
+  <!-- SECTION: SDK vs sGTM — which is right for you? -->
+  <!-- ============================================================ -->
+  <div class="mb-16">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">SDK vs sGTM — Which Is Right for You?</h2>
+    <p class="text-gray-600 mb-6">
+      mbuzz has two ways to connect: server-side SDKs and server-side GTM. They do the same thing
+      (send attribution data to mbuzz) but suit different teams.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+      <!-- SDK approach -->
+      <div class="border border-gray-200 rounded-xl p-6">
+        <div class="flex items-center gap-2 mb-3">
+          <div class="w-8 h-8 bg-blue-100 text-blue-700 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+          </div>
+          <h3 class="font-semibold text-gray-900">Server-Side SDKs</h3>
+        </div>
+        <p class="text-sm text-gray-600 mb-4">Ruby, Node.js, Python, PHP, Shopify</p>
+
+        <div class="space-y-2 mb-4">
+          <div class="flex items-start gap-2">
+            <svg class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <span class="text-sm text-gray-700">Quick to set up — <code class="bg-gray-100 px-1 rounded text-xs">npm install</code>, add middleware, done</span>
+          </div>
+          <div class="flex items-start gap-2">
+            <svg class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <span class="text-sm text-gray-700">No third-party infrastructure to manage</span>
+          </div>
+          <div class="flex items-start gap-2">
+            <svg class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <span class="text-sm text-gray-700">No monthly hosting costs beyond your own server</span>
+          </div>
+        </div>
+
+        <div class="space-y-2 mb-4">
+          <div class="flex items-start gap-2">
+            <svg class="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            <span class="text-sm text-gray-700">Requires backend access and a developer to install</span>
+          </div>
+          <div class="flex items-start gap-2">
+            <svg class="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            <span class="text-sm text-gray-700">Not available for no-code platforms (Webflow, Squarespace)</span>
+          </div>
+          <div class="flex items-start gap-2">
+            <svg class="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            <span class="text-sm text-gray-700">Changes to tracking require code deploys</span>
+          </div>
+        </div>
+
+        <div class="text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2">
+          <strong>Best for:</strong> Teams with developers who want the simplest, most reliable setup.
+        </div>
+      </div>
+
+      <!-- sGTM approach -->
+      <div class="border-2 border-indigo-200 rounded-xl p-6 bg-indigo-50/30">
+        <div class="flex items-center gap-2 mb-3">
+          <div class="w-8 h-8 bg-indigo-100 text-indigo-700 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/></svg>
+          </div>
+          <h3 class="font-semibold text-gray-900">Server-Side GTM</h3>
+        </div>
+        <p class="text-sm text-gray-600 mb-4">This page. Works with any website.</p>
+
+        <div class="space-y-2 mb-4">
+          <div class="flex items-start gap-2">
+            <svg class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <span class="text-sm text-gray-700">No backend code needed — works with any website</span>
+          </div>
+          <div class="flex items-start gap-2">
+            <svg class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <span class="text-sm text-gray-700">Non-technical team members can manage tags after setup</span>
+          </div>
+          <div class="flex items-start gap-2">
+            <svg class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <span class="text-sm text-gray-700">Tracking changes via GTM UI — no code deploys</span>
+          </div>
+        </div>
+
+        <div class="space-y-2 mb-4">
+          <div class="flex items-start gap-2">
+            <svg class="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            <span class="text-sm text-gray-700">Initial setup is painful — DNS, domain config, GTM containers (2-4 hours)</span>
+          </div>
+          <div class="flex items-start gap-2">
+            <svg class="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            <span class="text-sm text-gray-700">Monthly hosting cost ($20-90/month depending on provider)</span>
+          </div>
+          <div class="flex items-start gap-2">
+            <svg class="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            <span class="text-sm text-gray-700">More moving parts — two GTM containers, a hosting provider, DNS records</span>
+          </div>
+        </div>
+
+        <div class="text-xs text-indigo-700 bg-indigo-100 rounded-lg px-3 py-2">
+          <strong>Best for:</strong> No-code sites, agencies, and teams where marketers need to manage tracking without developers.
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm text-gray-600">
+      <strong>TL;DR:</strong> If you have a developer and backend access, the
+      <a href="<%= docs_path('getting-started') %>" class="text-indigo-600 underline font-medium">SDKs</a>
+      are faster to set up and simpler to maintain. If you don't have backend access or want marketers
+      to manage tracking independently, sGTM is worth the setup pain. Both give you the same attribution data.
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
   <!-- SECTION: What is sGTM? -->
   <!-- ============================================================ -->
   <div class="mb-16">
@@ -90,6 +200,63 @@
   </div>
 
   <!-- ============================================================ -->
+  <!-- SECTION: Why you need a custom domain -->
+  <!-- ============================================================ -->
+  <div class="mb-16">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Why You Need a Custom Domain</h2>
+
+    <p class="text-gray-700 mb-6">
+      This is the single most important thing to understand about sGTM: <strong>your server must run on your domain</strong>.
+      Without it, you lose most of the benefits.
+    </p>
+
+    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden mb-6">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="bg-gray-50 border-b border-gray-200">
+            <th class="text-left px-5 py-3 text-gray-600 font-medium"></th>
+            <th class="text-left px-5 py-3 text-gray-600 font-medium">Without custom domain</th>
+            <th class="text-left px-5 py-3 text-gray-600 font-medium">With custom domain</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          <tr>
+            <td class="px-5 py-3 font-medium text-gray-800">Your server URL</td>
+            <td class="px-5 py-3 text-gray-500"><code class="bg-gray-100 px-1 rounded text-xs">abc123.run.app</code></td>
+            <td class="px-5 py-3 text-gray-700"><code class="bg-green-50 px-1 rounded text-xs">sgtm.yoursite.com</code></td>
+          </tr>
+          <tr>
+            <td class="px-5 py-3 font-medium text-gray-800">Cookie type</td>
+            <td class="px-5 py-3 text-red-600">Third-party</td>
+            <td class="px-5 py-3 text-green-700">First-party</td>
+          </tr>
+          <tr>
+            <td class="px-5 py-3 font-medium text-gray-800">Cookie lifespan (Safari)</td>
+            <td class="px-5 py-3 text-red-600">7 days</td>
+            <td class="px-5 py-3 text-green-700">2 years</td>
+          </tr>
+          <tr>
+            <td class="px-5 py-3 font-medium text-gray-800">Ad blocker bypass</td>
+            <td class="px-5 py-3 text-red-600">No</td>
+            <td class="px-5 py-3 text-green-700">Yes</td>
+          </tr>
+          <tr>
+            <td class="px-5 py-3 font-medium text-gray-800">Attribution accuracy</td>
+            <td class="px-5 py-3 text-red-600 font-medium">Poor — visitors who take longer than 7 days to convert are lost</td>
+            <td class="px-5 py-3 text-green-700 font-medium">Full — visitors tracked across their entire journey</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4 text-sm text-indigo-800">
+      <strong>Bottom line:</strong> If your sGTM server doesn't run on your domain, Safari users (30-50% of web traffic)
+      lose their visitor identity every 7 days. For B2B or considered purchases where buyers take weeks to convert,
+      you'll miss most of the journey. The custom domain setup takes a few hours but it's the whole reason sGTM is worth doing.
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
   <!-- SECTION: The 3 pieces you need -->
   <!-- ============================================================ -->
   <div class="mb-16">
@@ -122,7 +289,7 @@
           <h3 class="font-semibold text-purple-900 mb-2 mt-1">sGTM Server</h3>
           <p class="text-sm text-purple-800 mb-3">A server that receives data from your client GTM and runs tags server-side. Lives on your domain (e.g. <code class="bg-purple-100 px-1 rounded text-xs">gtm.yoursite.com</code>).</p>
           <div class="text-xs text-purple-600 bg-purple-100 rounded px-2 py-1 inline-block">
-            5-min setup via Stape.io
+            Stape.io from $20/mo
           </div>
         </div>
 
@@ -169,41 +336,219 @@
   <!-- SECTION: Step-by-step setup -->
   <!-- ============================================================ -->
   <div class="mb-16">
-    <h2 class="text-2xl font-bold text-gray-900 mb-8">Setup Guide</h2>
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Setup Guide</h2>
+
+    <!-- Time estimate -->
+    <div class="bg-gray-50 border border-gray-200 rounded-lg p-5 mb-8">
+      <div class="flex items-start gap-3">
+        <svg class="w-5 h-5 text-gray-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <div>
+          <p class="text-sm text-gray-700 font-medium mb-1">How long does this take?</p>
+          <ul class="text-sm text-gray-600 space-y-1">
+            <li><strong>Already have sGTM running?</strong> Adding mbuzz takes ~15 minutes. <a href="#step-3" class="text-indigo-600 underline">Skip to Step 3</a>.</li>
+            <li><strong>Setting up sGTM from scratch?</strong> Allow 2-4 hours. Most of that is DNS/domain configuration,
+              which can take up to 72 hours for verification depending on your provider. This is a one-time setup.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
 
     <!-- ========== Step 1: Get sGTM hosting ========== -->
     <div id="step-1" class="mb-12 scroll-mt-24">
       <div class="flex items-center gap-4 mb-4">
         <div class="flex-shrink-0 w-10 h-10 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold text-lg">1</div>
-        <h3 class="text-xl font-semibold text-gray-900">Get an sGTM server</h3>
+        <h3 class="text-xl font-semibold text-gray-900">Get an sGTM server running on your domain</h3>
       </div>
       <div class="pl-14">
-        <p class="text-gray-600 mb-4">
-          You need a server to run your tags. The easiest option is <strong>Stape.io</strong> — it takes about 5 minutes,
-          costs ~$10/month, and handles all the infrastructure for you. You'll get a subdomain on your
-          own domain (like <code class="bg-gray-100 px-1 rounded text-sm">gtm.yoursite.com</code>).
+        <p class="text-gray-600 mb-2">
+          You need a server to run your tags, and it must live on <strong>your domain</strong> (like
+          <code class="bg-gray-100 px-1 rounded text-sm">sgtm.yoursite.com</code>) for first-party cookies to work.
+          There are a few ways to set this up.
+        </p>
+        <p class="text-gray-500 text-sm mb-6">
+          This is the most time-consuming step. The server itself spins up fast, but connecting your custom domain
+          involves DNS changes that can take anywhere from 30 minutes to 72 hours to verify.
         </p>
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-          <a href="https://stape.io" target="_blank" rel="noopener" class="block border border-gray-200 rounded-lg p-4 hover:border-purple-300 hover:bg-purple-50 transition-colors">
-            <div class="font-semibold text-gray-900 mb-1">Stape.io</div>
-            <div class="text-xs text-green-600 font-medium mb-2">Recommended</div>
-            <div class="text-sm text-gray-500">Managed hosting. 5-min setup. Free tier available (10k requests/month).</div>
-          </a>
-          <a href="https://www.addingwell.com" target="_blank" rel="noopener" class="block border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors">
-            <div class="font-semibold text-gray-900 mb-1">Addingwell</div>
-            <div class="text-sm text-gray-500 mt-3">Managed hosting. EU-focused. Good for GDPR compliance.</div>
-          </a>
-          <a href="https://developers.google.com/tag-platform/tag-manager/server-side" target="_blank" rel="noopener" class="block border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors">
-            <div class="font-semibold text-gray-900 mb-1">Google Cloud</div>
-            <div class="text-xs text-gray-500 font-medium mb-2">DIY</div>
-            <div class="text-sm text-gray-500">Self-hosted on GCP. More setup work. Best for large-scale deployments.</div>
-          </a>
+        <!-- Provider tabs -->
+        <div class="border border-gray-200 rounded-xl overflow-hidden mb-6"
+             data-controller="toggle"
+             data-toggle-default-value="stape"
+             data-toggle-active-class="border-b-2 border-indigo-500 text-indigo-600"
+             data-toggle-inactive-class="text-gray-500 hover:text-gray-700">
+          <!-- Tab headers -->
+          <div class="bg-gray-50 border-b border-gray-200 flex">
+            <button data-toggle-target="trigger" data-action="click->toggle#select" data-value="stape" class="px-5 py-3 text-sm font-medium">
+              Stape.io <span class="text-xs font-normal ml-1 text-green-600">Recommended</span>
+            </button>
+            <button data-toggle-target="trigger" data-action="click->toggle#select" data-value="gcp" class="px-5 py-3 text-sm font-medium">
+              Google Cloud
+            </button>
+            <button data-toggle-target="trigger" data-action="click->toggle#select" data-value="other" class="px-5 py-3 text-sm font-medium">
+              Other Providers
+            </button>
+          </div>
+
+          <!-- Tab: Stape.io -->
+          <div data-toggle-target="content" data-value="stape" class="p-6">
+            <div class="flex items-center gap-2 mb-1">
+              <h4 class="font-semibold text-gray-900">Stape.io</h4>
+              <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded font-medium">Best value</span>
+            </div>
+            <p class="text-sm text-gray-500 mb-5">$20/month for 500K requests. Free tier available (10K requests/month for testing).</p>
+
+            <ol class="space-y-4 mb-6">
+              <li class="flex items-start gap-3">
+                <span class="flex-shrink-0 w-6 h-6 bg-purple-100 text-purple-700 rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                <div>
+                  <p class="text-sm text-gray-700"><strong>Create a server container in GTM.</strong>
+                    Go to <a href="https://tagmanager.google.com" target="_blank" rel="noopener" class="text-indigo-600 underline">tagmanager.google.com</a>
+                    &rarr; Admin &rarr; Create Container &rarr; choose <strong>Server</strong> as the target platform.
+                    When prompted to set up your tagging server, choose <strong>"Manually provision tagging server"</strong>.</p>
+                  <p class="text-xs text-gray-500 mt-1">Copy the <strong>Container Config</strong> string — you'll paste it into Stape next.</p>
+                </div>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="flex-shrink-0 w-6 h-6 bg-purple-100 text-purple-700 rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                <div>
+                  <p class="text-sm text-gray-700"><strong>Create a Stape account and container.</strong>
+                    Sign up at <a href="https://stape.io" target="_blank" rel="noopener" class="text-indigo-600 underline">stape.io</a>,
+                    create a new sGTM container, and paste your Container Config string from GTM. Stape will spin up your server in about 2 minutes.</p>
+                </div>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="flex-shrink-0 w-6 h-6 bg-purple-100 text-purple-700 rounded-full flex items-center justify-center text-xs font-bold">3</span>
+                <div>
+                  <p class="text-sm text-gray-700"><strong>Set up your custom domain.</strong> This is the critical step — without it, your cookies are third-party and Safari kills them in 7 days.</p>
+                  <ol class="list-decimal list-inside text-sm text-gray-600 mt-2 space-y-1.5 pl-1">
+                    <li>In your Stape container settings, add a custom subdomain (e.g. <code class="bg-gray-100 px-1 rounded text-xs">sgtm.yoursite.com</code>)</li>
+                    <li>Stape gives you DNS records to add (usually an A record or CNAME)</li>
+                    <li>Go to your DNS provider (Cloudflare, GoDaddy, Namecheap, etc.) and add these records</li>
+                    <li>Wait for Stape to verify — usually 30 minutes, sometimes up to 72 hours</li>
+                    <li>SSL is provisioned automatically once DNS is verified</li>
+                  </ol>
+                </div>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="flex-shrink-0 w-6 h-6 bg-purple-100 text-purple-700 rounded-full flex items-center justify-center text-xs font-bold">4</span>
+                <div>
+                  <p class="text-sm text-gray-700"><strong>Verify it works.</strong>
+                    Visit <code class="bg-gray-100 px-1 rounded text-xs">https://sgtm.yoursite.com/healthy</code> in your browser.
+                    You should see a 200 response. If so, your server is live.</p>
+                </div>
+              </li>
+            </ol>
+
+            <!-- Stape DNS gotchas -->
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm">
+              <p class="font-medium text-amber-800 mb-2">Common DNS pitfalls (save yourself hours):</p>
+              <ul class="text-amber-700 space-y-1.5">
+                <li><strong>Cloudflare users:</strong> You must <strong>disable the orange proxy cloud</strong> for your sGTM subdomain (set it to DNS-only / grey cloud). This is the #1 reason domain verification fails.</li>
+                <li><strong>Duplicate records:</strong> Make sure you don't have existing A or AAAA records for the same subdomain. Remove any IPv6 (AAAA) records — they interfere with verification.</li>
+                <li><strong>SSL errors:</strong> If you use Cloudflare, set SSL/TLS mode to <strong>Full</strong> for your domain. "Flexible" mode causes redirect loops.</li>
+                <li><strong>Patience:</strong> DNS propagation genuinely takes time. If verification hasn't completed after 4 hours, double-check your records before changing anything.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Tab: Google Cloud -->
+          <div data-toggle-target="content" data-value="gcp" class="p-6 hidden">
+            <div class="flex items-center gap-2 mb-1">
+              <h4 class="font-semibold text-gray-900">Google Cloud (DIY)</h4>
+            </div>
+            <p class="text-sm text-gray-500 mb-5">Full control over your infrastructure. ~$120/month minimum for production (3 Cloud Run instances).</p>
+
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800 mb-5">
+              <strong>Heads up:</strong> When you create a Server container in GTM, you'll see an
+              <strong>"Automatically provision tagging server"</strong> button. This is fine for a quick test — it deploys
+              a Cloud Run instance in about 2 minutes. But it has real limitations:
+              <ul class="mt-2 space-y-1 text-amber-700">
+                <li>Always deploys to <strong>us-central1</strong> — you can't choose a region</li>
+                <li>Google's own docs say it's <strong>"recommended for testing limited traffic volumes only"</strong></li>
+                <li>No custom domain included — cookies are third-party on <code class="bg-amber-100 px-1 rounded text-xs">.run.app</code></li>
+                <li>Default logging adds ~$100/month to your bill (most people don't realise until invoiced)</li>
+              </ul>
+              <p class="mt-2">For production, you'll need to manually set up a load balancer and custom domain.</p>
+            </div>
+
+            <p class="text-sm font-medium text-gray-800 mb-3">Production setup (custom domain via load balancer):</p>
+            <ol class="space-y-3 mb-6">
+              <li class="flex items-start gap-3">
+                <span class="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                <p class="text-sm text-gray-700"><strong>Create a server container in GTM</strong> (Admin &rarr; Create Container &rarr; Server). Use "Manually provision" and copy the Container Config string.</p>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                <p class="text-sm text-gray-700"><strong>Deploy to Cloud Run.</strong> Follow <a href="https://developers.google.com/tag-platform/tag-manager/server-side/cloud-run-setup-guide" target="_blank" rel="noopener" class="text-indigo-600 underline">Google's Cloud Run setup guide</a>. Deploy at least 3 instances for production reliability.</p>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xs font-bold">3</span>
+                <div>
+                  <p class="text-sm text-gray-700"><strong>Set up a custom domain</strong> — this requires an Application Load Balancer in GCP:</p>
+                  <ol class="list-decimal list-inside text-sm text-gray-600 mt-2 space-y-1 pl-1">
+                    <li>Create a Serverless Network Endpoint Group (NEG) pointing to your Cloud Run service</li>
+                    <li>Create a Backend Service using that NEG</li>
+                    <li>Create a URL Map (routing rules)</li>
+                    <li>Create a Google-managed SSL certificate for your subdomain</li>
+                    <li>Create an HTTPS frontend linking the cert and URL map</li>
+                    <li>Add a DNS <code class="bg-gray-100 px-1 rounded text-xs">A</code> record pointing your subdomain to the load balancer IP</li>
+                    <li>Wait for SSL provisioning (minutes to hours after DNS propagation)</li>
+                  </ol>
+                </div>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xs font-bold">4</span>
+                <p class="text-sm text-gray-700"><strong>Disable default request logging</strong> in Cloud Run settings to avoid the ~$100/month logging bill.</p>
+              </li>
+            </ol>
+
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
+              <strong>Best reference:</strong> Simo Ahava's
+              <a href="https://www.simoahava.com/analytics/cloud-run-server-side-tagging-google-tag-manager/" target="_blank" rel="noopener" class="underline font-medium">Cloud Run with Server-Side Tagging</a>
+              is the most thorough walkthrough of the full GCP setup. If you're going the DIY route, bookmark it.
+            </div>
+          </div>
+
+          <!-- Tab: Other Providers -->
+          <div data-toggle-target="content" data-value="other" class="p-6 hidden">
+            <h4 class="font-semibold text-gray-900 mb-4">Other sGTM hosting providers</h4>
+
+            <div class="space-y-4">
+              <a href="https://www.addingwell.com" target="_blank" rel="noopener" class="block border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors">
+                <div class="flex items-center justify-between mb-1">
+                  <div class="font-semibold text-gray-900">Addingwell</div>
+                  <div class="text-xs text-gray-500">from EUR 90/month</div>
+                </div>
+                <p class="text-sm text-gray-600">Best onboarding experience. Guided setup, plug-and-play templates, 99.99% uptime SLA. Good for teams who want hand-holding. EU-focused hosting for GDPR compliance.</p>
+              </a>
+
+              <a href="https://taggrs.io" target="_blank" rel="noopener" class="block border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors">
+                <div class="flex items-center justify-between mb-1">
+                  <div class="font-semibold text-gray-900">TAGGRS</div>
+                  <div class="text-xs text-gray-500">from EUR 22/month</div>
+                </div>
+                <p class="text-sm text-gray-600">Own infrastructure (not built on GCP). European data residency. Good budget option for EU businesses. Same GTM expertise required as Stape.</p>
+              </a>
+
+              <a href="https://www.tracklution.com" target="_blank" rel="noopener" class="block border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors">
+                <div class="flex items-center justify-between mb-1">
+                  <div class="font-semibold text-gray-900">Tracklution</div>
+                  <div class="text-xs text-gray-500">from EUR 31/month</div>
+                </div>
+                <p class="text-sm text-gray-600">Genuinely the simplest option — copy-paste a pixel script, no GTM knowledge needed, ~15 minute setup. Trade-off: less customisable than full sGTM, locked to their supported ad networks.</p>
+              </a>
+            </div>
+          </div>
         </div>
 
+        <!-- What you should have after step 1 -->
         <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm text-gray-600">
-          <strong>What you'll have after this step:</strong> An sGTM container URL (like <code class="bg-gray-100 px-1 rounded">https://gtm.yoursite.com</code>)
+          <strong>What you should have after this step:</strong> An sGTM container running on your domain
+          (like <code class="bg-gray-100 px-1 rounded">https://sgtm.yoursite.com</code>)
           and a GTM server container ID (like <code class="bg-gray-100 px-1 rounded">GTM-XXXXXX</code>).
+          Visit <code class="bg-gray-100 px-1 rounded">/healthy</code> on your URL to confirm it's live.
         </div>
       </div>
     </div>
@@ -902,9 +1247,35 @@
           <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </summary>
         <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 text-sm text-gray-600 space-y-2">
-          <p><strong>Check 1:</strong> Your sGTM container must be on the <strong>same root domain</strong> as your website. If your site is <code class="bg-gray-100 px-1 rounded text-xs">example.com</code>, your sGTM should be <code class="bg-gray-100 px-1 rounded text-xs">gtm.example.com</code> (not a different domain).</p>
-          <p><strong>Check 2:</strong> Your sGTM container must use HTTPS. Cookies with <code class="bg-gray-100 px-1 rounded text-xs">Secure</code> flag require HTTPS.</p>
+          <p><strong>Check 1:</strong> Your sGTM container must be on the <strong>same root domain</strong> as your website. If your site is <code class="bg-gray-100 px-1 rounded text-xs">example.com</code>, your sGTM should be <code class="bg-gray-100 px-1 rounded text-xs">sgtm.example.com</code> (not a different domain). This is what makes cookies first-party.</p>
+          <p><strong>Check 2:</strong> Your sGTM container must use HTTPS. Cookies with the <code class="bg-gray-100 px-1 rounded text-xs">Secure</code> flag require HTTPS.</p>
           <p><strong>Check 3:</strong> If you specified a custom cookie domain in the tag settings, make sure it matches your site's domain.</p>
+          <p><strong>Check 4:</strong> If you're using the default <code class="bg-gray-100 px-1 rounded text-xs">.run.app</code> or <code class="bg-gray-100 px-1 rounded text-xs">.stape.io</code> domain (not your own), cookies are third-party. Safari limits these to 7 days. You need a <a href="#step-1" class="text-indigo-600 underline">custom domain</a>.</p>
+        </div>
+      </details>
+
+      <details class="border border-gray-200 rounded-lg overflow-hidden group">
+        <summary class="px-5 py-4 bg-white hover:bg-gray-50 cursor-pointer flex items-center justify-between">
+          <span class="font-medium text-gray-900">Custom domain not verifying (Stape)</span>
+          <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </summary>
+        <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 text-sm text-gray-600 space-y-2">
+          <p><strong>Cloudflare proxy:</strong> The most common cause. Your sGTM subdomain record must be set to <strong>DNS only</strong> (grey cloud), not proxied (orange cloud). Stape needs to reach the server directly for verification.</p>
+          <p><strong>Duplicate records:</strong> Check that you don't have multiple A records or any AAAA (IPv6) records for the same subdomain. Remove duplicates and any AAAA records.</p>
+          <p><strong>SSL/TLS mode:</strong> If using Cloudflare, your SSL/TLS encryption mode must be set to <strong>Full</strong> (not "Flexible"). Flexible mode causes redirect loops.</p>
+          <p><strong>Wrong values:</strong> Go to your Stape container settings and compare the DNS records shown there against what's in your DNS provider. They must match exactly.</p>
+          <p><strong>Give it time:</strong> DNS propagation typically takes 30 minutes to 4 hours. Some providers (especially older ones) can take up to 72 hours. Don't keep changing records — give each change time to propagate before troubleshooting further.</p>
+        </div>
+      </details>
+
+      <details class="border border-gray-200 rounded-lg overflow-hidden group">
+        <summary class="px-5 py-4 bg-white hover:bg-gray-50 cursor-pointer flex items-center justify-between">
+          <span class="font-medium text-gray-900">GCP automatic provisioning: should I use it?</span>
+          <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </summary>
+        <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 text-sm text-gray-600 space-y-2">
+          <p><strong>For testing only.</strong> The "Automatically provision tagging server" button in GTM creates a Cloud Run instance in us-central1 that runs on a <code class="bg-gray-100 px-1 rounded text-xs">.run.app</code> domain. Cookies set from this domain are third-party — Safari limits them to 7 days and ad blockers can block them.</p>
+          <p>It's fine for a quick test to see how sGTM works, but for production you'll need either a managed provider (Stape, Addingwell) with a custom domain, or a manual GCP setup with a load balancer and your own subdomain. See <a href="#step-1" class="text-indigo-600 underline">Step 1</a> for the full walkthrough.</p>
         </div>
       </details>
 
@@ -942,6 +1313,74 @@
       <p class="text-sm text-gray-500 mt-4">
         No extra configuration needed in the mbuzz tag. It inherits your GTM container's consent settings.
       </p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION: Video tutorials & learning resources -->
+  <!-- ============================================================ -->
+  <div class="mb-16">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Video Tutorials & Learning Resources</h2>
+    <p class="text-gray-600 mb-6">
+      sGTM setup is easier to follow visually. These are the best free resources we've found — they cover
+      the general sGTM setup process. Once your sGTM server is running, come back here for the mbuzz-specific
+      tag configuration (Steps 3-4 above).
+    </p>
+
+    <div class="space-y-4">
+      <a href="https://www.analyticsmania.com/post/introduction-to-google-tag-manager-server-side-tagging/" target="_blank" rel="noopener" class="block border border-gray-200 rounded-lg p-5 hover:border-indigo-300 hover:bg-indigo-50/30 transition-colors">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <h3 class="font-semibold text-gray-900">Analytics Mania — Server-Side Tagging Tutorial</h3>
+              <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded font-medium">Start here</span>
+            </div>
+            <p class="text-sm text-gray-500 mb-2">By Julius Fedorovicius. 45-minute video + written guide.</p>
+            <p class="text-sm text-gray-600">The most beginner-friendly walkthrough. Covers what sGTM is, why it matters, container creation, server provisioning, and connecting GA4. Updated regularly. If you watch one thing, make it this.</p>
+          </div>
+          <svg class="w-5 h-5 text-gray-400 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        </div>
+      </a>
+
+      <a href="https://measureschool.com/google-tag-manager-server-side-tagging/" target="_blank" rel="noopener" class="block border border-gray-200 rounded-lg p-5 hover:border-indigo-300 hover:bg-indigo-50/30 transition-colors">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="font-semibold text-gray-900 mb-1">MeasureSchool — How to Set Up Server-Side Tagging</h3>
+            <p class="text-sm text-gray-500 mb-2">Step-by-step written guide with video companion.</p>
+            <p class="text-sm text-gray-600">Good for people who prefer following written steps alongside video. Covers the full setup including GCP configuration and domain mapping.</p>
+          </div>
+          <svg class="w-5 h-5 text-gray-400 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        </div>
+      </a>
+
+      <a href="https://www.simoahava.com/analytics/cloud-run-server-side-tagging-google-tag-manager/" target="_blank" rel="noopener" class="block border border-gray-200 rounded-lg p-5 hover:border-indigo-300 hover:bg-indigo-50/30 transition-colors">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="font-semibold text-gray-900 mb-1">Simo Ahava — Cloud Run with Server-Side Tagging</h3>
+            <p class="text-sm text-gray-500 mb-2">Deep technical blog post. The definitive GCP reference.</p>
+            <p class="text-sm text-gray-600">If you're self-hosting on Google Cloud, this is the guide. Covers Cloud Run deployment, load balancer setup, domain mapping, SSL certificates, and debugging. Written by the most respected voice in the GTM community.</p>
+          </div>
+          <svg class="w-5 h-5 text-gray-400 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        </div>
+      </a>
+
+      <a href="https://stape.io/academy" target="_blank" rel="noopener" class="block border border-gray-200 rounded-lg p-5 hover:border-indigo-300 hover:bg-indigo-50/30 transition-colors">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="font-semibold text-gray-900 mb-1">Stape Academy — Free sGTM Courses</h3>
+            <p class="text-sm text-gray-500 mb-2">Platform-specific guides (Shopify, WooCommerce, WordPress).</p>
+            <p class="text-sm text-gray-600">If you're using Stape as your sGTM host, their academy has step-by-step guides specific to their platform. Particularly useful for Shopify and WooCommerce setups.</p>
+          </div>
+          <svg class="w-5 h-5 text-gray-400 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        </div>
+      </a>
+    </div>
+
+    <div class="mt-6 bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm text-gray-600">
+      <strong>Our recommendation:</strong> Start with the Analytics Mania tutorial to understand the big picture.
+      Then follow the <a href="#step-1" class="text-indigo-600 underline">setup guide above</a> for the specific steps.
+      The external tutorials cover general sGTM setup — once your server is running, Steps 3-4 on this page cover
+      the mbuzz-specific tag configuration.
     </div>
   </div>
 </div>
