@@ -613,6 +613,7 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
     assert result[:success]
     session = account.sessions.find_by(session_id: "sess_suspect_1")
     assert session.suspect?, "Session with no referrer, no UTM, no click_ids should be suspect"
+    assert_equal Sessions::BotClassifier::NO_SIGNALS, session.suspect_reason
   end
 
   test "session not suspect when it has a referrer" do
@@ -626,6 +627,7 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
     assert result[:success]
     session = account.sessions.find_by(session_id: "sess_not_suspect_ref")
     refute session.suspect?, "Session with referrer should not be suspect"
+    assert_nil session.suspect_reason
   end
 
   test "session not suspect when it has UTM params" do
@@ -650,6 +652,56 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
     assert result[:success]
     session = account.sessions.find_by(session_id: "sess_not_suspect_click")
     refute session.suspect?, "Session with click_ids should not be suspect"
+  end
+
+  # --- Bot Detection ---
+
+  test "bot UA flagged suspect with known_bot reason" do
+    load_bot_patterns!
+
+    result = Sessions::CreationService.new(account, {
+      visitor_id: "vis_bot_1",
+      session_id: "sess_bot_1",
+      url: "https://example.com/page?utm_source=google&gclid=abc",
+      referrer: "https://www.google.com/",
+      user_agent: "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+    }).call
+
+    assert result[:success]
+    session = account.sessions.find_by(session_id: "sess_bot_1")
+    assert session.suspect?, "Bot UA should be suspect even with attribution signals"
+    assert_equal Sessions::BotClassifier::KNOWN_BOT, session.suspect_reason
+  end
+
+  test "real UA with signals stores user_agent and is qualified" do
+    load_bot_patterns!
+
+    result = Sessions::CreationService.new(account, {
+      visitor_id: "vis_real_ua",
+      session_id: "sess_real_ua",
+      url: "https://example.com/page?utm_source=google",
+      referrer: "https://www.google.com/",
+      user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Chrome/120.0.0.0"
+    }).call
+
+    assert result[:success]
+    session = account.sessions.find_by(session_id: "sess_real_ua")
+    refute session.suspect?
+    assert_nil session.suspect_reason
+    assert_equal "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Chrome/120.0.0.0", session.user_agent
+  end
+
+  test "stores user_agent on session" do
+    ua = "Mozilla/5.0 TestBrowser/1.0"
+    Sessions::CreationService.new(account, {
+      visitor_id: "vis_ua_store",
+      session_id: "sess_ua_store",
+      url: "https://example.com/page",
+      user_agent: ua
+    }).call
+
+    session = account.sessions.find_by(session_id: "sess_ua_store")
+    assert_equal ua, session.user_agent
   end
 
   # --- Billing Usage ---
@@ -769,5 +821,12 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
 
   def usage_counter
     @usage_counter ||= Billing::UsageCounter.new(account)
+  end
+
+  def load_bot_patterns!
+    BotPatterns::Matcher.load!([
+      { pattern: "Googlebot", name: "Googlebot" },
+      { pattern: "AhrefsBot", name: "AhrefsBot" }
+    ])
   end
 end

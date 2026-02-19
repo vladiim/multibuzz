@@ -230,15 +230,24 @@ module Sessions
         initial_referrer: referrer,
         channel: channel,
         click_ids: click_ids,
-        suspect: suspect_session?,
+        suspect: classification[:suspect],
+        suspect_reason: classification[:suspect_reason],
+        user_agent: user_agent,
         landing_page_host: normalized_page_host
       }.compact
     end
 
-    def suspect_session?
-      referrer.blank? &&
-        normalized_utm.values.none?(&:present?) &&
-        click_ids.empty?
+    def classification
+      @classification ||= BotClassifier.new(
+        user_agent: user_agent,
+        referrer: referrer,
+        utm: normalized_utm,
+        click_ids: click_ids
+      ).call
+    end
+
+    def user_agent
+      params[:user_agent]
     end
 
     def raw_utm_data

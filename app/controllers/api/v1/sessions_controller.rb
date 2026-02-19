@@ -28,7 +28,8 @@ module Api
           :url,
           :referrer,
           :started_at,
-          :device_fingerprint
+          :device_fingerprint,
+          :user_agent
         )
       end
 

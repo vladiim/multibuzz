@@ -1,0 +1,4 @@
+# Custom bot patterns not covered by upstream lists.
+# Merged with upstream patterns (crawler-user-agents + Matomo bots) at sync time.
+# Format: Ruby-compatible regex pattern string.
+patterns: []

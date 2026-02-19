@@ -10,10 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_11_233517) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_19_035136) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
-  # enable_extension "timescaledb" — excluded for test env compatibility
+  enable_extension "timescaledb"
 
   create_table "account_memberships", force: :cascade do |t|
     t.bigint "user_id", null: false
@@ -200,20 +200,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_11_233517) do
     t.index ["account_id"], name: "index_conversion_property_keys_on_account_id"
   end
 
-  create_table "data_integrity_checks", force: :cascade do |t|
-    t.bigint "account_id", null: false
-    t.string "check_name", null: false
-    t.string "status", null: false
-    t.float "value", null: false
-    t.float "warning_threshold", null: false
-    t.float "critical_threshold", null: false
-    t.jsonb "details", default: {}
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["account_id", "check_name", "created_at"], name: "idx_integrity_checks_account_check_time"
-    t.index ["account_id"], name: "index_data_integrity_checks_on_account_id"
-  end
-
   create_table "conversions", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.bigint "visitor_id", null: false
@@ -395,6 +381,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_11_233517) do
     t.string "device_fingerprint"
     t.boolean "suspect", default: false, null: false
     t.string "landing_page_host"
+    t.text "user_agent"
+    t.string "suspect_reason"
     t.index ["account_id", "landing_page_host"], name: "index_sessions_on_account_and_landing_page_host"
     t.index ["account_id", "session_id", "started_at"], name: "index_sessions_on_account_id_and_session_id", unique: true
     t.index ["account_id"], name: "index_sessions_on_account_id"
@@ -406,6 +394,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_11_233517) do
     t.index ["is_test"], name: "index_sessions_on_is_test"
     t.index ["session_id"], name: "index_sessions_on_session_id"
     t.index ["started_at"], name: "index_sessions_on_started_at"
+    t.index ["suspect"], name: "index_sessions_on_suspect"
     t.index ["visitor_id", "device_fingerprint", "last_activity_at"], name: "index_sessions_for_resolution"
     t.index ["visitor_id"], name: "index_sessions_on_visitor_id"
   end
@@ -463,8 +452,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_11_233517) do
   add_foreign_key "visitors", "accounts"
   add_foreign_key "visitors", "identities"
 
-  # TimescaleDB hypertables and continuous aggregates excluded from schema.rb
-  # for test env compatibility. Production uses db:migrate which runs these.
-  # See: create_hypertable for events (occurred_at) and sessions (started_at)
-  # See: channel_attribution_daily, source_attribution_daily continuous aggregates
+  # NOTE: TimescaleDB hypertables and continuous aggregates are excluded from schema.rb
+  # They are created via migrations which skip in test environment.
+  # Production uses db:migrate which runs the TimescaleDB migrations.
+  # See: create_hypertable for events and sessions
+  # See: create_continuous_aggregate for channel_attribution_daily, source_attribution_daily
 end
