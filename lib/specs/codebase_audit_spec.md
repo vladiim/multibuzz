@@ -2,7 +2,7 @@
 
 **Date:** 2026-02-21
 **Priority:** P1
-**Status:** In Progress (Phases 1-2 complete, Phase 3 next)
+**Status:** In Progress (Phases 1-3 complete, Phase 4 next)
 **Branch:** `feature/session-bot-detection`
 
 ---
@@ -348,16 +348,16 @@ Assessment of each functional area against key software quality dimensions.
 
 | Dimension | Grade | Key Gaps |
 |-----------|-------|----------|
-| Maintainability | **A-** | Attribution calculator duplication |
+| Maintainability | **A** | Calculator duplication resolved via CreditEnrichment concern |
 | Readability | **A-** | Missing doc index, sparse "why" comments |
 | Testability | **A-** | Multi-tenancy isolation tests still missing |
 | Extensibility | **A-** | SDK checklist is manual, channel hierarchy is implicit |
 | Correctness | **A** | All queries account-scoped, JSONB size-validated |
 | Performance | **A** | N+1s verified clean by Prosopite |
 | SOLID | **A-** | CreationService SRP, hardcoded deps |
-| DRY | **B+** | Calculator duplication |
+| DRY | **A** | Calculator duplication extracted to CreditEnrichment concern |
 
-**Overall codebase grade: A-** -- excellent architecture with full static analysis tooling. All security bugs fixed. Remaining gaps: calculator DRY violation, style guide codification.
+**Overall codebase grade: A** -- excellent architecture with full static analysis tooling, all security bugs fixed, DRY violations resolved. Remaining: style guide codification (Phase 4), performance baselines (Phase 5).
 
 ---
 
@@ -757,13 +757,13 @@ Phase N work complete
 
 Fixed S1-S3 (unscoped queries), V1-V3 (JSONB size validations), cross-account isolation tests. Commit `ccc2c03`.
 
-### Phase 3: DRY Refactor (NEXT)
+### Phase 3: DRY Refactor -- COMPLETE
 
-Extract shared attribution logic from `Calculator` and `CrossDeviceCalculator`. These two classes share near-identical `enrich_with_session_data`, `sessions_map`, `utm_value`, `add_revenue_credit`, `normalize_credits`, and `ensure_sum_equals_one` methods. Extract into `Attribution::CreditEnricher` concern or base class. Run gate.
+Extracted `Attribution::CreditEnrichment` concern from Calculator and CrossDeviceCalculator. 10 shared methods moved to concern (~70 lines eliminated). Calculator: 121 -> 57 lines. CrossDeviceCalculator: 104 -> 40 lines. Commit `cc16f98`.
 
-### Phase 4: Style Guide Codification & Doc Cleanup
+### Phase 4: Style Guide Codification & Doc Cleanup (NEXT)
 
-Codify undocumented code conventions in CLAUDE.md, burn down `.rubocop_todo.yml`, fix naming inconsistencies. Run gate.
+Codify undocumented code conventions in CLAUDE.md, burn down `.rubocop_todo.yml` (autocorrectable cops), fix naming inconsistencies. Run gate.
 
 ---
 
@@ -870,10 +870,10 @@ Commit: `ccc2c03` on `feature/session-bot-detection`
 
 ### Phase 3: DRY Refactor
 
-- [ ] **3.1** Extract `Attribution::CreditEnricher` module from `Calculator` and `CrossDeviceCalculator` -- shared methods: `enrich_with_session_data`, `add_revenue_credit`, `find_session`, `sessions_map`, `utm_value`
-- [ ] **3.2** Both calculators `include Attribution::CreditEnricher`, eliminating ~40 lines of duplication
-- [ ] **3.3** (Optional) Extract `Visitors::ResolutionService` from `Sessions::CreationService` for the visitor find/create + fingerprint matching logic (~50 lines)
-- [ ] **3.4** **Gate checkpoint:** run full static analysis suite. Verify `flay` would no longer flag Calculator duplication.
+- [x] **3.1** Extracted `Attribution::CreditEnrichment` concern with 10 shared methods: `compute_credits`, `algorithm_credits`, `build_algorithm`, `probabilistic_model?`, `build_probabilistic_model`, `enrich_with_session_data`, `find_session`, `sessions_map`, `utm_value`, `add_revenue_credit`, `account`
+- [x] **3.2** Both calculators include `CreditEnrichment`. Calculator: 121 -> 57 lines. CrossDeviceCalculator: 104 -> 40 lines. ~70 lines of duplication eliminated.
+- [ ] **3.3** (Deferred) Extract `Visitors::ResolutionService` from `Sessions::CreationService` — lower priority, CreationService works well as-is
+- [x] **3.4** Gate clean: 2527 tests, 0 failures, 0 offenses
 
 ### Phase 4: Style Guide Codification & Documentation Cleanup
 
@@ -1038,7 +1038,7 @@ echo "==> All clear."
 - [x] JSONB size validations added for Event, Session, Identity (50KB max)
 - [x] RuboCop extended config with `.rubocop_todo.yml` baseline (2829 offenses)
 - [ ] `.rubocop_todo.yml` burned down (Phase 4)
-- [ ] `Attribution::CreditEnricher` extracted, both calculators refactored (Phase 3)
+- [x] `Attribution::CreditEnrichment` concern extracted, both calculators refactored
 - [ ] 6 undocumented code conventions codified in CLAUDE.md (Phase 4)
 - [ ] `frozen_string_literal: true` added to all Ruby files (Phase 4)
 - [ ] "Multibuzz" references removed from `lib/docs/` (Phase 4)
