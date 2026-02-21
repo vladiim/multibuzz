@@ -1,0 +1,9 @@
+linters:
+  SpaceAroundErbTag:
+    enabled: true
+  AllowedScriptType:
+    enabled: false
+  NoJavascriptTagHelper:
+    enabled: false
+  RequireInputAutocomplete:
+    enabled: false

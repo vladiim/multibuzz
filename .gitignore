@@ -42,3 +42,6 @@
 /config/credentials/production.key
 
 /config/credentials/development.key
+
+# Ignore SimpleCov coverage reports.
+/coverage

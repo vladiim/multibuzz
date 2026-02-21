@@ -32,7 +32,7 @@
             lexer = Rouge::Lexer.find_fancy(syntax.to_s, code) || Rouge::Lexers::PlainText.new
             formatter = Rouge::Formatters::HTML.new
             formatter.format(lexer.lex(code)).html_safe
-          %></div></code></pre>
+                                                                                                                   %></div></code></pre>
         </div>
       </div>
     <% end %>

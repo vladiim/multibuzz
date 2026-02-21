@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -e
+
+echo "==> Brakeman"       && bin/brakeman --no-pager --no-exit-on-error
+echo "==> Gem audit"       && bundle exec bundler-audit check --update
+echo "==> RuboCop"         && bundle exec rubocop
+echo "==> ERB Lint"        && bundle exec erb_lint app/views/
+echo "==> Tests + N+1"     && bin/rails test
+echo ""
+echo "==> All clear."

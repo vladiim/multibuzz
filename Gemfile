@@ -88,15 +88,49 @@ group :development, :test do
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
+
+  # --- Static analysis tools ---
+
+  # Gem dependency vulnerability scanning [https://github.com/rubysec/bundler-audit]
+  gem "bundler-audit", require: false
+
+  # RuboCop extensions
+  gem "rubocop-minitest", require: false
+  gem "rubocop-thread_safety", require: false
+
+  # ERB template linting [https://github.com/Shopify/erb_lint]
+  gem "erb_lint", require: false
+
+  # Code smell detection [https://github.com/troessner/reek]
+  gem "reek", require: false
+
+  # N+1 query detection [https://github.com/charkost/prosopite]
+  gem "prosopite"
+  gem "pg_query"
+
+  # Unsafe migration prevention [https://github.com/ankane/strong_migrations]
+  gem "strong_migrations"
 end
 
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
+
+  # Database schema/validation consistency [https://github.com/djezzzl/database_consistency]
+  gem "database_consistency", require: false
+
+  # Missing index detection [https://github.com/gregnavis/active_record_doctor]
+  gem "active_record_doctor"
 end
 
 group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
   gem "selenium-webdriver"
+
+  # Test coverage [https://github.com/simplecov-ruby/simplecov]
+  gem "simplecov", require: false
+
+  # Diff-based coverage enforcement [https://github.com/grodowski/undercover]
+  gem "undercover", require: false
 end

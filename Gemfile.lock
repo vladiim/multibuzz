@@ -44,6 +44,8 @@ GEM
       erubi (~> 1.11)
       rails-dom-testing (~> 2.2)
       rails-html-sanitizer (~> 1.6)
+    active_record_doctor (2.0.1)
+      activerecord (>= 7.0.0)
     activejob (8.0.4)
       activesupport (= 8.0.4)
       globalid (>= 0.3.6)
@@ -98,13 +100,23 @@ GEM
     bcrypt (3.1.20)
     bcrypt_pbkdf (1.1.1)
     benchmark (0.5.0)
+    better_html (2.2.0)
+      actionview (>= 7.0)
+      activesupport (>= 7.0)
+      ast (~> 2.0)
+      erubi (~> 1.4)
+      parser (>= 2.4)
+      smart_properties
     bigdecimal (3.3.1)
     bindex (0.8.1)
     bootsnap (1.18.6)
       msgpack (~> 1.2)
-    brakeman (7.1.1)
+    brakeman (8.0.2)
       racc
     builder (3.3.0)
+    bundler-audit (0.9.3)
+      bundler (>= 1.2.0)
+      thor (~> 1.0)
     capybara (3.40.0)
       addressable
       matrix
@@ -118,14 +130,53 @@ GEM
     connection_pool (2.5.4)
     crass (1.0.6)
     csv (3.3.5)
+    database_consistency (2.1.3)
+      activerecord (>= 3.2)
     date (3.5.0)
     debug (1.11.0)
       irb (~> 1.10)
       reline (>= 0.3.8)
+    docile (1.4.1)
     dotenv (3.1.8)
     drb (2.2.3)
+    dry-configurable (1.3.0)
+      dry-core (~> 1.1)
+      zeitwerk (~> 2.6)
+    dry-core (1.2.0)
+      concurrent-ruby (~> 1.0)
+      logger
+      zeitwerk (~> 2.6)
+    dry-inflector (1.3.1)
+    dry-initializer (3.2.0)
+    dry-logic (1.6.0)
+      bigdecimal
+      concurrent-ruby (~> 1.0)
+      dry-core (~> 1.1)
+      zeitwerk (~> 2.6)
+    dry-schema (1.15.0)
+      concurrent-ruby (~> 1.0)
+      dry-configurable (~> 1.0, >= 1.0.1)
+      dry-core (~> 1.1)
+      dry-initializer (~> 3.2)
+      dry-logic (~> 1.6)
+      dry-types (~> 1.8)
+      zeitwerk (~> 2.6)
+    dry-types (1.9.1)
+      bigdecimal (>= 3.0)
+      concurrent-ruby (~> 1.0)
+      dry-core (~> 1.0)
+      dry-inflector (~> 1.0)
+      dry-logic (~> 1.4)
+      zeitwerk (~> 2.6)
     ed25519 (1.4.0)
     erb (5.1.3)
+    erb_lint (0.9.0)
+      activesupport
+      better_html (>= 2.0.1)
+      parser (>= 2.7.1.4)
+      rainbow
+      rubocop (>= 1)
+      smart_properties
     erubi (1.13.1)
     et-orbi (1.4.0)
       tzinfo
@@ -135,9 +186,29 @@ GEM
       raabro (~> 1.4)
     globalid (1.3.0)
       activesupport (>= 6.1)
+    google-protobuf (4.33.5)
+      bigdecimal
+      rake (>= 13)
+    google-protobuf (4.33.5-aarch64-linux-gnu)
+      bigdecimal
+      rake (>= 13)
+    google-protobuf (4.33.5-aarch64-linux-musl)
+      bigdecimal
+      rake (>= 13)
+    google-protobuf (4.33.5-arm64-darwin)
+      bigdecimal
+      rake (>= 13)
+    google-protobuf (4.33.5-x86_64-linux-gnu)
+      bigdecimal
+      rake (>= 13)
+    google-protobuf (4.33.5-x86_64-linux-musl)
+      bigdecimal
+      rake (>= 13)
     hashids (1.0.6)
     i18n (1.14.7)
       concurrent-ruby (~> 1.0)
+    imagen (0.2.0)
+      parser (>= 2.5, != 2.5.1.1)
     importmap-rails (2.2.2)
       actionpack (>= 6.0.0)
       activesupport (>= 6.0.0)
@@ -222,6 +293,8 @@ GEM
     pg (1.6.2-arm64-darwin)
     pg (1.6.2-x86_64-linux)
     pg (1.6.2-x86_64-linux-musl)
+    pg_query (6.2.2)
+      google-protobuf (>= 3.25.3)
     postmark (1.25.1)
       json
     postmark-rails (0.22.1)
@@ -238,6 +311,7 @@ GEM
       actionpack (>= 7.0.0)
       activesupport (>= 7.0.0)
       rack
+    prosopite (2.1.2)
     psych (5.2.6)
       date
       stringio
@@ -294,6 +368,12 @@ GEM
       psych (>= 4.0.0)
       tsort
     redcarpet (3.6.1)
+    reek (6.5.0)
+      dry-schema (~> 1.13)
+      logger (~> 1.6)
+      parser (~> 3.3.0)
+      rainbow (>= 2.0, < 4.0)
+      rexml (~> 3.1)
     regexp_parser (2.11.3)
     reline (0.6.3)
       io-console (~> 0.5)
@@ -313,6 +393,10 @@ GEM
     rubocop-ast (1.47.1)
       parser (>= 3.3.7.2)
       prism (~> 1.4)
+    rubocop-minitest (0.38.2)
+      lint_roller (~> 1.1)
+      rubocop (>= 1.75.0, < 2.0)
+      rubocop-ast (>= 1.38.0, < 2.0)
     rubocop-performance (1.26.1)
       lint_roller (~> 1.1)
       rubocop (>= 1.75.0, < 2.0)
@@ -327,8 +411,13 @@ GEM
       rubocop (>= 1.72)
       rubocop-performance (>= 1.24)
       rubocop-rails (>= 2.30)
+    rubocop-thread_safety (0.7.3)
+      lint_roller (~> 1.1)
+      rubocop (~> 1.72, >= 1.72.1)
+      rubocop-ast (>= 1.44.0, < 2.0)
     ruby-progressbar (1.13.0)
     rubyzip (3.2.2)
+    rugged (1.9.0)
     securerandom (0.4.1)
     selenium-webdriver (4.38.0)
       base64 (~> 0.2)
@@ -336,6 +425,13 @@ GEM
       rexml (~> 3.2, >= 3.2.5)
       rubyzip (>= 1.2.2, < 4.0)
       websocket (~> 1.0)
+    simplecov (0.22.0)
+      docile (~> 1.1)
+      simplecov-html (~> 0.11)
+      simplecov_json_formatter (~> 0.1)
+    simplecov-html (0.13.2)
+    simplecov_json_formatter (0.1.4)
+    smart_properties (1.17.0)
     solid_cable (3.0.12)
       actioncable (>= 7.2)
       activejob (>= 7.2)
@@ -369,6 +465,8 @@ GEM
       railties (>= 6.0.0)
     stringio (3.1.7)
     stripe (18.0.1)
+    strong_migrations (2.5.2)
+      activerecord (>= 7.1)
     tailwindcss-rails (3.3.0)
       railties (>= 7.0.0)
       tailwindcss-ruby
@@ -392,6 +490,14 @@ GEM
       railties (>= 7.1.0)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
+    undercover (0.8.4)
+      base64
+      bigdecimal
+      imagen (>= 0.2.0)
+      rainbow (>= 2.1, < 4.0)
+      rugged (>= 0.27, < 1.10)
+      simplecov
+      simplecov_json_formatter
     unicode-display_width (3.2.0)
       unicode-emoji (~> 4.1)
     unicode-emoji (4.1.0)
@@ -423,13 +529,17 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
+  active_record_doctor
   aws-sdk-s3
   bcrypt (~> 3.1.7)
   bootsnap
   brakeman
+  bundler-audit
   capybara
   csv
+  database_consistency
   debug
+  erb_lint
   front_matter_parser
   importmap-rails
   jbuilder
@@ -438,28 +548,36 @@ DEPENDENCIES
   ostruct
   parser
   pg (~> 1.1)
+  pg_query
   postmark-rails
   prefixed_ids
   propshaft
+  prosopite
   puma (>= 5.0)
   rack-cors
   rails (~> 8.0.2)
   redcarpet
+  reek
   rouge
+  rubocop-minitest
   rubocop-rails-omakase
+  rubocop-thread_safety
   selenium-webdriver
+  simplecov
   solid_cable
   solid_cache
   solid_errors
   solid_queue
   stimulus-rails
   stripe
+  strong_migrations
   tailwindcss-rails (~> 3.0)
   tailwindcss-ruby (~> 3.0)
   thruster
   timescaledb (~> 0.2.0)
   turbo-rails
   tzinfo-data
+  undercover
   web-console
 
 BUNDLED WITH

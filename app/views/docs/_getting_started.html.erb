@@ -46,8 +46,7 @@
   ---
 
   ### 2. Install the Client Library
-MD
-%>
+MD %>
 
 <%= code_tabs(filter_live_examples({
   ruby: {
@@ -93,8 +92,7 @@ MD
   ---
 
   ### 3. Initialize (init)
-MD
-%>
+MD %>
 
 <%= code_tabs(filter_live_examples({
   ruby: {
@@ -157,8 +155,7 @@ MD
   ### 4. Track Events (event)
 
   Track steps in the customer journey:
-MD
-%>
+MD %>
 
 <%= code_tabs(filter_live_examples({
   ruby: {
@@ -292,8 +289,7 @@ MD
   - Filter dashboard to specific customer journeys
 
   **Example funnels**:
-MD
-%>
+MD %>
 
 <%= code_tabs(filter_live_examples({
   ruby: {
@@ -397,8 +393,7 @@ MD
   **Important**: All API calls are async and non-blocking. Your page render is not slowed.
 
   **Disable if needed**:
-MD
-%>
+MD %>
 
 <%= code_tabs(filter_live_examples({
   ruby: {
@@ -466,8 +461,7 @@ MD
 
   For **Rails 7+** applications, the Ruby SDK uses `ActiveSupport::CurrentAttributes` which Rails
   automatically serializes into ActiveJob payloads. **No code changes required** - it just works!
-MD
-%>
+MD %>
 
 <%= code_tabs(filter_live_examples({
   ruby: {
@@ -512,8 +506,7 @@ MD
   1. **Capture visitor_id** in the request context when creating the record
   2. **Store it** on the record (e.g., `order.mbuzz_visitor_id`)
   3. **Pass it explicitly** when tracking from background jobs
-MD
-%>
+MD %>
 
 <%= code_tabs(filter_live_examples({
   ruby: {
@@ -674,8 +667,7 @@ MD
   ## User Identification (identify)
 
   Link visitors to known users and store traits. This enables **cross-device attribution**.
-MD
-%>
+MD %>
 
 <%= code_tabs(filter_live_examples({
   ruby: {
@@ -807,8 +799,7 @@ MD
   You can create conversions in two ways:
 
   **Option A: Event-based** (recommended for precise attribution)
-MD
-%>
+MD %>
 
 <%= code_tabs(filter_live_examples({
   ruby: {
@@ -906,8 +897,7 @@ MD
 
 <%= render_markdown <<~MD
   **Option B: Visitor-based** (simpler, for direct conversions)
-MD
-%>
+MD %>
 
 <%= code_tabs(filter_live_examples({
   ruby: {
@@ -1016,8 +1006,7 @@ MD
   - **Recurring Revenue**: Subsequent payments - these inherit attribution from acquisition
 
   **Why this matters**: You want to know which channels drive new customers, not just which channels happened to be active when a subscription renewed.
-MD
-%>
+MD %>
 
 <%= code_tabs(filter_live_examples({
   ruby: {
@@ -1106,8 +1095,7 @@ MD
   ## Common Use Cases
 
   ### E-Commerce Tracking
-MD
-%>
+MD %>
 
 <%= code_tabs(filter_live_examples({
   ruby: {
@@ -1195,8 +1183,7 @@ MD
 
 <%= render_markdown <<~MD
   ### SaaS Subscription Tracking
-MD
-%>
+MD %>
 
 <%= code_tabs(filter_live_examples({
   ruby: {
@@ -1297,8 +1284,7 @@ MD
   **Why**: Tracking failures should never break your application.
 
   **Debugging**:
-MD
-%>
+MD %>
 
 <%= code_tabs(filter_live_examples({
   ruby: {
@@ -1369,8 +1355,7 @@ MD
   ## Testing
 
   ### Disable Tracking in Tests
-MD
-%>
+MD %>
 
 <%= code_tabs(filter_live_examples({
   ruby: {
@@ -1431,5 +1416,4 @@ MD
 
   **Need help?** Check out:
   - [Authentication](#{docs_path('authentication')}) - API key management
-MD
-%>
+MD %>

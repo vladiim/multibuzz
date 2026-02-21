@@ -1,8 +1,73 @@
-# Omakase Ruby styling for Rails
 inherit_gem: { rubocop-rails-omakase: rubocop.yml }
+inherit_from: .rubocop_todo.yml
 
-# Overwrite or add rules to create your own house style
-#
-# # Use `[a, [b, c]]` not `[ a, [ b, c ] ]`
-# Layout/SpaceInsideArrayLiteralBrackets:
-#   Enabled: false
+inherit_mode:
+  merge:
+    - Exclude
+
+AllCops:
+  NewCops: enable
+
+plugins:
+  - rubocop-minitest
+  - rubocop-thread_safety
+
+Metrics/MethodLength:
+  Enabled: true
+  Max: 12
+  CountAsOne: ['array', 'hash', 'heredoc', 'method_call']
+  Exclude: ['db/migrate/**/*', 'test/**/*']
+
+Metrics/ClassLength:
+  Enabled: true
+  Max: 150
+  Exclude: ['db/migrate/**/*', 'test/**/*']
+
+Metrics/AbcSize:
+  Enabled: true
+  Max: 20
+  Exclude: ['db/migrate/**/*', 'test/**/*']
+
+Metrics/CyclomaticComplexity:
+  Enabled: true
+  Max: 8
+
+Metrics/PerceivedComplexity:
+  Enabled: true
+  Max: 8
+
+Metrics/ParameterLists:
+  Enabled: true
+  Max: 4
+
+Lint/UnusedMethodArgument:
+  Enabled: true
+  AllowUnusedKeywordArguments: true
+
+Lint/UnusedBlockArgument:
+  Enabled: true
+
+Lint/DuplicateMethods:
+  Enabled: true
+
+Lint/ShadowingOuterLocalVariable:
+  Enabled: true
+
+Style/FrozenStringLiteralComment:
+  Enabled: true
+  EnforcedStyle: always
+
+Style/GuardClause:
+  Enabled: true
+
+Rails/HasManyOrHasOneDependent:
+  Enabled: true
+
+Rails/UniqueValidationWithoutIndex:
+  Enabled: true
+
+ThreadSafety/ClassInstanceVariable:
+  Enabled: true
+
+ThreadSafety/MutableClassInstanceVariable:
+  Enabled: true

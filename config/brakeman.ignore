@@ -1,0 +1,102 @@
+{
+  "ignored_warnings": [
+    {
+      "fingerprint": "2165082db5ae0dea2471ccd84ccb07a3c84673ccd6cd43c5e43df757d946e631",
+      "code": "scope.where(\"#{column} ILIKE ?\", \"%#{query}%\")",
+      "message": "Possible SQL injection",
+      "file": "app/services/dashboard/conversion_values_service.rb",
+      "line": 65,
+      "note": "Phase 1 baseline - Phase 2 fix target"
+    },
+    {
+      "fingerprint": "30765b2469f7926a2abb73d6921a79dfcf15bb41b2d9edb9e48c5ce6e0bfba6f",
+      "code": "eval(\"proc { #{dsl_code} }\", TOPLEVEL_BINDING, \"(aml)\", 1)",
+      "message": "Dynamic string evaluated as code",
+      "file": "app/services/aml/executor.rb",
+      "line": 42,
+      "note": "Phase 1 baseline - Phase 2 fix target"
+    },
+    {
+      "fingerprint": "3f4be0d871225342dd84d13e104f712b0c32af04fceb037f9894e49fe8ec0604",
+      "code": "scope.where(\"properties->>'#{sanitized_field}' ILIKE ?\", \"%#{query}%\")",
+      "message": "Possible SQL injection",
+      "file": "app/services/dashboard/conversion_values_service.rb",
+      "line": 69,
+      "note": "Phase 1 baseline - Phase 2 fix target"
+    },
+    {
+      "fingerprint": "7be1bc6cf3d8cbb66dfdb61785a2b1a6292ffdf9d022a6577bc13499a885e88f",
+      "code": "scope.where(\"(#{property_path})::numeric > ?\", numeric_value)",
+      "message": "Possible SQL injection",
+      "file": "app/services/dashboard/scopes/operators/greater_than.rb",
+      "line": 14,
+      "note": "Phase 1 baseline - Phase 2 fix target"
+    },
+    {
+      "fingerprint": "8c821c36f3fb7a10ff1a2afe238f340c64f34372f2a2214f4f358367fe0c7fec",
+      "code": "scope.where(\"(#{property_path})::numeric < ?\", numeric_value)",
+      "message": "Possible SQL injection",
+      "file": "app/services/dashboard/scopes/operators/less_than.rb",
+      "line": 14,
+      "note": "Phase 1 baseline - Phase 2 fix target"
+    },
+    {
+      "fingerprint": "965987c22e3ad838ea8d25844567b4030789eb61d2312f97b268bb348d9a9289",
+      "code": "ActiveRecord::Base.connection.execute(\"SELECT pg_advisory_xact_lock(#{(conversion.id % (2 ** 31))})\")",
+      "message": "Possible SQL injection",
+      "file": "app/services/conversions/reattribution_service.rb",
+      "line": 27,
+      "note": "Phase 1 baseline - Phase 2 fix target"
+    },
+    {
+      "fingerprint": "aec5fc48390a2b337b9389d432d1ed4b30eeef1c5606c3b3723763c90fca52b4",
+      "code": "ActiveRecord::Base.connection.select_value(\"SELECT COUNT(DISTINCT visitor_id)\\nFROM (\\n  SELECT visitor_id\\n  FROM sessions\\n  WHERE account_id = #{account.id}\\n    AND is_test = false\\n    AND started_at > '#{WINDOW.ago.utc.iso8601}'\\n    AND device_fingerprint IS NOT NULL\\n  GROUP BY visitor_id, DATE(started_at)\\n  HAVING COUNT(DISTINCT device_fingerprint) > 1\\n) AS unstable\\n\".squish)",
+      "message": "Possible SQL injection",
+      "file": "app/services/data_integrity/checks/fingerprint_instability.rb",
+      "line": 34,
+      "note": "Phase 1 baseline - Phase 2 fix target"
+    },
+    {
+      "fingerprint": "b7cc6a4a4bc853bad9fd5933e5d6c1d77fa81b8b416f7bec6c50fad35121c160",
+      "code": "ActiveRecord::Base.connection.execute(\"SELECT pg_advisory_xact_lock(#{(Digest::MD5.hexdigest(\"#{account.id}:#{(device_fingerprint or session_id)}\").to_i(16) % (2 ** 31))})\")",
+      "message": "Possible SQL injection",
+      "file": "app/services/sessions/creation_service.rb",
+      "line": 38,
+      "note": "Phase 1 baseline - Phase 2 fix target"
+    },
+    {
+      "fingerprint": "c5698dfdd59737606449604fb5abc333fdc76d54c40e1c8ea5efbe5117f0a467",
+      "code": "Arel.sql(\"DISTINCT properties->>'#{sanitized_field}' as val\")",
+      "message": "Possible SQL injection",
+      "file": "app/services/dashboard/conversion_values_service.rb",
+      "line": 61,
+      "note": "Phase 1 baseline - Phase 2 fix target"
+    },
+    {
+      "fingerprint": "c92ea03319e5527a347018f49a896dcafb49b7d314b5fa0489f5c3e6f36d2f08",
+      "code": "params.require(:waitlist_submission).permit(:email, :role, :framework, :framework_other)",
+      "message": "Potentially dangerous key allowed for mass assignment",
+      "file": "app/controllers/waitlist_controller.rb",
+      "line": 36,
+      "note": "Phase 1 baseline - Phase 2 fix target"
+    },
+    {
+      "fingerprint": "d13d8add2d912672990400494c22a74b8b9a978eb4c4844cbf9debe2d5935e09",
+      "code": "scope.where(\"#{column_path(field)} < ?\", numeric_value)",
+      "message": "Possible SQL injection",
+      "file": "app/services/dashboard/scopes/operators/less_than.rb",
+      "line": 10,
+      "note": "Phase 1 baseline - Phase 2 fix target"
+    },
+    {
+      "fingerprint": "d7d464c1d055323c6c23f8a1e605052cecac681039e1954becb096c06d340fd5",
+      "code": "scope.where(\"#{column_path(field)} > ?\", numeric_value)",
+      "message": "Possible SQL injection",
+      "file": "app/services/dashboard/scopes/operators/greater_than.rb",
+      "line": 10,
+      "note": "Phase 1 baseline - Phase 2 fix target"
+    }
+  ],
+  "updated": "2026-02-21",
+  "brakeman_version": "8.0.2"
+}

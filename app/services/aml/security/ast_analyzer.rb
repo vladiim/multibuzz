@@ -53,7 +53,7 @@ module AML
         buffer.source = code
         builder = Parser::Builders::Default.new
         parser = Parser::CurrentRuby.new(builder)
-        parser.diagnostics.consumer = ->(diagnostic) {} # Silence diagnostics
+        parser.diagnostics.consumer = ->(diagnostic) { } # Silence diagnostics
         parser.parse(buffer)
       rescue ::Parser::SyntaxError => e
         raise AML::SyntaxError.new(e.message, line: e.diagnostic&.location&.line || 1)

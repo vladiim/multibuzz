@@ -1,0 +1,18 @@
+detectors:
+  TooManyStatements:
+    max_statements: 8
+    exclude:
+      - initialize
+  LongParameterList:
+    max_params: 4
+  FeatureEnvy:
+    enabled: true
+  NestedIterators:
+    max_allowed_nesting: 2
+  DataClump:
+    enabled: true
+
+exclude_paths:
+  - test/
+  - db/migrate/
+  - config/

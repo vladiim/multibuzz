@@ -8,8 +8,7 @@
           <div data-controller="url-param" data-url-param-name-value="funnel">
             <select
               data-action="change->url-param#update"
-              class="text-sm border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            >
+              class="text-sm border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
               <option value="" <%= 'selected' unless @filter_params[:funnel] %>>All Funnels</option>
               <% @result[:data][:available_funnels].each do |funnel| %>
                 <option value="<%= funnel %>" <%= 'selected' if @filter_params[:funnel] == funnel %>><%= funnel.titleize %></option>
