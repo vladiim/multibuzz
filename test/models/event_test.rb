@@ -29,6 +29,17 @@ class EventTest < ActiveSupport::TestCase
     assert_includes event.errors[:properties], "must be a hash"
   end
 
+  test "rejects properties exceeding 50KB" do
+    event.properties = { "data" => "x" * 51_200 }
+    assert_not event.valid?
+    assert event.errors[:properties].any? { |e| e.include?("exceeds maximum size") }
+  end
+
+  test "accepts properties within 50KB" do
+    event.properties = { "data" => "x" * 1_000 }
+    assert event.valid?
+  end
+
   test "belongs to account" do
     assert_equal account, event.account
   end

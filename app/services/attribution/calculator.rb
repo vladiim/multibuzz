@@ -100,7 +100,7 @@ module Attribution
     def sessions_map
       @sessions_map ||= begin
         session_ids = touchpoints.map { |t| t[:session_id] }
-        Session.where(id: session_ids).index_by(&:id)
+        account.sessions.where(id: session_ids).index_by(&:id)
       end
     end
 

@@ -149,6 +149,22 @@ class Visitors::DeduplicationServiceTest < ActiveSupport::TestCase
     assert Visitor.exists?(v2.id), "Dry run should not delete anything"
   end
 
+  # --- Cross-account isolation ---
+
+  test "does not delete visitors belonging to another account" do
+    other = accounts(:two)
+    other_visitor = other.visitors.create!(
+      visitor_id: "vis_other_acct", first_seen_at: Time.current, last_seen_at: Time.current
+    )
+
+    create_burst_visitors(fingerprint: fingerprint_a, count: 2)
+
+    service.call
+
+    assert Visitor.exists?(other_visitor.id),
+      "Visitor from another account must not be deleted"
+  end
+
   # --- Edge cases ---
 
   test "skips fingerprints with only one visitor" do

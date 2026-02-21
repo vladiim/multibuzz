@@ -56,6 +56,28 @@ module Attribution
       assert_empty credits
     end
 
+    # --- Cross-account isolation ---
+
+    test "sessions_map only loads sessions from the conversion's account" do
+      create_sessions!
+      other_account = accounts(:two)
+      other_visitor = Visitor.create!(account: other_account, visitor_id: SecureRandom.hex(16))
+      Session.create!(
+        account: other_account,
+        visitor: other_visitor,
+        session_id: SecureRandom.hex(16),
+        started_at: 5.days.ago,
+        channel: "paid_social"
+      )
+
+      credits = build_calculator(model: linear_model).call
+
+      credit_channels = credits.map { |c| c[:channel] }
+
+      assert_not_includes credit_channels, "paid_social",
+        "Sessions from another account must not appear in credits"
+    end
+
     test "should use precomputed conversion_paths when provided" do
       create_historical_conversion(%w[organic_search paid_search])
       create_sessions!

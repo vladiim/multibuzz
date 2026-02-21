@@ -133,6 +133,21 @@ class SessionTest < ActiveSupport::TestCase
     assert_includes recent, session
   end
 
+  # JSONB size validation
+
+  test "rejects initial_utm exceeding 50KB" do
+    session.initial_utm = { "data" => "x" * 51_200 }
+
+    assert_not session.valid?
+    assert session.errors[:initial_utm].any? { |e| e.include?("exceeds maximum size") }
+  end
+
+  test "accepts initial_utm within 50KB" do
+    session.initial_utm = { "utm_source" => "google", "utm_medium" => "cpc" }
+
+    assert session.valid?
+  end
+
   # Ghost session filtering
 
   test "qualified scope excludes suspect sessions" do

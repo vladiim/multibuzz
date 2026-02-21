@@ -139,7 +139,7 @@ module Visitors
     end
 
     def delete_duplicates(duplicate_ids)
-      Visitor.where(id: duplicate_ids).delete_all
+      account.visitors.where(id: duplicate_ids).delete_all
     end
   end
 end

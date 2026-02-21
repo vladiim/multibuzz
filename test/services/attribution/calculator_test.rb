@@ -128,6 +128,27 @@ module Attribution
       assert_empty credits
     end
 
+    # --- Cross-account isolation ---
+
+    test "sessions_map only loads sessions from the conversion's account" do
+      session_one
+      other_account = accounts(:two)
+      other_visitor = Visitor.create!(account: other_account, visitor_id: SecureRandom.hex(16))
+      other_session = Session.create!(
+        account: other_account,
+        visitor: other_visitor,
+        session_id: SecureRandom.hex(16),
+        started_at: 5.days.ago,
+        channel: "paid_social"
+      )
+
+      credits = service.call
+
+      session_ids = credits.map { |c| c[:session_id] }
+      assert_not_includes session_ids, other_session.id,
+        "Sessions from another account must not appear in credits"
+    end
+
     # Markov Chain integration tests
     test "should calculate credits using Markov Chain with historical conversion paths" do
       # Create historical conversions to establish channel patterns
