@@ -15,4 +15,6 @@ Rails.application.config.after_initialize do
   else
     BotPatterns::SyncJob.perform_later
   end
+rescue StandardError => e
+  Rails.logger.warn("Bot pattern sync skipped on boot: #{e.message}")
 end
