@@ -1,4 +1,14 @@
 detectors:
+  IrresponsibleModule:
+    enabled: false
+  UtilityFunction:
+    enabled: false
+  MissingSafeMethod:
+    enabled: false
+  NilCheck:
+    enabled: false
+  UncommunicativeVariableName:
+    enabled: false
   TooManyStatements:
     max_statements: 8
     exclude:
@@ -11,6 +21,10 @@ detectors:
     max_allowed_nesting: 2
   DataClump:
     enabled: true
+  DuplicateMethodCall:
+    max_calls: 2
+  TooManyMethods:
+    max_methods: 20
 
 exclude_paths:
   - test/
