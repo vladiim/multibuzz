@@ -91,7 +91,7 @@ module Dashboard
       create_credit(channel: Channels::PAID_SEARCH)
       create_credit(channel: Channels::EMAIL)
 
-      csv = parse_csv(service(channels: [Channels::PAID_SEARCH]).call)
+      csv = parse_csv(service(channels: [ Channels::PAID_SEARCH ]).call)
 
       assert_equal 1, csv.size
       assert_equal Channels::PAID_SEARCH, csv.first["channel"]
@@ -106,7 +106,7 @@ module Dashboard
       create_credit(model: first_touch_model)
       create_credit(model: other_model)
 
-      csv = parse_csv(service(models: [first_touch_model]).call)
+      csv = parse_csv(service(models: [ first_touch_model ]).call)
 
       assert_equal 1, csv.size
       assert_equal first_touch_model.name, csv.first["attribution_model"]
@@ -146,6 +146,7 @@ module Dashboard
 
       assert_equal 1, csv.size
       channels = csv.map { |row| row["channel"] }
+
       assert_not_includes channels, Channels::DIRECT
     end
 
@@ -160,7 +161,7 @@ module Dashboard
     end
 
     def service(date_range: "30d", models: nil, channels: Channels::ALL, test_mode: false)
-      models ||= [first_touch_model]
+      models ||= [ first_touch_model ]
       filter_params = {
         date_range: date_range,
         models: models,

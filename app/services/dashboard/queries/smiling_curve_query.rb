@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Dashboard
   module Queries
     class SmilingCurveQuery
@@ -76,7 +78,7 @@ module Dashboard
       def channel_identity_acquisitions
         @channel_identity_acquisitions ||= acquisition_credits
           .group_by { |c| c[:channel] }
-          .transform_values { |credits| credits.to_h { |c| [c[:identity_id], c[:acquisition_date]] } }
+          .transform_values { |credits| credits.to_h { |c| [ c[:identity_id], c[:acquisition_date] ] } }
       end
 
       def acquisition_credits

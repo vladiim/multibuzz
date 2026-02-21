@@ -10,7 +10,7 @@ class FormSubmissionMailerTest < ActionMailer::TestCase
       email.deliver_now
     end
 
-    assert_equal ["vlad@forebrite.com"], email.to
+    assert_equal [ "vlad@forebrite.com" ], email.to
   end
 
   test "notify contact submission has correct subject" do
@@ -62,7 +62,7 @@ class FormSubmissionMailerTest < ActionMailer::TestCase
   test "notify from address is correct" do
     email = FormSubmissionMailer.notify(contact_submission)
 
-    assert_equal ["hello@mbuzz.co"], email.from
+    assert_equal [ "hello@mbuzz.co" ], email.from
   end
 
   private

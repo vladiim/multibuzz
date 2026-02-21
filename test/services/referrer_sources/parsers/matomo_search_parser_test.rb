@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class ReferrerSources::Parsers::MatomoSearchParserTest < ActiveSupport::TestCase
@@ -17,7 +19,7 @@ class ReferrerSources::Parsers::MatomoSearchParserTest < ActiveSupport::TestCase
     assert_equal "Google", results.first[:source_name]
     assert_equal ReferrerSources::Mediums::SEARCH, results.first[:medium]
     assert_equal "q", results.first[:keyword_param]
-    assert_equal false, results.first[:is_spam]
+    refute results.first[:is_spam]
     assert_equal ReferrerSources::DataOrigins::MATOMO_SEARCH, results.first[:data_origin]
   end
 
@@ -87,6 +89,7 @@ class ReferrerSources::Parsers::MatomoSearchParserTest < ActiveSupport::TestCase
 
     # Should expand to common TLDs
     domains = results.map { |r| r[:domain] }
+
     assert_includes domains, "google.com"
     assert_includes domains, "google.co.uk"
     assert_includes domains, "google.de"
@@ -109,13 +112,13 @@ class ReferrerSources::Parsers::MatomoSearchParserTest < ActiveSupport::TestCase
   test "returns empty array for empty yaml" do
     results = parser("").call
 
-    assert_equal [], results
+    assert_empty results
   end
 
   test "returns empty array for nil content" do
     results = parser(nil).call
 
-    assert_equal [], results
+    assert_empty results
   end
 
   private

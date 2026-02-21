@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class Sessions::UrlNormalizationServiceTest < ActiveSupport::TestCase
@@ -53,6 +55,7 @@ class Sessions::UrlNormalizationServiceTest < ActiveSupport::TestCase
 
   test "handles complex urls" do
     url = "HTTPS://WWW.EXAMPLE.COM/Page/SubPage/?utm_source=fb#anchor"
+
     assert_equal "example.com/Page/SubPage?utm_source=fb", normalize(url)
   end
 

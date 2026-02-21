@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class Demo::DataGeneratorServiceTest < ActiveSupport::TestCase
   test "returns demo data structure" do
     result = service.call
 
-    assert result.is_a?(Hash)
+    assert_kind_of Hash, result
     assert result.key?(:sessions)
     assert result.key?(:conversions)
     assert result.key?(:channel_breakdown)
@@ -15,22 +17,22 @@ class Demo::DataGeneratorServiceTest < ActiveSupport::TestCase
 
     channels = result[:sessions].map { |s| s[:channel] }.uniq
 
-    assert channels.include?(Channels::PAID_SEARCH)
-    assert channels.include?(Channels::ORGANIC_SEARCH)
-    assert channels.include?(Channels::EMAIL)
+    assert_includes channels, Channels::PAID_SEARCH
+    assert_includes channels, Channels::ORGANIC_SEARCH
+    assert_includes channels, Channels::EMAIL
   end
 
   test "generates conversions with revenue" do
     result = service.call
 
-    assert result[:conversions].any?
+    assert_predicate result[:conversions], :any?
     assert result[:conversions].all? { |c| c[:revenue].present? }
   end
 
   test "generates channel breakdown with attribution" do
     result = service.call
 
-    assert result[:channel_breakdown].any?
+    assert_predicate result[:channel_breakdown], :any?
     result[:channel_breakdown].each do |breakdown|
       assert breakdown.key?(:channel)
       assert breakdown.key?(:credit)
@@ -44,8 +46,8 @@ class Demo::DataGeneratorServiceTest < ActiveSupport::TestCase
     assert result.key?(:sample_journey)
     journey = result[:sample_journey]
 
-    assert journey[:touchpoints].any?
-    assert journey[:conversion].present?
+    assert_predicate journey[:touchpoints], :any?
+    assert_predicate journey[:conversion], :present?
   end
 
   test "channel breakdown sums to 100 percent" do

@@ -50,11 +50,11 @@ module Attribution
       end
 
       def shapley_value_for(channel)
-        other_channels = all_path_channels - [channel]
+        other_channels = all_path_channels - [ channel ]
         subsets = power_set(other_channels)
 
         marginal_contributions = subsets.map do |subset|
-          coalition_value(subset + [channel]) - coalition_value(subset)
+          coalition_value(subset + [ channel ]) - coalition_value(subset)
         end
 
         marginal_contributions.sum / subsets.size.to_f
@@ -72,11 +72,11 @@ module Attribution
       end
 
       def power_set(array)
-        return [[]] if array.empty?
+        return [ [] ] if array.empty?
 
         first, *rest = array
         subsets = power_set(rest)
-        subsets + subsets.map { |subset| [first] + subset }
+        subsets + subsets.map { |subset| [ first ] + subset }
       end
 
       def total_shapley_value

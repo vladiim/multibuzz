@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class SitemapControllerTest < ActionDispatch::IntegrationTest
@@ -46,7 +48,8 @@ class SitemapControllerTest < ActionDispatch::IntegrationTest
     get sitemap_path(format: :xml)
 
     doc = Nokogiri::XML(response.body)
-    assert doc.errors.empty?, "Invalid XML: #{doc.errors.join(', ')}"
+
+    assert_empty doc.errors, "Invalid XML: #{doc.errors.join(', ')}"
     assert_equal "urlset", doc.root.name
     assert_equal "http://www.sitemaps.org/schemas/sitemap/0.9", doc.root.namespace.href
   end
@@ -56,10 +59,10 @@ class SitemapControllerTest < ActionDispatch::IntegrationTest
 
     doc = Nokogiri::XML(response.body)
     doc.css("url").each do |url_node|
-      assert url_node.at_css("loc").present?, "Missing loc element"
-      assert url_node.at_css("lastmod").present?, "Missing lastmod element"
-      assert url_node.at_css("changefreq").present?, "Missing changefreq element"
-      assert url_node.at_css("priority").present?, "Missing priority element"
+      assert_predicate url_node.at_css("loc"), :present?, "Missing loc element"
+      assert_predicate url_node.at_css("lastmod"), :present?, "Missing lastmod element"
+      assert_predicate url_node.at_css("changefreq"), :present?, "Missing changefreq element"
+      assert_predicate url_node.at_css("priority"), :present?, "Missing priority element"
     end
   end
 
@@ -67,6 +70,7 @@ class SitemapControllerTest < ActionDispatch::IntegrationTest
     get sitemap_path(format: :xml)
 
     doc = Nokogiri::XML(response.body)
+
     doc.css("lastmod").each do |lastmod|
       assert_match(/\d{4}-\d{2}-\d{2}/, lastmod.text, "Invalid date format: #{lastmod.text}")
     end

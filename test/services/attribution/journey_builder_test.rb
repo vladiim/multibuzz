@@ -31,7 +31,7 @@ module Attribution
 
       touchpoints = service.call
 
-      assert touchpoints[0][:occurred_at] < touchpoints[1][:occurred_at]
+      assert_operator touchpoints[0][:occurred_at], :<, touchpoints[1][:occurred_at]
       assert_equal session_one.started_at, touchpoints[0][:occurred_at]
       assert_equal session_two.started_at, touchpoints[1][:occurred_at]
     end
@@ -43,7 +43,7 @@ module Attribution
       touchpoints = service.call
 
       # Algorithms only need session_id, channel, occurred_at
-      assert_equal [:channel, :occurred_at, :session_id], touchpoints[0].keys.sort
+      assert_equal [ :channel, :occurred_at, :session_id ], touchpoints[0].keys.sort
       assert_not touchpoints[0].key?(:utm_source)
       assert_not touchpoints[0].key?(:utm_medium)
       assert_not touchpoints[0].key?(:utm_campaign)
@@ -76,6 +76,7 @@ module Attribution
       touchpoints = service.call
 
       session_ids = touchpoints.map { |t| t[:session_id] }
+
       assert_includes session_ids, session_29_days.id
       assert_not_includes session_ids, session_31_days.id
     end
@@ -89,6 +90,7 @@ module Attribution
       touchpoints = custom_service.call
 
       session_ids = touchpoints.map { |t| t[:session_id] }
+
       assert_includes session_ids, session_6_days.id
       assert_not_includes session_ids, session_8_days.id
     end
@@ -206,6 +208,7 @@ module Attribution
       touchpoints = service.call
 
       session_ids = touchpoints.map { |t| t[:session_id] }
+
       assert_includes session_ids, session_one.id
       assert_not_includes session_ids, suspect.id
     end

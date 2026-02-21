@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class Team::AcceptanceServiceTest < ActiveSupport::TestCase
@@ -53,7 +55,8 @@ class Team::AcceptanceServiceTest < ActiveSupport::TestCase
 
     assert result[:success]
     pending_membership.reload
-    assert pending_membership.accepted?
+
+    assert_predicate pending_membership, :accepted?
   end
 
   test "sets accepted_at timestamp" do
@@ -61,6 +64,7 @@ class Team::AcceptanceServiceTest < ActiveSupport::TestCase
       accept(token: invitation_token, current_user: invited_user)
 
       pending_membership.reload
+
       assert_equal Time.current, pending_membership.accepted_at
     end
   end
@@ -69,6 +73,7 @@ class Team::AcceptanceServiceTest < ActiveSupport::TestCase
     accept(token: invitation_token, current_user: invited_user)
 
     pending_membership.reload
+
     assert_nil pending_membership.invitation_token_digest
   end
 
@@ -78,7 +83,8 @@ class Team::AcceptanceServiceTest < ActiveSupport::TestCase
     assert_not result[:success]
     assert_equal :wrong_user, result[:error_code]
     pending_membership.reload
-    assert pending_membership.pending?
+
+    assert_predicate pending_membership, :pending?
   end
 
   # ==========================================
@@ -90,7 +96,8 @@ class Team::AcceptanceServiceTest < ActiveSupport::TestCase
 
     assert result[:success]
     pending_membership.reload
-    assert pending_membership.accepted?
+
+    assert_predicate pending_membership, :accepted?
     assert invited_user.reload.authenticate("newpassword123")
   end
 
@@ -126,7 +133,8 @@ class Team::AcceptanceServiceTest < ActiveSupport::TestCase
     assert result[:success]
     assert_equal pending_membership, result[:membership]
     pending_membership.reload
-    assert pending_membership.pending?
+
+    assert_predicate pending_membership, :pending?
   end
 
   test "lookup_only still validates expiry" do

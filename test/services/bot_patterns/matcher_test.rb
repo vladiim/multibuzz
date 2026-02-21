@@ -48,6 +48,7 @@ class BotPatterns::MatcherTest < ActiveSupport::TestCase
 
   test "returns false when no patterns loaded" do
     BotPatterns::Matcher.reset!
+
     assert_not BotPatterns::Matcher.bot?(GOOGLEBOT_UA)
   end
 

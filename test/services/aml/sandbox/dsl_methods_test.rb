@@ -31,10 +31,10 @@ module AML
           end
         end
 
-        assert_equal 1.0, credits[0]
-        assert_equal 0.0, credits[1]
-        assert_equal 0.0, credits[2]
-        assert_equal 0.0, credits[3]
+        assert_in_delta(1.0, credits[0])
+        assert_in_delta(0.0, credits[1])
+        assert_in_delta(0.0, credits[2])
+        assert_in_delta(0.0, credits[3])
       end
 
       test "apply assigns credit to last touchpoint with negative index" do
@@ -44,10 +44,10 @@ module AML
           end
         end
 
-        assert_equal 0.0, credits[0]
-        assert_equal 0.0, credits[1]
-        assert_equal 0.0, credits[2]
-        assert_equal 1.0, credits[3]
+        assert_in_delta(0.0, credits[0])
+        assert_in_delta(0.0, credits[1])
+        assert_in_delta(0.0, credits[2])
+        assert_in_delta(1.0, credits[3])
       end
 
       test "apply supports multiple assignments" do
@@ -100,7 +100,7 @@ module AML
         end
 
         # Last touchpoint should have highest credit
-        assert credits[-1] > credits[0]
+        assert_operator credits[-1], :>, credits[0]
         # Credits should sum to 1.0
         assert_in_delta 1.0, credits.sum, 0.0001
       end

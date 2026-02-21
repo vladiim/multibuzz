@@ -10,15 +10,15 @@ module Attribution
 
         assert_equal 1, credits.size
         assert_equal "organic_search", credits[0][:channel]
-        assert_equal 1.0, credits[0][:credit]
+        assert_in_delta(1.0, credits[0][:credit])
         assert_equal session_ids[0], credits[0][:session_id]
       end
 
       test "should handle single touchpoint journey" do
-        credits = Attribution::Algorithms::FirstTouch.new([touchpoints[0]]).call
+        credits = Attribution::Algorithms::FirstTouch.new([ touchpoints[0] ]).call
 
         assert_equal 1, credits.size
-        assert_equal 1.0, credits[0][:credit]
+        assert_in_delta(1.0, credits[0][:credit])
       end
 
       test "should return empty array for empty journey" do
@@ -54,7 +54,7 @@ module Attribution
       end
 
       def session_ids
-        @session_ids ||= [100, 101, 102]
+        @session_ids ||= [ 100, 101, 102 ]
       end
     end
   end

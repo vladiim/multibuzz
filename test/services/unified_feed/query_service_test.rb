@@ -8,6 +8,7 @@ module UnifiedFeed
       result = service.call
 
       timestamps = result.map(&:occurred_at)
+
       assert_equal timestamps.sort.reverse, timestamps
     end
 
@@ -15,7 +16,8 @@ module UnifiedFeed
       result = service.call
 
       event_items = result.select(&:event?)
-      assert event_items.any?, "expected at least one event feed item"
+
+      assert_predicate event_items, :any?, "expected at least one event feed item"
       assert event_items.all? { |item| item.record.is_a?(Event) }
     end
 
@@ -23,7 +25,8 @@ module UnifiedFeed
       result = service.call
 
       conversion_items = result.select(&:conversion?)
-      assert conversion_items.any?, "expected at least one conversion feed item"
+
+      assert_predicate conversion_items, :any?, "expected at least one conversion feed item"
       assert conversion_items.all? { |item| item.record.is_a?(Conversion) }
     end
 
@@ -31,7 +34,8 @@ module UnifiedFeed
       result = service.call
 
       identify_items = result.select(&:identify?)
-      assert identify_items.any?, "expected at least one identify feed item"
+
+      assert_predicate identify_items, :any?, "expected at least one identify feed item"
       assert identify_items.all? { |item| item.record.is_a?(Identity) }
     end
 
@@ -39,7 +43,8 @@ module UnifiedFeed
       result = service.call
 
       session_items = result.select(&:session?)
-      assert session_items.any?, "expected at least one session feed item"
+
+      assert_predicate session_items, :any?, "expected at least one session feed item"
       assert session_items.all? { |item| item.record.is_a?(Session) }
     end
 
@@ -47,7 +52,8 @@ module UnifiedFeed
       result = service.call
 
       visitor_items = result.select(&:visitor?)
-      assert visitor_items.any?, "expected at least one visitor feed item"
+
+      assert_predicate visitor_items, :any?, "expected at least one visitor feed item"
       assert visitor_items.all? { |item| item.record.is_a?(Visitor) }
     end
 
@@ -105,7 +111,7 @@ module UnifiedFeed
       empty_account = Account.create!(name: "Empty", slug: "empty-#{SecureRandom.hex(4)}")
       result = UnifiedFeed::QueryService.new(empty_account).call
 
-      assert_equal [], result
+      assert_empty result
     end
 
     test "each feed item has occurred_at and prefix_id" do

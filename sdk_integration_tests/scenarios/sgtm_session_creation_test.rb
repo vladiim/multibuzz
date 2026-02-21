@@ -29,12 +29,14 @@ class SgtmSessionCreationTest < SdkIntegrationTest
 
     url = "#{sdk_app_url}/landing?utm_source=google&utm_medium=cpc"
     result = create_session_for_visitor(@visitor_id, url: url)
+
     assert_equal "accepted", result["status"]
 
     wait_for_async(2)
 
     data = verify_test_data
     session = data[:sessions].first
+
     assert_not_nil session, "Should have a session"
     assert_equal "google", session[:initial_utm][:utm_source]
     assert_equal "cpc", session[:initial_utm][:utm_medium]
@@ -49,12 +51,14 @@ class SgtmSessionCreationTest < SdkIntegrationTest
       url: "#{sdk_app_url}/",
       referrer: "https://google.com/search?q=test"
     )
+
     assert_equal "accepted", result["status"]
 
     wait_for_async(2)
 
     data = verify_test_data
     session = data[:sessions].first
+
     assert session.key?(:initial_referrer), "Session should have referrer field"
     assert_equal "https://google.com/search?q=test", session[:initial_referrer]
   end

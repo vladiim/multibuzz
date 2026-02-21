@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AttributionModel < ApplicationRecord
   include AttributionModel::Enums
   include AttributionModel::Relationships

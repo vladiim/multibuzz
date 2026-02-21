@@ -77,7 +77,7 @@ module AML
       end
 
       test "blocks instance_variable_get" do
-        assert_forbidden 'instance_variable_get(:@secret)'
+        assert_forbidden "instance_variable_get(:@secret)"
       end
 
       test "blocks instance_variable_set" do
@@ -85,7 +85,7 @@ module AML
       end
 
       test "blocks class_variable_get" do
-        assert_forbidden 'class_variable_get(:@@secret)'
+        assert_forbidden "class_variable_get(:@@secret)"
       end
 
       test "blocks class_variable_set" do

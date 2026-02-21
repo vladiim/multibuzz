@@ -12,8 +12,8 @@ module Attribution
 
         # Most recent (at conversion) should get most credit
         # Oldest (14 days ago) should get least credit
-        assert credits[2][:credit] > credits[1][:credit]
-        assert credits[1][:credit] > credits[0][:credit]
+        assert_operator credits[2][:credit], :>, credits[1][:credit]
+        assert_operator credits[1][:credit], :>, credits[0][:credit]
       end
 
       test "should apply correct decay formula with 7-day half-life" do
@@ -31,10 +31,10 @@ module Attribution
       end
 
       test "should handle single touchpoint journey" do
-        credits = Attribution::Algorithms::TimeDecay.new([touchpoints[0]]).call
+        credits = Attribution::Algorithms::TimeDecay.new([ touchpoints[0] ]).call
 
         assert_equal 1, credits.size
-        assert_equal 1.0, credits[0][:credit]
+        assert_in_delta(1.0, credits[0][:credit])
       end
 
       test "should handle two touchpoint journey" do
@@ -60,6 +60,7 @@ module Attribution
         credits = service.call
 
         total = credits.sum { |c| c[:credit] }
+
         assert_in_delta 1.0, total, 0.0001
       end
 
@@ -76,7 +77,7 @@ module Attribution
         ).call
 
         # With longer half-life, older touchpoint gets more credit
-        assert custom_credits[0][:credit] > default_credits[0][:credit]
+        assert_operator custom_credits[0][:credit], :>, default_credits[0][:credit]
       end
 
       test "should handle touchpoints on same day equally" do
@@ -120,7 +121,7 @@ module Attribution
       end
 
       def session_ids
-        @session_ids ||= [100, 101, 102]
+        @session_ids ||= [ 100, 101, 102 ]
       end
     end
   end

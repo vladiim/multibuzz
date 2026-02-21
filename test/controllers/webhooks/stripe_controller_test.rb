@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class WebhooksStripeControllerTest < ActionDispatch::IntegrationTest
@@ -47,6 +49,7 @@ class WebhooksStripeControllerTest < ActionDispatch::IntegrationTest
     end
 
     billing_event = BillingEvent.last
+
     assert_equal "evt_test123", billing_event.stripe_event_id
     assert_equal "invoice.paid", billing_event.event_type
   end

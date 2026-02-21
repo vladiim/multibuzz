@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AccountMembership < ApplicationRecord
   include AccountMembership::Validations
   include AccountMembership::Relationships

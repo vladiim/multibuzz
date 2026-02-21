@@ -14,10 +14,11 @@ module Billing
         assert_equal account, result[:account]
 
         account.reload
-        assert account.billing_active?
+
+        assert_predicate account, :billing_active?
         assert_equal "sub_new123", account.stripe_subscription_id
         assert_equal starter_plan, account.plan
-        assert account.subscription_started_at.present?
+        assert_predicate account.subscription_started_at, :present?
       end
 
       test "returns error when plan not found" do
@@ -26,10 +27,11 @@ module Billing
         result = handler(event_data_with_invalid_plan).call
 
         assert_not result[:success]
-        assert result[:errors].first.include?("Plan not found")
+        assert_includes result[:errors].first, "Plan not found"
 
         # Account should not be modified
         account.reload
+
         assert_nil account.stripe_subscription_id
         assert_nil account.plan
       end
@@ -40,7 +42,7 @@ module Billing
         result = handler(event_data_without_plan_slug).call
 
         assert_not result[:success]
-        assert result[:errors].first.include?("Plan not found")
+        assert_includes result[:errors].first, "Plan not found"
       end
 
       test "returns error when account not found" do
@@ -49,7 +51,7 @@ module Billing
         result = handler(valid_event_data).call
 
         assert_not result[:success]
-        assert result[:errors].first.include?("Account not found")
+        assert_includes result[:errors].first, "Account not found"
       end
 
       test "overwrites existing billing status" do
@@ -61,7 +63,7 @@ module Billing
         result = handler(valid_event_data).call
 
         assert result[:success]
-        assert account.reload.billing_active?
+        assert_predicate account.reload, :billing_active?
       end
 
       private

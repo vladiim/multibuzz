@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Author
   include ActiveModel::Model
   include ActiveModel::Attributes
@@ -23,7 +25,7 @@ class Author
       title: "Co-Founder",
       image: "authors/holly-henderson.jpeg",
       linkedin_url: "https://www.linkedin.com/in/hollymehakovic/",
-      credentials: ["Harvard Extension School", "Forebrite", "Westpac", "Avon"],
+      credentials: [ "Harvard Extension School", "Forebrite", "Westpac", "Avon" ],
       bio_short: "Holly Henderson is Co-Founder of mbuzz. With 10+ years in marketing " \
                  "including roles at Westpac, Avon, and Forebrite, she's obsessed with making " \
                  "measurement actually useful.",

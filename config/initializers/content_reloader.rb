@@ -8,5 +8,5 @@ if Rails.env.development?
 
   # Watch content directory for changes
   content_path = Rails.root.join("app/content/articles")
-  Rails.application.config.watchable_dirs[content_path.to_s] = [:erb, :md]
+  Rails.application.config.watchable_dirs[content_path.to_s] = [ :erb, :md ]
 end

@@ -23,16 +23,15 @@ module Attribution
         paid_credit = find_credit(credits, "paid_search")
         organic_credit = find_credit(credits, "organic_search")
 
-        assert paid_credit > organic_credit,
-          "paid_search (in all paths) should get more credit than organic_search"
+        assert_operator paid_credit, :>, organic_credit, "paid_search (in all paths) should get more credit than organic_search"
       end
 
       test "should handle single touchpoint journey" do
-        single_touchpoint = [touchpoints[0]]
+        single_touchpoint = [ touchpoints[0] ]
         credits = ShapleyValue.new(single_touchpoint, conversion_paths: conversion_paths).call
 
         assert_equal 1, credits.size
-        assert_equal 1.0, credits[0][:credit]
+        assert_in_delta(1.0, credits[0][:credit])
       end
 
       test "should return empty array for empty journey" do
@@ -45,6 +44,7 @@ module Attribution
         credits = service.call
 
         total = credits.sum { |c| c[:credit] }
+
         assert_in_delta 1.0, total, 0.0001
       end
 
@@ -52,18 +52,18 @@ module Attribution
         credits = service.call
 
         credits.each do |credit|
-          assert credit[:session_id].present?, "session_id should be present"
-          assert credit[:channel].present?, "channel should be present"
-          assert credit[:credit].is_a?(Numeric), "credit should be numeric"
+          assert_predicate credit[:session_id], :present?, "session_id should be present"
+          assert_predicate credit[:channel], :present?, "channel should be present"
+          assert_kind_of Numeric, credit[:credit], "credit should be numeric"
         end
       end
 
       test "should handle channels not in conversion_paths with zero weight" do
-        touchpoints_with_unknown = touchpoints + [{
+        touchpoints_with_unknown = touchpoints + [ {
           session_id: 103,
           channel: "unknown_channel",
           occurred_at: 30.minutes.ago
-        }]
+        } ]
 
         credits = ShapleyValue.new(touchpoints_with_unknown, conversion_paths: conversion_paths).call
 
@@ -73,7 +73,7 @@ module Attribution
         unknown_credit = find_credit(credits, "unknown_channel")
 
         assert_in_delta 1.0, known_total, 0.0001
-        assert_equal 0.0, unknown_credit
+        assert_in_delta(0.0, unknown_credit)
       end
 
       test "should handle duplicate channels in journey" do
@@ -89,6 +89,7 @@ module Attribution
 
         # Total credit for organic_search should be split between two touchpoints
         organic_credits = credits.select { |c| c[:channel] == "organic_search" }
+
         assert_equal 2, organic_credits.size
         assert_in_delta organic_credits[0][:credit], organic_credits[1][:credit], 0.0001
       end
@@ -108,7 +109,8 @@ module Attribution
 
         # paid_search appears in all paths, should have high contribution
         paid_credit = find_credit(credits, "paid_search")
-        assert paid_credit > 0, "paid_search should have positive credit"
+
+        assert_operator paid_credit, :>, 0, "paid_search should have positive credit"
       end
 
       test "should handle empty conversion_paths gracefully" do
@@ -164,7 +166,7 @@ module Attribution
         b_credit = find_credit(credits, "B")
 
         # B should have significantly more credit than A
-        assert b_credit > a_credit, "B should have more credit than A"
+        assert_operator b_credit, :>, a_credit, "B should have more credit than A"
         assert_in_delta 1.0, a_credit + b_credit, 0.0001
       end
 

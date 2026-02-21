@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class InvitationsControllerTest < ActionDispatch::IntegrationTest
@@ -66,8 +68,9 @@ class InvitationsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to dashboard_path
     pending_membership.reload
-    assert pending_membership.accepted?
-    assert pending_membership.accepted_at.present?
+
+    assert_predicate pending_membership, :accepted?
+    assert_predicate pending_membership.accepted_at, :present?
   end
 
   test "create clears invitation token after acceptance" do
@@ -76,6 +79,7 @@ class InvitationsControllerTest < ActionDispatch::IntegrationTest
     post accept_invitation_path(token: invitation_token)
 
     pending_membership.reload
+
     assert_nil pending_membership.invitation_token_digest
   end
 
@@ -100,7 +104,8 @@ class InvitationsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to dashboard_path
     pending_membership.reload
-    assert pending_membership.accepted?
+
+    assert_predicate pending_membership, :accepted?
     assert invited_user.reload.authenticate("newpassword123")
   end
 
@@ -113,6 +118,7 @@ class InvitationsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to dashboard_path
     # Follow redirect and verify logged in
     follow_redirect!
+
     assert_response :success
   end
 
@@ -124,7 +130,8 @@ class InvitationsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
     pending_membership.reload
-    assert pending_membership.pending?
+
+    assert_predicate pending_membership, :pending?
   end
 
   test "create rejects short password" do
@@ -135,7 +142,8 @@ class InvitationsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
     pending_membership.reload
-    assert pending_membership.pending?
+
+    assert_predicate pending_membership, :pending?
   end
 
   test "create rejects invalid token" do
@@ -169,7 +177,8 @@ class InvitationsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to dashboard_path(account_id: account.prefix_id)
     pending_membership.reload
-    assert pending_membership.accepted?
+
+    assert_predicate pending_membership, :accepted?
   end
 
   test "accept_pending redirects to login if not logged in" do
@@ -185,7 +194,8 @@ class InvitationsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to dashboard_path
     pending_membership.reload
-    assert pending_membership.pending?
+
+    assert_predicate pending_membership, :pending?
   end
 
   private

@@ -10,7 +10,7 @@ class Api::V1::BaseControllerErrorHandlingTest < ActionDispatch::IntegrationTest
     Events::IngestionService.define_method(:call) { |_| raise StandardError, "unexpected" }
 
     post api_v1_events_path,
-      params: { events: [{ event_type: "page_view", visitor_id: "vis_123" }] },
+      params: { events: [ { event_type: "page_view", visitor_id: "vis_123" } ] },
       headers: auth_headers,
       as: :json
 

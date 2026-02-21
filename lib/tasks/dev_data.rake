@@ -109,7 +109,7 @@ module Dev
     EMAIL = "email"
     DIRECT = "direct"
 
-    CHANNELS = [PAID_SEARCH, ORGANIC_SEARCH, PAID_SOCIAL, EMAIL, DIRECT].freeze
+    CHANNELS = [ PAID_SEARCH, ORGANIC_SEARCH, PAID_SOCIAL, EMAIL, DIRECT ].freeze
 
     CHANNEL_WEIGHTS = {
       PAID_SEARCH => 0.30,
@@ -124,7 +124,7 @@ module Dev
       ORGANIC_SEARCH => %w[google bing duckduckgo],
       PAID_SOCIAL => %w[facebook instagram linkedin],
       EMAIL => %w[newsletter drip mailchimp],
-      DIRECT => [nil]
+      DIRECT => [ nil ]
     }.freeze
 
     # Revenue patterns for different customer types
@@ -244,7 +244,7 @@ module Dev
       # Create acquisition conversion (first purchase/signup)
       # The conversion session is the last one, but journey includes ALL sessions
       acquisition_session = pre_acquisition_sessions.last || create_session(visitor, acquisition_time)
-      all_journey_sessions = pre_acquisition_sessions.any? ? pre_acquisition_sessions : [acquisition_session]
+      all_journey_sessions = pre_acquisition_sessions.any? ? pre_acquisition_sessions : [ acquisition_session ]
       create_acquisition_conversion(identity, visitor, acquisition_session, all_journey_sessions, acquisition_time, profile)
 
       # Generate repeat purchases based on profile
@@ -295,7 +295,7 @@ module Dev
       session_count = random.rand(1..5)
       sessions = []
 
-      session_count.times do |i|
+      session_count.times do |_i|
         days_before = random.rand(1..14)
         session_time = acquisition_time - days_before.days + random.rand(0..86_400).seconds
         sessions << create_session(visitor, session_time)
@@ -388,7 +388,7 @@ module Dev
         # Target a specific lifecycle month (M1=30-59 days, M2=60-89 days, etc.)
         target_month = i + 1
         min_days = target_month * 30
-        max_days = [min_days + 29, max_days_since_acquisition].min
+        max_days = [ min_days + 29, max_days_since_acquisition ].min
 
         # Skip if this month is in the future
         next if min_days > max_days_since_acquisition
@@ -409,7 +409,7 @@ module Dev
           revenue: revenue,
           converted_at: purchase_time,
           is_acquisition: false,
-          journey_session_ids: [session.id],
+          journey_session_ids: [ session.id ],
           is_test: is_test_flag
         )
 

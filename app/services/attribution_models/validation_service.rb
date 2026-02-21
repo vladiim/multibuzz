@@ -23,7 +23,7 @@ module AttributionModels
     end
 
     def error_result
-      { valid: false, errors: [error_hash] }
+      { valid: false, errors: [ error_hash ] }
     end
 
     def error_hash

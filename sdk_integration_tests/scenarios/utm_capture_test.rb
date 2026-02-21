@@ -13,15 +13,18 @@ class UtmCaptureTest < SdkIntegrationTest
       @visitor_id,
       url: "#{sdk_app_url}/?utm_source=google&utm_medium=cpc&utm_campaign=test_campaign"
     )
+
     assert_equal "accepted", result["status"], "Session creation should succeed"
 
     wait_for_async(2)
 
     data = verify_test_data
     session = data[:sessions].first
+
     assert_not_nil session, "Should have a session"
 
     utm = session[:initial_utm]
+
     assert_not_nil utm, "Session should have initial_utm"
     assert_equal "google", utm[:utm_source]
     assert_equal "cpc", utm[:utm_medium]
@@ -39,6 +42,7 @@ class UtmCaptureTest < SdkIntegrationTest
       url: "#{sdk_app_url}/",
       referrer: "https://google.com/search?q=test"
     )
+
     assert_equal "accepted", result["status"], "Session creation should succeed"
 
     wait_for_async(2)
@@ -68,6 +72,7 @@ class UtmCaptureTest < SdkIntegrationTest
     # Verify UTM was captured
     data = verify_test_data
     session = data[:sessions].find { |s| s[:session_id] == session_id }
+
     assert_not_nil session, "Should find session"
     assert_equal "facebook", session[:initial_utm][:utm_source]
     assert_equal "social", session[:initial_utm][:utm_medium]
@@ -83,6 +88,7 @@ class UtmCaptureTest < SdkIntegrationTest
       @visitor_id,
       url: "#{sdk_app_url}/?utm_source=google&utm_medium=cpc"
     )
+
     assert_equal "accepted", result["status"]
 
     wait_for_async(2)

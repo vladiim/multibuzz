@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Team
   class RoleChangeService < ApplicationService
     VALID_ROLES = %w[viewer member admin owner].freeze

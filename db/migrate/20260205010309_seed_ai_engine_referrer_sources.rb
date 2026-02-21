@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class SeedAiEngineReferrerSources < ActiveRecord::Migration[8.0]
   AI_ENGINES = [
     { domain: "chatgpt.com", source_name: "ChatGPT" },
@@ -25,7 +27,7 @@ class SeedAiEngineReferrerSources < ActiveRecord::Migration[8.0]
       )
     end
 
-    ReferrerSource.upsert_all(records, unique_by: :domain, update_only: [:source_name, :medium, :data_origin])
+    ReferrerSource.upsert_all(records, unique_by: :domain, update_only: [ :source_name, :medium, :data_origin ])
   end
 
   def down

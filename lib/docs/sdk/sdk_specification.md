@@ -1,4 +1,4 @@
-# Multibuzz SDK Specification
+# mbuzz SDK Specification
 
 Version: 1.1.0
 Last Updated: 2025-11-28
@@ -9,7 +9,7 @@ Status: **⚠️ PARTIALLY SUPERSEDED**
 > See [Visitor & Session Tracking Spec](../../specs/1_visitor_session_tracking_spec.md) for current session resolution.
 > See [API Contract](./api_contract.md) for `ip`, `user_agent`, and `identifier` params.
 
-This document defines the requirements for any Multibuzz SDK implementation. All SDKs (Ruby, JavaScript, Python, PHP, etc.) MUST implement this specification to be considered valid.
+This document defines the requirements for any mbuzz SDK implementation. All SDKs (Ruby, JavaScript, Python, PHP, etc.) MUST implement this specification to be considered valid.
 
 ---
 
@@ -17,7 +17,7 @@ This document defines the requirements for any Multibuzz SDK implementation. All
 
 VM: note - the idea is the SDK is a simple wrapper around the API. The API does all the context capture etc - think about this. The SDK implementation should be an extension of the REST API implementation.
 
-Multibuzz SDKs enable customer applications to track visitor behavior, sessions, and conversions for marketing attribution. SDKs must handle:
+mbuzz SDKs enable customer applications to track visitor behavior, sessions, and conversions for marketing attribution. SDKs must handle:
 
 1. **Visitor identification** - Persistent anonymous visitor tracking
 2. **Session management** - Group events into browsing sessions
@@ -35,20 +35,20 @@ Multibuzz SDKs enable customer applications to track visitor behavior, sessions,
 Runs on the customer's server. Must:
 - Manage cookies via middleware or helpers
 - Extract request context (URL, referrer, user agent)
-- Make server-to-server API calls to Multibuzz
+- Make server-to-server API calls to mbuzz
 
 ### Client-Side SDK (e.g., JavaScript)
 
 Runs in the browser. Must:
 - Manage cookies directly in browser
 - Capture page URL, referrer automatically
-- Make API calls directly to Multibuzz (CORS)
+- Make API calls directly to mbuzz (CORS)
 
 ---
 
 ## API Endpoints
 
-All SDKs communicate with the Multibuzz API:
+All SDKs communicate with the mbuzz API:
 
 | Method | Endpoint | Purpose | Status |
 |--------|----------|---------|--------|

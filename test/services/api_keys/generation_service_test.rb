@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class ApiKeys::GenerationServiceTest < ActiveSupport::TestCase
@@ -41,8 +43,8 @@ class ApiKeys::GenerationServiceTest < ActiveSupport::TestCase
       test_result = service(:test).call
       live_result = service(:live).call
 
-      assert test_result[:api_key].test?
-      assert live_result[:api_key].live?
+      assert_predicate test_result[:api_key], :test?
+      assert_predicate live_result[:api_key], :live?
     end
 
     test "should save API key to database" do
@@ -95,7 +97,7 @@ class ApiKeys::GenerationServiceTest < ActiveSupport::TestCase
       result = svc.call
 
       assert_not result[:success]
-      assert result[:errors].present?
+      assert_predicate result[:errors], :present?
       assert_includes result[:errors].join, "already been taken"
     end
 

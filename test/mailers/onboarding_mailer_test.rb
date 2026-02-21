@@ -10,7 +10,7 @@ class OnboardingMailerTest < ActionMailer::TestCase
       email.deliver_now
     end
 
-    assert_equal [user.email], email.to
+    assert_equal [ user.email ], email.to
     assert_match /welcome/i, email.subject
     assert_match /api key/i, email.subject
   end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class WaitlistSubmission < FormSubmission
   VALID_ROLES = %w[developer founder product_manager other].freeze
   VALID_FRAMEWORKS = %w[rails django laravel other].freeze

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class TeamMailer < ApplicationMailer
   def invitation(membership:, token:)
     @membership = membership

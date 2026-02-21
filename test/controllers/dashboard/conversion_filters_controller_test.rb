@@ -20,21 +20,25 @@ module Dashboard
       assert_response :success
 
       dimensions = response.parsed_body
+
       assert_kind_of Array, dimensions
 
       # Should include conversion_type as first dimension
       conversion_type = dimensions.find { |d| d["key"] == "conversion_type" }
+
       assert_not_nil conversion_type
       assert_equal "Conversion Name", conversion_type["label"]
       assert_equal "column", conversion_type["type"]
 
       # Should include funnel
       funnel = dimensions.find { |d| d["key"] == "funnel" }
+
       assert_not_nil funnel
       assert_equal "Funnel", funnel["label"]
 
       # Should include revenue
       revenue = dimensions.find { |d| d["key"] == "revenue" }
+
       assert_not_nil revenue
       assert_equal "numeric", revenue["type"]
     end
@@ -123,6 +127,7 @@ module Dashboard
       assert_response :success
 
       values = response.parsed_body
+
       assert_includes values, "signup"
       assert_includes values, "purchase"
       assert_equal 2, values.length
@@ -138,6 +143,7 @@ module Dashboard
       assert_response :success
 
       values = response.parsed_body
+
       assert_includes values, "subscription"
       assert_includes values, "lead"
       refute_includes values, nil
@@ -153,6 +159,7 @@ module Dashboard
       assert_response :success
 
       values = response.parsed_body
+
       assert_includes values, "signup"
       assert_includes values, "sign_in"
       refute_includes values, "purchase"
@@ -168,6 +175,7 @@ module Dashboard
       assert_response :success
 
       values = response.parsed_body
+
       assert_includes values, "pro"
       assert_includes values, "enterprise"
       assert_equal 2, values.length
@@ -181,6 +189,7 @@ module Dashboard
       assert_response :success
 
       values = response.parsed_body
+
       assert_equal 20, values.length
     end
 
@@ -211,6 +220,7 @@ module Dashboard
       assert_response :success
 
       values = response.parsed_body
+
       assert_includes values, "my_account_type"
       refute_includes values, "other_account_type"
     end

@@ -130,7 +130,7 @@ namespace :attribution do
     # Only look at sessions classified as 'referral' with a referrer
     referral_sessions = account.sessions
       .where(channel: "referral")
-      .where.not(initial_referrer: [nil, ""])
+      .where.not(initial_referrer: [ nil, "" ])
       .includes(:events)
 
     # Helper lambdas for host extraction and normalization

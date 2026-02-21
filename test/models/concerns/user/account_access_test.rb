@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class User::AccountAccessTest < ActiveSupport::TestCase
@@ -27,6 +29,7 @@ class User::AccountAccessTest < ActiveSupport::TestCase
 
   test "#admin_of? returns true for admin" do
     create_membership(user: user_two, account: accounts(:suspended), role: :admin)
+
     assert user_two.admin_of?(accounts(:suspended))
   end
 
@@ -45,6 +48,7 @@ class User::AccountAccessTest < ActiveSupport::TestCase
 
   test "#active_accounts returns only accepted memberships" do
     active = user_one.active_accounts
+
     assert_includes active, account_one
     assert_includes active, account_two
   end

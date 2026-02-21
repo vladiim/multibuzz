@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module TeamHelper
   ROLE_BADGES = {
     "owner" => { bg: "bg-purple-100", text: "text-purple-800", label: "Owner" },

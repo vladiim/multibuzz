@@ -56,11 +56,11 @@ module AML
         credit_ledger.normalize!
       end
 
-      def method_missing(method_name, *args, &block)
+      def method_missing(method_name, *_args)
         raise ::AML::SecurityError.new("Method not allowed: #{method_name}")
       end
 
-      def respond_to_missing?(method_name, include_private = false)
+      def respond_to_missing?(_method_name, _include_private = false)
         false
       end
 
@@ -76,7 +76,7 @@ module AML
       original_verbose = $VERBOSE
       $VERBOSE = nil
       BLOCKED_METHODS.each do |method_name|
-        define_method(method_name) do |*args, &block|
+        define_method(method_name) do |*_args|
           raise ::AML::SecurityError.new("Method not allowed: #{method_name}")
         end
       end

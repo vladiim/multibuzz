@@ -18,6 +18,7 @@ class BackgroundJobVisitorTest < SdkIntegrationTest
 
     # Create a session to register the visitor in Multibuzz
     session_result = create_session_for_visitor(@visitor_id)
+
     assert_equal "accepted", session_result["status"],
       "Session creation should succeed. Got: #{session_result.inspect}"
 
@@ -30,7 +31,7 @@ class BackgroundJobVisitorTest < SdkIntegrationTest
     })
 
     # Should fail - no visitor_id available outside request context
-    assert_equal false, response["success"],
+    refute response["success"],
       "Background event without visitor_id should fail. Got: #{response.inspect}"
   end
 
@@ -45,6 +46,7 @@ class BackgroundJobVisitorTest < SdkIntegrationTest
 
     # Create a session to register the visitor in Multibuzz
     session_result = create_session_for_visitor(stored_visitor_id)
+
     assert_equal "accepted", session_result["status"],
       "Session creation should succeed. Got: #{session_result.inspect}"
 
@@ -59,7 +61,7 @@ class BackgroundJobVisitorTest < SdkIntegrationTest
     })
 
     # Should succeed - explicit visitor_id provided
-    assert_equal true, response["success"],
+    assert response["success"],
       "Background event with explicit visitor_id should succeed. Got: #{response.inspect}"
 
     # Verify event was actually created
@@ -80,6 +82,7 @@ class BackgroundJobVisitorTest < SdkIntegrationTest
 
     # Create session to register visitor
     session_result = create_session_for_visitor(@visitor_id)
+
     assert_equal "accepted", session_result["status"],
       "Session creation should succeed. Got: #{session_result.inspect}"
 
@@ -90,7 +93,7 @@ class BackgroundJobVisitorTest < SdkIntegrationTest
       revenue: 99.99
     })
 
-    assert_equal false, response["success"],
+    refute response["success"],
       "Background conversion without visitor_id should fail. Got: #{response.inspect}"
   end
 
@@ -103,6 +106,7 @@ class BackgroundJobVisitorTest < SdkIntegrationTest
 
     # Create session to register visitor
     session_result = create_session_for_visitor(stored_visitor_id)
+
     assert_equal "accepted", session_result["status"],
       "Session creation should succeed. Got: #{session_result.inspect}"
 
@@ -114,7 +118,7 @@ class BackgroundJobVisitorTest < SdkIntegrationTest
       revenue: 149.99
     })
 
-    assert_equal true, response["success"],
+    assert response["success"],
       "Background conversion with explicit visitor_id should succeed. Got: #{response.inspect}"
   end
 

@@ -45,7 +45,7 @@ module AML
         @indexed_filtered_touchpoints ||= parent_touchpoints
           .each_with_index
           .select { |tp, _idx| seconds_range.cover?(days_before_conversion(tp)) }
-          .map { |tp, idx| [idx, touchpoint_to_hash(tp)] }
+          .map { |tp, idx| [ idx, touchpoint_to_hash(tp) ] }
       end
 
       def seconds_range

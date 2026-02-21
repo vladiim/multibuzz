@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Channels
   # Channel taxonomy - standard marketing channels
   PAID_SEARCH = "paid_search"

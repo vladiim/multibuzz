@@ -1,15 +1,17 @@
+# frozen_string_literal: true
+
 class ApplicationService
   def call
     run
   rescue ActiveRecord::RecordInvalid => e
     report_error(e)
-    error_result(["Record invalid: #{e.message}"])
+    error_result([ "Record invalid: #{e.message}" ])
   rescue ActiveRecord::RecordNotFound => e
     report_error(e)
-    error_result(["Record not found: #{e.message}"])
+    error_result([ "Record not found: #{e.message}" ])
   rescue StandardError => e
     report_error(e)
-    error_result(["Internal error: #{e.message}"])
+    error_result([ "Internal error: #{e.message}" ])
   end
 
   private

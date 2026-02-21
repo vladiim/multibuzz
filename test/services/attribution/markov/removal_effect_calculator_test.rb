@@ -25,8 +25,8 @@ module Attribution
         email_effect = effects["email"]
 
         # paid_search is in all paths, so removing it should have big impact
-        assert paid_effect > organic_effect, "paid_search should have higher effect than organic"
-        assert paid_effect > email_effect, "paid_search should have higher effect than email"
+        assert_operator paid_effect, :>, organic_effect, "paid_search should have higher effect than organic"
+        assert_operator paid_effect, :>, email_effect, "paid_search should have higher effect than email"
       end
 
       test "should return removal effects that sum to approximately 1.0 when normalized" do
@@ -34,8 +34,8 @@ module Attribution
 
         # Raw effects don't sum to 1.0, but they should be positive
         effects.each_value do |effect|
-          assert effect >= 0, "removal effects should be non-negative"
-          assert effect <= 1, "removal effects should be <= 1"
+          assert_operator effect, :>=, 0, "removal effects should be non-negative"
+          assert_operator effect, :<=, 1, "removal effects should be <= 1"
         end
       end
 
@@ -67,7 +67,7 @@ module Attribution
       test "should return empty hash for empty paths" do
         effects = RemovalEffectCalculator.new([]).call
 
-        assert_equal({}, effects)
+        assert_empty(effects)
       end
 
       test "should handle paths with duplicate channels" do
@@ -104,7 +104,7 @@ module Attribution
 
         # Removing A doesn't break any path (A is only in path 1, which also has B)
         # But this depends on implementation - some implementations give partial credit
-        assert effects["A"] < effects["B"], "A should have lower effect than B"
+        assert_operator effects["A"], :<, effects["B"], "A should have lower effect than B"
       end
 
       test "should normalize effects to sum to 1.0" do
@@ -112,6 +112,7 @@ module Attribution
         normalized = service.normalized_effects
 
         total = normalized.values.sum
+
         assert_in_delta 1.0, total, 0.0001
       end
 

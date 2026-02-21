@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Sessions
   class UtmCaptureService
     UTM_PARAMS = %w[utm_source utm_medium utm_campaign utm_content utm_term].freeze

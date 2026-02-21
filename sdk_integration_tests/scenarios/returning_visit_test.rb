@@ -43,7 +43,7 @@ class ReturningVisitTest < SdkIntegrationTest
     data = verify_test_data
 
     # Middleware auto-creates a session + visit_and_register creates another
-    assert data[:sessions].length >= 1, "Should have at least 1 session after registration"
+    assert_operator data[:sessions].length, :>=, 1, "Should have at least 1 session after registration"
     refute_nil data[:visitor][:visitor_id]
     refute_empty data[:visitor][:visitor_id]
   end
@@ -67,7 +67,7 @@ class ReturningVisitTest < SdkIntegrationTest
     data = verify_test_data
 
     # Middleware auto-created one session on visit, plus the external-referrer one above
-    assert data[:sessions].length >= 2, "Should have at least 2 sessions for same visitor"
+    assert_operator data[:sessions].length, :>=, 2, "Should have at least 2 sessions for same visitor"
     assert_equal first_visitor_id, data[:visitor][:visitor_id]
   end
 end

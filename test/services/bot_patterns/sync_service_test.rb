@@ -70,6 +70,7 @@ class BotPatterns::SyncServiceTest < ActiveSupport::TestCase
     sync(crawler: CRAWLER_JSON, matomo: MATOMO_YAML)
 
     cached = Rails.cache.read(BotPatterns::Sources::CACHE_KEY)
+
     assert_equal 4, cached.size
   end
 

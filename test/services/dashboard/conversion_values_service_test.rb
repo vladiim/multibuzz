@@ -108,7 +108,7 @@ module Dashboard
       result = service(field: "location").call
 
       assert result[:success]
-      assert_equal ["Sydney"], result[:values]
+      assert_equal [ "Sydney" ], result[:values]
     end
 
     test "returns values from properties alongside url and referrer" do
@@ -166,8 +166,8 @@ module Dashboard
       prod_result = service(field: "location", test_mode: false).call
       test_result = service(field: "location", test_mode: true).call
 
-      assert_equal ["Sydney"], prod_result[:values]
-      assert_equal ["Melbourne"], test_result[:values]
+      assert_equal [ "Sydney" ], prod_result[:values]
+      assert_equal [ "Melbourne" ], test_result[:values]
     end
 
     # ==========================================

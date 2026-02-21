@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ApiKeys
   class AuthenticationService
     def initialize(authorization_header)

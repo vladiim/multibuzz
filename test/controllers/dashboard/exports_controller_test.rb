@@ -56,6 +56,7 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     csv = CSV.parse(response.body, headers: true)
+
     assert_equal 0, csv.size
   end
 
@@ -64,10 +65,11 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
     create_credit(model: first_touch_model)
     create_credit(model: last_touch_model)
 
-    post dashboard_export_path, params: { models: [first_touch_model.prefix_id] }
+    post dashboard_export_path, params: { models: [ first_touch_model.prefix_id ] }
 
     csv = CSV.parse(response.body, headers: true)
     models = csv.map { |row| row["attribution_model"] }
+
     assert_includes models, first_touch_model.name
     assert_includes models, last_touch_model.name
   end
@@ -77,10 +79,11 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
     create_credit(channel: Channels::PAID_SEARCH)
     create_credit(channel: Channels::EMAIL)
 
-    post dashboard_export_path, params: { channels: [Channels::PAID_SEARCH] }
+    post dashboard_export_path, params: { channels: [ Channels::PAID_SEARCH ] }
 
     csv = CSV.parse(response.body, headers: true)
     channels = csv.map { |row| row["channel"] }
+
     assert_includes channels, Channels::PAID_SEARCH
     assert_includes channels, Channels::EMAIL
   end
@@ -92,12 +95,13 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
 
     post dashboard_export_path, params: {
       conversion_filters: {
-        "0" => { field: "conversion_type", operator: "is", values: ["purchase"] }
+        "0" => { field: "conversion_type", operator: "is", values: [ "purchase" ] }
       }
     }
 
     csv = CSV.parse(response.body, headers: true)
     types = csv.map { |row| row["conversion_type"] }
+
     assert_includes types, "purchase"
     assert_includes types, "signup"
   end

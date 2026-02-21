@@ -34,15 +34,15 @@ class BotPatterns::Parsers::CrawlerUserAgentsParserTest < ActiveSupport::TestCas
   end
 
   test "returns empty array for empty JSON array" do
-    assert_equal [], parser("[]").call
+    assert_empty parser("[]").call
   end
 
   test "returns empty array for nil content" do
-    assert_equal [], parser(nil).call
+    assert_empty parser(nil).call
   end
 
   test "returns empty array for malformed JSON" do
-    assert_equal [], parser("not json").call
+    assert_empty parser("not json").call
   end
 
   private

@@ -12,7 +12,7 @@ module Attribution
     attr_reader :attribution_model, :confirm_overage
 
     def run
-      return error_result(["No pending conversions to rerun"]) unless pending_count.positive?
+      return error_result([ "No pending conversions to rerun" ]) unless pending_count.positive?
       return overage_required_result unless can_proceed?
 
       create_and_enqueue_job

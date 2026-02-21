@@ -20,10 +20,10 @@ class CreateAttributionCredits < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :attribution_credits, [:conversion_id, :attribution_model_id]
-    add_index :attribution_credits, [:attribution_model_id, :channel]
-    add_index :attribution_credits, [:account_id, :channel]
-    add_index :attribution_credits, [:account_id, :attribution_model_id, :channel],
+    add_index :attribution_credits, [ :conversion_id, :attribution_model_id ]
+    add_index :attribution_credits, [ :attribution_model_id, :channel ]
+    add_index :attribution_credits, [ :account_id, :channel ]
+    add_index :attribution_credits, [ :account_id, :attribution_model_id, :channel ],
       name: "index_credits_on_account_model_channel"
   end
 end

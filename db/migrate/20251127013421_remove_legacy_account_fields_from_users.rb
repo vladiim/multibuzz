@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class RemoveLegacyAccountFieldsFromUsers < ActiveRecord::Migration[8.0]
   def change
     remove_reference :users, :account, foreign_key: true

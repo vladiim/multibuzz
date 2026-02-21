@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 module AttributionCredit::Callbacks
   extend ActiveSupport::Concern
 
   included do
-    after_commit :invalidate_dashboard_cache, on: [:create, :update, :destroy]
+    after_commit :invalidate_dashboard_cache, on: [ :create, :update, :destroy ]
   end
 
   private

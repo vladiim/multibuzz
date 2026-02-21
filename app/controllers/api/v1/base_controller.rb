@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Api
   module V1
     class BaseController < ActionController::API
@@ -24,7 +26,7 @@ module Api
         @current_account = auth_result[:account]
         @current_api_key = auth_result[:api_key]
 
-        return render_account_suspended unless current_account.active?
+        render_account_suspended unless current_account.active?
       end
 
       def authorization_header

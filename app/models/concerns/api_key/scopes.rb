@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ApiKey::Scopes
   extend ActiveSupport::Concern
 

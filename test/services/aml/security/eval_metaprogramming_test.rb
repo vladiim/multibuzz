@@ -45,7 +45,7 @@ module AML
       end
 
       test "blocks define_singleton_method" do
-        assert_forbidden 'define_singleton_method(:evil) { }'
+        assert_forbidden "define_singleton_method(:evil) { }"
       end
 
       test "blocks undef_method" do

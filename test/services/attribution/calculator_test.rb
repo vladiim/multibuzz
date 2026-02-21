@@ -23,7 +23,7 @@ module Attribution
       credits = first_touch_service.call
 
       assert_equal 1, credits.size
-      assert_equal 1.0, credits[0][:credit]
+      assert_in_delta(1.0, credits[0][:credit])
       assert_equal session_one.id, credits[0][:session_id]
     end
 
@@ -77,6 +77,7 @@ module Attribution
       credits = service.call
 
       session_ids = credits.map { |c| c[:session_id] }
+
       assert_includes session_ids, recent_session.id
       assert_not_includes session_ids, old_session.id,
         "Sessions older than #{AttributionAlgorithms::DEFAULT_LOOKBACK_DAYS} days should be excluded"
@@ -89,6 +90,7 @@ module Attribution
       credits = service.call
 
       total = credits.sum { |c| c[:credit] }
+
       assert_in_delta 1.0, total, 0.0001
     end
 
@@ -102,7 +104,8 @@ module Attribution
 
       assert_equal 3, credits.size
       total = credits.sum { |c| c[:credit] }
-      assert_equal 1.0, total.round(4), "Credits must sum to exactly 1.0"
+
+      assert_in_delta(1.0, total.round(4), 0.001, "Credits must sum to exactly 1.0")
     end
 
     test "should round credits to 4 decimal places" do
@@ -114,7 +117,8 @@ module Attribution
 
       credits.each do |credit|
         decimal_places = credit[:credit].to_s.split(".").last&.length || 0
-        assert decimal_places <= 4, "Credit #{credit[:credit]} has more than 4 decimal places"
+
+        assert_operator decimal_places, :<=, 4, "Credit #{credit[:credit]} has more than 4 decimal places"
       end
     end
 
@@ -145,6 +149,7 @@ module Attribution
       credits = service.call
 
       session_ids = credits.map { |c| c[:session_id] }
+
       assert_not_includes session_ids, other_session.id,
         "Sessions from another account must not appear in credits"
     end
@@ -185,8 +190,7 @@ module Attribution
       organic_credit = credits.find { |c| c[:channel] == "organic_search" }[:credit]
       paid_credit = credits.find { |c| c[:channel] == "paid_search" }[:credit]
 
-      assert paid_credit > organic_credit,
-        "paid_search (in all paths) should get more credit than organic_search (in 1 path)"
+      assert_operator paid_credit, :>, organic_credit, "paid_search (in all paths) should get more credit than organic_search (in 1 path)"
     end
 
     test "should handle Markov Chain with no historical conversions gracefully" do

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Sessions
   class CreationService < ApplicationService
     def initialize(account, params, is_test: false)
@@ -15,9 +17,9 @@ module Sessions
     end
 
     def run
-      return error_result(["visitor_id is required"]) unless visitor_id.present?
-      return error_result(["session_id is required"]) unless session_id.present?
-      return error_result(["url is required"]) unless url.present?
+      return error_result([ "visitor_id is required" ]) unless visitor_id.present?
+      return error_result([ "session_id is required" ]) unless session_id.present?
+      return error_result([ "url is required" ]) unless url.present?
 
       with_session_lock do
         process_visitor

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class Sessions::UtmCaptureServiceTest < ActiveSupport::TestCase
@@ -13,7 +15,7 @@ class Sessions::UtmCaptureServiceTest < ActiveSupport::TestCase
     @properties = {
       "utm_source" => "facebook",
       "utm_medium" => "social"
-    }
+    }.freeze
 
     assert_equal "facebook", result[:utm_source]
     assert_equal "social", result[:utm_medium]
@@ -23,7 +25,7 @@ class Sessions::UtmCaptureServiceTest < ActiveSupport::TestCase
   end
 
   test "should return empty hash when no UTM parameters" do
-    @properties = { "url" => "https://example.com" }
+    @properties = { "url" => "https://example.com" }.freeze
 
     assert_empty result
   end
@@ -32,7 +34,7 @@ class Sessions::UtmCaptureServiceTest < ActiveSupport::TestCase
     @properties = {
       "utm_source" => "twitter",
       "utm_medium" => "social"
-    }
+    }.freeze
 
     assert_equal "twitter", result[:utm_source]
     assert_equal "social", result[:utm_medium]
@@ -42,7 +44,7 @@ class Sessions::UtmCaptureServiceTest < ActiveSupport::TestCase
     @properties = {
       utm_source: "linkedin",
       utm_medium: "social"
-    }
+    }.freeze
 
     assert_equal "linkedin", result[:utm_source]
     assert_equal "social", result[:utm_medium]
@@ -52,7 +54,7 @@ class Sessions::UtmCaptureServiceTest < ActiveSupport::TestCase
     @properties = {
       "utm_source" => "newsletter",
       utm_medium: "email"
-    }
+    }.freeze
 
     assert_equal "newsletter", result[:utm_source]
     assert_equal "email", result[:utm_medium]
@@ -63,7 +65,7 @@ class Sessions::UtmCaptureServiceTest < ActiveSupport::TestCase
       "url" => "https://example.com",
       "utm_source" => "google",
       "referrer" => "https://other.com"
-    }
+    }.freeze
 
     assert_equal({ utm_source: "google" }, result)
   end
@@ -77,7 +79,7 @@ class Sessions::UtmCaptureServiceTest < ActiveSupport::TestCase
       "utm_source" => "google",
       "utm_medium" => nil,
       "utm_campaign" => "sale"
-    }
+    }.freeze
 
     refute result.key?(:utm_medium)
     assert_equal "google", result[:utm_source]
@@ -132,7 +134,7 @@ class Sessions::UtmCaptureServiceTest < ActiveSupport::TestCase
 
   test "should prioritize URL over properties" do
     @url = "https://example.com?utm_source=from_url"
-    @properties = { "utm_source" => "from_properties" }
+    @properties = { "utm_source" => "from_properties" }.freeze
 
     assert_equal "from_url", result[:utm_source]
   end

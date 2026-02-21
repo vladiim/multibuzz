@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Events
   class EnrichmentService
     def initialize(request, event_data, visitor_id:, session_id:)

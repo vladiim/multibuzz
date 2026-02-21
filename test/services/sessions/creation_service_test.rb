@@ -16,6 +16,7 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
 
     assert first_result[:success]
     first_visitor = account.visitors.find_by(visitor_id: "vis_turbo_frame_1")
+
     assert first_visitor
 
     # Second request with SAME session_id but DIFFERENT visitor_id
@@ -34,6 +35,7 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
 
     # Both sessions should belong to first visitor
     sessions = account.sessions.where(session_id: "sess_shared_turbo_session")
+
     assert_equal 1, sessions.count, "Should only have one session"
     assert_equal first_visitor, sessions.first.visitor
   end
@@ -106,6 +108,7 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
 
     assert first_result[:success]
     first_visitor = account.visitors.find_by(visitor_id: "vis_fp_concurrent_1")
+
     assert first_visitor
 
     second_params = {
@@ -139,10 +142,12 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
         url: "https://example.com/page"
       }
       result = Sessions::CreationService.new(account, params).call
+
       assert result[:success]
     end
 
     created_visitors = account.visitors.where("visitor_id LIKE ?", "vis_burst_%")
+
     assert_equal 1, created_visitors.count,
       "All requests with same fingerprint should resolve to single visitor"
   end
@@ -208,6 +213,7 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
     Sessions::CreationService.new(account, landing).call
 
     session_a = account.sessions.find_by(session_id: "sess_landing_uuid")
+
     assert session_a
     assert_equal "paid_search", session_a.channel
 
@@ -396,6 +402,7 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
     }).call
 
     session_a.reload
+
     assert_equal original_utm, session_a.initial_utm,
       "Reused session should preserve original UTM"
     assert_equal original_referrer, session_a.initial_referrer,
@@ -427,8 +434,8 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
     }).call
 
     session_a.reload
-    assert session_a.last_activity_at > old_activity,
-      "Reused session should update last_activity_at"
+
+    assert_operator session_a.last_activity_at, :>, old_activity, "Reused session should update last_activity_at"
   end
 
   test "reused session does not increment billing usage" do
@@ -539,6 +546,7 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
     }).call
 
     session_a.reload
+
     assert_equal original_utm, session_a.initial_utm,
       "Fallback-reused session should preserve original UTM"
     assert_equal original_channel, session_a.channel,
@@ -612,7 +620,8 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
 
     assert result[:success]
     session = account.sessions.find_by(session_id: "sess_suspect_1")
-    assert session.suspect?, "Session with no referrer, no UTM, no click_ids should be suspect"
+
+    assert_predicate session, :suspect?, "Session with no referrer, no UTM, no click_ids should be suspect"
     assert_equal Sessions::BotClassifier::NO_SIGNALS, session.suspect_reason
   end
 
@@ -626,7 +635,8 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
 
     assert result[:success]
     session = account.sessions.find_by(session_id: "sess_not_suspect_ref")
-    refute session.suspect?, "Session with referrer should not be suspect"
+
+    refute_predicate session, :suspect?, "Session with referrer should not be suspect"
     assert_nil session.suspect_reason
   end
 
@@ -639,7 +649,8 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
 
     assert result[:success]
     session = account.sessions.find_by(session_id: "sess_not_suspect_utm")
-    refute session.suspect?, "Session with UTM params should not be suspect"
+
+    refute_predicate session, :suspect?, "Session with UTM params should not be suspect"
   end
 
   test "session not suspect when it has click_ids" do
@@ -651,7 +662,8 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
 
     assert result[:success]
     session = account.sessions.find_by(session_id: "sess_not_suspect_click")
-    refute session.suspect?, "Session with click_ids should not be suspect"
+
+    refute_predicate session, :suspect?, "Session with click_ids should not be suspect"
   end
 
   # --- Bot Detection ---
@@ -669,7 +681,8 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
 
     assert result[:success]
     session = account.sessions.find_by(session_id: "sess_bot_1")
-    assert session.suspect?, "Bot UA should be suspect even with attribution signals"
+
+    assert_predicate session, :suspect?, "Bot UA should be suspect even with attribution signals"
     assert_equal Sessions::BotClassifier::KNOWN_BOT, session.suspect_reason
   end
 
@@ -686,7 +699,8 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
 
     assert result[:success]
     session = account.sessions.find_by(session_id: "sess_real_ua")
-    refute session.suspect?
+
+    refute_predicate session, :suspect?
     assert_nil session.suspect_reason
     assert_equal "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Chrome/120.0.0.0", session.user_agent
   end
@@ -701,6 +715,7 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
     }).call
 
     session = account.sessions.find_by(session_id: "sess_ua_store")
+
     assert_equal ua, session.user_agent
   end
 
@@ -711,7 +726,7 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
       visitor_id: visitor.visitor_id,
       session_id: "sess_new_session_existing_visitor",
       url: "https://example.com/page"
-    }
+    }.freeze
 
     assert_difference -> { usage_counter.current_usage }, 1 do
       result
@@ -723,7 +738,7 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
       visitor_id: "vis_brand_new_visitor",
       session_id: "sess_brand_new_session",
       url: "https://example.com/page"
-    }
+    }.freeze
 
     assert_difference -> { usage_counter.current_usage }, 2 do
       result
@@ -752,6 +767,7 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
     Sessions::CreationService.new(account, params).call
 
     session = account.sessions.find_by(session_id: "sess_landing_host")
+
     assert_equal "northshore.pettechpro.com.au", session.landing_page_host
   end
 
@@ -765,6 +781,7 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
     Sessions::CreationService.new(account, params).call
 
     session = account.sessions.find_by(session_id: "sess_www_host")
+
     assert_equal "petresortsaustralia.com.au", session.landing_page_host
   end
 
@@ -790,6 +807,7 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
     Sessions::CreationService.new(account, params).call
 
     session = account.sessions.find_by(session_id: "sess_self_ref")
+
     assert_equal "direct", session.channel
   end
 

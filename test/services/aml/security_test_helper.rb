@@ -10,7 +10,7 @@ module AML
       assert_match(/forbidden|not allowed|blocked/i, error.message, message)
     end
 
-    def assert_allowed(code, message = nil)
+    def assert_allowed(code, _message = nil)
       assert_nothing_raised do
         ::AML::Security::ASTAnalyzer.new(code).analyze!
       end

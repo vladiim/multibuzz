@@ -5,27 +5,27 @@ require "test_helper"
 module Shopify
   class WebhookVerifierTest < ActiveSupport::TestCase
     test "returns true for valid signature" do
-      assert verifier(signature: valid_signature).valid?
+      assert_predicate verifier(signature: valid_signature), :valid?
     end
 
     test "returns false for invalid signature" do
-      refute verifier(signature: "invalid_signature").valid?
+      refute_predicate verifier(signature: "invalid_signature"), :valid?
     end
 
     test "returns false when signature is nil" do
-      refute verifier(signature: nil).valid?
+      refute_predicate verifier(signature: nil), :valid?
     end
 
     test "returns false when signature is blank" do
-      refute verifier(signature: "").valid?
+      refute_predicate verifier(signature: ""), :valid?
     end
 
     test "returns false when secret is nil" do
-      refute verifier(secret: nil).valid?
+      refute_predicate verifier(secret: nil), :valid?
     end
 
     test "returns false when secret is blank" do
-      refute verifier(secret: "").valid?
+      refute_predicate verifier(secret: ""), :valid?
     end
 
     private

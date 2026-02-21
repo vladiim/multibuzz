@@ -24,7 +24,7 @@ module WaitlistHelper
       end
   end
 
-  def modal_trigger_button(feature_key, feature_name, css_class, content)
+  def modal_trigger_button(feature_key, _feature_name, css_class, content)
     content_tag :button,
       type: "button",
       class: css_class,

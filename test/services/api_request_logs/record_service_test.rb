@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class ApiRequestLogs::RecordServiceTest < ActiveSupport::TestCase
@@ -168,7 +170,7 @@ class ApiRequestLogs::RecordServiceTest < ActiveSupport::TestCase
   # --- Error Details ---
 
   test "should store error details" do
-    @error_details = { index: 0, event_type: "page_view" }
+    @error_details = { index: 0, event_type: "page_view" }.freeze
 
     result
 
@@ -181,7 +183,7 @@ class ApiRequestLogs::RecordServiceTest < ActiveSupport::TestCase
 
     result
 
-    assert_equal({}, log_record.error_details)
+    assert_empty(log_record.error_details)
   end
 
   # --- Request Params Sanitization ---

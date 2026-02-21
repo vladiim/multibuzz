@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 module Team
@@ -8,18 +10,18 @@ module Team
 
     test "owner can promote member to admin" do
       assert promote_member_to_admin[:success]
-      assert member_membership.reload.admin?
+      assert_predicate member_membership.reload, :admin?
     end
 
     test "owner can demote admin to member" do
       assert demote_admin_to_member[:success]
-      assert admin_membership.reload.member?
+      assert_predicate admin_membership.reload, :member?
     end
 
     test "owner cannot change own role" do
       assert_not owner_self_demote[:success]
       assert_includes owner_self_demote[:errors], "Cannot change your own role"
-      assert owner_membership.reload.owner?
+      assert_predicate owner_membership.reload, :owner?
     end
 
     # ==========================================
@@ -28,24 +30,24 @@ module Team
 
     test "admin can promote member to admin" do
       assert admin_promotes_member[:success]
-      assert member_membership.reload.admin?
+      assert_predicate member_membership.reload, :admin?
     end
 
     test "admin cannot demote other admin" do
       assert_not admin_demotes_admin[:success]
       assert_includes admin_demotes_admin[:errors], "Cannot change the role of another admin"
-      assert other_admin_membership.reload.admin?
+      assert_predicate other_admin_membership.reload, :admin?
     end
 
     test "admin cannot promote to owner" do
       assert_not admin_promotes_to_owner[:success]
       assert_includes admin_promotes_to_owner[:errors], "Only owners can assign owner role"
-      assert member_membership.reload.member?
+      assert_predicate member_membership.reload, :member?
     end
 
     test "admin cannot change owner role" do
       assert_not admin_changes_owner[:success]
-      assert owner_membership.reload.owner?
+      assert_predicate owner_membership.reload, :owner?
     end
 
     # ==========================================
@@ -73,7 +75,7 @@ module Team
 
     test "no-op when role unchanged" do
       assert same_role_change[:success]
-      assert member_membership.reload.member?
+      assert_predicate member_membership.reload, :member?
     end
 
     test "cannot change role of deleted membership" do

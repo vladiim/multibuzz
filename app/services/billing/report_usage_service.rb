@@ -66,7 +66,7 @@ module Billing
     end
 
     def overage_events
-      [current_usage - plan_limit, 0].max
+      [ current_usage - plan_limit, 0 ].max
     end
 
     def usage_counter

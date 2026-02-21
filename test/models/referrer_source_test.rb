@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class ReferrerSourceTest < ActiveSupport::TestCase
@@ -6,29 +8,33 @@ class ReferrerSourceTest < ActiveSupport::TestCase
   # ==========================================
 
   test "valid with all required attributes" do
-    assert referrer_source.valid?
+    assert_predicate referrer_source, :valid?
   end
 
   test "invalid without domain" do
     referrer_source.domain = nil
+
     assert_not referrer_source.valid?
     assert_includes referrer_source.errors[:domain], "can't be blank"
   end
 
   test "invalid without source_name" do
     referrer_source.source_name = nil
+
     assert_not referrer_source.valid?
     assert_includes referrer_source.errors[:source_name], "can't be blank"
   end
 
   test "invalid without medium" do
     referrer_source.medium = nil
+
     assert_not referrer_source.valid?
     assert_includes referrer_source.errors[:medium], "can't be blank"
   end
 
   test "invalid without data_origin" do
     referrer_source.data_origin = nil
+
     assert_not referrer_source.valid?
     assert_includes referrer_source.errors[:data_origin], "can't be blank"
   end
@@ -41,18 +47,21 @@ class ReferrerSourceTest < ActiveSupport::TestCase
       medium: ReferrerSources::Mediums::SOCIAL,
       data_origin: ReferrerSources::DataOrigins::CUSTOM
     )
+
     assert_not duplicate.valid?
     assert_includes duplicate.errors[:domain], "has already been taken"
   end
 
   test "invalid with medium not in allowed list" do
     referrer_source.medium = "invalid_medium"
+
     assert_not referrer_source.valid?
     assert_includes referrer_source.errors[:medium], "is not included in the list"
   end
 
   test "invalid with data_origin not in allowed list" do
     referrer_source.data_origin = "invalid_origin"
+
     assert_not referrer_source.valid?
     assert_includes referrer_source.errors[:data_origin], "is not included in the list"
   end
@@ -63,18 +72,21 @@ class ReferrerSourceTest < ActiveSupport::TestCase
 
   test "mediums constant contains all valid values" do
     expected = %w[search social email video shopping news ai]
+
     assert_equal expected, ReferrerSources::Mediums::ALL
   end
 
   test "data_origins constant contains all valid values" do
     expected = %w[matomo_search matomo_social matomo_spam snowplow custom]
+
     assert_equal expected, ReferrerSources::DataOrigins::ALL
   end
 
   test "data_origins priority ranks custom highest" do
     priority = ReferrerSources::DataOrigins::PRIORITY
-    assert priority[ReferrerSources::DataOrigins::CUSTOM] > priority[ReferrerSources::DataOrigins::MATOMO_SEARCH]
-    assert priority[ReferrerSources::DataOrigins::MATOMO_SEARCH] > priority[ReferrerSources::DataOrigins::SNOWPLOW]
+
+    assert_operator priority[ReferrerSources::DataOrigins::CUSTOM], :>, priority[ReferrerSources::DataOrigins::MATOMO_SEARCH]
+    assert_operator priority[ReferrerSources::DataOrigins::MATOMO_SEARCH], :>, priority[ReferrerSources::DataOrigins::SNOWPLOW]
   end
 
   # ==========================================

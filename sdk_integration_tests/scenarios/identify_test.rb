@@ -19,6 +19,7 @@ class IdentifyTest < SdkIntegrationTest
 
     # Verify identity in database
     data = verify_test_data
+
     assert_not_nil data[:identity], "Should have identity"
     assert_equal "test@example.com", data[:identity][:traits][:email]
     assert_equal "Test User", data[:identity][:traits][:name]
@@ -67,6 +68,7 @@ class IdentifyTest < SdkIntegrationTest
     wait_for_async(3)
 
     data = verify_test_data
+
     assert_equal "updated@example.com", data[:identity][:traits][:email]
     assert_equal "pro", data[:identity][:traits][:plan]
   end

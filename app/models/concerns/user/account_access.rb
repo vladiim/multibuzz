@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module User::AccountAccess
   extend ActiveSupport::Concern
 

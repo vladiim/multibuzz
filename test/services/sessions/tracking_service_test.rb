@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class Sessions::TrackingServiceTest < ActiveSupport::TestCase
@@ -53,7 +55,7 @@ class Sessions::TrackingServiceTest < ActiveSupport::TestCase
     @session_id = ""  # Invalid
 
     assert_not result[:success]
-    assert result[:errors].present?
+    assert_predicate result[:errors], :present?
   end
 
   test "should set started_at from event timestamp when creating session" do
@@ -116,7 +118,7 @@ class Sessions::TrackingServiceTest < ActiveSupport::TestCase
     result
 
     assert result[:success]
-    assert session.reload.last_activity_at > old_activity
+    assert_operator session.reload.last_activity_at, :>, old_activity
     assert_in_delta Time.current.to_i, session.last_activity_at.to_i, 2
   end
 

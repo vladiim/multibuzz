@@ -11,7 +11,7 @@ module Conversions
     attr_reader :conversion
 
     def run
-      return error_result(["Conversion has no identity"]) unless identity
+      return error_result([ "Conversion has no identity" ]) unless identity
 
       with_conversion_lock do
         delete_existing_credits

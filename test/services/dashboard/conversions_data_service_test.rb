@@ -7,7 +7,7 @@ module Dashboard
     setup do
       # Clear fixture data to ensure clean slate for each test
       AttributionCredit.delete_all
-      Conversion.where(account: account).where.not(id: [conversions(:signup).id, conversions(:purchase).id]).delete_all
+      Conversion.where(account: account).where.not(id: [ conversions(:signup).id, conversions(:purchase).id ]).delete_all
     end
 
     # ==========================================
@@ -48,7 +48,7 @@ module Dashboard
       totals = result[:data][:totals]
 
       # 3 credits with credit values 1.0, 0.5, 0.5 = 2.0 total conversions
-      assert_equal 2.0, totals[:conversions]
+      assert_in_delta(2.0, totals[:conversions])
     end
 
     test "calculates total revenue from attribution credits" do
@@ -58,7 +58,7 @@ module Dashboard
       totals = result[:data][:totals]
 
       # Credits with revenue 100, 50, 50 = 200 total
-      assert_equal 200.0, totals[:revenue]
+      assert_in_delta(200.0, totals[:revenue])
     end
 
     test "calculates average order value" do
@@ -68,7 +68,7 @@ module Dashboard
       totals = result[:data][:totals]
 
       # Revenue 200 / Conversions 2.0 = 100.0 AOV
-      assert_equal 100.0, totals[:aov]
+      assert_in_delta(100.0, totals[:aov])
     end
 
     test "handles zero conversions gracefully" do
@@ -95,8 +95,8 @@ module Dashboard
       result = service.call
       prior = result[:data][:totals][:prior_period]
 
-      assert prior[:conversions].present?
-      assert prior[:revenue].present?
+      assert_predicate prior[:conversions], :present?
+      assert_predicate prior[:revenue], :present?
     end
 
     # ==========================================
@@ -109,8 +109,9 @@ module Dashboard
       result = service.call
       by_channel = result[:data][:by_channel]
 
-      assert by_channel.is_a?(Array)
+      assert_kind_of Array, by_channel
       channels = by_channel.map { |c| c[:channel] }
+
       assert_includes channels, Channels::PAID_SEARCH
       assert_includes channels, Channels::EMAIL
     end
@@ -122,8 +123,9 @@ module Dashboard
       by_channel = result[:data][:by_channel]
 
       paid_search = by_channel.find { |c| c[:channel] == Channels::PAID_SEARCH }
-      assert_equal 1.0, paid_search[:credits]
-      assert_equal 100.0, paid_search[:revenue]
+
+      assert_in_delta(1.0, paid_search[:credits])
+      assert_in_delta(100.0, paid_search[:revenue])
     end
 
     test "calculates percentage per channel" do
@@ -134,7 +136,7 @@ module Dashboard
 
       paid_search = by_channel.find { |c| c[:channel] == Channels::PAID_SEARCH }
       # 1.0 credit out of 2.0 total = 50%
-      assert_equal 50.0, paid_search[:percentage]
+      assert_in_delta(50.0, paid_search[:percentage])
     end
 
     test "sorts channels by credits descending" do
@@ -144,6 +146,7 @@ module Dashboard
       by_channel = result[:data][:by_channel]
 
       credits = by_channel.map { |c| c[:credits] }
+
       assert_equal credits.sort.reverse, credits
     end
 
@@ -158,7 +161,7 @@ module Dashboard
       result = service(date_range: "7d").call
       totals = result[:data][:totals]
 
-      assert_equal 1.0, totals[:conversions]
+      assert_in_delta(1.0, totals[:conversions])
     end
 
     test "filters by date range 30d" do
@@ -168,7 +171,7 @@ module Dashboard
       result = service(date_range: "30d").call
       totals = result[:data][:totals]
 
-      assert_equal 1.0, totals[:conversions]
+      assert_in_delta(1.0, totals[:conversions])
     end
 
     test "filters by custom date range" do
@@ -183,7 +186,7 @@ module Dashboard
       result = service(date_range: custom_range).call
       totals = result[:data][:totals]
 
-      assert_equal 1.0, totals[:conversions]
+      assert_in_delta(1.0, totals[:conversions])
     end
 
     # ==========================================
@@ -193,10 +196,11 @@ module Dashboard
     test "filters by selected channels" do
       create_test_credits # Creates paid_search and email credits
 
-      result = service(channels: [Channels::PAID_SEARCH]).call
+      result = service(channels: [ Channels::PAID_SEARCH ]).call
       by_channel = result[:data][:by_channel]
 
       channels = by_channel.map { |c| c[:channel] }
+
       assert_includes channels, Channels::PAID_SEARCH
       assert_not_includes channels, Channels::EMAIL
     end
@@ -214,10 +218,10 @@ module Dashboard
       create_credit_for_model(first_touch_model)
       create_credit_for_model(other_model)
 
-      result = service(models: [first_touch_model]).call
+      result = service(models: [ first_touch_model ]).call
       totals = result[:data][:totals]
 
-      assert_equal 1.0, totals[:conversions]
+      assert_in_delta(1.0, totals[:conversions])
     end
 
     # ==========================================
@@ -230,8 +234,8 @@ module Dashboard
       result = service.call
       time_series = result[:data][:time_series]
 
-      assert time_series[:dates].is_a?(Array)
-      assert time_series[:series].is_a?(Array)
+      assert_kind_of Array, time_series[:dates]
+      assert_kind_of Array, time_series[:series]
     end
 
     test "time series covers date range" do
@@ -254,6 +258,7 @@ module Dashboard
 
       assert top_campaigns.key?(Channels::PAID_SEARCH)
       campaign_names = top_campaigns[Channels::PAID_SEARCH].map { |c| c[:name] }
+
       assert_includes campaign_names, "Campaign A"
     end
 
@@ -268,7 +273,7 @@ module Dashboard
       result = service.call
       totals = result[:data][:totals]
 
-      assert_equal 1.0, totals[:conversions]
+      assert_in_delta(1.0, totals[:conversions])
     end
 
     # ==========================================
@@ -298,13 +303,13 @@ module Dashboard
       totals = result[:data][:totals]
 
       # Should only count our account's 2.0 credits, not the other account's
-      assert_equal 2.0, totals[:conversions]
+      assert_in_delta(2.0, totals[:conversions])
     end
 
     private
 
     def service(date_range: "30d", models: nil, channels: Channels::ALL)
-      models ||= [first_touch_model]
+      models ||= [ first_touch_model ]
       filter_params = {
         date_range: date_range,
         models: models,
@@ -478,7 +483,8 @@ module Dashboard
 
       assert_no_difference -> { cache_writes } do
         result = service.call
-        assert_equal 2.0, result[:data][:totals][:conversions]
+
+        assert_in_delta(2.0, result[:data][:totals][:conversions])
       end
     end
 
@@ -504,7 +510,8 @@ module Dashboard
 
       # Next call should hit DB with new data
       result = service.call
-      assert_equal 3.0, result[:data][:totals][:conversions]
+
+      assert_in_delta(3.0, result[:data][:totals][:conversions])
     end
 
     test "different filter params use different cache keys" do
@@ -523,7 +530,7 @@ module Dashboard
     private
 
     def service(date_range: "30d", models: nil, channels: Channels::ALL)
-      models ||= [first_touch_model]
+      models ||= [ first_touch_model ]
       filter_params = {
         date_range: date_range,
         models: models,

@@ -23,10 +23,10 @@ class CreateApiRequestLogs < ActiveRecord::Migration[8.0]
       t.timestamps
 
       t.index :request_id
-      t.index [:account_id, :occurred_at]
-      t.index [:error_type, :occurred_at]
-      t.index [:endpoint, :http_status, :occurred_at]
-      t.index [:sdk_name, :sdk_version, :occurred_at]
+      t.index [ :account_id, :occurred_at ]
+      t.index [ :error_type, :occurred_at ]
+      t.index [ :endpoint, :http_status, :occurred_at ]
+      t.index [ :sdk_name, :sdk_version, :occurred_at ]
     end
   end
 end

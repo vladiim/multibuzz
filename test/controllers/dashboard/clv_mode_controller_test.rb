@@ -25,6 +25,7 @@ module Dashboard
 
       assert_redirected_to dashboard_path
       follow_redirect!
+
       assert_equal "clv", session[:clv_mode]
     end
 
@@ -38,6 +39,7 @@ module Dashboard
 
       assert_redirected_to dashboard_path
       follow_redirect!
+
       assert_equal "transactions", session[:clv_mode]
     end
 
@@ -46,6 +48,7 @@ module Dashboard
 
       assert_redirected_to dashboard_path
       follow_redirect!
+
       assert_equal "transactions", session[:clv_mode]
     end
 
@@ -54,6 +57,7 @@ module Dashboard
 
       assert_redirected_to dashboard_path
       follow_redirect!
+
       assert_equal "transactions", session[:clv_mode]
     end
 
@@ -178,7 +182,7 @@ module Dashboard
       clv_data = clv_results_data
 
       assert clv_data.key?(:by_channel)
-      assert clv_data[:by_channel].is_a?(Array)
+      assert_kind_of Array, clv_data[:by_channel]
     end
 
     test "coverage percentage is calculated" do
@@ -256,7 +260,7 @@ module Dashboard
       )
 
       # Create subsequent payments (linked to same identity)
-      [20.days.ago, 10.days.ago, 2.days.ago].each_with_index do |time, i|
+      [ 20.days.ago, 10.days.ago, 2.days.ago ].each_with_index do |time, _i|
         payment = account.conversions.create!(
           visitor: visitors(:one),
           identity: identity,

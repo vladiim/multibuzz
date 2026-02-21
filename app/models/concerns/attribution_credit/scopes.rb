@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module AttributionCredit::Scopes
   extend ActiveSupport::Concern
 

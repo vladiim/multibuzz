@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateReferrerSources < ActiveRecord::Migration[8.0]
   def change
     create_table :referrer_sources do |t|

@@ -19,11 +19,13 @@ class EventTrackingTest < SdkIntegrationTest
 
     # Verify event in database
     data = verify_test_data
+
     assert_not_nil data[:events], "Should have events"
     assert data[:events].any? { |e| e[:event_type] == "test_click" },
       "Should have test_click event"
 
     event = data[:events].find { |e| e[:event_type] == "test_click" }
+
     assert_equal "signup", event[:properties][:button]
   end
 
@@ -45,6 +47,7 @@ class EventTrackingTest < SdkIntegrationTest
     # URL should be auto-enriched by the SDK
     url_present = event[:url] && !event[:url].to_s.empty?
     props_url_present = event[:properties] && event[:properties][:url] && !event[:properties][:url].to_s.empty?
+
     assert url_present || props_url_present, "Event should have URL property"
   end
 

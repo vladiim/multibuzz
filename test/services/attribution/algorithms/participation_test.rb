@@ -10,7 +10,7 @@ module Attribution
 
         assert_equal 4, credits.size
         credits.each do |credit|
-          assert_equal 1.0, credit[:credit]
+          assert_in_delta(1.0, credit[:credit])
         end
       end
 
@@ -26,7 +26,8 @@ module Attribution
 
         assert_equal 3, credits.size
         channels = credits.map { |c| c[:channel] }
-        assert_equal ["organic_search", "email", "paid_search"], channels
+
+        assert_equal [ "organic_search", "email", "paid_search" ], channels
       end
 
       test "should use first touchpoint session_id for each channel" do
@@ -38,14 +39,15 @@ module Attribution
         credits = Attribution::Algorithms::Participation.new(touchpoints_with_duplicates).call
 
         organic_credit = credits.find { |c| c[:channel] == "organic_search" }
+
         assert_equal 100, organic_credit[:session_id]
       end
 
       test "should handle single touchpoint journey" do
-        credits = Attribution::Algorithms::Participation.new([touchpoints[0]]).call
+        credits = Attribution::Algorithms::Participation.new([ touchpoints[0] ]).call
 
         assert_equal 1, credits.size
-        assert_equal 1.0, credits[0][:credit]
+        assert_in_delta(1.0, credits[0][:credit])
       end
 
       test "should return empty array for empty journey" do
@@ -58,14 +60,16 @@ module Attribution
         credits = service.call
 
         total = credits.sum { |c| c[:credit] }
-        assert_equal 4.0, total
+
+        assert_in_delta(4.0, total)
       end
 
       test "should preserve channel order by first appearance" do
         credits = service.call
 
         channels = credits.map { |c| c[:channel] }
-        assert_equal ["organic_search", "email", "paid_social", "paid_search"], channels
+
+        assert_equal [ "organic_search", "email", "paid_social", "paid_search" ], channels
       end
 
       test "should handle all same channel" do
@@ -77,7 +81,7 @@ module Attribution
         credits = Attribution::Algorithms::Participation.new(same_channel_touchpoints).call
 
         assert_equal 1, credits.size
-        assert_equal 1.0, credits[0][:credit]
+        assert_in_delta(1.0, credits[0][:credit])
         assert_equal "organic_search", credits[0][:channel]
       end
 

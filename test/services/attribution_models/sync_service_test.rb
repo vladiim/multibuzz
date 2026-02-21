@@ -36,6 +36,7 @@ module AttributionModels
 
       assert result[:success]
       model = account_one.attribution_models.find_by(algorithm: :markov_chain)
+
       assert model.is_active
     end
 
@@ -43,13 +44,15 @@ module AttributionModels
       SyncService.new(:markov_chain).call
 
       model = account_one.attribution_models.find_by(algorithm: :markov_chain)
-      assert model.preset?
+
+      assert_predicate model, :preset?
     end
 
     test "uses humanized algorithm name" do
       SyncService.new(:markov_chain).call
 
       model = account_one.attribution_models.find_by(algorithm: :markov_chain)
+
       assert_equal "Markov Chain", model.name
     end
 
@@ -120,7 +123,7 @@ module AttributionModels
       result = SyncService.sync_all_presets
 
       assert result[:success]
-      assert result[:results].is_a?(Hash)
+      assert_kind_of Hash, result[:results]
       assert_equal AttributionAlgorithms::DEFAULTS.size, result[:results].keys.size
     end
 

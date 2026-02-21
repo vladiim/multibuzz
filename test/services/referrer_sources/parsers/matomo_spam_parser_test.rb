@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class ReferrerSources::Parsers::MatomoSpamParserTest < ActiveSupport::TestCase
@@ -11,7 +13,7 @@ class ReferrerSources::Parsers::MatomoSpamParserTest < ActiveSupport::TestCase
     assert_equal "spam-site.com", results.first[:source_name]
     assert_equal ReferrerSources::Mediums::SOCIAL, results.first[:medium]
     assert_nil results.first[:keyword_param]
-    assert_equal true, results.first[:is_spam]
+    assert results.first[:is_spam]
     assert_equal ReferrerSources::DataOrigins::MATOMO_SPAM, results.first[:data_origin]
   end
 
@@ -77,13 +79,13 @@ class ReferrerSources::Parsers::MatomoSpamParserTest < ActiveSupport::TestCase
   test "returns empty array for empty content" do
     results = parser("").call
 
-    assert_equal [], results
+    assert_empty results
   end
 
   test "returns empty array for nil content" do
     results = parser(nil).call
 
-    assert_equal [], results
+    assert_empty results
   end
 
   private

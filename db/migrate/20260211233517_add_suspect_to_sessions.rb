@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddSuspectToSessions < ActiveRecord::Migration[8.0]
   def change
     add_column :sessions, :suspect, :boolean, default: false, null: false

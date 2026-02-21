@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class ContactSubmissionTest < ActiveSupport::TestCase
   test "should have valid fixtures" do
-    assert contact_general.valid?
-    assert contact_support.valid?
+    assert_predicate contact_general, :valid?
+    assert_predicate contact_support, :valid?
   end
 
   test "should require name" do
@@ -59,10 +61,10 @@ class ContactSubmissionTest < ActiveSupport::TestCase
       message: "I have a question about pricing."
     )
 
-    assert submission.valid?
+    assert_predicate submission, :valid?
     assert submission.save
     assert_equal "ContactSubmission", submission.type
-    assert submission.pending?
+    assert_predicate submission, :pending?
   end
 
   test "should access store_accessor fields" do

@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 class OnboardingController < ApplicationController
   before_action :require_login
-  before_action :ensure_sdk_selected, only: [:install, :verify, :conversion]
+  before_action :ensure_sdk_selected, only: [ :install, :verify, :conversion ]
 
   def show
     redirect_to onboarding_setup_path if persona_selected?

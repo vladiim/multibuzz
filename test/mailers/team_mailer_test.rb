@@ -14,7 +14,7 @@ class TeamMailerTest < ActionMailer::TestCase
       email.deliver_now
     end
 
-    assert_equal [new_owner.email], email.to
+    assert_equal [ new_owner.email ], email.to
     assert_match /owner/i, email.subject
     assert_match account.name, email.subject
   end
@@ -30,7 +30,7 @@ class TeamMailerTest < ActionMailer::TestCase
       email.deliver_now
     end
 
-    assert_equal [previous_owner.email], email.to
+    assert_equal [ previous_owner.email ], email.to
     assert_match /owner/i, email.subject
     assert_match account.name, email.subject
   end

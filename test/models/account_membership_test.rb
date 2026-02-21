@@ -1,24 +1,29 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class AccountMembershipTest < ActiveSupport::TestCase
   test "valid membership" do
-    assert build_membership.valid?
+    assert_predicate build_membership, :valid?
   end
 
   test "requires role" do
     membership = build_membership(role: nil)
+
     assert_not membership.valid?
     assert_includes membership.errors[:role], "can't be blank"
   end
 
   test "requires status" do
     membership = build_membership(status: nil)
+
     assert_not membership.valid?
     assert_includes membership.errors[:status], "can't be blank"
   end
 
   test "active scope returns accepted non-deleted memberships" do
     active = AccountMembership.active
+
     assert active.all? { |m| m.accepted? && m.deleted_at.nil? }
   end
 
@@ -42,7 +47,8 @@ class AccountMembershipTest < ActiveSupport::TestCase
     create_membership(user: user_two, account: suspended_account, role: :owner)
 
     first_owner.status = :revoked
-    assert first_owner.valid?
+
+    assert_predicate first_owner, :valid?
   end
 
   test "role enum values" do

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateConversionPropertyKeys < ActiveRecord::Migration[8.0]
   def change
     create_table :conversion_property_keys do |t|
@@ -9,7 +11,7 @@ class CreateConversionPropertyKeys < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :conversion_property_keys, [:account_id, :property_key], unique: true
-    add_index :conversion_property_keys, [:account_id, :occurrences]
+    add_index :conversion_property_keys, [ :account_id, :property_key ], unique: true
+    add_index :conversion_property_keys, [ :account_id, :occurrences ]
   end
 end

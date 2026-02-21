@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Conversion < ApplicationRecord
   include Conversion::Relationships
   include Conversion::Validations

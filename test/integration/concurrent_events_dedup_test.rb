@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class ConcurrentEventsDeduplicationTest < ActionDispatch::IntegrationTest
@@ -41,14 +43,14 @@ class ConcurrentEventsDeduplicationTest < ActionDispatch::IntegrationTest
     # Step 2: First event request with visitor_id_1
     post api_v1_events_url,
       params: {
-        events: [{
+        events: [ {
           event_type: "page_view",
           visitor_id: visitor_id_1,
           timestamp: timestamp,
           ip: same_ip,
           user_agent: same_user_agent,
           properties: { url: "https://example.com/page1" }
-        }]
+        } ]
       },
       headers: { "Authorization" => "Bearer #{plaintext_key}" },
       as: :json
@@ -60,14 +62,14 @@ class ConcurrentEventsDeduplicationTest < ActionDispatch::IntegrationTest
     # This simulates a Turbo frame request that got a different cookie value
     post api_v1_events_url,
       params: {
-        events: [{
+        events: [ {
           event_type: "page_view",
           visitor_id: visitor_id_2,  # Different visitor ID
           timestamp: timestamp,
           ip: same_ip,               # Same fingerprint
           user_agent: same_user_agent,
           properties: { url: "https://example.com/page2" }
-        }]
+        } ]
       },
       headers: { "Authorization" => "Bearer #{plaintext_key}" },
       as: :json
@@ -77,6 +79,7 @@ class ConcurrentEventsDeduplicationTest < ActionDispatch::IntegrationTest
 
     # Then: Only ONE visitor should be created (deduplicated via fingerprint)
     new_visitors = account.visitors.unscope(where: :is_test).test_data.count - initial_visitor_count
+
     assert_equal 1, new_visitors,
       "Expected 1 visitor (deduplicated), got #{new_visitors}. Fingerprint dedup is not working!"
 
@@ -84,10 +87,12 @@ class ConcurrentEventsDeduplicationTest < ActionDispatch::IntegrationTest
     events = account.events.unscope(where: :is_test).test_data
       .where("occurred_at >= ?", 1.minute.ago)
       .where("properties->>'url' LIKE ?", "%example.com/page%")
+
     assert_equal 2, events.count, "Both events should be tracked"
 
     # And: Both events should reference the same visitor
     visitor_ids = events.pluck(:visitor_id).uniq
+
     assert_equal 1, visitor_ids.count, "Both events should belong to the same visitor"
   end
 
@@ -116,6 +121,7 @@ class ConcurrentEventsDeduplicationTest < ActionDispatch::IntegrationTest
       },
       headers: { "Authorization" => "Bearer #{plaintext_key}" },
       as: :json
+
     assert_response :accepted
 
     # Device B
@@ -130,23 +136,25 @@ class ConcurrentEventsDeduplicationTest < ActionDispatch::IntegrationTest
       },
       headers: { "Authorization" => "Bearer #{plaintext_key}" },
       as: :json
+
     assert_response :accepted
 
     # Then: TWO visitors should be created (different visitors)
     new_visitors = account.visitors.unscope(where: :is_test).test_data.count - initial_visitor_count
+
     assert_equal 2, new_visitors, "Expected 2 visitors (different devices)"
 
     # Step 2: Send events for each visitor
     post api_v1_events_url,
       params: {
-        events: [{
+        events: [ {
           event_type: "page_view",
           visitor_id: visitor_id_1,
           timestamp: timestamp,
           ip: "203.0.113.10",
           user_agent: "Chrome/120",
           properties: { url: "https://example.com/page1" }
-        }]
+        } ]
       },
       headers: { "Authorization" => "Bearer #{plaintext_key}" },
       as: :json
@@ -156,14 +164,14 @@ class ConcurrentEventsDeduplicationTest < ActionDispatch::IntegrationTest
 
     post api_v1_events_url,
       params: {
-        events: [{
+        events: [ {
           event_type: "page_view",
           visitor_id: visitor_id_2,
           timestamp: timestamp,
           ip: "198.51.100.20",
           user_agent: "Safari/17",
           properties: { url: "https://example.com/page2" }
-        }]
+        } ]
       },
       headers: { "Authorization" => "Bearer #{plaintext_key}" },
       as: :json
@@ -175,6 +183,7 @@ class ConcurrentEventsDeduplicationTest < ActionDispatch::IntegrationTest
     events = account.events.unscope(where: :is_test).test_data
       .where("occurred_at >= ?", 1.minute.ago)
       .where("properties->>'url' LIKE ?", "%example.com/page%")
+
     assert_equal 2, events.count, "Both events should be tracked"
     assert_equal 2, events.pluck(:visitor_id).uniq.count, "Events should belong to different visitors"
   end

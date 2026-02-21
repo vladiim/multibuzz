@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class Events::EnrichmentServiceTest < ActiveSupport::TestCase
@@ -32,11 +34,11 @@ class Events::EnrichmentServiceTest < ActiveSupport::TestCase
     @properties = {
       custom_field: "custom_value",
       page_title: "Home"
-    }
+    }.freeze
 
     assert_equal "custom_value", result[:properties][:custom_field]
     assert_equal "Home", result[:properties][:page_title]
-    assert result[:properties][:request_metadata].present?
+    assert_predicate result[:properties][:request_metadata], :present?
   end
 
   test "handles event_data with no properties" do
@@ -44,17 +46,17 @@ class Events::EnrichmentServiceTest < ActiveSupport::TestCase
     @properties = nil
 
     assert_equal "signup", result[:event_type]
-    assert result[:properties][:request_metadata].present?
+    assert_predicate result[:properties][:request_metadata], :present?
   end
 
   test "handles string keys in event_data" do
     @event_data = {
       "event_type" => "page_view",
       "properties" => { "url" => "https://example.com" }
-    }
+    }.freeze
 
     assert_equal "page_view", result["event_type"]
-    assert result[:properties][:request_metadata].present?
+    assert_predicate result[:properties][:request_metadata], :present?
   end
 
   test "handles missing User-Agent header" do
@@ -78,104 +80,104 @@ class Events::EnrichmentServiceTest < ActiveSupport::TestCase
   test "preserves original event_data keys" do
     @event_type = "purchase"
     @timestamp = "2025-11-14T10:00:00Z"
-    @properties = { amount: 99.99 }
+    @properties = { amount: 99.99 }.freeze
 
     assert_equal "purchase", result[:event_type]
     assert_equal "2025-11-14T10:00:00Z", result[:timestamp]
-    assert_equal 99.99, result[:properties][:amount]
+    assert_in_delta(99.99, result[:properties][:amount])
   end
 
   test "extracts host from URL" do
-    @properties = { url: "https://example.com/pricing" }
+    @properties = { url: "https://example.com/pricing" }.freeze
 
     assert_equal "example.com", result[:properties][:host]
   end
 
   test "extracts host with subdomain from URL" do
-    @properties = { url: "https://app.example.com/dashboard" }
+    @properties = { url: "https://app.example.com/dashboard" }.freeze
 
     assert_equal "app.example.com", result[:properties][:host]
   end
 
   test "extracts path from URL" do
-    @properties = { url: "https://example.com/pricing" }
+    @properties = { url: "https://example.com/pricing" }.freeze
 
     assert_equal "/pricing", result[:properties][:path]
   end
 
   test "extracts path from URL with query params" do
-    @properties = { url: "https://example.com/pricing?plan=pro" }
+    @properties = { url: "https://example.com/pricing?plan=pro" }.freeze
 
     assert_equal "/pricing", result[:properties][:path]
   end
 
   test "extracts path as root for domain-only URL" do
-    @properties = { url: "https://example.com" }
+    @properties = { url: "https://example.com" }.freeze
 
     assert_equal "/", result[:properties][:path]
   end
 
   test "extracts query params as hash" do
-    @properties = { url: "https://example.com/pricing?plan=pro&interval=monthly" }
+    @properties = { url: "https://example.com/pricing?plan=pro&interval=monthly" }.freeze
 
     assert_equal({ "plan" => "pro", "interval" => "monthly" }, result[:properties][:query_params])
   end
 
   test "handles URL with UTM and non-UTM query params" do
-    @properties = { url: "https://example.com/pricing?utm_source=google&plan=pro" }
+    @properties = { url: "https://example.com/pricing?utm_source=google&plan=pro" }.freeze
 
     assert_equal({ "utm_source" => "google", "plan" => "pro" }, result[:properties][:query_params])
     assert_equal "google", result[:properties][:utm_source]
   end
 
   test "handles URL with no query params" do
-    @properties = { url: "https://example.com/pricing" }
+    @properties = { url: "https://example.com/pricing" }.freeze
 
-    assert_equal({}, result[:properties][:query_params])
+    assert_empty(result[:properties][:query_params])
   end
 
   test "handles URL with empty query string" do
-    @properties = { url: "https://example.com/pricing?" }
+    @properties = { url: "https://example.com/pricing?" }.freeze
 
-    assert_equal({}, result[:properties][:query_params])
+    assert_empty(result[:properties][:query_params])
   end
 
   test "extracts referrer host" do
-    @properties = { referrer: "https://google.com/search" }
+    @properties = { referrer: "https://google.com/search" }.freeze
 
     assert_equal "google.com", result[:properties][:referrer_host]
   end
 
   test "extracts referrer path" do
-    @properties = { referrer: "https://google.com/search?q=analytics" }
+    @properties = { referrer: "https://google.com/search?q=analytics" }.freeze
 
     assert_equal "/search", result[:properties][:referrer_path]
   end
 
   test "handles empty referrer" do
-    @properties = { referrer: "" }
+    @properties = { referrer: "" }.freeze
 
     assert_nil result[:properties][:referrer_host]
     assert_nil result[:properties][:referrer_path]
   end
 
   test "handles missing referrer" do
-    @properties = { url: "https://example.com" }
+    @properties = { url: "https://example.com" }.freeze
 
     assert_nil result[:properties][:referrer_host]
     assert_nil result[:properties][:referrer_path]
   end
 
   test "handles invalid URL gracefully" do
-    @properties = { url: "not-a-valid-url" }
+    @properties = { url: "not-a-valid-url" }.freeze
 
     assert_nil result[:properties][:host], "Expected host to be nil but got: #{result[:properties][:host].inspect}"
     assert_nil result[:properties][:path], "Expected path to be nil but got: #{result[:properties][:path].inspect}"
-    assert_equal({}, result[:properties][:query_params])
+    assert_empty(result[:properties][:query_params])
   end
 
   test "handles invalid referrer gracefully" do
-    @properties = { referrer: "not-a-valid-url" }
+    @properties = { referrer: "not-a-valid-url" }.freeze
 
     assert_nil result[:properties][:referrer_host]
     assert_nil result[:properties][:referrer_path]
@@ -184,7 +186,7 @@ class Events::EnrichmentServiceTest < ActiveSupport::TestCase
   test "extracts all UTM parameters from query string" do
     @properties = {
       url: "https://example.com/pricing?utm_source=google&utm_medium=cpc&utm_campaign=spring&utm_content=ad1&utm_term=analytics"
-    }
+    }.freeze
 
     assert_equal "google", result[:properties][:utm_source]
     assert_equal "cpc", result[:properties][:utm_medium]
@@ -197,7 +199,7 @@ class Events::EnrichmentServiceTest < ActiveSupport::TestCase
     @properties = {
       url: "https://example.com/pricing?utm_source=google",
       utm_source: "facebook"
-    }
+    }.freeze
 
     assert_equal "facebook", result[:properties][:utm_source]
   end

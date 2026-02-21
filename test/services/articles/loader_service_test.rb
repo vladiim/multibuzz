@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 module Articles
@@ -16,7 +18,7 @@ module Articles
       with_empty_content_dir do
         articles = LoaderService.call
 
-        assert_equal [], articles
+        assert_empty articles
       end
     end
 
@@ -24,7 +26,7 @@ module Articles
       with_test_article("fundamentals/invalid.md.erb", "---\n---\nNo frontmatter") do
         articles = LoaderService.call
 
-        assert_equal [], articles
+        assert_empty articles
       end
     end
 

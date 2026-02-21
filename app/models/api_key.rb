@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ApiKey < ApplicationRecord
   include ApiKey::Validations
   include ApiKey::Scopes

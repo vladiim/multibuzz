@@ -239,7 +239,7 @@ namespace :sdk do
     end
 
     desc "Install all dependencies"
-    task all: [:ruby_app, :node_app, :python_app, :php_app, :symfony_app, :sgtm_app, :playwright]
+    task all: [ :ruby_app, :node_app, :python_app, :php_app, :symfony_app, :sgtm_app, :playwright ]
   end
 end
 

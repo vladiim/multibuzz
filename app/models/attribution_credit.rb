@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AttributionCredit < ApplicationRecord
   include AttributionCredit::Relationships
   include AttributionCredit::Validations

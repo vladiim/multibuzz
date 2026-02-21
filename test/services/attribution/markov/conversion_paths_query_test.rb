@@ -26,12 +26,12 @@ module Attribution
         session2 = create_session(channel: "organic_search", days_ago: 10)
         session3 = create_session(channel: "paid_search", days_ago: 1)
 
-        create_conversion(journey_session_ids: [session1.id, session2.id, session3.id])
+        create_conversion(journey_session_ids: [ session1.id, session2.id, session3.id ])
 
         paths = query.call
 
         # Should be ordered: organic_search (10 days ago), email (5 days ago), paid_search (1 day ago)
-        assert_equal [%w[organic_search email paid_search]], paths
+        assert_equal [ %w[organic_search email paid_search] ], paths
       end
 
       test "should skip conversions with empty journey_session_ids" do
@@ -56,7 +56,7 @@ module Attribution
 
         paths = query.call
 
-        assert_equal [%w[organic_search paid_search]], paths
+        assert_equal [ %w[organic_search paid_search] ], paths
       end
 
       test "should return empty array when no conversions exist" do
@@ -79,7 +79,7 @@ module Attribution
 
         paths = query.call
 
-        assert_equal [%w[organic_search email organic_search paid_search]], paths
+        assert_equal [ %w[organic_search email organic_search paid_search] ], paths
       end
 
       test "should return paths for multiple conversions" do
@@ -106,7 +106,7 @@ module Attribution
 
         paths = query.call
 
-        assert_equal [%w[paid_search email]], paths
+        assert_equal [ %w[paid_search email] ], paths
       end
 
       test "should collapse burst direct sessions in paths" do
@@ -122,7 +122,7 @@ module Attribution
 
         paths = query.call
 
-        assert_equal [%w[paid_search]], paths
+        assert_equal [ %w[paid_search] ], paths
       end
 
       test "should preserve direct sessions outside burst window" do
@@ -136,7 +136,7 @@ module Attribution
 
         paths = query.call
 
-        assert_equal [%w[paid_search direct]], paths
+        assert_equal [ %w[paid_search direct] ], paths
       end
 
       test "should not collapse non-direct burst sessions" do
@@ -150,7 +150,7 @@ module Attribution
 
         paths = query.call
 
-        assert_equal [%w[paid_search email]], paths
+        assert_equal [ %w[paid_search email] ], paths
       end
 
       test "should apply both qualified filter and burst dedup together" do
@@ -169,7 +169,7 @@ module Attribution
         paths = query.call
 
         # suspect filtered, burst direct collapsed, email preserved (>5min gap)
-        assert_equal [%w[organic_search email]], paths
+        assert_equal [ %w[organic_search email] ], paths
       end
 
       private

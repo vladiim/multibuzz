@@ -14,11 +14,12 @@ module AML
       end
 
       test "exposes conversion_value" do
-        assert_equal 100.0, context.conversion_value
+        assert_in_delta(100.0, context.conversion_value)
       end
 
       test "touchpoints are read-only wrappers" do
         tp = context.touchpoints.first
+
         assert_equal "organic_search", tp.channel
         assert_respond_to tp, :occurred_at
         assert_respond_to tp, :session_id
@@ -31,39 +32,46 @@ module AML
 
       test "touchpoints support range indexing" do
         middle = context.touchpoints[1..-2]
+
         assert_equal 2, middle.length
         assert_equal "email", middle.first.channel
       end
 
       test "touchpoints support select" do
         paid = context.touchpoints.select { |tp| tp.channel.start_with?("paid") }
+
         assert_equal 2, paid.length  # paid_social and paid_search
       end
 
       test "touchpoints support reject" do
         non_paid = context.touchpoints.reject { |tp| tp.channel.start_with?("paid") }
+
         assert_equal 2, non_paid.length  # organic_search and email
       end
 
       test "touchpoints support find" do
         email = context.touchpoints.find { |tp| tp.channel == "email" }
+
         assert_equal "email", email.channel
       end
 
       test "touchpoints support each_with_index" do
         indices = []
         context.touchpoints.each_with_index { |_, i| indices << i }
-        assert_equal [0, 1, 2, 3], indices
+
+        assert_equal [ 0, 1, 2, 3 ], indices
       end
 
       test "touchpoints support subtraction" do
-        first = [context.touchpoints.first]
+        first = [ context.touchpoints.first ]
         rest = context.touchpoints - first
+
         assert_equal 3, rest.length
       end
 
       test "touchpoints support sum" do
         total = context.touchpoints.sum { |_| 1 }
+
         assert_equal 4, total
       end
 

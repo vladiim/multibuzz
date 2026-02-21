@@ -15,7 +15,7 @@ module Identities
         result = service(user_id: "new_user_999").call
 
         assert result[:success]
-        assert result[:identity_id].present?
+        assert_predicate result[:identity_id], :present?
       end
     end
 
@@ -45,7 +45,7 @@ module Identities
       result = service(user_id: "some_user", visitor_id: "nonexistent").call
 
       assert result[:success]
-      assert_equal false, result[:visitor_linked]
+      refute result[:visitor_linked]
     end
 
     test "returns error when user_id missing" do
@@ -64,6 +64,7 @@ module Identities
 
       assert result[:success]
       reloaded = existing.reload.traits
+
       assert_equal "pro", reloaded["plan"]
       assert_equal "admin", reloaded["role"]
       assert_equal "a@b.com", reloaded["email"]
@@ -97,6 +98,7 @@ module Identities
 
       assert result[:success]
       address = existing.reload.traits["address"]
+
       assert_equal "New York", address["city"]
       assert_equal "NY", address["state"]
       assert_equal "10001", address["zip"]
@@ -118,6 +120,7 @@ module Identities
       svc.call
 
       conversions = svc.send(:conversions_needing_reattribution)
+
       assert_includes conversions, conversion
     end
 
@@ -132,6 +135,7 @@ module Identities
       svc.call
 
       conversions = svc.send(:conversions_needing_reattribution)
+
       assert_empty conversions
     end
 
@@ -149,6 +153,7 @@ module Identities
       svc.call
 
       conversions = svc.send(:conversions_needing_reattribution)
+
       assert_empty conversions
     end
 
@@ -167,6 +172,7 @@ module Identities
       svc.call
 
       conversions = svc.send(:conversions_needing_reattribution)
+
       assert_equal 2, conversions.count
       assert_includes conversions, conv1
       assert_includes conversions, conv2
@@ -188,6 +194,7 @@ module Identities
       svc.call
 
       conversions = svc.send(:conversions_needing_reattribution)
+
       assert_equal 1, conversions.count
       assert_includes conversions, conv1
       assert_not_includes conversions, conv2
@@ -204,7 +211,7 @@ module Identities
       result = service(user_id: "activity_user", visitor_id: "vis_activity_track").call
 
       assert result[:success]
-      assert session.reload.last_activity_at > old_activity
+      assert_operator session.reload.last_activity_at, :>, old_activity
       assert_in_delta Time.current.to_i, session.last_activity_at.to_i, 2
     end
 

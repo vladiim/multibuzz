@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class AttributionModelTest < ActiveSupport::TestCase
@@ -16,6 +18,7 @@ class AttributionModelTest < ActiveSupport::TestCase
 
   test "should require name" do
     model.name = nil
+
     assert_not model.valid?
     assert_includes model.errors[:name], "can't be blank"
   end
@@ -40,14 +43,14 @@ class AttributionModelTest < ActiveSupport::TestCase
       algorithm: :first_touch
     )
 
-    assert model_account_two.valid?
+    assert_predicate model_account_two, :valid?
   end
 
   test "should have preset model_type enum" do
     assert_respond_to model, :preset?
     assert_respond_to model, :custom?
 
-    assert model.preset?
+    assert_predicate model, :preset?
     assert_not model.custom?
   end
 
@@ -59,20 +62,22 @@ class AttributionModelTest < ActiveSupport::TestCase
     assert_respond_to model, :u_shaped?
     assert_respond_to model, :participation?
 
-    assert model.first_touch?
+    assert_predicate model, :first_touch?
   end
 
   test "should scope active models" do
     assert_includes AttributionModel.active, model
 
     model.update!(is_active: false)
+
     assert_not_includes AttributionModel.active, model
   end
 
   test "should scope default model" do
     default = AttributionModel.default_for_account(accounts(:one))
+
     assert_equal model, default
-    assert default.is_default?
+    assert_predicate default, :is_default?
   end
 
   test "should only allow one default per account" do
@@ -82,7 +87,7 @@ class AttributionModelTest < ActiveSupport::TestCase
     model.reload
 
     assert_not model.is_default?
-    assert last_touch_model.is_default?
+    assert_predicate last_touch_model, :is_default?
   end
 
   # --- Backfill Detection ---
@@ -114,7 +119,7 @@ class AttributionModelTest < ActiveSupport::TestCase
     test_model = create_test_model
     create_conversion_for(test_model.account)
 
-    assert test_model.has_unattributed_conversions?
+    assert_predicate test_model, :has_unattributed_conversions?
   end
 
   test "has_unattributed_conversions? returns false when all conversions have credits" do
@@ -129,7 +134,7 @@ class AttributionModelTest < ActiveSupport::TestCase
     test_model = create_test_model
     create_conversion_for(test_model.account)
 
-    assert test_model.needs_backfill?
+    assert_predicate test_model, :needs_backfill?
   end
 
   test "needs_backfill? returns false when no unattributed conversions" do
@@ -159,14 +164,14 @@ class AttributionModelTest < ActiveSupport::TestCase
     create_credit_for(test_model, conversion, model_version: 0)
     test_model.update!(version: 2)
 
-    assert test_model.needs_rerun?
+    assert_predicate test_model, :needs_rerun?
   end
 
   test "needs_rerun? returns true when unattributed conversions exist" do
     test_model = create_test_model
     create_conversion_for(test_model.account)
 
-    assert test_model.needs_rerun?
+    assert_predicate test_model, :needs_rerun?
   end
 
   test "needs_rerun? returns false when fully attributed and up to date" do

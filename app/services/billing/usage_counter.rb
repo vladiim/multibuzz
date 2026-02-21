@@ -17,7 +17,7 @@ module Billing
     end
 
     def remaining_events
-      [event_limit - current_usage, 0].max
+      [ event_limit - current_usage, 0 ].max
     end
 
     # --- Writing ---
@@ -39,7 +39,7 @@ module Billing
     def usage_percentage
       return 0 if event_limit.zero?
 
-      [(current_usage.to_f / event_limit * 100).round, 100].min
+      [ (current_usage.to_f / event_limit * 100).round, 100 ].min
     end
 
     def approaching_limit?

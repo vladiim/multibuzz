@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class SdkRegistry
   SDK_DATA = YAML.load_file(Rails.root.join("config/sdk_registry.yml")).freeze
 

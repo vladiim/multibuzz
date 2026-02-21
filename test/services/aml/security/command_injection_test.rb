@@ -21,11 +21,11 @@ module AML
       end
 
       test "blocks backticks" do
-        assert_forbidden '`ls`'
+        assert_forbidden "`ls`"
       end
 
       test "blocks %x command syntax" do
-        assert_forbidden '%x{ls}'
+        assert_forbidden "%x{ls}"
       end
 
       test "blocks Kernel.system" do

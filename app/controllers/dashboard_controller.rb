@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class DashboardController < Dashboard::BaseController
   def show
     @account = current_account

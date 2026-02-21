@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Conversion::Scopes
   extend ActiveSupport::Concern
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Account::Validations
   extend ActiveSupport::Concern
 

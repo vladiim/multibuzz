@@ -22,7 +22,7 @@ module Accounts
     end
 
     def validation_errors
-      error_result(["Name can't be blank"])
+      error_result([ "Name can't be blank" ])
     end
 
     def create_account_with_ownership

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 module DataIntegrity
@@ -11,7 +13,7 @@ module DataIntegrity
       test "returns healthy when channels match" do
         landing = create_session(channel: "paid_search")
         converting = create_session(channel: "paid_search")
-        create_conversion(session: converting, journey: [landing, converting])
+        create_conversion(session: converting, journey: [ landing, converting ])
 
         result = check.call
 
@@ -23,12 +25,12 @@ module DataIntegrity
         # 1 mismatch out of 3 = 33%
         2.times do
           s = create_session(channel: "organic_search")
-          create_conversion(session: s, journey: [s])
+          create_conversion(session: s, journey: [ s ])
         end
 
         landing = create_session(channel: "paid_search")
         converting = create_session(channel: "direct")
-        create_conversion(session: converting, journey: [landing, converting])
+        create_conversion(session: converting, journey: [ landing, converting ])
 
         result = check.call
 
@@ -39,12 +41,12 @@ module DataIntegrity
       test "returns critical when mismatch rate above critical" do
         # 3 mismatches out of 4 = 75%
         s = create_session(channel: "organic_search")
-        create_conversion(session: s, journey: [s])
+        create_conversion(session: s, journey: [ s ])
 
         3.times do
           landing = create_session(channel: "paid_search")
           converting = create_session(channel: "referral")
-          create_conversion(session: converting, journey: [landing, converting])
+          create_conversion(session: converting, journey: [ landing, converting ])
         end
 
         result = check.call
@@ -62,7 +64,7 @@ module DataIntegrity
 
       test "handles single-session journey gracefully" do
         s = create_session(channel: "paid_search")
-        create_conversion(session: s, journey: [s])
+        create_conversion(session: s, journey: [ s ])
 
         result = check.call
 

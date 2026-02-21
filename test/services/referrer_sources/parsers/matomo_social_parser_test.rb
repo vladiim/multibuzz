@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class ReferrerSources::Parsers::MatomoSocialParserTest < ActiveSupport::TestCase
@@ -14,7 +16,7 @@ class ReferrerSources::Parsers::MatomoSocialParserTest < ActiveSupport::TestCase
     assert_equal "Facebook", results.first[:source_name]
     assert_equal ReferrerSources::Mediums::SOCIAL, results.first[:medium]
     assert_nil results.first[:keyword_param]
-    assert_equal false, results.first[:is_spam]
+    refute results.first[:is_spam]
     assert_equal ReferrerSources::DataOrigins::MATOMO_SOCIAL, results.first[:data_origin]
   end
 
@@ -48,6 +50,7 @@ class ReferrerSources::Parsers::MatomoSocialParserTest < ActiveSupport::TestCase
 
     assert_equal 4, results.size
     source_names = results.map { |r| r[:source_name] }
+
     assert_includes source_names, "Facebook"
     assert_includes source_names, "Twitter"
     assert_includes source_names, "LinkedIn"
@@ -69,13 +72,13 @@ class ReferrerSources::Parsers::MatomoSocialParserTest < ActiveSupport::TestCase
   test "returns empty array for empty yaml" do
     results = parser("").call
 
-    assert_equal [], results
+    assert_empty results
   end
 
   test "returns empty array for nil content" do
     results = parser(nil).call
 
-    assert_equal [], results
+    assert_empty results
   end
 
   private

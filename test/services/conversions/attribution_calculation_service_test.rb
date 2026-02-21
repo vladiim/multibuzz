@@ -28,6 +28,7 @@ module Conversions
 
       assert result[:success]
       credits = result[:credits_by_model]["First Touch"]
+
       assert credits.all? { |c| c[:revenue_credit].present? }
     end
 
@@ -90,6 +91,7 @@ module Conversions
       # Each attribution model's credits should sum to $100 (the conversion revenue)
       payment_conversion.attribution_credits.group_by(&:attribution_model).each do |_model, credits|
         model_revenue_credit = credits.sum(&:revenue_credit)
+
         assert_in_delta 100.00, model_revenue_credit, 0.01
       end
     end
@@ -161,12 +163,14 @@ module Conversions
 
     test "populates journey_session_ids after fresh attribution calculation" do
       conv = build_conversion
-      assert_equal [], conv.journey_session_ids
+
+      assert_empty conv.journey_session_ids
 
       result = build_service(conv).call
 
       assert result[:success]
       conv.reload
+
       assert_not_empty conv.journey_session_ids
       assert_equal 2, conv.journey_session_ids.size  # 2 sessions created
     end
@@ -180,6 +184,7 @@ module Conversions
 
       # Should match the session IDs in the credits
       credit_session_ids = conv.attribution_credits.pluck(:session_id).uniq.sort
+
       assert_equal credit_session_ids, conv.journey_session_ids.sort
     end
 
@@ -189,7 +194,8 @@ module Conversions
 
       assert result[:success]
       empty_conversion.reload
-      assert_equal [], empty_conversion.journey_session_ids
+
+      assert_empty empty_conversion.journey_session_ids
     end
 
     test "inherited attribution works with multiple attribution models" do
@@ -234,7 +240,7 @@ module Conversions
       credited_session_ids = conv.attribution_credits.pluck(:session_id).uniq
       visitor_ids = Session.where(id: credited_session_ids).pluck(:visitor_id).uniq
 
-      assert_equal [conv.visitor_id], visitor_ids,
+      assert_equal [ conv.visitor_id ], visitor_ids,
         "Without identity, attribution should only use single visitor's sessions"
     end
 
@@ -281,9 +287,9 @@ module Conversions
         shapley_credits = conv.attribution_credits
           .where(attribution_model: shapley_model)
 
-        assert first_touch_credits.any?, "First Touch credits should be persisted"
-        assert last_touch_credits.any?, "Last Touch credits should be persisted"
-        assert shapley_credits.empty?, "Shapley credits should not exist (model failed)"
+        assert_predicate first_touch_credits, :any?, "First Touch credits should be persisted"
+        assert_predicate last_touch_credits, :any?, "Last Touch credits should be persisted"
+        assert_empty shapley_credits, "Shapley credits should not exist (model failed)"
       end
     ensure
       shapley_model&.destroy!
@@ -442,7 +448,7 @@ module Conversions
     end
 
     def stub_exploding_shapley(&block)
-      fake = ->(*args, **kwargs) {
+      fake = ->(*_args, **_kwargs) {
         obj = Object.new
         obj.define_singleton_method(:call) { raise "O(2^n) power_set explosion" }
         obj

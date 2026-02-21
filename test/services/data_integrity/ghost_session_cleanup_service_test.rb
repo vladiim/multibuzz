@@ -11,17 +11,18 @@ module DataIntegrity
     end
 
     test "removes suspect session IDs from journey_session_ids" do
-      conversion.update_column(:journey_session_ids, [real_session.id, suspect_session.id])
+      conversion.update_column(:journey_session_ids, [ real_session.id, suspect_session.id ])
 
       service.call
 
       cleaned_ids = conversion.reload.journey_session_ids || []
+
       assert_includes cleaned_ids, real_session.id
       assert_not_includes cleaned_ids, suspect_session.id
     end
 
     test "deletes attribution credits linked to suspect sessions" do
-      conversion.update_column(:journey_session_ids, [real_session.id, suspect_session.id])
+      conversion.update_column(:journey_session_ids, [ real_session.id, suspect_session.id ])
       create_credit(session: suspect_session)
 
       service.call
@@ -30,18 +31,19 @@ module DataIntegrity
     end
 
     test "re-runs attribution for affected conversions" do
-      conversion.update_column(:journey_session_ids, [real_session.id, suspect_session.id])
+      conversion.update_column(:journey_session_ids, [ real_session.id, suspect_session.id ])
       create_credit(session: suspect_session)
 
       service.call
 
       # journey_session_ids rebuilt without suspect session
       cleaned_ids = conversion.reload.journey_session_ids || []
+
       assert_not_includes cleaned_ids, suspect_session.id
     end
 
     test "skips conversions with no suspect sessions in journey" do
-      conversion.update_column(:journey_session_ids, [real_session.id])
+      conversion.update_column(:journey_session_ids, [ real_session.id ])
       create_credit(session: real_session)
       original_count = AttributionCredit.count
 
@@ -52,17 +54,18 @@ module DataIntegrity
     end
 
     test "handles conversion where all journey sessions are suspect" do
-      conversion.update_column(:journey_session_ids, [suspect_session.id])
+      conversion.update_column(:journey_session_ids, [ suspect_session.id ])
       create_credit(session: suspect_session)
 
       service.call
 
       cleaned_ids = conversion.reload.journey_session_ids || []
+
       refute_includes cleaned_ids, suspect_session.id
     end
 
     test "returns count of affected conversions" do
-      conversion.update_column(:journey_session_ids, [real_session.id, suspect_session.id])
+      conversion.update_column(:journey_session_ids, [ real_session.id, suspect_session.id ])
 
       result = service.call
 
@@ -73,9 +76,9 @@ module DataIntegrity
     test "scopes to account" do
       other_conversion = conversions(:trial_start)
       other_suspect = create_other_account_suspect_session
-      other_conversion.update_column(:journey_session_ids, [other_suspect.id])
+      other_conversion.update_column(:journey_session_ids, [ other_suspect.id ])
 
-      conversion.update_column(:journey_session_ids, [real_session.id, suspect_session.id])
+      conversion.update_column(:journey_session_ids, [ real_session.id, suspect_session.id ])
 
       result = service.call
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AllowNullableEventAndSessionInConversions < ActiveRecord::Migration[8.0]
   def change
     # Allow visitor-based conversions without a triggering event

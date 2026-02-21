@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Visitors
   class LookupService < ApplicationService
     def initialize(account, visitor_id, is_test: false, device_fingerprint: nil)
@@ -35,7 +37,7 @@ module Visitors
     end
 
     def visitor_not_found_error
-      error_result(["Visitor not found"])
+      error_result([ "Visitor not found" ])
     end
 
     def existing_visitor

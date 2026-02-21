@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class Api::V1::ValidateControllerTest < ActionDispatch::IntegrationTest
@@ -43,7 +45,7 @@ class Api::V1::ValidateControllerTest < ActionDispatch::IntegrationTest
     get api_v1_validate_path, headers: auth_headers
 
     assert_response :success
-    assert api_key.reload.last_used_at > old_time
+    assert_operator api_key.reload.last_used_at, :>, old_time
   end
 
   private

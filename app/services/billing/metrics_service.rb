@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Billing
   class MetricsService < ApplicationService
     PAYING_STATUSES = %i[active past_due].freeze

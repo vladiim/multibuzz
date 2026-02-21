@@ -49,7 +49,8 @@ class TurboFrameDedupTest < Minitest::Test
 
     # At least 1 request should succeed
     success_count = results.count { |r| r.is_a?(Hash) && r["status"] == "accepted" }
-    assert success_count >= 1, "At least 1 session request should succeed, got #{success_count}"
+
+    assert_operator success_count, :>=, 1, "At least 1 session request should succeed, got #{success_count}"
 
     # Wait for async processing
     sleep 2
@@ -79,6 +80,7 @@ class TurboFrameDedupTest < Minitest::Test
         session_id: session_id,
         url: "https://example.com/page"
       )
+
       assert_equal "accepted", result["status"], "Session creation should succeed"
     end
 

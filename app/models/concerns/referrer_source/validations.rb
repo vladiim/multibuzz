@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ReferrerSource::Validations
   extend ActiveSupport::Concern
 

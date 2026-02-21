@@ -11,6 +11,7 @@ module Attribution
       touchpoints = service.call
 
       session_ids = touchpoints.map { |t| t[:session_id] }
+
       assert_includes session_ids, real.id
       assert_not_includes session_ids, suspect.id
     end

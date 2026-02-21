@@ -49,15 +49,15 @@ class BotPatterns::Parsers::MatomoBotsParserTest < ActiveSupport::TestCase
   end
 
   test "returns empty array for empty YAML" do
-    assert_equal [], parser("").call
+    assert_empty parser("").call
   end
 
   test "returns empty array for nil content" do
-    assert_equal [], parser(nil).call
+    assert_empty parser(nil).call
   end
 
   test "returns empty array for malformed YAML" do
-    assert_equal [], parser("{{bad yaml").call
+    assert_empty parser("{{bad yaml").call
   end
 
   private

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class FormSubmission < ApplicationRecord
   include FormSubmission::Validations
   include FormSubmission::Scopes

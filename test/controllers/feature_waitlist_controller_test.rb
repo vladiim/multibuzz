@@ -13,6 +13,7 @@ class FeatureWaitlistControllerTest < ActionDispatch::IntegrationTest
     end
 
     submission = FeatureWaitlistSubmission.last
+
     assert_equal user.email, submission.email
   end
 
@@ -22,6 +23,7 @@ class FeatureWaitlistControllerTest < ActionDispatch::IntegrationTest
     post feature_waitlist_path, params: valid_params
 
     submission = FeatureWaitlistSubmission.last
+
     assert_equal "data_export", submission.feature_key
     assert_equal "Data Export", submission.feature_name
     assert_equal "dashboard", submission.context
@@ -46,6 +48,7 @@ class FeatureWaitlistControllerTest < ActionDispatch::IntegrationTest
       headers: { "HTTP_USER_AGENT" => "Test Browser" }
 
     submission = FeatureWaitlistSubmission.last
+
     assert_not_nil submission.ip_address
     assert_equal "Test Browser", submission.user_agent
   end
@@ -58,6 +61,7 @@ class FeatureWaitlistControllerTest < ActionDispatch::IntegrationTest
     end
 
     submission = FeatureWaitlistSubmission.last
+
     assert_equal "guest@example.com", submission.email
   end
 
@@ -65,6 +69,7 @@ class FeatureWaitlistControllerTest < ActionDispatch::IntegrationTest
     post feature_waitlist_path, params: valid_params_with_email
 
     submission = FeatureWaitlistSubmission.last
+
     assert_equal "csv_export", submission.feature_key
     assert_equal "CSV Export", submission.feature_name
   end

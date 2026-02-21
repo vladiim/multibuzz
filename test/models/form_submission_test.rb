@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class FormSubmissionTest < ActiveSupport::TestCase
   test "should have valid fixtures" do
-    assert waitlist_one.valid?
-    assert waitlist_two.valid?
+    assert_predicate waitlist_one, :valid?
+    assert_predicate waitlist_two, :valid?
   end
 
   test "should require email" do
@@ -29,10 +31,11 @@ class FormSubmissionTest < ActiveSupport::TestCase
 
   test "should have status enum" do
     assert_equal 0, waitlist_one.status_before_type_cast
-    assert waitlist_one.pending?
+    assert_predicate waitlist_one, :pending?
 
     waitlist_one.contacted!
-    assert waitlist_one.contacted?
+
+    assert_predicate waitlist_one, :contacted?
     assert_equal 1, waitlist_one.status_before_type_cast
   end
 
@@ -47,7 +50,7 @@ class FormSubmissionTest < ActiveSupport::TestCase
     recent_submissions = FormSubmission.recent
 
     # Should be ordered by created_at desc (most recent first)
-    assert recent_submissions.first.created_at >= recent_submissions.last.created_at
+    assert_operator recent_submissions.first.created_at, :>=, recent_submissions.last.created_at
   end
 
   test "should store data as jsonb" do

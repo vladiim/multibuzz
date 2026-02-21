@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateIdentities < ActiveRecord::Migration[8.0]
   def change
     create_table :identities do |t|
@@ -11,7 +13,7 @@ class CreateIdentities < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :identities, [:account_id, :external_id], unique: true
+    add_index :identities, [ :account_id, :external_id ], unique: true
     add_index :identities, :external_id
     add_index :identities, :traits, using: :gin
     add_index :identities, :is_test

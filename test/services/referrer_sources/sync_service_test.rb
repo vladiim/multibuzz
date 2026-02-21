@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class ReferrerSources::SyncServiceTest < ActiveSupport::TestCase
@@ -74,6 +76,7 @@ class ReferrerSources::SyncServiceTest < ActiveSupport::TestCase
     service.call
 
     spam_record = ReferrerSource.find_by(domain: "spam-site.com")
+
     assert spam_record.is_spam
   end
 
@@ -151,7 +154,7 @@ class ReferrerSources::SyncServiceTest < ActiveSupport::TestCase
     # Snowplow has google.com too, but lower priority than matomo
     {
       "search" => {
-        "Google" => { "domains" => ["google.com"], "parameters" => ["q"] }
+        "Google" => { "domains" => [ "google.com" ], "parameters" => [ "q" ] }
       }
     }.to_json
   end

@@ -30,6 +30,7 @@ class Event::BroadcastsTest < ActiveSupport::TestCase
     create_event
 
     broadcast = broadcasts(stream_name).last
+
     assert_includes broadcast, "events-list"
   end
 

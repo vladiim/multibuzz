@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class Admin::AccountsControllerTest < ActionDispatch::IntegrationTest
@@ -29,6 +31,7 @@ class Admin::AccountsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to admin_account_path(account)
     account.reload
+
     assert_equal :free_until, account.billing_status.to_sym
     assert_equal future_date, account.free_until.to_date
     assert_equal starter_plan, account.plan
@@ -45,6 +48,7 @@ class Admin::AccountsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to admin_account_path(account)
     account.reload
+
     assert_equal new_date, account.free_until.to_date
   end
 
@@ -58,6 +62,7 @@ class Admin::AccountsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to admin_account_path(account)
     account.reload
+
     assert_equal :free_forever, account.billing_status.to_sym
     assert_nil account.free_until
   end

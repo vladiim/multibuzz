@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Articles
   class LoaderService
     FILE_PATTERN = "**/*.md.erb".freeze

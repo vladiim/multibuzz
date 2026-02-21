@@ -50,6 +50,7 @@ class FirstVisitTest < SdkIntegrationTest
     # Verify visitor exists in API
     wait_for_async(1)
     data = verify_test_data
+
     assert data[:visitor], "Visitor should exist in API"
   end
 end

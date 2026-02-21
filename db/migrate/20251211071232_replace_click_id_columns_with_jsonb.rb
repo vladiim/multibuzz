@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ReplaceClickIdColumnsWithJsonb < ActiveRecord::Migration[8.0]
   def change
     # Remove individual click ID columns (added in 20251211035212 and 20251211064836)

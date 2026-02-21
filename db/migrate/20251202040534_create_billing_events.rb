@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateBillingEvents < ActiveRecord::Migration[8.0]
   def change
     create_table :billing_events do |t|

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class Team::InvitationServiceTest < ActiveSupport::TestCase
@@ -9,7 +11,7 @@ class Team::InvitationServiceTest < ActiveSupport::TestCase
     result = invite("newuser@example.com")
 
     assert result[:success]
-    assert result[:membership].pending?
+    assert_predicate result[:membership], :pending?
     assert_equal "newuser@example.com", result[:membership].user.email
   end
 
@@ -23,13 +25,15 @@ class Team::InvitationServiceTest < ActiveSupport::TestCase
     result = invite("newuser@example.com")
 
     membership = result[:membership]
-    assert membership.pending?
+
+    assert_predicate membership, :pending?
   end
 
   test "sets default member role" do
     result = invite("newuser@example.com")
 
     membership = result[:membership]
+
     assert_equal "member", membership.role
   end
 
@@ -37,6 +41,7 @@ class Team::InvitationServiceTest < ActiveSupport::TestCase
     result = invite("newuser@example.com", role: "admin")
 
     membership = result[:membership]
+
     assert_equal "admin", membership.role
   end
 
@@ -44,8 +49,9 @@ class Team::InvitationServiceTest < ActiveSupport::TestCase
     result = invite("newuser@example.com")
 
     membership = result[:membership]
-    assert membership.invitation_token_digest.present?
-    assert result[:invitation_token].present?
+
+    assert_predicate membership.invitation_token_digest, :present?
+    assert_predicate result[:invitation_token], :present?
   end
 
   test "returns unhashed token for email" do
@@ -55,6 +61,7 @@ class Team::InvitationServiceTest < ActiveSupport::TestCase
     membership = AccountMembership.find_by(
       invitation_token_digest: Digest::SHA256.hexdigest(result[:invitation_token])
     )
+
     assert_equal result[:membership], membership
   end
 
@@ -63,6 +70,7 @@ class Team::InvitationServiceTest < ActiveSupport::TestCase
       result = invite("newuser@example.com")
 
       membership = result[:membership]
+
       assert_equal Time.current, membership.invited_at
     end
   end
@@ -71,6 +79,7 @@ class Team::InvitationServiceTest < ActiveSupport::TestCase
     result = invite("newuser@example.com")
 
     membership = result[:membership]
+
     assert_equal inviter.id, membership.invited_by_id
   end
 
@@ -86,6 +95,7 @@ class Team::InvitationServiceTest < ActiveSupport::TestCase
 
       assert result[:success]
       membership = result[:membership]
+
       assert_equal existing_user, membership.user
     end
   end
@@ -97,8 +107,9 @@ class Team::InvitationServiceTest < ActiveSupport::TestCase
 
     assert result[:success]
     membership = AccountMembership.find_by(user: existing_user, account: account)
-    assert membership.present?
-    assert membership.pending?
+
+    assert_predicate membership, :present?
+    assert_predicate membership, :pending?
   end
 
   # ==========================================
@@ -161,6 +172,7 @@ class Team::InvitationServiceTest < ActiveSupport::TestCase
 
     assert result[:success]
     pending.reload
+
     assert_not_equal old_digest, pending.invitation_token_digest
   end
 
@@ -172,6 +184,7 @@ class Team::InvitationServiceTest < ActiveSupport::TestCase
 
       assert result[:success]
       pending.reload
+
       assert_equal Time.current, pending.invited_at
     end
   end

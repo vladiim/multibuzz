@@ -23,7 +23,7 @@ module Dashboard
       first_touch = attribution_models(:first_touch)
       last_touch = attribution_models(:last_touch)
 
-      get dashboard_conversions_path(models: [first_touch.prefix_id, last_touch.prefix_id])
+      get dashboard_conversions_path(models: [ first_touch.prefix_id, last_touch.prefix_id ])
 
       assert_response :success
       assert controller.instance_variable_get(:@comparison_mode)
@@ -56,7 +56,7 @@ module Dashboard
       result = controller.instance_variable_get(:@results).first[:result]
       totals = result[:data][:totals]
 
-      assert_equal 2.0, totals[:avg_channels_to_convert]
+      assert_in_delta(2.0, totals[:avg_channels_to_convert])
     end
 
     test "calculates avg_visits_to_convert correctly" do
@@ -68,14 +68,14 @@ module Dashboard
       result = controller.instance_variable_get(:@results).first[:result]
       totals = result[:data][:totals]
 
-      assert_equal 3.0, totals[:avg_visits_to_convert]
+      assert_in_delta(3.0, totals[:avg_visits_to_convert])
     end
 
     test "comparison results include panel_index for color theming" do
       first_touch = attribution_models(:first_touch)
       last_touch = attribution_models(:last_touch)
 
-      get dashboard_conversions_path(models: [first_touch.prefix_id, last_touch.prefix_id])
+      get dashboard_conversions_path(models: [ first_touch.prefix_id, last_touch.prefix_id ])
 
       assert_response :success
       assert_select ".dashboard-panel.border-indigo-500", count: 1
@@ -181,7 +181,7 @@ module Dashboard
 
       get dashboard_conversions_path(
         account_id: account.prefix_id,
-        models: [first_touch.prefix_id, last_touch.prefix_id]
+        models: [ first_touch.prefix_id, last_touch.prefix_id ]
       )
 
       assert_response :success
@@ -198,13 +198,14 @@ module Dashboard
 
       get dashboard_conversions_path(
         account_id: account.prefix_id,
-        models: [first_touch.prefix_id, last_touch.prefix_id]
+        models: [ first_touch.prefix_id, last_touch.prefix_id ]
       )
 
       clv_results = controller.instance_variable_get(:@clv_results)
-      assert clv_results.first[:model].present?
+
+      assert_predicate clv_results.first[:model], :present?
       assert clv_results.first[:result][:success]
-      assert clv_results.first[:result][:data].present?
+      assert_predicate clv_results.first[:result][:data], :present?
     end
 
     test "clv comparison panels show model names" do
@@ -215,7 +216,7 @@ module Dashboard
 
       get dashboard_conversions_path(
         account_id: account.prefix_id,
-        models: [first_touch.prefix_id, last_touch.prefix_id]
+        models: [ first_touch.prefix_id, last_touch.prefix_id ]
       )
 
       assert_response :success
@@ -231,7 +232,7 @@ module Dashboard
 
       get dashboard_conversions_path(
         account_id: account.prefix_id,
-        models: [first_touch.prefix_id, last_touch.prefix_id]
+        models: [ first_touch.prefix_id, last_touch.prefix_id ]
       )
 
       assert_response :success
@@ -247,7 +248,7 @@ module Dashboard
 
       get dashboard_conversions_path(
         account_id: account.prefix_id,
-        models: [first_touch.prefix_id, last_touch.prefix_id]
+        models: [ first_touch.prefix_id, last_touch.prefix_id ]
       )
 
       assert_response :success
@@ -313,7 +314,7 @@ module Dashboard
       get dashboard_conversions_path(
         account_id: account.prefix_id,
         conversion_filters: {
-          "0" => { field: "conversion_type", operator: "equals", values: ["signup"] }
+          "0" => { field: "conversion_type", operator: "equals", values: [ "signup" ] }
         }
       )
 
@@ -437,7 +438,7 @@ module Dashboard
         visitor: visitors(:one),
         conversion_type: "purchase",
         converted_at: 5.days.ago,
-        journey_session_ids: [s1.id, s2.id, s3.id],
+        journey_session_ids: [ s1.id, s2.id, s3.id ],
         is_test: false
       )
 
@@ -470,7 +471,7 @@ module Dashboard
       )
 
       # Create attribution credits for both models
-      [first_touch_model, attribution_models(:last_touch)].each do |model|
+      [ first_touch_model, attribution_models(:last_touch) ].each do |model|
         account.attribution_credits.create!(
           conversion: acquisition,
           attribution_model: model,
@@ -492,7 +493,7 @@ module Dashboard
         is_test: false
       )
 
-      [first_touch_model, attribution_models(:last_touch)].each do |model|
+      [ first_touch_model, attribution_models(:last_touch) ].each do |model|
         account.attribution_credits.create!(
           conversion: payment,
           attribution_model: model,

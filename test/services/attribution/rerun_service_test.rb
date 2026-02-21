@@ -15,6 +15,7 @@ module Attribution
       service.call
 
       credit = model.attribution_credits.first
+
       assert_equal model.version, credit.model_version
     end
 
@@ -22,14 +23,16 @@ module Attribution
       service.call
 
       rerun_job.reload
-      assert rerun_job.completed?
-      assert rerun_job.completed_at.present?
+
+      assert_predicate rerun_job, :completed?
+      assert_predicate rerun_job.completed_at, :present?
     end
 
     test "updates processed count" do
       service.call
 
       rerun_job.reload
+
       assert_equal 1, rerun_job.processed_conversions
     end
 
@@ -39,6 +42,7 @@ module Attribution
       service.call
 
       account.reload
+
       assert_equal initial_count + 1, account.reruns_used_this_period
     end
 
@@ -49,8 +53,9 @@ module Attribution
       service.call
 
       rerun_job.reload
-      assert rerun_job.failed?
-      assert rerun_job.error_message.present?
+
+      assert_predicate rerun_job, :failed?
+      assert_predicate rerun_job.error_message, :present?
     end
 
     # --- Unattributed Conversions ---
@@ -72,6 +77,7 @@ module Attribution
       mixed_service.call
 
       mixed_rerun_job.reload
+
       assert_equal 2, mixed_rerun_job.processed_conversions
     end
 

@@ -21,6 +21,7 @@ module Dashboard
         result = scope(funnel: "signup").call
 
         event_types = result.pluck(:event_type)
+
         assert_includes event_types, "signup_start"
         assert_includes event_types, "signup_complete"
         refute_includes event_types, "add_to_cart"
@@ -62,10 +63,12 @@ module Dashboard
 
         # "all" view includes nil funnel events
         all_result = scope(funnel: nil).call
+
         assert_equal 2, all_result.count
 
         # specific funnel excludes nil funnel events
         signup_result = scope(funnel: "signup").call
+
         assert_equal 1, signup_result.count
         assert_equal "signup_start", signup_result.first.event_type
       end
@@ -87,7 +90,7 @@ module Dashboard
         create_event("page_view", channel: Channels::PAID_SEARCH)
         create_event("page_view", channel: Channels::EMAIL)
 
-        result = scope(channels: [Channels::PAID_SEARCH]).call
+        result = scope(channels: [ Channels::PAID_SEARCH ]).call
 
         assert_equal 1, result.count
       end
@@ -106,7 +109,7 @@ module Dashboard
         create_event("signup_start", funnel: "signup", channel: Channels::EMAIL)
         create_event("add_to_cart", funnel: "purchase", channel: Channels::PAID_SEARCH)
 
-        result = scope(funnel: "signup", channels: [Channels::PAID_SEARCH]).call
+        result = scope(funnel: "signup", channels: [ Channels::PAID_SEARCH ]).call
 
         assert_equal 1, result.count
         assert_equal "signup_start", result.first.event_type

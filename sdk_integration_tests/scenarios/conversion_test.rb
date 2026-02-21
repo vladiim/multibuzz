@@ -20,12 +20,14 @@ class ConversionTest < SdkIntegrationTest
 
     # Verify conversion in database
     data = verify_test_data
+
     assert_not_nil data[:conversions], "Should have conversions"
     assert data[:conversions].any? { |c| c[:conversion_type] == "test_purchase" },
       "Should have test_purchase conversion"
 
     conversion = data[:conversions].find { |c| c[:conversion_type] == "test_purchase" }
-    assert_equal 99.99, conversion[:revenue].to_f
+
+    assert_in_delta(99.99, conversion[:revenue].to_f)
   end
 
   def test_tracks_acquisition_conversion
@@ -52,6 +54,7 @@ class ConversionTest < SdkIntegrationTest
 
     data = verify_test_data
     conversion = data[:conversions].find { |c| c[:conversion_type] == "signup" }
+
     assert_not_nil conversion, "Should have signup conversion"
     assert conversion[:is_acquisition], "Should be marked as acquisition"
   end
@@ -70,6 +73,7 @@ class ConversionTest < SdkIntegrationTest
 
     data = verify_test_data
     conversion = data[:conversions].find { |c| c[:conversion_type] == "free_signup" }
+
     assert_not_nil conversion, "Should have free_signup conversion"
     assert_equal 0, conversion[:revenue].to_i
   end

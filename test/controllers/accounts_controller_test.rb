@@ -25,18 +25,20 @@ class AccountsControllerTest < ActionDispatch::IntegrationTest
   test "create creates new account and membership" do
     sign_in
 
-    assert_difference ["Account.count", "AccountMembership.count"], 1 do
+    assert_difference [ "Account.count", "AccountMembership.count" ], 1 do
       post accounts_path, params: { account: { name: "New Company" } }
     end
 
     new_account = Account.last
+
     assert_equal "New Company", new_account.name
     assert_equal "new-company", new_account.slug
 
     membership = new_account.account_memberships.first
+
     assert_equal user, membership.user
-    assert membership.owner?
-    assert membership.accepted?
+    assert_predicate membership, :owner?
+    assert_predicate membership, :accepted?
   end
 
   test "create redirects to new account dashboard" do
@@ -45,6 +47,7 @@ class AccountsControllerTest < ActionDispatch::IntegrationTest
     post accounts_path, params: { account: { name: "My Startup" } }
 
     new_account = Account.last
+
     assert_redirected_to dashboard_path(account_id: new_account.prefix_id)
     assert_equal "Account created successfully!", flash[:notice]
   end
@@ -66,6 +69,7 @@ class AccountsControllerTest < ActionDispatch::IntegrationTest
     post accounts_path, params: { account: { name: "Acme" } }
 
     new_account = Account.last
+
     assert_match(/^acme-\w+$/, new_account.slug)
   end
 

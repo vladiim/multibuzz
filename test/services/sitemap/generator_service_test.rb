@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class Sitemap::GeneratorServiceTest < ActiveSupport::TestCase
   test "returns array of SitemapEntry objects" do
     entries = service.call
 
-    assert entries.is_a?(Array)
+    assert_kind_of Array, entries
     assert entries.all? { |e| e.is_a?(SitemapEntry) }
   end
 
@@ -13,7 +15,7 @@ class Sitemap::GeneratorServiceTest < ActiveSupport::TestCase
     homepage = entries.find { |e| e.loc.end_with?("/") }
 
     assert_not_nil homepage, "Homepage not found in sitemap"
-    assert_equal 1.0, homepage.priority
+    assert_in_delta(1.0, homepage.priority)
     assert_equal "weekly", homepage.changefreq
   end
 
@@ -22,7 +24,7 @@ class Sitemap::GeneratorServiceTest < ActiveSupport::TestCase
     academy = entries.find { |e| e.loc.include?("/academy") && !e.loc.include?("/academy/") }
 
     assert_not_nil academy, "Academy page not found in sitemap"
-    assert_equal 0.9, academy.priority
+    assert_in_delta(0.9, academy.priority)
     assert_equal "daily", academy.changefreq
   end
 
@@ -31,7 +33,7 @@ class Sitemap::GeneratorServiceTest < ActiveSupport::TestCase
     about = entries.find { |e| e.loc.include?("/about") }
 
     assert_not_nil about, "About page not found in sitemap"
-    assert_equal 0.5, about.priority
+    assert_in_delta(0.5, about.priority)
   end
 
   test "includes demo dashboard" do
@@ -39,7 +41,7 @@ class Sitemap::GeneratorServiceTest < ActiveSupport::TestCase
     demo = entries.find { |e| e.loc.include?("/demo/dashboard") }
 
     assert_not_nil demo, "Demo dashboard not found in sitemap"
-    assert_equal 0.6, demo.priority
+    assert_in_delta(0.6, demo.priority)
   end
 
   test "includes contact page" do
@@ -47,7 +49,7 @@ class Sitemap::GeneratorServiceTest < ActiveSupport::TestCase
     contact = entries.find { |e| e.loc.include?("/contact") }
 
     assert_not_nil contact, "Contact page not found in sitemap"
-    assert_equal 0.4, contact.priority
+    assert_in_delta(0.4, contact.priority)
     assert_equal "yearly", contact.changefreq
   end
 
@@ -73,7 +75,7 @@ class Sitemap::GeneratorServiceTest < ActiveSupport::TestCase
     section_entry = entries.find { |e| e.loc.include?("/academy/fundamentals") }
 
     assert_not_nil section_entry
-    assert_equal 0.8, section_entry.priority
+    assert_in_delta(0.8, section_entry.priority)
     assert_equal "weekly", section_entry.changefreq
   end
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ReferrerSources
   module DataOrigins
     MATOMO_SEARCH = "matomo_search"

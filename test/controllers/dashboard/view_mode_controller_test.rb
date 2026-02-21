@@ -16,6 +16,7 @@ module Dashboard
 
       assert_redirected_to dashboard_path
       follow_redirect!
+
       assert_equal "test", session[:view_mode]
     end
 
@@ -29,6 +30,7 @@ module Dashboard
 
       assert_redirected_to dashboard_path
       follow_redirect!
+
       assert_equal "production", session[:view_mode]
     end
 
@@ -37,6 +39,7 @@ module Dashboard
 
       assert_redirected_to dashboard_path
       follow_redirect!
+
       assert_equal "production", session[:view_mode]
     end
 
@@ -45,6 +48,7 @@ module Dashboard
 
       assert_redirected_to dashboard_path
       follow_redirect!
+
       assert_equal "production", session[:view_mode]
     end
 
@@ -108,7 +112,7 @@ module Dashboard
 
       patch dashboard_view_mode_path, params: { mode: "production" }
 
-      assert current_account.reload.live_mode_enabled?,
+      assert_predicate current_account.reload, :live_mode_enabled?,
         "live_mode_enabled should be true after switching to production"
     end
 

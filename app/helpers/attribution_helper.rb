@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module AttributionHelper
   ATTRIBUTION_DESCRIPTIONS = {
     # Tier 1: Heuristic models

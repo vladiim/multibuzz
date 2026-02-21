@@ -12,7 +12,7 @@ module AttributionModels
     attr_reader :account, :params
 
     def run
-      return error_result([limit_error]) unless can_create?
+      return error_result([ limit_error ]) unless can_create?
       return error_result(validation_errors) unless valid_code?
 
       model.save ? success_result(model: model) : error_result(model.errors.full_messages)

@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class VisitorTest < ActiveSupport::TestCase
   test "should be valid with valid attributes" do
-    assert visitor.valid?
+    assert_predicate visitor, :valid?
   end
 
   test "should belong to account" do
@@ -39,7 +41,7 @@ class VisitorTest < ActiveSupport::TestCase
       visitor_id: visitor.visitor_id
     )
 
-    assert other_visitor.valid?
+    assert_predicate other_visitor, :valid?
   end
 
   test "should validate visitor_id format" do
@@ -52,7 +54,8 @@ class VisitorTest < ActiveSupport::TestCase
 
     valid_ids.each do |id|
       visitor.visitor_id = id
-      assert visitor.valid?, "#{id} should be valid"
+
+      assert_predicate visitor, :valid?, "#{id} should be valid"
     end
   end
 
@@ -61,11 +64,12 @@ class VisitorTest < ActiveSupport::TestCase
       "abc 123",           # spaces
       "abc@123",           # special chars
       "abc#123",           # special chars
-      "ab",                # too short
+      "ab"                # too short
     ]
 
     invalid_ids.each do |id|
       visitor.visitor_id = id
+
       assert_not visitor.valid?, "#{id} should be invalid"
     end
   end
@@ -92,7 +96,7 @@ class VisitorTest < ActiveSupport::TestCase
       visitor_id: "new_visitor_123"
     )
 
-    assert new_visitor.first_seen_at.present?
+    assert_predicate new_visitor.first_seen_at, :present?
     assert_in_delta Time.current, new_visitor.first_seen_at, 1.second
   end
 
@@ -102,7 +106,7 @@ class VisitorTest < ActiveSupport::TestCase
       visitor_id: "new_visitor_456"
     )
 
-    assert new_visitor.last_seen_at.present?
+    assert_predicate new_visitor.last_seen_at, :present?
     assert_in_delta Time.current, new_visitor.last_seen_at, 1.second
   end
 

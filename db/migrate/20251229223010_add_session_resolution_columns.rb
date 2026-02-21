@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 class AddSessionResolutionColumns < ActiveRecord::Migration[8.0]
   def change
     add_column :sessions, :last_activity_at, :datetime
     add_column :sessions, :device_fingerprint, :string
 
-    add_index :sessions, [:visitor_id, :device_fingerprint, :last_activity_at],
+    add_index :sessions, [ :visitor_id, :device_fingerprint, :last_activity_at ],
       name: "index_sessions_for_resolution"
 
     reversible do |dir|

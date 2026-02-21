@@ -13,15 +13,18 @@ class SgtmUtmCaptureTest < SdkIntegrationTest
       @visitor_id,
       url: "#{sdk_app_url}/?utm_source=google&utm_medium=cpc&utm_campaign=sgtm_test"
     )
+
     assert_equal "accepted", result["status"]
 
     wait_for_async(2)
 
     data = verify_test_data
     session = data[:sessions].first
+
     assert_not_nil session, "Should have a session"
 
     utm = session[:initial_utm]
+
     assert_equal "google", utm[:utm_source]
     assert_equal "cpc", utm[:utm_medium]
     assert_equal "sgtm_test", utm[:utm_campaign]
@@ -35,12 +38,14 @@ class SgtmUtmCaptureTest < SdkIntegrationTest
       @visitor_id,
       url: "#{sdk_app_url}/?utm_source=google&utm_medium=cpc"
     )
+
     assert_equal "accepted", result["status"]
 
     wait_for_async(2)
 
     data = verify_test_data
     session = data[:sessions].first
+
     assert_not_nil session[:channel], "Session should have channel"
     assert_equal "paid_search", session[:channel]
   end
@@ -54,12 +59,14 @@ class SgtmUtmCaptureTest < SdkIntegrationTest
       url: "#{sdk_app_url}/",
       referrer: "https://www.google.com/search?q=attribution"
     )
+
     assert_equal "accepted", result["status"]
 
     wait_for_async(2)
 
     data = verify_test_data
     session = data[:sessions].first
+
     assert_not_nil session[:channel], "Session should have channel"
     assert_equal "organic_search", session[:channel]
   end

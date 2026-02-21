@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ReferrerSources
   # Utility class for looking up referrer sources.
   # Returns nil on any error (not ApplicationService format).

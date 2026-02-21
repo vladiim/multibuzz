@@ -10,6 +10,7 @@ class ViewModeTest < ActionDispatch::IntegrationTest
     sign_in
 
     get dashboard_path
+
     assert_response :success
 
     # Verify we're in test mode by checking the session
@@ -21,6 +22,7 @@ class ViewModeTest < ActionDispatch::IntegrationTest
     sign_in
 
     get dashboard_path
+
     assert_response :success
 
     # Should default to production
@@ -35,6 +37,7 @@ class ViewModeTest < ActionDispatch::IntegrationTest
     patch dashboard_view_mode_path, params: { mode: "test" }
 
     get dashboard_path
+
     assert_response :success
     assert_equal "test", session[:view_mode]
   end
@@ -45,10 +48,12 @@ class ViewModeTest < ActionDispatch::IntegrationTest
 
     # Override to test
     patch dashboard_view_mode_path, params: { mode: "test" }
+
     assert_equal "test", session[:view_mode]
 
     # Switch back to production
     patch dashboard_view_mode_path, params: { mode: "production" }
+
     assert_equal "production", session[:view_mode]
   end
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ApplicationHelper
   # Format event limits for display (500000 -> "500K", 1000000 -> "1M")
   def format_event_limit(count)

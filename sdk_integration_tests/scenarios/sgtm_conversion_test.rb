@@ -18,11 +18,13 @@ class SgtmConversionTest < SdkIntegrationTest
     wait_for_async(3)
 
     data = verify_test_data
+
     assert_not_nil data[:conversions], "Should have conversions"
     assert data[:conversions].any? { |c| c[:conversion_type] == "purchase" },
       "Should have purchase conversion"
 
     conversion = data[:conversions].find { |c| c[:conversion_type] == "purchase" }
+
     assert_equal "149.99", conversion[:revenue].to_s
   end
 end

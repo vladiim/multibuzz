@@ -16,8 +16,8 @@ class CreateRerunJobs < ActiveRecord::Migration[8.0]
       t.text :error_message
       t.timestamps
 
-      t.index [:account_id, :status]
-      t.index [:attribution_model_id, :status]
+      t.index [ :account_id, :status ]
+      t.index [ :attribution_model_id, :status ]
     end
   end
 end

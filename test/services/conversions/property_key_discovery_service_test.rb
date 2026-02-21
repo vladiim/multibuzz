@@ -41,6 +41,7 @@ module Conversions
         service.call
 
         key = account.conversion_property_keys.find_by(property_key: "plan")
+
         assert_equal Time.current, key.last_seen_at
       end
     end

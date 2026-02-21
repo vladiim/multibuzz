@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 module Team
@@ -8,12 +10,12 @@ module Team
 
     test "owner can remove member" do
       assert owner_removes_member[:success]
-      assert member_membership.reload.deleted_at.present?
+      assert_predicate member_membership.reload.deleted_at, :present?
     end
 
     test "owner can remove admin" do
       assert owner_removes_admin[:success]
-      assert admin_membership.reload.deleted_at.present?
+      assert_predicate admin_membership.reload.deleted_at, :present?
     end
 
     test "owner cannot remove self" do
@@ -28,7 +30,7 @@ module Team
 
     test "admin can remove member" do
       assert admin_removes_member[:success]
-      assert member_membership.reload.deleted_at.present?
+      assert_predicate member_membership.reload.deleted_at, :present?
     end
 
     test "admin cannot remove other admin" do
@@ -60,8 +62,9 @@ module Team
       assert owner_removes_member[:success]
 
       member_membership.reload
-      assert member_membership.deleted_at.present?
-      assert member_membership.accepted?
+
+      assert_predicate member_membership.deleted_at, :present?
+      assert_predicate member_membership, :accepted?
     end
 
     test "cannot remove already deleted membership" do

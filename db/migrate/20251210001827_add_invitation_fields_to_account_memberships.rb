@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddInvitationFieldsToAccountMemberships < ActiveRecord::Migration[8.0]
   def change
     add_column :account_memberships, :invitation_token_digest, :string

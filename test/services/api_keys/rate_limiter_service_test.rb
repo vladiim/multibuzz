@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class ApiKeys::RateLimiterServiceTest < ActiveSupport::TestCase
@@ -8,13 +10,14 @@ class ApiKeys::RateLimiterServiceTest < ActiveSupport::TestCase
   test "should allow request within limit" do
     assert result[:allowed]
     assert_equal 999, result[:remaining]
-    assert result[:reset_at].present?
+    assert_predicate result[:reset_at], :present?
   end
 
   test "should track request count" do
     service.call
 
     second_result = service.call
+
     assert second_result[:allowed]
     assert_equal 998, second_result[:remaining]
   end
@@ -56,8 +59,8 @@ class ApiKeys::RateLimiterServiceTest < ActiveSupport::TestCase
     1000.times { service.call }
 
     assert_not result[:allowed]
-    assert result[:retry_after].present?
-    assert result[:retry_after] > 0
+    assert_predicate result[:retry_after], :present?
+    assert_operator result[:retry_after], :>, 0
   end
 
   test "should use custom limit if provided" do
@@ -81,6 +84,7 @@ class ApiKeys::RateLimiterServiceTest < ActiveSupport::TestCase
 
     travel 11.seconds do
       fresh_service = ApiKeys::RateLimiterService.new(account, window: 10)
+
       assert fresh_service.call[:allowed]
     end
   end
@@ -92,7 +96,7 @@ class ApiKeys::RateLimiterServiceTest < ActiveSupport::TestCase
 
     remaining_values = results.map { |r| r[:remaining] }
     # Each call should decrement remaining by 1
-    assert_equal [999, 998, 997, 996, 995], remaining_values
+    assert_equal [ 999, 998, 997, 996, 995 ], remaining_values
   end
 
   test "should handle nil cache gracefully on first request" do
@@ -101,6 +105,7 @@ class ApiKeys::RateLimiterServiceTest < ActiveSupport::TestCase
 
     # First request should work
     result = service.call
+
     assert result[:allowed]
     assert_equal 999, result[:remaining]
   end

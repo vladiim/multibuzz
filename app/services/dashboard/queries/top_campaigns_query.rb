@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Dashboard
   module Queries
     class TopCampaignsQuery
@@ -31,7 +33,7 @@ module Dashboard
       def campaigns_for(channel)
         scope
           .where(channel: channel)
-          .where.not(utm_campaign: [nil, ""])
+          .where.not(utm_campaign: [ nil, "" ])
           .group(:utm_campaign)
           .select(:utm_campaign, "SUM(credit) as total_credits", "SUM(revenue_credit) as total_revenue")
           .order("SUM(credit) DESC")

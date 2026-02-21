@@ -24,8 +24,9 @@ class Logs::ArchiveServiceTest < ActiveSupport::TestCase
     assert_equal 1, s3_client.uploads.size
 
     upload = s3_client.uploads.first
+
     assert_equal expected_key(yesterday), upload[:key]
-    assert upload[:body].bytesize > 0, "Should upload compressed content"
+    assert_operator upload[:body].bytesize, :>, 0, "Should upload compressed content"
   end
 
   test "uses correct Spaces key format: logs/YYYY/MM/DD.log.gz" do
@@ -35,6 +36,7 @@ class Logs::ArchiveServiceTest < ActiveSupport::TestCase
     service(s3_client: s3_client).call
 
     expected = "mbuzz/logs/#{yesterday.strftime('%Y/%m/%d')}.log.gz"
+
     assert_equal expected, s3_client.uploads.first[:key]
   end
 
@@ -43,7 +45,7 @@ class Logs::ArchiveServiceTest < ActiveSupport::TestCase
 
     service(s3_client: MockS3Client.new).call
 
-    refute File.exist?(path), "Local log file should be deleted after upload"
+    refute_path_exists path, "Local log file should be deleted after upload"
   end
 
   test "uploads gzip-compressed content" do
@@ -53,6 +55,7 @@ class Logs::ArchiveServiceTest < ActiveSupport::TestCase
     service(s3_client: s3_client).call
 
     decompressed = Zlib::GzipReader.new(StringIO.new(s3_client.uploads.first[:body])).read
+
     assert_equal "test log line\n", decompressed
   end
 
@@ -79,7 +82,7 @@ class Logs::ArchiveServiceTest < ActiveSupport::TestCase
       service(s3_client: failing_client).call
     end
 
-    assert File.exist?(path), "Local file should be preserved on upload failure"
+    assert_path_exists path, "Local file should be preserved on upload failure"
   end
 
   private

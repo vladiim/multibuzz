@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class DemoController < ApplicationController
   def show
     @demo_data = Demo::DataGeneratorService.new.call

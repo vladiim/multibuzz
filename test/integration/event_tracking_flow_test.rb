@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class EventTrackingFlowTest < ActionDispatch::IntegrationTest
@@ -64,20 +66,23 @@ class EventTrackingFlowTest < ActionDispatch::IntegrationTest
 
     # Then: Visitor exists
     visitor = account.visitors.unscope(where: :is_test).test_data.find_by(visitor_id: visitor_id)
-    assert visitor.present?, "Visitor should exist"
-    assert visitor.first_seen_at.present?
-    assert visitor.last_seen_at.present?
+
+    assert_predicate visitor, :present?, "Visitor should exist"
+    assert_predicate visitor.first_seen_at, :present?
+    assert_predicate visitor.last_seen_at, :present?
 
     # And: Session is created with UTM data
     session = account.sessions.unscope(where: :is_test).test_data.find_by(session_id: session_id)
-    assert session.present?, "Session should be created"
+
+    assert_predicate session, :present?, "Session should be created"
     assert_equal visitor.id, session.visitor_id
     assert_equal 1, session.page_view_count
-    assert session.started_at.present?
+    assert_predicate session.started_at, :present?
     assert_nil session.ended_at
 
     # And: UTM parameters are captured from URL query string
     utm = session.initial_utm.with_indifferent_access
+
     assert_equal "google", utm[:utm_source]
     assert_equal "cpc", utm[:utm_medium]
     assert_equal "integration_test", utm[:utm_campaign]
@@ -89,8 +94,9 @@ class EventTrackingFlowTest < ActionDispatch::IntegrationTest
       visitor_id: visitor.id,
       session_id: session.id
     ).first
-    assert event.present?, "Event should be created"
-    assert event.occurred_at.present?
+
+    assert_predicate event, :present?, "Event should be created"
+    assert_predicate event.occurred_at, :present?
 
     # And: Event properties are stored
     assert_includes event.properties["url"], "example.com/products"
@@ -161,9 +167,9 @@ class EventTrackingFlowTest < ActionDispatch::IntegrationTest
     ).count, "Account B should not have Account A's events"
 
     # And: Account A can see its own event
-    assert account_a.events.unscope(where: :is_test).test_data.where(
+    assert_predicate account_a.events.unscope(where: :is_test).test_data.where(
       "properties->>'url' = ?", "https://example.com/account-a-page"
-    ).exists?, "Account A should have its own events"
+    ), :exists?, "Account A should have its own events"
   end
 
   test "batch processing with partial failures" do
@@ -219,6 +225,7 @@ class EventTrackingFlowTest < ActionDispatch::IntegrationTest
     assert_equal 1, response.parsed_body["rejected"].size
 
     rejected = response.parsed_body["rejected"].first
+
     assert_equal 1, rejected["index"]
     assert_includes rejected["errors"].join, "event_type"
   end
@@ -258,18 +265,19 @@ class EventTrackingFlowTest < ActionDispatch::IntegrationTest
     assert_response :accepted
     visitor_id = response.parsed_body["visitor_id"]
     session_id = response.parsed_body["session_id"]
+
     assert_equal "paid_search", response.parsed_body["channel"]
 
     # Step 2: Track a page view event
     post api_v1_events_url,
       params: {
-        events: [{
+        events: [ {
           event_type: "page_view",
           visitor_id: visitor_id,
           session_id: session_id,
           timestamp: event_time,
           properties: { url: "https://example.com/products" }
-        }]
+        } ]
       },
       headers: { "Authorization" => "Bearer #{plaintext_key}" },
       as: :json
@@ -292,6 +300,7 @@ class EventTrackingFlowTest < ActionDispatch::IntegrationTest
 
     assert_response :created
     conversion_id = response.parsed_body["conversion"]["id"]
+
     assert conversion_id.start_with?("conv_")
     assert_equal "pending", response.parsed_body["attribution"]["status"]
 
@@ -302,14 +311,16 @@ class EventTrackingFlowTest < ActionDispatch::IntegrationTest
     conversion = Conversion.find_by_prefix_id(conversion_id)
     credits = conversion.attribution_credits.where(attribution_model: linear_model)
 
-    assert credits.any?, "Expected attribution credits to be created"
+    assert_predicate credits, :any?, "Expected attribution credits to be created"
 
     # Verify credits sum to 1.0 (the constraint we fixed in H1)
     total_credit = credits.sum(&:credit)
+
     assert_in_delta 1.0, total_credit, 0.0001, "Credits must sum to 1.0"
 
     # Verify credit has correct channel and revenue
     credit = credits.first
+
     assert_equal "paid_search", credit.channel
     assert_equal "google", credit.utm_source
     assert_equal "cpc", credit.utm_medium

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Account::Billing
   extend ActiveSupport::Concern
 
@@ -15,7 +17,7 @@ module Account::Billing
       expired: 6
     }, prefix: :billing
 
-    scope :billing_active, -> { where(billing_status: [:free_forever, :free_until, :trialing, :active]) }
+    scope :billing_active, -> { where(billing_status: [ :free_forever, :free_until, :trialing, :active ]) }
     scope :past_due, -> { where(billing_status: :past_due) }
     scope :with_expiring_free_until, ->(days_from_now) {
       where(billing_status: :free_until)
@@ -89,7 +91,7 @@ module Account::Billing
   def usage_percentage
     return 0 if free_event_limit.zero?
 
-    [(current_period_usage.to_f / free_event_limit * ::Billing::USAGE_LIMIT_THRESHOLD).round, ::Billing::USAGE_LIMIT_THRESHOLD].min
+    [ (current_period_usage.to_f / free_event_limit * ::Billing::USAGE_LIMIT_THRESHOLD).round, ::Billing::USAGE_LIMIT_THRESHOLD ].min
   end
 
   def approaching_limit?
@@ -224,7 +226,7 @@ module Account::Billing
   end
 
   def reruns_remaining
-    [rerun_limit - reruns_used_this_period, 0].max
+    [ rerun_limit - reruns_used_this_period, 0 ].max
   end
 
   def rerun_overage_cents

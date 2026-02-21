@@ -66,6 +66,7 @@ module Dashboard
       property_dims = result[:dimensions].select { |d| d[:type] == "property" }
 
       keys = property_dims.map { |d| d[:key] }
+
       assert_equal %w[popular_key medium_key rare_key], keys
     end
 

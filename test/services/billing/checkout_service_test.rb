@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 require "ostruct"
 
@@ -66,10 +68,10 @@ class Billing::CheckoutServiceTest < ActiveSupport::TestCase
     service(stripe_client: client).call
 
     assert_equal "cus_123", captured_params[:customer]
-    assert_equal [{ price: "price_starter123", quantity: 1 }], captured_params[:line_items]
+    assert_equal [ { price: "price_starter123", quantity: 1 } ], captured_params[:line_items]
     assert_equal "subscription", captured_params[:mode]
-    assert captured_params[:success_url].include?("{CHECKOUT_SESSION_ID}")
-    assert captured_params[:cancel_url].present?
+    assert_includes captured_params[:success_url], "{CHECKOUT_SESSION_ID}"
+    assert_predicate captured_params[:cancel_url], :present?
   end
 
   test "includes account metadata in session" do
@@ -95,7 +97,7 @@ class Billing::CheckoutServiceTest < ActiveSupport::TestCase
     result = service(stripe_client: error_client).call
 
     assert_not result[:success]
-    assert result[:errors].first.include?("Stripe error")
+    assert_includes result[:errors].first, "Stripe error"
   end
 
   private

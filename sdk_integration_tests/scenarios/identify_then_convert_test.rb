@@ -33,7 +33,7 @@ class IdentifyThenConvertTest < SdkIntegrationTest
     conversion = data[:conversions].find { |c| c[:conversion_type] == "itc_purchase" }
 
     assert_not_nil conversion, "Should have itc_purchase conversion"
-    assert_equal 149.99, conversion[:revenue].to_f
+    assert_in_delta(149.99, conversion[:revenue].to_f)
     assert_not_nil conversion[:identity_id], "Conversion should have identity_id (resolved from visitor)"
   end
 

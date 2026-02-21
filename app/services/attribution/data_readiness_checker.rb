@@ -56,7 +56,7 @@ module Attribution
     end
 
     def conversions_needed
-      [REQUIRED_CONVERSIONS - current_conversions, 0].max
+      [ REQUIRED_CONVERSIONS - current_conversions, 0 ].max
     end
 
     def current_channels
@@ -64,14 +64,14 @@ module Attribution
     end
 
     def channels_needed
-      [REQUIRED_CHANNELS - current_channels, 0].max
+      [ REQUIRED_CHANNELS - current_channels, 0 ].max
     end
 
     def progress_percent
       return 100 if ready?
 
       conversion_progress = (current_conversions.to_f / REQUIRED_CONVERSIONS * 100).to_i
-      [conversion_progress, 100].min
+      [ conversion_progress, 100 ].min
     end
 
     def unique_channels_from_conversions

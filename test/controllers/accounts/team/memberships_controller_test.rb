@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 module Accounts
@@ -13,7 +15,7 @@ module Accounts
         patch account_team_membership_path(member_membership), params: { role: "admin" }
 
         assert_redirected_to account_team_path
-        assert member_membership.reload.admin?
+        assert_predicate member_membership.reload, :admin?
       end
 
       test "owner can change admin to member" do
@@ -22,7 +24,7 @@ module Accounts
         patch account_team_membership_path(admin_membership), params: { role: "member" }
 
         assert_redirected_to account_team_path
-        assert admin_membership.reload.member?
+        assert_predicate admin_membership.reload, :member?
       end
 
       test "admin can change member to admin" do
@@ -31,7 +33,7 @@ module Accounts
         patch account_team_membership_path(member_membership), params: { role: "admin" }
 
         assert_redirected_to account_team_path
-        assert member_membership.reload.admin?
+        assert_predicate member_membership.reload, :admin?
       end
 
       test "admin cannot demote other admin" do
@@ -40,7 +42,7 @@ module Accounts
         patch account_team_membership_path(other_admin_membership), params: { role: "member" }
 
         assert_response :forbidden
-        assert other_admin_membership.reload.admin?
+        assert_predicate other_admin_membership.reload, :admin?
       end
 
       test "admin cannot promote to owner" do
@@ -49,7 +51,7 @@ module Accounts
         patch account_team_membership_path(member_membership), params: { role: "owner" }
 
         assert_response :forbidden
-        assert member_membership.reload.member?
+        assert_predicate member_membership.reload, :member?
       end
 
       test "owner cannot change own role" do
@@ -58,7 +60,7 @@ module Accounts
         patch account_team_membership_path(owner_membership), params: { role: "admin" }
 
         assert_response :unprocessable_entity
-        assert owner_membership.reload.owner?
+        assert_predicate owner_membership.reload, :owner?
       end
 
       test "member cannot change roles" do
@@ -87,7 +89,7 @@ module Accounts
         delete account_team_membership_path(member_membership)
 
         assert_redirected_to account_team_path
-        assert member_membership.reload.deleted_at.present?
+        assert_predicate member_membership.reload.deleted_at, :present?
       end
 
       test "owner can remove admin" do
@@ -96,7 +98,7 @@ module Accounts
         delete account_team_membership_path(admin_membership)
 
         assert_redirected_to account_team_path
-        assert admin_membership.reload.deleted_at.present?
+        assert_predicate admin_membership.reload.deleted_at, :present?
       end
 
       test "admin can remove member" do
@@ -105,7 +107,7 @@ module Accounts
         delete account_team_membership_path(member_membership)
 
         assert_redirected_to account_team_path
-        assert member_membership.reload.deleted_at.present?
+        assert_predicate member_membership.reload.deleted_at, :present?
       end
 
       test "admin cannot remove other admin" do
@@ -149,7 +151,8 @@ module Accounts
         delete account_team_membership_path(member_membership)
 
         member_membership.reload
-        assert member_membership.deleted_at.present?
+
+        assert_predicate member_membership.deleted_at, :present?
         assert_equal "accepted", member_membership.status
       end
 

@@ -35,11 +35,11 @@ module Attribution
       end
 
       test "should handle single touchpoint journey" do
-        single_touchpoint = [touchpoints[0]]
+        single_touchpoint = [ touchpoints[0] ]
         credits = MarkovChain.new(single_touchpoint, removal_effects: removal_effects).call
 
         assert_equal 1, credits.size
-        assert_equal 1.0, credits[0][:credit]
+        assert_in_delta(1.0, credits[0][:credit])
         assert_equal "organic_search", credits[0][:channel]
       end
 
@@ -53,6 +53,7 @@ module Attribution
         credits = service.call
 
         total = credits.sum { |c| c[:credit] }
+
         assert_in_delta 1.0, total, 0.0001
       end
 
@@ -60,19 +61,19 @@ module Attribution
         credits = service.call
 
         credits.each do |credit|
-          assert credit[:session_id].present?, "session_id should be present"
-          assert credit[:channel].present?, "channel should be present"
-          assert credit[:credit].is_a?(Numeric), "credit should be numeric"
+          assert_predicate credit[:session_id], :present?, "session_id should be present"
+          assert_predicate credit[:channel], :present?, "channel should be present"
+          assert_kind_of Numeric, credit[:credit], "credit should be numeric"
         end
       end
 
       test "should handle channels not in removal_effects with zero weight" do
         # Journey includes a channel not in removal_effects
-        touchpoints_with_unknown = touchpoints + [{
+        touchpoints_with_unknown = touchpoints + [ {
           session_id: 103,
           channel: "unknown_channel",
           occurred_at: 30.minutes.ago
-        }]
+        } ]
 
         credits = MarkovChain.new(touchpoints_with_unknown, removal_effects: removal_effects).call
 
@@ -83,7 +84,7 @@ module Attribution
         unknown_credit = find_credit(credits, "unknown_channel")
 
         assert_in_delta 1.0, known_total, 0.0001
-        assert_equal 0.0, unknown_credit
+        assert_in_delta(0.0, unknown_credit)
       end
 
       test "should handle equal removal effects" do
@@ -133,6 +134,7 @@ module Attribution
 
         # Total credit for organic_search should be 0.4, split between two touchpoints
         organic_credits = credits.select { |c| c[:channel] == "organic_search" }
+
         assert_equal 2, organic_credits.size
         assert_in_delta 0.2, organic_credits[0][:credit], 0.0001
         assert_in_delta 0.2, organic_credits[1][:credit], 0.0001
@@ -158,7 +160,8 @@ module Attribution
         # paid_search appears in all paths, should have high removal effect
         # organic_search and email appear in some paths
         paid_credit = find_credit(credits, "paid_search")
-        assert paid_credit > 0, "paid_search should have positive credit"
+
+        assert_operator paid_credit, :>, 0, "paid_search should have positive credit"
       end
 
       test "should raise error when neither removal_effects nor conversion_paths provided" do

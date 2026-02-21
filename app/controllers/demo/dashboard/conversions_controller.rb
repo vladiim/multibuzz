@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Demo
   module Dashboard
     class ConversionsController < ApplicationController
@@ -29,7 +31,7 @@ module Demo
 
       def selected_models
         model_params = Array(params[:models]).reject(&:blank?)
-        model_params = ["linear"] if model_params.empty?
+        model_params = [ "linear" ] if model_params.empty?
 
         model_params.take(2).map do |model_key|
           build_demo_model(model_key)

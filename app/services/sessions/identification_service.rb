@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Sessions
   class IdentificationService
     COOKIE_NAME = "_mbuzz_sid"

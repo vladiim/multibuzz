@@ -10,10 +10,10 @@ module Shopify
         result = handler.call
 
         assert result[:success]
-        assert conversion.prefix_id.present?
+        assert_predicate conversion.prefix_id, :present?
 
         assert_equal Shopify::CONVERSION_TYPE_PURCHASE, conversion.conversion_type
-        assert_equal 99.99, conversion.revenue.to_f
+        assert_in_delta(99.99, conversion.revenue.to_f)
         assert_equal "USD", conversion.currency
         assert_equal visitor.id, conversion.visitor_id
         assert_equal session.id, conversion.session_id

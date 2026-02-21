@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Visitor::Relationships
   extend ActiveSupport::Concern
 

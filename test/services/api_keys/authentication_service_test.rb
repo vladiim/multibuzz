@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class ApiKeys::AuthenticationServiceTest < ActiveSupport::TestCase
@@ -68,7 +70,7 @@ class ApiKeys::AuthenticationServiceTest < ActiveSupport::TestCase
 
     service(valid_bearer_token).call
 
-    assert api_key.reload.last_used_at.present?
+    assert_predicate api_key.reload.last_used_at, :present?
     assert_in_delta Time.current, api_key.last_used_at, 1.second
   end
 
@@ -82,7 +84,7 @@ class ApiKeys::AuthenticationServiceTest < ActiveSupport::TestCase
     result = service(valid_bearer_token).call
 
     assert_instance_of Account, result[:account]
-    assert result[:account].persisted?
+    assert_predicate result[:account], :persisted?
   end
 
   test "should work with live API keys" do
@@ -92,7 +94,7 @@ class ApiKeys::AuthenticationServiceTest < ActiveSupport::TestCase
 
     assert result[:success]
     assert_equal account, result[:account]
-    assert live_key.reload.last_used_at.present?
+    assert_predicate live_key.reload.last_used_at, :present?
   end
 
   private

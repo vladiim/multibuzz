@@ -35,6 +35,7 @@ class ConversionFingerprintFallbackTest < Minitest::Test
       device_fingerprint: @device_fingerprint,
       url: "https://example.com/test"
     )
+
     assert_equal "accepted", session_result["status"], "Session should be created"
 
     # Step 2: Track event with specific fingerprint
@@ -44,6 +45,7 @@ class ConversionFingerprintFallbackTest < Minitest::Test
       ip: @test_ip,
       user_agent: @test_user_agent
     )
+
     assert_equal 1, event_result["accepted"], "Event should be accepted"
 
     sleep 1 # Allow processing
@@ -67,11 +69,13 @@ class ConversionFingerprintFallbackTest < Minitest::Test
 
     # Step 4: Verify conversion is linked to correct visitor
     verification = VerificationHelper.verify(visitor_id: @visitor_id)
-    assert verification[:conversions]&.any?, "Visitor should have conversion"
+
+    assert_predicate verification[:conversions], :any?, "Visitor should have conversion"
 
     conversion = verification[:conversions].first
+
     assert_equal "purchase", conversion[:conversion_type]
-    assert_equal 99.99, conversion[:revenue].to_f
+    assert_in_delta(99.99, conversion[:revenue].to_f)
   end
 
   # Test: Conversion fails when no fingerprint match and visitor_id not found
@@ -87,7 +91,7 @@ class ConversionFingerprintFallbackTest < Minitest::Test
     )
 
     refute conversion_result["success"], "Conversion should fail without visitor"
-    assert conversion_result["errors"]&.include?("Visitor not found"),
+    assert_includes conversion_result["errors"], "Visitor not found",
       "Should return 'Visitor not found' error"
   end
 
@@ -102,6 +106,7 @@ class ConversionFingerprintFallbackTest < Minitest::Test
       device_fingerprint: @device_fingerprint,
       url: "https://example.com/cart"
     )
+
     assert_equal "accepted", session_result["status"], "Session should be created"
 
     # Create event
@@ -111,6 +116,7 @@ class ConversionFingerprintFallbackTest < Minitest::Test
       ip: @test_ip,
       user_agent: @test_user_agent
     )
+
     assert_equal 1, event_result["accepted"]
 
     sleep 1
@@ -143,13 +149,13 @@ class ConversionFingerprintFallbackTest < Minitest::Test
       "#{TestConfig.api_url}/events",
       headers: auth_headers,
       body: {
-        events: [{
+        events: [ {
           visitor_id: visitor_id,
           event_type: event_type,
           ip: ip,
           user_agent: user_agent,
           properties: { url: "https://example.com/test" }
-        }]
+        } ]
       }.to_json
     ).parsed_response
   rescue StandardError => e
@@ -173,7 +179,7 @@ class ConversionFingerprintFallbackTest < Minitest::Test
       body: body.to_json
     ).parsed_response
   rescue StandardError => e
-    { "success" => false, "errors" => [e.message] }
+    { "success" => false, "errors" => [ e.message ] }
   end
 
   def track_conversion_with_event(event_id:, conversion_type:, revenue:)
@@ -189,7 +195,7 @@ class ConversionFingerprintFallbackTest < Minitest::Test
       }.to_json
     ).parsed_response
   rescue StandardError => e
-    { "success" => false, "errors" => [e.message] }
+    { "success" => false, "errors" => [ e.message ] }
   end
 
   def create_session(visitor_id:, session_id:, device_fingerprint:, url:)

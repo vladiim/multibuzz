@@ -17,6 +17,7 @@ module Attribution
 
       assert_difference "::RerunJob.count", 1 do
         result = service.call
+
         assert result[:success]
       end
     end
@@ -27,6 +28,7 @@ module Attribution
       result = service.call
 
       job = result[:rerun_job]
+
       assert_equal 1, job.from_version
       assert_equal 2, job.to_version
     end
@@ -39,7 +41,7 @@ module Attribution
 
       assert_not result[:success]
       assert result[:requires_confirmation]
-      assert result[:overage][:overage].positive?
+      assert_predicate result[:overage][:overage], :positive?
     end
 
     test "proceeds with overage when confirmed and has subscription" do
@@ -71,6 +73,7 @@ module Attribution
 
       assert_difference "::RerunJob.count", 1 do
         result = service.call
+
         assert result[:success], "Expected success but got: #{result.inspect}"
       end
     end
@@ -81,6 +84,7 @@ module Attribution
       result = service.call
 
       job = result[:rerun_job]
+
       assert_equal 0, job.from_version
       assert_equal 2, job.to_version
     end
@@ -92,6 +96,7 @@ module Attribution
       result = service.call
 
       job = result[:rerun_job]
+
       assert_equal 2, job.total_conversions
     end
 

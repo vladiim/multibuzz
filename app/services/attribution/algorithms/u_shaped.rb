@@ -25,7 +25,7 @@ module Attribution
       attr_reader :touchpoints
 
       def single_touchpoint_credits
-        [build_credit(touchpoints.first, FULL_CREDIT)]
+        [ build_credit(touchpoints.first, FULL_CREDIT) ]
       end
 
       def two_touchpoint_credits

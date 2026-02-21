@@ -94,7 +94,7 @@ module ApiRequestLogs
       octets = ip.split(".")
       return ip unless octets.length == IPV4_OCTET_COUNT
 
-      [*octets[0..2], ANONYMIZED_LAST_OCTET].join(".")
+      [ *octets[0..2], ANONYMIZED_LAST_OCTET ].join(".")
     end
 
     def sanitized_params

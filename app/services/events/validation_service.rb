@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Events
   class ValidationService < ApplicationService
     def initialize(event_data)
@@ -24,13 +26,13 @@ module Events
     def validate_event_type
       return [] if field_present?("event_type")
 
-      ["event_type is required"]
+      [ "event_type is required" ]
     end
 
     def validate_identity
       return [] if field_present?("visitor_id") || field_present?("user_id")
 
-      ["visitor_id or user_id is required"]
+      [ "visitor_id or user_id is required" ]
     end
 
     def field_present?(field)
@@ -50,14 +52,14 @@ module Events
       Time.iso8601(field_value("timestamp"))
       []
     rescue ArgumentError
-      ["timestamp must be a valid ISO8601 datetime"]
+      [ "timestamp must be a valid ISO8601 datetime" ]
     end
 
     def validate_properties
       return [] unless has_field?("properties")
       return [] if field_value("properties").is_a?(Hash)
 
-      ["properties must be a hash"]
+      [ "properties must be a hash" ]
     end
 
     def validate_funnel
@@ -65,9 +67,9 @@ module Events
 
       funnel = field_value("funnel")
       return [] if funnel.nil?
-      return ["funnel must be a string"] unless funnel.is_a?(String)
-      return ["funnel must be 255 characters or less"] if funnel.length > 255
-      return ["funnel must contain only alphanumeric characters and underscores"] unless funnel.match?(/\A[a-zA-Z0-9_]+\z/)
+      return [ "funnel must be a string" ] unless funnel.is_a?(String)
+      return [ "funnel must be 255 characters or less" ] if funnel.length > 255
+      return [ "funnel must contain only alphanumeric characters and underscores" ] unless funnel.match?(/\A[a-zA-Z0-9_]+\z/)
 
       []
     end

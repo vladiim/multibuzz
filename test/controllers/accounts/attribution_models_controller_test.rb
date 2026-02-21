@@ -254,6 +254,7 @@ class Accounts::AttributionModelsControllerTest < ActionDispatch::IntegrationTes
 
     assert_redirected_to account_attribution_models_path
     model.reload
+
     assert_equal new_code, model.dsl_code
   end
 
@@ -289,6 +290,7 @@ class Accounts::AttributionModelsControllerTest < ActionDispatch::IntegrationTes
 
     assert_redirected_to account_attribution_models_path
     model.reload
+
     assert_equal 60, model.lookback_days
   end
 
@@ -334,6 +336,7 @@ class Accounts::AttributionModelsControllerTest < ActionDispatch::IntegrationTes
 
     assert_response :success
     json = JSON.parse(response.body)
+
     assert json["valid"]
   end
 
@@ -345,8 +348,9 @@ class Accounts::AttributionModelsControllerTest < ActionDispatch::IntegrationTes
 
     assert_response :success
     json = JSON.parse(response.body)
+
     assert_not json["valid"]
-    assert json["errors"].any?
+    assert_predicate json["errors"], :any?
   end
 
   # --- Reset ---
@@ -364,6 +368,7 @@ class Accounts::AttributionModelsControllerTest < ActionDispatch::IntegrationTes
 
     assert_redirected_to edit_account_attribution_model_path(model)
     model.reload
+
     assert_nil model.dsl_code
   end
 
@@ -389,6 +394,7 @@ class Accounts::AttributionModelsControllerTest < ActionDispatch::IntegrationTes
     assert_redirected_to account_attribution_models_path
     model.reload
     other_model.reload
+
     assert model.is_default
     assert_not other_model.is_default
   end
@@ -486,7 +492,7 @@ class Accounts::AttributionModelsControllerTest < ActionDispatch::IntegrationTes
     @free_plan ||= plans(:free)
   end
 
-# --- Test (AML execution) ---
+  # --- Test (AML execution) ---
 
   test "test executes AML code and renders credit distribution" do
     sign_in
@@ -660,6 +666,7 @@ class Accounts::AttributionModelsControllerTest < ActionDispatch::IntegrationTes
 
     assert_response :success
     json = JSON.parse(response.body)
+
     assert json.key?("models")
     assert json["models"].key?("markov_chain")
     assert json["models"].key?("shapley_value")
@@ -672,6 +679,7 @@ class Accounts::AttributionModelsControllerTest < ActionDispatch::IntegrationTes
     get data_readiness_account_attribution_models_path, as: :json
 
     json = JSON.parse(response.body)
+
     assert json["models"]["markov_chain"]["ready"]
     assert json["models"]["shapley_value"]["ready"]
   end
@@ -683,6 +691,7 @@ class Accounts::AttributionModelsControllerTest < ActionDispatch::IntegrationTes
     get data_readiness_account_attribution_models_path, as: :json
 
     json = JSON.parse(response.body)
+
     assert_not json["models"]["markov_chain"]["ready"]
     assert_equal 100, json["models"]["markov_chain"]["current_conversions"]
     assert_equal 500, json["models"]["markov_chain"]["required_conversions"]
@@ -696,6 +705,7 @@ class Accounts::AttributionModelsControllerTest < ActionDispatch::IntegrationTes
     get data_readiness_account_attribution_models_path, as: :json
 
     json = JSON.parse(response.body)
+
     assert_not json["models"]["markov_chain"]["ready"]
     assert_equal 3, json["models"]["markov_chain"]["current_channels"]
     assert_equal 5, json["models"]["markov_chain"]["required_channels"]
@@ -724,7 +734,7 @@ class Accounts::AttributionModelsControllerTest < ActionDispatch::IntegrationTes
         session_id: session.id,
         conversion_type: "purchase",
         converted_at: i.hours.ago,
-        journey_session_ids: [session.id]
+        journey_session_ids: [ session.id ]
       )
     end
   end
@@ -746,7 +756,7 @@ class Accounts::AttributionModelsControllerTest < ActionDispatch::IntegrationTes
         session_id: session.id,
         conversion_type: "purchase",
         converted_at: i.hours.ago,
-        journey_session_ids: [session.id]
+        journey_session_ids: [ session.id ]
       )
     end
   end

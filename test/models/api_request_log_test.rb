@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class ApiRequestLogTest < ActiveSupport::TestCase
   # --- Validations ---
 
   test "should be valid with valid attributes" do
-    assert log.valid?
+    assert_predicate log, :valid?
   end
 
   test "should require request_id" do
@@ -77,14 +79,14 @@ class ApiRequestLogTest < ActiveSupport::TestCase
   test "should provide enum predicate methods" do
     log.error_type = :auth_missing_header
 
-    assert log.auth_missing_header?
+    assert_predicate log, :auth_missing_header?
     assert_not log.visitor_not_found?
   end
 
   test "should provide enum bang methods" do
     log.visitor_not_found!
 
-    assert log.visitor_not_found?
+    assert_predicate log, :visitor_not_found?
   end
 
   # --- Relationships ---
@@ -92,7 +94,7 @@ class ApiRequestLogTest < ActiveSupport::TestCase
   test "should belong to account optionally" do
     log.account = nil
 
-    assert log.valid?
+    assert_predicate log, :valid?
   end
 
   test "should belong to account when present" do
@@ -164,12 +166,14 @@ class ApiRequestLogTest < ActiveSupport::TestCase
 
   test "should default error_details to empty hash" do
     new_log = ApiRequestLog.new
-    assert_equal({}, new_log.error_details)
+
+    assert_empty(new_log.error_details)
   end
 
   test "should default request_params to empty hash" do
     new_log = ApiRequestLog.new
-    assert_equal({}, new_log.request_params)
+
+    assert_empty(new_log.request_params)
   end
 
   private

@@ -22,7 +22,7 @@ module Dashboard
 
       assert result[:success]
       assert result[:data].key?(:stages)
-      assert result[:data][:stages].is_a?(Array)
+      assert_kind_of Array, result[:data][:stages]
     end
 
     test "returns visits and conversions stages even with no events" do
@@ -33,6 +33,7 @@ module Dashboard
 
       assert result[:success]
       stage_names = result[:data][:stages].map { |s| s[:stage] }
+
       assert_includes stage_names, "Visits"
       assert_includes stage_names, "Conversions"
     end
@@ -83,6 +84,7 @@ module Dashboard
 
       # Middle stages are events
       event_stages = stages[1..-2]
+
       assert event_stages.all? { |s| s[:event_type].present? }
       assert_includes event_stages.map { |s| s[:event_type] }, "add_to_cart"
       assert_includes event_stages.map { |s| s[:event_type] }, "checkout_started"
@@ -268,7 +270,7 @@ module Dashboard
 
       # Cart stage conversion rate = 10 / 110 visits (100 + 10 from events)
       # Actually the visits count includes all sessions, so 110 unique visitors
-      assert cart_stage[:conversion_rate].present?
+      assert_predicate cart_stage[:conversion_rate], :present?
     end
 
     # ==========================================
@@ -293,7 +295,7 @@ module Dashboard
       create_sessions_with_events("add_to_cart", 5, channel: Channels::PAID_SEARCH)
       create_sessions_with_events("add_to_cart", 3, channel: Channels::EMAIL)
 
-      result = service(channels: [Channels::PAID_SEARCH]).call
+      result = service(channels: [ Channels::PAID_SEARCH ]).call
       cart_stage = result[:data][:stages].find { |s| s[:event_type] == "add_to_cart" }
 
       assert_equal 5, cart_stage[:total]
@@ -401,7 +403,7 @@ module Dashboard
       result = service.call
       funnels = result[:data][:available_funnels]
 
-      assert_equal ["awareness", "purchase", "signup"], funnels
+      assert_equal [ "awareness", "purchase", "signup" ], funnels
     end
 
     private
@@ -409,7 +411,7 @@ module Dashboard
     def service(date_range: "30d", channels: Channels::ALL, unique_users: true, funnel: nil)
       filter_params = {
         date_range: date_range,
-        models: [attribution_models(:first_touch)],
+        models: [ attribution_models(:first_touch) ],
         channels: channels,
         journey_position: "last_touch",
         metric: "conversions",
@@ -507,6 +509,7 @@ module Dashboard
       assert_no_difference -> { cache_writes } do
         result = service.call
         cart_stage = result[:data][:stages].find { |s| s[:event_type] == "add_to_cart" }
+
         assert_equal 5, cart_stage[:total]
       end
     end
@@ -524,6 +527,7 @@ module Dashboard
       # Next call should have new data
       result = service.call
       cart_stage = result[:data][:stages].find { |s| s[:event_type] == "add_to_cart" }
+
       assert_equal 8, cart_stage[:total]
     end
 
@@ -542,7 +546,7 @@ module Dashboard
 
       assert_difference -> { cache_writes }, 2 do
         service(channels: Channels::ALL).call
-        service(channels: [Channels::PAID_SEARCH]).call
+        service(channels: [ Channels::PAID_SEARCH ]).call
       end
     end
 
@@ -565,7 +569,7 @@ module Dashboard
     def service(date_range: "30d", channels: Channels::ALL, funnel: nil)
       filter_params = {
         date_range: date_range,
-        models: [attribution_models(:first_touch)],
+        models: [ attribution_models(:first_touch) ],
         channels: channels,
         journey_position: "last_touch",
         metric: "conversions",

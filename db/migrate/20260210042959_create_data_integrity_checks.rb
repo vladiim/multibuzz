@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateDataIntegrityChecks < ActiveRecord::Migration[8.0]
   def change
     create_table :data_integrity_checks do |t|
@@ -11,7 +13,7 @@ class CreateDataIntegrityChecks < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :data_integrity_checks, [:account_id, :check_name, :created_at],
+    add_index :data_integrity_checks, [ :account_id, :check_name, :created_at ],
       name: "idx_integrity_checks_account_check_time"
   end
 end

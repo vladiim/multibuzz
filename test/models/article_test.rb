@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class ArticleTest < ActiveSupport::TestCase
@@ -30,19 +32,19 @@ class ArticleTest < ActiveSupport::TestCase
   test "published? returns true when status is published and date is past" do
     article = build_article(status: "published", published_at: Date.yesterday)
 
-    assert article.published?
+    assert_predicate article, :published?
   end
 
   test "published? returns false when status is draft" do
     article = build_article(status: "draft", published_at: Date.yesterday)
 
-    refute article.published?
+    refute_predicate article, :published?
   end
 
   test "published? returns false when published_at is in the future" do
     article = build_article(status: "published", published_at: Date.tomorrow)
 
-    refute article.published?
+    refute_predicate article, :published?
   end
 
   test "seo_title falls back to title" do
@@ -72,13 +74,13 @@ class ArticleTest < ActiveSupport::TestCase
   test "key_takeaways returns empty array when not present" do
     article = build_article(aeo: {})
 
-    assert_equal [], article.key_takeaways
+    assert_empty article.key_takeaways
   end
 
   test "faq returns empty array when not present" do
     article = build_article(aeo: {})
 
-    assert_equal [], article.faq
+    assert_empty article.faq
   end
 
   test "to_param returns slug" do

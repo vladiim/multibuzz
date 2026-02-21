@@ -36,7 +36,7 @@ module Text
         prev_row = (0..s2.length).to_a
 
         s1.each_char.with_index(1) do |char1, i|
-          curr_row = [i]
+          curr_row = [ i ]
           s2.each_char.with_index(1) do |char2, j|
             curr_row << min_cost(prev_row, curr_row, i, j, char1 == char2)
           end

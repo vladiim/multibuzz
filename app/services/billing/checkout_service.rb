@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "ostruct"
 
 module Billing
@@ -27,10 +29,10 @@ module Billing
     end
 
     def validation_error
-      return error_result(["Plan not found"]) unless plan
-      return error_result(["Cannot checkout free plan"]) if plan.free?
+      return error_result([ "Plan not found" ]) unless plan
+      return error_result([ "Cannot checkout free plan" ]) if plan.free?
 
-      error_result(["Plan not configured for billing"])
+      error_result([ "Plan not configured for billing" ])
     end
 
     def ensure_stripe_customer
@@ -45,7 +47,7 @@ module Billing
         checkout_url: checkout_session.url
       )
     rescue Stripe::StripeError => e
-      error_result(["Stripe error: #{e.message}"])
+      error_result([ "Stripe error: #{e.message}" ])
     end
 
     def new_customer
@@ -71,7 +73,7 @@ module Billing
     end
 
     def line_items
-      [{ price: plan.stripe_price_id, quantity: 1 }]
+      [ { price: plan.stripe_price_id, quantity: 1 } ]
     end
 
     def session_metadata

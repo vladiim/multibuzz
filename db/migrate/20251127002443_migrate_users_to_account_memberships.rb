@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class MigrateUsersToAccountMemberships < ActiveRecord::Migration[8.0]
   def up
     execute <<-SQL

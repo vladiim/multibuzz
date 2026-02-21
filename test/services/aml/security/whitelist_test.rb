@@ -95,7 +95,7 @@ module AML
       end
 
       test "allows string match?" do
-        assert_allowed 'channel.match?(/paid/)'
+        assert_allowed "channel.match?(/paid/)"
       end
 
       # Numeric operations

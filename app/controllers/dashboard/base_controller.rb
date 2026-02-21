@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Dashboard
   class BaseController < ApplicationController
     before_action :require_login
@@ -10,7 +12,7 @@ module Dashboard
     private
 
     def selected_attribution_models
-      @selected_attribution_models ||= find_attribution_models.presence || [default_attribution_model]
+      @selected_attribution_models ||= find_attribution_models.presence || [ default_attribution_model ]
     end
 
     def find_attribution_models

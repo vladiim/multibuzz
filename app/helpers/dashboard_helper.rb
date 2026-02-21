@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module DashboardHelper
   ATTRIBUTION_MODEL_DESCRIPTIONS = {
     "first_touch" => "100% credit to the first marketing touchpoint",
@@ -91,14 +93,14 @@ module DashboardHelper
     when Hash
       value.flat_map { |k, v| hidden_inputs_for("#{key}[#{k}]", v) }
     else
-      [hidden_input_tag(key, value)]
+      [ hidden_input_tag(key, value) ]
     end
   end
 
   def hidden_inputs_for_array_element(key, value, index)
     return hidden_inputs_for("#{key}[#{index}]", value) if value.is_a?(Hash)
 
-    [hidden_input_tag(key, value, array: true)]
+    [ hidden_input_tag(key, value, array: true) ]
   end
 
   def hidden_input_tag(key, value, array: false)

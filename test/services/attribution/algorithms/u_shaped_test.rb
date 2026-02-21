@@ -9,25 +9,25 @@ module Attribution
         credits = service.call
 
         assert_equal 4, credits.size
-        assert_equal 0.4, credits[0][:credit]   # first
-        assert_equal 0.1, credits[1][:credit]   # middle (20% / 2)
-        assert_equal 0.1, credits[2][:credit]   # middle (20% / 2)
-        assert_equal 0.4, credits[3][:credit]   # last
+        assert_in_delta(0.4, credits[0][:credit])   # first
+        assert_in_delta(0.1, credits[1][:credit])   # middle (20% / 2)
+        assert_in_delta(0.1, credits[2][:credit])   # middle (20% / 2)
+        assert_in_delta(0.4, credits[3][:credit])   # last
       end
 
       test "should handle single touchpoint journey" do
-        credits = Attribution::Algorithms::UShaped.new([touchpoints[0]]).call
+        credits = Attribution::Algorithms::UShaped.new([ touchpoints[0] ]).call
 
         assert_equal 1, credits.size
-        assert_equal 1.0, credits[0][:credit]
+        assert_in_delta(1.0, credits[0][:credit])
       end
 
       test "should handle two touchpoint journey with 50/50 split" do
         credits = Attribution::Algorithms::UShaped.new(touchpoints[0..1]).call
 
         assert_equal 2, credits.size
-        assert_equal 0.5, credits[0][:credit]
-        assert_equal 0.5, credits[1][:credit]
+        assert_in_delta(0.5, credits[0][:credit])
+        assert_in_delta(0.5, credits[1][:credit])
       end
 
       test "should handle three touchpoint journey" do
@@ -35,9 +35,9 @@ module Attribution
         credits = Attribution::Algorithms::UShaped.new(three_touchpoints).call
 
         assert_equal 3, credits.size
-        assert_equal 0.4, credits[0][:credit]   # first
-        assert_equal 0.2, credits[1][:credit]   # middle (all 20%)
-        assert_equal 0.4, credits[2][:credit]   # last
+        assert_in_delta(0.4, credits[0][:credit])   # first
+        assert_in_delta(0.2, credits[1][:credit])   # middle (all 20%)
+        assert_in_delta(0.4, credits[2][:credit])   # last
       end
 
       test "should return empty array for empty journey" do
@@ -50,6 +50,7 @@ module Attribution
         credits = service.call
 
         total = credits.sum { |c| c[:credit] }
+
         assert_in_delta 1.0, total, 0.0001
       end
 
@@ -69,10 +70,11 @@ module Attribution
         credits = Attribution::Algorithms::UShaped.new(many_touchpoints).call
 
         assert_equal 10, credits.size
-        assert_equal 0.4, credits.first[:credit]
-        assert_equal 0.4, credits.last[:credit]
+        assert_in_delta(0.4, credits.first[:credit])
+        assert_in_delta(0.4, credits.last[:credit])
 
         middle_credits = credits[1..-2]
+
         middle_credits.each do |credit|
           assert_in_delta 0.025, credit[:credit], 0.0001  # 0.2 / 8
         end

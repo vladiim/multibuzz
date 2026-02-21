@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module CompetitorsHelper
   # Load all competitors from YAML
   def all_competitors
@@ -156,7 +158,7 @@ module CompetitorsHelper
   def competitors_yaml
     @competitors_yaml ||= begin
       path = Rails.root.join("config/competitors.yml")
-      YAML.safe_load(ERB.new(File.read(path)).result, permitted_classes: [Symbol])
+      YAML.safe_load(ERB.new(File.read(path)).result, permitted_classes: [ Symbol ])
     end
   end
 

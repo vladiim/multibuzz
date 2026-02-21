@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class WaitlistController < ApplicationController
   def new
     @submission = WaitlistSubmission.new

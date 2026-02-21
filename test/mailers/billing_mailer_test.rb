@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class BillingMailerTest < ActionMailer::TestCase
@@ -9,7 +11,7 @@ class BillingMailerTest < ActionMailer::TestCase
       email.deliver_now
     end
 
-    assert_equal [account.billing_email], email.to
+    assert_equal [ account.billing_email ], email.to
     assert_match /payment failed/i, email.subject
   end
 
@@ -20,7 +22,7 @@ class BillingMailerTest < ActionMailer::TestCase
       email.deliver_now
     end
 
-    assert_equal [account.billing_email], email.to
+    assert_equal [ account.billing_email ], email.to
     assert_match /payment.*successful/i, email.subject
   end
 
@@ -31,7 +33,7 @@ class BillingMailerTest < ActionMailer::TestCase
       email.deliver_now
     end
 
-    assert_equal [account.billing_email], email.to
+    assert_equal [ account.billing_email ], email.to
     assert_match /records.*locked/i, email.subject
   end
 
@@ -42,7 +44,7 @@ class BillingMailerTest < ActionMailer::TestCase
       email.deliver_now
     end
 
-    assert_equal [account.billing_email], email.to
+    assert_equal [ account.billing_email ], email.to
     assert_match /events.*unlocked|restored/i, email.subject
   end
 
@@ -53,7 +55,7 @@ class BillingMailerTest < ActionMailer::TestCase
       email.deliver_now
     end
 
-    assert_equal [account.billing_email], email.to
+    assert_equal [ account.billing_email ], email.to
     assert_match /subscription|welcome/i, email.subject
   end
 
@@ -64,7 +66,7 @@ class BillingMailerTest < ActionMailer::TestCase
       email.deliver_now
     end
 
-    assert_equal [account.billing_email], email.to
+    assert_equal [ account.billing_email ], email.to
     assert_match /cancel/i, email.subject
   end
 
@@ -77,7 +79,7 @@ class BillingMailerTest < ActionMailer::TestCase
       email.deliver_now
     end
 
-    assert_equal [account.billing_email], email.to
+    assert_equal [ account.billing_email ], email.to
     assert_match /free.*access/i, email.subject
   end
 
@@ -89,7 +91,7 @@ class BillingMailerTest < ActionMailer::TestCase
       email.deliver_now
     end
 
-    assert_equal [account.billing_email], email.to
+    assert_equal [ account.billing_email ], email.to
     assert_match /expir|ending/i, email.subject
   end
 
@@ -100,7 +102,7 @@ class BillingMailerTest < ActionMailer::TestCase
       email.deliver_now
     end
 
-    assert_equal [account.billing_email], email.to
+    assert_equal [ account.billing_email ], email.to
     assert_match /expired|ended/i, email.subject
   end
 
@@ -112,7 +114,7 @@ class BillingMailerTest < ActionMailer::TestCase
       email.deliver_now
     end
 
-    assert_equal [account.billing_email], email.to
+    assert_equal [ account.billing_email ], email.to
     assert_match /usage|approaching/i, email.subject
   end
 
@@ -123,7 +125,7 @@ class BillingMailerTest < ActionMailer::TestCase
       email.deliver_now
     end
 
-    assert_equal [account.billing_email], email.to
+    assert_equal [ account.billing_email ], email.to
     assert_match /limit.*reached/i, email.subject
   end
 
@@ -135,7 +137,7 @@ class BillingMailerTest < ActionMailer::TestCase
       email.deliver_now
     end
 
-    assert_equal [account.billing_email], email.to
+    assert_equal [ account.billing_email ], email.to
     assert_match /trial/i, email.subject
   end
 
@@ -147,7 +149,7 @@ class BillingMailerTest < ActionMailer::TestCase
       email.deliver_now
     end
 
-    assert_equal [account.billing_email], email.to
+    assert_equal [ account.billing_email ], email.to
     assert_match /trial.*end/i, email.subject
   end
 
@@ -158,7 +160,7 @@ class BillingMailerTest < ActionMailer::TestCase
       email.deliver_now
     end
 
-    assert_equal [account.billing_email], email.to
+    assert_equal [ account.billing_email ], email.to
     assert_match /trial.*expired/i, email.subject
   end
 

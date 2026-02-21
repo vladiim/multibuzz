@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddShopifyFieldsToAccounts < ActiveRecord::Migration[8.0]
   def change
     add_column :accounts, :shopify_domain, :string

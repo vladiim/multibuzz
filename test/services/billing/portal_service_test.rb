@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 require "ostruct"
 
@@ -24,7 +26,7 @@ class Billing::PortalServiceTest < ActiveSupport::TestCase
     result
 
     assert_equal "cus_123", @captured_params[:customer]
-    assert @captured_params[:return_url].present?
+    assert_predicate @captured_params[:return_url], :present?
   end
 
   test "handles stripe errors gracefully" do
@@ -32,7 +34,7 @@ class Billing::PortalServiceTest < ActiveSupport::TestCase
     @stripe_client = error_stripe_client
 
     assert_not result[:success]
-    assert result[:errors].first.include?("Stripe error")
+    assert_includes result[:errors].first, "Stripe error"
   end
 
   private

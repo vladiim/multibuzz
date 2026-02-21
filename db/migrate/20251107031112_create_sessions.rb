@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateSessions < ActiveRecord::Migration[8.0]
   def change
     create_table :sessions do |t|
@@ -12,7 +14,7 @@ class CreateSessions < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :sessions, [:account_id, :session_id], unique: true
+    add_index :sessions, [ :account_id, :session_id ], unique: true
     add_index :sessions, :session_id
     add_index :sessions, :ended_at
     add_index :sessions, :started_at

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Visitors
   class IdentificationService
     COOKIE_NAME = "_mbuzz_vid"

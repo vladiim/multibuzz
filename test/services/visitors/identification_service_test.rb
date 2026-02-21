@@ -12,7 +12,7 @@ class Visitors::IdentificationServiceTest < ActiveSupport::TestCase
   test "generates new visitor_id when cookie missing" do
     result = service_without_cookie.call
 
-    assert result[:visitor_id].present?
+    assert_predicate result[:visitor_id], :present?
     assert_equal 64, result[:visitor_id].length
     assert_match(/\A[a-f0-9]+\z/, result[:visitor_id])
   end
@@ -27,7 +27,7 @@ class Visitors::IdentificationServiceTest < ActiveSupport::TestCase
   test "returns set_cookie header" do
     result = service_without_cookie.call
 
-    assert result[:set_cookie].present?
+    assert_predicate result[:set_cookie], :present?
     assert_includes result[:set_cookie], "_mbuzz_vid="
   end
 
@@ -42,8 +42,10 @@ class Visitors::IdentificationServiceTest < ActiveSupport::TestCase
 
     assert_includes result[:set_cookie], "Expires="
     expiry_match = result[:set_cookie].match(/Expires=([^;]+)/)
+
     assert expiry_match
     expiry_time = Time.httpdate(expiry_match[1])
+
     assert_in_delta 1.year.from_now, expiry_time, 1.minute
   end
 

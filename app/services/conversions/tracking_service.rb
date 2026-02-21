@@ -47,11 +47,11 @@ module Conversions
     end
 
     def validation_error
-      return error_result(["event_id or visitor_id is required"]) unless has_identifier?
-      return error_result(["conversion_type is required"]) unless conversion_type.present?
-      return error_result(["Event not found"]) if event_id.present? && !event
-      return error_result(["Event belongs to different account"]) if event && !event_belongs_to_account?
-      return error_result(["Visitor not found"]) unless resolved_visitor
+      return error_result([ "event_id or visitor_id is required" ]) unless has_identifier?
+      return error_result([ "conversion_type is required" ]) unless conversion_type.present?
+      return error_result([ "Event not found" ]) if event_id.present? && !event
+      return error_result([ "Event belongs to different account" ]) if event && !event_belongs_to_account?
+      return error_result([ "Visitor not found" ]) unless resolved_visitor
 
       nil
     end

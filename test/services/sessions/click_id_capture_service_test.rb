@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class Sessions::ClickIdCaptureServiceTest < ActiveSupport::TestCase
@@ -5,21 +7,25 @@ class Sessions::ClickIdCaptureServiceTest < ActiveSupport::TestCase
 
   test "captures gclid from url" do
     result = capture(url: "https://example.com?gclid=abc123")
+
     assert_equal "abc123", result[:gclid]
   end
 
   test "captures gbraid from url" do
     result = capture(url: "https://example.com?gbraid=xyz789")
+
     assert_equal "xyz789", result[:gbraid]
   end
 
   test "captures wbraid from url" do
     result = capture(url: "https://example.com?wbraid=web123")
+
     assert_equal "web123", result[:wbraid]
   end
 
   test "captures dclid from url" do
     result = capture(url: "https://example.com?dclid=dc456")
+
     assert_equal "dc456", result[:dclid]
   end
 
@@ -27,6 +33,7 @@ class Sessions::ClickIdCaptureServiceTest < ActiveSupport::TestCase
 
   test "captures msclkid from url" do
     result = capture(url: "https://example.com?msclkid=ms789")
+
     assert_equal "ms789", result[:msclkid]
   end
 
@@ -34,6 +41,7 @@ class Sessions::ClickIdCaptureServiceTest < ActiveSupport::TestCase
 
   test "captures fbclid from url" do
     result = capture(url: "https://example.com?fbclid=fb123")
+
     assert_equal "fb123", result[:fbclid]
   end
 
@@ -41,31 +49,37 @@ class Sessions::ClickIdCaptureServiceTest < ActiveSupport::TestCase
 
   test "captures ttclid from url" do
     result = capture(url: "https://example.com?ttclid=tt123")
+
     assert_equal "tt123", result[:ttclid]
   end
 
   test "captures li_fat_id from url" do
     result = capture(url: "https://example.com?li_fat_id=li123")
+
     assert_equal "li123", result[:li_fat_id]
   end
 
   test "captures twclid from url" do
     result = capture(url: "https://example.com?twclid=tw123")
+
     assert_equal "tw123", result[:twclid]
   end
 
   test "captures epik from url" do
     result = capture(url: "https://example.com?epik=pin123")
+
     assert_equal "pin123", result[:epik]
   end
 
   test "captures sclid from url" do
     result = capture(url: "https://example.com?sclid=snap123")
+
     assert_equal "snap123", result[:sclid]
   end
 
   test "captures ScCid (mixed case snapchat) from url" do
     result = capture(url: "https://example.com?ScCid=snap456")
+
     assert_equal "snap456", result[:ScCid]
   end
 
@@ -73,6 +87,7 @@ class Sessions::ClickIdCaptureServiceTest < ActiveSupport::TestCase
 
   test "captures gclsrc from url" do
     result = capture(url: "https://example.com?gclsrc=aw.ds")
+
     assert_equal "aw.ds", result[:gclsrc]
   end
 
@@ -80,6 +95,7 @@ class Sessions::ClickIdCaptureServiceTest < ActiveSupport::TestCase
 
   test "captures rdt_cid from url" do
     result = capture(url: "https://example.com?rdt_cid=reddit123")
+
     assert_equal "reddit123", result[:rdt_cid]
   end
 
@@ -87,6 +103,7 @@ class Sessions::ClickIdCaptureServiceTest < ActiveSupport::TestCase
 
   test "captures qclid from url" do
     result = capture(url: "https://example.com?qclid=quora123")
+
     assert_equal "quora123", result[:qclid]
   end
 
@@ -94,6 +111,7 @@ class Sessions::ClickIdCaptureServiceTest < ActiveSupport::TestCase
 
   test "captures vmcid from url" do
     result = capture(url: "https://example.com?vmcid=yahoo123")
+
     assert_equal "yahoo123", result[:vmcid]
   end
 
@@ -101,6 +119,7 @@ class Sessions::ClickIdCaptureServiceTest < ActiveSupport::TestCase
 
   test "captures yclid from url" do
     result = capture(url: "https://example.com?yclid=yandex123")
+
     assert_equal "yandex123", result[:yclid]
   end
 
@@ -108,6 +127,7 @@ class Sessions::ClickIdCaptureServiceTest < ActiveSupport::TestCase
 
   test "captures sznclid from url" do
     result = capture(url: "https://example.com?sznclid=seznam123")
+
     assert_equal "seznam123", result[:sznclid]
   end
 
@@ -115,6 +135,7 @@ class Sessions::ClickIdCaptureServiceTest < ActiveSupport::TestCase
 
   test "captures multiple click ids from same url" do
     result = capture(url: "https://example.com?gclid=g123&fbclid=f456")
+
     assert_equal "g123", result[:gclid]
     assert_equal "f456", result[:fbclid]
   end
@@ -123,6 +144,7 @@ class Sessions::ClickIdCaptureServiceTest < ActiveSupport::TestCase
 
   test "captures click ids from properties if not in url" do
     result = capture(properties: { gclid: "prop123" })
+
     assert_equal "prop123", result[:gclid]
   end
 
@@ -131,27 +153,31 @@ class Sessions::ClickIdCaptureServiceTest < ActiveSupport::TestCase
       url: "https://example.com?gclid=url123",
       properties: { gclid: "prop123" }
     )
+
     assert_equal "url123", result[:gclid]
   end
 
   # === Edge Cases ===
 
   test "returns empty hash for nil url and properties" do
-    assert_equal({}, capture(url: nil, properties: nil))
+    assert_empty(capture(url: nil, properties: nil))
   end
 
   test "returns empty hash when no click ids present" do
     result = capture(url: "https://example.com?foo=bar")
-    assert_equal({}, result)
+
+    assert_empty(result)
   end
 
   test "ignores empty click id values" do
     result = capture(url: "https://example.com?gclid=")
-    assert_equal({}, result)
+
+    assert_empty(result)
   end
 
   test "handles invalid url gracefully" do
     result = capture(url: "not-a-valid-url", properties: { gclid: "abc" })
+
     assert_equal "abc", result[:gclid]
   end
 

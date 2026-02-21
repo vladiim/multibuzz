@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class Events::ValidationServiceTest < ActiveSupport::TestCase
@@ -65,7 +67,7 @@ class Events::ValidationServiceTest < ActiveSupport::TestCase
   end
 
   test "should collect multiple errors" do
-    @event_data = {}
+    @event_data = {}.freeze
 
     assert_not result[:valid]
     assert_includes result[:errors], "event_type is required"

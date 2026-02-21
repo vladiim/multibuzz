@@ -11,7 +11,7 @@ module Shopify
         result = handler.call
 
         assert result[:success]
-        assert identity.prefix_id.present?
+        assert_predicate identity.prefix_id, :present?
         assert_equal identity.id, visitor.reload.identity_id
       end
 

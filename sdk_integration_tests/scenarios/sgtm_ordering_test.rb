@@ -17,6 +17,7 @@ class SgtmOrderingTest < SdkIntegrationTest
     wait_for_async(3)
 
     data = verify_test_data
+
     assert data[:events].any? { |e| e[:event_type] == "after_session" },
       "Event should succeed after session creation"
   end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Event::Validations
   extend ActiveSupport::Concern
 

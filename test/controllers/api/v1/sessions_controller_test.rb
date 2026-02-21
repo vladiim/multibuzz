@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class Api::V1::SessionsControllerTest < ActionDispatch::IntegrationTest
@@ -15,6 +17,7 @@ class Api::V1::SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :accepted
 
     session = account.sessions.unscope(where: :is_test).test_data.last
+
     assert_equal "google", session.initial_utm["utm_source"]
     assert_equal "cpc", session.initial_utm["utm_medium"]
     assert_equal "paid_search", session.channel
@@ -26,6 +29,7 @@ class Api::V1::SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :accepted
 
     session = account.sessions.unscope(where: :is_test).test_data.last
+
     assert_equal "direct", session.channel
   end
 
@@ -35,6 +39,7 @@ class Api::V1::SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :accepted
 
     session = account.sessions.unscope(where: :is_test).test_data.last
+
     assert_equal "organic_search", session.channel
   end
 

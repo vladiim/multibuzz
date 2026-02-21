@@ -1,43 +1,51 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class EventTest < ActiveSupport::TestCase
   test "valid event" do
-    assert event.valid?
+    assert_predicate event, :valid?
   end
 
   test "requires event_type" do
     event.event_type = nil
+
     assert_not event.valid?
     assert_includes event.errors[:event_type], "can't be blank"
   end
 
   test "requires occurred_at" do
     event.occurred_at = nil
+
     assert_not event.valid?
     assert_includes event.errors[:occurred_at], "can't be blank"
   end
 
   test "requires properties" do
     event.properties = nil
+
     assert_not event.valid?
     assert_includes event.errors[:properties], "can't be blank"
   end
 
   test "properties must be a hash" do
     event.properties = "not a hash"
+
     assert_not event.valid?
     assert_includes event.errors[:properties], "must be a hash"
   end
 
   test "rejects properties exceeding 50KB" do
     event.properties = { "data" => "x" * 51_200 }
+
     assert_not event.valid?
     assert event.errors[:properties].any? { |e| e.include?("exceeds maximum size") }
   end
 
   test "accepts properties within 50KB" do
     event.properties = { "data" => "x" * 1_000 }
-    assert event.valid?
+
+    assert_predicate event, :valid?
   end
 
   test "belongs to account" do
@@ -54,11 +62,13 @@ class EventTest < ActiveSupport::TestCase
 
   test "by_type scope filters by event type" do
     page_view_events = Event.by_type("page_view")
+
     assert_includes page_view_events, event
   end
 
   test "recent scope orders by occurred_at desc" do
     recent_events = account.events.recent
+
     assert_equal events(:two), recent_events.first
     assert_equal events(:one), recent_events.second
   end
@@ -68,24 +78,28 @@ class EventTest < ActiveSupport::TestCase
     end_time = 45.minutes.ago
 
     events_in_range = account.events.between(start_time, end_time)
+
     assert_includes events_in_range, events(:one)
     assert_not_includes events_in_range, events(:two)
   end
 
   test "with_utm_source scope filters by utm source" do
     google_events = Event.with_utm_source("google")
+
     assert_includes google_events, events(:one)
     assert_not_includes google_events, events(:two)
   end
 
   test "with_utm_medium scope filters by utm medium" do
     cpc_events = Event.with_utm_medium("cpc")
+
     assert_includes cpc_events, events(:one)
     assert_not_includes cpc_events, events(:two)
   end
 
   test "with_utm_campaign scope filters by utm campaign" do
     campaign_events = Event.with_utm_campaign("spring_sale")
+
     assert_includes campaign_events, events(:one)
     assert_not_includes campaign_events, events(:two)
   end

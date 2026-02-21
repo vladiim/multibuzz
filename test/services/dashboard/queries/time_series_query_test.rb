@@ -17,13 +17,15 @@ module Dashboard
 
         result = query.call
 
-        assert result[:dates].is_a?(Array)
-        assert result[:series].is_a?(Array)
+        assert_kind_of Array, result[:dates]
+        assert_kind_of Array, result[:series]
 
         paid_search_series = result[:series].find { |s| s[:channel] == Channels::PAID_SEARCH }
-        assert paid_search_series.present?, "Should have paid_search series"
+
+        assert_predicate paid_search_series, :present?, "Should have paid_search series"
 
         data_sum = paid_search_series[:data].sum
+
         assert_operator data_sum, :>, 0, "Paid search series should have non-zero data"
       end
 
@@ -38,8 +40,8 @@ module Dashboard
       test "handles empty data gracefully" do
         result = query.call
 
-        assert result[:dates].is_a?(Array)
-        assert result[:series].empty?
+        assert_kind_of Array, result[:dates]
+        assert_empty result[:series]
       end
 
       test "limits to top channels by credit volume" do
@@ -66,7 +68,8 @@ module Dashboard
         result = query.call
 
         paid_search = result[:series].find { |s| s[:channel] == Channels::PAID_SEARCH }
-        assert_equal 0.5, paid_search[:data].sum
+
+        assert_in_delta(0.5, paid_search[:data].sum)
       end
 
       test "returns revenue when metric is revenue" do
@@ -78,8 +81,8 @@ module Dashboard
         paid_search = result[:series].find { |s| s[:channel] == Channels::PAID_SEARCH }
         email = result[:series].find { |s| s[:channel] == Channels::EMAIL }
 
-        assert_equal 100.0, paid_search[:data].sum
-        assert_equal 50.0, email[:data].sum
+        assert_in_delta(100.0, paid_search[:data].sum)
+        assert_in_delta(50.0, email[:data].sum)
       end
 
       test "returns conversion count when metric is conversions" do
@@ -96,11 +99,13 @@ module Dashboard
 
         # paid_search has credits from 2 conversions
         paid_search = result[:series].find { |s| s[:channel] == Channels::PAID_SEARCH }
-        assert_equal 2.0, paid_search[:data].sum
+
+        assert_in_delta(2.0, paid_search[:data].sum)
 
         # email has credit from 1 conversion
         email = result[:series].find { |s| s[:channel] == Channels::EMAIL }
-        assert_equal 1.0, email[:data].sum
+
+        assert_in_delta(1.0, email[:data].sum)
       end
 
       test "top channels ordered by selected metric" do
@@ -127,7 +132,7 @@ module Dashboard
       def build_scope
         Scopes::CreditsScope.new(
           account: account,
-          models: [attribution_model],
+          models: [ attribution_model ],
           date_range: date_range,
           channels: Channels::ALL
         ).call

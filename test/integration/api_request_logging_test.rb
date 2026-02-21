@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class ApiRequestLoggingTest < ActionDispatch::IntegrationTest
@@ -15,6 +17,7 @@ class ApiRequestLoggingTest < ActionDispatch::IntegrationTest
     assert_response :unauthorized
 
     log = ApiRequestLog.last
+
     assert_equal "auth_missing_header", log.error_type
     assert_equal 401, log.http_status
     assert_equal "v1/events", log.endpoint
@@ -32,6 +35,7 @@ class ApiRequestLoggingTest < ActionDispatch::IntegrationTest
     assert_response :unauthorized
 
     log = ApiRequestLog.last
+
     assert_equal "auth_invalid_key", log.error_type
     assert_equal 401, log.http_status
   end
@@ -46,6 +50,7 @@ class ApiRequestLoggingTest < ActionDispatch::IntegrationTest
     assert_response :unauthorized
 
     log = ApiRequestLog.last
+
     assert_equal "auth_revoked_key", log.error_type
   end
 
@@ -59,6 +64,7 @@ class ApiRequestLoggingTest < ActionDispatch::IntegrationTest
     assert_response :unauthorized
 
     log = ApiRequestLog.last
+
     assert_equal "auth_account_suspended", log.error_type
     assert_equal account, log.account
   end
@@ -83,6 +89,7 @@ class ApiRequestLoggingTest < ActionDispatch::IntegrationTest
     assert_response :accepted
 
     log = ApiRequestLog.last
+
     assert_equal "visitor_not_found", log.error_type
     assert_equal 422, log.http_status
     assert_equal account, log.account
@@ -102,6 +109,7 @@ class ApiRequestLoggingTest < ActionDispatch::IntegrationTest
     assert_response :accepted
 
     log = ApiRequestLog.last
+
     assert_equal "validation_invalid_format", log.error_type
     assert_equal 422, log.http_status
   end
@@ -157,6 +165,7 @@ class ApiRequestLoggingTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
 
     log = ApiRequestLog.last
+
     assert_equal "visitor_not_found", log.error_type
     assert_equal "v1/conversions", log.endpoint
   end
@@ -175,6 +184,7 @@ class ApiRequestLoggingTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
 
     log = ApiRequestLog.last
+
     assert_equal "validation_missing_param", log.error_type
   end
 
@@ -196,6 +206,7 @@ class ApiRequestLoggingTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
 
     log = ApiRequestLog.last
+
     assert_equal "validation_missing_param", log.error_type
     assert_equal "v1/sessions", log.endpoint
   end
@@ -209,6 +220,7 @@ class ApiRequestLoggingTest < ActionDispatch::IntegrationTest
       as: :json
 
     log = ApiRequestLog.last
+
     assert_equal "mbuzz-ruby", log.sdk_name
     assert_equal "0.7.1", log.sdk_version
   end
@@ -220,6 +232,7 @@ class ApiRequestLoggingTest < ActionDispatch::IntegrationTest
       as: :json
 
     log = ApiRequestLog.last
+
     assert_equal "mbuzz-php", log.sdk_name
     assert_equal "1.0.0", log.sdk_version
   end
@@ -230,7 +243,8 @@ class ApiRequestLoggingTest < ActionDispatch::IntegrationTest
     post api_v1_events_path, params: events_payload, as: :json
 
     log = ApiRequestLog.last
-    assert log.ip_address.present?
+
+    assert_predicate log.ip_address, :present?
     assert log.ip_address.end_with?(".0"), "IP should be anonymized"
   end
 

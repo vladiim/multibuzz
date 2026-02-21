@@ -8,16 +8,18 @@ module Conversions
       result = service.call
 
       assert result[:success], "Expected success but got: #{result[:errors]&.join(', ')}"
-      assert result[:credits_by_model].present?
+      assert_predicate result[:credits_by_model], :present?
     end
 
     test "deletes existing credits before recalculating" do
       # First calculate initial attribution
       initial_result = Conversions::AttributionCalculationService.new(conversion).call
+
       assert initial_result[:success]
 
       initial_credits = conversion.attribution_credits.count
-      assert initial_credits.positive?
+
+      assert_predicate initial_credits, :positive?
 
       # Now reattribute - should delete and recalculate
       result = service.call
@@ -46,14 +48,17 @@ module Conversions
 
     test "double reattribution produces same credit count not duplicates" do
       first_result = service.call
+
       assert first_result[:success]
 
       credits_after_first = conversion.attribution_credits.reload.count
 
       second_result = Conversions::ReattributionService.new(conversion).call
+
       assert second_result[:success]
 
       credits_after_second = conversion.attribution_credits.reload.count
+
       assert_equal credits_after_first, credits_after_second,
         "Second reattribution should replace, not duplicate credits"
     end

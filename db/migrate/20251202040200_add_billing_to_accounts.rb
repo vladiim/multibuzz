@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddBillingToAccounts < ActiveRecord::Migration[8.0]
   def change
     add_reference :accounts, :plan, null: true, foreign_key: true

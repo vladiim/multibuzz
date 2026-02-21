@@ -20,9 +20,9 @@ namespace :deduplication do
     puts "-" * 70
 
     [
-      ["Pre-fix baseline", pre_fix_range],
-      ["Last 24 hours", 24.hours.ago..Time.current],
-      ["Last 1 hour", 1.hour.ago..Time.current]
+      [ "Pre-fix baseline", pre_fix_range ],
+      [ "Last 24 hours", 24.hours.ago..Time.current ],
+      [ "Last 1 hour", 1.hour.ago..Time.current ]
     ].each do |name, range|
       multi = Visitor.where(account: account, created_at: range)
         .group("DATE_TRUNC('second', created_at)")
@@ -63,7 +63,7 @@ namespace :deduplication do
       s = Session.where(account: account, started_at: range).count
       next if v == 0 && s == 0
 
-      ratio = v.to_f / [s, 1].max
+      ratio = v.to_f / [ s, 1 ].max
       status = ratio > 1.2 ? "⚠️ High" : "✅"
 
       puts format("%s | %8d | %8d | %6.3f | %s", date, v, s, ratio, status)

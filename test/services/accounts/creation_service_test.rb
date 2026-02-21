@@ -16,9 +16,10 @@ class Accounts::CreationServiceTest < ActiveSupport::TestCase
 
     assert result[:success]
     membership = result[:account].account_memberships.first
+
     assert_equal user, membership.user
-    assert membership.owner?
-    assert membership.accepted?
+    assert_predicate membership, :owner?
+    assert_predicate membership, :accepted?
   end
 
   test "generates unique slug when duplicate exists" do
@@ -41,7 +42,7 @@ class Accounts::CreationServiceTest < ActiveSupport::TestCase
     result = service("New Account").call
 
     assert result[:success]
-    assert result[:account].attribution_models.count > 0
+    assert_operator result[:account].attribution_models.count, :>, 0
   end
 
   private

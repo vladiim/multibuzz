@@ -18,8 +18,8 @@ module Dashboard
       test "returns empty result when no acquisitions" do
         result = query.call
 
-        assert_equal [], result[:months]
-        assert_equal [], result[:series]
+        assert_empty result[:months]
+        assert_empty result[:series]
       end
 
       test "returns months array from 0 to 12" do
@@ -35,7 +35,7 @@ module Dashboard
 
         result = query.call
 
-        assert result[:series].is_a?(Array)
+        assert_kind_of Array, result[:series]
         assert result[:series].first.key?(:channel)
         assert result[:series].first.key?(:data)
       end
@@ -52,6 +52,7 @@ module Dashboard
         result = query.call
 
         channels = result[:series].map { |s| s[:channel] }
+
         assert_includes channels, Channels::PAID_SEARCH
         assert_includes channels, Channels::EMAIL
         assert_includes channels, Channels::DIRECT
@@ -63,6 +64,7 @@ module Dashboard
         result = query.call
 
         series = result[:series].find { |s| s[:channel] == Channels::PAID_SEARCH }
+
         assert_equal 13, series[:data].length
       end
 
@@ -79,7 +81,8 @@ module Dashboard
         result = query.call
 
         series = result[:series].find { |s| s[:channel] == Channels::PAID_SEARCH }
-        assert_equal 100.0, series[:data][0] # M0
+
+        assert_in_delta(100.0, series[:data][0]) # M0
       end
 
       test "subsequent months contain repeat purchase revenue" do
@@ -111,9 +114,10 @@ module Dashboard
         result = query.call
 
         series = result[:series].find { |s| s[:channel] == Channels::PAID_SEARCH }
-        assert_equal 100.0, series[:data][0] # M0
-        assert_equal 50.0, series[:data][1]  # M1
-        assert_equal 75.0, series[:data][2]  # M2
+
+        assert_in_delta(100.0, series[:data][0]) # M0
+        assert_in_delta(50.0, series[:data][1])  # M1
+        assert_in_delta(75.0, series[:data][2])  # M2
       end
 
       test "averages revenue across multiple customers in same channel" do
@@ -139,7 +143,7 @@ module Dashboard
 
         series = result[:series].find { |s| s[:channel] == Channels::PAID_SEARCH }
         # Average of $100 and $200 = $150
-        assert_equal 150.0, series[:data][0]
+        assert_in_delta(150.0, series[:data][0])
       end
 
       test "returns numeric values not strings" do
@@ -148,6 +152,7 @@ module Dashboard
         result = query.call
 
         series = result[:series].find { |s| s[:channel] == Channels::PAID_SEARCH }
+
         assert series[:data].all? { |v| v.is_a?(Numeric) }, "All values should be numeric"
       end
 

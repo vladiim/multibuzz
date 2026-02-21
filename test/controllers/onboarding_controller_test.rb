@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class OnboardingControllerTest < ActionDispatch::IntegrationTest
@@ -42,7 +44,8 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     post onboarding_persona_path, params: { persona: "developer" }
 
     @test_account.reload
-    assert @test_account.developer?
+
+    assert_predicate @test_account, :developer?
     assert @test_account.onboarding_step_completed?(:persona_selected)
     assert_redirected_to onboarding_setup_path
   end
@@ -53,7 +56,8 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     post onboarding_persona_path, params: { persona: "marketer" }
 
     @test_account.reload
-    assert @test_account.marketer?
+
+    assert_predicate @test_account, :marketer?
     assert_redirected_to dashboard_path
   end
 
@@ -83,7 +87,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
       get onboarding_setup_path
     end
 
-    assert @test_account.api_keys.test.exists?
+    assert_predicate @test_account.api_keys.test, :exists?
   end
 
   test "setup keeps plaintext key in session for install step" do
@@ -91,11 +95,13 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
 
     # First view - plaintext shown (dark bg, green text)
     get onboarding_setup_path
+
     assert_not_nil session[:plaintext_api_key], "Session should keep key for install step"
     assert_select "code.text-green-400", /sk_test_/
 
     # Key remains available for install page (needed for Shopify)
     get onboarding_setup_path
+
     assert_select "code.text-green-400", /sk_test_/
   end
 
@@ -128,8 +134,8 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     post onboarding_regenerate_api_key_path
 
     assert_redirected_to onboarding_setup_path
-    assert old_key.reload.revoked?
-    assert session[:plaintext_api_key].present?
+    assert_predicate old_key.reload, :revoked?
+    assert_predicate session[:plaintext_api_key], :present?
     assert session[:plaintext_api_key].start_with?("sk_test_")
   end
 
@@ -153,6 +159,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     post onboarding_select_sdk_path, params: { sdk: "ruby" }
 
     @test_account.reload
+
     assert_equal "ruby", @test_account.selected_sdk
     assert @test_account.onboarding_step_completed?(:sdk_selected)
     assert_redirected_to onboarding_install_path
@@ -164,6 +171,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     post onboarding_select_sdk_path, params: { sdk: "python" }
 
     @test_account.reload
+
     assert_equal "python", @test_account.selected_sdk
     assert_redirected_to onboarding_install_path
   end
@@ -184,9 +192,10 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to onboarding_setup_path
-    assert flash[:notice].include?("waitlist")
+    assert_includes flash[:notice], "waitlist"
 
     submission = SdkWaitlistSubmission.last
+
     assert_equal "python", submission.sdk_key
     assert_equal user.email, submission.email
   end
@@ -277,7 +286,8 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     json = JSON.parse(response.body)
-    assert_equal false, json["received"]
+
+    refute json["received"]
   end
 
   test "event_status returns received true when events exist" do
@@ -287,7 +297,8 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     json = JSON.parse(response.body)
-    assert_equal true, json["received"]
+
+    assert json["received"]
   end
 
   # --- Conversion ---

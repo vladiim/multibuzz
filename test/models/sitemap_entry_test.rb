@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class SitemapEntryTest < ActiveSupport::TestCase
@@ -12,7 +14,7 @@ class SitemapEntryTest < ActiveSupport::TestCase
     assert_equal "https://mbuzz.co/", entry.loc
     assert_equal Date.new(2026, 1, 28), entry.lastmod
     assert_equal "weekly", entry.changefreq
-    assert_equal 1.0, entry.priority
+    assert_in_delta(1.0, entry.priority)
   end
 
   test "lastmod_iso returns ISO 8601 date format" do

@@ -20,7 +20,7 @@ module Attribution
       success_result(processed: rerun_job.processed_conversions)
     rescue StandardError => e
       rerun_job.mark_failed!(e.message)
-      error_result([e.message])
+      error_result([ e.message ])
     end
 
     def process_stale_conversions
@@ -53,7 +53,6 @@ module Attribution
     end
 
     def process_conversion(conversion)
-
       ActiveRecord::Base.transaction do
         delete_existing_credits(conversion)
         calculate_and_persist_credits(conversion)

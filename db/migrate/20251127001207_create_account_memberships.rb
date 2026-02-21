@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateAccountMemberships < ActiveRecord::Migration[8.0]
   def change
     create_table :account_memberships do |t|
@@ -13,12 +15,12 @@ class CreateAccountMemberships < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :account_memberships, [:user_id, :account_id],
+    add_index :account_memberships, [ :user_id, :account_id ],
       unique: true,
       where: "deleted_at IS NULL",
       name: "index_account_memberships_unique_active"
-    add_index :account_memberships, [:account_id, :role]
-    add_index :account_memberships, [:account_id, :status]
+    add_index :account_memberships, [ :account_id, :role ]
+    add_index :account_memberships, [ :account_id, :status ]
     add_index :account_memberships, :deleted_at
   end
 end

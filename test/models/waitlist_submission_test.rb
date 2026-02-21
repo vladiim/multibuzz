@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class WaitlistSubmissionTest < ActiveSupport::TestCase
   test "should have valid fixtures" do
-    assert waitlist_one.valid?
-    assert waitlist_other_framework.valid?
+    assert_predicate waitlist_one, :valid?
+    assert_predicate waitlist_other_framework, :valid?
   end
 
   test "should require role" do
@@ -66,7 +68,7 @@ class WaitlistSubmissionTest < ActiveSupport::TestCase
       framework: "rails"
     )
 
-    assert submission.valid?
+    assert_predicate submission, :valid?
   end
 
   test "should create valid waitlist submission" do
@@ -76,10 +78,10 @@ class WaitlistSubmissionTest < ActiveSupport::TestCase
       framework: "django"
     )
 
-    assert submission.valid?
+    assert_predicate submission, :valid?
     assert submission.save
     assert_equal "WaitlistSubmission", submission.type
-    assert submission.pending?
+    assert_predicate submission, :pending?
   end
 
   test "should access store_accessor fields" do

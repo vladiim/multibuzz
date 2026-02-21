@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ReferrerSources
   class SyncService < ApplicationService
     MATOMO_SEARCH_URL = "https://raw.githubusercontent.com/matomo-org/searchengine-and-social-list/master/SearchEngines.yml"
@@ -50,7 +52,7 @@ module ReferrerSources
 
     HTTP_TIMEOUT = 30
     MAX_RETRIES = 3
-    RETRYABLE_ERRORS = [Net::OpenTimeout, Net::ReadTimeout, Errno::ECONNRESET, Errno::ECONNREFUSED].freeze
+    RETRYABLE_ERRORS = [ Net::OpenTimeout, Net::ReadTimeout, Errno::ECONNRESET, Errno::ECONNREFUSED ].freeze
 
     def fetch_source(url, source_key)
       log_info("Fetching #{source_key} from #{url}")
@@ -119,7 +121,7 @@ module ReferrerSources
         ReferrerSource.upsert_all(
           timestamped_records,
           unique_by: :domain,
-          update_only: [:source_name, :medium, :keyword_param, :is_spam, :data_origin]
+          update_only: [ :source_name, :medium, :keyword_param, :is_spam, :data_origin ]
         ) if records_to_upsert.any?
       end
     end

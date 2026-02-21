@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class Events::ProcessingServiceTest < ActiveSupport::TestCase
   test "should create event with valid data" do
     assert_difference -> { Event.count }, 1 do
       assert result[:success]
-      assert result[:event].persisted?
+      assert_predicate result[:event], :persisted?
       assert_equal "page_view", result[:event].event_type
     end
   end
@@ -82,7 +84,7 @@ class Events::ProcessingServiceTest < ActiveSupport::TestCase
     @event_data = valid_event_data.merge("event_type" => "")
 
     assert_not result[:success]
-    assert result[:errors].present?
+    assert_predicate result[:errors], :present?
   end
 
   private
@@ -152,7 +154,7 @@ class Events::ProcessingServiceTest < ActiveSupport::TestCase
     assert_difference -> { Session.count }, 1 do
       assert result[:success]
       # Should have generated a deterministic session_id
-      assert result[:event].session.session_id.present?
+      assert_predicate result[:event].session.session_id, :present?
       assert_equal 32, result[:event].session.session_id.length
     end
   end
@@ -197,7 +199,7 @@ class Events::ProcessingServiceTest < ActiveSupport::TestCase
       "user_agent" => test_user_agent,
       "timestamp" => Time.current.iso8601,
       "properties" => { "url" => "https://example.com" }
-    }
+    }.freeze
 
     assert_no_difference -> { Visitor.count } do
       assert result[:success]

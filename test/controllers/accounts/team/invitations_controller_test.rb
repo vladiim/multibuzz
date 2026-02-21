@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class Accounts::Team::InvitationsControllerTest < ActionDispatch::IntegrationTest
@@ -30,10 +32,11 @@ class Accounts::Team::InvitationsControllerTest < ActionDispatch::IntegrationTes
     post account_team_invitations_path, params: { email: "newuser@example.com", role: "member" }
 
     membership = AccountMembership.last
-    assert membership.pending?
+
+    assert_predicate membership, :pending?
     assert_equal "member", membership.role
-    assert membership.invitation_token_digest.present?
-    assert membership.invited_at.present?
+    assert_predicate membership.invitation_token_digest, :present?
+    assert_predicate membership.invited_at, :present?
   end
 
   test "create allows admin role invitation" do
@@ -42,6 +45,7 @@ class Accounts::Team::InvitationsControllerTest < ActionDispatch::IntegrationTes
     post account_team_invitations_path, params: { email: "newadmin@example.com", role: "admin" }
 
     membership = AccountMembership.last
+
     assert_equal "admin", membership.role
   end
 
@@ -65,8 +69,9 @@ class Accounts::Team::InvitationsControllerTest < ActionDispatch::IntegrationTes
 
     assert_redirected_to account_team_path
     membership = AccountMembership.find_by(user: existing_user, account: account)
-    assert membership.present?
-    assert membership.pending?
+
+    assert_predicate membership, :present?
+    assert_predicate membership, :pending?
   end
 
   test "create rejects duplicate invitation" do
@@ -128,6 +133,7 @@ class Accounts::Team::InvitationsControllerTest < ActionDispatch::IntegrationTes
     post account_team_invitations_path, params: { email: "newuser@example.com", role: "member" }
 
     membership = AccountMembership.last
+
     assert_equal owner.id, membership.invited_by_id
   end
 
@@ -194,6 +200,7 @@ class Accounts::Team::InvitationsControllerTest < ActionDispatch::IntegrationTes
     post account_team_invitations_path, params: { resend: pending_membership.prefix_id }
 
     pending_membership.reload
+
     assert_not_equal old_token, pending_membership.invitation_token_digest
   end
 

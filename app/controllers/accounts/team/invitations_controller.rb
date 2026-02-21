@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Accounts
   module Team
     class InvitationsController < Accounts::BaseController

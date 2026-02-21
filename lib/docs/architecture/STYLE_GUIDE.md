@@ -1,4 +1,4 @@
-# Multibuzz Design System & Style Guide
+# mbuzz Design System & Style Guide
 
 ## Brand Identity
 

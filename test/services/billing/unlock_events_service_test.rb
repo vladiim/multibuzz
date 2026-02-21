@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class Billing::UnlockEventsServiceTest < ActiveSupport::TestCase
@@ -11,7 +13,7 @@ class Billing::UnlockEventsServiceTest < ActiveSupport::TestCase
 
     assert result[:success]
     assert_equal 2, result[:unlocked_count]
-    assert account.events.where(locked: true).none?
+    assert_predicate account.events.where(locked: true), :none?
   end
 
   test "returns zero when no locked events" do
@@ -27,8 +29,8 @@ class Billing::UnlockEventsServiceTest < ActiveSupport::TestCase
 
     service.call
 
-    assert account.events.where(locked: true).none?
-    assert other_event.reload.locked?
+    assert_predicate account.events.where(locked: true), :none?
+    assert_predicate other_event.reload, :locked?
   end
 
   test "enqueues reattribution jobs for conversions during locked period" do
@@ -36,7 +38,7 @@ class Billing::UnlockEventsServiceTest < ActiveSupport::TestCase
     create_locked_event(occurred_at: 1.day.ago)
     conversion = create_conversion(converted_at: 3.days.ago)
 
-    assert_enqueued_with(job: Conversions::ReattributionJob, args: [conversion.id]) do
+    assert_enqueued_with(job: Conversions::ReattributionJob, args: [ conversion.id ]) do
       service.call
     end
   end
@@ -56,9 +58,9 @@ class Billing::UnlockEventsServiceTest < ActiveSupport::TestCase
 
     result = service.call
 
-    assert result[:earliest_unlocked].present?
-    assert result[:latest_unlocked].present?
-    assert result[:earliest_unlocked] < result[:latest_unlocked]
+    assert_predicate result[:earliest_unlocked], :present?
+    assert_predicate result[:latest_unlocked], :present?
+    assert_operator result[:earliest_unlocked], :<, result[:latest_unlocked]
   end
 
   test "updates account billing status when past_due" do
@@ -67,7 +69,7 @@ class Billing::UnlockEventsServiceTest < ActiveSupport::TestCase
 
     service.call
 
-    assert account.reload.billing_active?
+    assert_predicate account.reload, :billing_active?
   end
 
   test "clears payment failure timestamps" do
@@ -81,6 +83,7 @@ class Billing::UnlockEventsServiceTest < ActiveSupport::TestCase
     service.call
 
     account.reload
+
     assert_nil account.payment_failed_at
     assert_nil account.grace_period_ends_at
   end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class Billing::MetricsServiceTest < ActiveSupport::TestCase
@@ -6,7 +8,7 @@ class Billing::MetricsServiceTest < ActiveSupport::TestCase
     setup_active_account(growth_plan)
 
     assert_equal 12800, result[:mrr_cents]
-    assert_equal 128.00, result[:mrr]
+    assert_in_delta(128.00, result[:mrr])
   end
 
   test "excludes non-active accounts from MRR" do

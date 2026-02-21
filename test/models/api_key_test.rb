@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class ApiKeyTest < ActiveSupport::TestCase
   test "should be valid with valid attributes" do
-    assert api_key.valid?
+    assert_predicate api_key, :valid?
   end
 
   test "should belong to account" do
@@ -44,10 +46,12 @@ class ApiKeyTest < ActiveSupport::TestCase
 
   test "should allow test and live environments" do
     api_key.test!
-    assert api_key.test?
+
+    assert_predicate api_key, :test?
 
     api_key.live!
-    assert api_key.live?
+
+    assert_predicate api_key, :live?
   end
 
   test "should default to not revoked" do
@@ -66,8 +70,8 @@ class ApiKeyTest < ActiveSupport::TestCase
 
     api_key.revoke!
 
-    assert api_key.revoked?
-    assert api_key.revoked_at.present?
+    assert_predicate api_key, :revoked?
+    assert_predicate api_key.revoked_at, :present?
   end
 
   test "should track last_used_at" do
@@ -82,12 +86,12 @@ class ApiKeyTest < ActiveSupport::TestCase
 
     new_key.record_usage!
 
-    assert new_key.last_used_at.present?
+    assert_predicate new_key.last_used_at, :present?
     assert_in_delta Time.current, new_key.last_used_at, 1.second
   end
 
   test "should be active when not revoked" do
-    assert api_key.active?
+    assert_predicate api_key, :active?
 
     api_key.revoke!
 

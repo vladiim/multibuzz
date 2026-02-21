@@ -10,7 +10,7 @@ class FeatureWaitlistSubmissionTest < ActiveSupport::TestCase
       feature_name: "Data Export"
     )
 
-    assert submission.valid?
+    assert_predicate submission, :valid?
   end
 
   test "requires email" do
@@ -61,7 +61,7 @@ class FeatureWaitlistSubmissionTest < ActiveSupport::TestCase
       feature_name: "Data Export"
     )
 
-    assert submission.valid?
+    assert_predicate submission, :valid?
   end
 
   test "allows csv_export feature" do
@@ -71,7 +71,7 @@ class FeatureWaitlistSubmissionTest < ActiveSupport::TestCase
       feature_name: "CSV Export"
     )
 
-    assert submission.valid?
+    assert_predicate submission, :valid?
   end
 
   test "allows api_extract feature" do
@@ -81,7 +81,7 @@ class FeatureWaitlistSubmissionTest < ActiveSupport::TestCase
       feature_name: "API Extract"
     )
 
-    assert submission.valid?
+    assert_predicate submission, :valid?
   end
 
   test "context is optional" do
@@ -91,7 +91,7 @@ class FeatureWaitlistSubmissionTest < ActiveSupport::TestCase
       feature_name: "Data Export"
     )
 
-    assert submission.valid?
+    assert_predicate submission, :valid?
     assert_nil submission.context
   end
 
@@ -107,7 +107,7 @@ class FeatureWaitlistSubmissionTest < ActiveSupport::TestCase
   end
 
   test "inherits from FormSubmission" do
-    assert FeatureWaitlistSubmission < FormSubmission
+    assert_operator FeatureWaitlistSubmission, :<, FormSubmission
   end
 
   test "has prefix_id from FormSubmission" do

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Team
   class InvitationService < ApplicationService
     EMAIL_REGEX = URI::MailTo::EMAIL_REGEXP

@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class AccountTest < ActiveSupport::TestCase
   test "should be valid with valid attributes" do
-    assert account.valid?
+    assert_predicate account, :valid?
   end
 
   test "should require name" do
@@ -35,15 +37,17 @@ class AccountTest < ActiveSupport::TestCase
 
     valid_slugs.each do |slug|
       account.slug = slug
-      assert account.valid?, "#{slug} should be valid"
+
+      assert_predicate account, :valid?, "#{slug} should be valid"
     end
   end
 
   test "should validate slug format rejects invalid formats" do
-    invalid_slugs = ["Acme Inc", "acme_inc", "acme inc", "acme@inc", "ACME"]
+    invalid_slugs = [ "Acme Inc", "acme_inc", "acme inc", "acme@inc", "ACME" ]
 
     invalid_slugs.each do |slug|
       account.slug = slug
+
       assert_not account.valid?, "#{slug} should be invalid"
       assert_includes account.errors[:slug], "must be lowercase letters, numbers, and hyphens only"
     end
@@ -52,18 +56,21 @@ class AccountTest < ActiveSupport::TestCase
   test "should default status to active" do
     new_account = Account.new(name: "New Account", slug: "new-account")
 
-    assert new_account.active?
+    assert_predicate new_account, :active?
   end
 
   test "should allow changing status with enum methods" do
     account.suspended!
-    assert account.suspended?
+
+    assert_predicate account, :suspended?
 
     account.cancelled!
-    assert account.cancelled?
+
+    assert_predicate account, :cancelled?
 
     account.active!
-    assert account.active?
+
+    assert_predicate account, :active?
   end
 
   test "should have many api_keys" do
@@ -92,17 +99,20 @@ class AccountTest < ActiveSupport::TestCase
 
   test "should be active" do
     account.status = "active"
-    assert account.active?
+
+    assert_predicate account, :active?
   end
 
   test "should be suspended" do
     account.status = "suspended"
-    assert account.suspended?
+
+    assert_predicate account, :suspended?
   end
 
   test "should be cancelled" do
     account.status = "cancelled"
-    assert account.cancelled?
+
+    assert_predicate account, :cancelled?
   end
 
   test "should auto-create default attribution models on create" do
@@ -112,9 +122,10 @@ class AccountTest < ActiveSupport::TestCase
 
     AttributionAlgorithms::DEFAULTS.each do |algorithm|
       model = new_account.attribution_models.find_by(name: algorithm)
-      assert model.present?, "Expected attribution model '#{algorithm}' to exist"
+
+      assert_predicate model, :present?, "Expected attribution model '#{algorithm}' to exist"
       assert_equal algorithm, model.algorithm, "Expected algorithm to be set to '#{algorithm}'"
-      assert model.preset?, "Expected model_type to be preset"
+      assert_predicate model, :preset?, "Expected model_type to be preset"
     end
 
     assert new_account.attribution_models.all?(&:is_active?)

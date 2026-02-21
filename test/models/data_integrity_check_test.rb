@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class DataIntegrityCheckTest < ActiveSupport::TestCase
@@ -12,7 +14,7 @@ class DataIntegrityCheckTest < ActiveSupport::TestCase
       critical_threshold: 50.0
     )
 
-    assert check.valid?
+    assert_predicate check, :valid?
   end
 
   test "rejects missing check_name" do
@@ -51,7 +53,7 @@ class DataIntegrityCheckTest < ActiveSupport::TestCase
         critical_threshold: 50.0
       )
 
-      assert check.valid?, "Expected status '#{status}' to be valid"
+      assert_predicate check, :valid?, "Expected status '#{status}' to be valid"
     end
   end
 
@@ -77,7 +79,8 @@ class DataIntegrityCheckTest < ActiveSupport::TestCase
     sorted = account.data_integrity_checks.worst_first
 
     statuses = sorted.map(&:status)
-    assert_equal statuses.index("critical"), 0
+
+    assert_equal 0, statuses.index("critical")
   end
 
   # -- Relationships --

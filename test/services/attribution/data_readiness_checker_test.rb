@@ -153,8 +153,8 @@ module Attribution
     test "should include model description" do
       result = service.call
 
-      assert result[:markov_chain][:description].present?
-      assert result[:shapley_value][:description].present?
+      assert_predicate result[:markov_chain][:description], :present?
+      assert_predicate result[:shapley_value][:description], :present?
     end
 
     private
@@ -183,7 +183,7 @@ module Attribution
           session_id: session.id,
           conversion_type: "purchase",
           converted_at: i.hours.ago,
-          journey_session_ids: [session.id]
+          journey_session_ids: [ session.id ]
         )
       end
     end
@@ -203,7 +203,7 @@ module Attribution
           session_id: session.id,
           conversion_type: "purchase",
           converted_at: i.hours.ago,
-          journey_session_ids: [session.id]
+          journey_session_ids: [ session.id ]
         )
       end
     end

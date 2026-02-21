@@ -3,10 +3,10 @@
 module UnifiedFeed
   class QueryService
     SOURCES = {
-      event:      { timestamp: :occurred_at, includes: [:session, :visitor] },
-      conversion: { timestamp: :converted_at, includes: [:visitor] },
+      event:      { timestamp: :occurred_at, includes: [ :session, :visitor ] },
+      conversion: { timestamp: :converted_at, includes: [ :visitor ] },
       identify:   { timestamp: :last_identified_at, includes: [] },
-      session:    { timestamp: :started_at, includes: [:visitor] },
+      session:    { timestamp: :started_at, includes: [ :visitor ] },
       visitor:    { timestamp: :created_at, includes: [] }
     }.freeze
 

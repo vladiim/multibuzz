@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 module DataIntegrity
@@ -61,7 +63,7 @@ module DataIntegrity
 
         result = check.call
 
-        assert result[:value] > 0, "Should detect www.mysite.com as self-referral for mysite.com"
+        assert_operator result[:value], :>, 0, "Should detect www.mysite.com as self-referral for mysite.com"
       end
 
       test "returns correct check metadata" do

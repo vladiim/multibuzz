@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 module Accounts
@@ -18,8 +20,9 @@ module Accounts
         assert_redirected_to account_team_path
         admin_membership.reload
         owner_membership.reload
-        assert admin_membership.owner?
-        assert owner_membership.admin?
+
+        assert_predicate admin_membership, :owner?
+        assert_predicate owner_membership, :admin?
       end
 
       test "owner can transfer ownership to member" do
@@ -33,8 +36,9 @@ module Accounts
         assert_redirected_to account_team_path
         member_membership.reload
         owner_membership.reload
-        assert member_membership.owner?
-        assert owner_membership.admin?
+
+        assert_predicate member_membership, :owner?
+        assert_predicate owner_membership, :admin?
       end
 
       test "transfer requires correct confirmation" do
@@ -47,7 +51,8 @@ module Accounts
 
         assert_response :unprocessable_entity
         admin_membership.reload
-        assert admin_membership.admin?
+
+        assert_predicate admin_membership, :admin?
       end
 
       test "transfer requires confirmation" do

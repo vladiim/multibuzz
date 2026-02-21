@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class SitemapEntry
   attr_reader :loc, :lastmod, :changefreq, :priority
 

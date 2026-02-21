@@ -13,7 +13,7 @@ module AttributionModels
     attr_reader :model, :params, :can_edit_code
 
     def run
-      return error_result(["Upgrade to edit code"]) unless can_update?
+      return error_result([ "Upgrade to edit code" ]) unless can_update?
       return error_result(validation_errors) unless valid_code?
 
       model.update(permitted_params) ? success_result(model: model) : error_result(model.errors.full_messages)

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 Rails.application.routes.draw do
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
@@ -104,14 +106,14 @@ Rails.application.routes.draw do
   post "invitations/:id/accept_pending", to: "invitations#accept_pending", as: :accept_pending_invitation
 
   # Account creation for existing users
-  resources :accounts, only: [:new, :create]
+  resources :accounts, only: [ :new, :create ]
 
   # Admin routes
   namespace :admin do
     get "billing", to: "billing#show", as: :billing
-    resources :accounts, only: [:show, :update]
-    resources :submissions, only: [:index, :show]
-    resources :data_integrity, only: [:index, :show]
+    resources :accounts, only: [ :show, :update ]
+    resources :submissions, only: [ :index, :show ]
+    resources :data_integrity, only: [ :index, :show ]
     mount SolidErrors::Engine, at: "/errors"
   end
 
@@ -129,23 +131,23 @@ Rails.application.routes.draw do
   end
 
   # Account settings
-  resource :account, only: [:show, :update], controller: "account" do
+  resource :account, only: [ :show, :update ], controller: "account" do
     scope module: :accounts do
-      resource :billing, only: [:show], controller: "billing" do
+      resource :billing, only: [ :show ], controller: "billing" do
         post :checkout
         get :portal
         get :success
         get :cancel
       end
-      resource :team, only: [:show], controller: "team" do
-        resources :invitations, only: [:create, :destroy], controller: "team/invitations"
-        resources :memberships, only: [:update, :destroy], controller: "team/memberships"
+      resource :team, only: [ :show ], controller: "team" do
+        resources :invitations, only: [ :create, :destroy ], controller: "team/invitations"
+        resources :memberships, only: [ :update, :destroy ], controller: "team/memberships"
         resource :ownership, only: [], controller: "team/ownership" do
           post :transfer
         end
       end
-      resources :api_keys, only: [:index, :create, :destroy]
-      resources :attribution_models, except: [:show] do
+      resources :api_keys, only: [ :index, :create, :destroy ]
+      resources :attribution_models, except: [ :show ] do
         collection do
           post :validate
           get :data_readiness
@@ -169,7 +171,7 @@ Rails.application.routes.draw do
     get "conversions", to: "conversions#show"
     get "funnel", to: "funnel#show"
 
-    resource :export, only: [:create], controller: "exports"
+    resource :export, only: [ :create ], controller: "exports"
 
     # Conversion filter endpoints
     namespace :conversion_filters do

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class Events::IngestionServiceTest < ActiveSupport::TestCase
@@ -13,7 +15,7 @@ class Events::IngestionServiceTest < ActiveSupport::TestCase
     @events_data = [
       valid_event_data,
       invalid_event_data
-    ]
+    ].freeze
 
     assert_difference -> { Event.count }, 1 do
       assert_equal 1, result[:accepted]
@@ -22,15 +24,16 @@ class Events::IngestionServiceTest < ActiveSupport::TestCase
   end
 
   test "should include error details for rejected events" do
-    @events_data = [invalid_event_data]
+    @events_data = [ invalid_event_data ].freeze
 
     rejected = result[:rejected].first
+
     assert_equal 0, rejected[:index]
-    assert rejected[:errors].present?
+    assert_predicate rejected[:errors], :present?
   end
 
   test "should handle empty events array" do
-    @events_data = []
+    @events_data = [].freeze
 
     assert_equal 0, result[:accepted]
     assert_empty result[:rejected]
@@ -40,7 +43,7 @@ class Events::IngestionServiceTest < ActiveSupport::TestCase
     @events_data = [
       invalid_event_data,
       { "event_type" => "page_view" }
-    ]
+    ].freeze
 
     assert_no_difference -> { Event.count } do
       assert_equal 0, result[:accepted]
@@ -51,7 +54,7 @@ class Events::IngestionServiceTest < ActiveSupport::TestCase
   test "should validate before processing" do
     @events_data = [
       valid_event_data.except("visitor_id")
-    ]
+    ].freeze
 
     assert_no_difference -> { Event.count } do
       assert_equal 0, result[:accepted]
@@ -90,6 +93,7 @@ class Events::IngestionServiceTest < ActiveSupport::TestCase
     assert_equal 2, result[:events].size
 
     first_event = result[:events].first
+
     assert_match(/^evt_/, first_event[:id])
     assert_equal "page_view", first_event[:event_type]
     assert_equal visitor.visitor_id, first_event[:visitor_id]
@@ -98,16 +102,17 @@ class Events::IngestionServiceTest < ActiveSupport::TestCase
   end
 
   test "should return empty events array when all rejected" do
-    @events_data = [invalid_event_data]
+    @events_data = [ invalid_event_data ].freeze
 
     assert_empty result[:events]
     assert_equal 1, result[:rejected].size
   end
 
   test "should include event_type in rejected events" do
-    @events_data = [{ "event_type" => "signup", "visitor_id" => "" }]
+    @events_data = [ { "event_type" => "signup", "visitor_id" => "" } ].freeze
 
     rejected = result[:rejected].first
+
     assert_equal "signup", rejected[:event_type]
     assert_equal "rejected", rejected[:status]
   end
@@ -116,7 +121,7 @@ class Events::IngestionServiceTest < ActiveSupport::TestCase
 
   test "should reject all events when account cannot ingest" do
     account.update!(billing_status: :cancelled)
-    @events_data = [valid_event_data]
+    @events_data = [ valid_event_data ].freeze
 
     assert_no_difference -> { Event.count } do
       assert result[:billing_blocked]
@@ -127,7 +132,7 @@ class Events::IngestionServiceTest < ActiveSupport::TestCase
   test "should reject events when free tier at limit" do
     account.update!(billing_status: :free_forever, plan: plans(:free))
     Rails.cache.write(account.usage_cache_key, Billing::FREE_EVENT_LIMIT)
-    @events_data = [valid_event_data]
+    @events_data = [ valid_event_data ].freeze
 
     assert_no_difference -> { Event.count } do
       assert result[:billing_blocked]
@@ -137,7 +142,7 @@ class Events::IngestionServiceTest < ActiveSupport::TestCase
   test "should increment usage counter for accepted events" do
     account.update!(billing_status: :active, plan: plans(:starter))
     Rails.cache.write(account.usage_cache_key, 100)
-    @events_data = [valid_event_data]
+    @events_data = [ valid_event_data ].freeze
 
     result
 
@@ -151,12 +156,13 @@ class Events::IngestionServiceTest < ActiveSupport::TestCase
       grace_period_ends_at: 2.days.ago,
       plan: plans(:starter)
     )
-    @events_data = [valid_event_data]
+    @events_data = [ valid_event_data ].freeze
 
     result
 
     event = Event.last
-    assert event.locked?
+
+    assert_predicate event, :locked?
   end
 
   test "should not lock events when past_due within grace period" do
@@ -166,11 +172,12 @@ class Events::IngestionServiceTest < ActiveSupport::TestCase
       grace_period_ends_at: 2.days.from_now,
       plan: plans(:starter)
     )
-    @events_data = [valid_event_data]
+    @events_data = [ valid_event_data ].freeze
 
     result
 
     event = Event.last
+
     assert_not event.locked?
   end
 

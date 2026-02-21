@@ -43,7 +43,8 @@ class ConcurrentTest < SdkIntegrationTest
 
     # At least some events should be tracked (async may batch/dedupe)
     rapid_events = event_types.select { |t| t.start_with?("rapid_event_") }
-    assert rapid_events.any?, "Should have tracked at least one rapid event"
+
+    assert_predicate rapid_events, :any?, "Should have tracked at least one rapid event"
   end
 
   def test_all_events_have_same_visitor_id
@@ -67,7 +68,7 @@ class ConcurrentTest < SdkIntegrationTest
     # This is implicitly true since we query by visitor_id,
     # but verify the visitor data is consistent
     assert_equal @visitor_id, data[:visitor][:visitor_id]
-    assert data[:events].length >= 1, "Should have at least one event"
+    assert_operator data[:events].length, :>=, 1, "Should have at least one event"
   end
 
   def test_sessions_created_via_api_have_unique_ids

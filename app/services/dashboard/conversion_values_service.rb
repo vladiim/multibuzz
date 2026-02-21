@@ -17,7 +17,7 @@ module Dashboard
     attr_reader :account, :field, :query, :test_mode
 
     def run
-      return error_result(["field is required"]) if field.blank?
+      return error_result([ "field is required" ]) if field.blank?
 
       success_result(values: values)
     end

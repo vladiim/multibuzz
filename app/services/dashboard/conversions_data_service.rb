@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Dashboard
   class ConversionsDataService < ApplicationService
     CACHE_TTL = 5.minutes

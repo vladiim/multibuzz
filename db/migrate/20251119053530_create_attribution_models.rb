@@ -17,8 +17,8 @@ class CreateAttributionModels < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :attribution_models, [:account_id, :name], unique: true
-    add_index :attribution_models, [:account_id, :is_active]
-    add_index :attribution_models, [:account_id, :is_default]
+    add_index :attribution_models, [ :account_id, :name ], unique: true
+    add_index :attribution_models, [ :account_id, :is_active ]
+    add_index :attribution_models, [ :account_id, :is_default ]
   end
 end

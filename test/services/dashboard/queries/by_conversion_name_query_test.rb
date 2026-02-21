@@ -24,10 +24,10 @@ module Dashboard
         signup = result.find { |r| r[:channel] == "signup" }
         purchase = result.find { |r| r[:channel] == "purchase" }
 
-        assert_equal 1.5, signup[:credits]
-        assert_equal 150.0, signup[:revenue]
-        assert_equal 1.0, purchase[:credits]
-        assert_equal 200.0, purchase[:revenue]
+        assert_in_delta(1.5, signup[:credits])
+        assert_in_delta(150.0, signup[:revenue])
+        assert_in_delta(1.0, purchase[:credits])
+        assert_in_delta(200.0, purchase[:revenue])
       end
 
       test "groups by funnel dimension" do
@@ -40,8 +40,8 @@ module Dashboard
         checkout = result.find { |r| r[:channel] == "checkout" }
         onboarding = result.find { |r| r[:channel] == "onboarding" }
 
-        assert_equal 2.0, checkout[:credits]
-        assert_equal 1.0, onboarding[:credits]
+        assert_in_delta(2.0, checkout[:credits])
+        assert_in_delta(1.0, onboarding[:credits])
       end
 
       # ==========================================
@@ -74,10 +74,10 @@ module Dashboard
 
         assert_not_nil sydney, "Expected to find Sydney in results"
         assert_not_nil melbourne, "Expected to find Melbourne in results"
-        assert_equal 1.5, sydney[:credits]
-        assert_equal 150.0, sydney[:revenue]
-        assert_equal 1.0, melbourne[:credits]
-        assert_equal 200.0, melbourne[:revenue]
+        assert_in_delta(1.5, sydney[:credits])
+        assert_in_delta(150.0, sydney[:revenue])
+        assert_in_delta(1.0, melbourne[:credits])
+        assert_in_delta(200.0, melbourne[:revenue])
       end
 
       test "groups by plan property" do
@@ -90,8 +90,8 @@ module Dashboard
         pro = result.find { |r| r[:channel] == "pro" }
         enterprise = result.find { |r| r[:channel] == "enterprise" }
 
-        assert_equal 1.5, pro[:credits]
-        assert_equal 1.0, enterprise[:credits]
+        assert_in_delta(1.5, pro[:credits])
+        assert_in_delta(1.0, enterprise[:credits])
       end
 
       test "handles conversions without the property as not set" do
@@ -106,8 +106,8 @@ module Dashboard
 
         assert_not_nil sydney, "Expected to find Sydney in results"
         assert_not_nil not_set, "Expected to find (not set) in results"
-        assert_equal 0.5, sydney[:credits]
-        assert_equal 0.5, not_set[:credits]
+        assert_in_delta(0.5, sydney[:credits])
+        assert_in_delta(0.5, not_set[:credits])
       end
 
       test "works with properties alongside url and referrer" do
@@ -136,8 +136,9 @@ module Dashboard
         result = query(dimension: "location").call
 
         port_melbourne = result.find { |r| r[:channel] == "Port Melbourne" }
+
         assert_not_nil port_melbourne
-        assert_equal 1.0, port_melbourne[:credits]
+        assert_in_delta(1.0, port_melbourne[:credits])
       end
 
       # ==========================================
@@ -153,8 +154,8 @@ module Dashboard
         signup = result.find { |r| r[:channel] == "signup" }
         purchase = result.find { |r| r[:channel] == "purchase" }
 
-        assert_equal 75.0, signup[:percentage]
-        assert_equal 25.0, purchase[:percentage]
+        assert_in_delta(75.0, signup[:percentage])
+        assert_in_delta(25.0, purchase[:percentage])
       end
 
       test "returns conversion count for each row" do
@@ -169,6 +170,7 @@ module Dashboard
         result = query(dimension: "conversion_type").call
 
         signup = result.find { |r| r[:channel] == "signup" }
+
         assert_equal 2, signup[:conversion_count]
       end
 
@@ -193,7 +195,7 @@ module Dashboard
       test "returns empty array when no credits exist" do
         result = query(dimension: "conversion_type").call
 
-        assert_equal [], result
+        assert_empty result
       end
 
       # ==========================================
@@ -217,8 +219,8 @@ module Dashboard
         paid_search = signup[:by_channel].find { |c| c[:channel] == Channels::PAID_SEARCH }
         direct = signup[:by_channel].find { |c| c[:channel] == Channels::DIRECT }
 
-        assert_equal 1.5, paid_search[:credits]
-        assert_equal 0.5, direct[:credits]
+        assert_in_delta(1.5, paid_search[:credits])
+        assert_in_delta(0.5, direct[:credits])
       end
 
       test "by_channel is sorted by credits descending" do
@@ -231,7 +233,8 @@ module Dashboard
         signup = result.find { |r| r[:channel] == "signup" }
 
         channels = signup[:by_channel].map { |c| c[:channel] }
-        assert_equal [Channels::PAID_SEARCH, Channels::DIRECT, Channels::EMAIL], channels
+
+        assert_equal [ Channels::PAID_SEARCH, Channels::DIRECT, Channels::EMAIL ], channels
       end
 
       private

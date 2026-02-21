@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class SdkRegistryTest < ActiveSupport::TestCase
   test ".all returns all SDKs sorted by sort_order" do
     sdks = SdkRegistry.all
 
-    assert sdks.any?
+    assert_predicate sdks, :any?
     assert_equal sdks.map(&:sort_order), sdks.map(&:sort_order).sort
   end
 
@@ -23,7 +25,7 @@ class SdkRegistryTest < ActiveSupport::TestCase
   test ".live returns only live SDKs" do
     sdks = SdkRegistry.live
 
-    assert sdks.any?
+    assert_predicate sdks, :any?
     assert sdks.all?(&:live?)
   end
 
@@ -36,21 +38,21 @@ class SdkRegistryTest < ActiveSupport::TestCase
   test ".server_side returns only server_side SDKs" do
     sdks = SdkRegistry.server_side
 
-    assert sdks.any?
+    assert_predicate sdks, :any?
     assert sdks.all?(&:server_side?)
   end
 
   test ".platform returns only platform SDKs" do
     sdks = SdkRegistry.platform
 
-    assert sdks.any?
+    assert_predicate sdks, :any?
     assert sdks.all?(&:platform?)
   end
 
   test ".api returns only api SDKs" do
     sdks = SdkRegistry.api
 
-    assert sdks.any?
+    assert_predicate sdks, :any?
     assert sdks.all?(&:api?)
   end
 
@@ -70,7 +72,7 @@ class SdkRegistryTest < ActiveSupport::TestCase
   test "Sdk#live? returns true for live status" do
     sdk = SdkRegistry.find(:ruby)
 
-    assert sdk.live?
+    assert_predicate sdk, :live?
     assert_not sdk.coming_soon?
     assert_not sdk.beta?
   end
@@ -78,14 +80,14 @@ class SdkRegistryTest < ActiveSupport::TestCase
   test "Sdk#coming_soon? returns true for coming_soon status" do
     sdk = build_sdk(status: SdkStatuses::COMING_SOON)
 
-    assert sdk.coming_soon?
+    assert_predicate sdk, :coming_soon?
     assert_not sdk.live?
   end
 
   test "Sdk#server_side? returns true for server_side category" do
     sdk = SdkRegistry.find(:ruby)
 
-    assert sdk.server_side?
+    assert_predicate sdk, :server_side?
     assert_not sdk.platform?
     assert_not sdk.api?
   end
@@ -93,14 +95,14 @@ class SdkRegistryTest < ActiveSupport::TestCase
   test "Sdk#platform? returns true for platform category" do
     sdk = SdkRegistry.find(:shopify)
 
-    assert sdk.platform?
+    assert_predicate sdk, :platform?
     assert_not sdk.server_side?
   end
 
   test "Sdk#api? returns true for api category" do
     sdk = SdkRegistry.find(:rest_api)
 
-    assert sdk.api?
+    assert_predicate sdk, :api?
     assert_not sdk.server_side?
   end
 
@@ -116,18 +118,18 @@ class SdkRegistryTest < ActiveSupport::TestCase
   test "SDK contains code snippets for server-side SDKs" do
     sdk = SdkRegistry.find(:ruby)
 
-    assert sdk.init_code.present?
-    assert sdk.event_code.present?
-    assert sdk.conversion_code.present?
-    assert sdk.identify_code.present?
+    assert_predicate sdk.init_code, :present?
+    assert_predicate sdk.event_code, :present?
+    assert_predicate sdk.conversion_code, :present?
+    assert_predicate sdk.identify_code, :present?
   end
 
   test "REST API contains curl examples" do
     sdk = SdkRegistry.find(:rest_api)
 
-    assert sdk.init_code.present?
-    assert sdk.event_code.include?("curl")
-    assert sdk.conversion_code.include?("curl")
+    assert_predicate sdk.init_code, :present?
+    assert_includes sdk.event_code, "curl"
+    assert_includes sdk.conversion_code, "curl"
   end
 
   test "platform SDKs have nil code snippets" do
@@ -141,14 +143,14 @@ class SdkRegistryTest < ActiveSupport::TestCase
   test ".tag_manager returns only tag_manager SDKs" do
     sdks = SdkRegistry.tag_manager
 
-    assert sdks.any?
+    assert_predicate sdks, :any?
     assert sdks.all?(&:tag_manager?)
   end
 
   test "Sdk#tag_manager? returns true for tag_manager category" do
     sdk = SdkRegistry.find(:sgtm)
 
-    assert sdk.tag_manager?
+    assert_predicate sdk, :tag_manager?
     assert_not sdk.server_side?
     assert_not sdk.platform?
     assert_not sdk.api?
@@ -173,11 +175,11 @@ class SdkRegistryTest < ActiveSupport::TestCase
 
   # custom_install? tests
   test "Sdk#custom_install? returns true for platform SDKs" do
-    assert SdkRegistry.find(:shopify).custom_install?
+    assert_predicate SdkRegistry.find(:shopify), :custom_install?
   end
 
   test "Sdk#custom_install? returns true for tag_manager SDKs" do
-    assert SdkRegistry.find(:sgtm).custom_install?
+    assert_predicate SdkRegistry.find(:sgtm), :custom_install?
   end
 
   test "Sdk#custom_install? returns false for server_side SDKs" do

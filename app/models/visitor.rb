@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Visitor < ApplicationRecord
   include Visitor::Validations
   include Visitor::Relationships

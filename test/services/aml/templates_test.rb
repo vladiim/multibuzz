@@ -11,14 +11,15 @@ module AML
 
     test "includes all expected algorithms" do
       expected = %i[first_touch last_touch linear time_decay u_shaped participation markov_chain]
+
       assert_equal expected.sort, AML::Templates::DEFINITIONS.keys.sort
     end
 
     test "each template has required attributes" do
       AML::Templates::DEFINITIONS.each do |key, template|
-        assert template[:name].present?, "#{key} missing name"
-        assert template[:description].present?, "#{key} missing description"
-        assert template[:code].present?, "#{key} missing code"
+        assert_predicate template[:name], :present?, "#{key} missing name"
+        assert_predicate template[:description], :present?, "#{key} missing description"
+        assert_predicate template[:code], :present?, "#{key} missing code"
       end
     end
 
@@ -116,19 +117,19 @@ module AML
     test "first_touch gives 100% to first touchpoint" do
       credits = execute_template(:first_touch)
 
-      assert_equal 1.0, credits[0]
-      assert_equal 0.0, credits[1]
-      assert_equal 0.0, credits[2]
-      assert_equal 0.0, credits[3]
+      assert_in_delta(1.0, credits[0])
+      assert_in_delta(0.0, credits[1])
+      assert_in_delta(0.0, credits[2])
+      assert_in_delta(0.0, credits[3])
     end
 
     test "last_touch gives 100% to last touchpoint" do
       credits = execute_template(:last_touch)
 
-      assert_equal 0.0, credits[0]
-      assert_equal 0.0, credits[1]
-      assert_equal 0.0, credits[2]
-      assert_equal 1.0, credits[3]
+      assert_in_delta(0.0, credits[0])
+      assert_in_delta(0.0, credits[1])
+      assert_in_delta(0.0, credits[2])
+      assert_in_delta(1.0, credits[3])
     end
 
     test "linear distributes equally" do
@@ -142,7 +143,7 @@ module AML
     test "time_decay weights recent touchpoints higher" do
       credits = execute_template(:time_decay)
 
-      assert credits[3] > credits[0], "Last should have more credit than first"
+      assert_operator credits[3], :>, credits[0], "Last should have more credit than first"
       assert_in_delta 1.0, credits.sum, 0.0001
     end
 
@@ -159,6 +160,7 @@ module AML
     test "templates work with single touchpoint" do
       %i[first_touch last_touch linear time_decay u_shaped].each do |algorithm|
         credits = execute_template(algorithm, touchpoint_count: 1)
+
         assert_in_delta 1.0, credits.sum, 0.0001, "#{algorithm} failed with single touchpoint"
       end
     end
@@ -166,6 +168,7 @@ module AML
     test "templates work with two touchpoints" do
       %i[first_touch last_touch linear time_decay u_shaped].each do |algorithm|
         credits = execute_template(algorithm, touchpoint_count: 2)
+
         assert_in_delta 1.0, credits.sum, 0.0001, "#{algorithm} failed with two touchpoints"
       end
     end
@@ -176,7 +179,7 @@ module AML
       code = AML::Templates.generate(algorithm)
       analyzer = AML::Security::ASTAnalyzer.new(code)
 
-      assert analyzer.valid?, "#{algorithm} template failed security validation"
+      assert_predicate analyzer, :valid?, "#{algorithm} template failed security validation"
     end
 
     def assert_template_executes(algorithm)

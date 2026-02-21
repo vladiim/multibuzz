@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Sets Current.user and Current.account from session
 #
 # Include in ApplicationController to make Current attributes

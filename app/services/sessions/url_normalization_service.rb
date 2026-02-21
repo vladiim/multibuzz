@@ -36,7 +36,7 @@ module Sessions
     end
 
     def normalize_parsed_url
-      [normalized_host, normalized_path.to_s.delete_suffix("/"), normalized_query]
+      [ normalized_host, normalized_path.to_s.delete_suffix("/"), normalized_query ]
         .compact
         .join
     end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class Accounts::ApiKeysControllerTest < ActionDispatch::IntegrationTest
@@ -31,7 +33,7 @@ class Accounts::ApiKeysControllerTest < ActionDispatch::IntegrationTest
 
     delete account_api_key_path(api_key)
 
-    assert api_key.reload.revoked?
+    assert_predicate api_key.reload, :revoked?
   end
 
   test "requires authentication" do

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class AccountControllerTest < ActionDispatch::IntegrationTest
@@ -86,7 +88,7 @@ class AccountControllerTest < ActionDispatch::IntegrationTest
     patch account_path, params: { account: { live_mode_enabled: true } }
 
     assert_redirected_to account_path
-    assert account.reload.live_mode_enabled?
+    assert_predicate account.reload, :live_mode_enabled?
     assert_equal "Live mode enabled. Dashboard now shows production data.", flash[:notice]
   end
 
@@ -110,6 +112,7 @@ class AccountControllerTest < ActionDispatch::IntegrationTest
     sign_in
 
     get dashboard_path
+
     assert_response :success
   end
 

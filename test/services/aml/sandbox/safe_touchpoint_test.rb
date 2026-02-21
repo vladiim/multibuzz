@@ -32,6 +32,7 @@ module AML
           occurred_at: Time.current,
           properties: { "nested" => { "value" => 123 } }
         )
+
         assert_equal 123, tp.properties.dig("nested", "value")
       end
 
@@ -44,7 +45,7 @@ module AML
       end
 
       test "channel supports include?" do
-        assert touchpoint.channel.include?("search")
+        assert_includes touchpoint.channel, "search"
       end
 
       test "channel supports comparison" do
@@ -52,8 +53,8 @@ module AML
       end
 
       test "occurred_at supports time comparison" do
-        assert touchpoint.occurred_at < Time.current
-        assert touchpoint.occurred_at > 10.days.ago
+        assert_operator touchpoint.occurred_at, :<, Time.current
+        assert_operator touchpoint.occurred_at, :>, 10.days.ago
       end
 
       test "occurred_at supports between?" do

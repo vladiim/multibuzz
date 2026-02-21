@@ -48,7 +48,7 @@ Methods:
 ````markdown
 ```ruby
 def hello
-  puts "Hello from Multibuzz!"
+  puts "Hello from mbuzz!"
 end
 ```
 ````

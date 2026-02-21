@@ -20,7 +20,7 @@ module Pagination
   end
 
   def page_offset
-    [(current_page - 1) * per_page_count, 0].max
+    [ (current_page - 1) * per_page_count, 0 ].max
   end
 
   def current_page

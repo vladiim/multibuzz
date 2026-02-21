@@ -10,8 +10,8 @@ class AttributionModels::TestServiceTest < ActiveSupport::TestCase
 
     assert result[:success]
     assert_equal 4, result[:results].length
-    assert_equal 1.0, result[:results].first[:credit]
-    assert_equal 0.0, result[:results].last[:credit]
+    assert_in_delta(1.0, result[:results].first[:credit])
+    assert_in_delta(0.0, result[:results].last[:credit])
     assert_in_delta 1.0, result[:total], 0.0001
   end
 
@@ -19,8 +19,8 @@ class AttributionModels::TestServiceTest < ActiveSupport::TestCase
     result = service(last_touch_code, :four_touch).call
 
     assert result[:success]
-    assert_equal 0.0, result[:results].first[:credit]
-    assert_equal 1.0, result[:results].last[:credit]
+    assert_in_delta(0.0, result[:results].first[:credit])
+    assert_in_delta(1.0, result[:results].last[:credit])
   end
 
   test "executes linear model with four touchpoints" do
@@ -56,7 +56,7 @@ class AttributionModels::TestServiceTest < ActiveSupport::TestCase
 
     assert result[:success]
     assert_equal 1, result[:results].length
-    assert_equal 1.0, result[:results].first[:credit]
+    assert_in_delta(1.0, result[:results].first[:credit])
   end
 
   test "returns channel labels" do
@@ -71,15 +71,15 @@ class AttributionModels::TestServiceTest < ActiveSupport::TestCase
   test "returns percentage values" do
     result = service(first_touch_code, :four_touch).call
 
-    assert_equal 100.0, result[:results].first[:percentage]
-    assert_equal 0.0, result[:results].last[:percentage]
+    assert_in_delta(100.0, result[:results].first[:percentage])
+    assert_in_delta(0.0, result[:results].last[:percentage])
   end
 
   test "returns error for invalid syntax" do
     result = service("this is not valid ruby {{{", :four_touch).call
 
     assert_not result[:success]
-    assert result[:error].present?
+    assert_predicate result[:error], :present?
   end
 
   test "returns error for security violation" do

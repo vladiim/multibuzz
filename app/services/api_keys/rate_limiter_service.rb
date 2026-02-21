@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ApiKeys
   class RateLimiterService
     DEFAULT_LIMIT = 1000
@@ -48,7 +50,7 @@ module ApiKeys
     end
 
     def remaining
-      [limit - current_count, 0].max
+      [ limit - current_count, 0 ].max
     end
 
     def reset_at

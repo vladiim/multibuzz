@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class MockupsController < ApplicationController
   before_action :require_admin_access
 

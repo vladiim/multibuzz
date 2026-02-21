@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module LiveEventsHelper
   FEED_BADGE_STYLES = {
     event:      { bg: "bg-indigo-100", text: "text-indigo-700" },
@@ -62,7 +64,7 @@ module LiveEventsHelper
   end
 
   def identify_primary_info(identity)
-    parts = [identity.external_id]
+    parts = [ identity.external_id ]
     email = identity.traits&.dig("email")
     parts << email if email.present?
     truncate(parts.compact.join(" - "), length: 60)

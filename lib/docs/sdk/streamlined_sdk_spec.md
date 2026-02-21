@@ -12,7 +12,7 @@
 
 ## Executive Summary
 
-This specification defines a streamlined 4-call SDK model for Multibuzz, simplifying the developer experience while maintaining full multi-touch attribution capabilities.
+This specification defines a streamlined 4-call SDK model for mbuzz, simplifying the developer experience while maintaining full multi-touch attribution capabilities.
 
 ### The 4-Call Model
 

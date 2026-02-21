@@ -18,7 +18,7 @@ class IdentityCrossDeviceTest < Minitest::Test
   end
 
   def teardown
-    [@desktop_visitor_id, @mobile_visitor_id].each do |vid|
+    [ @desktop_visitor_id, @mobile_visitor_id ].each do |vid|
       VerificationHelper.cleanup(visitor_id: vid)
     rescue StandardError
       nil
@@ -38,6 +38,7 @@ class IdentityCrossDeviceTest < Minitest::Test
       device_fingerprint: @desktop_fingerprint,
       url: "https://example.com/desktop-page"
     )
+
     assert_equal "accepted", desktop_result["status"], "Desktop session should be created"
 
     # Step 2: Desktop - identify user (links desktop visitor to identity)
@@ -46,6 +47,7 @@ class IdentityCrossDeviceTest < Minitest::Test
       user_id: @user_email,
       traits: { email: @user_email, device: "desktop" }
     )
+
     assert identify_result["success"], "Desktop identify should succeed"
 
     sleep 1 # Allow async processing
@@ -57,6 +59,7 @@ class IdentityCrossDeviceTest < Minitest::Test
       device_fingerprint: @mobile_fingerprint,
       url: "https://example.com/mobile-landing"
     )
+
     assert_equal "accepted", mobile_session_result["status"], "Mobile session should be created"
 
     # Step 4: Mobile - track event with identifier (triggers cross-device session lookup)
@@ -85,6 +88,7 @@ class IdentityCrossDeviceTest < Minitest::Test
 
     # Step 6: Verify the mobile event exists
     mobile_event = mobile_data[:events]&.first
+
     assert mobile_event, "Mobile visitor should have an event"
   end
 
@@ -180,14 +184,14 @@ class IdentityCrossDeviceTest < Minitest::Test
       "#{TestConfig.api_url}/events",
       headers: auth_headers,
       body: {
-        events: [{
+        events: [ {
           visitor_id: visitor_id,
           event_type: event_type,
           properties: { url: url },
           identifier: identifier,
           ip: ip,
           user_agent: user_agent
-        }]
+        } ]
       }.to_json
     ).parsed_response
   rescue StandardError => e
@@ -199,11 +203,11 @@ class IdentityCrossDeviceTest < Minitest::Test
       "#{TestConfig.api_url}/events",
       headers: auth_headers,
       body: {
-        events: [{
+        events: [ {
           visitor_id: visitor_id,
           event_type: event_type,
           properties: { url: url }
-        }]
+        } ]
       }.to_json
     ).parsed_response
   rescue StandardError => e

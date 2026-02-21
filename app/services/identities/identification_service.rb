@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Identities
   class IdentificationService < ApplicationService
     def initialize(account, params, is_test: false)

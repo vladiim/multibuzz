@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class BillingMailer < ApplicationMailer
   # Payment & Subscription
   def payment_failed(account)

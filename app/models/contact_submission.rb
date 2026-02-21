@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ContactSubmission < FormSubmission
   VALID_SUBJECTS = %w[general sales support partnership other].freeze
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddOnboardingToAccounts < ActiveRecord::Migration[8.0]
   def change
     add_column :accounts, :onboarding_progress, :integer, default: 1, null: false

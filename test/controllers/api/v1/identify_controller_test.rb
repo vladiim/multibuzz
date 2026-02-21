@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class Api::V1::IdentifyControllerTest < ActionDispatch::IntegrationTest
@@ -13,6 +15,7 @@ class Api::V1::IdentifyControllerTest < ActionDispatch::IntegrationTest
     assert_response :ok
 
     identity = account.identities.unscope(where: :is_test).test_data.find_by(external_id: "user_123")
+
     assert_equal "jane@example.com", identity.traits["email"]
     assert_equal "Jane", identity.traits["name"]
   end
@@ -36,6 +39,7 @@ class Api::V1::IdentifyControllerTest < ActionDispatch::IntegrationTest
 
     # Verify response includes visitor_linked flag
     response_body = JSON.parse(response.body)
+
     assert response_body["visitor_linked"]
   end
 
@@ -48,7 +52,8 @@ class Api::V1::IdentifyControllerTest < ActionDispatch::IntegrationTest
     assert_response :ok
 
     response_body = JSON.parse(response.body)
-    assert_equal false, response_body["visitor_linked"]
+
+    refute response_body["visitor_linked"]
   end
 
   test "returns visitor_linked false when visitor not found" do
@@ -60,7 +65,8 @@ class Api::V1::IdentifyControllerTest < ActionDispatch::IntegrationTest
     assert_response :ok
 
     response_body = JSON.parse(response.body)
-    assert_equal false, response_body["visitor_linked"]
+
+    refute response_body["visitor_linked"]
   end
 
   test "returns identity_id in response" do
@@ -72,7 +78,8 @@ class Api::V1::IdentifyControllerTest < ActionDispatch::IntegrationTest
     assert_response :ok
 
     response_body = JSON.parse(response.body)
-    assert response_body["identity_id"].present?
+
+    assert_predicate response_body["identity_id"], :present?
     assert response_body["identity_id"].start_with?("idt_")
   end
 
@@ -92,6 +99,7 @@ class Api::V1::IdentifyControllerTest < ActionDispatch::IntegrationTest
     assert_response :ok
 
     identity = account.identities.unscope(where: :is_test).test_data.find_by(external_id: "user_123")
+
     assert_equal "jane@example.com", identity.traits["email"]
   end
 

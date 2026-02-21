@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ReferrerSources
   module Parsers
     class MatomoSearchParser < BaseParser
@@ -27,7 +29,7 @@ module ReferrerSources
         if url.include?("{}")
           expand_wildcard(url, source_name, keyword_param)
         else
-          [build_search_record(url, source_name, keyword_param)]
+          [ build_search_record(url, source_name, keyword_param) ]
         end
       end
 

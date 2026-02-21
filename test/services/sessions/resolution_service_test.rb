@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class Sessions::ResolutionServiceTest < ActiveSupport::TestCase
@@ -83,6 +85,7 @@ class Sessions::ResolutionServiceTest < ActiveSupport::TestCase
 
     travel_to(6.minutes.from_now) do
       result2 = service_for_unknown_visitor.call
+
       assert_not_equal result1, result2
     end
   end
@@ -188,6 +191,7 @@ class Sessions::ResolutionServiceTest < ActiveSupport::TestCase
 
     # Visitor should now be linked to identity
     visitor.reload
+
     assert_equal identity.id, visitor.identity_id,
       "Visitor should be linked to identity after resolution with identifier"
   end

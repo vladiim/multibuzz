@@ -23,14 +23,14 @@ class ApplicationServiceTest < ActiveSupport::TestCase
   test "still returns error_result hash on failure" do
     result = FailingService.new.call
 
-    assert_equal false, result[:success]
+    refute result[:success]
     assert_includes result[:errors].first, "Internal error"
   end
 
   test "still returns success_result on success" do
     result = SucceedingService.new.call
 
-    assert_equal true, result[:success]
+    assert result[:success]
   end
 
   private

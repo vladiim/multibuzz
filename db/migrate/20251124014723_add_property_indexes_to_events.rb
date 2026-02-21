@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddPropertyIndexesToEvents < ActiveRecord::Migration[8.0]
   def change
     # GIN indexes for fast JSONB property queries

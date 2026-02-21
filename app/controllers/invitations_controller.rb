@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class InvitationsController < ApplicationController
   SHOW_ERROR_HANDLERS = {
     not_found: :render_not_found,

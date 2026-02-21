@@ -18,7 +18,8 @@ module Billing
         assert result[:success]
 
         account.reload
-        assert account.billing_active?
+
+        assert_predicate account, :billing_active?
         assert_nil account.payment_failed_at
         assert_nil account.grace_period_ends_at
       end
@@ -32,7 +33,7 @@ module Billing
         result = handler(valid_event_data).call
 
         assert result[:success]
-        assert account.reload.billing_active?
+        assert_predicate account.reload, :billing_active?
       end
 
       test "unlocks events when locked events exist" do
@@ -63,7 +64,7 @@ module Billing
         result = handler(valid_event_data).call
 
         assert_not result[:success]
-        assert result[:errors].first.include?("Account not found")
+        assert_includes result[:errors].first, "Account not found"
       end
 
       private

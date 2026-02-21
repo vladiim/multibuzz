@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateApiKeys < ActiveRecord::Migration[8.0]
   def change
     create_table :api_keys do |t|
@@ -16,6 +18,6 @@ class CreateApiKeys < ActiveRecord::Migration[8.0]
     add_index :api_keys, :key_prefix
     add_index :api_keys, :environment
     add_index :api_keys, :revoked_at
-    add_index :api_keys, [:account_id, :environment]
+    add_index :api_keys, [ :account_id, :environment ]
   end
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Dashboard
   module Queries
     class FunnelStagesQuery
@@ -36,7 +38,7 @@ module Dashboard
       end
 
       def all_stages
-        [visits_stage, *event_stages, conversions_stage].compact.reject { |s| s[:count].zero? }
+        [ visits_stage, *event_stages, conversions_stage ].compact.reject { |s| s[:count].zero? }
       end
 
       # Visits stage from sessions

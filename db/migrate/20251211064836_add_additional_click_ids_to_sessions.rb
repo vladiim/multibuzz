@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddAdditionalClickIdsToSessions < ActiveRecord::Migration[8.0]
   def change
     add_column :sessions, :gclsrc, :string

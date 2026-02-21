@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class ReferrerSources::LookupServiceTest < ActiveSupport::TestCase
@@ -12,7 +14,7 @@ class ReferrerSources::LookupServiceTest < ActiveSupport::TestCase
     assert_equal "Google", result[:source_name]
     assert_equal ReferrerSources::Mediums::SEARCH, result[:medium]
     assert_equal "q", result[:keyword_param]
-    assert_equal false, result[:is_spam]
+    refute result[:is_spam]
   end
 
   test "finds source stripping www prefix" do
@@ -37,7 +39,7 @@ class ReferrerSources::LookupServiceTest < ActiveSupport::TestCase
     result = service("https://spam-site.com/evil").call
 
     assert_not_nil result
-    assert_equal true, result[:is_spam]
+    assert result[:is_spam]
   end
 
   test "extracts search term from url" do

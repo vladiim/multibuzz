@@ -17,11 +17,13 @@ class SgtmEventTrackingTest < SdkIntegrationTest
     wait_for_async(3)
 
     data = verify_test_data
+
     assert_not_nil data[:events], "Should have events"
     assert data[:events].any? { |e| e[:event_type] == "test_click" },
       "Should have test_click event"
 
     event = data[:events].find { |e| e[:event_type] == "test_click" }
+
     assert_equal "signup", event[:properties][:button]
   end
 

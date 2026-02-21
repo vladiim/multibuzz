@@ -9,7 +9,7 @@ module Attribution
     def collapse_burst_sessions(touchpoints)
       return touchpoints if touchpoints.size <= 1
 
-      touchpoints.each_with_object([touchpoints.first]) do |touchpoint, collapsed|
+      touchpoints.each_with_object([ touchpoints.first ]) do |touchpoint, collapsed|
         next if touchpoint == touchpoints.first
 
         previous = collapsed.last

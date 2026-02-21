@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class Sessions::UtmNormalizationServiceTest < ActiveSupport::TestCase
@@ -154,11 +156,11 @@ class Sessions::UtmNormalizationServiceTest < ActiveSupport::TestCase
   end
 
   test "handles empty utm hash" do
-    assert_equal({}, service({}).call)
+    assert_empty(service({}).call)
   end
 
   test "handles nil utm hash" do
-    assert_equal({}, service(nil).call)
+    assert_empty(service(nil).call)
   end
 
   test "preserves original keys as symbols" do

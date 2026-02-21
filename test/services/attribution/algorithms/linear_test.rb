@@ -20,18 +20,18 @@ module Attribution
       end
 
       test "should handle single touchpoint journey" do
-        credits = Attribution::Algorithms::Linear.new([touchpoints[0]]).call
+        credits = Attribution::Algorithms::Linear.new([ touchpoints[0] ]).call
 
         assert_equal 1, credits.size
-        assert_equal 1.0, credits[0][:credit]
+        assert_in_delta(1.0, credits[0][:credit])
       end
 
       test "should handle two touchpoint journey" do
         credits = Attribution::Algorithms::Linear.new(touchpoints[0..1]).call
 
         assert_equal 2, credits.size
-        assert_equal 0.5, credits[0][:credit]
-        assert_equal 0.5, credits[1][:credit]
+        assert_in_delta(0.5, credits[0][:credit])
+        assert_in_delta(0.5, credits[1][:credit])
       end
 
       test "should return empty array for empty journey" do
@@ -44,6 +44,7 @@ module Attribution
         credits = service.call
 
         total = credits.sum { |c| c[:credit] }
+
         assert_in_delta 1.0, total, 0.0001
       end
 
@@ -74,7 +75,7 @@ module Attribution
       end
 
       def session_ids
-        @session_ids ||= [100, 101, 102]
+        @session_ids ||= [ 100, 101, 102 ]
       end
     end
   end

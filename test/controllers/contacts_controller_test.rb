@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class ContactsControllerTest < ActionDispatch::IntegrationTest
@@ -20,6 +22,7 @@ class ContactsControllerTest < ActionDispatch::IntegrationTest
     post contact_path, params: valid_params
 
     submission = ContactSubmission.last
+
     assert_not_nil submission.ip_address
   end
 
@@ -27,6 +30,7 @@ class ContactsControllerTest < ActionDispatch::IntegrationTest
     post contact_path, params: valid_params, headers: { "HTTP_USER_AGENT" => "Test Browser" }
 
     submission = ContactSubmission.last
+
     assert_equal "Test Browser", submission.user_agent
   end
 
@@ -122,5 +126,4 @@ class ContactsControllerTest < ActionDispatch::IntegrationTest
       }
     }
   end
-
 end

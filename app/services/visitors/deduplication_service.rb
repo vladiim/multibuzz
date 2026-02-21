@@ -72,14 +72,14 @@ module Visitors
 
     def cluster_by_burst(visitors)
       groups = []
-      current_group = [visitors.first]
+      current_group = [ visitors.first ]
 
       visitors[1..].each do |visitor|
         if (visitor.created_at - current_group.first.created_at).abs <= window
           current_group << visitor
         else
           groups << current_group if current_group.size > 1
-          current_group = [visitor]
+          current_group = [ visitor ]
         end
       end
 
@@ -128,7 +128,7 @@ module Visitors
     end
 
     def update_timestamps(canonical, duplicates)
-      all_visitors = [canonical] + duplicates
+      all_visitors = [ canonical ] + duplicates
       earliest_first_seen = all_visitors.map(&:first_seen_at).min
       latest_last_seen = all_visitors.map(&:last_seen_at).max
 

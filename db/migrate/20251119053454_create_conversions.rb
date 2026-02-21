@@ -20,7 +20,7 @@ class CreateConversions < ActiveRecord::Migration[8.0]
 
     add_index :conversions, :conversion_type
     add_index :conversions, :converted_at
-    add_index :conversions, [:account_id, :converted_at]
-    add_index :conversions, [:visitor_id, :converted_at]
+    add_index :conversions, [ :account_id, :converted_at ]
+    add_index :conversions, [ :visitor_id, :converted_at ]
   end
 end

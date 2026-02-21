@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Event < ApplicationRecord
   include Event::Validations
   include Event::Relationships

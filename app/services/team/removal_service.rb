@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Team
   class RemovalService < ApplicationService
     VALIDATIONS = {

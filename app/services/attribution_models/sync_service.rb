@@ -31,7 +31,7 @@ module AttributionModels
     end
 
     def invalid_algorithm_error
-      { success: false, errors: ["Invalid algorithm: #{algorithm}"] }
+      { success: false, errors: [ "Invalid algorithm: #{algorithm}" ] }
     end
 
     def sync_to_all_accounts

@@ -15,21 +15,21 @@ module Dashboard
         create_credit(credit: 0.3)
         create_credit(credit: 0.2)
 
-        assert_equal 1.0, result[:conversions]
+        assert_in_delta(1.0, result[:conversions])
       end
 
       test "returns revenue as sum of revenue_credit" do
         create_credit(credit: 0.5, revenue_credit: 50.0)
         create_credit(credit: 0.5, revenue_credit: 100.0)
 
-        assert_equal 150.0, result[:revenue]
+        assert_in_delta(150.0, result[:revenue])
       end
 
       test "returns aov as revenue divided by conversions" do
         create_credit(credit: 0.5, revenue_credit: 50.0)
         create_credit(credit: 0.5, revenue_credit: 50.0)
 
-        assert_equal 100.0, result[:aov]
+        assert_in_delta(100.0, result[:aov])
       end
 
       test "returns avg_channels_to_convert" do
@@ -45,7 +45,7 @@ module Dashboard
         create_credit_for_conversion(conv2, channel: Channels::DIRECT)
 
         # Average: (2 + 3) / 2 = 2.5
-        assert_equal 2.5, result[:avg_channels_to_convert]
+        assert_in_delta(2.5, result[:avg_channels_to_convert])
       end
 
       test "returns avg_visits_to_convert based on journey_session_ids count" do
@@ -53,7 +53,7 @@ module Dashboard
         s1, s2 = create_sessions(2)
         conv1 = create_conversion_with_journey(
           converted_at: Time.current,
-          journey_session_ids: [s1.id, s2.id]
+          journey_session_ids: [ s1.id, s2.id ]
         )
         create_credit_for_conversion(conv1)
 
@@ -61,12 +61,12 @@ module Dashboard
         s3, s4, s5, s6 = create_sessions(4)
         conv2 = create_conversion_with_journey(
           converted_at: Time.current,
-          journey_session_ids: [s3.id, s4.id, s5.id, s6.id]
+          journey_session_ids: [ s3.id, s4.id, s5.id, s6.id ]
         )
         create_credit_for_conversion(conv2)
 
         # Average: (2 + 4) / 2 = 3.0 based on journey length, NOT credit count
-        assert_equal 3.0, result[:avg_visits_to_convert]
+        assert_in_delta(3.0, result[:avg_visits_to_convert])
       end
 
       test "avg_visits is independent of attribution model credit count" do
@@ -81,7 +81,7 @@ module Dashboard
         create_credit_for_conversion(conversion)
 
         # Should return 5.0 (journey length), not 1.0 (credit count)
-        assert_equal 5.0, result[:avg_visits_to_convert]
+        assert_in_delta(5.0, result[:avg_visits_to_convert])
       end
 
       test "avg_visits skips conversions with empty journey" do
@@ -101,7 +101,7 @@ module Dashboard
         create_credit_for_conversion(conv2)
 
         # Should return 3.0 (only conv1 counted)
-        assert_equal 3.0, result[:avg_visits_to_convert]
+        assert_in_delta(3.0, result[:avg_visits_to_convert])
       end
 
       test "handles empty data gracefully" do
@@ -118,7 +118,7 @@ module Dashboard
         session = create_session(started_at: 5.days.ago)
         conversion = create_conversion_with_journey(
           converted_at: Time.current,
-          journey_session_ids: [session.id]
+          journey_session_ids: [ session.id ]
         )
         create_credit_for_conversion(conversion)
 
@@ -130,7 +130,7 @@ module Dashboard
         session1 = create_session(started_at: 3.days.ago)
         conv1 = create_conversion_with_journey(
           converted_at: Time.current,
-          journey_session_ids: [session1.id]
+          journey_session_ids: [ session1.id ]
         )
         create_credit_for_conversion(conv1)
 
@@ -138,7 +138,7 @@ module Dashboard
         session2 = create_session(started_at: 7.days.ago)
         conv2 = create_conversion_with_journey(
           converted_at: Time.current,
-          journey_session_ids: [session2.id]
+          journey_session_ids: [ session2.id ]
         )
         create_credit_for_conversion(conv2)
 
@@ -154,7 +154,7 @@ module Dashboard
 
         conversion = create_conversion_with_journey(
           converted_at: Time.current,
-          journey_session_ids: [session_first.id, session_second.id, session_third.id]
+          journey_session_ids: [ session_first.id, session_second.id, session_third.id ]
         )
         create_credit_for_conversion(conversion)
 
@@ -167,7 +167,7 @@ module Dashboard
         session = create_session(started_at: now)
         conversion = create_conversion_with_journey(
           converted_at: now,
-          journey_session_ids: [session.id]
+          journey_session_ids: [ session.id ]
         )
         create_credit_for_conversion(conversion)
 
@@ -179,7 +179,7 @@ module Dashboard
         session = create_session(started_at: 5.days.ago)
         conv1 = create_conversion_with_journey(
           converted_at: Time.current,
-          journey_session_ids: [session.id]
+          journey_session_ids: [ session.id ]
         )
         create_credit_for_conversion(conv1)
 
@@ -199,7 +199,7 @@ module Dashboard
         acquisition_session = create_session(started_at: 10.days.ago)
         acquisition = create_conversion_with_journey(
           converted_at: Time.current,
-          journey_session_ids: [acquisition_session.id],
+          journey_session_ids: [ acquisition_session.id ],
           is_acquisition: true
         )
         create_credit_for_conversion(acquisition)
@@ -208,7 +208,7 @@ module Dashboard
         repeat_session = create_session(started_at: 2.days.ago)
         repeat = create_conversion_with_journey(
           converted_at: Time.current,
-          journey_session_ids: [repeat_session.id]
+          journey_session_ids: [ repeat_session.id ]
         )
         create_credit_for_conversion(repeat)
 
@@ -224,7 +224,7 @@ module Dashboard
           s = create_session(started_at: 1.day.ago)
           conv = create_conversion_with_journey(
             converted_at: Time.current,
-            journey_session_ids: [s.id]
+            journey_session_ids: [ s.id ]
           )
           create_credit_for_conversion(conv)
         end
@@ -239,7 +239,7 @@ module Dashboard
 
         # Median of [1, 1, 1, 1, 100] = 1 (middle value)
         # Mean would be 20.8, but median is 1
-        assert_equal 1.0, result[:avg_visits_to_convert]
+        assert_in_delta(1.0, result[:avg_visits_to_convert])
       end
 
       test "uses mean for avg_days_to_convert" do
@@ -250,7 +250,7 @@ module Dashboard
           s = create_session(started_at: 1.day.ago)
           conv = create_conversion_with_journey(
             converted_at: now,
-            journey_session_ids: [s.id]
+            journey_session_ids: [ s.id ]
           )
           create_credit_for_conversion(conv)
         end
@@ -259,7 +259,7 @@ module Dashboard
         long_session = create_session(started_at: 100.days.ago)
         long_conv = create_conversion_with_journey(
           converted_at: now,
-          journey_session_ids: [long_session.id]
+          journey_session_ids: [ long_session.id ]
         )
         create_credit_for_conversion(long_conv)
 
@@ -286,7 +286,7 @@ module Dashboard
 
         # Median of [1, 1, 1, 1, 10] = 1 (middle value)
         # Mean would be 2.8, but median is 1
-        assert_equal 1.0, result[:avg_channels_to_convert]
+        assert_in_delta(1.0, result[:avg_channels_to_convert])
       end
 
       test "median with even number of elements averages two middle values" do
@@ -310,7 +310,7 @@ module Dashboard
         end
 
         # Sorted: [2, 2, 4, 4] -> median = (2 + 4) / 2 = 3.0
-        assert_equal 3.0, result[:avg_visits_to_convert]
+        assert_in_delta(3.0, result[:avg_visits_to_convert])
       end
 
       private
@@ -326,7 +326,7 @@ module Dashboard
       def build_scope
         Scopes::CreditsScope.new(
           account: account,
-          models: [attribution_model],
+          models: [ attribution_model ],
           date_range: date_range,
           channels: Channels::ALL
         ).call

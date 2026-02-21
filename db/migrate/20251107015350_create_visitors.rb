@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateVisitors < ActiveRecord::Migration[8.0]
   def change
     create_table :visitors do |t|
@@ -10,7 +12,7 @@ class CreateVisitors < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :visitors, [:account_id, :visitor_id], unique: true
+    add_index :visitors, [ :account_id, :visitor_id ], unique: true
     add_index :visitors, :visitor_id
     add_index :visitors, :last_seen_at
     add_index :visitors, :traits, using: :gin

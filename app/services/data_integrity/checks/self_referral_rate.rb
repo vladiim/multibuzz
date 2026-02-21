@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module DataIntegrity
   module Checks
     class SelfReferralRate < BaseCheck
@@ -41,7 +43,7 @@ module DataIntegrity
       def referral_scope
         account.sessions.production
           .where("started_at > ?", WINDOW.ago)
-          .where.not(initial_referrer: [nil, ""])
+          .where.not(initial_referrer: [ nil, "" ])
       end
     end
   end

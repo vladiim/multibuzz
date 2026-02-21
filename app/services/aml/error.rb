@@ -15,7 +15,7 @@ module AML
     private
 
     def build_message(message)
-      parts = [message]
+      parts = [ message ]
       parts << "at line #{line}, column #{column}" if line && column
       parts << "at line #{line}" if line && !column
       parts << "Suggestion: #{suggestion}" if suggestion

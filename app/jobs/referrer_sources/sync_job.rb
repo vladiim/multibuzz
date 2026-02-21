@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ReferrerSources
   class SyncJob < ApplicationJob
     queue_as :default

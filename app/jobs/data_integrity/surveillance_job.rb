@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module DataIntegrity
   class SurveillanceJob < ApplicationJob
     queue_as :default

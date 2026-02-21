@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ApiKeys
   class GenerationService < ApplicationService
     def initialize(account, environment: :test, description: nil)

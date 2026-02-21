@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Events
   class ProcessingService < ApplicationService
     def initialize(account, event_data, is_test: false)

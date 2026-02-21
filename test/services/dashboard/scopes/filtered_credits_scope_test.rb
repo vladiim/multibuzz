@@ -33,7 +33,7 @@ module Dashboard
       end
 
       test "filters by conversion_type with equals operator" do
-        filters = [{ field: "conversion_type", operator: "equals", values: ["purchase"] }]
+        filters = [ { field: "conversion_type", operator: "equals", values: [ "purchase" ] } ]
 
         result = scope(conversion_filters: filters).call
 
@@ -42,7 +42,7 @@ module Dashboard
       end
 
       test "filters by conversion_type with not_equals operator" do
-        filters = [{ field: "conversion_type", operator: "not_equals", values: ["purchase"] }]
+        filters = [ { field: "conversion_type", operator: "not_equals", values: [ "purchase" ] } ]
 
         result = scope(conversion_filters: filters).call
 
@@ -51,7 +51,7 @@ module Dashboard
       end
 
       test "filters by funnel column" do
-        filters = [{ field: "funnel", operator: "equals", values: ["checkout"] }]
+        filters = [ { field: "funnel", operator: "equals", values: [ "checkout" ] } ]
 
         result = scope(conversion_filters: filters).call
 
@@ -60,7 +60,7 @@ module Dashboard
       end
 
       test "filters by revenue with greater_than operator" do
-        filters = [{ field: "revenue", operator: "greater_than", values: ["50"] }]
+        filters = [ { field: "revenue", operator: "greater_than", values: [ "50" ] } ]
 
         result = scope(conversion_filters: filters).call
 
@@ -69,7 +69,7 @@ module Dashboard
       end
 
       test "filters by revenue with less_than operator" do
-        filters = [{ field: "revenue", operator: "less_than", values: ["50"] }]
+        filters = [ { field: "revenue", operator: "less_than", values: [ "50" ] } ]
 
         result = scope(conversion_filters: filters).call
 
@@ -78,7 +78,7 @@ module Dashboard
       end
 
       test "filters by JSONB property with equals operator" do
-        filters = [{ field: "plan", operator: "equals", values: ["pro"] }]
+        filters = [ { field: "plan", operator: "equals", values: [ "pro" ] } ]
 
         result = scope(conversion_filters: filters).call
 
@@ -87,7 +87,7 @@ module Dashboard
       end
 
       test "filters by JSONB property with contains operator" do
-        filters = [{ field: "source", operator: "contains", values: ["mob"] }]
+        filters = [ { field: "source", operator: "contains", values: [ "mob" ] } ]
 
         result = scope(conversion_filters: filters).call
 
@@ -96,7 +96,7 @@ module Dashboard
       end
 
       test "supports multiple values with OR logic" do
-        filters = [{ field: "conversion_type", operator: "equals", values: %w[purchase signup] }]
+        filters = [ { field: "conversion_type", operator: "equals", values: %w[purchase signup] } ]
 
         result = scope(conversion_filters: filters).call
 
@@ -105,8 +105,8 @@ module Dashboard
 
       test "combines multiple filters with AND logic" do
         filters = [
-          { field: "conversion_type", operator: "equals", values: ["purchase"] },
-          { field: "plan", operator: "equals", values: ["pro"] }
+          { field: "conversion_type", operator: "equals", values: [ "purchase" ] },
+          { field: "plan", operator: "equals", values: [ "pro" ] }
         ]
 
         result = scope(conversion_filters: filters).call
@@ -117,8 +117,8 @@ module Dashboard
 
       test "returns empty when filters exclude all" do
         filters = [
-          { field: "conversion_type", operator: "equals", values: ["purchase"] },
-          { field: "plan", operator: "equals", values: ["free"] }
+          { field: "conversion_type", operator: "equals", values: [ "purchase" ] },
+          { field: "plan", operator: "equals", values: [ "free" ] }
         ]
 
         result = scope(conversion_filters: filters).call
@@ -131,7 +131,7 @@ module Dashboard
       def scope(conversion_filters:)
         FilteredCreditsScope.new(
           account: account,
-          models: [attribution_model],
+          models: [ attribution_model ],
           date_range: date_range,
           channels: Channels::ALL,
           test_mode: false,

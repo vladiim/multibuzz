@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Sessions
   class TrackingService < ApplicationService
     def initialize(account, session_id, visitor, event_timestamp: nil, is_test: false, device_fingerprint: nil)

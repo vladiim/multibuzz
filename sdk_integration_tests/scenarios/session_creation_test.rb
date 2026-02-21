@@ -23,12 +23,14 @@ class SessionCreationTest < SdkIntegrationTest
 
     # Verify session was created WITHOUT manual create_session_for_visitor call
     data = verify_test_data
+
     refute_nil data, "Should be able to verify test data"
     refute_nil data[:visitor], "Visitor should be created automatically by middleware"
     refute_empty data[:sessions], "Session should be created automatically by middleware"
 
     # Verify session has attribution data
     session = data[:sessions].first
+
     refute_nil session[:channel], "Session should have channel attribution"
   end
 
@@ -40,14 +42,17 @@ class SessionCreationTest < SdkIntegrationTest
     wait_for_async(2)
 
     data = verify_test_data
+
     refute_nil data[:visitor], "Visitor should be created automatically"
     refute_empty data[:sessions], "Session should be created automatically"
 
     # Verify UTM params were captured
     session = data[:sessions].first
+
     assert_equal "paid_search", session[:channel], "Channel should be derived from UTM"
 
     utm = session[:initial_utm] || {}
+
     assert_equal "google", utm["utm_source"] || utm[:utm_source], "utm_source should be captured"
     assert_equal "cpc", utm["utm_medium"] || utm[:utm_medium], "utm_medium should be captured"
     assert_equal "test_campaign", utm["utm_campaign"] || utm[:utm_campaign], "utm_campaign should be captured"
@@ -61,11 +66,13 @@ class SessionCreationTest < SdkIntegrationTest
     wait_for_async(2)
 
     data = verify_test_data
+
     refute_nil data[:visitor], "Visitor should be created automatically"
     refute_empty data[:sessions], "Session should be created automatically"
 
     # Session should have started_at timestamp
     session = data[:sessions].first
+
     refute_nil session[:started_at], "Session should have started_at timestamp"
   end
 
@@ -89,13 +96,14 @@ class SessionCreationTest < SdkIntegrationTest
       properties: { test: true }
     })
 
-    assert_equal true, response["success"],
+    assert response["success"],
       "Event should succeed after automatic session creation. Got: #{response.inspect}"
 
     # Verify event was created
     wait_for_async(2)
     data = verify_test_data
     event = data[:events]&.find { |e| e[:event_type] == "auto_session_test_event" }
+
     refute_nil event, "Event should be created after automatic session creation"
   end
 
@@ -112,7 +120,7 @@ class SessionCreationTest < SdkIntegrationTest
       revenue: 99.99
     })
 
-    assert_equal true, response["success"],
+    assert response["success"],
       "Conversion should succeed after automatic session creation. Got: #{response.inspect}"
   end
 
@@ -138,6 +146,7 @@ class SessionCreationTest < SdkIntegrationTest
 
     # Verify only one visitor created (no duplicates)
     data = verify_test_data
+
     refute_nil data[:visitor], "Should have visitor"
     # Session count may vary based on timing/expiry, but visitor should be same
     assert_equal first_visitor_id, data[:visitor][:visitor_id], "Should be same visitor"
@@ -162,7 +171,7 @@ class SessionCreationTest < SdkIntegrationTest
       properties: { visit: "second" }
     })
 
-    assert_equal true, response["success"],
+    assert response["success"],
       "Returning visitor should be able to track events. Got: #{response.inspect}"
   end
 
@@ -183,6 +192,7 @@ class SessionCreationTest < SdkIntegrationTest
     # The middleware should create session, verified by checking server
     wait_for_async(2)
     data = verify_test_data
+
     refute_empty data[:sessions], "Session should exist on server"
   end
 

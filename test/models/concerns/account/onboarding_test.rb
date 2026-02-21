@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class Account::OnboardingTest < ActiveSupport::TestCase
@@ -23,6 +25,7 @@ class Account::OnboardingTest < ActiveSupport::TestCase
     account.complete_onboarding_step!(:api_key_viewed)
 
     account.reload
+
     assert account.onboarding_step_completed?(:api_key_viewed)
   end
 
@@ -51,9 +54,11 @@ class Account::OnboardingTest < ActiveSupport::TestCase
     assert_equal :persona_selected, account.current_onboarding_step
 
     account.complete_onboarding_step!(:persona_selected)
+
     assert_equal :api_key_viewed, account.current_onboarding_step
 
     account.complete_onboarding_step!(:api_key_viewed)
+
     assert_equal :sdk_selected, account.current_onboarding_step
   end
 
@@ -87,7 +92,7 @@ class Account::OnboardingTest < ActiveSupport::TestCase
   test "onboarding_complete? returns true when all steps done" do
     complete_all_steps!
 
-    assert account.onboarding_complete?
+    assert_predicate account, :onboarding_complete?
   end
 
   # Activation tests
@@ -107,19 +112,22 @@ class Account::OnboardingTest < ActiveSupport::TestCase
     account.complete_onboarding_step!(:first_conversion)
     account.complete_onboarding_step!(:attribution_viewed)
 
-    assert account.activated?
+    assert_predicate account, :activated?
   end
 
   # Persona tests
   test "onboarding_persona enum works correctly" do
     account.developer!
-    assert account.developer?
+
+    assert_predicate account, :developer?
 
     account.marketer!
-    assert account.marketer?
+
+    assert_predicate account, :marketer?
 
     account.both!
-    assert account.both?
+
+    assert_predicate account, :both?
   end
 
   # Timestamp tests
@@ -135,9 +143,11 @@ class Account::OnboardingTest < ActiveSupport::TestCase
     assert_nil account.activated_at
 
     account.complete_onboarding_step!(:first_conversion)
+
     assert_nil account.activated_at
 
     account.complete_onboarding_step!(:attribution_viewed)
+
     assert_not_nil account.activated_at
   end
 

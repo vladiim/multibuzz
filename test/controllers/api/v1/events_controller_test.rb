@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
@@ -87,7 +89,7 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
     post api_v1_events_path, params: events_payload, headers: auth_headers, as: :json
 
     assert_response :accepted
-    assert api_key.reload.last_used_at > old_time
+    assert_operator api_key.reload.last_used_at, :>, old_time
   end
 
   test "should scope events to authenticated account" do
@@ -95,6 +97,7 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :accepted
     created_event = account.events.unscoped.where(account: account).test_data.last
+
     assert_equal account, created_event.account
   end
 
@@ -105,13 +108,14 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 2, json_response["events"].size
 
     first_event = json_response["events"].first
+
     assert_match(/^evt_/, first_event["id"])
     assert_equal "page_view", first_event["event_type"]
     assert_equal "accepted", first_event["status"]
   end
 
   test "should return rejected events with details" do
-    payload = { events: [invalid_event_data] }
+    payload = { events: [ invalid_event_data ] }
 
     post api_v1_events_path, params: payload, headers: auth_headers, as: :json
 
@@ -120,6 +124,7 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 1, json_response["rejected"].size
 
     rejected = json_response["rejected"].first
+
     assert_equal 0, rejected["index"]
     assert_equal "rejected", rejected["status"]
   end
@@ -138,7 +143,7 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :payment_required
     assert_equal "Account cannot accept events", json_response["error"]
-    assert_equal true, json_response["billing_blocked"]
+    assert json_response["billing_blocked"]
   end
 
   test "should preserve visitor_id from SDK payload" do
@@ -158,6 +163,7 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
     assert_response :accepted
 
     created_event = account.events.unscoped.where(account: account).test_data.order(created_at: :desc).first
+
     assert_equal visitor.visitor_id, created_event.visitor.visitor_id
     assert_equal sdk_session_id, created_event.session.session_id
   end
@@ -165,17 +171,17 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
   # Cookie handling tests - visitor persistence
 
   test "should set visitor cookie in response" do
-    payload = { events: [event_without_ids] }
+    payload = { events: [ event_without_ids ] }
 
     post api_v1_events_path, params: payload, headers: auth_headers, as: :json
 
     assert_response :accepted
-    assert response.headers["Set-Cookie"].present?
+    assert_predicate response.headers["Set-Cookie"], :present?
     assert_match(/_mbuzz_vid=/, response.headers["Set-Cookie"])
   end
 
   test "should set session cookie in response" do
-    payload = { events: [event_without_ids] }
+    payload = { events: [ event_without_ids ] }
 
     post api_v1_events_path, params: payload, headers: auth_headers, as: :json
 
@@ -184,7 +190,7 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should reject event when visitor_id not provided and visitor not found" do
-    payload = { events: [event_without_ids] }
+    payload = { events: [ event_without_ids ] }
 
     post api_v1_events_path, params: payload, headers: auth_headers, as: :json
 
@@ -196,14 +202,15 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
 
   test "should reuse visitor_id from cookie when visitor exists" do
     # First create a session/visitor via the sessions endpoint or use existing
-    payload = { events: [event_without_ids.merge("visitor_id" => visitor.visitor_id)] }
+    payload = { events: [ event_without_ids.merge("visitor_id" => visitor.visitor_id) ] }
 
     post api_v1_events_path, params: payload, headers: auth_headers, as: :json
+
     assert_response :accepted
     assert_equal 1, json_response["accepted"]
 
     # Second request with same visitor_id
-    second_payload = { events: [event_without_ids.merge("visitor_id" => visitor.visitor_id, "event_type" => "button_click")] }
+    second_payload = { events: [ event_without_ids.merge("visitor_id" => visitor.visitor_id, "event_type" => "button_click") ] }
 
     post api_v1_events_path,
       params: second_payload,
@@ -214,13 +221,14 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 1, json_response["accepted"]
 
     events = account.events.unscoped.where(account: account).test_data.order(created_at: :asc).last(2)
+
     assert_equal events.first.visitor_id, events.last.visitor_id
   end
 
   test "should reject events with unknown visitor_id from cookie" do
     unknown_visitor_id = "vis_unknown_#{SecureRandom.hex(16)}"
 
-    payload = { events: [event_without_ids] }
+    payload = { events: [ event_without_ids ] }
     post api_v1_events_path,
       params: payload,
       headers: auth_headers.merge("Cookie" => "_mbuzz_vid=#{unknown_visitor_id}"),
@@ -232,7 +240,7 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should set HttpOnly flag on visitor cookie" do
-    payload = { events: [event_without_ids] }
+    payload = { events: [ event_without_ids ] }
 
     post api_v1_events_path, params: payload, headers: auth_headers, as: :json
 
@@ -240,7 +248,7 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should set SameSite=Lax on visitor cookie" do
-    payload = { events: [event_without_ids] }
+    payload = { events: [ event_without_ids ] }
 
     post api_v1_events_path, params: payload, headers: auth_headers, as: :json
 
@@ -250,7 +258,7 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
   test "should use visitor_id from payload even when cookie present" do
     # Use existing visitor_two from payload, even though cookie has visitor_one's ID
     payload = {
-      events: [event_without_ids.merge("visitor_id" => visitor_two.visitor_id)]
+      events: [ event_without_ids.merge("visitor_id" => visitor_two.visitor_id) ]
     }
 
     post api_v1_events_path,
@@ -261,6 +269,7 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
     assert_response :accepted
 
     created_event = account.events.unscoped.where(account: account).test_data.last
+
     assert_equal visitor_two.visitor_id, created_event.visitor.visitor_id,
       "Explicit visitor_id in payload should take precedence over cookie"
   end
@@ -302,6 +311,7 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
     assert_response :accepted
 
     created_event = account.events.unscoped.where(account: account).test_data.last
+
     assert_equal existing_session.session_id, created_event.session.session_id,
       "Should use existing session, not client-sent session_id"
   end
@@ -327,7 +337,7 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
     )
 
     payload = {
-      events: [event_without_ids.merge("visitor_id" => visitor_id)]
+      events: [ event_without_ids.merge("visitor_id" => visitor_id) ]
     }
 
     post api_v1_events_path, params: payload, headers: auth_headers_with_user_agent, as: :json
@@ -335,6 +345,7 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
     assert_response :accepted
 
     created_event = account.events.unscoped.where(account: account).test_data.last
+
     assert_not_equal old_session.session_id, created_event.session.session_id,
       "Should create new session when existing session expired"
   end
@@ -363,6 +374,7 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
     assert_response :accepted
 
     events = account.events.unscoped.where(account: account).test_data.order(created_at: :asc).last(2)
+
     assert_equal events.first.session_id, events.last.session_id,
       "Concurrent events should get same deterministic session_id"
   end
@@ -390,14 +402,13 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
     old_activity = session.last_activity_at
 
     payload = {
-      events: [event_without_ids.merge("visitor_id" => visitor_id)]
+      events: [ event_without_ids.merge("visitor_id" => visitor_id) ]
     }
 
     post api_v1_events_path, params: payload, headers: auth_headers_with_user_agent, as: :json
 
     assert_response :accepted
-    assert session.reload.last_activity_at > old_activity,
-      "Session last_activity_at should be updated"
+    assert_operator session.reload.last_activity_at, :>, old_activity, "Session last_activity_at should be updated"
   end
 
   test "should store device_fingerprint on new session" do
@@ -411,7 +422,7 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
     )
 
     payload = {
-      events: [event_without_ids.merge("visitor_id" => visitor_id)]
+      events: [ event_without_ids.merge("visitor_id" => visitor_id) ]
     }
 
     post api_v1_events_path, params: payload, headers: auth_headers_with_user_agent, as: :json
@@ -419,7 +430,8 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
     assert_response :accepted
 
     created_event = account.events.unscoped.where(account: account).test_data.last
-    assert created_event.session.device_fingerprint.present?,
+
+    assert_predicate created_event.session.device_fingerprint, :present?,
       "New session should have device_fingerprint stored"
     assert_equal 32, created_event.session.device_fingerprint.length
   end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Events
   class IngestionService
     def initialize(account, async: false, is_test: false)

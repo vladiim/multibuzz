@@ -1,11 +1,13 @@
+# frozen_string_literal: true
+
 module Dashboard
   class DateRangeParser
     PRESETS = { "7d" => 7, "30d" => 30, "90d" => 90 }.freeze
     DEFAULT_DAYS = 30
 
     PARSERS = {
-      Hash => ->(param) { [Date.parse(param[:start_date]), Date.parse(param[:end_date])] },
-      String => ->(param) { [(PRESETS.fetch(param, DEFAULT_DAYS) - 1).days.ago.to_date, Date.current] }
+      Hash => ->(param) { [ Date.parse(param[:start_date]), Date.parse(param[:end_date]) ] },
+      String => ->(param) { [ (PRESETS.fetch(param, DEFAULT_DAYS) - 1).days.ago.to_date, Date.current ] }
     }.freeze
 
     attr_reader :start_date, :end_date
@@ -30,7 +32,7 @@ module Dashboard
 
     def parse(param)
       PARSERS
-        .fetch(param.class) { ->(_) { [DEFAULT_DAYS.days.ago.to_date, Date.current] } }
+        .fetch(param.class) { ->(_) { [ DEFAULT_DAYS.days.ago.to_date, Date.current ] } }
         .call(param)
     end
   end

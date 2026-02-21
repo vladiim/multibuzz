@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class SessionTest < ActiveSupport::TestCase
   test "should be valid with valid attributes" do
-    assert session.valid?
+    assert_predicate session, :valid?
   end
 
   test "should belong to account" do
@@ -52,7 +54,7 @@ class SessionTest < ActiveSupport::TestCase
       session_id: session.session_id
     )
 
-    assert other_session.valid?
+    assert_predicate other_session, :valid?
   end
 
   test "should have many events" do
@@ -81,7 +83,7 @@ class SessionTest < ActiveSupport::TestCase
       session_id: "new_session_123"
     )
 
-    assert new_session.started_at.present?
+    assert_predicate new_session.started_at, :present?
     assert_in_delta Time.current, new_session.started_at, 1.second
   end
 
@@ -108,12 +110,12 @@ class SessionTest < ActiveSupport::TestCase
 
     session.end_session!
 
-    assert session.ended_at.present?
+    assert_predicate session.ended_at, :present?
     assert_in_delta Time.current, session.ended_at, 1.second
   end
 
   test "should check if session is active" do
-    assert session.active?
+    assert_predicate session, :active?
 
     session.end_session!
 
@@ -145,7 +147,7 @@ class SessionTest < ActiveSupport::TestCase
   test "accepts initial_utm within 50KB" do
     session.initial_utm = { "utm_source" => "google", "utm_medium" => "cpc" }
 
-    assert session.valid?
+    assert_predicate session, :valid?
   end
 
   # Ghost session filtering
@@ -196,5 +198,4 @@ class SessionTest < ActiveSupport::TestCase
   def suspect_session
     @suspect_session ||= sessions(:suspect)
   end
-
 end

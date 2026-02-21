@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class Sessions::ChannelAttributionServiceTest < ActiveSupport::TestCase
@@ -244,10 +246,11 @@ class Sessions::ChannelAttributionServiceTest < ActiveSupport::TestCase
   end
 
   test "returns organic_search for plcid with various path suffixes" do
-    suffixes = ["/contact-us", "/about", "/info", "/contact.html", "/contact.php"]
+    suffixes = [ "/contact-us", "/about", "/info", "/contact.html", "/contact.php" ]
 
     suffixes.each do |suffix|
       utm_data = { utm_term: "plcid_123456789#{suffix}" }
+
       assert_equal Channels::ORGANIC_SEARCH, service(utm_data).call,
         "Expected organic_search for plcid with suffix #{suffix}"
     end

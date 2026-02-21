@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class Visitors::LookupServiceTest < ActiveSupport::TestCase
@@ -34,7 +36,7 @@ class Visitors::LookupServiceTest < ActiveSupport::TestCase
     @existing_visitor_id = "a"  # Too short
 
     assert_not result[:success]
-    assert result[:errors].present?
+    assert_predicate result[:errors], :present?
   end
 
   # --- Billing Usage ---
@@ -85,6 +87,7 @@ class Visitors::LookupServiceTest < ActiveSupport::TestCase
 
     assert_no_difference -> { Visitor.count } do
       result = service_with_fingerprint.call
+
       assert_not result[:success]
       assert_includes result[:errors], "Visitor not found"
     end
@@ -111,6 +114,7 @@ class Visitors::LookupServiceTest < ActiveSupport::TestCase
 
     assert_no_difference -> { Visitor.count } do
       result = service_with_fingerprint.call
+
       assert_not result[:success]
       assert_includes result[:errors], "Visitor not found"
     end

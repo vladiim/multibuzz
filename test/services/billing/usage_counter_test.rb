@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class Billing::UsageCounterTest < ActiveSupport::TestCase
@@ -44,7 +46,7 @@ class Billing::UsageCounterTest < ActiveSupport::TestCase
     account.update!(plan: free_plan)
     Rails.cache.write(cache_key, free_limit / 2)
 
-    assert counter.within_limit?
+    assert_predicate counter, :within_limit?
   end
 
   test "within_limit? returns false when at limit" do
@@ -89,7 +91,7 @@ class Billing::UsageCounterTest < ActiveSupport::TestCase
     account.update!(plan: free_plan)
     Rails.cache.write(cache_key, (free_limit * 0.8).to_i)
 
-    assert counter.approaching_limit?
+    assert_predicate counter, :approaching_limit?
   end
 
   test "approaching_limit? returns false below 80%" do
@@ -103,7 +105,7 @@ class Billing::UsageCounterTest < ActiveSupport::TestCase
     account.update!(plan: free_plan)
     Rails.cache.write(cache_key, free_limit)
 
-    assert counter.at_limit?
+    assert_predicate counter, :at_limit?
   end
 
   test "at_limit? returns false below 100%" do

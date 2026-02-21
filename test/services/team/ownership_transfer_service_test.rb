@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 module Team
@@ -9,14 +11,14 @@ module Team
 
     test "transfers ownership to admin" do
       assert transfer_to_admin[:success]
-      assert admin_membership.reload.owner?
-      assert owner_membership.reload.admin?
+      assert_predicate admin_membership.reload, :owner?
+      assert_predicate owner_membership.reload, :admin?
     end
 
     test "transfers ownership to member" do
       assert transfer_to_member[:success]
-      assert member_membership.reload.owner?
-      assert owner_membership.reload.admin?
+      assert_predicate member_membership.reload, :owner?
+      assert_predicate owner_membership.reload, :admin?
     end
 
     test "sends notification emails to both parties" do

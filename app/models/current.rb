@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Thread-safe global state using ActiveSupport::CurrentAttributes
 #
 # Usage in controllers:

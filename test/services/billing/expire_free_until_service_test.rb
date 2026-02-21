@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class Billing::ExpireFreeUntilServiceTest < ActiveSupport::TestCase
@@ -6,7 +8,7 @@ class Billing::ExpireFreeUntilServiceTest < ActiveSupport::TestCase
 
     service.call
 
-    assert account.reload.billing_expired?
+    assert_predicate account.reload, :billing_expired?
   end
 
   test "does not expire accounts with free_until in the future" do
@@ -14,7 +16,7 @@ class Billing::ExpireFreeUntilServiceTest < ActiveSupport::TestCase
 
     service.call
 
-    assert account.reload.billing_free_until?
+    assert_predicate account.reload, :billing_free_until?
   end
 
   test "does not affect accounts with other billing statuses" do
@@ -22,7 +24,7 @@ class Billing::ExpireFreeUntilServiceTest < ActiveSupport::TestCase
 
     service.call
 
-    assert account.reload.billing_active?
+    assert_predicate account.reload, :billing_active?
   end
 
   test "expires multiple accounts at once" do
@@ -31,8 +33,8 @@ class Billing::ExpireFreeUntilServiceTest < ActiveSupport::TestCase
 
     service.call
 
-    assert account.reload.billing_expired?
-    assert other_account.reload.billing_expired?
+    assert_predicate account.reload, :billing_expired?
+    assert_predicate other_account.reload, :billing_expired?
   end
 
   test "handles accounts expiring exactly now" do
@@ -40,7 +42,7 @@ class Billing::ExpireFreeUntilServiceTest < ActiveSupport::TestCase
 
     service.call
 
-    assert account.reload.billing_expired?
+    assert_predicate account.reload, :billing_expired?
   end
 
   test "returns count of expired accounts" do

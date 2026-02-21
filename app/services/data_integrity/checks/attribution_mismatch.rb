@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module DataIntegrity
   module Checks
     class AttributionMismatch < BaseCheck

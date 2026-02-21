@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module DocsHelper
   def render_markdown(text)
     markdown_renderer.render(text).html_safe
@@ -16,7 +18,7 @@ module DocsHelper
     languages = examples.keys
     default_lang = default || languages.first
 
-    render partial: 'docs/shared/code_tabs', locals: {
+    render partial: "docs/shared/code_tabs", locals: {
       examples: examples,
       languages: languages,
       default_lang: default_lang
@@ -27,8 +29,8 @@ module DocsHelper
   def api_key_configuration_example
     code_tabs(filter_live_examples({
       ruby: {
-        label: 'Ruby',
-        syntax: 'ruby',
+        label: "Ruby",
+        syntax: "ruby",
         code: <<~CODE
           # config/initializers/mbuzz.rb
           Mbuzz.init(
@@ -38,8 +40,8 @@ module DocsHelper
         CODE
       },
       nodejs: {
-        label: 'Node.js',
-        syntax: 'javascript',
+        label: "Node.js",
+        syntax: "javascript",
         code: <<~CODE
           // app.js or server.js
           const mbuzz = require('mbuzz');
@@ -51,8 +53,8 @@ module DocsHelper
         CODE
       },
       curl: {
-        label: 'REST API',
-        syntax: 'bash',
+        label: "REST API",
+        syntax: "bash",
         code: <<~CODE
           # Set your API key as environment variable
           export MBUZZ_API_KEY=sk_test_your_key_here
@@ -68,8 +70,8 @@ module DocsHelper
   def api_key_usage_example
     code_tabs(filter_live_examples({
       ruby: {
-        label: 'Ruby',
-        syntax: 'ruby',
+        label: "Ruby",
+        syntax: "ruby",
         code: <<~CODE
           # Automatically handled by gem
           Mbuzz.init(api_key: ENV['MBUZZ_API_KEY'])
@@ -79,8 +81,8 @@ module DocsHelper
         CODE
       },
       nodejs: {
-        label: 'Node.js',
-        syntax: 'javascript',
+        label: "Node.js",
+        syntax: "javascript",
         code: <<~CODE
           // Automatically handled by SDK
           const mbuzz = require('mbuzz');
@@ -91,8 +93,8 @@ module DocsHelper
         CODE
       },
       curl: {
-        label: 'cURL',
-        syntax: 'bash',
+        label: "cURL",
+        syntax: "bash",
         code: <<~CODE
           curl -X POST #{api_v1_events_url} \\
             -H "Authorization: Bearer sk_test_your_key_here" \\
@@ -106,8 +108,8 @@ module DocsHelper
   def track_event_example
     code_tabs(filter_live_examples({
       ruby: {
-        label: 'Ruby',
-        syntax: 'ruby',
+        label: "Ruby",
+        syntax: "ruby",
         code: <<~CODE
           # Track user interactions
           Mbuzz.event("page_view", url: "/pricing")
@@ -115,8 +117,8 @@ module DocsHelper
         CODE
       },
       nodejs: {
-        label: 'Node.js',
-        syntax: 'javascript',
+        label: "Node.js",
+        syntax: "javascript",
         code: <<~CODE
           // Track user interactions
           mbuzz.event('page_view', { url: '/pricing' });
@@ -124,8 +126,8 @@ module DocsHelper
         CODE
       },
       curl: {
-        label: 'REST API',
-        syntax: 'bash',
+        label: "REST API",
+        syntax: "bash",
         code: <<~CODE
           curl -X POST https://mbuzz.co/api/v1/events \\
             -H "Authorization: Bearer $MBUZZ_API_KEY" \\
@@ -200,7 +202,7 @@ module DocsHelper
   # Custom renderer with Rouge syntax highlighting
   class SyntaxHighlightRenderer < Redcarpet::Render::HTML
     def block_code(code, language)
-      language ||= 'ruby'
+      language ||= "ruby"
 
       # Use Rouge for syntax highlighting
       lexer = Rouge::Lexer.find_fancy(language, code) || Rouge::Lexers::PlainText.new

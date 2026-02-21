@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class SdkHelperTest < ActionView::TestCase
   test "live_sdks returns live SDKs" do
     sdks = live_sdks
 
-    assert sdks.any?
+    assert_predicate sdks, :any?
     assert sdks.all?(&:live?)
   end
 
@@ -17,14 +19,14 @@ class SdkHelperTest < ActionView::TestCase
   test "server_side_sdks returns server_side SDKs" do
     sdks = server_side_sdks
 
-    assert sdks.any?
+    assert_predicate sdks, :any?
     assert sdks.all?(&:server_side?)
   end
 
   test "platform_sdks returns platform SDKs" do
     sdks = platform_sdks
 
-    assert sdks.any?
+    assert_predicate sdks, :any?
     assert sdks.all?(&:platform?)
   end
 

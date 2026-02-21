@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 module DataIntegrity
@@ -93,7 +95,7 @@ module DataIntegrity
           session_id: session.id,
           conversion_type: "test",
           converted_at: 1.day.ago + 30.minutes,
-          journey_session_ids: [session.id]
+          journey_session_ids: [ session.id ]
         )
       end
     end

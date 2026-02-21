@@ -17,7 +17,7 @@ module Dashboard
       result = service.call
 
       assert result[:success]
-      assert result[:data].present?
+      assert_predicate result[:data], :present?
     end
 
     test "returns all required data keys" do
@@ -53,7 +53,7 @@ module Dashboard
       totals = result[:data][:totals]
 
       # 1 customer, 3 payments of $49 = $147 total
-      assert_equal 147.0, totals[:clv]
+      assert_in_delta(147.0, totals[:clv])
     end
 
     test "customers counts distinct identities with is_acquisition in date range" do
@@ -79,7 +79,7 @@ module Dashboard
       totals = result[:data][:totals]
 
       # 3 payments * $49 = $147
-      assert_equal 147.0, totals[:revenue]
+      assert_in_delta(147.0, totals[:revenue])
     end
 
     test "avg_duration calculates average customer lifespan in days" do
@@ -97,7 +97,7 @@ module Dashboard
       totals = result[:data][:totals]
 
       # 4 conversions / 1 customer = 4.0
-      assert_equal 4.0, totals[:repurchase_frequency]
+      assert_in_delta(4.0, totals[:repurchase_frequency])
     end
 
     # ==========================================
@@ -109,8 +109,9 @@ module Dashboard
       result = service.call
       by_channel = result[:data][:by_channel]
 
-      assert by_channel.is_a?(Array)
+      assert_kind_of Array, by_channel
       channels = by_channel.map { |c| c[:channel] }
+
       assert_includes channels, Channels::ORGANIC_SEARCH
       assert_includes channels, Channels::PAID_SEARCH
     end
@@ -121,8 +122,9 @@ module Dashboard
       by_channel = result[:data][:by_channel]
 
       organic = by_channel.find { |c| c[:channel] == Channels::ORGANIC_SEARCH }
-      assert organic[:clv].positive?
-      assert organic[:customers].positive?
+
+      assert_predicate organic[:clv], :positive?
+      assert_predicate organic[:customers], :positive?
     end
 
     # ==========================================
@@ -143,10 +145,10 @@ module Dashboard
       result = service.call
       coverage = result[:data][:coverage]
 
-      assert coverage[:total].positive?
-      assert coverage[:identified].positive?
-      assert coverage[:percentage] > 0
-      assert coverage[:percentage] <= 100
+      assert_predicate coverage[:total], :positive?
+      assert_predicate coverage[:identified], :positive?
+      assert_operator coverage[:percentage], :>, 0
+      assert_operator coverage[:percentage], :<=, 100
     end
 
     # ==========================================
@@ -274,7 +276,7 @@ module Dashboard
       )
 
       # Filter to only organic search
-      result = service_with_channels([Channels::ORGANIC_SEARCH]).call
+      result = service_with_channels([ Channels::ORGANIC_SEARCH ]).call
       totals = result[:data][:totals]
 
       assert_equal 1, totals[:customers]
@@ -319,7 +321,7 @@ module Dashboard
 
       # Filter to only signup conversions
       conversion_filters = [
-        { field: "conversion_type", operator: "equals", values: ["signup"] }
+        { field: "conversion_type", operator: "equals", values: [ "signup" ] }
       ]
       result = service_with_conversion_filters(conversion_filters).call
       totals = result[:data][:totals]
@@ -404,7 +406,7 @@ module Dashboard
       )
 
       # Apply date (30d) + channel (organic) filters
-      result = service_with_channels([Channels::ORGANIC_SEARCH]).call
+      result = service_with_channels([ Channels::ORGANIC_SEARCH ]).call
       totals = result[:data][:totals]
 
       # Only customer 1 should match both filters
@@ -454,7 +456,7 @@ module Dashboard
       # 1 customer acquired in range
       assert_equal 1, totals[:customers]
       # Full lifetime revenue: $100 + $50 = $150
-      assert_equal 150.0, totals[:revenue]
+      assert_in_delta(150.0, totals[:revenue])
     end
 
     private
@@ -478,7 +480,7 @@ module Dashboard
     def filter_params
       {
         date_range: "30d",
-        models: [attribution_models(:first_touch)],
+        models: [ attribution_models(:first_touch) ],
         channels: Channels::ALL,
         conversion_filters: [],
         test_mode: false
@@ -520,7 +522,7 @@ module Dashboard
       )
 
       # Create subsequent payments
-      [20.days.ago, 10.days.ago, 2.days.ago].each do |time|
+      [ 20.days.ago, 10.days.ago, 2.days.ago ].each do |time|
         payment = account.conversions.create!(
           visitor: visitors(:one),
           identity: identity,

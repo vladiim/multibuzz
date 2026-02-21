@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class Events::ProcessingJobTest < ActiveJob::TestCase
@@ -11,6 +13,7 @@ class Events::ProcessingJobTest < ActiveJob::TestCase
     Events::ProcessingJob.perform_now(account.id, event_data)
 
     event = Event.last
+
     assert_equal "page_view", event.event_type
     assert_equal account, event.account
     assert_equal visitor.visitor_id, event.visitor.visitor_id
@@ -28,6 +31,7 @@ class Events::ProcessingJobTest < ActiveJob::TestCase
     Events::ProcessingJob.perform_now(account.id, event_data)
 
     event = Event.last
+
     assert_equal account, event.account
   end
 

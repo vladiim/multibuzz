@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Billing
   module Handlers
     class Base < ApplicationService
@@ -33,7 +35,7 @@ module Billing
       end
 
       def account_not_found_error
-        error_result(["Account not found for customer: #{customer_id}"])
+        error_result([ "Account not found for customer: #{customer_id}" ])
       end
     end
   end

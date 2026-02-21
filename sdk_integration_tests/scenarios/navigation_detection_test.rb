@@ -303,6 +303,7 @@ class NavigationDetectionTest < Minitest::Test
     )
 
     session_cookie = extract_cookie(cookies, "_mbuzz_sid")
+
     assert_nil session_cookie,
       "Session cookie (_mbuzz_sid) must NOT be set — removed in v0.8.0"
   end
@@ -477,12 +478,14 @@ class NavigationDetectionTest < Minitest::Test
 
     # Only the navigation request should have created a session
     nav_data = poll_for_visitor(navigation_vid)
+
     refute_empty nav_data[:sessions],
       "Navigation request must create a session"
 
     # Frame requests should NOT have sessions (single-shot check — no session was created)
     frame_vids.compact.each do |fvid|
       frame_data = verify_once(fvid)
+
       assert_no_sessions frame_data,
         "Turbo frame sub-request must NOT create a session (visitor #{fvid})"
     end
@@ -536,7 +539,7 @@ class NavigationDetectionTest < Minitest::Test
 
     created_visitor_ids << visitor_id
 
-    [visitor_id, cookies]
+    [ visitor_id, cookies ]
   end
 
   # Make an HTTP request to the SDK test app with specific headers.
@@ -564,7 +567,7 @@ class NavigationDetectionTest < Minitest::Test
     visitor_id = extract_cookie(cookies, "_mbuzz_vid")
     created_visitor_ids << visitor_id if visitor_id
 
-    [visitor_id, cookies]
+    [ visitor_id, cookies ]
   end
 
   def extract_cookie(cookies, name)
@@ -616,11 +619,13 @@ class NavigationDetectionTest < Minitest::Test
 
   def assert_no_sessions(data, message)
     sessions = data[:sessions] || []
+
     assert_empty sessions, message
   end
 
   def assert_visitor_cookie_present(cookies, message)
     visitor_id = extract_cookie(cookies, "_mbuzz_vid")
+
     refute_nil visitor_id, message
     assert_match(/\A[a-f0-9]{64}\z/, visitor_id,
       "Visitor cookie should be a 64-char hex string, got: #{visitor_id.inspect}")

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Session < ApplicationRecord
   include Session::Validations
   include Session::Relationships

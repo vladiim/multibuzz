@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module SdkHelper
   def live_sdks
     SdkRegistry.live

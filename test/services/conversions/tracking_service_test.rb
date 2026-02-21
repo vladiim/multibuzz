@@ -146,7 +146,7 @@ module Conversions
       result = build_service(event_id: event.prefix_id, revenue: 99.99).call
 
       assert result[:success]
-      assert_equal 99.99, result[:conversion].revenue.to_f
+      assert_in_delta(99.99, result[:conversion].revenue.to_f)
     end
 
     test "stores properties when provided" do
@@ -179,6 +179,7 @@ module Conversions
     test "attribution job enqueued via model callback" do
       # Job is enqueued by Conversion::Callbacks, not the service
       result = build_service(event_id: event.prefix_id).call
+
       assert result[:success]
       assert_enqueued_jobs 1, only: Conversions::AttributionCalculationJob
     end
@@ -198,14 +199,14 @@ module Conversions
       result = build_service(event_id: event.prefix_id, revenue: 0).call
 
       assert result[:success]
-      assert_equal 0.0, result[:conversion].revenue.to_f
+      assert_in_delta(0.0, result[:conversion].revenue.to_f)
     end
 
     test "preserves string zero revenue" do
       result = build_service(event_id: event.prefix_id, revenue: "0").call
 
       assert result[:success]
-      assert_equal 0.0, result[:conversion].revenue.to_f
+      assert_in_delta(0.0, result[:conversion].revenue.to_f)
     end
 
     test "normalizes negative revenue to nil" do
@@ -229,14 +230,14 @@ module Conversions
       result = build_service(event_id: event.prefix_id, revenue: 150.50).call
 
       assert result[:success]
-      assert_equal 150.50, result[:conversion].revenue.to_f
+      assert_in_delta(150.50, result[:conversion].revenue.to_f)
     end
 
     test "preserves valid string revenue" do
       result = build_service(event_id: event.prefix_id, revenue: "99.99").call
 
       assert result[:success]
-      assert_equal 99.99, result[:conversion].revenue.to_f
+      assert_in_delta(99.99, result[:conversion].revenue.to_f)
     end
 
     # ==========================================
@@ -319,7 +320,7 @@ module Conversions
       ).call
 
       assert result[:success]
-      assert_equal true, result[:conversion].is_acquisition
+      assert result[:conversion].is_acquisition
     end
 
     test "is_acquisition defaults to false" do
@@ -329,7 +330,7 @@ module Conversions
       ).call
 
       assert result[:success]
-      assert_equal false, result[:conversion].is_acquisition
+      refute result[:conversion].is_acquisition
     end
 
     test "sets inherit_acquisition transient attribute when provided" do
@@ -340,7 +341,7 @@ module Conversions
       ).call
 
       assert result[:success]
-      assert_equal true, result[:conversion].inherit_acquisition?
+      assert_predicate result[:conversion], :inherit_acquisition?
     end
 
     test "inherit_acquisition defaults to false" do
@@ -350,7 +351,7 @@ module Conversions
       ).call
 
       assert result[:success]
-      assert_equal false, result[:conversion].inherit_acquisition?
+      refute_predicate result[:conversion], :inherit_acquisition?
     end
 
     test "returns error when is_acquisition true but no valid user_id" do
@@ -372,7 +373,7 @@ module Conversions
 
       assert result[:success]
       assert_equal identity.id, result[:conversion].identity_id
-      assert_equal true, result[:conversion].is_acquisition
+      assert result[:conversion].is_acquisition
     end
 
     # ==========================================
@@ -586,16 +587,18 @@ module Conversions
 
       assert result[:success]
       assert_equal "idem_new_123", result[:conversion].idempotency_key
-      assert_equal false, result[:duplicate]
+      refute result[:duplicate]
     end
 
     test "returns existing conversion for duplicate idempotency key" do
       first = build_service(event_id: event.prefix_id, idempotency_key: "idem_dup_456").call
+
       assert first[:success]
 
       second = build_service(event_id: event.prefix_id, idempotency_key: "idem_dup_456").call
+
       assert second[:success]
-      assert_equal true, second[:duplicate]
+      assert second[:duplicate]
       assert_equal first[:conversion].id, second[:conversion].id
     end
 
@@ -609,6 +612,7 @@ module Conversions
 
     test "same idempotency key in different account creates new conversion" do
       first = build_service(event_id: event.prefix_id, idempotency_key: "idem_cross_acct").call
+
       assert first[:success]
 
       other_event = events(:three)
@@ -633,7 +637,7 @@ module Conversions
       assert first[:success]
       assert second[:success]
       assert_not_equal first[:conversion].id, second[:conversion].id
-      assert_equal false, second[:duplicate]
+      refute second[:duplicate]
     end
 
     # ==========================================
@@ -648,7 +652,7 @@ module Conversions
       result = build_service(event_id: event.prefix_id).call
 
       assert result[:success]
-      assert session.reload.last_activity_at > old_activity
+      assert_operator session.reload.last_activity_at, :>, old_activity
       assert_in_delta Time.current.to_i, session.last_activity_at.to_i, 2
     end
 

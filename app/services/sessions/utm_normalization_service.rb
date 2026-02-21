@@ -35,7 +35,7 @@ module Sessions
     def symbolize_keys(hash)
       return {} if hash.blank?
 
-      hash.to_h { |k, v| [k.to_s.to_sym, v] }
+      hash.to_h { |k, v| [ k.to_s.to_sym, v ] }
     end
 
     def downcase(value)

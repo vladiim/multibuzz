@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class OnboardingMailer < ApplicationMailer
   def welcome(account:, user:)
     @account = account

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddIsTestToTrackingTables < ActiveRecord::Migration[8.0]
   def change
     add_column :visitors, :is_test, :boolean, default: false, null: false

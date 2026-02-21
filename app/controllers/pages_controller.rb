@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class PagesController < ApplicationController
   def home
   end
@@ -13,5 +15,4 @@ class PagesController < ApplicationController
 
   def cookies
   end
-
 end

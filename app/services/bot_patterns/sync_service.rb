@@ -15,7 +15,7 @@ module BotPatterns
 
     HTTP_TIMEOUT = 30
     MAX_RETRIES = 3
-    RETRYABLE_ERRORS = [Net::OpenTimeout, Net::ReadTimeout, Errno::ECONNRESET, Errno::ECONNREFUSED].freeze
+    RETRYABLE_ERRORS = [ Net::OpenTimeout, Net::ReadTimeout, Errno::ECONNRESET, Errno::ECONNREFUSED ].freeze
 
     def initialize(fetched_content: nil)
       @fetched_content = fetched_content

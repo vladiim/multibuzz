@@ -61,7 +61,7 @@ module AML
 
       def resolve_touchpoint(touchpoint)
         index = @touchpoints.index(touchpoint)
-        index ? [index] : []
+        index ? [ index ] : []
       end
 
       def resolve_collection(collection)
@@ -84,7 +84,7 @@ module AML
 
       def resolve_integer(idx)
         normalized = normalize_index(idx)
-        normalized && normalized >= 0 && normalized < @length ? [normalized] : []
+        normalized && normalized >= 0 && normalized < @length ? [ normalized ] : []
       end
 
       def all_indices

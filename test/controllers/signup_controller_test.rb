@@ -14,7 +14,7 @@ class SignupControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "create with valid params creates user and account" do
-    assert_difference ["User.count", "Account.count", "AccountMembership.count"], 1 do
+    assert_difference [ "User.count", "Account.count", "AccountMembership.count" ], 1 do
       post signup_path, params: {
         user: { email: "newuser@example.com", password: "password123" },
         account: { name: "New Company" }
@@ -30,7 +30,7 @@ class SignupControllerTest < ActionDispatch::IntegrationTest
       account: { name: "New Company" }
     }
 
-    assert session[:user_id].present?
+    assert_predicate session[:user_id], :present?
   end
 
   test "create sets user as account owner" do
@@ -43,12 +43,12 @@ class SignupControllerTest < ActionDispatch::IntegrationTest
     account = Account.find_by(name: "New Company")
     membership = AccountMembership.find_by(user: user, account: account)
 
-    assert membership.owner?
-    assert membership.accepted?
+    assert_predicate membership, :owner?
+    assert_predicate membership, :accepted?
   end
 
   test "create with invalid email rerenders form" do
-    assert_no_difference ["User.count", "Account.count"] do
+    assert_no_difference [ "User.count", "Account.count" ] do
       post signup_path, params: {
         user: { email: "invalid", password: "password123" },
         account: { name: "New Company" }
@@ -59,7 +59,7 @@ class SignupControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "create with blank password rerenders form" do
-    assert_no_difference ["User.count", "Account.count"] do
+    assert_no_difference [ "User.count", "Account.count" ] do
       post signup_path, params: {
         user: { email: "newuser@example.com", password: "" },
         account: { name: "New Company" }
@@ -70,7 +70,7 @@ class SignupControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "create with blank account name rerenders form" do
-    assert_no_difference ["User.count", "Account.count"] do
+    assert_no_difference [ "User.count", "Account.count" ] do
       post signup_path, params: {
         user: { email: "newuser@example.com", password: "password123" },
         account: { name: "" }
@@ -83,7 +83,7 @@ class SignupControllerTest < ActionDispatch::IntegrationTest
   test "create with duplicate email rerenders form" do
     existing_user = users(:one)
 
-    assert_no_difference ["User.count", "Account.count"] do
+    assert_no_difference [ "User.count", "Account.count" ] do
       post signup_path, params: {
         user: { email: existing_user.email, password: "password123" },
         account: { name: "New Company" }
@@ -100,6 +100,7 @@ class SignupControllerTest < ActionDispatch::IntegrationTest
     }
 
     account = Account.find_by(name: "New Company")
-    assert account.api_keys.test.exists?
+
+    assert_predicate account.api_keys.test, :exists?
   end
 end

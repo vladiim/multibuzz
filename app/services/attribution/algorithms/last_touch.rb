@@ -12,7 +12,7 @@ module Attribution
       def call
         return [] if touchpoints.empty?
 
-        [build_credit(touchpoints.last, FULL_CREDIT)]
+        [ build_credit(touchpoints.last, FULL_CREDIT) ]
       end
 
       private

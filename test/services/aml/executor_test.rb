@@ -18,15 +18,15 @@ module AML
     test "executes first touch model" do
       credits = build_executor(first_touch_code).call
 
-      assert_equal 1.0, credits[0]
-      assert_equal 0.0, credits[1]
+      assert_in_delta(1.0, credits[0])
+      assert_in_delta(0.0, credits[1])
     end
 
     test "executes last touch model" do
       credits = build_executor(last_touch_code).call
 
-      assert_equal 0.0, credits[0]
-      assert_equal 1.0, credits[-1]
+      assert_in_delta(0.0, credits[0])
+      assert_in_delta(1.0, credits[-1])
     end
 
     test "executes u-shaped model" do
@@ -42,7 +42,7 @@ module AML
       credits = build_executor(time_decay_code).call
 
       # More recent touchpoints should have higher credit
-      assert credits[-1] > credits[0]
+      assert_operator credits[-1], :>, credits[0]
       assert_in_delta 1.0, credits.sum, 0.0001
     end
 
@@ -57,7 +57,7 @@ module AML
 
     test "rejects code with backticks" do
       error = assert_raises(::AML::SecurityError) do
-        build_executor('`ls`').call
+        build_executor("`ls`").call
       end
 
       assert_includes error.message, "Backtick"

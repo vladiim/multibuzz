@@ -53,8 +53,9 @@ class WebhooksShopifyControllerTest < ActionDispatch::IntegrationTest
     assert_equal({ "received" => true }, response.parsed_body)
 
     conversion = Conversion.last
+
     assert_equal "purchase", conversion.conversion_type
-    assert_equal 99.99, conversion.revenue.to_f
+    assert_in_delta(99.99, conversion.revenue.to_f)
     assert_equal visitor.id, conversion.visitor_id
     assert_equal "12345", conversion.properties["shopify_order_id"]
   end
@@ -88,7 +89,7 @@ class WebhooksShopifyControllerTest < ActionDispatch::IntegrationTest
       headers: headers_with_valid_signature(payload, topic: "orders/paid")
 
     assert_response :ok
-    assert response.parsed_body["warning"].present?
+    assert_predicate response.parsed_body["warning"], :present?
     assert_includes response.parsed_body["warning"], "no identity found for email"
   end
 
@@ -126,6 +127,7 @@ class WebhooksShopifyControllerTest < ActionDispatch::IntegrationTest
     assert_equal({ "received" => true }, response.parsed_body)
 
     conversion = Conversion.last
+
     assert_equal v.id, conversion.visitor_id
   end
 
