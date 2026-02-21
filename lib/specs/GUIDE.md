@@ -1,6 +1,6 @@
 # Specification Writing Guide
 
-> How to write specs that ship features faster at Multibuzz
+> How to write specs that ship features faster at mbuzz
 
 ---
 
@@ -43,9 +43,18 @@ lib/specs/
   old/                  # Completed, archived for reference
   incidents/            # Post-mortems and investigation reports
   marketing/            # Content and positioning specs
+
+lib/docs/
+  PRODUCT.md            # What mbuzz is (non-technical, high-level)
+  BUSINESS_RULES.md     # Every rule the system enforces (non-technical, detailed)
+  SETUP.md              # Local development setup
+  architecture/         # Technical architecture documents
+  sdk/                  # SDK developer documentation
 ```
 
 **Keep the root clean.** Only specs for the current or next sprint live in `lib/specs/`. Move completed work to `old/` and unscheduled ideas to `future/`.
+
+**Keep business docs current.** `PRODUCT.md` and `BUSINESS_RULES.md` are living documents that must be reviewed as part of every feature completion (see [Business Documentation](#business-documentation)).
 
 ---
 
@@ -303,7 +312,7 @@ Every spec should feed the development cycle:
 
 ---
 
-## Multibuzz-Specific Conventions
+## mbuzz-Specific Conventions
 
 ### Always Consider
 
@@ -361,9 +370,46 @@ Scopes: auth, event, visitor, session, api, dashboard, export
 2. **Review** -- get feedback before building
 3. **Build** -- implement following spec + TDD cycle
 4. **Update** -- check off tasks, note any deviations
-5. **Archive** -- move to `old/` when complete
+5. **Business docs review** -- check if changes affect `lib/docs/PRODUCT.md` or `lib/docs/BUSINESS_RULES.md` (see below)
+6. **Archive** -- move to `old/` when complete
 
 Specs in `lib/specs/` should only be active work. If it's done, move it. If it's not scheduled, it belongs in `future/`.
+
+---
+
+## Business Documentation
+
+mbuzz maintains two living documents that describe the product for non-technical readers:
+
+- **[Product Overview](../docs/PRODUCT.md)** -- What mbuzz is, who it's for, how it works at a conceptual level. The "elevator pitch" expanded into a full explanation.
+- **[Business Rules](../docs/BUSINESS_RULES.md)** -- Every rule the system enforces, in plain language with concrete examples. The definitive reference for "how does X work?"
+
+### When to Update Business Docs
+
+**Update `PRODUCT.md` when:**
+- A new major capability is added (new attribution model, new SDK, new dashboard feature)
+- The product positioning or target audience changes
+- The architecture changes in a way that affects the conceptual explanation
+
+**Update `BUSINESS_RULES.md` when:**
+- A business rule is added, changed, or removed (session timeout, channel classification, attribution behavior)
+- A new entity is introduced (new model with user-facing behavior)
+- Default values change (lookback window, burst dedup threshold, etc.)
+- A new API endpoint is added
+
+**Do NOT update when:**
+- The change is purely internal (refactoring, performance, tooling)
+- The change doesn't affect user-visible behavior
+
+### Business Doc Review Checklist
+
+When completing a spec, ask:
+
+- [ ] Does this feature change how visitors, sessions, or events behave? --> Update Business Rules
+- [ ] Does this add a new channel, attribution model, or tracking capability? --> Update both docs
+- [ ] Does this change the API contract? --> Update Business Rules section 11
+- [ ] Would a marketer need to know about this? --> Update Product Overview
+- [ ] Does this change billing, limits, or plan behavior? --> Update Business Rules section 9
 
 ---
 
