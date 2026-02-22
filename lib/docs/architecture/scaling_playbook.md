@@ -14,12 +14,15 @@
 |-----------|--------------|---------|
 | App server | Single DO droplet | 68.183.173.51 |
 | Database | Self-managed TimescaleDB (pg18) | Separate droplet 64.225.47.17, private network 10.120.0.3 |
-| Puma | 3 threads, 0 workers | SOLID_QUEUE_IN_PUMA=true |
+| Puma | 3 threads, 2 workers | WEB_CONCURRENCY=2, SOLID_QUEUE_IN_PUMA=true |
 | DB pool | 5 connections | Matches RAILS_MAX_THREADS |
-| Backups | **NONE** | Critical gap |
+| Backups | Daily pg_dump to DO Spaces | 3am UTC, 7-day retention, `s3://mbuzz/mbuzz/backups/daily/` |
+| pg_stat_statements | Enabled | Tracking all queries, 1000 statement limit |
+| Health checks | CI + daily recurring job | `bin/rails infra:health`, 5am UTC via SolidQueue |
+| Slow query logger | Enabled | Logs queries >100ms via ActiveSupport notifications |
 | Staging | **NONE** | |
 | CDN | **NONE** | |
-| Monitoring | Rails health check only | /up endpoint |
+| Monitoring | Health checks + SolidErrors | /up, /api/v1/health, infra:health rake task |
 | TimescaleDB | Compression enabled (7d), 1-week chunks | Continuous aggregates for attribution |
 | Deploy | Kamal + Thruster + GHCR | jemalloc enabled |
 
@@ -29,49 +32,43 @@
 
 **Do these immediately. They're free or near-free and prevent data loss.**
 
-### 0.1 Database Backups — CRITICAL
+### 0.1 Database Backups — DONE
 
-Since DO Managed Postgres doesn't support TimescaleDB, you're running self-managed. No backups = one bad deploy or disk failure away from total data loss.
-
-**Action: Daily pg_dump to DO Spaces**
+Daily pg_dump to DO Spaces via `docker exec` (avoids pg client version mismatch with PG18).
 
 ```bash
-# /usr/local/bin/backup-mbuzz.sh
+# /root/backup-mbuzz.sh (on DB droplet)
 #!/bin/bash
 set -euo pipefail
 
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-BACKUP_DIR="/tmp/mbuzz-backups"
-BACKUP_FILE="${BACKUP_DIR}/mbuzz_${TIMESTAMP}.dump"
-SPACES_BUCKET="mbuzz-backups"
+BACKUP_FILE="/tmp/mbuzz_${TIMESTAMP}.dump"
+S3_PATH="s3://mbuzz/mbuzz/backups/daily/"
 
-mkdir -p "$BACKUP_DIR"
+docker exec multibuzz-postgres \
+  pg_dump -U multibuzz -Fc multibuzz_production \
+  > "$BACKUP_FILE"
 
-# Custom format (-Fc) for parallel restore support
-pg_dump -h 10.120.0.3 -U multibuzz -Fc multibuzz_production > "$BACKUP_FILE"
-
-# Upload to DO Spaces (S3-compatible)
-s3cmd put "$BACKUP_FILE" "s3://${SPACES_BUCKET}/daily/"
+s3cmd put "$BACKUP_FILE" "$S3_PATH"
 
 # Retention: keep 7 daily
-s3cmd ls "s3://${SPACES_BUCKET}/daily/" | sort -r | tail -n +8 | awk '{print $4}' | \
-  xargs -I {} s3cmd del {}
+s3cmd ls "$S3_PATH" \
+  | sort -r \
+  | tail -n +8 \
+  | awk '{print $4}' \
+  | xargs -I {} s3cmd del {}
 
 rm -f "$BACKUP_FILE"
+
+echo "[$(date)] Backup complete: mbuzz_${TIMESTAMP}.dump"
 ```
 
 ```bash
 # Cron (on the DB droplet)
-0 3 * * * /usr/local/bin/backup-mbuzz.sh >> /var/log/mbuzz-backup.log 2>&1
+0 3 * * * /root/backup-mbuzz.sh >> /var/log/mbuzz-backup.log 2>&1
 ```
 
 **Cost:** ~$5/mo for DO Spaces (250GB included).
-
-**Setup steps:**
-1. Create a DO Space (e.g., `mbuzz-backups` in the same region)
-2. Install s3cmd on the DB droplet, configure with Spaces access keys
-3. Add the backup script and cron job
-4. Test a restore to verify it works: `pg_restore -d test_db mbuzz_YYYYMMDD.dump`
 
 **Upgrade path:** Move to WAL-G continuous archiving when database exceeds 50GB (gives point-in-time recovery with ~minute RPO instead of 24h).
 
@@ -93,52 +90,22 @@ What you get for $0:
 3. Cache rules: cache `/assets/*` aggressively, bypass `/api/*`
 4. Page rule: `mbuzz.co/api/*` → Cache Level: Bypass
 
-### 0.3 CI Infrastructure Health Checks
+### 0.3 CI Infrastructure Health Checks — DONE
 
-**Action: Add a rake task that checks scaling thresholds and runs in CI or as a scheduled job.**
+Automated smoke detector implemented as `Infrastructure::HealthCheckService` with five checks, each deriving its name from the class and using centralized thresholds from `app/constants/infrastructure.rb`.
 
-This is the automated smoke detector — it checks database size, connection count, table bloat, compression ratios, and job queue health. When something crosses a threshold, the test fails and you know it's time to act.
+**Checks:**
+- `database_size` — warn >10GB, critical >50GB
+- `connection_usage` — warn >50%, critical >75%
+- `queue_depth` — warn >200, critical >2000
+- `compression_ratio` — warn <70%, critical <50%
+- `long_running_queries` — warn >1 query >5s, critical >3 queries >30s
 
-```ruby
-# lib/tasks/infra_health.rake
-namespace :infra do
-  desc "Check infrastructure health against scaling thresholds"
-  task health: :environment do
-    checks = Infrastructure::HealthCheckService.new.call
-    checks.each do |check|
-      status = check[:status] == :ok ? "OK" : check[:status].to_s.upcase
-      puts "[#{status}] #{check[:name]}: #{check[:value]} (threshold: #{check[:threshold]})"
-    end
-    failures = checks.select { |c| c[:status] == :critical }
-    abort("CRITICAL: #{failures.map { |f| f[:name] }.join(', ')}") if failures.any?
-  end
-end
-```
+**Run:** `bin/rails infra:health` (CI or manual), plus daily at 5am UTC via `Infrastructure::HealthCheckJob` (SolidQueue recurring).
 
-Checks to include:
-- Database size vs disk capacity (warn >60%, critical >80%)
-- Compression ratio on hypertables (warn if <85%)
-- Active DB connections vs max_connections (warn >50%)
-- SolidQueue job depth (warn >200)
-- Table bloat / dead tuple ratio (warn >10%)
-- Backup age (critical if >48 hours)
+### 0.4 Puma Workers — DONE
 
-Run via: `bin/rails infra:health` in CI, or as a daily SolidQueue recurring job.
-
-### 0.4 Puma Workers
-
-**Action: Enable Puma workers immediately.**
-
-Current config runs 3 threads with no workers — meaning a single process handling all requests. One slow query blocks everything.
-
-```yaml
-# config/deploy.yml — change from commented out to:
-WEB_CONCURRENCY: 2
-```
-
-With 2 workers x 3 threads = 6 concurrent requests. On even a small droplet, this is a massive improvement. Each worker is a forked process — one can handle requests while another is blocked on I/O.
-
-Update `database.yml` pool to match: `pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>` (already set correctly).
+`WEB_CONCURRENCY: 2` enabled in `config/deploy.yml`. 2 workers x 3 threads = 6 concurrent requests.
 
 **Phase 0 total cost: ~$5/mo** (DO Spaces only; everything else is free/built-in).
 
@@ -216,28 +183,9 @@ Alert via: email (free) or Slack webhook (free).
 
 **For the DB droplet, RAM matters most** — PostgreSQL uses it for shared_buffers and OS page cache. A 4GB RAM DB droplet should set `shared_buffers = 1GB`, `effective_cache_size = 3GB`.
 
-### 1.4 Slow Query Logging
+### 1.4 Slow Query Logging — DONE (moved to Phase 0)
 
-**Action:** Enable `pg_stat_statements` in production.
-
-```sql
--- In postgresql.conf (on DB droplet)
-shared_preload_libraries = 'timescaledb,pg_stat_statements'
-pg_stat_statements.max = 5000
-pg_stat_statements.track = all
-```
-
-Plus the Rails-side slow query logger:
-
-```ruby
-# config/initializers/slow_query_logger.rb
-ActiveSupport::Notifications.subscribe("sql.active_record") do |*, payload|
-  duration = payload[:duration] || 0
-  if duration > 100 # ms
-    Rails.logger.warn("[SLOW QUERY #{duration.round}ms] #{payload[:sql]&.truncate(500)}")
-  end
-end
-```
+`pg_stat_statements` enabled in production (`pg_stat_statements.max = 1000`, `pg_stat_statements.track = all`). Rails-side slow query logger active via `config/initializers/slow_query_logger.rb` (threshold: `Infrastructure::SLOW_QUERY_THRESHOLD_MS`, default 100ms).
 
 ### 1.5 Database Size Monitoring
 
@@ -609,12 +557,13 @@ At every phase, infrastructure cost should be <5% of MRR. If it's higher, you're
 
 ---
 
-## Priority Action Items (Do This Week)
+## Priority Action Items
 
-1. **Set up database backups** — daily pg_dump to DO Spaces (~$5/mo)
-2. **Put mbuzz.co behind Cloudflare** — free CDN + DDoS + SSL
-3. **Enable Puma workers** — set `WEB_CONCURRENCY: 2`
-4. **Build CI health check rake task** — automated scaling threshold monitoring
-5. **Enable `pg_stat_statements`** — slow query visibility for free
+1. ~~**Set up database backups**~~ — DONE. Daily pg_dump to `s3://mbuzz/mbuzz/backups/daily/`, 7-day retention.
+2. **Put mbuzz.co behind Cloudflare** — free CDN + DDoS + SSL (remaining Phase 0 item)
+3. ~~**Enable Puma workers**~~ — DONE. `WEB_CONCURRENCY: 2`.
+4. ~~**Build CI health check rake task**~~ — DONE. `bin/rails infra:health` + daily recurring job.
+5. ~~**Enable `pg_stat_statements`**~~ — DONE. Tracking all queries.
+6. ~~**Slow query logger**~~ — DONE. `config/initializers/slow_query_logger.rb`.
 
 All free except $5/mo for DO Spaces. No paid services — SolidErrors + log archival covers error tracking for now.
