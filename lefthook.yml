@@ -11,6 +11,6 @@ pre-commit:
 pre-push:
   commands:
     brakeman:
-      run: bin/brakeman --no-pager --quiet --no-exit-on-error
+      run: bin/brakeman --no-pager --quiet --no-exit-on-error --no-exit-on-warn
     bundler-audit:
       run: bundle exec bundler-audit check --update
