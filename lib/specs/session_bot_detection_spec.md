@@ -2,7 +2,7 @@
 
 **Date:** 2026-02-19
 **Priority:** P0
-**Status:** In Progress (Phases 1-2 complete, Phase 3-4 pending)
+**Status:** In Progress (Phases 1-3 complete, Phase 4 pending)
 **Branch:** `feature/session-bot-detection`
 
 ---
@@ -170,7 +170,7 @@ patterns:
 - [x] **1.5** Create `BotPatterns::Parsers::MatomoBotsParser` (YAML → pattern list)
 - [x] **1.6** Create `BotPatterns::SyncJob` (thin wrapper)
 - [x] **1.7** Write tests for all of the above (34 tests, 0 failures)
-- [ ] **1.8** Run initial sync to populate cache (post-deploy)
+- [x] **1.8** Run initial sync to populate cache (post-deploy) — `config/initializers/bot_patterns.rb` syncs on boot
 
 ### Phase 2: Session Classification ✓
 
@@ -181,33 +181,39 @@ patterns:
 - [x] **2.5** Permit `:user_agent` in `Api::V1::SessionsController` strong params
 - [x] **2.6** Write tests (full suite: 2518 runs, 0 failures)
 
-### Phase 3: SDK Updates (all → v0.7.5)
+### Phase 3: SDK Updates (all → v0.7.5) ✓
 
 All server-side SDKs: include `user_agent` in session payload. Data already captured — just not forwarded.
 
 **Ruby** (`mbuzz` gem):
-- [ ] **3.1** `lib/mbuzz/middleware/tracking.rb` — add `user_agent: context[:user_agent]` to `create_session`
-- [ ] **3.2** `lib/mbuzz/client/session_request.rb` — add `user_agent` to initializer + payload
-- [ ] **3.3** `lib/mbuzz/client.rb` — pass `user_agent:` kwarg through `Client.session`
+- [x] **3.1** `lib/mbuzz/middleware/tracking.rb` — add `user_agent: context[:user_agent]` to `create_session`
+- [x] **3.2** `lib/mbuzz/client/session_request.rb` — add `user_agent` to initializer + payload
+- [x] **3.3** `lib/mbuzz/client.rb` — pass `user_agent:` kwarg through `Client.session`
 - [ ] **3.4** Bump to 0.7.5, release
 
 **Node** (`@mbuzz/node`):
-- [ ] **3.5** `src/middleware/express.ts` — add `user_agent: userAgent` to session payload
+- [x] **3.5** `src/middleware/express.ts` — add `user_agent: userAgent` to session payload
 - [ ] **3.6** Bump to 0.7.5, publish
 
 **Python** (`mbuzz`):
-- [ ] **3.7** `src/mbuzz/middleware/flask.py` — add `"user_agent": user_agent` to session payload
+- [x] **3.7** `src/mbuzz/middleware/flask.py` — add `"user_agent": user_agent` to session payload
 - [ ] **3.8** Bump to 0.7.5, publish
 
 **PHP** (`mbuzz/mbuzz-php`):
-- [ ] **3.9** `src/Mbuzz/Client.php` — add `'user_agent' => $userAgent` to session payload
+- [x] **3.9** `src/Mbuzz/Client.php` — add `'user_agent' => $userAgent` to session payload
 - [ ] **3.10** Bump to 0.7.5, publish
 
 **Shopify** — no change (already sends `user_agent`).
 
 **sGTM**:
-- [ ] **3.11** `template.tpl` — add `user_agent: getRequestHeader('user-agent')` to session body
+- [x] **3.11** `template.tpl` — add `user_agent: getRequestHeader('user-agent')` to session body
 - [ ] **3.12** Bump template version
+
+**E2E Verification** (all SDKs verified via `sdk_integration_tests/scenarios/bot_detection_test.rb`):
+- [x] Ruby: 5/5 pass — user_agent stored, bot classified, real browser qualified
+- [x] Node: 5/5 pass
+- [x] Python: 5/5 pass
+- [x] PHP: 2/2 pass (cookie-first variant)
 
 ### Phase 4: Deploy + Validate
 
@@ -235,6 +241,9 @@ All server-side SDKs: include `user_agent` in session payload. Data already capt
 | `app/services/sessions/bot_classifier.rb` | Classification orchestrator | **New** |
 | `app/services/sessions/creation_service.rb` | Session creation | **Modified** — use BotClassifier |
 | `app/controllers/api/v1/sessions_controller.rb` | Strong params | **Modified** — permit :user_agent |
+| `config/initializers/bot_patterns.rb` | Boot-time pattern sync | **New** |
+| `app/controllers/api/v1/test/verifications_controller.rb` | Test verification | **Modified** — expose user_agent, suspect, suspect_reason |
+| `sdk_integration_tests/scenarios/bot_detection_test.rb` | E2E bot detection tests | **New** |
 
 ---
 
@@ -265,6 +274,18 @@ All server-side SDKs: include `user_agent` in session payload. Data already capt
 | CreationService stores suspect_reason | `test/services/sessions/creation_service_test.rb` | Reason persisted |
 | Controller permits user_agent | `test/controllers/api/v1/sessions_controller_test.rb` | Strong params updated |
 | Cross-account isolation | `test/services/sessions/creation_service_test.rb` | Multi-tenancy preserved |
+
+### E2E Integration Tests
+
+| Test | File | Verifies |
+|------|------|----------|
+| Session stores user_agent from middleware | `sdk_integration_tests/scenarios/bot_detection_test.rb` | SDK sends UA, server persists it |
+| Bot UA classified as known_bot | Same | Googlebot → suspect: true, suspect_reason: "known_bot" |
+| Real browser with UTM is qualified | Same | Chrome + UTMs → suspect: false |
+| Bot with UTMs still classified as bot | Same | Bot detection takes priority over attribution signals |
+| Real browser no signals → no_signals | Same | Direct visit → suspect: true, suspect_reason: "no_signals" |
+| PHP session stores user_agent | Same | Cookie-first SDK variant |
+| PHP bot detection | Same | Cookie-first bot classification |
 
 ### Production Validation
 

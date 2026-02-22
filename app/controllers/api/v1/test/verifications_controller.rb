@@ -107,7 +107,10 @@ module Api
             ended_at: session.ended_at,
             initial_referrer: session.initial_referrer,
             initial_utm: session.initial_utm,
-            channel: session.channel
+            channel: session.channel,
+            user_agent: session.user_agent,
+            suspect: session.suspect,
+            suspect_reason: session.suspect_reason
           }
         end
 
