@@ -1,3 +1,3 @@
 # frozen_string_literal: true
 
-StrongMigrations.target_postgresql_version = "16"
+StrongMigrations.target_postgresql_version = "16" if defined?(StrongMigrations)
