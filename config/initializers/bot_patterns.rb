@@ -8,12 +8,11 @@
 # Production: enqueue job (SolidCache persists across processes).
 Rails.application.config.after_initialize do
   next if Rails.env.test?
+  next if ENV["SECRET_KEY_BASE_DUMMY"].present?
 
   if Rails.env.local?
     Thread.new { BotPatterns::SyncService.new.call } # rubocop:disable ThreadSafety/NewThread
   else
     BotPatterns::SyncJob.perform_later
   end
-rescue ActiveRecord::ConnectionNotEstablished
-  # No DB during Docker build (assets:precompile) — job runs on first real boot
 end
