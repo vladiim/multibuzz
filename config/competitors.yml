@@ -429,6 +429,55 @@ competitors:
       - "Complex"
       - "Long setup"
 
+  cometly:
+    name: Cometly
+    slug: cometly
+    website: https://cometly.com
+    logo: /images/competitors/cometly/logo.png
+    category: dtc
+    tagline: "AI-powered ad attribution"
+
+    pricing:
+      starting: 199
+      currency: USD
+      period: month
+      has_free_tier: false
+      pricing_model: traffic_based
+      notes: "Sales-led, scales with ad spend. Est. $199-$5,000/mo."
+
+    features:
+      tracking_method: client_side
+      platforms: [shopify, custom]
+      attribution_models: 4
+      custom_models: false
+      view_through: false
+      ltv_tracking: false
+      server_side: false
+      setup_time: "days"
+      capi_enrichment: true
+
+    best_for:
+      - "E-commerce/DTC paid ads"
+      - "Meta & Google optimization"
+      - "CAPI signal enrichment"
+
+    not_for:
+      - "Organic/email/lifecycle attribution"
+      - "Custom model needs"
+      - "Transparent pricing seekers"
+
+    strengths:
+      - "AI-powered optimization recommendations"
+      - "CAPI enrichment (Meta match scores)"
+      - "Strong SEO content authority"
+      - "4.7 Trustpilot (109 reviews)"
+
+    weaknesses:
+      - "Paid-ads only (no organic, email, lifecycle)"
+      - "Opaque pricing (must schedule demo)"
+      - "No custom models or DSL"
+      - "No incrementality testing"
+
   ga4:
     name: Google Analytics 4
     slug: ga4
