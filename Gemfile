@@ -135,4 +135,10 @@ group :test do
 
   # Diff-based coverage enforcement [https://github.com/grodowski/undercover]
   gem "undercover", require: false
+
+  # Performance testing [https://github.com/evanphx/benchmark-ips]
+  gem "benchmark-ips"
+
+  # Memory allocation profiling [https://github.com/SamSaffron/memory_profiler]
+  gem "memory_profiler"
 end

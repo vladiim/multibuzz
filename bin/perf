@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -e
+
+echo "==> Performance tests"
+bin/rails test test/performance/
+
+echo ""
+echo "==> All performance budgets pass."

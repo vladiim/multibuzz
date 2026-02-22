@@ -322,17 +322,12 @@ Add Open Graph images to docs for better social sharing:
 
 Every Monday, review all SDKs for consistency:
 
-```bash
-# Run automated consistency check
-bin/rails docs:check_sdk_consistency
-
-# This script checks:
-# 1. Parameter names match API contract
-# 2. Examples use correct env var names
-# 3. Links to mbuzz.co are not broken
-# 4. Code examples actually work
-# 5. Versions match between gem and docs
-```
+Manual checklist:
+1. Parameter names match API contract (`lib/docs/sdk/api_contract.md`)
+2. Examples use correct env var names
+3. Links to mbuzz.co are not broken
+4. Code examples actually work (paste and run)
+5. Versions match between gem and docs
 
 ### Before Each Release
 
@@ -394,47 +389,13 @@ If you update docs (new guide, better examples):
 
 ## Tools & Automation
 
-### 1. Link Checker (Planned)
+Currently manual. Potential future automation (not yet implemented):
 
-```ruby
-# lib/tasks/docs.rake
-namespace :docs do
-  desc "Check all documentation links"
-  task check_links: :environment do
-    # Check all links in app/views/docs/
-    # Check all links in SDK READMEs
-    # Report broken links
-  end
-end
-```
+- **Link checker** — validate all internal/external links in docs and SDK READMEs
+- **SDK consistency checker** — parse SDK code for parameter names, compare with `Events::ValidationService` requirements
+- **Example runner** — extract code blocks from docs, run in sandbox, verify they work
 
-### 2. SDK Consistency Checker (Planned)
-
-```ruby
-# lib/tasks/docs.rake
-namespace :docs do
-  desc "Check SDK consistency with backend API"
-  task check_sdk_consistency: :environment do
-    # Parse SDK code for parameter names
-    # Compare with Events::ValidationService requirements
-    # Report mismatches
-  end
-end
-```
-
-### 3. Example Runner (Planned)
-
-```ruby
-# lib/tasks/docs.rake
-namespace :docs do
-  desc "Run all code examples from documentation"
-  task run_examples: :environment do
-    # Extract code blocks from docs
-    # Run them in sandbox
-    # Verify they work
-  end
-end
-```
+These are low priority at current scale. The manual checklists above cover the same ground.
 
 ---
 

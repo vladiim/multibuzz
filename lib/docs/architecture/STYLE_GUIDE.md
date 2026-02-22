@@ -130,15 +130,21 @@
 - Vibrant colors highlight data and actions
 - Don't overwhelm - vibrant should feel intentional
 
-#### Channel Color Mapping (UTM Sources)
+#### Channel Color Mapping
+Source of truth: `CHANNEL_COLORS` in `app/javascript/controllers/chart_controller.js`
 ```
-Google / Search:     #3B82F6  (blue-500)
-Facebook / Social:   #A855F7  (purple-500)
-Email Campaigns:     #10B981  (emerald-500)
-Paid Advertising:    #EC4899  (pink-500)
-Referral Traffic:    #F97316  (orange-500)
-Direct / Bookmarks:  #FACC15  (yellow-500)
-Other / Unknown:     #64748B  (slate-500)
+paid_search:     #6366F1  (indigo)
+organic_search:  #10B981  (emerald)
+paid_social:     #F59E0B  (amber)
+organic_social:  #84CC16  (lime)
+email:           #EC4899  (pink)
+display:         #8B5CF6  (violet)
+affiliate:       #14B8A6  (teal)
+referral:        #F97316  (orange)
+video:           #EF4444  (red)
+ai:              #06B6D4  (cyan)
+direct:          #6B7280  (gray)
+other:           #9CA3AF  (gray-400)
 ```
 
 #### Button Colors

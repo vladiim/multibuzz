@@ -169,12 +169,30 @@ module EntityName
 end
 ```
 
+**Method ordering** (followed by 98% of services):
+```
+initialize(params)      # public — only public method besides call
+                        # blank line
+private                 # access modifier
+  attr_reader :a, :b    # readers first
+  def run ...           # implementation
+  def helper ...        # private helpers
+```
+
 **Rules:**
 - Only `initialize` and `call` are public
 - Everything else private, use `attr_reader`
 - Memoize with `@var ||=`
 - Multiple public methods? Split into separate services
 - Compose services via pipelines, not inheritance
+
+**Error handling — three patterns:**
+
+| Pattern | When to Use |
+|---------|-------------|
+| ApplicationService rescue (default) | Service returns success/fail. `run` raises, `call` rescues. |
+| Explicit error collection | Multi-field validation. `errors = []; errors.concat(validate_x)` |
+| Custom return types | Domain structures (`{ allowed:, remaining: }`). Skip ApplicationService. |
 
 ### When NOT to Use ApplicationService
 
@@ -235,7 +253,10 @@ class SomeTest < ActiveSupport::TestCase
 end
 ```
 
-Always test cross-account isolation.
+- **Memoized helpers** for fixtures (`def account = @account ||= accounts(:one)`)
+- **`setup`** only for side-effectful resets (cache clear, global state)
+- **Test names**: action-based strings (`test "returns 422 with invalid event_id"`)
+- Always test cross-account isolation.
 
 ---
 
@@ -244,7 +265,7 @@ Always test cross-account isolation.
 | Pattern | Use For |
 |---------|---------|
 | Service Object | One action, `initialize` + `call`, namespaced |
-| Query Object | Complex queries, returns AR relation |
+| Query Object | Complex queries, `initialize(scope)` + `call`, returns domain structures (NOT success/fail, does NOT inherit ApplicationService) |
 | Form Object | Complex forms, `ActiveModel::Model` |
 | Presenter | View decoration, `SimpleDelegator` |
 | Value Object | Wrapping primitives (e.g., `UtmParameters`) |
@@ -279,6 +300,12 @@ Compare via `prefix_id`, not `id`:
 # NEVER:  Event.where(event_type: "page_view")
 ```
 
+### JSONB Columns
+
+- **Max 50KB** per JSONB field. Validate via `validate :field_size_limit`.
+- Prefer **shallow assignment** over `deep_merge` (simpler, auditable).
+- Always validate that JSONB value `is_a?(Hash)` before size check.
+
 ---
 
 ## Formatting
@@ -293,7 +320,7 @@ Compare via `prefix_id`, not `id`:
 
 - Methods/vars: `visitor_id`, `rate_limit_exceeded?` (descriptive, no abbreviations)
 - Classes: `Event::IngestionService` (namespaced `Module::ActionService`)
-- Constants: `SCREAMING_SNAKE`, `.freeze` arrays/hashes
+- Constants: `SCREAMING_SNAKE`, `.freeze` arrays/hashes, module wrapping, section headers (`# --- Section ---`)
 
 ---
 
