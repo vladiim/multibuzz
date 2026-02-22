@@ -1,8 +1,9 @@
 # Codebase Audit & Quality Hardening Specification
 
 **Date:** 2026-02-21
+**Completed:** 2026-02-22
 **Priority:** P1
-**Status:** Complete (all 5 phases shipped)
+**Status:** Done — all 5 phases shipped, gate clean (2545 tests, 0 failures, 0 offenses)
 **Branch:** `feature/session-bot-detection`
 
 ---
