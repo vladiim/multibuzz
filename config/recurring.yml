@@ -25,3 +25,7 @@ production:
   log_archive:
     class: Logs::ArchiveJob
     schedule: at 4am every day
+
+  infrastructure_health_check:
+    class: Infrastructure::HealthCheckJob
+    schedule: at 5am every day
