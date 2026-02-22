@@ -14,4 +14,6 @@ Rails.application.config.after_initialize do
   else
     BotPatterns::SyncJob.perform_later
   end
+rescue ActiveRecord::ConnectionNotEstablished
+  # No DB during Docker build (assets:precompile) — job runs on first real boot
 end
