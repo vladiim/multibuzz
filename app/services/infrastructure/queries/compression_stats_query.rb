@@ -12,11 +12,14 @@ module Infrastructure
       private
 
       def stats_for(table)
+        raise ArgumentError, "Unknown hypertable: #{table}" unless HYPERTABLES.include?(table)
+
+        quoted = ActiveRecord::Base.connection.quote_table_name(table)
         row = ActiveRecord::Base.connection.execute(<<-SQL.squish).first
           SELECT
             COALESCE(SUM(before_compression_total_bytes), 0) AS before_bytes,
             COALESCE(SUM(after_compression_total_bytes), 0) AS after_bytes
-          FROM hypertable_compression_stats('#{table}')
+          FROM hypertable_compression_stats(#{quoted})
           WHERE before_compression_total_bytes > 0
         SQL
 
