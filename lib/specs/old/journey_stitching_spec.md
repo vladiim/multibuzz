@@ -2,7 +2,7 @@
 
 **Date:** 2026-02-17
 **Priority:** P0
-**Status:** Draft
+**Status:** Complete (code shipped, pending deploy + backfill)
 **Branch:** `feature/journey-stitching`
 
 ---
@@ -188,12 +188,12 @@ AttributionCalculationJob fires
 - [x] **3D.1** Verify existing behavior: `identify()` calls `$this->context->setUserId()`, `conversion()` reads it back
 - [x] **3D.2** Write unit test confirming this if not already covered
 
-### Phase 3.5: Publish SDKs & Verify Data Flow
+### Phase 3.5: Publish SDKs & Verify Data Flow ✅
 
-- [ ] **3.5.1** Publish Ruby SDK 0.7.4 to RubyGems
-- [ ] **3.5.2** Publish Node SDK 0.7.4 to npm
-- [ ] **3.5.3** Publish Python SDK 0.7.4 to PyPI
-- [ ] **3.5.4** Tag PHP SDK 0.7.4 on GitHub (Composer uses git tags)
+- [x] **3.5.1** Publish Ruby SDK 0.7.5 to RubyGems
+- [x] **3.5.2** Publish Node SDK 0.7.5 to npm
+- [x] **3.5.3** Publish Python SDK 0.7.5 to PyPI
+- [x] **3.5.4** Tag PHP SDK 0.7.5 on GitHub (Composer uses git tags)
 - [ ] **3.5.5** `bundle update mbuzz` in pet_resorts, deploy to staging
 - [ ] **3.5.6** Verify data flowing correctly in staging:
   - Log in as test user → `identify()` fires

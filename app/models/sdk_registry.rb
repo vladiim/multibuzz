@@ -4,7 +4,7 @@ class SdkRegistry
   SDK_DATA = YAML.load_file(Rails.root.join("config/sdk_registry.yml")).freeze
 
   Sdk = Data.define(
-    :key, :name, :display_name, :icon, :package_name, :package_manager,
+    :key, :name, :display_name, :icon, :version, :package_name, :package_manager,
     :package_url, :github_url, :docs_url, :status, :released_at, :category,
     :sort_order, :install_command, :init_code, :event_code, :conversion_code,
     :identify_code, :middleware_code, :verification_command
@@ -96,6 +96,7 @@ class SdkRegistry
         name: data["name"],
         display_name: data["display_name"],
         icon: data["icon"],
+        version: data["version"],
         package_name: data["package_name"],
         package_manager: data["package_manager"],
         package_url: data["package_url"],

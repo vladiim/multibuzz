@@ -34,7 +34,7 @@ class OnboardingHelperTest < ActionView::TestCase
   test "syntax_language_for returns ruby for unknown SDK" do
     unknown = SdkRegistry::Sdk.new(
       key: "unknown", name: "Unknown", display_name: "Unknown",
-      icon: nil, package_name: nil, package_manager: nil,
+      icon: nil, version: nil, package_name: nil, package_manager: nil,
       package_url: nil, github_url: nil, docs_url: nil,
       status: "live", released_at: nil, category: "server_side",
       sort_order: 99, install_command: nil, init_code: nil,

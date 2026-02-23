@@ -2,7 +2,7 @@
 
 **Date:** 2026-02-19
 **Priority:** P0
-**Status:** In Progress (Phases 1-3 complete, Phase 4 pending)
+**Status:** Complete (code shipped, pending deploy + production validation)
 **Branch:** `feature/session-bot-detection`
 
 ---
@@ -189,25 +189,25 @@ All server-side SDKs: include `user_agent` in session payload. Data already capt
 - [x] **3.1** `lib/mbuzz/middleware/tracking.rb` — add `user_agent: context[:user_agent]` to `create_session`
 - [x] **3.2** `lib/mbuzz/client/session_request.rb` — add `user_agent` to initializer + payload
 - [x] **3.3** `lib/mbuzz/client.rb` — pass `user_agent:` kwarg through `Client.session`
-- [ ] **3.4** Bump to 0.7.5, release
+- [x] **3.4** Bump to 0.7.5, release
 
 **Node** (`@mbuzz/node`):
 - [x] **3.5** `src/middleware/express.ts` — add `user_agent: userAgent` to session payload
-- [ ] **3.6** Bump to 0.7.5, publish
+- [x] **3.6** Bump to 0.7.5, publish
 
 **Python** (`mbuzz`):
 - [x] **3.7** `src/mbuzz/middleware/flask.py` — add `"user_agent": user_agent` to session payload
-- [ ] **3.8** Bump to 0.7.5, publish
+- [x] **3.8** Bump to 0.7.5, publish
 
 **PHP** (`mbuzz/mbuzz-php`):
 - [x] **3.9** `src/Mbuzz/Client.php` — add `'user_agent' => $userAgent` to session payload
-- [ ] **3.10** Bump to 0.7.5, publish
+- [x] **3.10** Bump to 0.7.5, publish
 
 **Shopify** — no change (already sends `user_agent`).
 
 **sGTM**:
 - [x] **3.11** `template.tpl` — add `user_agent: getRequestHeader('user-agent')` to session body
-- [ ] **3.12** Bump template version
+- [x] **3.12** Bump template version
 
 **E2E Verification** (all SDKs verified via `sdk_integration_tests/scenarios/bot_detection_test.rb`):
 - [x] Ruby: 5/5 pass — user_agent stored, bot classified, real browser qualified
@@ -217,8 +217,8 @@ All server-side SDKs: include `user_agent` in session payload. Data already capt
 
 ### Phase 4: Deploy + Validate
 
-- [ ] **4.1** Update server `Gemfile` to `mbuzz ~> 0.7.5`
-- [ ] **4.2** Update `config/sdk_registry.yml` with version 0.7.5 for all SDKs
+- [x] **4.1** Update server `Gemfile` to `mbuzz ~> 0.7.5`
+- [x] **4.2** Update `config/sdk_registry.yml` with version 0.7.5 for all SDKs
 - [ ] **4.3** Deploy server (migration + bot sync + updated gem)
 - [ ] **4.4** Deploy updated SDKs to test app (PetPro360)
 - [ ] **4.5** 24-hour production validation (see below)

@@ -1,7 +1,8 @@
 # Server-Side Session Intelligence
 
 **Created:** 2026-02-19
-**Status:** Research & Architecture
+**Updated:** 2026-02-23
+**Status:** Phases 1-2 Implemented (UA storage + bot detection live)
 **Related:** `session_qualification.md`, `session_continuity_fingerprint_fallback.md`, `server_side_attribution_architecture.md`
 
 This document is the **single source of truth** for how mbuzz identifies real visitors, filters noise, and achieves parity with client-side analytics (GA4). It exists so we build on accumulated research rather than re-discovering the same problems.
@@ -39,8 +40,9 @@ Even after ghost session filtering, we're **2.5x GA4** on qualified sessions. Th
 | 2026-02-11 | Fingerprint fallback to visitor_id | Session misattribution from IP rotation | Doesn't filter bots |
 | 2026-02-13 | `suspect` flag + `.qualified` scope | 64.2% ghost rate → 0% for direct-no-signals | Bots with attribution signals (UTMs, referrers) pass through |
 | 2026-02-13 | Ghost session cleanup service | Removed poisoned journey data | Doesn't prevent future bot sessions |
+| 2026-02-19 | **UA storage + bot detection** | Bots with real attribution signals (UTMs, click_ids) now caught via 1,400+ UA patterns | Spoofed UAs, datacenter IPs still pass |
 
-**Pattern:** Each fix addressed one symptom. The root cause — server-side session creation can't distinguish browsers from bots at the HTTP level — remains unsolved.
+**Pattern:** Each fix addressed one symptom. Phases 1-2 of this roadmap (UA storage + bot pattern detection) address the root cause for self-identifying bots. Remaining layers (datacenter IP, behavioral, Cloudflare) will catch sophisticated bots that spoof UAs.
 
 ---
 
@@ -150,7 +152,7 @@ GA4 also **under-counts** due to ad blockers (~30-40% of users) and cookie conse
 
 ---
 
-## Proposed Architecture: Server-Side Session Intelligence
+## Architecture: Server-Side Session Intelligence
 
 ### Design Principles
 
@@ -160,25 +162,19 @@ GA4 also **under-counts** due to ad blockers (~30-40% of users) and cookie conse
 4. **Layered defense** — multiple independent signals, no single point of failure
 5. **Preserve data** — classify, don't delete. Reclassify when heuristics improve.
 
-### Layer 1: Store User-Agent on Sessions (prerequisite)
+### Layer 1: Store User-Agent on Sessions ✅ LIVE
 
-Currently the User-Agent is hashed into `device_fingerprint` and discarded. We need to store it for all downstream detection.
+User-Agent stored on sessions via `user_agent` text column. All SDKs (v0.7.5+) include `user_agent` in `POST /sessions` payload.
 
-- Add `user_agent` column to `sessions` table
-- SDK already sends UA via API (`ip` and `user_agent` params on events/conversions)
-- `CreationService` needs to accept and persist it from the session creation payload
+### Layer 2: User-Agent Bot Detection ✅ LIVE
 
-### Layer 2: User-Agent Bot Detection
+`BotPatterns::SyncService` fetches two upstream open-source bot lists daily:
+- **crawler-user-agents** (300+ regex patterns, MIT) — broadest regex coverage
+- **Matomo bots** (1,100+ entries, LGPL-3.0) — categorized, high-volume
 
-Use the `device_detector` gem (Matomo's UA database, 2,000+ bot patterns, fastest Ruby implementation):
+Patterns are compiled into `Regexp.union` and cached in memory. `BotPatterns::Matcher.bot?(ua)` runs a single regex match at session creation time. Custom patterns in `config/bot_patterns.yml` are merged at sync time.
 
-```ruby
-client = DeviceDetector.new(user_agent)
-client.bot?       # => true/false
-client.bot_name   # => "Googlebot", "AhrefsBot", etc.
-```
-
-Run at session creation time. Mark detected bots as `suspect: true` with a `suspect_reason` for observability.
+`Sessions::BotClassifier` orchestrates: bot detection takes priority over attribution signals (a Googlebot with `?gclid=abc` is still a bot).
 
 **What this catches:** Googlebot, Bingbot, AhrefsBot, SEMrushBot, GPTBot, ClaudeBot, FacebookExternalHit, Twitterbot, email preview bots, SEO crawlers, ad verification bots — everything that self-identifies in its User-Agent.
 
@@ -234,26 +230,23 @@ def suspect_session?
 end
 ```
 
-### Classification Model
+### Classification Model ✅ LIVE
 
 ```ruby
-# Proposed: Sessions::BotClassifier
+# Sessions::BotClassifier (actual implementation)
 # Called from CreationService at session creation time
 
-def classify(user_agent:, ip:, referrer:, utm:, click_ids:, cloudflare_score: nil)
-  return :verified_bot if cloudflare_score.present? && cloudflare_score < 5
-  return :likely_bot if cloudflare_score.present? && cloudflare_score < 30
-  return :known_bot if ua_bot?(user_agent)
-  return :datacenter if datacenter_ip?(ip)
-  return :no_signals if no_attribution_signals?(referrer, utm, click_ids)
-  :qualified
+def classify
+  return bot_result if bot?           # UA matches 1,400+ bot patterns → known_bot
+  return no_signals_result if no_signals?  # No referrer, UTMs, or click_ids → no_signals
+  qualified_result                     # Real browser with attribution signals → qualified
 end
 ```
 
-Store classification as `suspect_reason` (enum or string) alongside the boolean `suspect` flag. This enables:
-- Observability: "How many sessions are blocked by each layer?"
-- Tuning: "Are we over-filtering? Under-filtering?"
-- Reclassification: "Update the UA database and reclassify"
+Classification stored as `suspect` (boolean) + `suspect_reason` (string) on each session. This enables:
+- Observability: `sessions.group(:suspect_reason).count` — how many caught by each layer
+- Tuning: compare qualified count to GA4 for same window
+- Future layers: datacenter IP, behavioral, Cloudflare can be added to the classifier without changing the schema
 
 ---
 
@@ -276,20 +269,25 @@ Store classification as `suspect_reason` (enum or string) alongside the boolean 
 
 ## Implementation Roadmap
 
-### Phase 1: Store User-Agent (prerequisite)
+### Phase 1: Store User-Agent ✅ COMPLETE
 
-1. Migration: add `user_agent` text column to sessions
-2. SDK: include `user_agent` in session creation API payload
-3. Server: `CreationService` persists `user_agent` from params
-4. Backfill: not possible for existing sessions (UA was never stored)
+1. ✅ Migration: `user_agent` (text) and `suspect_reason` (string) columns added to sessions
+2. ✅ All SDKs (Ruby, Node, Python, PHP, sGTM) include `user_agent` in session payload (v0.7.5)
+3. ✅ `CreationService` persists `user_agent` from params
+4. N/A Backfill: not possible for existing sessions (UA was never stored)
 
-### Phase 2: UA-Based Bot Detection
+**Spec:** `lib/specs/old/session_bot_detection_spec.md` (Phases 1-3)
 
-1. Add `device_detector` gem
-2. Create `Sessions::BotClassifier` service
-3. Wire into `CreationService#suspect_session?`
-4. Add `suspect_reason` column to sessions
-5. Backfill: once UA is stored, reclassify existing sessions
+### Phase 2: UA-Based Bot Detection ✅ COMPLETE
+
+1. ✅ `BotPatterns::SyncService` — fetches crawler-user-agents (300+ patterns) + Matomo bots (1,100+ patterns), compiles `Regexp.union`, caches in memory
+2. ✅ `BotPatterns::Matcher` — singleton regex matcher, `bot?(ua)` and `bot_name(ua)`
+3. ✅ `Sessions::BotClassifier` — classifies sessions: `known_bot` → `no_signals` → qualified
+4. ✅ Wired into `CreationService` replacing `suspect_session?` heuristic
+5. ✅ `BotPatterns::SyncJob` runs daily; custom patterns in `config/bot_patterns.yml`
+6. ✅ Boot-time sync via `config/initializers/bot_patterns.rb`
+
+**Key files:** `app/services/bot_patterns/`, `app/services/sessions/bot_classifier.rb`, `config/bot_patterns.yml`
 
 ### Phase 3: Datacenter IP Detection
 

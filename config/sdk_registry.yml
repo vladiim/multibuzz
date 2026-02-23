@@ -4,6 +4,7 @@ ruby:
   name: Ruby
   display_name: Ruby / Rails / Rack
   icon: ruby
+  version: '0.7.5'
   package_name: mbuzz
   package_manager: RubyGems
   package_url: https://rubygems.org/gems/mbuzz
@@ -53,6 +54,7 @@ python:
   name: Python
   display_name: Python / Django / Flask
   icon: python
+  version: '0.7.5'
   package_name: mbuzz
   package_manager: PyPI
   package_url: https://pypi.org/project/mbuzz
@@ -118,6 +120,7 @@ php:
   name: PHP
   display_name: PHP / Laravel / Symfony
   icon: php
+  version: '0.7.5'
   package_name: mbuzz/mbuzz-php
   package_manager: Composer
   package_url: https://packagist.org/packages/mbuzz/mbuzz-php
@@ -193,6 +196,7 @@ nodejs:
   name: Node.js
   display_name: Node.js / Express
   icon: nodejs
+  version: '0.7.5'
   package_name: mbuzz
   package_manager: npm
   package_url: null

@@ -195,7 +195,7 @@ class SdkRegistryTest < ActiveSupport::TestCase
   def build_sdk(status:, category: SdkCategories::SERVER_SIDE)
     SdkRegistry::Sdk.new(
       key: "test", name: "Test", display_name: "Test SDK", icon: "test",
-      package_name: nil, package_manager: nil, package_url: nil,
+      version: nil, package_name: nil, package_manager: nil, package_url: nil,
       github_url: nil, docs_url: nil, status: status, released_at: nil,
       category: category, sort_order: 99, install_command: nil,
       init_code: nil, event_code: nil, conversion_code: nil,

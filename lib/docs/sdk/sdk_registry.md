@@ -2,7 +2,7 @@
 
 **Purpose**: Central registry of all mbuzz SDKs with version info, status, and maintenance notes.
 
-**Last Updated**: 2026-02-05
+**Last Updated**: 2026-02-23
 
 ---
 
@@ -28,11 +28,11 @@ See [Visitor & Session Tracking Spec](../../specs/1_visitor_session_tracking_spe
 
 **Repository**: `/Users/vlad/code/m/mbuzz-ruby`
 **Package**: https://rubygems.org/gems/mbuzz
-**Status**: ✅ Production Ready (v0.7.3)
-**Current Version**: 0.7.3
+**Status**: ✅ Production Ready (v0.7.5)
+**Current Version**: 0.7.5
 
 **Maintainer**: Vlad
-**Last Verified**: 2026-02-05
+**Last Verified**: 2026-02-23
 
 **Framework Support**:
 - ✅ Ruby on Rails (6.0+)
@@ -51,6 +51,13 @@ See [Visitor & Session Tracking Spec](../../specs/1_visitor_session_tracking_spe
 - ✅ URL/referrer auto-enrichment via RequestContext
 - ✅ **Navigation-aware session creation** (Sec-Fetch-* whitelist + framework blacklist fallback)
 - ✅ **Device fingerprint** (`SHA256(ip|user_agent)[0:32]`) in session creation
+- ✅ **User-Agent forwarded** in session payload (for server-side bot detection)
+- ✅ **Identity context resolution** (`identify()` stores user_id, `conversion()` resolves from context)
+
+**v0.7.5 Changes** (bot detection + identity fix):
+- ✅ `user_agent` included in `POST /sessions` payload (enables server-side bot classification)
+- ✅ `conversion()` resolves `user_id` from context when not explicitly passed (was shadowed by parameter)
+- ✅ `identify()` stores `user_id` in `Current.user_id` for same-request access
 
 **v0.7.3 Changes** (navigation detection):
 - ✅ `should_create_session?` gates session creation on real page navigations only
@@ -75,8 +82,8 @@ gem 'mbuzz'
 
 **Repository**: `/Users/vlad/code/m/mbuzz-node`
 **Package**: https://www.npmjs.com/package/mbuzz
-**Status**: ✅ Production Ready (v0.7.3)
-**Current Version**: 0.7.3
+**Status**: ✅ Production Ready (v0.7.5)
+**Current Version**: 0.7.5
 
 **Framework Support**:
 - ✅ Express.js
@@ -90,6 +97,8 @@ gem 'mbuzz'
 - ✅ TypeScript types included
 - ✅ Navigation-aware session creation (Sec-Fetch-* whitelist)
 - ✅ Device fingerprint in session creation
+- ✅ User-Agent forwarded in session payload (v0.7.5)
+- ✅ Identity context resolution — `identify()` writes `userId` to `AsyncLocalStorage`, `conversion()` resolves from context (v0.7.5)
 
 ---
 
@@ -97,8 +106,8 @@ gem 'mbuzz'
 
 **Repository**: `/Users/vlad/code/m/mbuzz-python`
 **Package**: https://pypi.org/project/mbuzz/
-**Status**: ✅ Production Ready (v0.7.3)
-**Current Version**: 0.7.3
+**Status**: ✅ Production Ready (v0.7.5)
+**Current Version**: 0.7.5
 
 **Framework Support**:
 - ✅ Django
@@ -111,6 +120,8 @@ gem 'mbuzz'
 - ✅ Server-side session resolution
 - ✅ Navigation-aware session creation (Sec-Fetch-* whitelist)
 - ✅ Device fingerprint in session creation
+- ✅ User-Agent forwarded in session payload (v0.7.5)
+- ✅ Identity context resolution — `identify()` writes `user_id` to context, `conversion()` resolves from context (v0.7.5)
 
 ---
 
@@ -118,8 +129,8 @@ gem 'mbuzz'
 
 **Repository**: `/Users/vlad/code/m/mbuzz-php`
 **Package**: https://packagist.org/packages/mbuzz/mbuzz
-**Status**: ✅ Production Ready (v0.7.3)
-**Current Version**: 0.7.3
+**Status**: ✅ Production Ready (v0.7.5)
+**Current Version**: 0.7.5
 
 **Framework Support**:
 - ✅ Laravel
@@ -131,6 +142,8 @@ gem 'mbuzz'
 - ✅ Server-side session resolution
 - ✅ Navigation-aware session creation (Sec-Fetch-* whitelist)
 - ✅ Device fingerprint in session creation
+- ✅ User-Agent forwarded in session payload (v0.7.5)
+- ✅ Identity context resolution — `identify()` writes `userId` to context, `conversion()` resolves from context (reference implementation, v0.7.5)
 
 ---
 
@@ -176,6 +189,7 @@ gem 'mbuzz'
 - ✅ Identity linking (`POST /identify`) for cross-device attribution
 - ✅ Device fingerprint (`SHA256(ip|user_agent)[0:32]`) for session resolution
 - ✅ GTM consent mode support
+- ✅ User-Agent forwarded in session/event/conversion payloads (v0.7.5)
 
 **Supported Platforms** (any site with GTM):
 - Webflow
@@ -249,9 +263,11 @@ debug (default: false)
 
 | Backend Version | Ruby SDK | Python SDK | PHP SDK | Node SDK | Shopify |
 |----------------|----------|------------|---------|----------|---------|
-| 1.4.0 (current) | 0.7.3+ | 0.7.3+ | 0.7.3+ | 0.7.3+ | 0.7.0+ |
-| 1.4.0 | 0.7.0+ | 0.7.0+ | 0.7.0+ | 0.7.0+ | 0.7.0+ |
+| 1.5.0 (current) | 0.7.5+ | 0.7.5+ | 0.7.5+ | 0.7.5+ | 0.7.0+ |
+| 1.4.0 | 0.7.3+ | 0.7.3+ | 0.7.3+ | 0.7.3+ | 0.7.0+ |
 | 1.3.0 | 0.6.0+ | 0.6.0+ | 0.6.0+ | 0.6.0+ | Works (legacy) |
+
+**v0.7.5**: User-Agent forwarded in session payload (enables server-side bot detection). Identity context fix (`identify()` → `conversion()` flow works without explicit `user_id`). All server-side SDKs should be at v0.7.5+.
 
 **v0.7.3**: Navigation-aware session creation. All server-side SDKs should be at v0.7.3+ to prevent visit count inflation from sub-requests.
 
@@ -267,7 +283,7 @@ debug (default: false)
 
 Before releasing any SDK version:
 
-### Code (v0.7.3+ Server-Side SDKs)
+### Code (v0.7.5+ Server-Side SDKs)
 - [ ] All methods match API contract
 - [ ] Parameter names match backend expectations
 - [ ] Timestamp format is ISO8601
@@ -282,6 +298,9 @@ Before releasing any SDK version:
 - [ ] Session creation only fires for real page navigations
 - [ ] Tests verify sub-requests (Turbo, htmx, fetch, XHR, prefetch) do NOT create sessions
 - [ ] Device fingerprint (`SHA256(ip|user_agent)[0:32]`) sent in `POST /sessions`
+- [ ] `user_agent` included in `POST /sessions` payload (for server-side bot detection)
+- [ ] `identify()` stores `user_id` in request context for same-request resolution
+- [ ] `conversion()` resolves `user_id` from context when not explicitly passed
 
 ### Documentation
 - [ ] README updated with new features

@@ -2,8 +2,8 @@
 
 **Purpose**: Define the exact API behavior that all SDKs must implement to remain compatible with the mbuzz backend.
 
-**Last Updated**: 2026-01-09
-**Backend Version**: 1.4.0
+**Last Updated**: 2026-02-23
+**Backend Version**: 1.5.0
 
 ---
 
@@ -111,6 +111,7 @@ X-Mbuzz-User-Agent: Mozilla/5.0... # Visitor's real UA (for server-side SDKs)
     "url": "https://example.com/landing?utm_source=google&utm_medium=cpc&utm_campaign=q4",
     "referrer": "https://www.google.com/search?q=analytics",
     "device_fingerprint": "ea687534a507e203bdef87cee3cc60c5",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36...",
     "started_at": "2025-11-28T10:30:00Z"
   }
 }
@@ -124,6 +125,7 @@ X-Mbuzz-User-Agent: Mozilla/5.0... # Visitor's real UA (for server-side SDKs)
 **Optional Fields**:
 - `referrer` (String) - Referring URL
 - `device_fingerprint` (String, 32 hex chars) - `SHA256(ip|user_agent)[0:32]` — enables server-side advisory lock serialization for concurrent requests from the same device
+- `user_agent` (String) - Client's raw User-Agent string. Used for server-side bot detection (`BotClassifier`). SDKs v0.7.5+ must include this. Sessions without `user_agent` fall back to no-signals heuristic only.
 - `started_at` (String, ISO8601) - Session start time (defaults to now)
 
 **What the API does**:
@@ -525,6 +527,8 @@ _mbuzz_vid=<64 hex chars>; Max-Age=63072000; Path=/; HttpOnly; SameSite=Lax; Sec
 - ✅ Session creation (`POST /sessions`) - async, on real page navigations only
 - ✅ Navigation detection (`Sec-Fetch-*` whitelist + framework blacklist fallback) - v0.7.3+
 - ✅ Device fingerprint (`SHA256(ip|user_agent)[0:32]`) in session creation - v0.7.3+
+- ✅ `user_agent` in session payload (for server-side bot detection) - v0.7.5+
+- ✅ Identity context resolution (`identify()` stores user_id, `conversion()` resolves from context) - v0.7.5+
 
 ### Tag Manager (sGTM)
 
