@@ -1,6 +1,8 @@
 linters:
   SpaceAroundErbTag:
     enabled: true
+  ClosingErbTagIndent:
+    enabled: false
   AllowedScriptType:
     enabled: false
   NoJavascriptTagHelper:
