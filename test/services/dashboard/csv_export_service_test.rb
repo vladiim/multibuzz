@@ -38,8 +38,9 @@ module Dashboard
       assert_equal 1, csv.size
       row = csv.first
 
-      assert_equal 5.days.ago.to_date.to_s, row["conversion_date"]
-      assert_equal "purchase", row["conversion_type"]
+      assert_equal 5.days.ago.to_date.to_s, row["date"]
+      assert_equal "conversion", row["type"]
+      assert_equal "purchase", row["name"]
       assert_equal "sales", row["funnel"]
       assert_equal first_touch_model.name, row["attribution_model"]
       assert_equal "first_touch", row["algorithm"]
@@ -52,7 +53,16 @@ module Dashboard
       assert_equal "cpc", row["utm_medium"]
       assert_equal "summer_sale", row["utm_campaign"]
       assert_equal "true", row["is_acquisition"]
-      assert_equal '{"plan":"pro"}', row["conversion_properties"]
+      assert_equal '{"plan":"pro"}', row["properties"]
+    end
+
+    test "type column is always conversion" do
+      create_full_credit
+      create_minimal_credit
+
+      csv = parse_csv(service.call)
+
+      csv.each { |row| assert_equal "conversion", row["type"] }
     end
 
     # ==========================================
@@ -71,7 +81,7 @@ module Dashboard
       assert_nil row["utm_medium"]
       assert_nil row["utm_campaign"]
       assert_nil row["funnel"]
-      assert_equal "{}", row["conversion_properties"]
+      assert_equal "{}", row["properties"]
     end
 
     # ==========================================
@@ -154,9 +164,9 @@ module Dashboard
 
     def expected_headers
       %w[
-        conversion_date conversion_type funnel attribution_model algorithm
+        date type name funnel attribution_model algorithm
         channel credit revenue revenue_credit currency
-        utm_source utm_medium utm_campaign is_acquisition conversion_properties
+        utm_source utm_medium utm_campaign is_acquisition properties
       ]
     end
 

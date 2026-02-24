@@ -16,11 +16,11 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
     assert_match "attachment", response.headers["Content-Disposition"]
   end
 
-  test "filename includes current date" do
+  test "filename includes export type and current date" do
     sign_in
     post dashboard_export_path
 
-    assert_match "mbuzz-export-#{Date.current}.csv", response.headers["Content-Disposition"]
+    assert_match "mbuzz-conversions-#{Date.current}.csv", response.headers["Content-Disposition"]
   end
 
   test "requires authentication" do
@@ -88,6 +88,60 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
     assert_includes channels, Channels::EMAIL
   end
 
+  # ==========================================
+  # Funnel export
+  # ==========================================
+
+  test "funnel export returns CSV with attachment disposition" do
+    sign_in
+    post dashboard_export_path, params: { export_type: "funnel" }
+
+    assert_response :success
+    assert_equal "text/csv", response.content_type
+    assert_match "attachment", response.headers["Content-Disposition"]
+  end
+
+  test "funnel export filename includes funnel type and current date" do
+    sign_in
+    post dashboard_export_path, params: { export_type: "funnel" }
+
+    assert_match "mbuzz-funnel-#{Date.current}.csv", response.headers["Content-Disposition"]
+  end
+
+  test "funnel export returns 200 with empty data" do
+    sign_in
+    Session.where(account: account).delete_all
+
+    post dashboard_export_path, params: { export_type: "funnel" }
+
+    assert_response :success
+    csv = CSV.parse(response.body, headers: true)
+
+    assert_equal 0, csv.size
+  end
+
+  test "funnel export includes visit rows" do
+    sign_in
+    account.sessions.create!(
+      visitor: visitors(:one),
+      session_id: "sess_export_test_#{SecureRandom.hex(4)}",
+      started_at: 1.hour.ago,
+      channel: Channels::PAID_SEARCH,
+      is_test: true
+    )
+
+    post dashboard_export_path, params: { export_type: "funnel", view_mode: "test" }
+
+    csv = CSV.parse(response.body, headers: true)
+    types = csv.map { |row| row["type"] }.uniq
+
+    assert_includes types, FunnelStages::VISIT
+  end
+
+  # ==========================================
+  # Conversion export
+  # ==========================================
+
   test "ignores conversion filters" do
     sign_in
     create_credit(conversion_type: "purchase")
@@ -100,10 +154,10 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
     }
 
     csv = CSV.parse(response.body, headers: true)
-    types = csv.map { |row| row["conversion_type"] }
+    names = csv.map { |row| row["name"] }
 
-    assert_includes types, "purchase"
-    assert_includes types, "signup"
+    assert_includes names, "purchase"
+    assert_includes names, "signup"
   end
 
   private

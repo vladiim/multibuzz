@@ -3,9 +3,9 @@
 module Dashboard
   class CsvExportService
     HEADERS = %w[
-      conversion_date conversion_type funnel attribution_model algorithm
+      date type name funnel attribution_model algorithm
       channel credit revenue revenue_credit currency
-      utm_source utm_medium utm_campaign is_acquisition conversion_properties
+      utm_source utm_medium utm_campaign is_acquisition properties
     ].freeze
 
     def initialize(account, filter_params)
@@ -29,6 +29,7 @@ module Dashboard
 
       [
         conversion.converted_at.to_date.to_s,
+        FunnelStages::CONVERSION,
         conversion.conversion_type,
         conversion.funnel,
         credit.attribution_model.name,

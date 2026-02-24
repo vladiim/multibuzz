@@ -69,7 +69,14 @@
                     <%= form_with url: dashboard_export_path, method: :post, data: { turbo: false } do %>
                       <%= hidden_params_for(request.query_parameters) %>
                       <button type="submit" data-action="click->export#submit" class="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded">
-                        CSV Export
+                        Conversions CSV
+                      </button>
+                    <% end %>
+                    <%= form_with url: dashboard_export_path, method: :post, data: { turbo: false } do %>
+                      <%= hidden_params_for(request.query_parameters) %>
+                      <input type="hidden" name="export_type" value="funnel">
+                      <button type="submit" data-action="click->export#submit" class="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded">
+                        Funnel CSV
                       </button>
                     <% end %>
                     <div class="border-t border-gray-100 mt-1 pt-1">
