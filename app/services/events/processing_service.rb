@@ -113,17 +113,42 @@ module Events
     end
 
     def channel
-      @channel ||= Sessions::ChannelAttributionService.new(utm_data, referrer).call
+      @channel ||= Sessions::ChannelAttributionService.new(
+        utm_data,
+        referrer,
+        click_ids,
+        page_host: page_host,
+        account_domains: account_domains
+      ).call
     end
 
     def capture_utm_if_new_session
-      return unless session.initial_utm.blank?
+      return if session.channel.present?
 
       session.update(
         initial_utm: utm_data,
         initial_referrer: referrer,
         channel: channel
       )
+    end
+
+    def click_ids
+      @click_ids ||= Sessions::ClickIdCaptureService.new(url: url).call
+    end
+
+    def page_host
+      @page_host ||= begin
+        URI.parse(url).host if url.present?
+      rescue URI::InvalidURIError
+        nil
+      end
+    end
+
+    def account_domains
+      @account_domains ||= account.sessions
+        .where.not(landing_page_host: nil)
+        .distinct
+        .pluck(:landing_page_host)
     end
 
     def save_event

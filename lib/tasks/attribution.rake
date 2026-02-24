@@ -17,18 +17,23 @@ namespace :attribution do
 
     stats = { total: 0, updated: 0, unchanged: 0, errors: 0, by_channel: Hash.new(0) }
 
+    account_domains = account.sessions
+      .where.not(landing_page_host: nil)
+      .distinct.pluck(:landing_page_host)
+
     account.sessions.includes(:events).find_each do |session|
       stats[:total] += 1
 
       # Extract page_host from first event for internal referrer detection
       first_event = session.events.order(:occurred_at).first
-      page_host = first_event&.properties&.dig("host")
+      page_host = session.landing_page_host || first_event&.properties&.dig("host")
 
       new_channel = Sessions::ChannelAttributionService.new(
         session.initial_utm || {},
         session.initial_referrer,
         session.click_ids || {},
-        page_host: page_host
+        page_host: page_host,
+        account_domains: account_domains
       ).call
 
       if session.channel == new_channel
@@ -258,6 +263,75 @@ namespace :attribution do
     puts "Recomputed: #{stats[:recomputed]}"
     puts "Old credits cleared: #{stats[:credits_cleared]}"
     puts "Errors: #{stats[:errors]}"
+  end
+
+  desc "Fix sessions whose channel was overwritten to direct by event processing bug"
+  task fix_event_channel_overwrite: :environment do
+    account_id = ENV["ACCOUNT_ID"]
+    dry_run = ENV["DRY_RUN"] == "true"
+
+    unless account_id
+      puts "Usage: bin/rails attribution:fix_event_channel_overwrite ACCOUNT_ID=123 [DRY_RUN=true]"
+      exit 1
+    end
+
+    account = Account.find(account_id)
+    puts "Fixing event channel overwrite for: #{account.name} (ID: #{account.id})"
+    puts "DRY RUN MODE - no changes will be made" if dry_run
+
+    account_domains = account.sessions
+      .where.not(landing_page_host: nil)
+      .distinct.pluck(:landing_page_host)
+
+    stats = { total: 0, fixed: 0, unchanged: 0, errors: 0, by_channel: Hash.new(0) }
+
+    # Target: sessions marked "direct" that have click_ids or initial_referrer
+    # These were likely overwritten by the capture_utm_if_new_session bug
+    corrupted = account.sessions
+      .where(channel: "direct")
+      .where("click_ids IS NOT NULL AND click_ids != '{}'::jsonb OR initial_referrer IS NOT NULL")
+
+    total = corrupted.count
+    puts "Found #{total} potentially corrupted sessions\n"
+
+    corrupted.find_each do |session|
+      stats[:total] += 1
+
+      new_channel = Sessions::ChannelAttributionService.new(
+        session.initial_utm || {},
+        session.initial_referrer,
+        session.click_ids || {},
+        page_host: session.landing_page_host,
+        account_domains: account_domains
+      ).call
+
+      if new_channel == "direct"
+        stats[:unchanged] += 1
+      else
+        stats[:by_channel][new_channel] += 1
+        session.update_column(:channel, new_channel) unless dry_run
+        stats[:fixed] += 1
+      end
+
+      print "\rProcessed: #{stats[:total]}/#{total}" if (stats[:total] % 100).zero?
+    rescue StandardError => e
+      stats[:errors] += 1
+      puts "\nError processing session #{session.id}: #{e.message}"
+    end
+
+    puts "\n\n=== RESULTS ==="
+    puts "Total checked: #{stats[:total]}"
+    puts "Fixed: #{stats[:fixed]}"
+    puts "Unchanged (legitimately direct): #{stats[:unchanged]}"
+    puts "Errors: #{stats[:errors]}"
+    puts "\nRecovered channels:"
+    stats[:by_channel].sort_by { |_, v| -v }.each do |channel, count|
+      puts "  #{channel}: #{count}"
+    end
+
+    if stats[:fixed] > 0 && !dry_run
+      puts "\nRun attribution:reattribute_conversions ACCOUNT_ID=#{account_id} to update conversion credits"
+    end
   end
 
   desc "Full backfill: channels + reattribution"

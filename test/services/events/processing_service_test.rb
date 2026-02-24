@@ -71,6 +71,7 @@ class Events::ProcessingServiceTest < ActiveSupport::TestCase
 
   test "should not override session UTM on subsequent events" do
     existing_session = sessions(:one)
+    existing_session.update_columns(channel: "paid_search")
     @session_id = existing_session.session_id
     @event_data = valid_event_data.merge(
       "properties" => { "utm_source" => "facebook" }
@@ -121,6 +122,132 @@ class Events::ProcessingServiceTest < ActiveSupport::TestCase
 
     assert result[:success]
     assert_equal "purchase", result[:event].funnel
+  end
+
+  # --- Channel attribution preservation ---
+
+  test "should not overwrite session channel when initial_utm is empty hash" do
+    # THE BUG: session attributed by referrer has channel but empty UTM.
+    # {}.blank? == true in Rails, so the guard fails and channel is overwritten to "direct"
+    session.update_columns(channel: "organic_search", initial_utm: {}, initial_referrer: "https://www.google.com/")
+
+    @event_data = {
+      "event_type" => "add_to_cart",
+      "visitor_id" => visitor_id,
+      "session_id" => session_id,
+      "timestamp" => Time.current.iso8601,
+      "properties" => { "product" => "Widget" }
+    }.freeze
+
+    assert result[:success]
+    session.reload
+
+    assert_equal "organic_search", session.channel
+    assert_equal "https://www.google.com/", session.initial_referrer
+  end
+
+  test "should not overwrite session channel attributed by click IDs" do
+    session.update_columns(channel: "paid_search", initial_utm: {}, click_ids: { gclid: "abc123" }.to_json)
+
+    @event_data = {
+      "event_type" => "add_to_cart",
+      "visitor_id" => visitor_id,
+      "session_id" => session_id,
+      "timestamp" => Time.current.iso8601,
+      "properties" => { "product" => "Widget" }
+    }.freeze
+
+    assert result[:success]
+    session.reload
+
+    assert_equal "paid_search", session.channel
+  end
+
+  test "should set channel with full context when session has no channel" do
+    # TrackingService path: session created without channel
+    @session_id = "sess_no_channel"
+    @event_data = {
+      "event_type" => "page_view",
+      "visitor_id" => visitor_id,
+      "session_id" => "sess_no_channel",
+      "timestamp" => Time.current.iso8601,
+      "properties" => { "page" => "/landing" },
+      "url" => "https://example.com/landing?gclid=xyz789"
+    }.freeze
+
+    assert result[:success]
+    new_session = result[:event].session
+
+    assert_equal "paid_search", new_session.channel
+  end
+
+  test "should set channel from referrer when session has no channel" do
+    @session_id = "sess_referrer_only"
+    @event_data = {
+      "event_type" => "page_view",
+      "visitor_id" => visitor_id,
+      "session_id" => "sess_referrer_only",
+      "timestamp" => Time.current.iso8601,
+      "properties" => { "page" => "/landing" },
+      "url" => "https://example.com/landing",
+      "referrer" => "https://www.google.com/search?q=test"
+    }.freeze
+
+    assert result[:success]
+    new_session = result[:event].session
+
+    assert_equal "organic_search", new_session.channel
+  end
+
+  test "should set channel as direct when session has no channel and no signals" do
+    @session_id = "sess_genuinely_direct"
+    @event_data = {
+      "event_type" => "page_view",
+      "visitor_id" => visitor_id,
+      "session_id" => "sess_genuinely_direct",
+      "timestamp" => Time.current.iso8601,
+      "properties" => { "page" => "/home" }
+    }.freeze
+
+    assert result[:success]
+    new_session = result[:event].session
+
+    assert_equal "direct", new_session.channel
+  end
+
+  test "second event should not change channel set by first event" do
+    @session_id = "sess_multi_event"
+    first_event_data = {
+      "event_type" => "page_view",
+      "visitor_id" => visitor_id,
+      "session_id" => "sess_multi_event",
+      "timestamp" => Time.current.iso8601,
+      "properties" => { "page" => "/landing" },
+      "referrer" => "https://www.google.com/"
+    }.freeze
+
+    first_result = Events::ProcessingService.new(account, first_event_data).call
+
+    assert first_result[:success]
+    new_session = first_result[:event].session
+
+    assert_equal "organic_search", new_session.channel
+
+    # Second event with no referrer — should not overwrite
+    second_event_data = {
+      "event_type" => "add_to_cart",
+      "visitor_id" => visitor_id,
+      "session_id" => "sess_multi_event",
+      "timestamp" => Time.current.iso8601,
+      "properties" => { "product" => "Widget" }
+    }.freeze
+
+    second_result = Events::ProcessingService.new(account, second_event_data).call
+
+    assert second_result[:success]
+    new_session.reload
+
+    assert_equal "organic_search", new_session.channel
   end
 
   # --- Server-side session resolution ---
