@@ -54,6 +54,10 @@ module Dashboard
       assert_equal "summer_sale", row["utm_campaign"]
       assert_equal "true", row["is_acquisition"]
       assert_equal '{"plan":"pro"}', row["properties"]
+      assert_equal AttributionAlgorithms::FIRST_TOUCH, row["journey_position"]
+      assert_equal "1", row["touchpoint_index"]
+      assert_equal "1", row["journey_length"]
+      assert_equal "5", row["days_to_conversion"]
     end
 
     test "type column is always conversion" do
@@ -132,6 +136,184 @@ module Dashboard
     end
 
     # ==========================================
+    # Journey position tests
+    # ==========================================
+
+    test "single touchpoint journey has first_touch position" do
+      session = create_journey_session(started_at: 10.days.ago)
+      conversion = account.conversions.create!(
+        visitor: visitors(:one),
+        conversion_type: "purchase",
+        converted_at: 5.days.ago,
+        journey_session_ids: [ session.id ]
+      )
+      account.attribution_credits.create!(
+        conversion: conversion,
+        attribution_model: first_touch_model,
+        session_id: session.id,
+        channel: Channels::PAID_SEARCH,
+        credit: 1.0
+      )
+
+      csv = parse_csv(service.call)
+      row = csv.first
+
+      assert_equal AttributionAlgorithms::FIRST_TOUCH, row["journey_position"]
+      assert_equal "1", row["touchpoint_index"]
+      assert_equal "1", row["journey_length"]
+    end
+
+    test "two touchpoint journey: first is first_touch, second is last_touch" do
+      s1 = create_journey_session(started_at: 10.days.ago)
+      s2 = create_journey_session(started_at: 5.days.ago)
+      conversion = account.conversions.create!(
+        visitor: visitors(:one),
+        conversion_type: "purchase",
+        converted_at: 3.days.ago,
+        journey_session_ids: [ s1.id, s2.id ]
+      )
+      [ s1, s2 ].each do |s|
+        account.attribution_credits.create!(
+          conversion: conversion,
+          attribution_model: first_touch_model,
+          session_id: s.id,
+          channel: Channels::PAID_SEARCH,
+          credit: 0.5
+        )
+      end
+
+      csv = parse_csv(service.call)
+      rows = csv.sort_by { |r| r["touchpoint_index"].to_i }
+
+      assert_equal AttributionAlgorithms::FIRST_TOUCH, rows[0]["journey_position"]
+      assert_equal AttributionAlgorithms::LAST_TOUCH, rows[1]["journey_position"]
+      assert_equal "2", rows[0]["journey_length"]
+      assert_equal "2", rows[1]["journey_length"]
+    end
+
+    test "three touchpoint journey: middle touchpoints are assisted" do
+      s1 = create_journey_session(started_at: 15.days.ago)
+      s2 = create_journey_session(started_at: 10.days.ago)
+      s3 = create_journey_session(started_at: 5.days.ago)
+      conversion = account.conversions.create!(
+        visitor: visitors(:one),
+        conversion_type: "purchase",
+        converted_at: 3.days.ago,
+        journey_session_ids: [ s1.id, s2.id, s3.id ]
+      )
+      [ s1, s2, s3 ].each do |s|
+        account.attribution_credits.create!(
+          conversion: conversion,
+          attribution_model: first_touch_model,
+          session_id: s.id,
+          channel: Channels::PAID_SEARCH,
+          credit: 0.33
+        )
+      end
+
+      csv = parse_csv(service.call)
+      rows = csv.sort_by { |r| r["touchpoint_index"].to_i }
+
+      assert_equal AttributionAlgorithms::FIRST_TOUCH, rows[0]["journey_position"]
+      assert_equal AttributionAlgorithms::ASSISTED, rows[1]["journey_position"]
+      assert_equal AttributionAlgorithms::LAST_TOUCH, rows[2]["journey_position"]
+      assert_equal "3", rows[0]["journey_length"]
+    end
+
+    test "days_to_conversion calculated from session start to conversion" do
+      session = create_journey_session(started_at: 10.days.ago)
+      conversion = account.conversions.create!(
+        visitor: visitors(:one),
+        conversion_type: "purchase",
+        converted_at: 3.days.ago,
+        journey_session_ids: [ session.id ]
+      )
+      account.attribution_credits.create!(
+        conversion: conversion,
+        attribution_model: first_touch_model,
+        session_id: session.id,
+        channel: Channels::PAID_SEARCH,
+        credit: 1.0
+      )
+
+      csv = parse_csv(service.call)
+      row = csv.first
+
+      assert_equal "7", row["days_to_conversion"]
+    end
+
+    test "nil journey_session_ids returns nil journey columns" do
+      conversion = account.conversions.create!(
+        visitor: visitors(:one),
+        conversion_type: "purchase",
+        converted_at: 5.days.ago,
+        journey_session_ids: nil
+      )
+      account.attribution_credits.create!(
+        conversion: conversion,
+        attribution_model: first_touch_model,
+        session_id: rand(100..999),
+        channel: Channels::PAID_SEARCH,
+        credit: 1.0
+      )
+
+      csv = parse_csv(service.call)
+      row = csv.first
+
+      assert_nil row["journey_position"]
+      assert_nil row["touchpoint_index"]
+      assert_nil row["journey_length"]
+      assert_nil row["days_to_conversion"]
+    end
+
+    test "empty journey_session_ids returns nil journey columns" do
+      conversion = account.conversions.create!(
+        visitor: visitors(:one),
+        conversion_type: "purchase",
+        converted_at: 5.days.ago,
+        journey_session_ids: []
+      )
+      account.attribution_credits.create!(
+        conversion: conversion,
+        attribution_model: first_touch_model,
+        session_id: rand(100..999),
+        channel: Channels::PAID_SEARCH,
+        credit: 1.0
+      )
+
+      csv = parse_csv(service.call)
+      row = csv.first
+
+      assert_nil row["journey_position"]
+      assert_nil row["touchpoint_index"]
+      assert_nil row["journey_length"]
+      assert_nil row["days_to_conversion"]
+    end
+
+    test "credit session_id not in journey returns nil journey columns" do
+      session = create_journey_session(started_at: 10.days.ago)
+      conversion = account.conversions.create!(
+        visitor: visitors(:one),
+        conversion_type: "purchase",
+        converted_at: 5.days.ago,
+        journey_session_ids: [ session.id ]
+      )
+      account.attribution_credits.create!(
+        conversion: conversion,
+        attribution_model: first_touch_model,
+        session_id: 999_999,
+        channel: Channels::PAID_SEARCH,
+        credit: 1.0
+      )
+
+      csv = parse_csv(service.call)
+      row = csv.first
+
+      assert_nil row["journey_position"]
+      assert_nil row["touchpoint_index"]
+    end
+
+    # ==========================================
     # Multi-account isolation
     # ==========================================
 
@@ -167,6 +349,7 @@ module Dashboard
         date type name funnel attribution_model algorithm
         channel credit revenue revenue_credit currency
         utm_source utm_medium utm_campaign is_acquisition properties
+        journey_position touchpoint_index journey_length days_to_conversion
       ]
     end
 
@@ -195,6 +378,8 @@ module Dashboard
     end
 
     def create_full_credit
+      session = create_journey_session(started_at: 10.days.ago)
+
       conversion = account.conversions.create!(
         visitor: visitors(:one),
         identity: identities(:one),
@@ -204,13 +389,14 @@ module Dashboard
         converted_at: 5.days.ago,
         funnel: "sales",
         is_acquisition: true,
-        properties: { plan: "pro" }
+        properties: { plan: "pro" },
+        journey_session_ids: [ session.id ]
       )
 
       account.attribution_credits.create!(
         conversion: conversion,
         attribution_model: first_touch_model,
-        session_id: 1,
+        session_id: session.id,
         channel: Channels::PAID_SEARCH,
         credit: 1.0,
         revenue_credit: 100.0,
@@ -271,6 +457,15 @@ module Dashboard
         channel: channel,
         credit: 1.0,
         is_test: is_test
+      )
+    end
+
+    def create_journey_session(started_at: 10.days.ago)
+      account.sessions.create!(
+        visitor: visitors(:one),
+        session_id: "sess_csv_test_#{SecureRandom.hex(4)}",
+        started_at: started_at,
+        channel: Channels::PAID_SEARCH
       )
     end
   end
