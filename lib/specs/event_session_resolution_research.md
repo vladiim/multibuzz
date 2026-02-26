@@ -241,15 +241,34 @@ puts "Fixed: #{fixed}, Skipped (no prior): #{skipped}"
 6. **Backfill rake task** — `attribution:fix_orphan_sessions` added to `lib/tasks/attribution.rake`
 7. **Full test suite** — 2606 tests, 6657 assertions, 0 failures
 
+### Deployed
+
+- **2026-02-27** — Deployed `c60b00f`, ran `attribution:fix_orphan_sessions ACCOUNT_ID=2`
+- **Result:** 2,639 orphan sessions fixed (0 skipped, 0 errors)
+- **Post-backfill channel distribution (30-day, sessions with events):**
+
+| Channel | Count | % |
+|---------|-------|---|
+| direct | 4,877 | 67.9% |
+| paid_search | 1,266 | 17.6% |
+| organic_search | 848 | 11.8% |
+| paid_social | 86 | 1.2% |
+| email | 69 | 1.0% |
+| referral | 18 | 0.3% |
+| organic_social | 11 | 0.2% |
+
+- Referral dropped from 10% → 0.3% (internal referrer orphans eliminated)
+- Search up from ~0.4% → 29.4% (orphan events now on correct sessions)
+- Direct still high at 67.9% — likely prior sessions had their channels overwritten to direct by the old event processing bug (`e0e11d7`). May need `attribution:fix_event_channel_overwrite` re-run.
+
 ### Remaining
 
-- [ ] Commit
-- [ ] Deploy + run backfill on production
+- [ ] **Monday 2026-03-02:** Validate new session data from Fri 12pm–Mon morning (fresh data since deploy, no backfill influence). Check channel distribution for sessions created after `2026-02-27 01:00:00 UTC`. Expect 50-70% search if fix is working. If direct is still >50%, investigate whether `fix_event_channel_overwrite` needs re-running on historical data.
+- [ ] Decide whether to re-run `attribution:fix_event_channel_overwrite` for historical sessions
 
 ---
 
 ## Out of Scope
 
 - SDK changes (not needed for this fix)
-- Fixing the 89.6% direct (separate investigation — may be legitimate or may need the channel-overwrite backfill re-run with the resolution fix in place)
 - `_mbuzz_sid` cookie persistence in the Ruby SDK (future improvement, not required)
