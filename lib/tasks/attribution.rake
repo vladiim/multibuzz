@@ -376,7 +376,6 @@ namespace :attribution do
         ActiveRecord::Base.transaction do
           orphan.events.update_all(session_id: prior.id)
           prior.update!(last_activity_at: [prior.last_activity_at, orphan.last_activity_at].max)
-          orphan.conversions.update_all(session_id: prior.id) if orphan.conversions.any?
           orphan.destroy!
         end
       end
