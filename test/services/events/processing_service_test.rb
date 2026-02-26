@@ -305,6 +305,35 @@ class Events::ProcessingServiceTest < ActiveSupport::TestCase
     assert_equal session_id, result[:event].session.session_id
   end
 
+  # --- Fingerprint fallback (mismatched IP) ---
+
+  test "event with mismatched fingerprint joins existing active session" do
+    # Session created by SDK middleware with one IP
+    original_ip = "10.0.0.1"
+    original_fingerprint = Digest::SHA256.hexdigest("#{original_ip}|#{test_user_agent}")[0, 32]
+
+    session.update!(
+      device_fingerprint: original_fingerprint,
+      last_activity_at: 5.minutes.ago
+    )
+
+    # Event arrives with different IP (mobile network rotation, CDN edge, etc.)
+    different_ip = "10.0.0.99"
+    @event_data = {
+      "event_type" => "add_to_cart",
+      "visitor_id" => visitor_id,
+      "ip" => different_ip,
+      "user_agent" => test_user_agent,
+      "timestamp" => Time.current.iso8601,
+      "properties" => { "product" => "Widget" }
+    }.freeze
+
+    assert_no_difference -> { Session.count } do
+      assert result[:success]
+      assert_equal session.session_id, result[:event].session.session_id
+    end
+  end
+
   # --- Visitor fingerprint deduplication ---
 
   test "should pass device_fingerprint to LookupService for visitor deduplication" do

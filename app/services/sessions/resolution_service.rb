@@ -30,13 +30,13 @@ module Sessions
     def visitor_session
       return unless visitor
 
-      account.sessions
+      scope = account.sessions
         .where(visitor_id: visitor.id)
-        .where(device_fingerprint: [ device_fingerprint, nil ])
         .where(ended_at: nil)
         .where("last_activity_at > ?", SESSION_TIMEOUT.ago)
         .order(last_activity_at: :desc)
-        .first
+
+      scope.where(device_fingerprint: [ device_fingerprint, nil ]).first || scope.first
     end
 
     def identity_session

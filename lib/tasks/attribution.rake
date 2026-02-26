@@ -334,6 +334,66 @@ namespace :attribution do
     end
   end
 
+  desc "Fix orphan sessions created by event processing with mismatched fingerprints"
+  task fix_orphan_sessions: :environment do
+    account_id = ENV["ACCOUNT_ID"]
+    dry_run = ENV["DRY_RUN"] == "true"
+
+    unless account_id
+      puts "Usage: bin/rails attribution:fix_orphan_sessions ACCOUNT_ID=123 [DRY_RUN=true]"
+      exit 1
+    end
+
+    account = Account.find(account_id)
+    puts "Fixing orphan sessions for: #{account.name} (ID: #{account.id})"
+    puts "DRY RUN MODE - no changes will be made" if dry_run
+
+    stats = { fixed: 0, skipped: 0, errors: 0 }
+
+    orphans = account.sessions
+      .where(landing_page_host: nil)
+      .where.not(channel: nil)
+      .joins(:events)
+      .distinct
+
+    total = orphans.count
+    puts "Found #{total} orphan sessions\n"
+
+    orphans.find_each do |orphan|
+      prior = account.sessions
+        .where(visitor_id: orphan.visitor_id)
+        .where.not(id: orphan.id)
+        .where("started_at <= ?", orphan.started_at)
+        .order(started_at: :desc)
+        .first
+
+      unless prior
+        stats[:skipped] += 1
+        next
+      end
+
+      unless dry_run
+        ActiveRecord::Base.transaction do
+          orphan.events.update_all(session_id: prior.id)
+          prior.update!(last_activity_at: [prior.last_activity_at, orphan.last_activity_at].max)
+          orphan.conversions.update_all(session_id: prior.id) if orphan.conversions.any?
+          orphan.destroy!
+        end
+      end
+
+      stats[:fixed] += 1
+      print "\rProcessed: #{stats[:fixed] + stats[:skipped]}/#{total}" if ((stats[:fixed] + stats[:skipped]) % 100).zero?
+    rescue StandardError => e
+      stats[:errors] += 1
+      puts "\nError processing session #{orphan.id}: #{e.message}"
+    end
+
+    puts "\n\n=== RESULTS ==="
+    puts "Fixed: #{stats[:fixed]}"
+    puts "Skipped (no prior session): #{stats[:skipped]}"
+    puts "Errors: #{stats[:errors]}"
+  end
+
   desc "Full backfill: channels + reattribution"
   task full_backfill: :environment do
     account_id = ENV["ACCOUNT_ID"]

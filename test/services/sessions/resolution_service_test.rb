@@ -92,13 +92,13 @@ class Sessions::ResolutionServiceTest < ActiveSupport::TestCase
 
   # --- Device fingerprint (same visitor, different device) ---
 
-  test "same visitor on different device gets different session" do
+  test "same visitor on different device falls back to existing session" do
     session.update!(
       last_activity_at: 10.minutes.ago,
       device_fingerprint: device_fingerprint
     )
 
-    # Same visitor but different user agent (different device)
+    # Same visitor but different user agent (different fingerprint)
     different_device_service = Sessions::ResolutionService.new(
       account: account,
       visitor_id: visitor.visitor_id,
@@ -108,8 +108,45 @@ class Sessions::ResolutionServiceTest < ActiveSupport::TestCase
 
     result = different_device_service.call
 
-    # Should NOT return the existing session - it's a different device
-    assert_not_equal session.session_id, result
+    # Fallback: reuse active session rather than creating an orphan
+    assert_equal session.session_id, result
+  end
+
+  test "falls back to visitor session when fingerprint does not match" do
+    session.update!(
+      last_activity_at: 10.minutes.ago,
+      device_fingerprint: "fp_completely_different_hash_val"
+    )
+
+    # Fingerprint won't match, but fallback finds the visitor's active session
+    result = service.call
+
+    assert_equal session.session_id, result
+  end
+
+  test "prefers fingerprint-matched session over visitor-only match" do
+    # Older session with matching fingerprint
+    fingerprint_session = account.sessions.create!(
+      session_id: "sess_fingerprint_match",
+      visitor: visitor,
+      started_at: 1.hour.ago,
+      last_activity_at: 15.minutes.ago,
+      device_fingerprint: device_fingerprint
+    )
+
+    # Newer session with different fingerprint (same visitor)
+    other_session = account.sessions.create!(
+      session_id: "sess_other_device",
+      visitor: visitor,
+      started_at: 30.minutes.ago,
+      last_activity_at: 5.minutes.ago,
+      device_fingerprint: "fp_other_device_fingerprint_xxx"
+    )
+
+    result = service.call
+
+    # Should prefer fingerprint match even though other session is more recent
+    assert_equal fingerprint_session.session_id, result
   end
 
   test "same visitor on same device within timeout continues session" do

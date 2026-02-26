@@ -15,7 +15,8 @@ class ConcurrentEventsDeduplicationTest < ActionDispatch::IntegrationTest
     visitor_id_2 = SecureRandom.hex(32)
 
     # These represent concurrent requests from the same device/browser
-    same_ip = "203.0.113.42"
+    # Use .0 so /24 anonymization in EnrichmentService is a no-op
+    same_ip = "203.0.113.0"
     same_user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
     device_fingerprint = Digest::SHA256.hexdigest("#{same_ip}|#{same_user_agent}")[0, 32]
     timestamp = Time.current.utc.iso8601
