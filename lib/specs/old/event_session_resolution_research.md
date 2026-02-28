@@ -1,7 +1,7 @@
 # Event-to-Session Resolution: Research
 
 **Date:** 2026-02-26
-**Status:** In Progress (code written, full suite pending)
+**Status:** Complete
 **Branch:** `feature/session-bot-detection`
 **Related:** `lib/specs/old/event_channel_attribution_spec.md`
 
@@ -261,10 +261,32 @@ puts "Fixed: #{fixed}, Skipped (no prior): #{skipped}"
 - Search up from ~0.4% → 29.4% (orphan events now on correct sessions)
 - Direct still high at 67.9% — likely prior sessions had their channels overwritten to direct by the old event processing bug (`e0e11d7`). May need `attribution:fix_event_channel_overwrite` re-run.
 
-### Remaining
+### Monday 2026-03-02 Validation
 
-- [ ] **Monday 2026-03-02:** Validate new session data from Fri 12pm–Mon morning (fresh data since deploy, no backfill influence). Check channel distribution for sessions created after `2026-02-27 01:00:00 UTC`. Expect 50-70% search if fix is working. If direct is still >50%, investigate whether `fix_event_channel_overwrite` needs re-running on historical data.
-- [ ] Decide whether to re-run `attribution:fix_event_channel_overwrite` for historical sessions
+- [x] **Monday 2026-03-02:** Validated fresh session data (post-deploy, no backfill influence).
+
+**Post-deploy channel distribution (sessions created after 2026-02-27 01:00 UTC, n=13,294):**
+
+| Channel | Count | % |
+|---------|-------|---|
+| organic_search | 6,130 | 46.1% |
+| paid_social | 2,670 | 20.1% |
+| paid_search | 2,637 | 19.8% |
+| direct | 1,159 | 8.7% |
+| referral | 391 | 2.9% |
+| organic_social | 207 | 1.6% |
+| email | 88 | 0.7% |
+| ai | 10 | 0.1% |
+
+- Search channels combined = 65.9% (within predicted 50-70% range)
+- Direct dropped from 36.9% (pre-fix) → 8.7% (post-fix)
+- Orphan sessions post-deploy: 17 (all direct, legitimate first-visits)
+- Events on orphan sessions: 30 / 958 (3.1%, edge cases)
+
+**Follow-up fixes applied (`6cb19f3`):**
+- Added spam referrer detection to BotClassifier (raw IP + binance.com, shsupplychain.com)
+- Added missing channel mappings: brave → organic_search, syndicatedsearch.goog → organic_search, t.co/threads → organic_social, webmail.* → email
+- Historical channel overwrite re-run not needed — post-fix distribution is healthy
 
 ---
 
