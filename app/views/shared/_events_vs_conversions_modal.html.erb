@@ -1,0 +1,62 @@
+<div id="events-vs-conversions-modal"
+     data-controller="modal"
+     class="hidden fixed inset-0 z-50">
+  <div class="fixed inset-0 bg-black/50" data-action="click->modal#close"></div>
+
+  <div class="fixed inset-0 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold text-gray-900">Events vs Conversions</h3>
+        <button type="button" data-action="click->modal#close" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <div class="border border-gray-200 rounded-lg p-4">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-6 h-6 bg-blue-100 text-blue-700 rounded flex items-center justify-center">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            </div>
+            <h4 class="font-semibold text-gray-900 text-sm">Events</h4>
+          </div>
+          <p class="text-xs text-gray-600 mb-3">
+            Actions <strong>on the way to</strong> a conversion. Mid-funnel engagement signals.
+          </p>
+          <div class="space-y-1 text-xs text-gray-500">
+            <div class="flex items-center gap-1.5"><span class="w-1 h-1 rounded-full bg-blue-400"></span>Form views</div>
+            <div class="flex items-center gap-1.5"><span class="w-1 h-1 rounded-full bg-blue-400"></span>CTA clicks</div>
+            <div class="flex items-center gap-1.5"><span class="w-1 h-1 rounded-full bg-blue-400"></span>Video plays</div>
+            <div class="flex items-center gap-1.5"><span class="w-1 h-1 rounded-full bg-blue-400"></span>Scroll depth</div>
+            <div class="flex items-center gap-1.5"><span class="w-1 h-1 rounded-full bg-blue-400"></span>Pricing page visits</div>
+          </div>
+        </div>
+
+        <div class="border border-indigo-200 rounded-lg p-4 bg-indigo-50/30">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-6 h-6 bg-indigo-100 text-indigo-700 rounded flex items-center justify-center">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            </div>
+            <h4 class="font-semibold text-gray-900 text-sm">Conversions</h4>
+          </div>
+          <p class="text-xs text-gray-600 mb-3">
+            Goals that trigger <strong>multi-touch attribution</strong>. The actions that matter most.
+          </p>
+          <div class="space-y-1 text-xs text-gray-500">
+            <div class="flex items-center gap-1.5"><span class="w-1 h-1 rounded-full bg-indigo-400"></span>Purchases</div>
+            <div class="flex items-center gap-1.5"><span class="w-1 h-1 rounded-full bg-indigo-400"></span>Lead form submissions</div>
+            <div class="flex items-center gap-1.5"><span class="w-1 h-1 rounded-full bg-indigo-400"></span>Demo bookings</div>
+            <div class="flex items-center gap-1.5"><span class="w-1 h-1 rounded-full bg-indigo-400"></span>Signups / trial starts</div>
+            <div class="flex items-center gap-1.5"><span class="w-1 h-1 rounded-full bg-indigo-400"></span>Phone calls (click-to-call)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gray-50 rounded-lg p-3 text-xs text-gray-600">
+        <strong>Rule of thumb:</strong> If you'd assign a dollar value to it, it's a conversion. Everything else is an event.
+      </div>
+    </div>
+  </div>
+</div>

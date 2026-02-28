@@ -695,6 +695,8 @@
                 <p class="text-sm text-gray-500 mb-3">
                   Track mid-funnel actions: form submissions, button clicks, video plays, add-to-cart, etc.
                   Create one tag per event type, or use a GTM variable for the event name.
+                  Not sure whether something is an event or a conversion?
+                  <button data-controller="modal" data-action="click->modal#open" data-modal-target-value="events-vs-conversions-modal" class="text-indigo-600 underline cursor-pointer">Events vs Conversions</button>
                 </p>
 
                 <ol class="list-decimal list-inside text-sm text-gray-600 space-y-1.5 mb-4">
@@ -732,15 +734,21 @@
                 </div>
 
                 <ol start="5" class="list-decimal list-inside text-sm text-gray-600 space-y-1.5 mb-3">
-                  <li>Set the <strong>Trigger</strong> to your custom event (e.g. a <code class="bg-gray-100 px-1 rounded text-xs">form_submit</code> custom event trigger)</li>
-                  <li>Click <strong>Advanced Settings</strong> &rarr; <strong>Tag Sequencing</strong></li>
-                  <li>Check <strong>"Fire a tag before this tag fires"</strong> &rarr; select <code class="bg-gray-100 px-1 rounded text-xs">mbuzz - Session</code></li>
+                  <li>Set the <strong>Trigger</strong> to a <strong>Custom Event</strong> matching your event name (e.g. <code class="bg-gray-100 px-1 rounded text-xs">form_submit</code>)</li>
                   <li>Click <strong>Save</strong></li>
                 </ol>
 
+                <div class="bg-amber-50 border border-amber-200 rounded p-3 text-xs text-amber-700 mb-3">
+                  <strong>Trigger event names must match exactly.</strong> Open <strong>Preview</strong> mode, trigger the action on your site,
+                  and check the event name in the sGTM preview sidebar. Use that exact name in your Custom Event trigger.
+                  For example, a form submission might appear as <code class="bg-amber-100 px-1 rounded">contact_form_submission</code>,
+                  not <code class="bg-amber-100 px-1 rounded">form_submit</code>. Use regex matching if you want to catch multiple
+                  variations (e.g. <code class="bg-amber-100 px-1 rounded">.*_form_submission</code>).
+                </div>
+
                 <div class="bg-blue-50 border border-blue-200 rounded p-3 text-xs text-blue-700">
-                  <strong>Tag sequencing is critical.</strong> The Session tag must fire before any Event tag. Without it,
-                  mbuzz doesn't know who the visitor is, and the event will be rejected.
+                  <strong>Session tag must fire first.</strong> Make sure the Session tag has an <strong>All Pages</strong> trigger so it fires on every page view.
+                  The Session tag creates the visitor record — without it, events are rejected.
                 </div>
 
                 <div class="mt-3 bg-gray-50 border border-gray-200 rounded p-3 text-xs text-gray-500">
@@ -765,6 +773,9 @@
                 <p class="text-sm text-gray-500 mb-3">
                   Fires when a visitor completes a goal — purchase, signup, lead form, demo booking.
                   This triggers multi-touch attribution calculation in mbuzz.
+                  <button data-controller="modal" data-action="click->modal#open" data-modal-target-value="events-vs-conversions-modal" class="text-indigo-600 underline cursor-pointer">Events vs Conversions</button> —
+                  not sure which to use? For browser-only conversions (like phone clicks), see
+                  <a href="#client-side-conversions" class="text-indigo-600 underline">Tracking Client-Side Actions</a> below.
                 </p>
 
                 <ol class="list-decimal list-inside text-sm text-gray-600 space-y-1.5 mb-4">
@@ -812,11 +823,20 @@
                 </div>
 
                 <ol start="5" class="list-decimal list-inside text-sm text-gray-600 space-y-1.5 mb-3">
-                  <li>Set the <strong>Trigger</strong> to your conversion event (e.g. <code class="bg-gray-100 px-1 rounded text-xs">purchase</code> or <code class="bg-gray-100 px-1 rounded text-xs">generate_lead</code>)</li>
-                  <li>Click <strong>Advanced Settings</strong> &rarr; <strong>Tag Sequencing</strong></li>
-                  <li>Check <strong>"Fire a tag before this tag fires"</strong> &rarr; select <code class="bg-gray-100 px-1 rounded text-xs">mbuzz - Session</code></li>
+                  <li>Set the <strong>Trigger</strong> to a <strong>Custom Event</strong> matching your conversion event (e.g. <code class="bg-gray-100 px-1 rounded text-xs">purchase</code> or <code class="bg-gray-100 px-1 rounded text-xs">generate_lead</code>)</li>
                   <li>Click <strong>Save</strong></li>
                 </ol>
+
+                <div class="bg-amber-50 border border-amber-200 rounded p-3 text-xs text-amber-700 mb-3">
+                  <strong>Trigger event names must match exactly.</strong> Open <strong>Preview</strong> mode, trigger the conversion on your site,
+                  and check the event name in the sGTM preview sidebar. Use that exact name in your Custom Event trigger.
+                  Use regex matching if you want to catch multiple variations (e.g. <code class="bg-amber-100 px-1 rounded">.*_form_submission</code>).
+                </div>
+
+                <div class="bg-blue-50 border border-blue-200 rounded p-3 text-xs text-blue-700 mb-3">
+                  <strong>Session tag must fire first.</strong> Make sure the Session tag has an <strong>All Pages</strong> trigger so it fires on every page view.
+                  The Session tag creates the visitor record — without it, conversions are rejected.
+                </div>
 
                 <div class="bg-green-50 border border-green-200 rounded p-3 text-xs text-green-700">
                   <strong>What this does:</strong> Calls <code class="bg-green-100 px-1 rounded">POST /api/v1/conversions</code>
@@ -883,9 +903,7 @@
                 </div>
 
                 <ol start="5" class="list-decimal list-inside text-sm text-gray-600 space-y-1.5 mb-3">
-                  <li>Set the <strong>Trigger</strong> to your login or signup event</li>
-                  <li>Click <strong>Advanced Settings</strong> &rarr; <strong>Tag Sequencing</strong></li>
-                  <li>Check <strong>"Fire a tag before this tag fires"</strong> &rarr; select <code class="bg-gray-100 px-1 rounded text-xs">mbuzz - Session</code></li>
+                  <li>Set the <strong>Trigger</strong> to a <strong>Custom Event</strong> matching your login or signup event</li>
                   <li>Click <strong>Save</strong></li>
                 </ol>
 
@@ -985,6 +1003,199 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION: Events vs Conversions -->
+  <!-- ============================================================ -->
+  <div id="events-vs-conversions" class="mb-16 scroll-mt-24">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Events vs Conversions</h2>
+    <p class="text-gray-600 mb-6">
+      mbuzz tracks two types of visitor actions. Understanding the difference helps you set up the right tags.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+      <div class="border border-gray-200 rounded-xl p-6">
+        <div class="flex items-center gap-2 mb-3">
+          <div class="w-8 h-8 bg-blue-100 text-blue-700 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+          </div>
+          <h3 class="font-semibold text-gray-900">Events</h3>
+        </div>
+        <p class="text-sm text-gray-600 mb-4">
+          Actions a visitor takes <strong>on the way to</strong> a conversion. Mid-funnel engagement
+          signals that show interest but aren't the end goal.
+        </p>
+        <div class="space-y-1.5 text-sm text-gray-500">
+          <div class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+            Form views (before submission)
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+            CTA button clicks
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+            Video plays
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+            Scroll depth milestones
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+            Pricing page visits
+          </div>
+        </div>
+      </div>
+
+      <div class="border border-indigo-200 rounded-xl p-6 bg-indigo-50/30">
+        <div class="flex items-center gap-2 mb-3">
+          <div class="w-8 h-8 bg-indigo-100 text-indigo-700 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          </div>
+          <h3 class="font-semibold text-gray-900">Conversions</h3>
+        </div>
+        <p class="text-sm text-gray-600 mb-4">
+          The actions that matter most to your business. Conversions trigger
+          <strong>multi-touch attribution</strong> — mbuzz looks at every channel that
+          contributed and assigns credit.
+        </p>
+        <div class="space-y-1.5 text-sm text-gray-500">
+          <div class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
+            Purchases / transactions
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
+            Lead form submissions
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
+            Demo bookings
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
+            Signups / trial starts
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
+            Phone calls (click-to-call)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm text-gray-600">
+      <strong>Rule of thumb:</strong> If you'd assign a dollar value to it (or it directly generates revenue), it's a conversion.
+      Everything else is an event. When in doubt, start with conversions only — you can always add events later.
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION: Client-side to server-side conversions -->
+  <!-- ============================================================ -->
+  <div id="client-side-conversions" class="mb-16 scroll-mt-24">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Tracking Client-Side Actions as Conversions</h2>
+    <p class="text-gray-600 mb-6">
+      Some conversions happen entirely in the browser — like clicking a phone number or tapping a mailto link.
+      These never hit your backend, but you can still track them through sGTM.
+    </p>
+
+    <!-- Flow diagram -->
+    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden mb-6">
+      <div class="bg-gray-50 border-b border-gray-200 px-6 py-3">
+        <h3 class="font-medium text-gray-700">How it works: phone click example</h3>
+      </div>
+      <div class="p-6">
+        <div class="space-y-4">
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-8 h-8 bg-gray-100 text-gray-600 rounded-lg flex items-center justify-center text-xs font-bold">1</div>
+            <div>
+              <div class="font-medium text-gray-900 text-sm">Visitor clicks a <code class="bg-gray-100 px-1 rounded text-xs">tel:</code> link on your site</div>
+              <div class="text-sm text-gray-500">Client-side GTM catches this as a click event on an element with <code class="bg-gray-100 px-1 rounded text-xs">href="tel:..."</code></div>
+            </div>
+          </div>
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center text-xs font-bold">2</div>
+            <div>
+              <div class="font-medium text-gray-900 text-sm">Client-side GTM fires a GA4 event</div>
+              <div class="text-sm text-gray-500">A tag in your <strong>web</strong> GTM container sends the event (e.g. <code class="bg-gray-100 px-1 rounded text-xs">phone_link_click</code>) through to sGTM via the <code class="bg-gray-100 px-1 rounded text-xs">server_container_url</code></div>
+            </div>
+          </div>
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-8 h-8 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center text-xs font-bold">3</div>
+            <div>
+              <div class="font-medium text-gray-900 text-sm">sGTM GA4 Client processes the event</div>
+              <div class="text-sm text-gray-500">The GA4 Client in your server container claims the request and parses it into event data</div>
+            </div>
+          </div>
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-8 h-8 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center text-xs font-bold">4</div>
+            <div>
+              <div class="font-medium text-gray-900 text-sm">Custom Event trigger fires the mbuzz Conversion tag</div>
+              <div class="text-sm text-gray-500">A trigger matching the event name fires your mbuzz Conversion tag, which sends <code class="bg-gray-100 px-1 rounded text-xs">POST /api/v1/conversions</code> to mbuzz</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Setup steps -->
+    <h3 class="font-semibold text-gray-900 mb-3">Setting it up</h3>
+    <div class="space-y-3 mb-6">
+      <div class="flex items-start gap-3">
+        <div class="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center text-xs font-bold">1</div>
+        <div class="text-sm text-gray-700">
+          <strong>Client-side GTM:</strong> Create a trigger for the click (e.g. Click URL contains <code class="bg-gray-100 px-1 rounded text-xs">tel:</code>).
+          Create a GA4 Event tag that fires on this trigger and sends a custom event name (e.g. <code class="bg-gray-100 px-1 rounded text-xs">phone_link_click</code>).
+        </div>
+      </div>
+      <div class="flex items-start gap-3">
+        <div class="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center text-xs font-bold">2</div>
+        <div class="text-sm text-gray-700">
+          <strong>Server-side GTM:</strong> Create a <strong>Custom Event</strong> trigger matching the exact event name from step 1.
+          Open Preview mode and trigger the action to verify the event name — it may differ from what you expect
+          (e.g. <code class="bg-gray-100 px-1 rounded text-xs">GA4-phone-link-click</code> instead of <code class="bg-gray-100 px-1 rounded text-xs">phone_link_click</code>).
+        </div>
+      </div>
+      <div class="flex items-start gap-3">
+        <div class="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center text-xs font-bold">3</div>
+        <div class="text-sm text-gray-700">
+          <strong>mbuzz Conversion tag:</strong> Create a new tag with Call Type <strong>Conversion</strong> and your conversion type
+          (e.g. <code class="bg-gray-100 px-1 rounded text-xs">phone_click</code>). Attach the trigger from step 2.
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-amber-50 border border-amber-200 rounded p-3 text-xs text-amber-700 mb-4">
+      <strong>This pattern works for any browser-only action:</strong> mailto clicks, outbound link clicks,
+      file downloads, scroll milestones, video completions — anything your client-side GTM can detect.
+    </div>
+
+    <!-- Data Client alternative -->
+    <details class="border border-gray-200 rounded-lg overflow-hidden group">
+      <summary class="px-5 py-4 bg-white hover:bg-gray-50 cursor-pointer flex items-center justify-between">
+        <span class="font-medium text-gray-900 text-sm">Alternative: using a Data Client for JSON POST requests</span>
+        <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+      </summary>
+      <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 text-sm text-gray-600 space-y-2">
+        <p>
+          Some sGTM providers (like Stape) offer a <strong>Data Client</strong> that accepts raw JSON POST requests
+          instead of GA4-formatted payloads. Combined with a <strong>JSON HTTP request</strong> template, this lets you
+          send conversion data from any source — including client-side JavaScript, webhooks, or third-party services.
+        </p>
+        <p>
+          <strong>When to use this:</strong> When the event doesn't originate from GA4 or your client-side GTM container.
+          For example, a webhook from your phone system or a server-side event from a third-party CRM.
+        </p>
+        <p>
+          <strong>Setup:</strong> Add the Data Client to your sGTM container, install the JSON HTTP request template from the Gallery,
+          and configure a trigger to match the incoming event. The mbuzz Conversion tag works the same way regardless of which Client processes the request.
+        </p>
+      </div>
+    </details>
   </div>
 
   <!-- ============================================================ -->
@@ -1237,7 +1448,20 @@
         </summary>
         <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 text-sm text-gray-600 space-y-2">
           <p>The Session tag must fire <strong>before</strong> any Event or Conversion tag. The session call creates the visitor — without it, mbuzz doesn't know who the event belongs to.</p>
-          <p><strong>Fix:</strong> Use <strong>Tag Sequencing</strong>. Edit your Event/Conversion tag &rarr; Advanced Settings &rarr; Tag Sequencing &rarr; check "Fire a tag before" &rarr; select <code class="bg-gray-100 px-1 rounded text-xs">mbuzz - Session</code>.</p>
+          <p><strong>Fix:</strong> Make sure the Session tag has an <strong>All Pages</strong> trigger so it fires on every page view. The Session tag creates the visitor — Event and Conversion tags read the same <code class="bg-gray-100 px-1 rounded text-xs">_mbuzz_vid</code> cookie automatically. As long as the visitor has loaded at least one page, subsequent tags will have the visitor ID they need.</p>
+        </div>
+      </details>
+
+      <details class="border border-gray-200 rounded-lg overflow-hidden group">
+        <summary class="px-5 py-4 bg-white hover:bg-gray-50 cursor-pointer flex items-center justify-between">
+          <span class="font-medium text-gray-900">Event or Conversion tag fires but no data appears</span>
+          <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+        </summary>
+        <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 text-sm text-gray-600 space-y-2">
+          <p><strong>Check the trigger event name.</strong> The most common cause is a mismatch between the event name in your trigger and the actual event name in the sGTM data stream.</p>
+          <p><strong>How to find the correct name:</strong> Open <strong>Preview</strong> mode in your sGTM container, trigger the action on your site, and look at the event name in the preview sidebar. Use that exact name in your Custom Event trigger.</p>
+          <p>For example, a form submission might appear as <code class="bg-gray-100 px-1 rounded text-xs">contact_form_submission</code> (not <code class="bg-gray-100 px-1 rounded text-xs">form_submit</code>), and a phone click might appear as <code class="bg-gray-100 px-1 rounded text-xs">GA4-phone-link-click</code> (not <code class="bg-gray-100 px-1 rounded text-xs">phone_click</code>).</p>
+          <p><strong>Tip:</strong> Enable regex matching on your trigger if you want to catch multiple event name variations (e.g. <code class="bg-gray-100 px-1 rounded text-xs">.*_form_submission</code>).</p>
         </div>
       </details>
 
@@ -1384,3 +1608,5 @@
     </div>
   </div>
 </div>
+
+<%= render "shared/events_vs_conversions_modal" %>
