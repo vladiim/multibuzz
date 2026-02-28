@@ -24,6 +24,7 @@ module Sessions
     # Referrer domain patterns mapped to channels (fallback)
     REFERRER_DOMAIN_PATTERNS = {
       Channels::AI_ENGINES => Channels::AI,
+      Channels::EMAIL_PROVIDERS => Channels::EMAIL,
       Channels::SEARCH_ENGINES => Channels::ORGANIC_SEARCH,
       Channels::SOCIAL_NETWORKS => Channels::ORGANIC_SOCIAL,
       Channels::VIDEO_PLATFORMS => Channels::VIDEO

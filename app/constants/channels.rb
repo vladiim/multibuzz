@@ -32,8 +32,9 @@ module Channels
   ].freeze
 
   # Domain pattern matching
-  SEARCH_ENGINES = /google|bing|yahoo|duckduckgo|baidu/i
-  SOCIAL_NETWORKS = /facebook|instagram|linkedin|twitter|tiktok|pinterest/i
+  SEARCH_ENGINES = /google|bing|yahoo|duckduckgo|baidu|brave|\.goog$/i
+  SOCIAL_NETWORKS = /facebook|instagram|linkedin|twitter|tiktok|pinterest|\bt\.co\b|threads/i
   VIDEO_PLATFORMS = /youtube|vimeo/i
+  EMAIL_PROVIDERS = /\bwebmail\./i
   AI_ENGINES = /chatgpt|openai|perplexity|claude\.ai|gemini|copilot\.microsoft|meta\.ai|grok\.x\.ai|you\.com|phind|kagi/i
 end

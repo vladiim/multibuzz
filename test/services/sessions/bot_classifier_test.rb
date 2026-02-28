@@ -95,6 +95,92 @@ class Sessions::BotClassifierTest < ActiveSupport::TestCase
     assert_equal "no_signals", result[:suspect_reason]
   end
 
+  # ==========================================
+  # Spam Referrer Detection Tests
+  # ==========================================
+
+  test "raw IP referrer returns suspect with spam_referrer reason" do
+    result = classify(
+      user_agent: CHROME_UA,
+      referrer: "http://52.62.84.103:80/getcmd"
+    )
+
+    assert result[:suspect]
+    assert_equal "spam_referrer", result[:suspect_reason]
+  end
+
+  test "raw IP referrer without port returns suspect" do
+    result = classify(
+      user_agent: CHROME_UA,
+      referrer: "http://192.168.1.1/path"
+    )
+
+    assert result[:suspect]
+    assert_equal "spam_referrer", result[:suspect_reason]
+  end
+
+  test "known spam domain binance.com returns suspect" do
+    result = classify(
+      user_agent: CHROME_UA,
+      referrer: "https://binance.com"
+    )
+
+    assert result[:suspect]
+    assert_equal "spam_referrer", result[:suspect_reason]
+  end
+
+  test "known spam domain shsupplychain.com returns suspect" do
+    result = classify(
+      user_agent: CHROME_UA,
+      referrer: "https://www.shsupplychain.com/"
+    )
+
+    assert result[:suspect]
+    assert_equal "spam_referrer", result[:suspect_reason]
+  end
+
+  test "known spam domain with subdomain returns suspect" do
+    result = classify(
+      user_agent: CHROME_UA,
+      referrer: "https://sub.binance.com/path"
+    )
+
+    assert result[:suspect]
+    assert_equal "spam_referrer", result[:suspect_reason]
+  end
+
+  test "known bot takes priority over spam referrer" do
+    result = classify(
+      user_agent: GOOGLEBOT_UA,
+      referrer: "https://binance.com"
+    )
+
+    assert result[:suspect]
+    assert_equal "known_bot", result[:suspect_reason]
+  end
+
+  test "legitimate referrer is not flagged as spam" do
+    result = classify(
+      user_agent: CHROME_UA,
+      referrer: "https://google.com/search"
+    )
+
+    assert_not result[:suspect]
+    assert_nil result[:suspect_reason]
+  end
+
+  test "spam referrer with utm signals still flagged as suspect" do
+    result = classify(
+      user_agent: CHROME_UA,
+      referrer: "https://binance.com",
+      utm: { source: "binance" },
+      click_ids: {}
+    )
+
+    assert result[:suspect]
+    assert_equal "spam_referrer", result[:suspect_reason]
+  end
+
   private
 
   def classify(user_agent: nil, referrer: nil, utm: {}, click_ids: {})

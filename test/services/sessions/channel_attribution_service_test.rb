@@ -598,6 +598,50 @@ class Sessions::ChannelAttributionServiceTest < ActiveSupport::TestCase
     assert_equal Channels::PAID_SEARCH, result
   end
 
+  # ==========================================
+  # Additional Search Engine Tests
+  # ==========================================
+
+  test "returns organic_search from search.brave.com referrer" do
+    assert_equal Channels::ORGANIC_SEARCH, service({}, "https://search.brave.com/search?q=dog+boarding").call
+  end
+
+  test "returns organic_search from syndicatedsearch.goog referrer" do
+    assert_equal Channels::ORGANIC_SEARCH, service({}, "https://syndicatedsearch.goog/").call
+  end
+
+  # ==========================================
+  # Additional Social Network Tests
+  # ==========================================
+
+  test "returns organic_social from t.co referrer" do
+    assert_equal Channels::ORGANIC_SOCIAL, service({}, "https://t.co/abc123").call
+  end
+
+  test "returns organic_social from threads.com referrer" do
+    assert_equal Channels::ORGANIC_SOCIAL, service({}, "https://www.threads.com/").call
+  end
+
+  test "returns organic_social from threads.net referrer" do
+    assert_equal Channels::ORGANIC_SOCIAL, service({}, "https://www.threads.net/@user").call
+  end
+
+  test "t.co pattern does not false-match att.com" do
+    assert_equal Channels::REFERRAL, service({}, "https://att.com/wireless").call
+  end
+
+  # ==========================================
+  # Webmail / Email Provider Referrer Tests
+  # ==========================================
+
+  test "returns email from webmail referrer" do
+    assert_equal Channels::EMAIL, service({}, "https://webmail.optusnet.com.au/").call
+  end
+
+  test "returns email from webmail subdomain on any domain" do
+    assert_equal Channels::EMAIL, service({}, "https://webmail.bigpond.com/mail").call
+  end
+
   private
 
   def service(utm_data = {}, referrer = nil, click_ids = {}, page_host: nil, account_domains: [])
