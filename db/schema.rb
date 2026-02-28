@@ -1,4 +1,3 @@
-# frozen_string_literal: true
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -11,10 +10,9 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_19_035136) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_02_051307) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
-  enable_extension "timescaledb"
 
   create_table "account_memberships", force: :cascade do |t|
     t.bigint "user_id", null: false
@@ -82,6 +80,65 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_19_035136) do
     t.index ["stripe_customer_id"], name: "index_accounts_on_stripe_customer_id", unique: true
     t.index ["stripe_subscription_id"], name: "index_accounts_on_stripe_subscription_id", unique: true
     t.index ["trial_ends_at"], name: "index_accounts_on_trial_ends_at"
+  end
+
+  create_table "ad_platform_connections", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.integer "platform", null: false
+    t.string "platform_account_id", null: false
+    t.string "platform_account_name"
+    t.string "currency", limit: 3, null: false
+    t.text "access_token"
+    t.text "refresh_token"
+    t.datetime "token_expires_at"
+    t.integer "status", default: 0, null: false
+    t.datetime "last_synced_at"
+    t.string "last_sync_error"
+    t.jsonb "settings", default: {}
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "platform", "platform_account_id"], name: "idx_ad_connections_unique", unique: true
+    t.index ["account_id"], name: "index_ad_platform_connections_on_account_id"
+  end
+
+  create_table "ad_spend_records", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "ad_platform_connection_id", null: false
+    t.date "spend_date", null: false
+    t.string "channel", null: false
+    t.string "platform_campaign_id", null: false
+    t.string "campaign_name", null: false
+    t.string "campaign_type"
+    t.string "network_type"
+    t.bigint "spend_micros", default: 0, null: false
+    t.string "currency", limit: 3, null: false
+    t.bigint "impressions", default: 0, null: false
+    t.bigint "clicks", default: 0, null: false
+    t.bigint "platform_conversions_micros", default: 0, null: false
+    t.bigint "platform_conversion_value_micros", default: 0, null: false
+    t.boolean "is_test", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "ad_platform_connection_id", "spend_date", "platform_campaign_id"], name: "idx_spend_unique", unique: true
+    t.index ["account_id", "channel", "spend_date"], name: "idx_spend_date_range"
+    t.index ["account_id", "spend_date", "channel"], name: "idx_spend_channel_date"
+    t.index ["account_id"], name: "index_ad_spend_records_on_account_id"
+    t.index ["ad_platform_connection_id"], name: "index_ad_spend_records_on_ad_platform_connection_id"
+    t.index ["is_test"], name: "idx_spend_is_test"
+  end
+
+  create_table "ad_spend_sync_runs", force: :cascade do |t|
+    t.bigint "ad_platform_connection_id", null: false
+    t.date "sync_date", null: false
+    t.integer "status", default: 0, null: false
+    t.integer "records_synced", default: 0
+    t.string "error_message"
+    t.datetime "started_at"
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ad_platform_connection_id", "sync_date"], name: "idx_sync_runs_connection_date"
+    t.index ["ad_platform_connection_id"], name: "index_ad_spend_sync_runs_on_ad_platform_connection_id"
   end
 
   create_table "api_keys", force: :cascade do |t|
@@ -400,6 +457,28 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_19_035136) do
     t.index ["visitor_id"], name: "index_sessions_on_visitor_id"
   end
 
+  create_table "solid_errors", force: :cascade do |t|
+    t.text "exception_class", null: false
+    t.text "message", null: false
+    t.text "severity", null: false
+    t.text "source"
+    t.datetime "resolved_at"
+    t.string "fingerprint", limit: 64, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["fingerprint"], name: "index_solid_errors_on_fingerprint", unique: true
+    t.index ["resolved_at"], name: "index_solid_errors_on_resolved_at"
+  end
+
+  create_table "solid_errors_occurrences", force: :cascade do |t|
+    t.integer "error_id", null: false
+    t.text "backtrace"
+    t.json "context"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["error_id"], name: "index_solid_errors_occurrences_on_error_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email", null: false
     t.string "password_digest", null: false
@@ -431,6 +510,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_19_035136) do
   add_foreign_key "account_memberships", "accounts"
   add_foreign_key "account_memberships", "users"
   add_foreign_key "accounts", "plans"
+  add_foreign_key "ad_platform_connections", "accounts"
+  add_foreign_key "ad_spend_records", "accounts"
+  add_foreign_key "ad_spend_records", "ad_platform_connections"
+  add_foreign_key "ad_spend_sync_runs", "ad_platform_connections"
   add_foreign_key "api_keys", "accounts"
   add_foreign_key "api_request_logs", "accounts"
   add_foreign_key "attribution_credits", "accounts"
@@ -450,12 +533,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_19_035136) do
   add_foreign_key "rerun_jobs", "attribution_models"
   add_foreign_key "sessions", "accounts"
   add_foreign_key "sessions", "visitors"
+  add_foreign_key "solid_errors_occurrences", "solid_errors", column: "error_id"
   add_foreign_key "visitors", "accounts"
   add_foreign_key "visitors", "identities"
-
-  # NOTE: TimescaleDB hypertables and continuous aggregates are excluded from schema.rb
-  # They are created via migrations which skip in test environment.
-  # Production uses db:migrate which runs the TimescaleDB migrations.
-  # See: create_hypertable for events and sessions
-  # See: create_continuous_aggregate for channel_attribution_daily, source_attribution_daily
 end

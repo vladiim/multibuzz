@@ -1,0 +1,79 @@
+paid_search_today:
+  account: one
+  ad_platform_connection: google_ads
+  spend_date: <%= Date.current %>
+  channel: "paid_search"
+  platform_campaign_id: "campaign_001"
+  campaign_name: "Brand Search"
+  campaign_type: "SEARCH"
+  spend_micros: 12400000
+  currency: "USD"
+  impressions: 5000
+  clicks: 250
+  platform_conversions_micros: 10000000
+  platform_conversion_value_micros: 50000000
+  is_test: false
+
+display_today:
+  account: one
+  ad_platform_connection: google_ads
+  spend_date: <%= Date.current %>
+  channel: "display"
+  platform_campaign_id: "campaign_002"
+  campaign_name: "Retargeting Display"
+  campaign_type: "DISPLAY"
+  spend_micros: 2100000
+  currency: "USD"
+  impressions: 80000
+  clicks: 120
+  platform_conversions_micros: 3000000
+  platform_conversion_value_micros: 8000000
+  is_test: false
+
+paid_search_yesterday:
+  account: one
+  ad_platform_connection: google_ads
+  spend_date: <%= Date.yesterday %>
+  channel: "paid_search"
+  platform_campaign_id: "campaign_001"
+  campaign_name: "Brand Search"
+  campaign_type: "SEARCH"
+  spend_micros: 11800000
+  currency: "USD"
+  impressions: 4800
+  clicks: 230
+  platform_conversions_micros: 9000000
+  platform_conversion_value_micros: 45000000
+  is_test: false
+
+test_record:
+  account: one
+  ad_platform_connection: google_ads
+  spend_date: <%= Date.current %>
+  channel: "paid_search"
+  platform_campaign_id: "campaign_test"
+  campaign_name: "Test Campaign"
+  campaign_type: "SEARCH"
+  spend_micros: 1000000
+  currency: "USD"
+  impressions: 100
+  clicks: 10
+  platform_conversions_micros: 0
+  platform_conversion_value_micros: 0
+  is_test: true
+
+other_account_record:
+  account: two
+  ad_platform_connection: other_account_google
+  spend_date: <%= Date.current %>
+  channel: "paid_search"
+  platform_campaign_id: "campaign_beta"
+  campaign_name: "Beta Search"
+  campaign_type: "SEARCH"
+  spend_micros: 5000000
+  currency: "AUD"
+  impressions: 2000
+  clicks: 100
+  platform_conversions_micros: 0
+  platform_conversion_value_micros: 0
+  is_test: false

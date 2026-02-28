@@ -45,3 +45,5 @@
 
 # Ignore SimpleCov coverage reports.
 /coverage
+
+/config/credentials/test.key

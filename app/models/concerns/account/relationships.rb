@@ -20,6 +20,8 @@ module Account::Relationships
     has_many :visitors, dependent: :destroy             # depends on identities
     has_many :identities, dependent: :destroy
     has_many :attribution_models, dependent: :destroy
+    has_many :ad_spend_records, dependent: :destroy
+    has_many :ad_platform_connections, dependent: :destroy
     has_many :data_integrity_checks, dependent: :destroy
   end
 end

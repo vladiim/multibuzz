@@ -977,18 +977,20 @@ Google Ads data for a given day is considered final after **48 hours**. For the 
 
 ## Implementation Tasks
 
-### Phase 1: Data Foundation
+### Phase 1: Data Foundation ✓
 
-- [ ] **1.1** Run `bin/rails db:encryption:init` and add keys to credentials (first use of `encrypts` in codebase)
-- [ ] **1.2** Create `ad_platform_connections` migration (integer enums, plain text columns for encrypted fields)
-- [ ] **1.3** Create `ad_spend_records` migration (bigint micros, network_type, is_test)
-- [ ] **1.4** Create `ad_spend_sync_runs` migration (sync tracking)
-- [ ] **1.5** Create `AdPlatformConnection` model with concerns (Validations, Relationships, StatusManagement) + `encrypts :access_token, :refresh_token`
-- [ ] **1.6** Create `AdSpendRecord` model with concerns (Validations, Relationships, Scopes)
-- [ ] **1.7** Create `AdSpendSyncRun` model
-- [ ] **1.8** Create `AdPlatformChannels` constant module (campaign type + network type maps)
-- [ ] **1.9** Add `has_many :ad_platform_connections` to Account
-- [ ] **1.10** Write model tests
+- [x] **1.1** Run `bin/rails db:encryption:init` and add keys to credentials (first use of `encrypts` in codebase)
+- [x] **1.2** Create `ad_platform_connections` migration (integer enums, plain text columns for encrypted fields)
+- [x] **1.3** Create `ad_spend_records` migration (bigint micros, network_type, is_test)
+- [x] **1.4** Create `ad_spend_sync_runs` migration (sync tracking)
+- [x] **1.5** Create `AdPlatformConnection` model with concerns (Validations, Relationships, StatusManagement) + `encrypts :access_token, :refresh_token`
+- [x] **1.6** Create `AdSpendRecord` model with concerns (Validations, Relationships, Scopes)
+- [x] **1.7** Create `AdSpendSyncRun` model with concerns (Validations, Relationships)
+- [x] **1.8** Create `AdPlatformChannels` constant module (campaign type + network type maps)
+- [x] **1.9** Add `has_many :ad_platform_connections` and `has_many :ad_spend_records` to Account
+- [x] **1.10** Write model tests (58 tests, all passing)
+
+> **Implementation notes**: ActiveRecord Encryption keys configured in `config/environments/test.rb` (inline, not in credentials) with `support_unencrypted_data = true` for fixture compatibility. Settings JSONB limit uses explicit `MAX_SETTINGS_BYTES = 51_200` constant. TimescaleDB calls removed from `db/schema.rb` after migration auto-dump.
 
 ### Phase 2: Google Ads OAuth
 

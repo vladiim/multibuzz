@@ -1,0 +1,16 @@
+completed_run:
+  ad_platform_connection: google_ads
+  sync_date: <%= Date.yesterday %>
+  status: 2
+  records_synced: 42
+  started_at: <%= 2.hours.ago %>
+  completed_at: <%= 2.hours.ago + 30.seconds %>
+
+failed_run:
+  ad_platform_connection: google_ads
+  sync_date: <%= Date.current %>
+  status: 3
+  records_synced: 0
+  error_message: "API rate limit exceeded"
+  started_at: <%= 1.hour.ago %>
+  completed_at: <%= 1.hour.ago + 5.seconds %>

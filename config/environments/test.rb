@@ -53,6 +53,12 @@ Rails.application.configure do
   # Raise error when a before_action's only/except options reference missing actions.
   config.action_controller.raise_on_missing_callback_actions = true
 
+  # ActiveRecord Encryption (deterministic keys for test only)
+  config.active_record.encryption.primary_key = "test-primary-key-00000000000000"
+  config.active_record.encryption.deterministic_key = "test-deterministic-key-0000000000"
+  config.active_record.encryption.key_derivation_salt = "test-key-derivation-salt-00000000"
+  config.active_record.encryption.support_unencrypted_data = true
+
   # Database-backed error tracking via Solid Errors
   config.solid_errors.connects_to = { database: { writing: :errors } }
 end
