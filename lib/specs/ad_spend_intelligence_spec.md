@@ -192,6 +192,53 @@ Dashboard shows: "Paid Search drove 40% of this conversion's value"
 
 ---
 
+## UX Placement
+
+### Connection Management → Settings > Integrations (NEW)
+
+New tab in account settings sidebar, between API Keys and Attribution:
+
+```
+General
+Billing
+Team
+API Keys
+Integrations  ← NEW (/account/integrations)
+Attribution
+```
+
+The Integrations page shows platform cards:
+- **Google Ads** card: Connect/Disconnect button, status dot (green/red), account name/ID, last synced, sync error if any
+- **Meta Ads**, **TikTok Ads**, **LinkedIn Ads** cards (future, greyed out with "Coming Soon")
+
+Connect flow:
+1. User clicks "Connect Google Ads" → redirect to Google OAuth consent
+2. User grants read-only access → callback to `/oauth/google_ads/callback`
+3. Account picker: list accessible Google Ads accounts via `ListAccessibleCustomers` → user selects
+4. `AdPlatformConnection` created (status: connected) → redirect back to Integrations
+5. Background job: 90-day backfill starts (status: syncing)
+6. Integrations page shows "Syncing historical data..." → completes in ~2-5 min
+
+### Spend Dashboard → New Dashboard Tab
+
+Add 4th tab to main dashboard: **Conversions | Funnel | Spend | Events**
+
+- **Empty state** (no connections): CTA → "Connect Google Ads to see spend intelligence" linking to Settings > Integrations
+- **Syncing state**: "Historical data syncing, check back in a few minutes"
+- **Full dashboard**: Hero metrics, trend chart, channel/platform breakdown, drill-down
+
+### Daily Sync (Background)
+
+```
+Daily at 4am UTC:
+  SpendSyncSchedulerJob → iterates connected accounts
+    → SpendSyncJob per connection
+      → Re-syncs last 3 days (captures Google's corrections)
+      → Refreshes materialized view
+```
+
+---
+
 ## Proposed Solution
 
 ### Core Insight: The Join
@@ -203,10 +250,54 @@ Attributed ROAS = Σ(revenue_credit WHERE channel = X) / Σ(ad_spend WHERE chann
 ```
 
 This works because:
-1. Our channel taxonomy is standardized (11 channels)
-2. Google Ads spend maps cleanly to `paid_search` (and optionally `display`, `video`)
+1. Our channel taxonomy is standardized (12 channels)
+2. Google Ads spend maps cleanly to `paid_search`, `display`, `video`, `paid_social`
 3. UTM campaign data in `AttributionCredit` enables campaign-level ROAS drill-down
 4. The join is a simple GROUP BY, not a complex click-level match
+
+### Two Grouping Dimensions: Channel vs Platform
+
+Industry research (Triple Whale, Northbeam, Rockerbox) shows marketers need both views:
+
+| View | Primary Dimension | Answers | Join Key |
+|------|-------------------|---------|----------|
+| **Channel view** | paid_search, display, video | "Which channel strategies should we invest in?" | `ad_spend_records.channel = attribution_credits.channel` |
+| **Platform view** | Google Ads, Meta Ads, TikTok | "Which platform is performing best?" | `ad_spend_records.ad_platform_connection_id` (platform inferred) |
+
+We support both. Channel is the default (matches existing dashboard architecture). Platform view groups all spend from one `AdPlatformConnection` and joins against attribution credits where the session's click_id or utm_source maps to that platform.
+
+### The Date Join
+
+Three dates exist for any attributed conversion:
+
+| Date | Source | What It Means |
+|------|--------|---------------|
+| **Spend date** | Platform API (`segments.date`) | Day money left the account |
+| **Click date** | Platform-reported (what Google attributes conversions to) | Day user clicked the ad |
+| **Conversion date** | Our data (`conversions.converted_at`) | Day user actually converted |
+
+**Decision: Use conversion date for revenue, spend date for costs.** This is what every third-party platform does (Northbeam, Triple Whale, Rockerbox). Our dashboard already filters on `DATE(conversions.converted_at)`.
+
+```
+ROAS for Day X = Σ(revenue_credit WHERE DATE(converted_at) = X)
+                 / Σ(spend_micros WHERE spend_date = X)
+```
+
+Over a 30-day window this is accurate and intuitive. Single-day ROAS can be misleading (spend today, conversions arrive over 7-30 days) — we note this in the UI.
+
+### Campaign-Level Drill-Down
+
+For campaign-level ROAS, we match `ad_spend_records.campaign_name` ↔ `attribution_credits.utm_campaign`. This is inherently fragile because:
+
+1. Marketers set UTMs manually — names often don't match Google campaign names exactly
+2. Auto-tagging (gclid) bypasses UTMs entirely
+3. Campaign names change over time
+
+**Mitigation:**
+- Normalize both sides: lowercase, strip whitespace, collapse separators
+- During onboarding, recommend tracking template: `{lpurl}?utm_source=google&utm_medium=cpc&utm_campaign={campaignid}`
+- Using `{campaignid}` (numeric ID) instead of `{campaignname}` gives stable, exact matching
+- Future: resolve `gclid` → campaign via Google Ads API for click-level join (Phase 8)
 
 ### Architecture
 
@@ -215,11 +306,15 @@ Google Ads API ──OAuth2──→ AdPlatformConnection (stores tokens)
        ↓
   Sync Job (daily + on-demand)
        ↓
-  AdSpendRecord (date, channel, campaign, spend, impressions, clicks)
+  AdSpendRecord (date, channel, platform, campaign, spend, impressions, clicks)
        ↓
   SpendIntelligence::MetricsService
        ↓
-  Join: ad_spend_records ⟗ attribution_credits (on channel + date + campaign)
+  Join: ad_spend_records ⟗ attribution_credits (on channel + date)
+       ↓                                          ↓
+  Channel view: ROAS by channel          Platform view: ROAS by platform
+       ↓                                          ↓
+  Campaign drill-down: ROAS by campaign (best-effort utm_campaign match)
        ↓
   Dashboard: ROAS, CAC, Payback, Marginal ROAS, Recommendations
 ```
@@ -228,17 +323,19 @@ Google Ads API ──OAuth2──→ AdPlatformConnection (stores tokens)
 
 ```
 [SPEND SIDE]                              [ATTRIBUTION SIDE]
-Google Ads API                            Existing Multibuzz flow
+Google Ads API                            Existing mbuzz flow
      ↓                                          ↓
 AdSpendRecord                             AttributionCredit
-{ date, channel, campaign,                { channel, credit,
-  spend, impressions, clicks }              revenue_credit, utm_campaign }
+{ spend_date, channel, campaign,          { channel, credit,
+  spend_micros, impressions, clicks,        revenue_credit, utm_campaign,
+  ad_platform_connection_id }               conversion.converted_at }
      ↓                                          ↓
-     └──────────── JOIN on channel + date ──────┘
+     └──────── JOIN on (account, channel, date) ┘
                          ↓
               SpendIntelligence::MetricsService
                          ↓
-              { attributed_roas, cac, mer, payback_period,
+              { attributed_roas, platform_roas, blended_roas,
+                cac, ncac, mer, payback_period,
                 marginal_roas, recommendations }
 ```
 
@@ -248,15 +345,21 @@ AdSpendRecord                             AttributionCredit
 
 | Decision | Choice | Why |
 |----------|--------|-----|
+| **UX: Connection** | Settings > Integrations (new tab) | Follows existing account settings pattern. Between API Keys and Attribution in sidebar. |
+| **UX: Dashboard** | New "Spend" tab on main dashboard | 4th tab: Conversions / Funnel / Spend / Events. Keeps spend analysis alongside attribution. |
+| **Primary grouping** | Channel (default) + Platform (toggle) | Channel matches existing architecture. Platform view added because marketers think in platforms. Industry standard is hybrid (Rockerbox, Triple Whale). |
+| **Date semantics** | Conversion date for revenue, spend date for costs | Industry standard (Northbeam, Triple Whale, Rockerbox). Matches existing `CreditsScope` filtering on `DATE(conversions.converted_at)`. |
+| **Campaign matching** | Normalized `campaign_name ↔ utm_campaign` | Best-effort string match. Recommend `{campaignid}` in tracking templates for exact match. gclid resolution deferred to Phase 8. |
 | Join granularity | Channel + date (campaign drill-down) | Matches our channel-primary architecture. Campaign-level via utm_campaign secondary join. |
-| Sync frequency | Daily (midnight UTC) + manual refresh | Google Ads data settles within 24-48h. More frequent creates false precision. |
+| Sync frequency | Daily (4am UTC) + manual refresh | Google Ads data settles within 24-48h. Re-sync last 3 days for corrections. |
 | Historical backfill | 90 days on first connect | Enough for trend analysis and response curves without massive API load. |
 | Monetary storage | `bigint` micros (1M = 1 currency unit) | Matches Google Ads API natively. Integer math is faster, avoids decimal rounding. Convert at display time only. |
-| Multi-currency | Store in ad platform's native currency | Google API returns cost_micros in account currency. Phase 1 displays in native currency with label. Currency normalization is a Phase 2 concern requiring exchange rate API. |
+| Multi-currency | Store in ad platform's native currency | Google API returns cost_micros in account currency. Phase 1 displays in native currency with label. Currency normalization deferred to Phase 2. |
 | Google Ads hierarchy | Campaign-level aggregation | Ad Group and Ad level are too granular for attribution join. Campaign maps to utm_campaign. |
 | OAuth scope | `https://www.googleapis.com/auth/adwords` (read-only) | We never write to their ad accounts. Read-only builds trust. |
-| Channel mapping | Automatic via Google campaign type + network segment | Search → paid_search, Display → display, Video → video, Shopping → paid_search. PMax split by `segments.ad_network_type`. Configurable override. |
-| Response curves | Hill saturation function, fitted in Ruby | Industry standard (PyMC-Marketing, Robyn). Pure Ruby via `matrix` stdlib — 3 parameters, ~50 data points, ~50 lines. Python sidecar deferred to ML attribution phase. |
+| Channel mapping | Automatic via Google campaign type + network segment | Search → paid_search, Display → display, Video → video, Shopping → paid_search. PMax split by `segments.ad_network_type` (API v23). Configurable override. |
+| PMax handling | Split by sub-channel | Google exposes channel-level PMax data since API v23 (Jan 2026). Distributes spend correctly across paid_search, display, video. |
+| Response curves | Hill saturation function, fitted in Ruby | Industry standard (PyMC-Marketing, Robyn). Pure Ruby via `matrix` stdlib — 3 parameters, ~50 data points, ~50 lines. |
 | Token encryption | Rails `encrypts` (ActiveRecord Encryption) | Built into Rails 8. No gem needed. Non-deterministic AES-256-GCM. |
 | Adapter pattern | `AdPlatforms::BaseAdapter` with platform-specific subclasses | Mirrors existing `Attribution::Algorithms` strategy pattern. Google first, Meta/TikTok/LinkedIn plug in identically. |
 
