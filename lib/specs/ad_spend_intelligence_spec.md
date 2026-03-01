@@ -9,18 +9,38 @@
 
 ## Step Zero: Google Ads API Setup
 
-> This is the boring prerequisite that blocks everything else. It's bureaucratic, time-gated, and has non-obvious gotchas. Start this **before writing any code** so approval timelines don't block development.
+> **COMPLETED** — 2 Mar 2026. All setup steps done except Basic Access approval (pending) and OAuth consent screen verification (not yet submitted — requires working demo video first).
 
-### What You Need Before Anything
+### Accounts & Credentials
 
-| Prerequisite | What | How |
-|---|---|---|
-| **MCC account** | A Google Ads *manager* account (not a regular advertiser account). The API Center lives here. | Create free at [ads.google.com/home/tools/manager-accounts](https://ads.google.com/home/tools/manager-accounts/) |
-| **GCP project** | Any Google Cloud project to hold OAuth credentials | [console.cloud.google.com/projectcreate](https://console.cloud.google.com/projectcreate) |
-| **Privacy policy URL** | Required for the OAuth consent screen. Must be on a domain you control. | Host at `mbuzz.co/privacy` (already exists) |
-| **Google account** | Admin access to both the MCC and GCP project | Use the Multibuzz service account |
+| Resource | Value |
+|---|---|
+| **Google account** | vlad@mehakovic.com |
+| **MCC account** | mbuzz — `652-093-6525` |
+| **MCC sub-account** | mbuzz — `851-548-6033` |
+| **Developer token** | `eXga_FDm2uazzjhgdlpwJw` (Explorer Access) |
+| **GCP project** | mbuzz (`mbuzz-489003`) under mehakovic.com org |
+| **OAuth client** | Web application, redirect URIs: `https://mbuzz.co/oauth/google_ads/callback` + `http://localhost:3000/oauth/google_ads/callback` |
+| **OAuth consent screen** | External, Testing status, scope: `auth/adwords`, test user: vlad@mehakovic.com |
+| **Rails credentials** | `google_ads.client_id`, `google_ads.client_secret`, `google_ads.developer_token` — added to development + production |
 
-### Setup Steps (Do These in Order)
+### Pending Approvals
+
+| Approval | Status | Submitted | Expected |
+|---|---|---|---|
+| **Basic Access** | Pending review | Mon 2 Mar 2026, 13:42 AEDT | ~3 business days |
+| **OAuth consent screen verification** | Not yet submitted | — | Submit after demo video (2-6 weeks review) |
+
+### Gotchas Discovered
+
+- **marketing@mbuzz.co Google account was auto-disabled** by Google's abuse detection (brand new account + custom domain + immediate Ads access). Appeal submitted. Using vlad@mehakovic.com instead.
+- **Google Ads forces campaign creation wizard** when creating sub-accounts. Hit X to close, Discard the draft.
+- **7-day refresh token expiry** while consent screen is in "Testing" status. Tokens will silently break weekly during development.
+
+### Setup Steps Reference
+
+<details>
+<summary>Original setup steps (completed — click to expand)</summary>
 
 #### 1. Create MCC + Get Developer Token (5 min, instant)
 
@@ -34,28 +54,25 @@
 #### 2. Enable Google Ads API in GCP (2 min, instant)
 
 1. Go to [console.cloud.google.com/apis/library/googleads.googleapis.com](https://console.cloud.google.com/apis/library/googleads.googleapis.com)
-2. Select the Multibuzz GCP project
+2. Select the mbuzz GCP project
 3. Click **Enable**
 
 #### 3. Configure OAuth Consent Screen (15 min, triggers review)
 
-This is where the first gotcha lives.
-
 1. Go to [console.cloud.google.com/apis/credentials/consent](https://console.cloud.google.com/apis/credentials/consent)
 2. Choose **External** (our customers connect their own accounts)
-3. Fill in: app name, support email, `mbuzz.co` domain, privacy policy URL
+3. Fill in: app name (mbuzz), support email, `mbuzz.co` authorized domain, privacy policy URL
 4. Add scope: `https://www.googleapis.com/auth/adwords` — this is **sensitive**, triggering Google's verification review
-5. Add test users (your email, team emails — max 100 while in Testing status)
+5. Add test users (vlad@mehakovic.com — max 100 while in Testing status)
 
-> **GOTCHA: 7-day refresh token expiry.** While the consent screen is in "Testing" status (before verification), refresh tokens expire after 7 days. Your integration will silently break weekly. This is the #1 surprise. Budget for regenerating tokens during development, or build a re-auth utility.
+> **GOTCHA: 7-day refresh token expiry.** While the consent screen is in "Testing" status (before verification), refresh tokens expire after 7 days. Your integration will silently break weekly. Budget for regenerating tokens during development, or build a re-auth utility.
 
 #### 4. Create OAuth2 Credentials (5 min, instant)
 
-1. Go to [console.cloud.google.com/apis/credentials](https://console.cloud.google.com/apis/credentials)
-2. Click **+ CREATE CREDENTIALS → OAuth client ID**
-3. Type: **Web application**
-4. Authorized redirect URI: `https://mbuzz.co/oauth/google_ads/callback` (production) + `http://localhost:3000/oauth/google_ads/callback` (development)
-5. Save the **Client ID** and **Client Secret** to Rails credentials:
+1. Go to GCP → Google Auth Platform → Clients
+2. Create OAuth client ID → **Web application**
+3. Authorized redirect URIs: `https://mbuzz.co/oauth/google_ads/callback` + `http://localhost:3000/oauth/google_ads/callback`
+4. Save Client ID and Client Secret to Rails credentials:
 
 ```bash
 bin/rails credentials:edit
@@ -63,14 +80,15 @@ bin/rails credentials:edit
 # google_ads:
 #   client_id: "xxx.apps.googleusercontent.com"
 #   client_secret: "GOCSPX-xxx"
-#   developer_token: "xxx"
+#   developer_token: "eXga_FDm2uazzjhgdlpwJw"
 ```
 
 #### 5. Apply for Basic Access (5 min, then wait 2-7 business days)
 
 1. In MCC → API Center, click **Apply for Basic Access**
-2. Describe the use case specifically: *"Read-only integration. We pull campaign performance metrics (cost, impressions, clicks) via the Campaign reporting resource for marketing attribution. We do not create, edit, or manage campaigns."*
-3. Submit
+2. Describe the use case: read-only reporting integration
+3. Upload design document PDF
+4. Submit
 
 > **Common rejection reasons**: Vague descriptions ("we use the API for marketing"), no working website, or anything that sounds like automated ad management. Be specific about read-only reporting.
 
@@ -80,26 +98,18 @@ bin/rails credentials:edit
 2. Google requires: a YouTube demo video showing the OAuth flow + how you use the data, domain verification, and privacy policy review
 3. Respond to Google's follow-up emails promptly — your review pauses until you reply
 
-### Timeline Reality
+</details>
 
-| Step | Time |
+### Timeline
+
+| Step | Status |
 |---|---|
-| MCC + developer token (test) | Instant |
-| GCP setup + OAuth credentials | 30 minutes |
-| **Development against test accounts** | **Immediate — start building now** |
-| Basic access approval (real accounts) | 2-7 business days |
-| OAuth consent screen verification (external users) | 2-6 weeks |
-| **Production-ready** | **~3-6 weeks from kickoff** |
-
-### Development Strategy
-
-**Don't wait for approvals to start building.** The pending developer token + test account gives you full API access immediately. Build and test the entire integration against test accounts. Apply for Basic access and OAuth verification in parallel. By the time code is ready, approvals should be through.
-
-| Phase | Access Level Needed |
-|---|---|
-| Phase 1-3 development | Test account access (instant) |
-| Internal QA with real data | Basic access (2-7 days) |
-| Customer-facing launch | Basic access + OAuth verification (2-6 weeks) |
+| MCC + developer token (Explorer) | Done |
+| GCP project + OAuth credentials | Done |
+| Rails credentials (dev + prod) | Done |
+| **Development against test accounts** | **Ready to start** |
+| Basic access approval (real accounts) | Pending (~3 business days) |
+| OAuth consent screen verification | Not yet submitted (needs demo video) |
 
 > **Good news for us**: Multibuzz is **read-only** (we never write to ad accounts). This means: (1) Required Minimum Functionality rules likely don't apply, (2) Basic access is sufficient (low operation count), (3) Google's review is simpler for read-only apps.
 
