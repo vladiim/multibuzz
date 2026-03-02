@@ -233,8 +233,10 @@ Add 4th tab to main dashboard: **Conversions | Funnel | Spend | Events**
 Daily at 4am UTC:
   SpendSyncSchedulerJob → iterates connected accounts
     → SpendSyncJob per connection
-      → Re-syncs last 3 days (captures Google's corrections)
+      → Re-syncs last 3 days (hourly × device × network_type granularity)
+      → Captures Google's corrections on recent data
       → Refreshes materialized view
+      → Increments account usage meter with records_synced count
 ```
 
 ---
@@ -243,7 +245,7 @@ Daily at 4am UTC:
 
 ### Core Insight: The Join
 
-We don't need click-level GCLID matching (that's Google's game). We need **channel-level spend aggregation** joined with **channel-level attributed revenue**:
+Click-level cost data doesn't exist in the Google Ads API (the `click_view` resource exposes GCLIDs but zero cost metrics). The finest cost granularity available is **hourly × device × campaign**. Our join operates at **channel-level spend aggregation** joined with **channel-level attributed revenue**:
 
 ```
 Attributed ROAS = Σ(revenue_credit WHERE channel = X) / Σ(ad_spend WHERE channel = X)
@@ -254,6 +256,7 @@ This works because:
 2. Google Ads spend maps cleanly to `paid_search`, `display`, `video`, `paid_social`
 3. UTM campaign data in `AttributionCredit` enables campaign-level ROAS drill-down
 4. The join is a simple GROUP BY, not a complex click-level match
+5. Hourly × device × network_type dimensions roll up naturally via SUM — the ROAS join aggregates all hours/devices for a given channel+date, while drill-down views slice by hour or device independently
 
 ### Two Grouping Dimensions: Channel vs Platform
 
@@ -272,7 +275,7 @@ Three dates exist for any attributed conversion:
 
 | Date | Source | What It Means |
 |------|--------|---------------|
-| **Spend date** | Platform API (`segments.date`) | Day money left the account |
+| **Spend date + hour** | Platform API (`segments.date` + `segments.hour`) | Day and hour money left the account |
 | **Click date** | Platform-reported (what Google attributes conversions to) | Day user clicked the ad |
 | **Conversion date** | Our data (`conversions.converted_at`) | Day user actually converted |
 
@@ -306,7 +309,9 @@ Google Ads API ──OAuth2──→ AdPlatformConnection (stores tokens)
        ↓
   Sync Job (daily + on-demand)
        ↓
-  AdSpendRecord (date, channel, platform, campaign, spend, impressions, clicks)
+  AdSpendRecord (date, hour, device, network_type, channel, campaign, spend, impressions, clicks)
+       ↓
+  account.increment_usage!(records_synced) → Billing::UsageCounter (same pool as SDK events)
        ↓
   SpendIntelligence::MetricsService
        ↓
@@ -314,7 +319,7 @@ Google Ads API ──OAuth2──→ AdPlatformConnection (stores tokens)
        ↓                                          ↓
   Channel view: ROAS by channel          Platform view: ROAS by platform
        ↓                                          ↓
-  Campaign drill-down: ROAS by campaign (best-effort utm_campaign match)
+  Campaign drill-down                    Device / Hour drill-down
        ↓
   Dashboard: ROAS, CAC, Payback, Marginal ROAS, Recommendations
 ```
@@ -326,9 +331,12 @@ Google Ads API ──OAuth2──→ AdPlatformConnection (stores tokens)
 Google Ads API                            Existing mbuzz flow
      ↓                                          ↓
 AdSpendRecord                             AttributionCredit
-{ spend_date, channel, campaign,          { channel, credit,
-  spend_micros, impressions, clicks,        revenue_credit, utm_campaign,
-  ad_platform_connection_id }               conversion.converted_at }
+{ spend_date, spend_hour, device,         { channel, credit,
+  network_type, channel, campaign,          revenue_credit, utm_campaign,
+  spend_micros, impressions, clicks,        conversion.converted_at }
+  ad_platform_connection_id }
+     ↓                                          ↓
+     ├── increment_usage!(records_synced) → Billing::UsageCounter
      ↓                                          ↓
      └──────── JOIN on (account, channel, date) ┘
                          ↓
@@ -336,7 +344,8 @@ AdSpendRecord                             AttributionCredit
                          ↓
               { attributed_roas, platform_roas, blended_roas,
                 cac, ncac, mer, payback_period,
-                marginal_roas, recommendations }
+                marginal_roas, recommendations,
+                device_breakdown, hourly_breakdown }
 ```
 
 ---
@@ -351,11 +360,14 @@ AdSpendRecord                             AttributionCredit
 | **Date semantics** | Conversion date for revenue, spend date for costs | Industry standard (Northbeam, Triple Whale, Rockerbox). Matches existing `CreditsScope` filtering on `DATE(conversions.converted_at)`. |
 | **Campaign matching** | Normalized `campaign_name ↔ utm_campaign` | Best-effort string match. Recommend `{campaignid}` in tracking templates for exact match. gclid resolution deferred to Phase 8. |
 | Join granularity | Channel + date (campaign drill-down) | Matches our channel-primary architecture. Campaign-level via utm_campaign secondary join. |
-| Sync frequency | Daily (4am UTC) + manual refresh | Google Ads data settles within 24-48h. Re-sync last 3 days for corrections. |
-| Historical backfill | 90 days on first connect | Enough for trend analysis and response curves without massive API load. |
+| Sync frequency | Daily (4am UTC) + manual refresh | Google Ads data settles within 24-48h. Re-sync last 3 days for corrections. Hourly data returned in single API response per query. |
+| Historical backfill | 90 days on first connect | Enough for trend analysis and response curves. ~90 × 24 × campaigns × ~4.5 dimension combos rows. Counts toward usage meter. |
 | Monetary storage | `bigint` micros (1M = 1 currency unit) | Matches Google Ads API natively. Integer math is faster, avoids decimal rounding. Convert at display time only. |
 | Multi-currency | Store in ad platform's native currency | Google API returns cost_micros in account currency. Phase 1 displays in native currency with label. Currency normalization deferred to Phase 2. |
-| Google Ads hierarchy | Campaign-level aggregation | Ad Group and Ad level are too granular for attribution join. Campaign maps to utm_campaign. |
+| Google Ads hierarchy | Campaign-level aggregation | Ad Group and Ad level are too granular for attribution join. Campaign maps to utm_campaign. Keyword-level deferred to future phase. |
+| Reporting granularity | Hourly × device × network_type | Finest cost granularity Google Ads API offers. Enables dayparting analysis, device-level ROAS, and near-real-time spend monitoring. ~39K rows/campaign/year. |
+| Metered billing | Ad spend rows count toward usage meter | Each synced row increments same `Billing::UsageCounter` as SDK events. Natural alignment: bigger advertisers = more campaigns = more rows = higher plan. |
+| Connection limits | Gated by plan tier | Free: 0, Starter: 1, Growth: 3, Pro: unlimited. Prevents Free accounts from consuming sync resources. |
 | OAuth scope | `https://www.googleapis.com/auth/adwords` (read-only) | We never write to their ad accounts. Read-only builds trust. |
 | Channel mapping | Automatic via Google campaign type + network segment | Search → paid_search, Display → display, Video → video, Shopping → paid_search. PMax split by `segments.ad_network_type` (API v23). Configurable override. |
 | PMax handling | Split by sub-channel | Google exposes channel-level PMax data since API v23 (Jan 2026). Distributes spend correctly across paid_search, display, video. |
@@ -422,18 +434,31 @@ bin/rails credentials:edit
 
 #### `ad_spend_records`
 
-Daily spend data per campaign. The atomic unit of spend intelligence. Standard PostgreSQL table — **not** a hypertable (daily aggregate data, modest volume: ~36K rows/year per 100 campaigns).
+Hourly spend data per campaign, segmented by device and network type. The atomic unit of spend intelligence. Each row represents one campaign × hour × device × network_type combination. **Every row counts toward the account's metered usage** (same pool as SDK events).
+
+**Volume estimates** (per account, per year):
+
+| Account Size | Campaigns | Rows/year | Plan Tier |
+|---|---|---|---|
+| Small (freelancer) | 5 | ~50K | Free/Starter |
+| Medium (SMB) | 50 | ~500K | Starter/Growth |
+| Large (growth team) | 200 | ~2M | Growth/Pro |
+| Agency (multi-client) | 1,000+ | ~10M+ | Pro/Enterprise |
+
+Formula: `campaigns × 365 days × 24 hours × ~3 devices × ~1.5 avg network types ≈ campaigns × 39K rows/year`
 
 ```ruby
 create_table :ad_spend_records do |t|
   t.references :account, null: false, foreign_key: true
   t.references :ad_platform_connection, null: false, foreign_key: true
   t.date :spend_date, null: false
+  t.integer :spend_hour, null: false          # 0-23 (from segments.hour)
   t.string :channel, null: false              # Mapped to our channel taxonomy (Channels::ALL)
   t.string :platform_campaign_id, null: false # Google's campaign ID
   t.string :campaign_name, null: false
   t.string :campaign_type                     # SEARCH, DISPLAY, VIDEO, SHOPPING, PERFORMANCE_MAX
-  t.string :network_type                      # For PMax: SEARCH, DISPLAY, VIDEO, CROSS_NETWORK
+  t.string :network_type                      # segments.ad_network_type: SEARCH, CONTENT, YOUTUBE_SEARCH, etc.
+  t.string :device                            # segments.device: MOBILE, DESKTOP, TABLET, OTHER
   t.bigint :spend_micros, null: false, default: 0  # 1,000,000 = 1 currency unit
   t.string :currency, limit: 3, null: false
   t.bigint :impressions, null: false, default: 0
@@ -444,10 +469,11 @@ create_table :ad_spend_records do |t|
   t.timestamps
 
   t.index [:account_id, :spend_date, :channel], name: "idx_spend_channel_date"
-  t.index [:account_id, :ad_platform_connection_id, :spend_date, :platform_campaign_id],
+  t.index [:account_id, :ad_platform_connection_id, :spend_date, :spend_hour,
+           :platform_campaign_id, :device, :network_type],
     unique: true, name: "idx_spend_unique"
   t.index [:account_id, :channel, :spend_date], name: "idx_spend_date_range"
-  t.index [:is_test], name: "index_ad_spend_records_on_is_test"
+  t.index [:is_test], name: "idx_spend_is_test"
 end
 ```
 
@@ -462,6 +488,8 @@ class AdSpendRecord < ApplicationRecord
   has_prefix_id :aspend
 
   MICRO_UNIT = 1_000_000
+
+  DEVICES = %w[MOBILE DESKTOP TABLET OTHER].freeze
 
   def spend
     spend_micros.to_d / MICRO_UNIT
@@ -536,6 +564,75 @@ Users can override per-campaign in settings. Stored in `ad_platform_connections.
 }
 ```
 
+### Billing & Metering
+
+#### Connection Limits by Plan
+
+Ad platform connections are gated by plan tier. Free accounts cannot connect ad platforms (keeps sync resources and API quota for paying customers).
+
+| Plan | Connections | Ad Spend Access |
+|---|---|---|
+| Free ($0) | 0 | None |
+| Starter ($29) | 1 | 1 platform, 1 account |
+| Growth ($99) | 3 | All platforms, 3 accounts |
+| Pro ($299) | Unlimited | All platforms, unlimited |
+
+**Implementation**: Add `ad_platform_connection_limit` column to `plans` table. Check in `AdPlatformConnectionsController#create` before starting OAuth flow. Display upgrade CTA for accounts at their limit.
+
+```ruby
+# Plan model addition
+def ad_platform_connection_limit
+  return 0 if free?
+  read_attribute(:ad_platform_connection_limit)
+end
+
+# Billing constant additions
+AD_PLATFORM_CONNECTION_LIMITS = {
+  PLAN_FREE => 0,
+  PLAN_STARTER => 1,
+  PLAN_GROWTH => 3,
+  PLAN_PRO => nil  # nil = unlimited
+}.freeze
+```
+
+```ruby
+# Account::Billing concern addition
+def can_connect_ad_platform?
+  limit = plan&.ad_platform_connection_limit
+  return false if limit == 0
+  return true if limit.nil?  # unlimited
+
+  ad_platform_connections.connected_or_syncing.count < limit
+end
+```
+
+#### Unified Usage Meter
+
+Ad spend records count toward the **same usage pool** as SDK events (sessions, events, conversions, identify calls). One meter, one overage calculation, no new Stripe meters.
+
+**How it works**:
+1. `SpendSyncService` upserts ad spend records from Google Ads API
+2. After sync, calls `account.increment_usage!(records_synced_count)`
+3. Same `Billing::UsageCounter` increments the same Redis cache key
+4. Same overage calculation applies: Starter $5/250K block, Growth $15/1M block, Pro $50/5M block
+
+**Why this works**:
+- **One number to track**: Users see total "data records" usage, not separate SDK vs ad spend meters
+- **Natural alignment**: Bigger advertisers have more campaigns → more rows → higher plan tier
+- **Covers costs**: Millions of ad spend rows consume storage and compute — metering ensures cost coverage
+- **No billing complexity**: Zero new Stripe meters, zero new overage logic, zero new UI
+
+**Volume context** (at campaign × hour × device × network_type granularity):
+
+| Account Size | Ad Spend Rows/month | As % of Starter (1M) | As % of Growth (5M) |
+|---|---|---|---|
+| 5 campaigns | ~4K | 0.4% | 0.1% |
+| 50 campaigns | ~42K | 4.2% | 0.8% |
+| 200 campaigns | ~167K | 16.7% | 3.3% |
+| 1,000 campaigns | ~833K | 83.3% | 16.7% |
+
+For most accounts, ad spend rows are a small fraction of their allocation. Only agency-scale accounts (1,000+ campaigns) see meaningful usage from ad data alone — and those accounts should be on Pro or Enterprise.
+
 ### UTM Campaign Matching
 
 For campaign-level ROAS drill-down, we match:
@@ -575,10 +672,12 @@ This relies on users having consistent UTM tagging. We provide guidance in onboa
 module SpendIntelligence
   module Scopes
     class SpendScope
-      def initialize(account:, date_range:, channels: Channels::ALL, test_mode: false)
+      def initialize(account:, date_range:, channels: Channels::ALL, devices: nil, hours: nil, test_mode: false)
         @account = account
         @date_range = date_range
         @channels = channels
+        @devices = devices       # nil = all devices, or Array of MOBILE/DESKTOP/TABLET/OTHER
+        @hours = hours           # nil = all hours, or Range (e.g., 9..17 for business hours)
         @test_mode = test_mode
       end
 
@@ -587,11 +686,13 @@ module SpendIntelligence
           .then { |scope| test_mode ? scope.where(is_test: true) : scope.where(is_test: false) }
           .where(spend_date: date_range)
           .then { |scope| channels == Channels::ALL ? scope : scope.where(channel: channels) }
+          .then { |scope| devices ? scope.where(device: devices) : scope }
+          .then { |scope| hours ? scope.where(spend_hour: hours) : scope }
       end
 
       private
 
-      attr_reader :account, :date_range, :channels, :test_mode
+      attr_reader :account, :date_range, :channels, :devices, :hours, :test_mode
     end
   end
 end
@@ -756,7 +857,34 @@ When mROAS > 1.0, additional spend is profitable. When mROAS < 1.0, you've hit d
 **Tier 3: Deep Analysis Tabs**
 
 ```
-[Overview] [Payback Period] [Recommendations] [Scenarios]
+[Overview] [Hourly / Device] [Payback Period] [Recommendations] [Scenarios]
+```
+
+### Hourly / Device View
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  Spend by Hour of Day            [Last 30 days]  [paid_search ▼]   │
+│  ┌────────────────────────────────────────────────────────────────┐ │
+│  │ Spend│                                                         │ │
+│  │ $800 │          ╱──╲                                           │ │
+│  │ $600 │        ╱─    ─╲          ╱──╲                           │ │
+│  │ $400 │      ╱─        ─╲     ╱─    ─╲                         │ │
+│  │ $200 │──╱──               ──╱        ──╲──                     │ │
+│  │      └──────────────────────────────── Hour →                  │ │
+│  │      0  2  4  6  8  10 12 14 16 18 20 22                      │ │
+│  └────────────────────────────────────────────────────────────────┘ │
+│                                                                     │
+│  Device Breakdown                                                   │
+│  ┌───────────┬──────────┬────────┬────────┬────────┐               │
+│  │ Device    │ Spend    │ Clicks │ CPC    │ ROAS   │               │
+│  │ Desktop   │ $14,200  │ 3,100  │ $4.58  │ 4.2x   │               │
+│  │ Mobile    │  $8,400  │ 5,200  │ $1.62  │ 2.1x   │               │
+│  │ Tablet    │  $1,900  │   480  │ $3.96  │ 3.8x   │               │
+│  └───────────┴──────────┴────────┴────────┴────────┘               │
+│                                                                     │
+│  💡 Desktop ROAS is 2x mobile. Consider increasing desktop bids.   │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Payback Period View
@@ -916,7 +1044,7 @@ adapter.fetch_spend(date_range: 3.days.ago..Date.current)
 
 ### Reporting API (GAQL)
 
-Daily spend sync query (non-PMax campaigns):
+Hourly spend sync query (non-PMax campaigns):
 
 ```sql
 SELECT
@@ -924,6 +1052,8 @@ SELECT
   campaign.name,
   campaign.advertising_channel_type,
   segments.date,
+  segments.hour,
+  segments.device,
   metrics.cost_micros,
   metrics.impressions,
   metrics.clicks,
@@ -946,6 +1076,8 @@ SELECT
   campaign.name,
   campaign.advertising_channel_type,
   segments.date,
+  segments.hour,
+  segments.device,
   segments.ad_network_type,
   metrics.cost_micros,
   metrics.impressions,
@@ -963,9 +1095,15 @@ ORDER BY segments.date DESC
 
 **Why two queries**: Adding `segments.ad_network_type` to non-PMax campaigns would unnecessarily split rows for single-channel campaign types. PMax is the only type that genuinely spans networks.
 
+**Dimensions pulled**: `date × hour × device × network_type (PMax only)`. This is the maximum useful granularity — `segments.hour` (0-23) is the finest time unit Google Ads API offers (no minute-level data exists). `segments.device` returns MOBILE, DESKTOP, TABLET, OTHER. Together they enable dayparting analysis, device-level ROAS, and near-real-time spend tracking.
+
+**Dimensions NOT pulled**: `segments.click_type` (too noisy, 5-10x fan-out for marginal insight), `segments.slot` (top-of-page vs other — marginal value for ROAS), `segments.conversion_action` (we have our own attribution).
+
 **Cost storage**: `cost_micros` is stored directly as `spend_micros` (bigint). No conversion needed at sync time — convert to display currency at read time only.
 
-**Rate limits**: 10,000 requests/day per developer token. Our daily sync uses ~1 request per account. No concern.
+**Rate limits**: 15,000 requests/day at Basic Access. Our daily sync uses ~1 request per account (hourly data returned in a single query response). No concern.
+
+**Metered billing**: After each sync, `account.increment_usage!(records_synced)` counts the upserted rows against the account's usage meter. This is the same `Billing::UsageCounter` used for SDK events — one pool, one overage calculation, no new Stripe meters.
 
 ### Data Freshness
 
@@ -977,7 +1115,7 @@ Google Ads data for a given day is considered final after **48 hours**. For the 
 
 ## Implementation Tasks
 
-### Phase 1: Data Foundation ✓
+### Phase 1: Data Foundation ✓ (+ 1b: Hourly Dimensions)
 
 - [x] **1.1** Run `bin/rails db:encryption:init` and add keys to credentials (first use of `encrypts` in codebase)
 - [x] **1.2** Create `ad_platform_connections` migration (integer enums, plain text columns for encrypted fields)
@@ -989,6 +1127,14 @@ Google Ads data for a given day is considered final after **48 hours**. For the 
 - [x] **1.8** Create `AdPlatformChannels` constant module (campaign type + network type maps)
 - [x] **1.9** Add `has_many :ad_platform_connections` and `has_many :ad_spend_records` to Account
 - [x] **1.10** Write model tests (58 tests, all passing)
+- [x] **1.11** Migration: add `spend_hour` (integer, not null) and `device` (string) columns to `ad_spend_records`
+- [x] **1.12** Migration: update unique index `idx_spend_unique` to include `spend_hour`, `device`, `network_type`
+- [x] **1.13** Migration: add `ad_platform_connection_limit` (integer, nullable) to `plans` table
+- [x] **1.14** Add `DEVICES` constant to `AdSpendRecord`, add `spend_hour` (0-23) and `device` validations
+- [x] **1.15** Add `for_device` and `for_hour` scopes to `AdSpendRecord::Scopes`
+- [x] **1.16** Add `AD_PLATFORM_CONNECTION_LIMITS` to `Billing` constants
+- [x] **1.17** Add `can_connect_ad_platform?` to `Account::Billing` concern
+- [x] **1.18** Update fixtures and tests for new columns + billing checks (16 new tests, 2701 total passing)
 
 > **Implementation notes**: ActiveRecord Encryption keys configured in `config/environments/test.rb` (inline, not in credentials) with `support_unencrypted_data = true` for fixture compatibility. Settings JSONB limit uses explicit `MAX_SETTINGS_BYTES = 51_200` constant. TimescaleDB calls removed from `db/schema.rb` after migration auto-dump.
 
@@ -1005,15 +1151,17 @@ Google Ads data for a given day is considered final after **48 hours**. For the 
 
 ### Phase 3: Spend Sync
 
-- [ ] **3.1** Create `AdPlatforms::Google::SpendSyncService` (two GAQL queries: standard + PMax, upsert records, create sync run)
+- [ ] **3.1** Create `AdPlatforms::Google::SpendSyncService` (two GAQL queries: standard + PMax, hourly × device × network_type, upsert records, create sync run)
 - [ ] **3.2** Create `AdPlatforms::Google::CampaignChannelMapper` (campaign type → channel, PMax network type splitting)
 - [ ] **3.3** Create `AdPlatforms::SpendSyncSchedulerJob` (iterates `Account.active.find_each`, enqueues per-connection jobs — mirrors `DataIntegrity::SurveillanceSchedulerJob`)
 - [ ] **3.4** Create `AdPlatforms::SpendSyncJob` (per-connection sync, wraps adapter call)
 - [ ] **3.5** Add entry to `config/recurring.yml`: `ad_spend_sync: { class: AdPlatforms::SpendSyncSchedulerJob, schedule: at 4am every day }`
-- [ ] **3.6** Implement 90-day historical backfill on first connect
+- [ ] **3.6** Implement 90-day historical backfill on first connect (counts toward usage meter)
 - [ ] **3.7** Implement incremental daily sync (last 3 days for corrections)
-- [ ] **3.8** Add manual "Refresh" button
-- [ ] **3.9** Write sync service tests with mocked API responses
+- [ ] **3.8** Add `account.increment_usage!(records_synced)` call after each sync in `SpendSyncService`
+- [ ] **3.9** Add connection limit check in `AdPlatformConnectionsController#create` (calls `account.can_connect_ad_platform?`)
+- [ ] **3.10** Add manual "Refresh" button
+- [ ] **3.11** Write sync service tests with mocked API responses (including metering assertions)
 
 ### Phase 4: Core Metrics
 
@@ -1030,11 +1178,12 @@ Google Ads data for a given day is considered final after **48 hours**. For the 
 - [ ] **5.2** Create `_spend_hero_metrics.html.erb` partial (5 KPI cards)
 - [ ] **5.3** Create `_spend_trend_chart.html.erb` (ROAS + spend time-series via Highcharts)
 - [ ] **5.4** Create `_channel_performance_table.html.erb` (sortable table)
-- [ ] **5.5** Create `_payback_period.html.erb` (chart + table)
-- [ ] **5.6** Create empty state with onboarding CTA
-- [ ] **5.7** Add data freshness badges ("Last synced", "Preliminary" labels)
-- [ ] **5.8** Add "Attributed vs Platform" ROAS comparison column with tooltip
-- [ ] **5.9** Write controller + view tests
+- [ ] **5.5** Create `_hourly_device_breakdown.html.erb` (spend-by-hour chart + device table)
+- [ ] **5.6** Create `_payback_period.html.erb` (chart + table)
+- [ ] **5.7** Create empty state with onboarding CTA (upgrade CTA for Free accounts)
+- [ ] **5.8** Add data freshness badges ("Last synced", "Preliminary" labels)
+- [ ] **5.9** Add "Attributed vs Platform" ROAS comparison column with tooltip
+- [ ] **5.10** Write controller + view tests
 
 ### Phase 6: Response Curves + Recommendations
 
@@ -1075,7 +1224,7 @@ Google Ads data for a given day is considered final after **48 hours**. For the 
 | OauthService | `test/services/ad_platforms/google/oauth_service_test.rb` | Auth URL with state param, token exchange, refresh, state verification |
 | SpendSyncService | `test/services/ad_platforms/google/spend_sync_service_test.rb` | GAQL parsing, PMax network splitting, upsert logic, sync run tracking |
 | CampaignChannelMapper | `test/services/ad_platforms/google/campaign_channel_mapper_test.rb` | All campaign types, PMax by network, user overrides |
-| SpendScope | `test/services/spend_intelligence/scopes/spend_scope_test.rb` | Date range, channel filter, test_mode filter |
+| SpendScope | `test/services/spend_intelligence/scopes/spend_scope_test.rb` | Date range, channel filter, device filter, hour filter, test_mode filter |
 | ChannelMetricsQuery | `test/services/spend_intelligence/queries/channel_metrics_query_test.rb` | ROAS, CAC, MER calculations, zero-spend guard |
 | PaybackPeriodQuery | `test/services/spend_intelligence/queries/payback_period_query_test.rb` | CLV integration, cohort grouping |
 | ResponseCurveService | `test/services/spend_intelligence/response_curve_service_test.rb` | Hill function fit, marginal ROAS calc, insufficient data guard |
@@ -1088,7 +1237,9 @@ Google Ads data for a given day is considered final after **48 hours**. For the 
 | Test | Verifies |
 |------|----------|
 | OAuth flow | Full connect → callback → account selection → redirect |
+| Connection limits | Free blocked, Starter allows 1, Growth allows 3, Pro unlimited |
 | Sync job | Scheduled execution, idempotency, error handling |
+| Sync metering | `account.increment_usage!` called with correct count after sync |
 | Dashboard render | All states (empty, loading, error, populated) |
 | Multi-tenancy | Account A cannot see Account B's spend data |
 
@@ -1106,7 +1257,9 @@ Google Ads data for a given day is considered final after **48 hours**. For the 
 ## Definition of Done
 
 - [ ] Google Ads OAuth connect/disconnect working
-- [ ] Daily spend sync running reliably
+- [ ] Connection limits enforced by plan tier (Free: 0, Starter: 1, Growth: 3, Pro: unlimited)
+- [ ] Hourly spend sync running reliably (date × hour × device × network_type)
+- [ ] Synced rows counted toward account usage meter
 - [ ] Attributed ROAS matches manual calculation within 1%
 - [ ] Dashboard shows all 5 hero metrics
 - [ ] Channel breakdown table sortable and filterable
@@ -1123,7 +1276,7 @@ Google Ads data for a given day is considered final after **48 hours**. For the 
 
 ## Out of Scope
 
-- **Click-level GCLID matching** -- We don't need to match individual clicks to conversions. Channel and campaign level aggregation is sufficient and more reliable.
+- **Click-level GCLID cost matching** -- Google Ads API does not expose per-click CPC. The `click_view` resource returns GCLIDs but zero cost metrics. Hourly × device × campaign is the finest cost granularity available.
 - **Writing to ad platforms** -- We will never modify bids, budgets, or campaigns. Read-only always.
 - **Real-time spend** -- Daily granularity is sufficient. Intra-day spend fluctuations aren't actionable.
 - **Ad creative analysis** -- Which ad copy/image performs best is a different feature.

@@ -7,6 +7,7 @@ free:
   stripe_price_id: null
   is_active: true
   sort_order: <%= Billing::FREE_SORT_ORDER %>
+  ad_platform_connection_limit: 0
 
 starter:
   name: "Starter"
@@ -17,6 +18,7 @@ starter:
   stripe_price_id: "price_starter_test"
   is_active: true
   sort_order: <%= Billing::STARTER_SORT_ORDER %>
+  ad_platform_connection_limit: 1
 
 growth:
   name: "Growth"
@@ -27,6 +29,7 @@ growth:
   stripe_price_id: "price_growth_test"
   is_active: true
   sort_order: <%= Billing::GROWTH_SORT_ORDER %>
+  ad_platform_connection_limit: 3
 
 pro:
   name: "Pro"
@@ -37,3 +40,4 @@ pro:
   stripe_price_id: "price_pro_test"
   is_active: true
   sort_order: <%= Billing::PRO_SORT_ORDER %>
+  ad_platform_connection_limit: null

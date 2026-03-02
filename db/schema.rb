@@ -10,9 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_02_051307) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_03_060001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+  # enable_extension "timescaledb" # Removed for test compatibility
 
   create_table "account_memberships", force: :cascade do |t|
     t.bigint "user_id", null: false
@@ -119,7 +120,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_02_051307) do
     t.boolean "is_test", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["account_id", "ad_platform_connection_id", "spend_date", "platform_campaign_id"], name: "idx_spend_unique", unique: true
+    t.integer "spend_hour", default: 0, null: false
+    t.string "device"
+    t.index ["account_id", "ad_platform_connection_id", "spend_date", "spend_hour", "platform_campaign_id", "device", "network_type"], name: "idx_spend_unique", unique: true
     t.index ["account_id", "channel", "spend_date"], name: "idx_spend_date_range"
     t.index ["account_id", "spend_date", "channel"], name: "idx_spend_channel_date"
     t.index ["account_id"], name: "index_ad_spend_records_on_account_id"
@@ -380,6 +383,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_02_051307) do
     t.integer "sort_order", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "ad_platform_connection_limit"
     t.index ["is_active"], name: "index_plans_on_is_active"
     t.index ["slug"], name: "index_plans_on_slug", unique: true
     t.index ["sort_order"], name: "index_plans_on_sort_order"
@@ -536,4 +540,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_02_051307) do
   add_foreign_key "solid_errors_occurrences", "solid_errors", column: "error_id"
   add_foreign_key "visitors", "accounts"
   add_foreign_key "visitors", "identities"
+
+  # TimescaleDB calls removed for test compatibility (see CLAUDE.md)
+  # create_hypertable "events", ...
+  # create_hypertable "sessions", ...
+  # create_continuous_aggregate "channel_attribution_daily", ...
+  # create_continuous_aggregate "source_attribution_daily", ...
 end

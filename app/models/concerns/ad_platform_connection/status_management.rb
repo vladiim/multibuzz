@@ -3,6 +3,10 @@
 module AdPlatformConnection::StatusManagement
   extend ActiveSupport::Concern
 
+  included do
+    scope :active_connections, -> { where(status: [ :connected, :syncing ]) }
+  end
+
   def token_expired?
     token_expires_at.present? && token_expires_at < Time.current
   end

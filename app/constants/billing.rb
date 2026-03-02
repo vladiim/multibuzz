@@ -62,6 +62,14 @@ module Billing
   # --- Attribution Rerun Limits (matches event limits) ---
   RERUN_LIMITS = PLAN_LIMITS
 
+  # --- Ad Platform Connection Limits ---
+  AD_PLATFORM_CONNECTION_LIMITS = {
+    PLAN_FREE => 0,
+    PLAN_STARTER => 1,
+    PLAN_GROWTH => 3,
+    PLAN_PRO => nil  # nil = unlimited
+  }.freeze
+
   # --- Rerun Overage (event_overage / 7, in cents per block) ---
   # Starter: $5/250K block / 7 = ~$0.71
   # Growth: $15/1M block / 7 = ~$2.14

@@ -403,6 +403,56 @@ class Account::BillingTest < ActiveSupport::TestCase
     assert_not_includes expiring, other_account
   end
 
+  # --- Ad Platform Connection Limits ---
+
+  test "can_connect_ad_platform? returns false for free plan" do
+    account.update!(plan: free_plan)
+
+    assert_not account.can_connect_ad_platform?
+  end
+
+  test "can_connect_ad_platform? returns false for nil plan" do
+    account.update!(plan: nil)
+
+    assert_not account.can_connect_ad_platform?
+  end
+
+  test "can_connect_ad_platform? returns true for starter with no connections" do
+    account.update!(plan: starter_plan)
+    account.ad_platform_connections.destroy_all
+
+    assert_predicate account, :can_connect_ad_platform?
+  end
+
+  test "can_connect_ad_platform? returns false for starter at limit" do
+    account.update!(plan: starter_plan)
+    account.ad_platform_connections.where(status: [ :connected, :syncing ]).count
+    # starter_plan allows 1 connection — account fixture already has google_ads (connected)
+
+    assert_not account.can_connect_ad_platform?
+  end
+
+  test "can_connect_ad_platform? returns true for growth under limit" do
+    account.update!(plan: growth_plan)
+    # account has 2 connections (google_ads + google_ads_error), error status doesn't count
+
+    assert_predicate account, :can_connect_ad_platform?
+  end
+
+  test "can_connect_ad_platform? returns true for pro regardless of count" do
+    account.update!(plan: pro_plan)
+
+    assert_predicate account, :can_connect_ad_platform?
+  end
+
+  test "can_connect_ad_platform? ignores disconnected and error connections" do
+    account.update!(plan: starter_plan)
+    # google_ads is connected (counts), google_ads_error is error (doesn't count)
+    # Starter limit is 1, so 1 connected = at limit
+
+    assert_not account.can_connect_ad_platform?
+  end
+
   # --- Attribution Model Limits ---
 
   test "custom_model_limit returns 0 for free plan" do

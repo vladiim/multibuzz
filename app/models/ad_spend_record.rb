@@ -1,13 +1,14 @@
 # frozen_string_literal: true
 
 class AdSpendRecord < ApplicationRecord
+  MICRO_UNIT = 1_000_000
+  DEVICES = %w[MOBILE DESKTOP TABLET OTHER].freeze
+
   include AdSpendRecord::Validations
   include AdSpendRecord::Relationships
   include AdSpendRecord::Scopes
 
   has_prefix_id :aspend
-
-  MICRO_UNIT = 1_000_000
 
   def spend
     spend_micros.to_d / MICRO_UNIT

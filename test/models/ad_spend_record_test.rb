@@ -70,6 +70,59 @@ class AdSpendRecordTest < ActiveSupport::TestCase
     assert_not record.valid?
   end
 
+  # --- Hourly Dimension Validations ---
+
+  test "requires spend_hour" do
+    record.spend_hour = nil
+
+    assert_not record.valid?
+  end
+
+  test "spend_hour rejects negative values" do
+    record.spend_hour = -1
+
+    assert_not record.valid?
+  end
+
+  test "spend_hour rejects values above 23" do
+    record.spend_hour = 24
+
+    assert_not record.valid?
+  end
+
+  test "spend_hour accepts 0" do
+    record.spend_hour = 0
+
+    assert_predicate record, :valid?
+  end
+
+  test "spend_hour accepts 23" do
+    record.spend_hour = 23
+
+    assert_predicate record, :valid?
+  end
+
+  test "device must be from valid list when present" do
+    record.device = "INVALID"
+
+    assert_not record.valid?
+    assert_includes record.errors[:device], "is not included in the list"
+  end
+
+  test "device allows valid values" do
+    %w[MOBILE DESKTOP TABLET OTHER].each do |device|
+      record.device = device
+
+      assert_predicate record, :valid?, "Expected #{device} to be valid"
+    end
+  end
+
+  test "device allows nil" do
+    record.device = nil
+
+    assert_predicate record, :valid?
+  end
+
   # --- Spend Conversion ---
 
   test "spend converts micros to decimal" do
@@ -114,6 +167,32 @@ class AdSpendRecordTest < ActiveSupport::TestCase
     results = account.ad_spend_records.for_channel("display")
 
     assert results.all? { |r| r.channel == "display" }
+  end
+
+  # --- Hourly Dimension Scopes ---
+
+  test "for_hour filters by spend_hour" do
+    results = account.ad_spend_records.for_hour(14)
+
+    assert results.all? { |r| r.spend_hour == 14 }
+  end
+
+  test "for_hour accepts range" do
+    results = account.ad_spend_records.for_hour(9..17)
+
+    assert results.all? { |r| (9..17).cover?(r.spend_hour) }
+  end
+
+  test "for_device filters by device" do
+    results = account.ad_spend_records.for_device("DESKTOP")
+
+    assert results.all? { |r| r.device == "DESKTOP" }
+  end
+
+  test "for_device accepts array" do
+    results = account.ad_spend_records.for_device(%w[MOBILE TABLET])
+
+    assert results.all? { |r| %w[MOBILE TABLET].include?(r.device) }
   end
 
   # --- Prefix ID ---

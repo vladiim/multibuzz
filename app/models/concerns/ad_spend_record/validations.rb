@@ -12,5 +12,8 @@ module AdSpendRecord::Validations
     validates :spend_micros, numericality: { greater_than_or_equal_to: 0 }
     validates :impressions, numericality: { greater_than_or_equal_to: 0 }
     validates :clicks, numericality: { greater_than_or_equal_to: 0 }
+    validates :spend_hour, presence: true,
+      numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 23 }
+    validates :device, inclusion: { in: AdSpendRecord::DEVICES }, allow_nil: true
   end
 end
