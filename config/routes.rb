@@ -11,6 +11,15 @@ Rails.application.routes.draw do
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
+  # OAuth callbacks (fixed URLs registered with providers)
+  namespace :oauth do
+    get "google_ads/connect", to: "google_ads#connect"
+    get "google_ads/callback", to: "google_ads#callback"
+    get "google_ads/select_account", to: "google_ads#select_account"
+    post "google_ads/create_connection", to: "google_ads#create_connection"
+    delete "google_ads/:id", to: "google_ads#disconnect", as: :google_ads_disconnect
+  end
+
   # Webhooks (before API routes for clarity)
   namespace :webhooks do
     post "stripe", to: "stripe#create"

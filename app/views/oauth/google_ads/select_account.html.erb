@@ -1,0 +1,41 @@
+<div class="min-h-screen bg-gray-100">
+  <%= render "layouts/nav" %>
+
+  <div class="py-6 sm:py-10">
+    <div class="max-w-lg mx-auto px-4 sm:px-6">
+      <div class="bg-white shadow sm:rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h1 class="text-xl font-semibold text-gray-900">Select Google Ads Account</h1>
+          <p class="mt-1 text-sm text-gray-500">Choose the account you want to connect.</p>
+        </div>
+
+        <% if @customers.any? %>
+          <div class="divide-y divide-gray-200">
+            <% @customers.each do |customer| %>
+              <%= form_with url: oauth_google_ads_create_connection_path, method: :post, class: "px-6 py-4 hover:bg-gray-50" do %>
+                <input type="hidden" name="customer_id" value="<%= customer[:id] %>">
+                <input type="hidden" name="customer_name" value="<%= customer[:name] %>">
+                <input type="hidden" name="currency" value="<%= customer[:currency] %>">
+                <button type="submit" class="w-full text-left">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-sm font-medium text-gray-900"><%= customer[:name] %></p>
+                      <p class="text-xs text-gray-500">ID: <%= customer[:id] %> &middot; <%= customer[:currency] %></p>
+                    </div>
+                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </button>
+              <% end %>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="px-6 py-12 text-center">
+            <p class="text-sm text-gray-500">No Google Ads accounts found. Make sure your Google account has access to at least one non-manager Google Ads account.</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

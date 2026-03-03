@@ -1005,11 +1005,12 @@ module AdPlatforms
       end
 
       def refresh_token!
-        OauthService.new(connection).refresh!
+        TokenRefresher.new(connection).call
       end
 
       def validate_connection
-        OauthService.new(connection).validate!
+        return refresh_token! if token_expired?
+        { success: true }
       end
     end
   end
@@ -1140,14 +1141,17 @@ Google Ads data for a given day is considered final after **48 hours**. For the 
 
 ### Phase 2: Google Ads OAuth
 
-- [ ] **2.1** Register OAuth application with Google (developer token, OAuth client)
-- [ ] **2.2** Create `AdPlatforms::BaseAdapter` interface (abstract: `fetch_spend`, `refresh_token`, `validate_connection`)
-- [ ] **2.3** Create `AdPlatforms::Google::Adapter` implementing BaseAdapter
-- [ ] **2.4** Create `AdPlatforms::Google::OauthService` (authorization URL with CSRF state param, token exchange, refresh)
-- [ ] **2.5** Create `AdPlatformConnectionsController` (connect, callback with state verification, disconnect)
-- [ ] **2.6** Create account selection flow (list accessible customers via `CustomerService.ListAccessibleCustomers`)
+- [x] **2.1** Register OAuth application with Google (developer token, OAuth client)
+- [x] **2.2** Create `AdPlatforms::BaseAdapter` interface (abstract: `fetch_spend`, `refresh_token`, `validate_connection`)
+- [x] **2.3** Create `AdPlatforms::Google::Adapter` implementing BaseAdapter
+- [x] **2.4** Create OAuth services (split from monolithic OauthService per SRP): `AdPlatforms::Google::OauthUrl`, `TokenClient`, `TokenExchanger`, `TokenRefresher` + shared constants in `AdPlatforms::Google` module + `AdPlatforms::Registry`
+- [x] **2.5** Create `Oauth::GoogleAdsController` (connect with CSRF state + plan limit check, callback with state verification + token exchange, disconnect with `mark_disconnected!`) — routes at `/oauth/google_ads/*`
+- [x] **2.6** Create account selection flow (list accessible customers via `ListAccessibleCustomers`) — `ListCustomers` service written, controller actions `select_account` + `create_connection` complete.
+  - **BUG FIX (session pinning)**: `current_account` switched to wrong account after OAuth redirect because callback URLs are fixed (no `account_id` param) and `primary_account` resolves by `last_accessed_at` — any concurrent request to another account changed resolution. Fixed: `connect` pins `session[:oauth_account_id]`, `require_oauth_account` guard validates on `callback`/`select_account`/`create_connection`, `oauth_account` resolves from session (not `current_account`), `clear_oauth_session!` cleans up all OAuth keys on completion. 4 new tests (23 total controller tests, 2759 suite).
 - [ ] **2.7** Create settings UI: "Integrations" page with Google Ads connection card
-- [ ] **2.8** Write controller + service tests (including OAuth state CSRF verification)
+- [x] **2.8** Write controller + service tests (28 service tests + 13 controller tests passing, 2745 total)
+
+> **Implementation notes (Phase 2)**: OauthService was split into 4 SRP classes: `OauthUrl` (authorization URL builder), `TokenClient` (shared HTTP client for Google token endpoint), `TokenExchanger` (code → tokens), `TokenRefresher` (refresh token → new access token). All use memoized methods, no procedural variable assignment. Constants (URIs, scopes, grant types, API field names, headers) in `AdPlatforms::Google` module — no magic strings. `AdPlatforms::Registry` maps `google_ads:` symbol → adapter class. Tests stub `Google.credentials` since test env has no Google OAuth creds configured. **Session pinning**: OAuth callback URLs are fixed (Google-registered, no account context), so `connect` pins `session[:oauth_account_id]` and all subsequent OAuth actions (`callback`, `select_account`, `create_connection`) resolve the account from session via `oauth_account` instead of `current_account`. This prevents `primary_account` (ordered by mutable `last_accessed_at`) from silently switching accounts mid-flow. `require_oauth_account` guard rejects requests with missing/invalid pinned account. `disconnect` remains on `current_account` (settings page context, not OAuth flow).
 
 ### Phase 3: Spend Sync
 
@@ -1221,7 +1225,12 @@ Google Ads data for a given day is considered final after **48 hours**. For the 
 | AdSpendSyncRun model | `test/models/ad_spend_sync_run_test.rb` | Validations, status enum |
 | AdPlatformChannels constant | `test/constants/ad_platform_channels_test.rb` | All campaign type mappings, PMax network type maps, override handling |
 | Google Adapter | `test/services/ad_platforms/google/adapter_test.rb` | Implements BaseAdapter interface, API call delegation |
-| OauthService | `test/services/ad_platforms/google/oauth_service_test.rb` | Auth URL with state param, token exchange, refresh, state verification |
+| OauthUrl | `test/services/ad_platforms/google/oauth_url_test.rb` | Auth URL with state param, scope, offline access, consent prompt |
+| TokenClient | `test/services/ad_platforms/google/token_client_test.rb` | HTTP POST to Google token endpoint, credential merging, error parsing |
+| TokenExchanger | `test/services/ad_platforms/google/token_exchanger_test.rb` | Code → access_token + refresh_token, error passthrough, blank code guard |
+| TokenRefresher | `test/services/ad_platforms/google/token_refresher_test.rb` | Refresh → new access_token, missing token guard, error passthrough |
+| ListCustomers | `test/services/ad_platforms/google/list_customers_test.rb` | List accessible customers, exclude managers, error handling |
+| Oauth::GoogleAdsController | `test/controllers/oauth/google_ads_controller_test.rb` | Connect (CSRF + limit), callback (state verify + exchange), disconnect (scoped) |
 | SpendSyncService | `test/services/ad_platforms/google/spend_sync_service_test.rb` | GAQL parsing, PMax network splitting, upsert logic, sync run tracking |
 | CampaignChannelMapper | `test/services/ad_platforms/google/campaign_channel_mapper_test.rb` | All campaign types, PMax by network, user overrides |
 | SpendScope | `test/services/spend_intelligence/scopes/spend_scope_test.rb` | Date range, channel filter, device filter, hour filter, test_mode filter |
