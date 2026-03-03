@@ -1,0 +1,10 @@
+<% status_config = {
+  "connected" => { color: "green", label: "Connected" },
+  "syncing" => { color: "yellow", label: "Syncing" },
+  "error" => { color: "red", label: "Error" }
+}.fetch(connection.status, { color: "gray", label: connection.status.humanize }) %>
+
+<span class="inline-flex items-center gap-1.5 text-sm text-gray-600">
+  <span class="h-2 w-2 rounded-full bg-<%= status_config[:color] %>-500"></span>
+  <%= status_config[:label] %>
+</span>

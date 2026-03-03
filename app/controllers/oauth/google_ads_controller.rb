@@ -29,16 +29,16 @@ module Oauth
     end
 
     def create_connection
-      return redirect_to(account_path, alert: "This account is already connected.") if duplicate_connection?
+      return redirect_to(account_integrations_path, alert: "This account is already connected.") if duplicate_connection?
 
       build_connection.save!
       clear_oauth_session!
-      redirect_to account_path, notice: "Google Ads account connected."
+      redirect_to account_integrations_path, notice: "Google Ads account connected."
     end
 
     def disconnect
       connection.mark_disconnected!
-      redirect_to account_path, notice: "Google Ads disconnected."
+      redirect_to account_integrations_path, notice: "Google Ads disconnected."
     end
 
     private
@@ -125,27 +125,27 @@ module Oauth
       return if session[:oauth_account_id].present? &&
                 current_user.active_accounts.exists?(id: session[:oauth_account_id])
 
-      redirect_to account_path, alert: "OAuth session expired. Please try connecting again."
+      redirect_to account_integrations_path, alert: "OAuth session expired. Please try connecting again."
     end
 
     def require_session_tokens
       return if session_tokens.present?
 
-      redirect_to account_path, alert: "Please connect Google Ads first."
+      redirect_to account_integrations_path, alert: "Please connect Google Ads first."
     end
 
     # --- Error redirects ---
 
     def redirect_with_limit_error
-      redirect_to account_path, alert: "Your plan's ad platform connection limit has been reached. Please upgrade to connect more platforms."
+      redirect_to account_integrations_path, alert: "Your plan's ad platform connection limit has been reached. Please upgrade to connect more platforms."
     end
 
     def redirect_with_state_error
-      redirect_to account_path, alert: "OAuth verification failed. Please try again."
+      redirect_to account_integrations_path, alert: "OAuth verification failed. Please try again."
     end
 
     def redirect_with_error(result)
-      redirect_to account_path, alert: result[:errors]&.first || "Failed to connect Google Ads."
+      redirect_to account_integrations_path, alert: result[:errors]&.first || "Failed to connect Google Ads."
     end
   end
 end

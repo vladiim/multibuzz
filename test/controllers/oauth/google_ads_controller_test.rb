@@ -40,7 +40,7 @@ class Oauth::GoogleAdsControllerTest < ActionDispatch::IntegrationTest
 
     get oauth_google_ads_connect_path
 
-    assert_redirected_to account_path
+    assert_redirected_to account_integrations_path
     assert_match(/limit/i, flash[:alert])
   end
 
@@ -67,7 +67,7 @@ class Oauth::GoogleAdsControllerTest < ActionDispatch::IntegrationTest
 
     get oauth_google_ads_callback_path, params: { state: "wrong_state", code: "auth_code" }
 
-    assert_redirected_to account_path
+    assert_redirected_to account_integrations_path
     assert_match(/verification failed/i, flash[:alert])
   end
 
@@ -77,7 +77,7 @@ class Oauth::GoogleAdsControllerTest < ActionDispatch::IntegrationTest
 
     get oauth_google_ads_callback_path, params: { code: "auth_code" }
 
-    assert_redirected_to account_path
+    assert_redirected_to account_integrations_path
     assert_match(/OAuth session expired/i, flash[:alert])
   end
 
@@ -91,7 +91,7 @@ class Oauth::GoogleAdsControllerTest < ActionDispatch::IntegrationTest
       get oauth_google_ads_callback_path, params: { state: state, code: "bad_code" }
     end
 
-    assert_redirected_to account_path
+    assert_redirected_to account_integrations_path
     assert_match(/invalid_grant/i, flash[:alert])
   end
 
@@ -122,7 +122,7 @@ class Oauth::GoogleAdsControllerTest < ActionDispatch::IntegrationTest
 
     get oauth_google_ads_select_account_path
 
-    assert_redirected_to account_path
+    assert_redirected_to account_integrations_path
     assert_match(/OAuth session expired/i, flash[:alert])
   end
 
@@ -168,7 +168,7 @@ class Oauth::GoogleAdsControllerTest < ActionDispatch::IntegrationTest
       customer_id: "123", customer_name: "X", currency: "USD"
     }
 
-    assert_redirected_to account_path
+    assert_redirected_to account_integrations_path
   end
 
   test "create_connection rejects duplicate platform account" do
@@ -180,7 +180,7 @@ class Oauth::GoogleAdsControllerTest < ActionDispatch::IntegrationTest
       customer_id: connection.platform_account_id, customer_name: "Dupe", currency: "USD"
     }
 
-    assert_redirected_to account_path
+    assert_redirected_to account_integrations_path
     assert_match(/already connected/i, flash[:alert])
     assert_no_difference "AdPlatformConnection.count" do
       post oauth_google_ads_create_connection_path, params: {
@@ -255,7 +255,7 @@ class Oauth::GoogleAdsControllerTest < ActionDispatch::IntegrationTest
     delete oauth_google_ads_disconnect_path(connection)
 
     assert_predicate connection.reload, :disconnected?
-    assert_redirected_to account_path
+    assert_redirected_to account_integrations_path
   end
 
   test "disconnect clears tokens" do

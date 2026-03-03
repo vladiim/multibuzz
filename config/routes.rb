@@ -156,6 +156,7 @@ Rails.application.routes.draw do
         end
       end
       resources :api_keys, only: [ :index, :create, :destroy ]
+      resource :integrations, only: [ :show ], controller: "integrations"
       resources :attribution_models, except: [ :show ] do
         collection do
           post :validate
