@@ -156,7 +156,9 @@ Rails.application.routes.draw do
         end
       end
       resources :api_keys, only: [ :index, :create, :destroy ]
-      resource :integrations, only: [ :show ], controller: "integrations"
+      resource :integrations, only: [ :show ], controller: "integrations" do
+        post "refresh/:id", action: :refresh, as: :refresh
+      end
       resources :attribution_models, except: [ :show ] do
         collection do
           post :validate

@@ -32,6 +32,7 @@ module Oauth
       return redirect_to(account_integrations_path, alert: "This account is already connected.") if duplicate_connection?
 
       build_connection.save!
+      enqueue_backfill
       clear_oauth_session!
       redirect_to account_integrations_path, notice: "Google Ads account connected."
     end
@@ -89,7 +90,7 @@ module Oauth
     end
 
     def build_connection
-      oauth_account.ad_platform_connections.build(
+      @build_connection ||= oauth_account.ad_platform_connections.build(
         platform: :google_ads,
         platform_account_id: params[:customer_id],
         platform_account_name: params[:customer_name],
@@ -99,6 +100,11 @@ module Oauth
         token_expires_at: Time.parse(session_tokens["expires_at"]),
         status: :connected
       )
+    end
+
+    def enqueue_backfill
+      backfill_range = AdPlatforms::Google::ConnectionSyncService::BACKFILL_DAYS.days.ago.to_date..Date.current
+      AdPlatforms::SpendSyncJob.perform_later(build_connection.id, date_range: backfill_range)
     end
 
     # --- Disconnect ---

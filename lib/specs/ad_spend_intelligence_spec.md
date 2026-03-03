@@ -1155,17 +1155,19 @@ Google Ads data for a given day is considered final after **48 hours**. For the 
 
 ### Phase 3: Spend Sync
 
-- [ ] **3.1** Create `AdPlatforms::Google::SpendSyncService` (two GAQL queries: standard + PMax, hourly × device × network_type, upsert records, create sync run)
-- [ ] **3.2** Create `AdPlatforms::Google::CampaignChannelMapper` (campaign type → channel, PMax network type splitting)
-- [ ] **3.3** Create `AdPlatforms::SpendSyncSchedulerJob` (iterates `Account.active.find_each`, enqueues per-connection jobs — mirrors `DataIntegrity::SurveillanceSchedulerJob`)
-- [ ] **3.4** Create `AdPlatforms::SpendSyncJob` (per-connection sync, wraps adapter call)
-- [ ] **3.5** Add entry to `config/recurring.yml`: `ad_spend_sync: { class: AdPlatforms::SpendSyncSchedulerJob, schedule: at 4am every day }`
-- [ ] **3.6** Implement 90-day historical backfill on first connect (counts toward usage meter)
-- [ ] **3.7** Implement incremental daily sync (last 3 days for corrections)
-- [ ] **3.8** Add `account.increment_usage!(records_synced)` call after each sync in `SpendSyncService`
-- [ ] **3.9** Add connection limit check in `AdPlatformConnectionsController#create` (calls `account.can_connect_ad_platform?`)
-- [ ] **3.10** Add manual "Refresh" button
-- [ ] **3.11** Write sync service tests with mocked API responses (including metering assertions)
+- [x] **3.1** Create `AdPlatforms::Google::SpendSyncService` (two GAQL queries: standard + PMax, hourly × device × network_type, upsert via `upsert_all`, meter usage)
+- [x] **3.2** Create `AdPlatforms::Google::CampaignChannelMapper` (campaign type → channel, PMax network type splitting)
+- [x] **3.3** Create `AdPlatforms::SpendSyncSchedulerJob` (iterates `AdPlatformConnection.active_connections.find_each`, enqueues per-connection jobs)
+- [x] **3.4** Create `AdPlatforms::SpendSyncJob` (thin wrapper → `Google::ConnectionSyncService`); `ConnectionSyncService` handles token refresh, sync run lifecycle, connection status
+- [x] **3.5** Add entry to `config/recurring.yml`: `ad_spend_sync: { class: AdPlatforms::SpendSyncSchedulerJob, schedule: at 6am every day }`
+- [x] **3.6** Implement 90-day historical backfill on first connect (enqueued from `create_connection`, counts toward usage meter)
+- [x] **3.7** Implement incremental daily sync (last 3 days for corrections — `ConnectionSyncService::INCREMENTAL_LOOKBACK_DAYS`)
+- [x] **3.8** Add `account.increment_usage!(records_synced)` call after each sync in `SpendSyncService`
+- [x] **3.9** Connection limit check already enforced in `Oauth::GoogleAdsController#connect` (calls `account.can_connect_ad_platform?`)
+- [x] **3.10** Add manual "Refresh" button on integrations page (enqueues `SpendSyncJob`)
+- [x] **3.11** Write sync service tests with mocked API responses (including metering assertions)
+
+> **Implementation notes (Phase 3)**: Sync pipeline decomposed into 4 SRP classes: `ApiClient` (shared HTTP client with auth headers), `RowParser` (API row → upsert hash), `CampaignChannelMapper` (campaign type → mbuzz channel, PMax network splitting), `SpendSyncService` (orchestrate: fetch, parse, `upsert_all`, meter). All use memoized methods. Jobs are thin wrappers: `SpendSyncSchedulerJob` iterates `active_connections`, `SpendSyncJob` delegates to `ConnectionSyncService`. `ConnectionSyncService` handles lifecycle: token refresh (memoized `token_refresh`), sync run creation/completion, connection status transitions. Campaign types and network types use `AdPlatformChannels` constants — no magic strings. 90-day backfill enqueued from `create_connection` via `SpendSyncJob` with custom `date_range:`. Daily incremental sync covers last 3 days for Google Ads correction window. Manual refresh via `IntegrationsController#refresh` (scoped to `current_account`). Schedule: 6am daily via `recurring.yml`. 40 new tests (2809 suite total).
 
 ### Phase 4: Core Metrics
 

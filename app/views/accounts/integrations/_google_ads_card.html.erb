@@ -32,6 +32,11 @@
       <% if google_connection %>
         <%= render "connection_status", connection: google_connection %>
 
+        <%= button_to "Refresh",
+          refresh_account_integrations_path(google_connection),
+          method: :post,
+          class: "text-sm text-indigo-600 hover:text-indigo-800 font-medium" %>
+
         <%= link_to "Disconnect",
           oauth_google_ads_disconnect_path(google_connection),
           data: { turbo_method: :delete, turbo_confirm: "Disconnect Google Ads? Historical data will be kept." },

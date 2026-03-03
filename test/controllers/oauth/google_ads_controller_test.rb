@@ -4,6 +4,7 @@ require "test_helper"
 require "minitest/mock"
 
 class Oauth::GoogleAdsControllerTest < ActionDispatch::IntegrationTest
+  include ActiveJob::TestHelper
   # --- connect ---
 
   test "connect redirects to Google OAuth consent screen" do
@@ -231,6 +232,18 @@ class Oauth::GoogleAdsControllerTest < ActionDispatch::IntegrationTest
     }
 
     assert_nil session[:oauth_account_id]
+  end
+
+  test "create_connection enqueues backfill sync job" do
+    sign_in
+    assign_plan(:growth)
+    set_session_tokens
+
+    assert_enqueued_with(job: AdPlatforms::SpendSyncJob) do
+      post oauth_google_ads_create_connection_path, params: {
+        customer_id: "8889990000", customer_name: "Backfill Test", currency: "USD"
+      }
+    end
   end
 
   test "create_connection clears all oauth session keys" do

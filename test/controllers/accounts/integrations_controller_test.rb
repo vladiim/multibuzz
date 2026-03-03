@@ -3,6 +3,7 @@
 require "test_helper"
 
 class Accounts::IntegrationsControllerTest < ActionDispatch::IntegrationTest
+  include ActiveJob::TestHelper
   # --- show ---
 
   test "show renders integrations page" do
@@ -71,6 +72,32 @@ class Accounts::IntegrationsControllerTest < ActionDispatch::IntegrationTest
     get account_integrations_path
 
     assert_response :forbidden
+  end
+
+  # --- refresh ---
+
+  test "refresh enqueues sync job for connection" do
+    sign_in
+
+    assert_enqueued_with(job: AdPlatforms::SpendSyncJob) do
+      post refresh_account_integrations_path(connection)
+    end
+
+    assert_redirected_to account_integrations_path
+  end
+
+  test "refresh cannot sync other account connections" do
+    sign_in
+
+    post refresh_account_integrations_path(other_connection)
+
+    assert_response :not_found
+  end
+
+  test "refresh requires authentication" do
+    post refresh_account_integrations_path(connection)
+
+    assert_redirected_to login_path
   end
 
   # --- multi-tenancy ---
