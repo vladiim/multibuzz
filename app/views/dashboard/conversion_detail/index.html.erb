@@ -1,0 +1,59 @@
+<div class="min-h-screen bg-gray-100">
+  <%= render "layouts/nav" %>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-semibold text-gray-900">Conversions</h1>
+        <p class="mt-1 text-sm text-gray-500"><%= @total_count %> total</p>
+      </div>
+      <%= link_to "← Dashboard", dashboard_path, class: "text-sm text-indigo-600 hover:text-indigo-800" %>
+    </div>
+
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Channels</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Touchpoints</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Identity</th>
+            <th class="px-4 py-3"></th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <% @conversions.each do |conversion| %>
+            <%= render "conversion_row", conversion: conversion %>
+          <% end %>
+          <% if @conversions.empty? %>
+            <tr>
+              <td colspan="7" class="px-4 py-12 text-center text-sm text-gray-500">
+                No conversions yet
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if @total_count > 25 %>
+      <div class="mt-4 flex justify-between items-center">
+        <p class="text-sm text-gray-500">
+          Showing <%= (@conversions.offset_value || 0) + 1 %>–<%= (@conversions.offset_value || 0) + @conversions.size %> of <%= @total_count %>
+        </p>
+        <div class="flex gap-2">
+          <% if (params[:page] || 1).to_i > 1 %>
+            <%= link_to "← Previous", dashboard_conversion_list_path(page: (params[:page] || 1).to_i - 1),
+                class: "px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50" %>
+          <% end %>
+          <% if (@conversions.offset_value || 0) + @conversions.size < @total_count %>
+            <%= link_to "Next →", dashboard_conversion_list_path(page: (params[:page] || 1).to_i + 1),
+                class: "px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50" %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

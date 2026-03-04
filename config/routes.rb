@@ -158,6 +158,8 @@ Rails.application.routes.draw do
       resources :api_keys, only: [ :index, :create, :destroy ]
       resource :integrations, only: [ :show ], controller: "integrations" do
         post "refresh/:id", action: :refresh, as: :refresh
+        post "notify", action: :notify, as: :notify
+        post "request", action: :request_integration, as: :request_integration
       end
       resources :attribution_models, except: [ :show ] do
         collection do
@@ -182,6 +184,12 @@ Rails.application.routes.draw do
     get "filters", to: "filters#show"
     get "conversions", to: "conversions#show"
     get "funnel", to: "funnel#show"
+    get "spend", to: "spend#show"
+
+    # Conversion & identity detail views
+    get "conversion_list", to: "conversion_detail#index", as: :conversion_list
+    get "conversion_list/:id", to: "conversion_detail#show", as: :conversion_detail
+    get "identities/:id", to: "identities#show", as: :identity_detail
 
     resource :export, only: [ :create ], controller: "exports"
 

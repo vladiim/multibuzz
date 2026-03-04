@@ -1,0 +1,179 @@
+<% content_for :title, "Identity #{@identity.external_id}" %>
+
+<%
+  tier_styles = {
+    Dashboard::EngagementScoreCalculator::TIER_HOT => "bg-red-100 text-red-700",
+    Dashboard::EngagementScoreCalculator::TIER_WARM => "bg-orange-100 text-orange-700",
+    Dashboard::EngagementScoreCalculator::TIER_ENGAGED => "bg-yellow-100 text-yellow-700",
+    Dashboard::EngagementScoreCalculator::TIER_COOL => "bg-blue-100 text-blue-700",
+    Dashboard::EngagementScoreCalculator::TIER_COLD => "bg-gray-100 text-gray-600"
+  }
+%>
+
+<div class="min-h-screen bg-gray-100">
+  <%= render "layouts/nav" %>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <%# --- Breadcrumb --- %>
+    <nav class="mb-6 text-sm text-gray-500">
+      <%= link_to "Dashboard", dashboard_path, class: "hover:text-gray-700" %>
+      <span class="mx-1">/</span>
+      <%= link_to "Conversions", dashboard_conversion_list_path, class: "hover:text-gray-700" %>
+      <span class="mx-1">/</span>
+      <span class="text-gray-900"><%= @identity.external_id %></span>
+    </nav>
+
+    <%# --- Profile Header --- %>
+    <div class="bg-white shadow rounded-lg p-5 mb-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <span class="w-12 h-12 rounded-full flex items-center justify-center text-lg font-semibold bg-purple-100 text-purple-700">
+            <%= @identity.external_id.first(2).upcase %>
+          </span>
+          <div>
+            <h1 class="text-xl font-semibold text-gray-900"><%= @identity.external_id %></h1>
+            <p class="text-sm text-gray-500">
+              First seen <%= time_ago_in_words(@identity.first_identified_at) %> ago
+              &bull; Last seen <%= time_ago_in_words(@identity.last_identified_at) %> ago
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="px-3 py-1.5 rounded-full text-sm font-semibold <%= tier_styles.fetch(@engagement_score[:tier]) %>">
+            <%= @engagement_score[:tier] %> &middot; <%= @engagement_score[:score] %>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <%# --- Left Column: Traits + Score Breakdown + Visitors --- %>
+      <div class="lg:col-span-1 space-y-6">
+        <%# --- Engagement Score Breakdown --- %>
+        <div class="bg-white shadow rounded-lg p-5">
+          <h2 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Engagement Score</h2>
+          <div class="space-y-3">
+            <% @engagement_score[:components].each do |name, value| %>
+              <div>
+                <div class="flex justify-between text-sm mb-1">
+                  <span class="text-gray-600 capitalize"><%= name %></span>
+                  <span class="text-gray-900 font-medium"><%= (value * Dashboard::EngagementScoreCalculator::SCORE_SCALE).round %>%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-1.5">
+                  <div class="bg-indigo-500 h-1.5 rounded-full" style="width: <%= (value * Dashboard::EngagementScoreCalculator::SCORE_SCALE).round %>%"></div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+
+        <%# --- Traits --- %>
+        <div class="bg-white shadow rounded-lg p-5">
+          <h2 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Traits</h2>
+          <% if @identity.traits.present? && @identity.traits.any? %>
+            <div class="bg-gray-50 rounded p-3 space-y-1">
+              <% @identity.traits.each do |key, value| %>
+                <div class="flex justify-between text-sm">
+                  <span class="text-gray-500 font-mono text-xs"><%= key %></span>
+                  <span class="text-gray-900 text-xs"><%= value %></span>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="text-sm text-gray-400">No traits collected</p>
+          <% end %>
+        </div>
+
+        <%# --- Linked Visitors --- %>
+        <div class="bg-white shadow rounded-lg p-5">
+          <h2 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">
+            Visitors <span class="text-gray-400">(<%= @identity.visitors.size %>)</span>
+          </h2>
+          <% if @identity.visitors.any? %>
+            <div class="space-y-2">
+              <% @identity.visitors.each do |visitor| %>
+                <div class="flex justify-between items-center text-sm p-2 bg-gray-50 rounded">
+                  <span class="font-mono text-xs text-gray-700"><%= visitor.prefix_id %></span>
+                  <span class="text-xs text-gray-400"><%= time_ago_in_words(visitor.last_seen_at) %> ago</span>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="text-sm text-gray-400">No visitors linked</p>
+          <% end %>
+        </div>
+      </div>
+
+      <%# --- Right Column: Channels + Conversions --- %>
+      <div class="lg:col-span-2 space-y-6">
+        <%# --- Channel Breakdown --- %>
+        <div class="bg-white shadow rounded-lg p-5">
+          <h2 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Channels</h2>
+          <% if @identity.channel_breakdown.any? %>
+            <% total_sessions = @identity.channel_breakdown.values.sum %>
+            <div class="space-y-2">
+              <% @identity.channel_breakdown.sort_by { |_, count| -count }.each do |channel, count| %>
+                <div>
+                  <div class="flex justify-between text-sm mb-1">
+                    <span class="text-gray-700"><%= channel.titleize %></span>
+                    <span class="text-gray-500"><%= count %> sessions (<%= ((count.to_f / total_sessions) * Dashboard::EngagementScoreCalculator::SCORE_SCALE).round %>%)</span>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-1.5">
+                    <div class="bg-indigo-500 h-1.5 rounded-full" style="width: <%= ((count.to_f / total_sessions) * Dashboard::EngagementScoreCalculator::SCORE_SCALE).round %>%"></div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="text-sm text-gray-400 py-4 text-center">No channel data</p>
+          <% end %>
+        </div>
+
+        <%# --- Conversions --- %>
+        <div class="bg-white shadow rounded-lg p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-xs font-medium text-gray-500 uppercase tracking-wider">Conversions</h2>
+            <% if @identity.total_revenue > 0 %>
+              <span class="text-sm font-semibold text-gray-900">Total: <%= number_to_currency(@identity.total_revenue) %></span>
+            <% end %>
+          </div>
+          <% if @identity.conversions.any? %>
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead>
+                  <tr>
+                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                    <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue</th>
+                    <th class="px-3 py-2"></th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                  <% @identity.conversions.order(converted_at: :desc).each do |conversion| %>
+                    <tr class="hover:bg-gray-50 cursor-pointer transition-colors"
+                        onclick="Turbo.visit('<%= dashboard_conversion_detail_path(conversion.prefix_id) %>')">
+                      <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900"><%= conversion.converted_at.strftime("%b %-d, %Y") %></td>
+                      <td class="px-3 py-2 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700"><%= conversion.conversion_type %></span>
+                      </td>
+                      <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
+                        <%= conversion.revenue.present? ? number_to_currency(conversion.revenue) : raw("&mdash;") %>
+                      </td>
+                      <td class="px-3 py-2 whitespace-nowrap text-right">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          <% else %>
+            <p class="text-sm text-gray-400 py-8 text-center">No conversions yet</p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

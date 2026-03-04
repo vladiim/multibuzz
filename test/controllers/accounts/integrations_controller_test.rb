@@ -100,6 +100,74 @@ class Accounts::IntegrationsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to login_path
   end
 
+  # --- notify ---
+
+  test "notify creates integration request submission" do
+    sign_in
+
+    assert_difference "IntegrationRequestSubmission.count", 1 do
+      post notify_account_integrations_path, params: { platform_name: "Meta Ads" }
+    end
+
+    assert_redirected_to account_integrations_path
+    assert_match(/notify you/, flash[:notice])
+  end
+
+  test "notify prevents duplicate for same platform" do
+    sign_in
+    IntegrationRequestSubmission.create!(email: user.email, platform_name: "Meta Ads")
+
+    assert_no_difference "IntegrationRequestSubmission.count" do
+      post notify_account_integrations_path, params: { platform_name: "Meta Ads" }
+    end
+
+    assert_match(/already requested/, flash[:notice])
+  end
+
+  test "show displays coming soon cards with Notify Me buttons" do
+    sign_in
+
+    get account_integrations_path
+
+    assert_select "[data-platform='meta-ads']"
+    assert_select "[data-platform='linkedin-ads']"
+    assert_select "[data-platform='microsoft-ads-bing']"
+  end
+
+  test "show displays Notified badge for already-requested platforms" do
+    sign_in
+    IntegrationRequestSubmission.create!(email: user.email, platform_name: "Meta Ads")
+
+    get account_integrations_path
+
+    assert_select "[data-platform='meta-ads']" do
+      assert_select "span", /Notified/
+    end
+  end
+
+  # --- request_integration ---
+
+  test "request_integration creates submission with full params" do
+    sign_in
+
+    assert_difference "IntegrationRequestSubmission.count", 1 do
+      post request_integration_account_integrations_path, params: {
+        platform_name: "Other",
+        platform_name_other: "Spotify Ads",
+        monthly_spend: "$1K – $10K",
+        notes: "Need this soon"
+      }
+    end
+
+    assert_redirected_to account_integrations_path
+  end
+
+  test "notify requires authentication" do
+    post notify_account_integrations_path, params: { platform_name: "Meta Ads" }
+
+    assert_redirected_to login_path
+  end
+
   # --- multi-tenancy ---
 
   test "does not show other account connections" do

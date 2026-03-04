@@ -1,0 +1,49 @@
+<tr class="hover:bg-gray-50 cursor-pointer transition-colors"
+    onclick="Turbo.visit('<%= dashboard_conversion_detail_path(conversion.prefix_id) %>')">
+  <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+    <%= conversion.converted_at.strftime("%b %-d, %Y %H:%M") %>
+  </td>
+  <td class="px-4 py-3 whitespace-nowrap">
+    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">
+      <%= conversion.conversion_type %>
+    </span>
+    <% if conversion.is_test %>
+      <span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">TEST</span>
+    <% end %>
+    <% if conversion.is_acquisition %>
+      <span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-700">ACQ</span>
+    <% end %>
+  </td>
+  <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+    <% if conversion.revenue.present? %>
+      <%= number_to_currency(conversion.revenue, unit: conversion.currency == "USD" ? "$" : conversion.currency) %>
+    <% else %>
+      <span class="text-gray-400">&mdash;</span>
+    <% end %>
+  </td>
+  <td class="px-4 py-3 whitespace-nowrap">
+    <% if conversion.journey_session_ids.any? %>
+      <span class="text-xs text-gray-500"><%= conversion.journey_session_ids.size %> sessions</span>
+    <% else %>
+      <span class="text-xs text-gray-400">&mdash;</span>
+    <% end %>
+  </td>
+  <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+    <%= conversion.journey_session_ids.size %>
+  </td>
+  <td class="px-4 py-3 whitespace-nowrap text-sm">
+    <% if conversion.identity.present? %>
+      <%= link_to conversion.identity.external_id,
+          dashboard_identity_detail_path(conversion.identity.prefix_id),
+          class: "text-indigo-600 hover:text-indigo-800 font-medium",
+          onclick: "event.stopPropagation()" %>
+    <% else %>
+      <span class="text-gray-400">Anonymous</span>
+    <% end %>
+  </td>
+  <td class="px-4 py-3 whitespace-nowrap text-right">
+    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+    </svg>
+  </td>
+</tr>

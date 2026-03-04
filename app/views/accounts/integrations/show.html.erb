@@ -16,12 +16,23 @@
             </div>
 
             <div class="divide-y divide-gray-200">
-              <%= render "google_ads_card" %>
-              <%= render "coming_soon_card", platform: "Meta Ads" %>
-              <%= render "coming_soon_card", platform: "TikTok Ads" %>
-              <%= render "coming_soon_card", platform: "LinkedIn Ads" %>
+              <% if Rails.env.production? %>
+                <%= render "coming_soon_card",
+                  platform: "Google Ads",
+                  notified: @notified_platforms.include?("Google Ads") %>
+              <% else %>
+                <%= render "google_ads_card" %>
+              <% end %>
+
+              <% IntegrationRequestSubmission::COMING_SOON_PLATFORMS.each do |platform| %>
+                <%= render "coming_soon_card",
+                  platform: platform,
+                  notified: @notified_platforms.include?(platform) %>
+              <% end %>
             </div>
           </div>
+
+          <%= render "request_integration" %>
         </div>
       </div>
     </div>

@@ -1,0 +1,56 @@
+<div class="bg-white shadow overflow-hidden sm:rounded-lg mt-4">
+  <div class="px-6 py-4 border-b border-gray-200">
+    <h2 class="text-lg font-medium text-gray-900">Don't see your platform?</h2>
+    <p class="mt-1 text-sm text-gray-500">Tell us which integration you need and we'll prioritize it.</p>
+  </div>
+
+  <div class="px-6 py-5">
+    <%= form_with url: request_integration_account_integrations_path, method: :post, class: "space-y-4" do |f| %>
+      <div>
+        <label for="platform_name" class="block text-sm font-medium text-gray-700">Platform</label>
+        <select name="platform_name" id="platform_name"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          data-controller="toggle-other"
+          data-action="change->toggle-other#toggle"
+          data-toggle-other-target-value="platform_name_other_wrapper">
+          <option value="">Select a platform...</option>
+          <% IntegrationRequestSubmission::REQUEST_ONLY_PLATFORMS.each do |platform| %>
+            <option value="<%= platform %>"><%= platform %></option>
+          <% end %>
+        </select>
+      </div>
+
+      <div id="platform_name_other_wrapper" class="hidden">
+        <label for="platform_name_other" class="block text-sm font-medium text-gray-700">Platform name</label>
+        <input type="text" name="platform_name_other" id="platform_name_other"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          placeholder="e.g. Spotify Ads">
+      </div>
+
+      <div>
+        <label for="monthly_spend" class="block text-sm font-medium text-gray-700">Monthly ad spend <span class="text-gray-400">(optional)</span></label>
+        <select name="monthly_spend" id="monthly_spend"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+          <option value="">Select range...</option>
+          <% IntegrationRequestSubmission::MONTHLY_SPEND_OPTIONS.each do |option| %>
+            <option value="<%= option %>"><%= option %></option>
+          <% end %>
+        </select>
+      </div>
+
+      <div>
+        <label for="notes" class="block text-sm font-medium text-gray-700">Anything else? <span class="text-gray-400">(optional)</span></label>
+        <textarea name="notes" id="notes" rows="2"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          placeholder="e.g. We spend $200K/mo on Microsoft Ads and need this ASAP"></textarea>
+      </div>
+
+      <div>
+        <button type="submit"
+          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+          Request Integration
+        </button>
+      </div>
+    <% end %>
+  </div>
+</div>

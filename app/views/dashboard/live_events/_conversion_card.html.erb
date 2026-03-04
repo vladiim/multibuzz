@@ -23,6 +23,11 @@
       <span class="text-sm text-gray-500" title="<%= conversion.converted_at.iso8601 %>">
         <%= time_ago_in_words(conversion.converted_at) %> ago
       </span>
+      <%= link_to dashboard_conversion_detail_path(conversion.prefix_id),
+          class: "text-xs text-indigo-600 hover:text-indigo-800 font-medium",
+          onclick: "event.stopPropagation()" do %>
+        View journey
+      <% end %>
       <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
       </svg>

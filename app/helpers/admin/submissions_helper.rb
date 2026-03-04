@@ -5,7 +5,8 @@ module Admin::SubmissionsHelper
     "ContactSubmission" => { class: "bg-blue-100 text-blue-800", label: "Contact" },
     "WaitlistSubmission" => { class: "bg-purple-100 text-purple-800", label: "Waitlist" },
     "SdkWaitlistSubmission" => { class: "bg-green-100 text-green-800", label: "SDK" },
-    "FeatureWaitlistSubmission" => { class: "bg-amber-100 text-amber-800", label: "Feature" }
+    "FeatureWaitlistSubmission" => { class: "bg-amber-100 text-amber-800", label: "Feature" },
+    "IntegrationRequestSubmission" => { class: "bg-indigo-100 text-indigo-800", label: "Integration" }
   }.freeze
 
   STATUS_BADGES = {
@@ -42,12 +43,10 @@ module Admin::SubmissionsHelper
       "#{submission.subject}: #{submission.message&.truncate(50)}"
     when WaitlistSubmission
       "#{submission.role} - #{submission.framework}"
-    when SdkWaitlistSubmission
-      submission.sdk_name
-    when FeatureWaitlistSubmission
-      submission.feature_name
-    else
-      "-"
+    when SdkWaitlistSubmission then submission.sdk_name
+    when FeatureWaitlistSubmission then submission.feature_name
+    when IntegrationRequestSubmission then submission.platform_name
+    else "-"
     end
   end
 end

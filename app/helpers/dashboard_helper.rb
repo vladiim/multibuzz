@@ -52,6 +52,14 @@ module DashboardHelper
     count == 1 ? "1 filter" : "#{count} filters"
   end
 
+  def format_time_gap(days)
+    return "< 1 h" if days.nil? || days < (1.0 / 24)
+    return pluralize(((days * 24).round), "hr") if days < 1
+    return pluralize(days.round, "day") if days < 30
+
+    pluralize((days / 30).round, "mo")
+  end
+
   def chart_or_empty(data:, empty_message: "No data for the selected period", &block)
     if data.blank?
       content_tag(:div, empty_message, class: "h-64 flex items-center justify-center text-gray-500")

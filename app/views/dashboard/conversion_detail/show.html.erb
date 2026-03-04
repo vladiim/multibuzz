@@ -1,0 +1,132 @@
+<% content_for :title, "Conversion #{@conversion.prefix_id}" %>
+
+<div class="min-h-screen bg-gray-100">
+  <%= render "layouts/nav" %>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <%# --- Breadcrumb --- %>
+    <nav class="mb-6 text-sm text-gray-500">
+      <%= link_to "Dashboard", dashboard_path, class: "hover:text-gray-700" %>
+      <span class="mx-1">/</span>
+      <%= link_to "Conversions", dashboard_conversion_list_path, class: "hover:text-gray-700" %>
+      <span class="mx-1">/</span>
+      <span class="text-gray-900"><%= @conversion.prefix_id %></span>
+    </nav>
+
+    <%# --- Header --- %>
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-3">
+        <span class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold bg-green-100 text-green-700">$</span>
+        <div>
+          <h1 class="text-xl font-semibold text-gray-900"><%= @conversion.conversion_type %></h1>
+          <p class="text-sm text-gray-500"><%= @conversion.converted_at.strftime("%b %-d, %Y at %H:%M") %></p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <% if @conversion.is_test %>
+          <span class="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded">TEST</span>
+        <% end %>
+        <% if @conversion.is_acquisition %>
+          <span class="px-2 py-1 text-xs font-medium bg-indigo-100 text-indigo-700 rounded">ACQUISITION</span>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <%# --- Conversion Data Card --- %>
+      <div class="lg:col-span-1 space-y-6">
+        <div class="bg-white shadow rounded-lg p-5">
+          <h2 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Details</h2>
+          <dl class="space-y-2">
+            <div class="flex justify-between text-sm">
+              <dt class="text-gray-500">ID</dt>
+              <dd class="text-gray-900 font-mono text-xs"><%= @conversion.prefix_id %></dd>
+            </div>
+            <div class="flex justify-between text-sm">
+              <dt class="text-gray-500">Type</dt>
+              <dd class="text-gray-900 font-medium"><%= @conversion.conversion_type %></dd>
+            </div>
+            <div class="flex justify-between text-sm">
+              <dt class="text-gray-500">Revenue</dt>
+              <dd class="text-gray-900 font-medium">
+                <% if @conversion.revenue.present? %>
+                  <%= number_to_currency(@conversion.revenue) %> <%= @conversion.currency %>
+                <% else %>
+                  <span class="text-gray-400">&mdash;</span>
+                <% end %>
+              </dd>
+            </div>
+            <div class="flex justify-between text-sm">
+              <dt class="text-gray-500">Date</dt>
+              <dd class="text-gray-900"><%= @conversion.converted_at.strftime("%b %-d, %Y %H:%M") %></dd>
+            </div>
+            <% if @conversion.funnel.present? %>
+              <div class="flex justify-between text-sm">
+                <dt class="text-gray-500">Funnel</dt>
+                <dd class="text-gray-900"><%= @conversion.funnel %></dd>
+              </div>
+            <% end %>
+            <div class="flex justify-between text-sm">
+              <dt class="text-gray-500">Visitor</dt>
+              <dd class="text-gray-900 font-mono text-xs"><%= @conversion.visitor.prefix_id %></dd>
+            </div>
+            <div class="flex justify-between text-sm">
+              <dt class="text-gray-500">Identity</dt>
+              <dd>
+                <% if @conversion.identity.present? %>
+                  <%= link_to @conversion.identity.external_id,
+                      dashboard_identity_detail_path(@conversion.identity.prefix_id),
+                      class: "text-indigo-600 hover:text-indigo-800 font-medium text-sm" %>
+                <% else %>
+                  <span class="text-gray-400 text-sm">Anonymous</span>
+                <% end %>
+              </dd>
+            </div>
+            <% if @conversion.days_to_convert.present? %>
+              <div class="flex justify-between text-sm">
+                <dt class="text-gray-500">Time to convert</dt>
+                <dd class="text-gray-900"><%= pluralize(@conversion.days_to_convert.round(1), "day") %></dd>
+              </div>
+            <% end %>
+          </dl>
+        </div>
+
+        <%# --- Properties --- %>
+        <% if @conversion.properties.present? && @conversion.properties.any? %>
+          <div class="bg-white shadow rounded-lg p-5">
+            <h2 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Properties</h2>
+            <div class="bg-gray-50 rounded p-3 space-y-1">
+              <% @conversion.properties.each do |key, value| %>
+                <div class="flex justify-between text-sm">
+                  <span class="text-gray-500 font-mono text-xs"><%= key %></span>
+                  <span class="text-gray-900 text-xs"><%= value %></span>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <%# --- Journey + Attribution (wide column) --- %>
+      <div class="lg:col-span-2 space-y-6">
+        <%# --- Journey Visualisation --- %>
+        <div class="bg-white shadow rounded-lg p-5">
+          <h2 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-4">Customer Journey</h2>
+          <% if @conversion.journey_sessions.any? %>
+            <%= render "journey", conversion: @conversion %>
+          <% else %>
+            <p class="text-sm text-gray-400 py-8 text-center">No journey data &mdash; attribution may still be processing</p>
+          <% end %>
+        </div>
+
+        <%# --- Attribution Credits --- %>
+        <% if @conversion.attribution_credits.any? %>
+          <div class="bg-white shadow rounded-lg p-5">
+            <h2 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Attribution Credits</h2>
+            <%= render "attribution_credits", credits: @conversion.attribution_credits %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
