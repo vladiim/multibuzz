@@ -1,32 +1,56 @@
-<div class="overflow-x-auto">
-  <table class="min-w-full divide-y divide-gray-200">
-    <thead>
-      <tr>
-        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Model</th>
-        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Channel</th>
-        <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Credit</th>
-        <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue</th>
-        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
-        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Campaign</th>
-      </tr>
-    </thead>
-    <tbody class="divide-y divide-gray-200">
-      <% credits.each do |credit| %>
-        <tr>
-          <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900"><%= credit.attribution_model&.name %></td>
-          <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900"><%= credit.channel&.titleize %></td>
-          <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-right"><%= number_with_precision(credit.credit, precision: 2) %></td>
-          <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
-            <% if credit.revenue_credit.present? %>
-              <%= number_to_currency(credit.revenue_credit) %>
-            <% else %>
-              <span class="text-gray-400">&mdash;</span>
+<% model_names = credits.filter_map { |c| c.attribution_model&.name }.uniq.sort %>
+<% selected_model = model_names.first %>
+
+<div data-controller="toggle"
+  data-toggle-default-value="<%= selected_model %>"
+  data-toggle-active-class="bg-indigo-100 text-indigo-700 border-indigo-200"
+  data-toggle-inactive-class="bg-white text-gray-600 border-gray-300 hover:bg-gray-50">
+  <%# --- Model Filter Pills --- %>
+  <div class="flex flex-wrap gap-2 mb-4">
+    <% model_names.each do |name| %>
+      <button type="button"
+        data-toggle-target="trigger"
+        data-action="toggle#select"
+        data-value="<%= name %>"
+        class="px-3 py-1.5 text-xs font-medium rounded-full border transition-colors">
+        <%= name.titleize %>
+      </button>
+    <% end %>
+  </div>
+
+  <%# --- Table Per Model (toggled) --- %>
+  <% model_names.each do |name| %>
+    <div data-toggle-target="content" data-value="<%= name %>" class="<%= 'hidden' unless name == selected_model %>">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead>
+            <tr>
+              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Channel</th>
+              <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Credit</th>
+              <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Campaign</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <% credits.select { |c| c.attribution_model&.name == name }.each do |credit| %>
+              <tr>
+                <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900"><%= credit.channel&.titleize %></td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-right"><%= number_with_precision(credit.credit, precision: 2) %></td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
+                  <% if credit.revenue_credit.present? %>
+                    <%= number_to_currency(credit.revenue_credit) %>
+                  <% else %>
+                    <span class="text-gray-400">&mdash;</span>
+                  <% end %>
+                </td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500"><%= credit.utm_source || raw("&mdash;") %></td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500"><%= credit.utm_campaign || raw("&mdash;") %></td>
+              </tr>
             <% end %>
-          </td>
-          <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500"><%= credit.utm_source || "&mdash;".html_safe %></td>
-          <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500"><%= credit.utm_campaign || "&mdash;".html_safe %></td>
-        </tr>
-      <% end %>
-    </tbody>
-  </table>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% end %>
 </div>

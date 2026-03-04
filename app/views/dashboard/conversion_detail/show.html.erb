@@ -95,11 +95,11 @@
         <% if @conversion.properties.present? && @conversion.properties.any? %>
           <div class="bg-white shadow rounded-lg p-5">
             <h2 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Properties</h2>
-            <div class="bg-gray-50 rounded p-3 space-y-1">
+            <div class="bg-gray-50 rounded p-3 space-y-2">
               <% @conversion.properties.each do |key, value| %>
-                <div class="flex justify-between text-sm">
-                  <span class="text-gray-500 font-mono text-xs"><%= key %></span>
-                  <span class="text-gray-900 text-xs"><%= value %></span>
+                <div class="text-sm">
+                  <dt class="text-gray-500 font-mono text-xs mb-0.5"><%= key %></dt>
+                  <dd class="text-gray-900 text-xs break-all"><%= value %></dd>
                 </div>
               <% end %>
             </div>
