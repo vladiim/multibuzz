@@ -42,6 +42,32 @@ namespace :dev do
     generator.call
   end
 
+  desc "Generate ad spend seed data for an account"
+  task generate_spend_data: :environment do
+    unless Rails.env.development?
+      puts "This task is only available in development environment"
+      exit 1
+    end
+
+    account_slug = ENV["ACCOUNT_SLUG"]
+    days = (ENV["DAYS"] || 90).to_i
+    clear_existing = ENV["CLEAR"] == "true"
+    seed = ENV["SEED"]&.to_i
+
+    unless account_slug
+      puts "Usage: bin/rails dev:generate_spend_data ACCOUNT_SLUG=acme-inc [DAYS=90] [CLEAR=true] [SEED=42]"
+      exit 1
+    end
+
+    account = Account.find_by(slug: account_slug)
+    unless account
+      puts "Account not found: #{account_slug}"
+      exit 1
+    end
+
+    Dev::SpendDataGenerator.new(account, days: days, clear_existing: clear_existing, seed: seed).call
+  end
+
   desc "Clear all test data for an account"
   task clear_test_data: :environment do
     unless Rails.env.development?
@@ -479,6 +505,178 @@ module Dev
       puts "  Avg CLV: $#{avg_clv.round(2)}"
       puts ""
       puts "To view in dashboard, filter by 'Test data' or enable test data view."
+    end
+  end
+
+  class SpendDataGenerator
+    PAID_CHANNELS = {
+      "paid_search" => { campaign_type: "SEARCH", cpm: 15_000, ctr: 0.05 },
+      "paid_social" => { campaign_type: "SOCIAL", cpm: 8_000, ctr: 0.012 },
+      "display" => { campaign_type: "DISPLAY", cpm: 3_000, ctr: 0.004 },
+      "video" => { campaign_type: "VIDEO", cpm: 10_000, ctr: 0.015 }
+    }.freeze
+
+    CAMPAIGNS = {
+      "paid_search" => [
+        { id: "100001", name: "Brand Search", weight: 0.45 },
+        { id: "100002", name: "Non-Brand Search", weight: 0.35 },
+        { id: "100003", name: "Competitor Search", weight: 0.20 }
+      ],
+      "paid_social" => [
+        { id: "200001", name: "Prospecting LAL", weight: 0.50 },
+        { id: "200002", name: "Retargeting", weight: 0.30 },
+        { id: "200003", name: "Brand Awareness", weight: 0.20 }
+      ],
+      "display" => [
+        { id: "300001", name: "Remarketing Display", weight: 0.60 },
+        { id: "300002", name: "Contextual Display", weight: 0.40 }
+      ],
+      "video" => [
+        { id: "400001", name: "YouTube TrueView", weight: 0.70 },
+        { id: "400002", name: "YouTube Bumper", weight: 0.30 }
+      ]
+    }.freeze
+
+    DEVICES = %w[DESKTOP MOBILE TABLET].freeze
+    DEVICE_WEIGHTS = [ 0.45, 0.45, 0.10 ].freeze
+    CURRENCY = "USD"
+
+    # Daily budget per channel (micros) — adds up to ~$800/day total
+    DAILY_BUDGETS = {
+      "paid_search" => 350_000_000,
+      "paid_social" => 250_000_000,
+      "display" => 100_000_000,
+      "video" => 100_000_000
+    }.freeze
+
+    def initialize(account, days:, clear_existing: false, seed: nil)
+      @account = account
+      @days = days
+      @clear_existing = clear_existing
+      @random = seed ? Random.new(seed) : Random.new
+      @stats = Hash.new(0)
+    end
+
+    def call
+      setup_connection
+      clear_data if @clear_existing
+
+      puts "Generating #{@days} days of spend data for: #{@account.name}"
+      puts "  Daily budget: ~$#{DAILY_BUDGETS.values.sum / 1_000_000}"
+      puts ""
+
+      ActiveRecord::Base.transaction { generate_spend_records }
+
+      print_summary
+    end
+
+    private
+
+    attr_reader :account, :random, :stats
+
+    def setup_connection
+      @connection = account.ad_platform_connections.find_or_create_by!(
+        platform: :google_ads,
+        platform_account_id: "8515486033"
+      ) do |c|
+        c.platform_account_name = "#{account.name} — Google Ads"
+        c.currency = CURRENCY
+        c.status = :connected
+        c.access_token = "seed_token"
+        c.refresh_token = "seed_refresh"
+        c.token_expires_at = 1.year.from_now
+      end
+      puts "Connection: #{@connection.platform_account_name} (#{@connection.prefix_id})"
+    end
+
+    def clear_data
+      count = account.ad_spend_records.delete_all
+      puts "Cleared #{count} existing spend records"
+    end
+
+    def generate_spend_records
+      @days.times do |i|
+        date = i.days.ago.to_date
+        print "\rGenerating #{date}..."
+        generate_day(date)
+      end
+      puts "\rGenerated #{@days} days of spend data. Done!"
+    end
+
+    def generate_day(date)
+      PAID_CHANNELS.each do |channel, config|
+        CAMPAIGNS[channel].each do |campaign|
+          generate_campaign_day(date, channel, config, campaign)
+        end
+      end
+    end
+
+    def generate_campaign_day(date, channel, config, campaign)
+      budget_share = DAILY_BUDGETS[channel] * campaign[:weight]
+
+      24.times do |hour|
+        hour_weight = hour_distribution(hour)
+        weighted_device.each do |device, device_weight|
+          spend = (budget_share * hour_weight * device_weight * variance).to_i
+          next if spend.zero?
+
+          impressions = (spend.to_f / config[:cpm] * 1000 * variance).to_i
+          clicks = (impressions * config[:ctr] * variance).to_i
+
+          account.ad_spend_records.create!(
+            ad_platform_connection: @connection,
+            spend_date: date,
+            spend_hour: hour,
+            channel: channel,
+            platform_campaign_id: campaign[:id],
+            campaign_name: campaign[:name],
+            campaign_type: config[:campaign_type],
+            device: device,
+            spend_micros: spend,
+            currency: CURRENCY,
+            impressions: [ impressions, 1 ].max,
+            clicks: [ clicks, 0 ].max,
+            platform_conversions_micros: 0,
+            platform_conversion_value_micros: 0,
+            is_test: false
+          )
+          stats[:records] += 1
+          stats[:spend] += spend
+        end
+      end
+    end
+
+    def hour_distribution(hour)
+      case hour
+      when 0..5 then 0.01
+      when 6..8 then 0.03
+      when 9..11 then 0.06
+      when 12..14 then 0.07
+      when 15..17 then 0.06
+      when 18..20 then 0.05
+      when 21..23 then 0.03
+      end
+    end
+
+    def weighted_device
+      DEVICES.zip(DEVICE_WEIGHTS)
+    end
+
+    def variance
+      0.7 + random.rand * 0.6
+    end
+
+    def print_summary
+      puts ""
+      puts "=== SPEND SEED SUMMARY ==="
+      puts "  Records created: #{stats[:records]}"
+      puts "  Total spend: $#{(stats[:spend].to_f / 1_000_000).round(2)}"
+      puts "  Date range: #{@days.days.ago.to_date} → #{Date.current}"
+      puts "  Campaigns: #{CAMPAIGNS.values.flatten.size}"
+      puts "  Channels: #{PAID_CHANNELS.keys.join(', ')}"
+      puts ""
+      puts "Run MetricsService:"
+      puts "  bin/rails runner \"result = SpendIntelligence::MetricsService.new(Account.find_by(slug: '#{account.slug}'), { date_range: '30d' }).call; pp result[:data][:totals]\""
     end
   end
 end

@@ -102,6 +102,7 @@ Metrics/ParameterLists:
     - 'app/services/sessions/channel_attribution_service.rb'
     - 'app/services/sessions/resolution_service.rb'
     - 'app/services/sessions/tracking_service.rb'
+    - 'app/services/spend_intelligence/scopes/spend_scope.rb'
     - 'app/services/team/acceptance_service.rb'
     - 'app/services/team/invitation_service.rb'
     - 'app/services/text/levenshtein_matcher.rb'
@@ -119,6 +120,7 @@ Metrics/ParameterLists:
     - 'test/services/dashboard/scopes/events_scope_test.rb'
     - 'test/services/data_integrity/check_runner_test.rb'
     - 'test/services/sessions/channel_attribution_service_test.rb'
+    - 'test/services/spend_intelligence/scopes/spend_scope_test.rb'
     - 'test/services/team/acceptance_service_test.rb'
 
 # Offense count: 6

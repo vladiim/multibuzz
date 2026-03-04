@@ -213,7 +213,9 @@ Attribution
 
 The Integrations page shows platform cards:
 - **Google Ads** card: Connect/Disconnect button, status dot (green/red), account name/ID, last synced, sync error if any
-- **Meta Ads**, **TikTok Ads**, **LinkedIn Ads** cards (future, greyed out with "Coming Soon")
+- **Coming Soon** cards (greyed out with "Notify Me" button): Meta Ads, TikTok Ads, LinkedIn Ads, Microsoft Ads (Bing), Pinterest Ads, Snapchat Ads, Reddit Ads, X (Twitter) Ads, Apple Search Ads, Phone/Call Tracking
+- **CSV Import** card (coming soon): manual spend import for any platform
+- **Request Integration** card: always-visible card at the bottom of the list, prompting users to request a platform we don't support yet
 
 Connect flow:
 1. User clicks "Connect Google Ads" → redirect to Google OAuth consent
@@ -222,6 +224,373 @@ Connect flow:
 4. `AdPlatformConnection` created (status: connected) → redirect back to Integrations
 5. Background job: 90-day backfill starts (status: syncing)
 6. Integrations page shows "Syncing historical data..." → completes in ~2-5 min
+
+### Coming Soon Cards
+
+Each upcoming platform gets a card on the Integrations page. Cards are greyed out with a **"Notify Me"** button instead of "Connect". Clicking "Notify Me" creates an `IntegrationRequestSubmission` (same model as the Request Integration form) with the platform name auto-populated — no form fields, single click.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  Ad Platforms                                                        │
+│                                                                      │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐               │
+│  │ Google   │ │ Meta     │ │ TikTok   │ │ LinkedIn │               │
+│  │ Ads      │ │ Ads      │ │ Ads      │ │ Ads      │               │
+│  │ ● Active │ │ Soon     │ │ Soon     │ │ Soon     │               │
+│  │[Manage]  │ │[Notify]  │ │[Notify]  │ │[Notify]  │               │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘               │
+│                                                                      │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐               │
+│  │Microsoft │ │Pinterest │ │ Snapchat │ │ Reddit   │               │
+│  │Ads (Bing)│ │ Ads      │ │ Ads      │ │ Ads      │               │
+│  │ Soon     │ │ Soon     │ │ Soon     │ │ Soon     │               │
+│  │[Notify]  │ │[Notify]  │ │[Notify]  │ │[Notify]  │               │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘               │
+│                                                                      │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐                            │
+│  │ X (Twit) │ │Apple Ads │ │ Phone/   │                            │
+│  │ Ads      │ │          │ │ Call     │                            │
+│  │ Soon     │ │ Soon     │ │ Soon     │                            │
+│  │[Notify]  │ │[Notify]  │ │[Notify]  │                            │
+│  └──────────┘ └──────────┘ └──────────┘                            │
+│                                                                      │
+│  Data Import                                                         │
+│  ┌──────────┐                                                       │
+│  │ CSV      │                                                       │
+│  │ Import   │                                                       │
+│  │ Soon     │                                                       │
+│  │[Notify]  │                                                       │
+│  └──────────┘                                                       │
+│                                                                      │
+│  ┌──────────────────────────────────────────────────────────────┐   │
+│  │  Don't see your platform?  [Request Integration →]           │   │
+│  └──────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Coming Soon platforms** (ordered by priority):
+
+| Platform | Category | Notes |
+|----------|----------|-------|
+| Meta Ads | Ad platform | API approval in progress |
+| TikTok Ads | Ad platform | Deferred — fast approval when ready |
+| LinkedIn Ads | Ad platform | API access submitted 5 Mar 2026 |
+| Microsoft Ads (Bing) | Ad platform | Similar API to Google, easy build |
+| Pinterest Ads | Ad platform | High value for e-commerce/DTC |
+| Snapchat Ads | Ad platform | Younger demographics |
+| Reddit Ads | Ad platform | Growing fast for SaaS/tech |
+| X (Twitter) Ads | Ad platform | Declining but some B2B spend |
+| Apple Search Ads | Ad platform | iOS app marketers |
+| Phone/Call Tracking | Data source | Call tracking providers (CallRail, etc.) — spec separately |
+| CSV Import | Data import | Manual upload for any platform — zero API overhead |
+
+**"Notify Me" behavior:**
+1. User clicks "Notify Me" → POST `/account/integrations/notify` with `platform_name` param
+2. Creates `IntegrationRequestSubmission` with platform name auto-populated, no other fields
+3. Button changes to "Notified ✓" (disabled state) — persisted via checking existing submission
+4. Same duplicate check as Request Integration form (same email + platform = already notified)
+5. Counts as demand signal in admin dashboard alongside full Request Integration submissions
+
+### Request Integration
+
+Below the coming-soon cards, a persistent "Request Integration" link opens a contact form for platforms not listed. This serves two purposes: (1) users feel heard, (2) we get demand signal to prioritize platform expansion (Phase 8).
+
+#### User-Facing Form
+
+The card sits below the coming-soon cards on the Integrations page, always visible regardless of connection state:
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  ┌──────────────────────────────────────────────────────────────┐   │
+│  │  🔌  Don't see your platform?                                │   │
+│  │                                                              │   │
+│  │  Platform  [Select platform      ▼]                          │   │
+│  │            ○ Microsoft Ads (Bing)                             │   │
+│  │            ○ Pinterest Ads                                    │   │
+│  │            ○ Snapchat Ads                                     │   │
+│  │            ○ Amazon Ads                                       │   │
+│  │            ○ Twitter/X Ads                                    │   │
+│  │            ○ Reddit Ads                                       │   │
+│  │            ○ Other (specify below)                            │   │
+│  │                                                              │   │
+│  │  Monthly ad spend   [$___________]   (optional — helps       │   │
+│  │                                        us prioritize)        │   │
+│  │                                                              │   │
+│  │  Anything else?     [___________]   (optional free text)     │   │
+│  │                                                              │   │
+│  │  [Request Integration]                                       │   │
+│  └──────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Form fields:**
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `platform_name` | Select (dropdown) | Yes | Predefined options + "Other" |
+| `platform_name_other` | Text | Only if "Other" selected | Free text for unlisted platforms |
+| `monthly_spend` | Select (dropdown) | No | Ranges: "Under $1K", "$1K–$10K", "$10K–$50K", "$50K–$100K", "$100K+" |
+| `notes` | Text (textarea) | No | Free text for context ("We spend $200K/mo on Microsoft Ads and need this ASAP") |
+
+**Auto-populated (not shown to user):**
+
+| Field | Source |
+|-------|--------|
+| `email` | `current_user.email` (user is logged in — this is behind auth on Settings page) |
+| `account_id` | `current_account.prefix_id` (links request to account for admin context) |
+| `plan_name` | `current_account.plan&.name` (helps prioritize — Pro accounts get more weight) |
+| `ip_address` | `request.remote_ip` (anonymized /24) |
+| `user_agent` | `request.user_agent` |
+
+**Predefined platform options** (ordered by market share / likely demand):
+
+```ruby
+PLATFORM_OPTIONS = [
+  "Microsoft Ads (Bing)",
+  "Pinterest Ads",
+  "Snapchat Ads",
+  "Amazon Ads",
+  "Twitter/X Ads",
+  "Reddit Ads",
+  "Apple Search Ads",
+  "Phone/Call Tracking",
+  "Criteo",
+  "The Trade Desk",
+  "Other"
+].freeze
+
+MONTHLY_SPEND_OPTIONS = [
+  "Under $1K",
+  "$1K – $10K",
+  "$10K – $50K",
+  "$50K – $100K",
+  "$100K+"
+].freeze
+```
+
+**Behavior:**
+1. User fills form → POST `/account/integrations/request`
+2. Creates `IntegrationRequestSubmission` (STI subclass of `FormSubmission`)
+3. Duplicate check: same email + same platform_name = "You've already requested this platform!" (redirect back with notice)
+4. Success: "Thanks! We'll notify you when {platform} is available." (redirect back with notice)
+5. `FormSubmissionMailer.notify` fires automatically (existing `after_create_commit` on `FormSubmission`)
+6. No email field shown — user is authenticated, email auto-populated
+
+#### Data Model
+
+Follows existing `FormSubmission` STI pattern (like `SdkWaitlistSubmission`, `FeatureWaitlistSubmission`):
+
+```ruby
+# app/models/integration_request_submission.rb
+class IntegrationRequestSubmission < FormSubmission
+  # Used for both "Notify Me" (coming soon cards) and "Request Integration" (contact form)
+  COMING_SOON_PLATFORMS = [
+    "Meta Ads",
+    "TikTok Ads",
+    "LinkedIn Ads",
+    "Microsoft Ads (Bing)",
+    "Pinterest Ads",
+    "Snapchat Ads",
+    "Reddit Ads",
+    "X (Twitter) Ads",
+    "Apple Search Ads",
+    "Phone/Call Tracking",
+    "CSV Import"
+  ].freeze
+
+  REQUEST_ONLY_PLATFORMS = [
+    "Amazon Ads",
+    "Criteo",
+    "The Trade Desk",
+    "Other"
+  ].freeze
+
+  PLATFORM_OPTIONS = (COMING_SOON_PLATFORMS + REQUEST_ONLY_PLATFORMS).freeze
+
+  MONTHLY_SPEND_OPTIONS = [
+    "Under $1K",
+    "$1K – $10K",
+    "$10K – $50K",
+    "$50K – $100K",
+    "$100K+"
+  ].freeze
+
+  store_accessor :data, :platform_name, :platform_name_other, :monthly_spend,
+                        :notes, :account_id, :plan_name
+
+  validates :platform_name, presence: true, inclusion: { in: PLATFORM_OPTIONS }
+  validates :platform_name_other, presence: true, if: -> { platform_name == "Other" }
+  validates :monthly_spend, inclusion: { in: MONTHLY_SPEND_OPTIONS }, allow_blank: true
+end
+```
+
+No migration needed — uses existing `form_submissions` table with JSONB `data` column.
+
+#### Controller
+
+```ruby
+# In Accounts::IntegrationsController (existing)
+def request_integration
+  return handle_duplicate_request if already_requested?
+
+  submission = IntegrationRequestSubmission.new(request_params)
+  if submission.save
+    redirect_to account_integrations_path,
+      notice: "Thanks! We'll notify you when #{submission.display_platform_name} is available."
+  else
+    redirect_to account_integrations_path,
+      alert: submission.errors.full_messages.first
+  end
+end
+
+private
+
+def already_requested?
+  IntegrationRequestSubmission
+    .where(email: current_user.email)
+    .where("data->>'platform_name' = ?", params[:platform_name])
+    .exists?
+end
+
+def handle_duplicate_request
+  redirect_to account_integrations_path,
+    notice: "You've already requested this platform!"
+end
+
+def request_params
+  {
+    email: current_user.email,
+    platform_name: params[:platform_name],
+    platform_name_other: params[:platform_name_other],
+    monthly_spend: params[:monthly_spend],
+    notes: params[:notes],
+    account_id: current_account.prefix_id,
+    plan_name: current_account.plan&.name,
+    ip_address: anonymized_ip,
+    user_agent: request.user_agent
+  }
+end
+```
+
+**Route** (add to existing `resource :integrations` block):
+
+```ruby
+resource :integrations, only: [:show], controller: "integrations" do
+  post "refresh/:id", action: :refresh, as: :refresh
+  post "request", action: :request_integration, as: :request_integration  # NEW
+end
+```
+
+#### Admin: Integration Requests Dashboard
+
+A dedicated admin page for integration requests at `/admin/integration_requests`. While these submissions also appear in the general `/admin/submissions` list, the dedicated page provides aggregated demand signals and request management.
+
+**Route:**
+
+```ruby
+namespace :admin do
+  # ... existing routes ...
+  resources :integration_requests, only: [:index, :show, :update]
+end
+```
+
+**Controller:**
+
+```ruby
+# app/controllers/admin/integration_requests_controller.rb
+module Admin
+  class IntegrationRequestsController < BaseController
+    include Pagination
+
+    per_page 25
+
+    def index
+      @filter = params[:filter] || "visible"
+      @requests = paginate(filtered_requests)
+      @platform_summary = platform_summary
+    end
+
+    def show
+      @request = IntegrationRequestSubmission.find_by_prefix_id!(params[:id])
+    end
+
+    def update
+      request = IntegrationRequestSubmission.find_by_prefix_id!(params[:id])
+      request.update!(status: params[:status].to_i)
+      redirect_to admin_integration_requests_path(filter: params[:filter]),
+        notice: "Request updated."
+    end
+
+    private
+
+    def filtered_requests
+      scope = IntegrationRequestSubmission.order(created_at: :desc)
+      case @filter
+      when "hidden"
+        scope.where(status: :spam)  # reuse "spam" status as "hidden"
+      when "visible"
+        scope.where.not(status: :spam)
+      else # "all"
+        scope
+      end
+    end
+
+    def platform_summary
+      IntegrationRequestSubmission
+        .where.not(status: :spam)
+        .group("data->>'platform_name'")
+        .count
+        .sort_by { |_, count| -count }
+    end
+  end
+end
+```
+
+**Admin index view** (`/admin/integration_requests`):
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  Integration Requests                                [Submissions]  │
+│                                                                     │
+│  ┌─ Demand Summary ────────────────────────────────────────────┐   │
+│  │ Microsoft Ads (Bing)  ████████████████  12 requests          │   │
+│  │ Pinterest Ads         ████████         8 requests            │   │
+│  │ Amazon Ads            ██████           6 requests            │   │
+│  │ Snapchat Ads          ███              3 requests            │   │
+│  │ Other                 ██               2 requests            │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  Filter: [All] [Visible ✓] [Hidden]              31 requests       │
+│                                                                     │
+│  ┌───────────┬──────────────┬───────────┬──────────┬──────────┐   │
+│  │ Platform  │ Email        │ Spend     │ Plan     │ Actions  │   │
+│  │ Microsoft │ a@co.com     │ $10K-$50K │ Pro      │ Hide     │   │
+│  │ Pinterest │ b@co.com     │ $1K-$10K  │ Growth   │ Hide     │   │
+│  │ Other:    │ c@co.com     │ —         │ Starter  │ Hide     │   │
+│  │  "Taboola"│              │           │          │          │   │
+│  └───────────┴──────────────┴───────────┴──────────┴──────────┘   │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Key design decisions:**
+
+| Decision | Choice | Why |
+|----------|--------|-----|
+| **Hide mechanism** | Reuse existing `FormSubmission.status` enum — `spam` status = hidden | No migration, no new column. "spam" is the correct semantic for dismissed submissions. Admin can toggle back to `pending` to unhide. |
+| **Filter default** | "Visible" (non-hidden) | Admin sees actionable requests by default. Hidden requests accessible via filter toggle. |
+| **Demand summary** | Horizontal bar chart (simple HTML/CSS, no JS) | At-a-glance platform prioritization. Excludes hidden requests from count. |
+| **Account context** | Show plan name alongside request | Pro/Growth account requesting Microsoft Ads carries more weight than Free account. |
+| **Separate admin page** | `/admin/integration_requests` (not mixed into `/admin/submissions`) | Dedicated page enables demand summary aggregation. Requests still appear in general submissions list too. |
+
+**States:**
+
+| State | What User Sees | What Admin Sees |
+|-------|---------------|-----------------|
+| No requests yet | Form with "Request Integration" | Empty state: "No integration requests yet." |
+| Request submitted | "Thanks! We'll notify you when {platform} is available." | New row in request list + email notification |
+| Duplicate request | "You've already requested this platform!" | Nothing (blocked at controller) |
+| Admin hides request | (no change — user-facing is fire-and-forget) | Request moves to "Hidden" filter, removed from demand summary |
+| Admin unhides request | (no change) | Request returns to "Visible" filter, re-counted in demand summary |
 
 ### Spend Dashboard → New Dashboard Tab
 
@@ -392,7 +761,7 @@ OAuth connections to ad platforms. One per platform per account.
 ```ruby
 create_table :ad_platform_connections do |t|
   t.references :account, null: false, foreign_key: true
-  t.integer :platform, null: false            # enum: google_ads: 0, meta_ads: 1, linkedin_ads: 2, tiktok_ads: 3
+  t.integer :platform, null: false            # enum: google_ads: 0, meta_ads: 1, linkedin_ads: 2, tiktok_ads: 3, microsoft_ads: 4, pinterest_ads: 5, snapchat_ads: 6, reddit_ads: 7, x_ads: 8, apple_search_ads: 9
   t.string :platform_account_id, null: false  # Google Ads Customer ID (no dashes)
   t.string :platform_account_name
   t.string :currency, limit: 3, null: false   # "USD", "AUD", etc.
@@ -423,7 +792,11 @@ class AdPlatformConnection < ApplicationRecord
   encrypts :access_token
   encrypts :refresh_token
 
-  enum :platform, { google_ads: 0, meta_ads: 1, linkedin_ads: 2, tiktok_ads: 3 }
+  enum :platform, {
+    google_ads: 0, meta_ads: 1, linkedin_ads: 2, tiktok_ads: 3,
+    microsoft_ads: 4, pinterest_ads: 5, snapchat_ads: 6,
+    reddit_ads: 7, x_ads: 8, apple_search_ads: 9
+  }
   enum :status, { connected: 0, syncing: 1, error: 2, disconnected: 3 }
 end
 ```
@@ -1175,12 +1548,12 @@ Google Ads data for a given day is considered final after **48 hours**. For the 
 
 ### Phase 4: Core Metrics
 
-- [ ] **4.1** Create `SpendIntelligence::Scopes::SpendScope` (account, date_range, channels, test_mode)
-- [ ] **4.2** Create `SpendIntelligence::Queries::ChannelMetricsQuery` (ROAS, CAC, MER as methods on one consolidated query class)
-- [ ] **4.3** Create `SpendIntelligence::Queries::PaybackPeriodQuery` (integrates with CLV data)
-- [ ] **4.4** Create `channel_revenue_daily` materialized view migration (with `return if Rails.env.test?`)
-- [ ] **4.5** Create `SpendIntelligence::MetricsService` (aggregates all metrics for dashboard, delegates to scope + queries)
-- [ ] **4.6** Write comprehensive metric tests
+- [x] **4.1** Create `SpendIntelligence::Scopes::SpendScope` (account, date_range, channels, devices, hours, test_mode)
+- [x] **4.2** Create `SpendIntelligence::Queries::ChannelMetricsQuery` (ROAS, blended ROAS as methods on one consolidated query class)
+- [x] **4.3** Create `SpendIntelligence::Queries::PaybackPeriodQuery` (integrates with CLV data, NCAC per channel, cumulative CLV curve)
+- [x] **4.4** Create `channel_revenue_daily` materialized view migration (with `return if Rails.env.test?`)
+- [x] **4.5** Create `SpendIntelligence::MetricsService` (aggregates all metrics for dashboard, delegates to scope + queries, caches 5 min)
+- [x] **4.6** Write comprehensive metric tests (27 tests: 9 SpendScope, 11 ChannelMetrics, 7 MetricsService)
 
 ### Phase 5: Dashboard UI
 
@@ -1211,12 +1584,46 @@ Google Ads data for a given day is considered final after **48 hours**. For the 
 - [ ] **7.4** Create Stimulus controller for interactive slider UX
 - [ ] **7.5** Write optimizer service tests with edge cases
 
+### Phase 7b: Request Integration
+
+- [ ] **7b.1** Create `IntegrationRequestSubmission` model (STI subclass of `FormSubmission`, `store_accessor` for `platform_name`, `platform_name_other`, `monthly_spend`, `notes`, `account_id`, `plan_name`)
+- [ ] **7b.2** Add `request_integration` action to `Accounts::IntegrationsController` (form submission, duplicate check, auto-populate email/account/plan from session)
+- [ ] **7b.3** Add route: `post "request"` inside existing `resource :integrations` block
+- [ ] **7b.4** Create `_request_integration_card.html.erb` partial (platform dropdown, monthly spend dropdown, notes textarea, submit button)
+- [ ] **7b.5** Render request card below coming-soon cards in `integrations/show.html.erb`
+- [ ] **7b.6** Add `IntegrationRequestSubmission` to `Admin::SubmissionsHelper` `TYPE_BADGES` and `submission_details_preview`
+- [ ] **7b.7** Create `Admin::IntegrationRequestsController` (index with filter, show, update status)
+- [ ] **7b.8** Create admin index view with demand summary bar chart + filterable request table (All / Visible / Hidden)
+- [ ] **7b.9** Create admin show view with full request detail
+- [ ] **7b.10** Add admin routes: `resources :integration_requests, only: [:index, :show, :update]`
+- [ ] **7b.11** Add link to integration requests from admin billing/submissions nav
+- [ ] **7b.12** Write model + controller + admin tests
+
 ### Phase 8: Platform Expansion (Future)
 
-- [ ] **8.1** Meta Ads integration (same pattern, different API)
-- [ ] **8.2** TikTok Ads integration
-- [ ] **8.3** LinkedIn Ads integration
-- [ ] **8.4** Manual spend import (CSV upload for platforms without API)
+Priority order based on market share, customer demand signals (from Notify Me / Request Integration), and build complexity.
+
+**Tier 1 — Core platforms (covers ~90% of paid spend):**
+- [ ] **8.1** Meta Ads integration (API approval in progress — see `platform_api_approvals_spec.md`)
+- [ ] **8.2** TikTok Ads integration (deferred — fast approval when ready)
+- [ ] **8.3** LinkedIn Ads integration (API access submitted 5 Mar 2026)
+- [ ] **8.4** CSV Import (manual spend upload for any platform — zero API overhead)
+
+**Tier 2 — Secondary platforms:**
+- [ ] **8.5** Microsoft Ads / Bing (similar API to Google, easy build)
+- [ ] **8.6** Pinterest Ads (high value for e-commerce/DTC)
+- [ ] **8.7** Snapchat Ads
+- [ ] **8.8** Reddit Ads (growing for SaaS/tech audiences)
+
+**Tier 3 — Long tail:**
+- [ ] **8.9** X (Twitter) Ads
+- [ ] **8.10** Apple Search Ads
+- [ ] **8.11** Amazon Ads
+
+**Different category (spec separately):**
+- [ ] **8.12** Phone/Call Tracking (CallRail, etc. — inbound call attribution)
+
+All platform adapters follow the same `AdPlatforms::BaseAdapter` interface. See `platform_api_approvals_spec.md` for API approval status and timelines.
 
 ---
 
@@ -1246,6 +1653,9 @@ Google Ads data for a given day is considered final after **48 hours**. For the 
 | RecommendationService | `test/services/spend_intelligence/recommendation_service_test.rb` | Scale/Maintain/Reduce thresholds |
 | ScenarioService | `test/services/spend_intelligence/scenario_service_test.rb` | Prediction accuracy, confidence intervals |
 | BudgetOptimizerService | `test/services/spend_intelligence/budget_optimizer_service_test.rb` | Optimal allocation, constraints |
+| IntegrationRequestSubmission | `test/models/integration_request_submission_test.rb` | Validations (platform inclusion, conditional other), store accessors, duplicate detection |
+| IntegrationsController#request | `test/controllers/accounts/integrations_controller_test.rb` | Form submission, duplicate blocking, auto-populated fields, redirect with notice |
+| Admin::IntegrationRequestsController | `test/controllers/admin/integration_requests_controller_test.rb` | Index filters (all/visible/hidden), demand summary, show detail, hide/unhide (status toggle) |
 
 ### Integration Tests
 
@@ -1257,6 +1667,8 @@ Google Ads data for a given day is considered final after **48 hours**. For the 
 | Sync metering | `account.increment_usage!` called with correct count after sync |
 | Dashboard render | All states (empty, loading, error, populated) |
 | Multi-tenancy | Account A cannot see Account B's spend data |
+| Integration request form | Submit → creates `IntegrationRequestSubmission`, duplicate blocked, notification email sent |
+| Admin integration requests | Filter toggles (All/Visible/Hidden), hide/unhide updates status, demand summary excludes hidden |
 
 ### Manual QA
 
@@ -1266,6 +1678,9 @@ Google Ads data for a given day is considered final after **48 hours**. For the 
 4. Compare Attributed ROAS with manual calculation
 5. Disconnect and verify data retained
 6. Reconnect and verify no duplicate data
+7. Submit integration request from Integrations page — verify submission created, notice shown
+8. Submit duplicate request — verify "already requested" notice
+9. Admin: verify demand summary counts, filter toggles, hide/unhide flow
 
 ---
 
@@ -1285,6 +1700,8 @@ Google Ads data for a given day is considered final after **48 hours**. For the 
 - [ ] All tests pass (unit + integration)
 - [ ] Manual QA on dev with real Google Ads account
 - [ ] Multi-tenancy verified
+- [ ] Request Integration form submits from Integrations page, duplicates blocked
+- [ ] Admin integration requests page shows demand summary, filter (All/Visible/Hidden), hide/unhide
 - [ ] Spec updated with final state
 
 ---
