@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mbuzz - Spend Intelligence: Hourly / Device</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+  <!-- Nav -->
+  <nav class="bg-white border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-14 items-center">
+        <div class="flex items-center gap-6">
+          <span class="text-lg font-bold text-gray-900">mbuzz</span>
+          <span class="text-sm text-gray-500">Acme Inc</span>
+        </div>
+        <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-sm font-medium text-indigo-600">VM</div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="py-6">
+    <main>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <!-- Tab Bar -->
+        <div class="border-b border-gray-200">
+          <nav class="-mb-px flex gap-4 sm:gap-6">
+            <button class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-500">Conversions</button>
+            <button class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-500">Funnel</button>
+            <button class="py-3 px-1 text-sm font-medium border-b-2 border-indigo-500 text-indigo-600">Spend</button>
+            <button class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-500">Events</button>
+          </nav>
+        </div>
+
+        <div class="mt-6">
+
+          <!-- Compact hero metrics (condensed row for sub-views) -->
+          <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 mb-6 text-sm">
+            <div class="flex items-center gap-4 sm:gap-6">
+              <div class="flex items-center gap-1.5">
+                <span class="text-gray-500">ROAS</span>
+                <span class="font-semibold text-gray-900">3.2x</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-gray-500">Spend</span>
+                <span class="font-semibold text-gray-900">$24,500</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-gray-500">Revenue</span>
+                <span class="font-semibold text-gray-900">$78,400</span>
+              </div>
+            </div>
+            <div class="sm:ml-auto flex items-center gap-2">
+              <select class="text-sm border border-gray-300 rounded-md px-3 py-1.5 text-gray-700 bg-white">
+                <option selected>Last 30 days</option>
+              </select>
+              <select class="text-sm border border-gray-300 rounded-md px-3 py-1.5 text-gray-700 bg-white">
+                <option selected>Linear</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Sub-tabs -->
+          <div class="bg-white rounded-lg shadow">
+            <div class="border-b border-gray-200 px-4 sm:px-6">
+              <nav class="-mb-px flex gap-4 sm:gap-6">
+                <a href="spend_dashboard.html" class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap">Overview</a>
+                <button class="py-3 px-1 text-sm font-medium border-b-2 border-indigo-500 text-indigo-600 whitespace-nowrap">Hourly / Device</button>
+                <a href="spend_payback.html" class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap">Payback Period</a>
+                <button class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-400 whitespace-nowrap cursor-not-allowed" disabled>Recommendations <span class="ml-1 text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">Soon</span></button>
+                <button class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-400 whitespace-nowrap cursor-not-allowed" disabled>Scenarios <span class="ml-1 text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">Soon</span></button>
+              </nav>
+            </div>
+
+            <div class="p-4 sm:p-6">
+
+              <!-- Channel filter -->
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6">
+                <h4 class="text-base font-medium text-gray-900">Hourly Spend Distribution</h4>
+                <select class="text-sm border border-gray-300 rounded-md px-3 py-1.5 text-gray-700 bg-white w-full sm:w-auto">
+                  <option>All Channels</option>
+                  <option selected>Paid Search</option>
+                  <option>Paid Social</option>
+                  <option>Display</option>
+                  <option>Video</option>
+                </select>
+              </div>
+
+              <!-- Hourly Bar Chart -->
+              <div class="h-48 sm:h-56 relative mb-2">
+                <svg viewBox="0 0 720 200" class="w-full h-full" preserveAspectRatio="none">
+                  <!-- Grid -->
+                  <line x1="0" y1="40" x2="720" y2="40" stroke="#f3f4f6" stroke-width="1"/>
+                  <line x1="0" y1="80" x2="720" y2="80" stroke="#f3f4f6" stroke-width="1"/>
+                  <line x1="0" y1="120" x2="720" y2="120" stroke="#f3f4f6" stroke-width="1"/>
+                  <line x1="0" y1="160" x2="720" y2="160" stroke="#f3f4f6" stroke-width="1"/>
+
+                  <!-- Y-axis labels -->
+                  <text x="4" y="44" font-size="10" fill="#9ca3af">$800</text>
+                  <text x="4" y="84" font-size="10" fill="#9ca3af">$600</text>
+                  <text x="4" y="124" font-size="10" fill="#9ca3af">$400</text>
+                  <text x="4" y="164" font-size="10" fill="#9ca3af">$200</text>
+
+                  <!-- Bars: 24 hours (each 28px wide with 2px gap) -->
+                  <!-- Low hours 0-5 -->
+                  <rect x="40" y="170" width="24" height="20" fill="#c7d2fe" rx="2"/>
+                  <rect x="70" y="175" width="24" height="15" fill="#c7d2fe" rx="2"/>
+                  <rect x="100" y="178" width="24" height="12" fill="#c7d2fe" rx="2"/>
+                  <rect x="130" y="180" width="24" height="10" fill="#c7d2fe" rx="2"/>
+                  <rect x="160" y="178" width="24" height="12" fill="#c7d2fe" rx="2"/>
+                  <rect x="190" y="170" width="24" height="20" fill="#c7d2fe" rx="2"/>
+
+                  <!-- Ramp up 6-9 -->
+                  <rect x="220" y="150" width="24" height="40" fill="#a5b4fc" rx="2"/>
+                  <rect x="250" y="130" width="24" height="60" fill="#a5b4fc" rx="2"/>
+                  <rect x="280" y="100" width="24" height="90" fill="#818cf8" rx="2"/>
+                  <rect x="310" y="70" width="24" height="120" fill="#818cf8" rx="2"/>
+
+                  <!-- Peak 10-14 -->
+                  <rect x="340" y="50" width="24" height="140" fill="#6366f1" rx="2"/>
+                  <rect x="370" y="40" width="24" height="150" fill="#6366f1" rx="2"/>
+                  <rect x="400" y="55" width="24" height="135" fill="#6366f1" rx="2"/>
+                  <rect x="430" y="45" width="24" height="145" fill="#6366f1" rx="2"/>
+                  <rect x="460" y="50" width="24" height="140" fill="#6366f1" rx="2"/>
+
+                  <!-- Afternoon 15-18 -->
+                  <rect x="490" y="60" width="24" height="130" fill="#818cf8" rx="2"/>
+                  <rect x="520" y="75" width="24" height="115" fill="#818cf8" rx="2"/>
+                  <rect x="550" y="85" width="24" height="105" fill="#818cf8" rx="2"/>
+                  <rect x="580" y="100" width="24" height="90" fill="#a5b4fc" rx="2"/>
+
+                  <!-- Evening 19-23 -->
+                  <rect x="610" y="120" width="24" height="70" fill="#a5b4fc" rx="2"/>
+                  <rect x="640" y="140" width="24" height="50" fill="#c7d2fe" rx="2"/>
+                  <rect x="670" y="155" width="24" height="35" fill="#c7d2fe" rx="2"/>
+                  <rect x="700" y="165" width="24" height="25" fill="#c7d2fe" rx="2"/>
+                  <!-- Hour 23 would wrap but we have 24 bars -->
+                </svg>
+              </div>
+              <div class="flex justify-between px-10 mb-8">
+                <span class="text-xs text-gray-400">12am</span>
+                <span class="text-xs text-gray-400">4am</span>
+                <span class="text-xs text-gray-400">8am</span>
+                <span class="text-xs text-gray-400">12pm</span>
+                <span class="text-xs text-gray-400">4pm</span>
+                <span class="text-xs text-gray-400">8pm</span>
+              </div>
+
+              <!-- Peak hours insight -->
+              <div class="bg-indigo-50 border border-indigo-100 rounded-lg p-4 mb-8">
+                <div class="flex items-start gap-3">
+                  <svg class="w-5 h-5 text-indigo-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  <div>
+                    <p class="text-sm font-medium text-indigo-900">Peak spend: 10am &ndash; 2pm</p>
+                    <p class="text-sm text-indigo-700 mt-0.5">62% of daily paid search spend occurs between 10am and 2pm. ROAS during peak hours is 4.8x vs 2.9x off-peak.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Device Breakdown -->
+              <h4 class="text-base font-medium text-gray-900 mb-4">Device Breakdown</h4>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                <!-- Desktop card -->
+                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2">
+                      <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                      <span class="font-medium text-gray-900">Desktop</span>
+                    </div>
+                    <span class="text-lg font-semibold text-gray-900">4.2x</span>
+                  </div>
+                  <div class="space-y-1 text-sm text-gray-600">
+                    <div class="flex justify-between">
+                      <span>Spend</span><span class="font-medium">$14,200</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span>Clicks</span><span>3,100</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span>CPC</span><span>$4.58</span>
+                    </div>
+                  </div>
+                  <!-- Spend share bar -->
+                  <div class="mt-3">
+                    <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
+                      <span>58% of spend</span>
+                    </div>
+                    <div class="w-full h-1.5 bg-gray-200 rounded-full">
+                      <div class="h-1.5 bg-indigo-500 rounded-full" style="width: 58%"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Mobile card -->
+                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2">
+                      <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                      <span class="font-medium text-gray-900">Mobile</span>
+                    </div>
+                    <span class="text-lg font-semibold text-gray-900">2.1x</span>
+                  </div>
+                  <div class="space-y-1 text-sm text-gray-600">
+                    <div class="flex justify-between">
+                      <span>Spend</span><span class="font-medium">$8,400</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span>Clicks</span><span>5,200</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span>CPC</span><span>$1.62</span>
+                    </div>
+                  </div>
+                  <div class="mt-3">
+                    <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
+                      <span>34% of spend</span>
+                    </div>
+                    <div class="w-full h-1.5 bg-gray-200 rounded-full">
+                      <div class="h-1.5 bg-amber-500 rounded-full" style="width: 34%"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Tablet card -->
+                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2">
+                      <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                      <span class="font-medium text-gray-900">Tablet</span>
+                    </div>
+                    <span class="text-lg font-semibold text-gray-900">3.8x</span>
+                  </div>
+                  <div class="space-y-1 text-sm text-gray-600">
+                    <div class="flex justify-between">
+                      <span>Spend</span><span class="font-medium">$1,900</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span>Clicks</span><span>480</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span>CPC</span><span>$3.96</span>
+                    </div>
+                  </div>
+                  <div class="mt-3">
+                    <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
+                      <span>8% of spend</span>
+                    </div>
+                    <div class="w-full h-1.5 bg-gray-200 rounded-full">
+                      <div class="h-1.5 bg-emerald-500 rounded-full" style="width: 8%"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Desktop vs Mobile insight -->
+              <div class="bg-amber-50 border border-amber-100 rounded-lg p-4">
+                <div class="flex items-start gap-3">
+                  <svg class="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                  <div>
+                    <p class="text-sm font-medium text-amber-900">Desktop ROAS is 2x mobile</p>
+                    <p class="text-sm text-amber-700 mt-0.5">Desktop converts at 4.2x ROAS vs mobile at 2.1x, despite mobile having 68% more clicks. Consider increasing desktop bid adjustments or shifting mobile budget to desktop.</p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+</body>
+</html>

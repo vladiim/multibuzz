@@ -1,0 +1,72 @@
+<%# Required locals: by_hour, by_device %>
+
+<!-- Hourly Spend Distribution -->
+<h4 class="text-base font-medium text-gray-900 mb-4">Hourly Spend Distribution</h4>
+
+<% if by_hour.present? %>
+  <% max_spend = by_hour.map { |h| h[:spend_micros] }.max %>
+  <div class="flex items-end gap-0.5 h-32 sm:h-40 mb-2">
+    <% (0..23).each do |hour| %>
+      <% row = by_hour.find { |h| h[:hour] == hour } %>
+      <% spend = row ? row[:spend_micros] : 0 %>
+      <% pct = max_spend&.positive? ? (spend.to_f / max_spend * 100).round : 0 %>
+      <div class="flex-1 bg-indigo-400 rounded-t-sm transition-all hover:bg-indigo-500"
+        style="height: <%= [pct, 2].max %>%"
+        title="<%= "#{hour}:00 — #{format_spend(spend)}" %>">
+      </div>
+    <% end %>
+  </div>
+  <div class="flex justify-between px-0.5 mb-8">
+    <span class="text-xs text-gray-400">12am</span>
+    <span class="text-xs text-gray-400">6am</span>
+    <span class="text-xs text-gray-400">12pm</span>
+    <span class="text-xs text-gray-400">6pm</span>
+  </div>
+<% else %>
+  <div class="h-32 flex items-center justify-center text-gray-500 text-sm mb-8">
+    No hourly data available
+  </div>
+<% end %>
+
+<!-- Device Breakdown -->
+<h4 class="text-base font-medium text-gray-900 mb-4">Device Breakdown</h4>
+
+<% if by_device.present? %>
+  <% total_device_spend = by_device.sum { |d| d[:spend_micros] } %>
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <% by_device.each do |device| %>
+      <% pct = total_device_spend.positive? ? (device[:spend_micros].to_f / total_device_spend * 100).round : 0 %>
+      <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+        <div class="flex items-center justify-between mb-2">
+          <span class="font-medium text-gray-900"><%= device[:device]&.titleize || "Unknown" %></span>
+        </div>
+        <div class="space-y-1 text-sm text-gray-600">
+          <div class="flex justify-between">
+            <span>Spend</span>
+            <span class="font-medium"><%= format_spend(device[:spend_micros]) %></span>
+          </div>
+          <div class="flex justify-between">
+            <span>Clicks</span>
+            <span><%= number_with_delimiter(device[:clicks]) %></span>
+          </div>
+          <div class="flex justify-between">
+            <span>CPC</span>
+            <span><%= device[:cpc_micros] ? format_spend(device[:cpc_micros]) : "—" %></span>
+          </div>
+        </div>
+        <div class="mt-3">
+          <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
+            <span><%= pct %>% of spend</span>
+          </div>
+          <div class="w-full h-1.5 bg-gray-200 rounded-full">
+            <div class="h-1.5 bg-indigo-500 rounded-full" style="width: <%= pct %>%"></div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <div class="h-32 flex items-center justify-center text-gray-500 text-sm">
+    No device data available
+  </div>
+<% end %>

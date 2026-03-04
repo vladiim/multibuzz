@@ -65,9 +65,78 @@ export default class extends Controller {
       case "line":
         this.renderLineChart()
         break
+      case "spend-trend":
+        this.renderSpendTrendChart()
+        break
       default:
         console.warn(`Unknown chart type: ${this.typeValue}`)
     }
+  }
+
+  renderSpendTrendChart() {
+    const data = this.parseData()
+    if (!Array.isArray(data) || data.length === 0) return
+
+    const dates = data.map(d => {
+      const date = new Date(d.date)
+      return `${date.getMonth() + 1}/${date.getDate()}`
+    })
+
+    this.chart = Highcharts.chart(this.chartElement, {
+      chart: { type: "column" },
+      title: { text: null },
+      xAxis: {
+        categories: dates,
+        labels: { step: Math.max(1, Math.floor(dates.length / 10)), style: { fontSize: "11px" } }
+      },
+      yAxis: [{
+        title: { text: "Spend ($)" },
+        min: 0
+      }, {
+        title: { text: "ROAS", style: { color: "#6366F1" } },
+        labels: { format: "{value}x", style: { color: "#6366F1" } },
+        min: 0,
+        opposite: true
+      }],
+      legend: {
+        align: "right",
+        verticalAlign: "top",
+        layout: "horizontal",
+        itemStyle: { fontSize: "11px" }
+      },
+      tooltip: {
+        shared: true,
+        formatter: function() {
+          let html = `<b>${this.x}</b><br/>`
+          this.points.forEach(point => {
+            const val = point.series.yAxis.options.index === 1
+              ? `${Highcharts.numberFormat(point.y, 2)}x`
+              : `$${Highcharts.numberFormat(point.y, 0)}`
+            html += `<span style="color:${point.color}">●</span> ${point.series.name}: ${val}<br/>`
+          })
+          return html
+        }
+      },
+      plotOptions: {
+        column: { borderRadius: 2 }
+      },
+      series: [{
+        name: "Spend",
+        type: "column",
+        color: "#E5E7EB",
+        data: data.map(d => d.spend),
+        yAxis: 0
+      }, {
+        name: "ROAS",
+        type: "line",
+        color: "#6366F1",
+        data: data.map(d => d.roas || 0),
+        yAxis: 1,
+        marker: { enabled: false },
+        lineWidth: 2
+      }],
+      credits: { enabled: false }
+    })
   }
 
   renderBarChart() {

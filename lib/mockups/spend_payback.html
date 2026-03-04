@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mbuzz - Spend Intelligence: Payback Period</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+  <!-- Nav -->
+  <nav class="bg-white border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-14 items-center">
+        <div class="flex items-center gap-6">
+          <span class="text-lg font-bold text-gray-900">mbuzz</span>
+          <span class="text-sm text-gray-500">Acme Inc</span>
+        </div>
+        <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-sm font-medium text-indigo-600">VM</div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="py-6">
+    <main>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <!-- Tab Bar -->
+        <div class="border-b border-gray-200">
+          <nav class="-mb-px flex gap-4 sm:gap-6">
+            <button class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-500">Conversions</button>
+            <button class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-500">Funnel</button>
+            <button class="py-3 px-1 text-sm font-medium border-b-2 border-indigo-500 text-indigo-600">Spend</button>
+            <button class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-500">Events</button>
+          </nav>
+        </div>
+
+        <div class="mt-6">
+
+          <!-- Compact hero metrics -->
+          <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 mb-6 text-sm">
+            <div class="flex items-center gap-4 sm:gap-6">
+              <div class="flex items-center gap-1.5">
+                <span class="text-gray-500">ROAS</span>
+                <span class="font-semibold text-gray-900">3.2x</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-gray-500">Spend</span>
+                <span class="font-semibold text-gray-900">$24,500</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-gray-500">Revenue</span>
+                <span class="font-semibold text-gray-900">$78,400</span>
+              </div>
+            </div>
+            <div class="sm:ml-auto flex items-center gap-2">
+              <select class="text-sm border border-gray-300 rounded-md px-3 py-1.5 text-gray-700 bg-white">
+                <option selected>Last 30 days</option>
+              </select>
+              <select class="text-sm border border-gray-300 rounded-md px-3 py-1.5 text-gray-700 bg-white">
+                <option selected>Linear</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Sub-tabs -->
+          <div class="bg-white rounded-lg shadow">
+            <div class="border-b border-gray-200 px-4 sm:px-6">
+              <nav class="-mb-px flex gap-4 sm:gap-6">
+                <a href="spend_dashboard.html" class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap">Overview</a>
+                <a href="spend_hourly_device.html" class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap">Hourly / Device</a>
+                <button class="py-3 px-1 text-sm font-medium border-b-2 border-indigo-500 text-indigo-600 whitespace-nowrap">Payback Period</button>
+                <button class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-400 whitespace-nowrap cursor-not-allowed" disabled>Recommendations <span class="ml-1 text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">Soon</span></button>
+                <button class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-400 whitespace-nowrap cursor-not-allowed" disabled>Scenarios <span class="ml-1 text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">Soon</span></button>
+              </nav>
+            </div>
+
+            <div class="p-4 sm:p-6">
+
+              <!-- Two-column layout: CLV curve chart + Payback table -->
+              <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+                <!-- CLV Curve Chart (3/5) -->
+                <div class="lg:col-span-3">
+                  <h4 class="text-base font-medium text-gray-900 mb-4">Cumulative CLV vs Acquisition Cost</h4>
+
+                  <div class="h-64 sm:h-72 relative">
+                    <svg viewBox="0 0 500 250" class="w-full h-full" preserveAspectRatio="xMidYMid meet">
+                      <!-- Grid -->
+                      <line x1="50" y1="30" x2="480" y2="30" stroke="#f3f4f6" stroke-width="1"/>
+                      <line x1="50" y1="70" x2="480" y2="70" stroke="#f3f4f6" stroke-width="1"/>
+                      <line x1="50" y1="110" x2="480" y2="110" stroke="#f3f4f6" stroke-width="1"/>
+                      <line x1="50" y1="150" x2="480" y2="150" stroke="#f3f4f6" stroke-width="1"/>
+                      <line x1="50" y1="190" x2="480" y2="190" stroke="#f3f4f6" stroke-width="1"/>
+                      <line x1="50" y1="220" x2="480" y2="220" stroke="#e5e7eb" stroke-width="1"/>
+
+                      <!-- Y-axis labels -->
+                      <text x="46" y="34" font-size="10" fill="#9ca3af" text-anchor="end">$120</text>
+                      <text x="46" y="74" font-size="10" fill="#9ca3af" text-anchor="end">$100</text>
+                      <text x="46" y="114" font-size="10" fill="#9ca3af" text-anchor="end">$80</text>
+                      <text x="46" y="154" font-size="10" fill="#9ca3af" text-anchor="end">$60</text>
+                      <text x="46" y="194" font-size="10" fill="#9ca3af" text-anchor="end">$40</text>
+                      <text x="46" y="224" font-size="10" fill="#9ca3af" text-anchor="end">$20</text>
+
+                      <!-- X-axis labels -->
+                      <text x="85" y="242" font-size="10" fill="#9ca3af" text-anchor="middle">M0</text>
+                      <text x="120" y="242" font-size="10" fill="#9ca3af" text-anchor="middle">M1</text>
+                      <text x="155" y="242" font-size="10" fill="#9ca3af" text-anchor="middle">M2</text>
+                      <text x="190" y="242" font-size="10" fill="#9ca3af" text-anchor="middle">M3</text>
+                      <text x="260" y="242" font-size="10" fill="#9ca3af" text-anchor="middle">M6</text>
+                      <text x="400" y="242" font-size="10" fill="#9ca3af" text-anchor="middle">M9</text>
+                      <text x="470" y="242" font-size="10" fill="#9ca3af" text-anchor="middle">M12</text>
+
+                      <!-- NCAC reference line (dashed, at $47) -->
+                      <line x1="50" y1="162" x2="480" y2="162" stroke="#ef4444" stroke-width="1" stroke-dasharray="6,4"/>
+                      <text x="482" y="166" font-size="9" fill="#ef4444">NCAC $47</text>
+
+                      <!-- Paid Search CLV curve (indigo - crosses NCAC at ~M2) -->
+                      <polyline fill="none" stroke="#6366f1" stroke-width="2.5"
+                        points="85,205 120,175 155,155 190,140 225,130 260,115 295,105 330,98 365,92 400,87 435,83 470,80"/>
+                      <text x="472" y="76" font-size="9" fill="#6366f1">Paid Search</text>
+
+                      <!-- Paid Social CLV curve (amber - crosses NCAC at ~M5) -->
+                      <polyline fill="none" stroke="#f59e0b" stroke-width="2.5"
+                        points="85,212 120,195 155,182 190,172 225,165 260,155 295,148 330,142 365,137 400,133 435,130 470,127"/>
+                      <text x="472" y="123" font-size="9" fill="#f59e0b">Paid Social</text>
+
+                      <!-- Display CLV curve (rose - crosses NCAC at ~M7) -->
+                      <polyline fill="none" stroke="#f43f5e" stroke-width="2"
+                        points="85,218 120,208 155,200 190,193 225,187 260,178 295,170 330,164 365,158 400,153 435,149 470,146"/>
+                      <text x="472" y="142" font-size="9" fill="#f43f5e">Display</text>
+
+                      <!-- Video CLV curve (red - crosses NCAC at ~M6) -->
+                      <polyline fill="none" stroke="#dc2626" stroke-width="2"
+                        points="85,215 120,200 155,188 190,178 225,170 260,160 295,152 330,146 365,141 400,137 435,134 470,131"/>
+                      <text x="472" y="134" font-size="9" fill="#dc2626">Video</text>
+
+                      <!-- Payback markers (circles where line crosses NCAC) -->
+                      <circle cx="155" cy="155" r="5" fill="#6366f1" stroke="white" stroke-width="2"/>
+                      <circle cx="260" cy="155" r="5" fill="#f59e0b" stroke="white" stroke-width="2"/>
+                      <circle cx="330" cy="164" r="5" fill="#f43f5e" stroke="white" stroke-width="2"/>
+                      <circle cx="295" cy="152" r="5" fill="#dc2626" stroke="white" stroke-width="2"/>
+                    </svg>
+                  </div>
+
+                  <div class="mt-2 text-xs text-gray-400 text-center">
+                    Cumulative revenue per customer over time. Payback = when CLV line crosses the NCAC threshold.
+                  </div>
+                </div>
+
+                <!-- Payback Table (2/5) -->
+                <div class="lg:col-span-2">
+                  <h4 class="text-base font-medium text-gray-900 mb-4">Payback by Channel</h4>
+
+                  <div class="space-y-3">
+
+                    <!-- Organic (instant payback) -->
+                    <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                      <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                          <span class="font-medium text-gray-900">Organic Search</span>
+                        </div>
+                        <span class="text-lg font-semibold text-emerald-600">Day 1</span>
+                      </div>
+                      <div class="mt-2 flex items-center gap-4 text-sm text-gray-600">
+                        <span>NCAC: $0</span>
+                        <span>Customers: 340</span>
+                      </div>
+                      <!-- Full payback bar -->
+                      <div class="mt-2 w-full h-1.5 bg-emerald-200 rounded-full">
+                        <div class="h-1.5 bg-emerald-500 rounded-full" style="width: 100%"></div>
+                      </div>
+                    </div>
+
+                    <!-- Paid Search -->
+                    <div class="bg-white border border-gray-200 rounded-lg p-4">
+                      <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                          <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+                          <span class="font-medium text-gray-900">Paid Search</span>
+                        </div>
+                        <span class="text-lg font-semibold text-gray-900">2.1 mo</span>
+                      </div>
+                      <div class="mt-2 flex items-center gap-4 text-sm text-gray-600">
+                        <span>NCAC: $47</span>
+                        <span>Customers: 186</span>
+                      </div>
+                      <div class="mt-2 w-full h-1.5 bg-gray-200 rounded-full">
+                        <div class="h-1.5 bg-indigo-500 rounded-full" style="width: 83%"></div>
+                      </div>
+                    </div>
+
+                    <!-- Paid Social -->
+                    <div class="bg-white border border-gray-200 rounded-lg p-4">
+                      <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                          <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                          <span class="font-medium text-gray-900">Paid Social</span>
+                        </div>
+                        <span class="text-lg font-semibold text-gray-900">4.7 mo</span>
+                      </div>
+                      <div class="mt-2 flex items-center gap-4 text-sm text-gray-600">
+                        <span>NCAC: $62</span>
+                        <span>Customers: 94</span>
+                      </div>
+                      <div class="mt-2 w-full h-1.5 bg-gray-200 rounded-full">
+                        <div class="h-1.5 bg-amber-500 rounded-full" style="width: 61%"></div>
+                      </div>
+                    </div>
+
+                    <!-- Video -->
+                    <div class="bg-white border border-gray-200 rounded-lg p-4">
+                      <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                          <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+                          <span class="font-medium text-gray-900">Video</span>
+                        </div>
+                        <span class="text-lg font-semibold text-gray-900">5.8 mo</span>
+                      </div>
+                      <div class="mt-2 flex items-center gap-4 text-sm text-gray-600">
+                        <span>NCAC: $71</span>
+                        <span>Customers: 42</span>
+                      </div>
+                      <div class="mt-2 w-full h-1.5 bg-gray-200 rounded-full">
+                        <div class="h-1.5 bg-red-500 rounded-full" style="width: 52%"></div>
+                      </div>
+                    </div>
+
+                    <!-- Display -->
+                    <div class="bg-white border border-gray-200 rounded-lg p-4">
+                      <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                          <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+                          <span class="font-medium text-gray-900">Display</span>
+                        </div>
+                        <span class="text-lg font-semibold text-amber-600">7.2 mo</span>
+                      </div>
+                      <div class="mt-2 flex items-center gap-4 text-sm text-gray-600">
+                        <span>NCAC: $84</span>
+                        <span>Customers: 28</span>
+                      </div>
+                      <div class="mt-2 w-full h-1.5 bg-gray-200 rounded-full">
+                        <div class="h-1.5 bg-rose-500 rounded-full" style="width: 40%"></div>
+                      </div>
+                    </div>
+
+                  </div>
+
+                  <!-- Insight -->
+                  <div class="mt-4 bg-gray-50 border border-gray-200 rounded-lg p-3">
+                    <p class="text-xs text-gray-500">
+                      <span class="font-medium text-gray-700">Payback</span> = months until cumulative CLV exceeds new customer acquisition cost (NCAC) for that channel. Shorter is better.
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+</body>
+</html>

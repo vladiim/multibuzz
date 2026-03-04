@@ -1,0 +1,59 @@
+<%# Required locals: data %>
+<% totals = data[:totals] %>
+
+<!-- Connection Status -->
+<div class="flex items-center gap-3 mb-6">
+  <div class="flex items-center gap-1.5">
+    <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+    <span class="text-sm text-gray-600">Google Ads connected</span>
+  </div>
+  <% connection = current_account.ad_platform_connections.active_connections.first %>
+  <% if connection&.last_synced_at %>
+    <span class="text-xs text-gray-400">Last sync: <%= time_ago_in_words(connection.last_synced_at) %> ago</span>
+  <% end %>
+</div>
+
+<!-- Hero KPI Cards -->
+<%= render "dashboard/spend/hero_metrics", totals: totals %>
+
+<!-- Trend Chart + Channel Summary -->
+<div class="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6">
+  <%= render "dashboard/spend/trend_chart", time_series: data[:time_series] %>
+  <%= render "dashboard/spend/channel_summary", by_channel: data[:by_channel] %>
+</div>
+
+<!-- Deep Analysis: Channel Table + Device/Hour -->
+<div class="bg-white rounded-lg shadow">
+  <div class="border-b border-gray-200 px-4 sm:px-6"
+    data-controller="toggle"
+    data-toggle-default-value="overview"
+    data-toggle-active-class="border-indigo-500 text-indigo-600"
+    data-toggle-inactive-class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+
+    <nav class="-mb-px flex gap-4 sm:gap-6 overflow-x-auto">
+      <button type="button" data-toggle-target="trigger" data-action="toggle#select" data-value="overview"
+        class="py-3 px-1 text-sm font-medium border-b-2 whitespace-nowrap">Overview</button>
+      <button type="button" data-toggle-target="trigger" data-action="toggle#select" data-value="hourly_device"
+        class="py-3 px-1 text-sm font-medium border-b-2 whitespace-nowrap">Hourly / Device</button>
+      <button type="button" disabled
+        class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-400 whitespace-nowrap cursor-not-allowed">
+        Recommendations
+        <span class="ml-1 text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">Soon</span>
+      </button>
+    </nav>
+
+    <!-- Overview Sub-Tab -->
+    <div data-toggle-target="content" data-value="overview">
+      <div class="py-4 sm:py-6">
+        <%= render "dashboard/spend/channel_table", by_channel: data[:by_channel], totals: totals %>
+      </div>
+    </div>
+
+    <!-- Hourly / Device Sub-Tab -->
+    <div data-toggle-target="content" data-value="hourly_device" class="hidden">
+      <div class="py-4 sm:py-6">
+        <%= render "dashboard/spend/hourly_device", by_hour: data[:by_hour], by_device: data[:by_device] %>
+      </div>
+    </div>
+  </div>
+</div>

@@ -53,6 +53,37 @@ module SpendIntelligence
       assert_equal first[:data], second[:data]
     end
 
+    test "returns time_series with daily spend and ROAS" do
+      data = service.call[:data][:time_series]
+
+      assert_kind_of Array, data
+      assert_predicate data, :present?
+      assert_equal %i[date spend_micros spend revenue roas].sort, data.first.keys.sort
+    end
+
+    test "returns by_device breakdown" do
+      data = service.call[:data][:by_device]
+
+      assert_kind_of Array, data
+      assert_predicate data, :present?
+      assert_equal %i[device spend_micros impressions clicks cpc_micros].sort, data.first.keys.sort
+    end
+
+    test "returns by_hour breakdown" do
+      data = service.call[:data][:by_hour]
+
+      assert_kind_of Array, data
+      assert_predicate data, :present?
+      assert_equal %i[hour spend_micros].sort, data.first.keys.sort
+    end
+
+    test "by_device sorts by spend descending" do
+      data = service.call[:data][:by_device]
+      spends = data.map { |d| d[:spend_micros] }
+
+      assert_equal spends.sort.reverse, spends
+    end
+
     test "scopes to account" do
       other_service = MetricsService.new(accounts(:two), filter_params)
       result = other_service.call

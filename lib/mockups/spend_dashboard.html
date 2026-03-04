@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mbuzz - Spend Intelligence Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Minimal chart placeholders */
+    .chart-placeholder {
+      background: linear-gradient(135deg, #f0f0f0 25%, transparent 25%),
+                  linear-gradient(225deg, #f0f0f0 25%, transparent 25%),
+                  linear-gradient(315deg, #f0f0f0 25%, transparent 25%),
+                  linear-gradient(45deg, #f0f0f0 25%, transparent 25%);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    }
+    .trend-line {
+      stroke-dasharray: 4;
+      animation: dash 20s linear infinite;
+    }
+    @keyframes dash { to { stroke-dashoffset: -100; } }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+  <!-- Nav (simplified) -->
+  <nav class="bg-white border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-14 items-center">
+        <div class="flex items-center gap-6">
+          <span class="text-lg font-bold text-gray-900">mbuzz</span>
+          <span class="text-sm text-gray-500">Acme Inc</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-sm text-gray-500">Settings</span>
+          <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-sm font-medium text-indigo-600">VM</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="py-6">
+    <main>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <!-- Tab Bar -->
+        <div class="border-b border-gray-200">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <nav class="-mb-px flex gap-4 sm:gap-6">
+              <button class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Conversions</button>
+              <button class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Funnel</button>
+              <button class="py-3 px-1 text-sm font-medium border-b-2 border-indigo-500 text-indigo-600">Spend</button>
+              <button class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Events</button>
+            </nav>
+            <div class="flex items-center gap-2 pt-2 pb-3 sm:pt-0">
+              <button class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+                Filters
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Spend Tab Content -->
+        <div class="mt-6">
+
+          <!-- Connection Status + Controls Row -->
+          <div class="flex flex-col gap-3 mb-6">
+            <div class="flex items-center gap-3">
+              <div class="flex items-center gap-1.5">
+                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                <span class="text-sm text-gray-600">Google Ads connected</span>
+              </div>
+              <span class="text-xs text-gray-400 hidden sm:inline">Last sync: 2 hours ago</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <!-- Date Range -->
+              <select class="text-sm border border-gray-300 rounded-md px-3 py-1.5 text-gray-700 bg-white flex-shrink-0">
+                <option>Last 7 days</option>
+                <option selected>Last 30 days</option>
+                <option>Last 90 days</option>
+                <option>This month</option>
+                <option>Last month</option>
+              </select>
+              <!-- Attribution Model -->
+              <select class="text-sm border border-gray-300 rounded-md px-3 py-1.5 text-gray-700 bg-white flex-shrink-0">
+                <option>Last Touch</option>
+                <option selected>Linear</option>
+                <option>Time Decay</option>
+                <option>U-Shaped</option>
+                <option>Markov</option>
+              </select>
+              <!-- Refresh -->
+              <button class="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 flex-shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <span class="hidden sm:inline">Refresh</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- TIER 1: Hero KPI Cards -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6">
+
+            <!-- Blended ROAS -->
+            <div class="bg-white p-3 sm:p-5 rounded-lg shadow">
+              <dt class="text-xs sm:text-sm font-medium text-gray-500">Blended ROAS</dt>
+              <dd class="mt-1">
+                <span class="text-lg sm:text-2xl font-semibold text-gray-900">3.2x</span>
+                <span class="ml-1.5 inline-flex items-center text-xs font-medium text-green-600">
+                  <svg class="w-3 h-3 mr-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"/></svg>
+                  +0.3
+                </span>
+              </dd>
+              <div class="mt-1 text-xs text-gray-400">vs 2.9x prior</div>
+            </div>
+
+            <!-- Total Spend -->
+            <div class="bg-white p-3 sm:p-5 rounded-lg shadow">
+              <dt class="text-xs sm:text-sm font-medium text-gray-500">Total Spend</dt>
+              <dd class="mt-1">
+                <span class="text-lg sm:text-2xl font-semibold text-gray-900">$24,500</span>
+                <span class="ml-1.5 inline-flex items-center text-xs font-medium text-red-600">
+                  <svg class="w-3 h-3 mr-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z"/></svg>
+                  +12%
+                </span>
+              </dd>
+              <div class="mt-1 text-xs text-gray-400">vs $21,875 prior</div>
+            </div>
+
+            <!-- Attributed Revenue -->
+            <div class="bg-white p-3 sm:p-5 rounded-lg shadow">
+              <dt class="text-xs sm:text-sm font-medium text-gray-500">Attributed Revenue</dt>
+              <dd class="mt-1">
+                <span class="text-lg sm:text-2xl font-semibold text-gray-900">$78,400</span>
+                <span class="ml-1.5 inline-flex items-center text-xs font-medium text-green-600">
+                  <svg class="w-3 h-3 mr-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"/></svg>
+                  +18%
+                </span>
+              </dd>
+              <div class="mt-1 text-xs text-gray-400">vs $66,440 prior</div>
+            </div>
+
+            <!-- NCAC -->
+            <div class="bg-white p-3 sm:p-5 rounded-lg shadow">
+              <dt class="text-xs sm:text-sm font-medium text-gray-500">NCAC</dt>
+              <dd class="mt-1">
+                <span class="text-lg sm:text-2xl font-semibold text-gray-900">$47</span>
+                <span class="ml-1.5 inline-flex items-center text-xs font-medium text-green-600">
+                  <svg class="w-3 h-3 mr-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"/></svg>
+                  -$3
+                </span>
+              </dd>
+              <div class="mt-1 text-xs text-gray-400">new customer acq. cost</div>
+            </div>
+
+            <!-- MER -->
+            <div class="bg-white p-3 sm:p-5 rounded-lg shadow col-span-2 sm:col-span-1">
+              <dt class="text-xs sm:text-sm font-medium text-gray-500">MER</dt>
+              <dd class="mt-1">
+                <span class="text-lg sm:text-2xl font-semibold text-gray-900">4.1x</span>
+                <span class="ml-1.5 inline-flex items-center text-xs font-medium text-green-600">
+                  <svg class="w-3 h-3 mr-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"/></svg>
+                  +0.2
+                </span>
+              </dd>
+              <div class="mt-1 text-xs text-gray-400">marketing efficiency ratio</div>
+            </div>
+
+          </div>
+
+          <!-- TIER 2: Trend Chart + Channel Table (side-by-side on lg) -->
+          <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6">
+
+            <!-- ROAS + Spend Trend Chart (3/5 width) -->
+            <div class="lg:col-span-3 bg-white p-4 sm:p-6 rounded-lg shadow">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base sm:text-lg font-medium text-gray-900">ROAS & Spend Trend</h3>
+                <div class="flex items-center gap-4">
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-3 h-0.5 bg-indigo-500 inline-block"></span>
+                    <span class="text-xs text-gray-500">ROAS</span>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-3 h-3 bg-gray-200 rounded-sm inline-block"></span>
+                    <span class="text-xs text-gray-500">Spend</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Chart SVG mockup -->
+              <div class="h-48 sm:h-64 relative">
+                <svg viewBox="0 0 600 200" class="w-full h-full" preserveAspectRatio="none">
+                  <!-- Grid lines -->
+                  <line x1="0" y1="50" x2="600" y2="50" stroke="#f3f4f6" stroke-width="1"/>
+                  <line x1="0" y1="100" x2="600" y2="100" stroke="#f3f4f6" stroke-width="1"/>
+                  <line x1="0" y1="150" x2="600" y2="150" stroke="#f3f4f6" stroke-width="1"/>
+
+                  <!-- Spend bars (light gray) -->
+                  <rect x="20" y="120" width="16" height="60" fill="#e5e7eb" rx="2"/>
+                  <rect x="60" y="110" width="16" height="70" fill="#e5e7eb" rx="2"/>
+                  <rect x="100" y="100" width="16" height="80" fill="#e5e7eb" rx="2"/>
+                  <rect x="140" y="115" width="16" height="65" fill="#e5e7eb" rx="2"/>
+                  <rect x="180" y="105" width="16" height="75" fill="#e5e7eb" rx="2"/>
+                  <rect x="220" y="95" width="16" height="85" fill="#e5e7eb" rx="2"/>
+                  <rect x="260" y="100" width="16" height="80" fill="#e5e7eb" rx="2"/>
+                  <rect x="300" y="90" width="16" height="90" fill="#e5e7eb" rx="2"/>
+                  <rect x="340" y="85" width="16" height="95" fill="#e5e7eb" rx="2"/>
+                  <rect x="380" y="90" width="16" height="90" fill="#e5e7eb" rx="2"/>
+                  <rect x="420" y="80" width="16" height="100" fill="#e5e7eb" rx="2"/>
+                  <rect x="460" y="75" width="16" height="105" fill="#e5e7eb" rx="2"/>
+                  <rect x="500" y="85" width="16" height="95" fill="#e5e7eb" rx="2"/>
+                  <rect x="540" y="80" width="16" height="100" fill="#e5e7eb" rx="2"/>
+
+                  <!-- ROAS line (indigo) -->
+                  <polyline fill="none" stroke="#6366f1" stroke-width="2.5"
+                    points="28,130 68,120 108,105 148,110 188,95 228,80 268,85 308,70 348,60 388,65 428,55 468,50 508,55 548,45"/>
+
+                  <!-- ROAS dots -->
+                  <circle cx="28" cy="130" r="3" fill="#6366f1"/>
+                  <circle cx="68" cy="120" r="3" fill="#6366f1"/>
+                  <circle cx="108" cy="105" r="3" fill="#6366f1"/>
+                  <circle cx="148" cy="110" r="3" fill="#6366f1"/>
+                  <circle cx="188" cy="95" r="3" fill="#6366f1"/>
+                  <circle cx="228" cy="80" r="3" fill="#6366f1"/>
+                  <circle cx="268" cy="85" r="3" fill="#6366f1"/>
+                  <circle cx="308" cy="70" r="3" fill="#6366f1"/>
+                  <circle cx="348" cy="60" r="3" fill="#6366f1"/>
+                  <circle cx="388" cy="65" r="3" fill="#6366f1"/>
+                  <circle cx="428" cy="55" r="3" fill="#6366f1"/>
+                  <circle cx="468" cy="50" r="3" fill="#6366f1"/>
+                  <circle cx="508" cy="55" r="3" fill="#6366f1"/>
+                  <circle cx="548" cy="45" r="3" fill="#6366f1"/>
+
+                  <!-- Y-axis labels -->
+                  <text x="596" y="55" font-size="10" fill="#9ca3af" text-anchor="end">4x</text>
+                  <text x="596" y="105" font-size="10" fill="#9ca3af" text-anchor="end">2x</text>
+                  <text x="596" y="155" font-size="10" fill="#9ca3af" text-anchor="end">0x</text>
+                </svg>
+
+                <!-- X-axis labels -->
+                <div class="flex justify-between px-4 mt-1">
+                  <span class="text-xs text-gray-400">Feb 4</span>
+                  <span class="text-xs text-gray-400">Feb 11</span>
+                  <span class="text-xs text-gray-400">Feb 18</span>
+                  <span class="text-xs text-gray-400">Feb 25</span>
+                  <span class="text-xs text-gray-400">Mar 4</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Channel Performance Table (2/5 width) -->
+            <div class="lg:col-span-2 bg-white p-4 sm:p-6 rounded-lg shadow">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base sm:text-lg font-medium text-gray-900">By Channel</h3>
+                <div class="group relative">
+                  <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  <div class="hidden group-hover:block absolute z-10 w-48 p-2 text-xs text-gray-600 bg-white border border-gray-200 rounded shadow-lg right-0 top-6">
+                    Spend and ROAS by channel using Linear attribution model.
+                  </div>
+                </div>
+              </div>
+
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th class="pb-3">Channel</th>
+                    <th class="pb-3 text-right">Spend</th>
+                    <th class="pb-3 text-right">ROAS</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr class="hover:bg-gray-50 cursor-pointer">
+                    <td class="py-3">
+                      <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+                        <span class="font-medium text-gray-900">Paid Search</span>
+                      </div>
+                    </td>
+                    <td class="py-3 text-right text-gray-700">$12,400</td>
+                    <td class="py-3 text-right">
+                      <span class="font-semibold text-gray-900">4.1x</span>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-gray-50 cursor-pointer">
+                    <td class="py-3">
+                      <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                        <span class="font-medium text-gray-900">Paid Social</span>
+                      </div>
+                    </td>
+                    <td class="py-3 text-right text-gray-700">$8,200</td>
+                    <td class="py-3 text-right">
+                      <span class="font-semibold text-gray-900">2.8x</span>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-gray-50 cursor-pointer">
+                    <td class="py-3">
+                      <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+                        <span class="font-medium text-gray-900">Display</span>
+                      </div>
+                    </td>
+                    <td class="py-3 text-right text-gray-700">$2,100</td>
+                    <td class="py-3 text-right">
+                      <span class="font-semibold text-gray-900">1.4x</span>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-gray-50 cursor-pointer">
+                    <td class="py-3">
+                      <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+                        <span class="font-medium text-gray-900">Video</span>
+                      </div>
+                    </td>
+                    <td class="py-3 text-right text-gray-700">$1,800</td>
+                    <td class="py-3 text-right">
+                      <span class="font-semibold text-gray-900">1.9x</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div class="mt-3 pt-3 border-t border-gray-100">
+                <button class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+                  Expand to campaign level &rarr;
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- TIER 3: Deep Analysis Sub-Tabs -->
+          <div class="bg-white rounded-lg shadow">
+            <!-- Sub-tab nav -->
+            <div class="border-b border-gray-200 px-4 sm:px-6">
+              <nav class="-mb-px flex gap-4 sm:gap-6 overflow-x-auto">
+                <button class="py-3 px-1 text-sm font-medium border-b-2 border-indigo-500 text-indigo-600 whitespace-nowrap">Overview</button>
+                <a href="spend_hourly_device.html" class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap">Hourly / Device</a>
+                <a href="spend_payback.html" class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap">Payback Period</a>
+                <button class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-400 whitespace-nowrap cursor-not-allowed" disabled>
+                  Recommendations
+                  <span class="ml-1 text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">Soon</span>
+                </button>
+                <button class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-400 whitespace-nowrap cursor-not-allowed" disabled>
+                  Scenarios
+                  <span class="ml-1 text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">Soon</span>
+                </button>
+              </nav>
+            </div>
+
+            <!-- Overview content: Expanded channel table -->
+            <div class="p-4 sm:p-6">
+              <h4 class="text-base font-medium text-gray-900 mb-4">Channel Performance Detail</h4>
+
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead>
+                    <tr class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                      <th class="pb-3 pr-4">Channel</th>
+                      <th class="pb-3 pr-4 text-right cursor-pointer hover:text-gray-700">
+                        Spend
+                        <svg class="w-3 h-3 inline ml-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+                      </th>
+                      <th class="pb-3 pr-4 text-right">Revenue</th>
+                      <th class="pb-3 pr-4 text-right">ROAS</th>
+                      <th class="pb-3 pr-4 text-right">Impressions</th>
+                      <th class="pb-3 pr-4 text-right">Clicks</th>
+                      <th class="pb-3 pr-4 text-right">CTR</th>
+                      <th class="pb-3 text-right">CPC</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100">
+                    <tr class="hover:bg-gray-50">
+                      <td class="py-3 pr-4">
+                        <div class="flex items-center gap-2">
+                          <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+                          <span class="font-medium text-gray-900">Paid Search</span>
+                        </div>
+                      </td>
+                      <td class="py-3 pr-4 text-right text-gray-700">$12,400</td>
+                      <td class="py-3 pr-4 text-right text-gray-700">$50,840</td>
+                      <td class="py-3 pr-4 text-right font-semibold text-gray-900">4.1x</td>
+                      <td class="py-3 pr-4 text-right text-gray-600">284,000</td>
+                      <td class="py-3 pr-4 text-right text-gray-600">8,300</td>
+                      <td class="py-3 pr-4 text-right text-gray-600">2.9%</td>
+                      <td class="py-3 text-right text-gray-600">$1.49</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50">
+                      <td class="py-3 pr-4">
+                        <div class="flex items-center gap-2">
+                          <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                          <span class="font-medium text-gray-900">Paid Social</span>
+                        </div>
+                      </td>
+                      <td class="py-3 pr-4 text-right text-gray-700">$8,200</td>
+                      <td class="py-3 pr-4 text-right text-gray-700">$22,960</td>
+                      <td class="py-3 pr-4 text-right font-semibold text-gray-900">2.8x</td>
+                      <td class="py-3 pr-4 text-right text-gray-600">520,000</td>
+                      <td class="py-3 pr-4 text-right text-gray-600">6,200</td>
+                      <td class="py-3 pr-4 text-right text-gray-600">1.2%</td>
+                      <td class="py-3 text-right text-gray-600">$1.32</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50">
+                      <td class="py-3 pr-4">
+                        <div class="flex items-center gap-2">
+                          <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+                          <span class="font-medium text-gray-900">Display</span>
+                        </div>
+                      </td>
+                      <td class="py-3 pr-4 text-right text-gray-700">$2,100</td>
+                      <td class="py-3 pr-4 text-right text-gray-700">$2,940</td>
+                      <td class="py-3 pr-4 text-right font-semibold text-gray-900">1.4x</td>
+                      <td class="py-3 pr-4 text-right text-gray-600">1,200,000</td>
+                      <td class="py-3 pr-4 text-right text-gray-600">2,400</td>
+                      <td class="py-3 pr-4 text-right text-gray-600">0.2%</td>
+                      <td class="py-3 text-right text-gray-600">$0.88</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50">
+                      <td class="py-3 pr-4">
+                        <div class="flex items-center gap-2">
+                          <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+                          <span class="font-medium text-gray-900">Video</span>
+                        </div>
+                      </td>
+                      <td class="py-3 pr-4 text-right text-gray-700">$1,800</td>
+                      <td class="py-3 pr-4 text-right text-gray-700">$3,420</td>
+                      <td class="py-3 pr-4 text-right font-semibold text-gray-900">1.9x</td>
+                      <td class="py-3 pr-4 text-right text-gray-600">180,000</td>
+                      <td class="py-3 pr-4 text-right text-gray-600">1,800</td>
+                      <td class="py-3 pr-4 text-right text-gray-600">1.0%</td>
+                      <td class="py-3 text-right text-gray-600">$1.00</td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr class="border-t-2 border-gray-200 font-medium">
+                      <td class="py-3 pr-4 text-gray-900">Total</td>
+                      <td class="py-3 pr-4 text-right text-gray-900">$24,500</td>
+                      <td class="py-3 pr-4 text-right text-gray-900">$80,160</td>
+                      <td class="py-3 pr-4 text-right font-semibold text-gray-900">3.2x</td>
+                      <td class="py-3 pr-4 text-right text-gray-600">2,184,000</td>
+                      <td class="py-3 pr-4 text-right text-gray-600">18,700</td>
+                      <td class="py-3 pr-4 text-right text-gray-600">0.9%</td>
+                      <td class="py-3 text-right text-gray-600">$1.31</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+
+              <!-- Data freshness note -->
+              <div class="mt-4 flex items-center gap-2 text-xs text-gray-400">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>ROAS uses conversion-date revenue vs spend-date costs. Single-day ROAS may lag &mdash; use 7d+ windows for accuracy.</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+</body>
+</html>

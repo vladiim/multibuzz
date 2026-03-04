@@ -26,6 +26,14 @@ require_relative "../config/environment"
 require "rails/test_help"
 require "prosopite"
 
+module SignInHelper
+  def sign_in_as(user)
+    post login_path, params: { email: user.email, password: "password123" }
+  end
+end
+
+ActionDispatch::IntegrationTest.include SignInHelper
+
 module ActiveSupport
   class TestCase
     # Run tests in parallel with specified workers

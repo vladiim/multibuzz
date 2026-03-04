@@ -1,0 +1,15 @@
+<%= turbo_frame_tag "spend_#{current_account.prefix_id}" do %>
+  <div class="dashboard-section">
+    <% if !@has_connections %>
+      <%= render "dashboard/spend/empty_state" %>
+    <% elsif @result[:success] && @result[:data] %>
+      <%= render "dashboard/spend/dashboard", data: @result[:data] %>
+    <% elsif @result[:success] %>
+      <%= render "dashboard/spend/empty_state" %>
+    <% else %>
+      <div class="bg-red-50 p-4 rounded-lg">
+        <p class="text-red-700">Error loading spend data: <%= @result[:errors].join(', ') %></p>
+      </div>
+    <% end %>
+  </div>
+<% end %>

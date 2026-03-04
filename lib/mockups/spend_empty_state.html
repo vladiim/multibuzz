@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mbuzz - Spend Intelligence: Empty State</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+  <!-- Nav -->
+  <nav class="bg-white border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-14 items-center">
+        <div class="flex items-center gap-6">
+          <span class="text-lg font-bold text-gray-900">mbuzz</span>
+          <span class="text-sm text-gray-500">Acme Inc</span>
+        </div>
+        <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-sm font-medium text-indigo-600">VM</div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="py-6">
+    <main>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <!-- Tab Bar -->
+        <div class="border-b border-gray-200">
+          <nav class="-mb-px flex gap-4 sm:gap-6">
+            <button class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-500">Conversions</button>
+            <button class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-500">Funnel</button>
+            <button class="py-3 px-1 text-sm font-medium border-b-2 border-indigo-500 text-indigo-600">Spend</button>
+            <button class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-500">Events</button>
+          </nav>
+        </div>
+
+        <div class="mt-6">
+
+          <!-- ============================================= -->
+          <!-- STATE 1: No connections at all                 -->
+          <!-- ============================================= -->
+          <div class="bg-white rounded-lg shadow">
+            <div class="px-6 py-16 text-center max-w-lg mx-auto">
+
+              <!-- Illustration: simplified chart icon -->
+              <div class="mx-auto w-20 h-20 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6">
+                <svg class="w-10 h-10 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                </svg>
+              </div>
+
+              <h3 class="text-xl font-semibold text-gray-900 mb-2">See where your money works hardest</h3>
+              <p class="text-sm text-gray-500 mb-8">
+                Connect your ad platform to unlock attributed ROAS, payback periods, and channel-level spend intelligence &mdash; powered by your multi-touch attribution data.
+              </p>
+
+              <!-- CTA -->
+              <a href="#" class="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
+                Connect Google Ads
+              </a>
+
+              <!-- What you'll unlock -->
+              <div class="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
+                <div class="bg-gray-50 rounded-lg p-4">
+                  <div class="text-sm font-medium text-gray-900 mb-1">Attributed ROAS</div>
+                  <div class="text-xs text-gray-500">True return on ad spend using your multi-touch attribution models, not platform self-reporting.</div>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-4">
+                  <div class="text-sm font-medium text-gray-900 mb-1">Payback Period</div>
+                  <div class="text-xs text-gray-500">How long until a new customer's CLV covers the acquisition cost, by channel.</div>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-4">
+                  <div class="text-sm font-medium text-gray-900 mb-1">Channel Intelligence</div>
+                  <div class="text-xs text-gray-500">Hourly spend patterns, device breakdown, and campaign-level drill-downs.</div>
+                </div>
+              </div>
+
+              <!-- Supported platforms hint -->
+              <div class="mt-8 flex flex-wrap items-center justify-center gap-2">
+                <span class="text-xs text-gray-400">Coming soon:</span>
+                <span class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">Meta Ads</span>
+                <span class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">TikTok</span>
+                <span class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">LinkedIn</span>
+                <span class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">+6 more</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============================================= -->
+          <!-- STATE 2: Syncing (toggle visibility to view)   -->
+          <!-- ============================================= -->
+          <div class="mt-8 bg-white rounded-lg shadow">
+            <div class="px-6 py-12 text-center max-w-md mx-auto">
+
+              <!-- Animated sync icon -->
+              <div class="mx-auto w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6">
+                <svg class="w-8 h-8 text-indigo-500 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+              </div>
+
+              <h3 class="text-lg font-semibold text-gray-900 mb-2">Syncing historical data...</h3>
+              <p class="text-sm text-gray-500 mb-6">
+                Importing 90 days of Google Ads data. This usually takes 2&ndash;5 minutes.
+              </p>
+
+              <!-- Progress -->
+              <div class="w-full max-w-xs mx-auto">
+                <div class="flex items-center justify-between text-xs text-gray-500 mb-1.5">
+                  <span>Importing campaigns...</span>
+                  <span>42%</span>
+                </div>
+                <div class="w-full h-2 bg-gray-200 rounded-full">
+                  <div class="h-2 bg-indigo-500 rounded-full transition-all" style="width: 42%"></div>
+                </div>
+              </div>
+
+              <div class="mt-6 flex items-center justify-center gap-2">
+                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                <span class="text-sm text-gray-600">Google Ads &mdash; Acme Inc (851-548-6033)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============================================= -->
+          <!-- STATE 3: Error state                           -->
+          <!-- ============================================= -->
+          <div class="mt-8">
+            <!-- Error banner (shown at top of spend tab) -->
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <div class="flex items-start gap-3">
+                <svg class="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <div class="flex-1">
+                  <p class="text-sm font-medium text-red-800">Google Ads sync failed</p>
+                  <p class="text-sm text-red-600 mt-0.5">Authentication expired. Your Google Ads refresh token needs to be renewed.</p>
+                </div>
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-3 sm:mt-0">
+                  <button class="px-3 py-1.5 text-sm font-medium text-red-700 bg-red-100 rounded-md hover:bg-red-200">
+                    Re-authenticate
+                  </button>
+                  <button class="px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                    Retry Sync
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stale data below with "last successful" badge -->
+            <div class="bg-white rounded-lg shadow p-6">
+              <div class="flex items-center gap-2 text-sm text-amber-600 mb-4">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>Showing data from last successful sync: Mar 2, 2026 at 4:00 AM UTC</span>
+              </div>
+              <div class="h-32 flex items-center justify-center text-gray-400 text-sm">
+                [Dashboard would render with stale cached data here]
+              </div>
+            </div>
+          </div>
+
+          <!-- ============================================= -->
+          <!-- STATE 4: Preliminary data badge               -->
+          <!-- ============================================= -->
+          <div class="mt-8 bg-white rounded-lg shadow p-6">
+            <h4 class="text-base font-medium text-gray-900 mb-3">Data Freshness Badges</h4>
+            <p class="text-sm text-gray-500 mb-4">Recent data (last 48h) shows a "Preliminary" badge because Google Ads may still adjust values.</p>
+
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="text-left text-xs font-medium text-gray-500 uppercase">
+                  <th class="pb-2">Date</th>
+                  <th class="pb-2 text-right">Spend</th>
+                  <th class="pb-2 text-right">Status</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <tr>
+                  <td class="py-2 text-gray-900">Mar 4, 2026</td>
+                  <td class="py-2 text-right text-gray-700">$812</td>
+                  <td class="py-2 text-right">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 rounded">
+                      <span class="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
+                      Preliminary
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="py-2 text-gray-900">Mar 3, 2026</td>
+                  <td class="py-2 text-right text-gray-700">$845</td>
+                  <td class="py-2 text-right">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 rounded">
+                      <span class="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
+                      Preliminary
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="py-2 text-gray-900">Mar 2, 2026</td>
+                  <td class="py-2 text-right text-gray-700">$823</td>
+                  <td class="py-2 text-right">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded">
+                      <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                      Final
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="py-2 text-gray-900">Mar 1, 2026</td>
+                  <td class="py-2 text-right text-gray-700">$791</td>
+                  <td class="py-2 text-right">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded">
+                      <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                      Final
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+</body>
+</html>

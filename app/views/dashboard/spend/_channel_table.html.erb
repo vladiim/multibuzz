@@ -1,0 +1,69 @@
+<%# Required locals: by_channel, totals %>
+<h4 class="text-base font-medium text-gray-900 mb-4">Channel Performance Detail</h4>
+
+<% if by_channel.present? %>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+          <th class="pb-3 pr-4">Channel</th>
+          <th class="pb-3 pr-4 text-right">Spend</th>
+          <th class="pb-3 pr-4 text-right">Revenue</th>
+          <th class="pb-3 pr-4 text-right">ROAS</th>
+          <th class="pb-3 pr-4 text-right">Impressions</th>
+          <th class="pb-3 pr-4 text-right">Clicks</th>
+          <th class="pb-3 pr-4 text-right">CTR</th>
+          <th class="pb-3 text-right">CPC</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <% by_channel.each do |row| %>
+          <tr class="hover:bg-gray-50">
+            <td class="py-3 pr-4">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full" style="background-color: <%= spend_channel_color(row[:channel]) %>"></span>
+                <span class="font-medium text-gray-900"><%= row[:channel].titleize %></span>
+              </div>
+            </td>
+            <td class="py-3 pr-4 text-right text-gray-700"><%= format_spend(row[:spend_micros]) %></td>
+            <td class="py-3 pr-4 text-right text-gray-700"><%= number_to_currency(row[:attributed_revenue], precision: 0) %></td>
+            <td class="py-3 pr-4 text-right font-semibold text-gray-900"><%= row[:roas] ? "#{row[:roas]}x" : "—" %></td>
+            <td class="py-3 pr-4 text-right text-gray-600"><%= number_with_delimiter(row[:impressions]) %></td>
+            <td class="py-3 pr-4 text-right text-gray-600"><%= number_with_delimiter(row[:clicks]) %></td>
+            <td class="py-3 pr-4 text-right text-gray-600"><%= spend_ctr(row) %></td>
+            <td class="py-3 text-right text-gray-600"><%= spend_cpc(row) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+      <tfoot>
+        <tr class="border-t-2 border-gray-200 font-medium">
+          <td class="py-3 pr-4 text-gray-900">Total</td>
+          <td class="py-3 pr-4 text-right text-gray-900"><%= format_spend(totals[:total_spend_micros]) %></td>
+          <td class="py-3 pr-4 text-right text-gray-900"><%= number_to_currency(totals[:attributed_revenue], precision: 0) %></td>
+          <td class="py-3 pr-4 text-right font-semibold text-gray-900"><%= totals[:blended_roas] ? "#{totals[:blended_roas]}x" : "—" %></td>
+          <td class="py-3 pr-4 text-right text-gray-600"><%= number_with_delimiter(by_channel.sum { |r| r[:impressions] }) %></td>
+          <td class="py-3 pr-4 text-right text-gray-600"><%= number_with_delimiter(by_channel.sum { |r| r[:clicks] }) %></td>
+          <td class="py-3 pr-4 text-right text-gray-600">
+            <% total_imp = by_channel.sum { |r| r[:impressions] } %>
+            <% total_clicks = by_channel.sum { |r| r[:clicks] } %>
+            <%= total_imp.positive? ? "#{(total_clicks.to_f / total_imp * 100).round(1)}%" : "—" %>
+          </td>
+          <td class="py-3 text-right text-gray-600">
+            <%= total_clicks.positive? ? format_spend(totals[:total_spend_micros] / total_clicks) : "—" %>
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <div class="mt-4 flex items-center gap-2 text-xs text-gray-400">
+    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    <span>ROAS uses conversion-date revenue vs spend-date costs. Use 7d+ windows for accuracy.</span>
+  </div>
+<% else %>
+  <div class="h-32 flex items-center justify-center text-gray-500">
+    No spend data for the selected period
+  </div>
+<% end %>

@@ -1,0 +1,53 @@
+<%# Required locals: totals %>
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6">
+  <!-- Blended ROAS -->
+  <div class="bg-white p-3 sm:p-5 rounded-lg shadow">
+    <dt class="text-xs sm:text-sm font-medium text-gray-500">Blended ROAS</dt>
+    <dd class="mt-1">
+      <span class="text-lg sm:text-2xl font-semibold text-gray-900">
+        <%= totals[:blended_roas] ? "#{totals[:blended_roas]}x" : "—" %>
+      </span>
+    </dd>
+  </div>
+
+  <!-- Total Spend -->
+  <div class="bg-white p-3 sm:p-5 rounded-lg shadow">
+    <dt class="text-xs sm:text-sm font-medium text-gray-500">Total Spend</dt>
+    <dd class="mt-1">
+      <span class="text-lg sm:text-2xl font-semibold text-gray-900">
+        <%= totals[:total_spend] ? number_to_currency(totals[:total_spend], precision: 0) : "—" %>
+      </span>
+    </dd>
+    <% if totals[:currency] %>
+      <div class="mt-1 text-xs text-gray-400"><%= totals[:currency] %></div>
+    <% end %>
+  </div>
+
+  <!-- Attributed Revenue -->
+  <div class="bg-white p-3 sm:p-5 rounded-lg shadow">
+    <dt class="text-xs sm:text-sm font-medium text-gray-500">Attributed Revenue</dt>
+    <dd class="mt-1">
+      <span class="text-lg sm:text-2xl font-semibold text-gray-900">
+        <%= totals[:attributed_revenue]&.positive? ? number_to_currency(totals[:attributed_revenue], precision: 0) : "—" %>
+      </span>
+    </dd>
+  </div>
+
+  <!-- NCAC (placeholder — requires PaybackPeriodQuery integration) -->
+  <div class="bg-white p-3 sm:p-5 rounded-lg shadow">
+    <dt class="text-xs sm:text-sm font-medium text-gray-500">NCAC</dt>
+    <dd class="mt-1">
+      <span class="text-lg sm:text-2xl font-semibold text-gray-900">&mdash;</span>
+    </dd>
+    <div class="mt-1 text-xs text-gray-400">new customer acq. cost</div>
+  </div>
+
+  <!-- MER -->
+  <div class="bg-white p-3 sm:p-5 rounded-lg shadow col-span-2 sm:col-span-1">
+    <dt class="text-xs sm:text-sm font-medium text-gray-500">MER</dt>
+    <dd class="mt-1">
+      <span class="text-lg sm:text-2xl font-semibold text-gray-900">&mdash;</span>
+    </dd>
+    <div class="mt-1 text-xs text-gray-400">marketing efficiency ratio</div>
+  </div>
+</div>

@@ -31,6 +31,22 @@ module Channels
     OTHER
   ].freeze
 
+  # Hex colors — keep in sync with CHANNEL_COLORS in chart_controller.js
+  COLORS = {
+    PAID_SEARCH => "#6366F1",
+    ORGANIC_SEARCH => "#10B981",
+    PAID_SOCIAL => "#F59E0B",
+    ORGANIC_SOCIAL => "#84CC16",
+    EMAIL => "#EC4899",
+    DISPLAY => "#8B5CF6",
+    AFFILIATE => "#14B8A6",
+    REFERRAL => "#F97316",
+    VIDEO => "#EF4444",
+    AI => "#06B6D4",
+    DIRECT => "#6B7280",
+    OTHER => "#9CA3AF"
+  }.freeze
+
   # Domain pattern matching
   SEARCH_ENGINES = /google|bing|yahoo|duckduckgo|baidu|brave|\.goog$/i
   SOCIAL_NETWORKS = /facebook|instagram|linkedin|twitter|tiktok|pinterest|\bt\.co\b|threads/i

@@ -25,7 +25,10 @@ module SpendIntelligence
     def query_data
       {
         totals: totals,
-        by_channel: channel_metrics.call
+        by_channel: channel_metrics.call,
+        time_series: time_series,
+        by_device: by_device,
+        by_hour: by_hour
       }
     end
 
@@ -37,6 +40,52 @@ module SpendIntelligence
         attributed_revenue: channel_metrics.total_revenue,
         currency: primary_currency
       }
+    end
+
+    # --- Time Series ---
+
+    def time_series
+      daily_spend = spend_scope.group(:spend_date).sum(:spend_micros)
+
+      daily_spend.keys.sort.map do |date|
+        spend = daily_spend[date] || 0
+        revenue = (daily_revenue[date] || 0).to_f
+        {
+          date: date.to_s,
+          spend_micros: spend,
+          spend: spend_in_units(spend),
+          revenue: revenue,
+          roas: spend.positive? ? (revenue / spend_in_units(spend)).round(2) : nil
+        }
+      end
+    end
+
+    def daily_revenue
+      @daily_revenue ||= credits_scope.joins(:conversion)
+        .group(Arel.sql("DATE(conversions.converted_at)")).sum(:revenue_credit)
+    end
+
+    # --- Device & Hour Breakdowns ---
+
+    def by_device
+      spend_scope.group(:device)
+        .select("device, SUM(spend_micros) AS total_spend, SUM(impressions) AS total_impressions, SUM(clicks) AS total_clicks")
+        .map do |row|
+          {
+            device: row.device,
+            spend_micros: row.total_spend,
+            impressions: row.total_impressions,
+            clicks: row.total_clicks,
+            cpc_micros: row.total_clicks.positive? ? row.total_spend / row.total_clicks : nil
+          }
+        end
+        .sort_by { |d| -(d[:spend_micros] || 0) }
+    end
+
+    def by_hour
+      spend_scope.group(:spend_hour).sum(:spend_micros)
+        .sort_by(&:first)
+        .map { |hour, spend| { hour: hour, spend_micros: spend } }
     end
 
     # --- Queries ---
