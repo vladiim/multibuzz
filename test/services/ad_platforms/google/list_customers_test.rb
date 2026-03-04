@@ -15,13 +15,57 @@ class AdPlatforms::Google::ListCustomersTest < ActiveSupport::TestCase
     end
   end
 
-  test "excludes manager accounts" do
-    details = {
-      "1234567890" => customer_detail,
-      "9999999999" => manager_detail
+  test "excludes manager accounts and discovers sub-accounts" do
+    responses = {
+      "9999999999" => manager_detail,
+      "9999999999:sub" => sub_accounts_response
     }
 
-    stub_api(list_response: multi_accessible_response, detail_responses: details) do
+    stub_api(list_response: single_manager_response, detail_responses: responses) do
+      result = service.call
+      expected = { id: "5555555555", name: "Sub Account", currency: "AUD", login_customer_id: "9999999999" }
+
+      assert result[:success]
+      assert_equal [ expected ], result[:customers]
+    end
+  end
+
+  test "returns both direct and sub-accounts" do
+    responses = {
+      "1234567890" => customer_detail,
+      "9999999999" => manager_detail,
+      "9999999999:sub" => sub_accounts_response
+    }
+
+    stub_api(list_response: multi_accessible_response, detail_responses: responses) do
+      result = service.call
+
+      assert result[:success]
+      assert_equal %w[1234567890 5555555555], result[:customers].map { |c| c[:id] }
+    end
+  end
+
+  test "deduplicates accounts appearing both directly and via MCC" do
+    direct_and_sub = customer_detail.deep_dup
+    sub_response = {
+      "results" => [ {
+        "customerClient" => {
+          "id" => "1234567890",
+          "descriptiveName" => "Acme Ads",
+          "currencyCode" => "USD",
+          "manager" => false,
+          "level" => "1"
+        }
+      } ]
+    }
+
+    responses = {
+      "1234567890" => direct_and_sub,
+      "9999999999" => manager_detail,
+      "9999999999:sub" => sub_response
+    }
+
+    stub_api(list_response: multi_accessible_response, detail_responses: responses) do
       result = service.call
 
       assert result[:success]
@@ -39,8 +83,14 @@ class AdPlatforms::Google::ListCustomersTest < ActiveSupport::TestCase
     end
   end
 
-  test "returns empty list when no non-manager accounts" do
-    stub_api(list_response: single_manager_response, detail_responses: { "9999999999" => manager_detail }) do
+  test "returns empty list when manager has no sub-accounts" do
+    empty_sub = { "results" => [] }
+    responses = {
+      "9999999999" => manager_detail,
+      "9999999999:sub" => empty_sub
+    }
+
+    stub_api(list_response: single_manager_response, detail_responses: responses) do
       result = service.call
 
       assert result[:success]
@@ -90,6 +140,20 @@ class AdPlatforms::Google::ListCustomersTest < ActiveSupport::TestCase
     }
   end
 
+  def sub_accounts_response
+    {
+      "results" => [ {
+        "customerClient" => {
+          "id" => "5555555555",
+          "descriptiveName" => "Sub Account",
+          "currencyCode" => "AUD",
+          "manager" => false,
+          "level" => "1"
+        }
+      } ]
+    }
+  end
+
   def error_response
     nil
   end
@@ -108,15 +172,21 @@ class AdPlatforms::Google::ListCustomersTest < ActiveSupport::TestCase
   end
 
   def build_mock_http(list_stub, detail_stubs)
+    resolver = method(:resolve_stub_key)
     mock = Object.new
     mock.define_singleton_method(:request) do |req|
       path = req.uri&.path || req.path
       next list_stub if path&.include?("listAccessibleCustomers")
 
-      customer_id = path&.match(%r{customers/(\d+)})&.[](1)
-      detail_stubs[customer_id] || list_stub
+      detail_stubs[resolver.call(path, req.body)] || list_stub
     end
     mock
+  end
+
+  def resolve_stub_key(path, body)
+    customer_id = path&.match(%r{customers/(\d+)})&.[](1)
+    sub_query = body && JSON.parse(body)["query"]&.include?("customer_client")
+    sub_query ? "#{customer_id}:sub" : customer_id
   end
 
   def build_response(body)

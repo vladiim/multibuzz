@@ -10,7 +10,7 @@ module AdPlatforms
       def call
         return list_error unless list_response_success?
 
-        { success: true, customers: non_manager_customers }
+        { success: true, customers: all_customers }
       end
 
       private
@@ -35,31 +35,56 @@ module AdPlatforms
         @parsed_list ||= JSON.parse(list_response.body)
       end
 
-      # --- Fetch details per customer ---
+      # --- Discover all selectable accounts ---
 
-      def non_manager_customers
-        customer_ids.filter_map { |id| fetch_customer(id) }
+      def all_customers
+        customer_ids
+          .filter_map { |id| fetch_customer_details(id) }
+          .flat_map { |details| resolve(details) }
+          .uniq { |c| c[:id] }
       end
 
-      def fetch_customer(customer_id)
-        response = api_post(search_uri(customer_id), query: CUSTOMER_QUERY)
-        return nil unless response.is_a?(Net::HTTPSuccess)
+      def resolve(details)
+        return sub_accounts_for(details[:id]) if details[:manager]
 
-        parse_customer(JSON.parse(response.body))
+        [ details.except(:manager) ]
       end
 
-      def parse_customer(body)
-        customer = body.dig(FIELD_RESULTS, 0, FIELD_CUSTOMER)
-        return nil if customer.nil? || customer[FIELD_MANAGER] == true
+      def fetch_customer_details(customer_id)
+        search(customer_id, query: CUSTOMER_QUERY)
+          &.dig(FIELD_RESULTS, 0, FIELD_CUSTOMER)
+          &.then { |c| parse_customer(c) }
+      end
 
+      def parse_customer(customer)
         {
           id: customer[FIELD_ID],
           name: customer[FIELD_DESCRIPTIVE_NAME],
-          currency: customer[FIELD_CURRENCY_CODE]
+          currency: customer[FIELD_CURRENCY_CODE],
+          manager: customer[FIELD_MANAGER] == true
         }
       end
 
+      # --- MCC sub-account discovery ---
+
+      def sub_accounts_for(manager_id)
+        results = search(manager_id, query: SUB_ACCOUNTS_QUERY)&.fetch(FIELD_RESULTS, []) || []
+        results.filter_map { |r| parse_client(r) }.map { |c| c.merge(login_customer_id: manager_id) }
+      end
+
+      def parse_client(result)
+        client = result[FIELD_CUSTOMER_CLIENT]
+        return nil if client.nil? || client[FIELD_MANAGER] == true
+
+        { id: client[FIELD_ID], name: client[FIELD_DESCRIPTIVE_NAME], currency: client[FIELD_CURRENCY_CODE] }
+      end
+
       # --- HTTP ---
+
+      def search(customer_id, query:)
+        response = api_post(search_uri(customer_id), query: query)
+        JSON.parse(response.body) if response.is_a?(Net::HTTPSuccess)
+      end
 
       def search_uri(customer_id)
         URI("#{API_BASE_URL}/#{API_VERSION}/customers/#{customer_id}/#{SEARCH_PATH}")

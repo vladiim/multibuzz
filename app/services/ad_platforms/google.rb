@@ -12,16 +12,18 @@ module AdPlatforms
     PROMPT_CONSENT = "consent"
 
     # --- Google Ads REST API ---
-    API_VERSION = "v18"
+    API_VERSION = "v23"
     API_BASE_URL = "https://googleads.googleapis.com"
     LIST_CUSTOMERS_URI = URI("#{API_BASE_URL}/#{API_VERSION}/customers:listAccessibleCustomers").freeze
     SEARCH_PATH = "googleAds:search"
     CUSTOMER_QUERY = "SELECT customer.id, customer.descriptive_name, customer.currency_code, customer.manager FROM customer LIMIT 1"
+    SUB_ACCOUNTS_QUERY = "SELECT customer_client.id, customer_client.descriptive_name, customer_client.currency_code, customer_client.manager, customer_client.level FROM customer_client WHERE customer_client.level <= 1"
 
     # --- API response fields ---
     FIELD_RESOURCE_NAMES = "resourceNames"
     FIELD_RESULTS = "results"
     FIELD_CUSTOMER = "customer"
+    FIELD_CUSTOMER_CLIENT = "customerClient"
     FIELD_ID = "id"
     FIELD_DESCRIPTIVE_NAME = "descriptiveName"
     FIELD_CURRENCY_CODE = "currencyCode"
@@ -74,6 +76,7 @@ module AdPlatforms
 
     # --- HTTP headers ---
     HEADER_DEVELOPER_TOKEN = "developer-token"
+    HEADER_LOGIN_CUSTOMER_ID = "login-customer-id"
 
     REDIRECT_URIS = {
       production: "https://mbuzz.co/oauth/google_ads/callback",

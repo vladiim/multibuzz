@@ -46,7 +46,11 @@ module AdPlatforms
       end
 
       def client
-        @client ||= ApiClient.new(access_token: connection.access_token, customer_id: connection.platform_account_id)
+        @client ||= ApiClient.new(
+          access_token: connection.access_token,
+          customer_id: connection.platform_account_id,
+          login_customer_id: connection.settings["login_customer_id"]
+        )
       end
 
       def formatted_query(template)

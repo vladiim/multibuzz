@@ -3,9 +3,10 @@
 module AdPlatforms
   module Google
     class ApiClient
-      def initialize(access_token:, customer_id: nil)
+      def initialize(access_token:, customer_id: nil, login_customer_id: nil)
         @access_token = access_token
         @customer_id = customer_id
+        @login_customer_id = login_customer_id
       end
 
       def search(query)
@@ -25,7 +26,7 @@ module AdPlatforms
 
       private
 
-      attr_reader :access_token, :customer_id
+      attr_reader :access_token, :customer_id, :login_customer_id
 
       def execute(klass, uri)
         Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
@@ -39,6 +40,7 @@ module AdPlatforms
         klass.new(uri).tap do |req|
           req["Authorization"] = "Bearer #{access_token}"
           req[HEADER_DEVELOPER_TOKEN] = Google.credentials.fetch(:developer_token)
+          req[HEADER_LOGIN_CUSTOMER_ID] = login_customer_id if login_customer_id.present?
           req.content_type = "application/json"
         end
       end

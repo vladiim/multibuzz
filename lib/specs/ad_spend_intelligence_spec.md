@@ -7,6 +7,10 @@
 
 ---
 
+> **UAT BLOCKED** — 4 Mar 2026. OAuth flow, MCC sub-account discovery, and sync pipeline are code-complete but cannot be tested end-to-end until Google approves Basic Access (developer token returns `DEVELOPER_TOKEN_INVALID` with Explorer Access). Bugs found and fixed during UAT attempt: API version `v18` → `v23`, session key serialization (symbol → string), MCC sub-account discovery via `customer_client` query, `login-customer-id` header propagation. **When Basic Access is approved, re-run the full UAT checklist in the Testing Strategy section.**
+
+---
+
 ## Step Zero: Google Ads API Setup
 
 > **COMPLETED** — 2 Mar 2026. All setup steps done except Basic Access approval (pending) and OAuth consent screen verification (not yet submitted — requires working demo video first).

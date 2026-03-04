@@ -64,9 +64,9 @@ module Oauth
 
     def store_tokens_in_session
       session[:google_ads_tokens] = {
-        access_token: exchange_result[:access_token],
-        refresh_token: exchange_result[:refresh_token],
-        expires_at: exchange_result[:expires_at].iso8601
+        "access_token" => exchange_result[:access_token],
+        "refresh_token" => exchange_result[:refresh_token],
+        "expires_at" => exchange_result[:expires_at].iso8601
       }
     end
 
@@ -98,8 +98,13 @@ module Oauth
         access_token: session_tokens["access_token"],
         refresh_token: session_tokens["refresh_token"],
         token_expires_at: Time.parse(session_tokens["expires_at"]),
-        status: :connected
+        status: :connected,
+        settings: connection_settings
       )
+    end
+
+    def connection_settings
+      { "login_customer_id" => params[:login_customer_id].presence }.compact
     end
 
     def enqueue_backfill
