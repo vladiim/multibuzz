@@ -1,26 +1,15 @@
 <% model_names = credits.filter_map { |c| c.attribution_model&.name }.uniq.sort %>
-<% selected_model = model_names.first %>
 
-<div data-controller="toggle"
-  data-toggle-default-value="<%= selected_model %>"
-  data-toggle-active-class="bg-indigo-100 text-indigo-700 border-indigo-200"
-  data-toggle-inactive-class="bg-white text-gray-600 border-gray-300 hover:bg-gray-50">
-  <%# --- Model Filter Pills --- %>
-  <div class="flex flex-wrap gap-2 mb-4">
+<div data-controller="filter">
+  <select data-action="filter#change" data-filter-target="select"
+    class="mb-4 block w-full sm:w-auto rounded-md border-gray-300 text-sm text-gray-700 focus:border-indigo-500 focus:ring-indigo-500">
     <% model_names.each do |name| %>
-      <button type="button"
-        data-toggle-target="trigger"
-        data-action="toggle#select"
-        data-value="<%= name %>"
-        class="px-3 py-1.5 text-xs font-medium rounded-full border transition-colors">
-        <%= name.titleize %>
-      </button>
+      <option value="<%= name %>"><%= name.titleize %></option>
     <% end %>
-  </div>
+  </select>
 
-  <%# --- Table Per Model (toggled) --- %>
-  <% model_names.each do |name| %>
-    <div data-toggle-target="content" data-value="<%= name %>" class="<%= 'hidden' unless name == selected_model %>">
+  <% model_names.each_with_index do |name, i| %>
+    <div data-filter-target="content" data-value="<%= name %>" <%= 'hidden' if i > 0 %>>
       <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
           <thead>

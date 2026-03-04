@@ -39,8 +39,8 @@
           <h2 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Details</h2>
           <dl class="space-y-2">
             <div class="flex justify-between text-sm">
-              <dt class="text-gray-500">ID</dt>
-              <dd class="text-gray-900 font-mono text-xs"><%= @conversion.prefix_id %></dd>
+              <dt class="text-gray-500 shrink-0 mr-2">ID</dt>
+              <dd class="text-gray-900 font-mono text-xs min-w-0 break-all text-right"><%= @conversion.prefix_id %></dd>
             </div>
             <div class="flex justify-between text-sm">
               <dt class="text-gray-500">Type</dt>
@@ -67,12 +67,12 @@
               </div>
             <% end %>
             <div class="flex justify-between text-sm">
-              <dt class="text-gray-500">Visitor</dt>
-              <dd class="text-gray-900 font-mono text-xs"><%= @conversion.visitor.prefix_id %></dd>
+              <dt class="text-gray-500 shrink-0 mr-2">Visitor</dt>
+              <dd class="text-gray-900 font-mono text-xs min-w-0 break-all text-right"><%= @conversion.visitor.prefix_id %></dd>
             </div>
             <div class="flex justify-between text-sm">
-              <dt class="text-gray-500">Identity</dt>
-              <dd>
+              <dt class="text-gray-500 shrink-0 mr-2">Identity</dt>
+              <dd class="min-w-0 break-all text-right">
                 <% if @conversion.identity.present? %>
                   <%= link_to @conversion.identity.external_id,
                       dashboard_identity_detail_path(@conversion.identity.prefix_id),
