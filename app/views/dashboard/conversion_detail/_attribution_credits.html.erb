@@ -1,12 +1,17 @@
 <% model_names = credits.filter_map { |c| c.attribution_model&.name }.uniq.sort %>
 
 <div data-controller="filter">
-  <select data-action="filter#change" data-filter-target="select"
-    class="mb-4 block w-full sm:w-auto rounded-md border-gray-300 text-sm text-gray-700 focus:border-indigo-500 focus:ring-indigo-500">
-    <% model_names.each do |name| %>
-      <option value="<%= name %>"><%= name.titleize %></option>
-    <% end %>
-  </select>
+  <div class="flex items-start gap-3 mb-4">
+    <select data-action="filter#change" data-filter-target="select"
+      class="block w-full sm:w-auto rounded-md border-gray-300 text-sm text-gray-700 focus:border-indigo-500 focus:ring-indigo-500">
+      <% model_names.each do |name| %>
+        <option value="<%= name %>"><%= name.titleize %></option>
+      <% end %>
+    </select>
+    <p class="text-xs text-gray-400 leading-snug pt-1.5">
+      Most models show one row per touchpoint. Participation groups by channel instead, so it shows fewer rows for the same journey.
+    </p>
+  </div>
 
   <% model_names.each_with_index do |name, i| %>
     <div data-filter-target="content" data-value="<%= name %>" <%= 'hidden' if i > 0 %>>
