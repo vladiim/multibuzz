@@ -1,0 +1,103 @@
+<%
+  sessions = conversion.journey_sessions
+  time_gaps = conversion.journey_time_gaps
+  channel_colors = {
+    "paid_search" => "indigo", "organic_search" => "emerald", "paid_social" => "amber",
+    "organic_social" => "lime", "email" => "pink", "display" => "violet",
+    "affiliate" => "teal", "referral" => "orange", "video" => "red",
+    "ai" => "cyan", "direct" => "gray", "other" => "gray"
+  }
+%>
+
+<%# Desktop: horizontal flow %>
+<div class="hidden sm:flex items-start gap-0 overflow-x-auto pb-4">
+  <% sessions.each_with_index do |session, i| %>
+    <% color = channel_colors.fetch(session.channel, "gray") %>
+
+    <%# Session node %>
+    <div class="flex-shrink-0 w-40">
+      <div class="border-l-4 border-<%= color %>-500 bg-<%= color %>-50 rounded-r-lg p-3">
+        <div class="text-xs font-semibold text-<%= color %>-700"><%= session.channel&.titleize || "Unknown" %></div>
+        <% if session.initial_utm&.dig("utm_source").present? %>
+          <div class="text-xs text-gray-500 mt-0.5"><%= session.initial_utm["utm_source"] %></div>
+        <% end %>
+        <div class="text-xs text-gray-400 mt-1"><%= session.started_at.strftime("%b %-d, %Y") %></div>
+        <% if session.landing_page_host.present? %>
+          <div class="text-xs text-gray-400 truncate"><%= session.landing_page_host %></div>
+        <% end %>
+      </div>
+    </div>
+
+    <%# Connector arrow with time gap %>
+    <% if i < sessions.size - 1 %>
+      <div class="flex-shrink-0 flex flex-col items-center justify-center w-16 pt-4">
+        <div class="text-xs text-gray-400 mb-1"><%= format_time_gap(time_gaps[i]) %></div>
+        <div class="w-full border-t border-gray-300 relative">
+          <div class="absolute right-0 -top-1 w-2 h-2 border-t border-r border-gray-300 transform rotate-45"></div>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+
+  <%# Connector to conversion %>
+  <% if sessions.any? %>
+    <div class="flex-shrink-0 flex flex-col items-center justify-center w-16 pt-4">
+      <% last_gap = (conversion.converted_at - sessions.last.started_at) / 1.day %>
+      <div class="text-xs text-gray-400 mb-1"><%= format_time_gap(last_gap) %></div>
+      <div class="w-full border-t border-gray-300 relative">
+        <div class="absolute right-0 -top-1 w-2 h-2 border-t border-r border-gray-300 transform rotate-45"></div>
+      </div>
+    </div>
+  <% end %>
+
+  <%# Conversion node %>
+  <div class="flex-shrink-0 w-40">
+    <div class="border-l-4 border-green-500 bg-green-50 rounded-r-lg p-3">
+      <div class="text-xs font-semibold text-green-700">Converted</div>
+      <div class="text-xs text-gray-900 font-medium mt-0.5"><%= conversion.conversion_type %></div>
+      <% if conversion.revenue.present? %>
+        <div class="text-xs text-green-600 font-semibold mt-0.5"><%= number_to_currency(conversion.revenue) %></div>
+      <% end %>
+      <div class="text-xs text-gray-400 mt-1"><%= conversion.converted_at.strftime("%b %-d, %Y") %></div>
+    </div>
+  </div>
+</div>
+
+<%# Mobile: vertical flow %>
+<div class="sm:hidden space-y-0">
+  <% sessions.each_with_index do |session, i| %>
+    <% color = channel_colors.fetch(session.channel, "gray") %>
+
+    <div class="border-l-4 border-<%= color %>-500 bg-<%= color %>-50 rounded-r-lg p-3">
+      <div class="text-xs font-semibold text-<%= color %>-700"><%= session.channel&.titleize || "Unknown" %></div>
+      <% if session.initial_utm&.dig("utm_source").present? %>
+        <div class="text-xs text-gray-500 mt-0.5"><%= session.initial_utm["utm_source"] %></div>
+      <% end %>
+      <div class="text-xs text-gray-400 mt-1"><%= session.started_at.strftime("%b %-d, %Y") %></div>
+    </div>
+
+    <% if i < sessions.size - 1 %>
+      <div class="ml-4 flex items-center gap-2 py-1">
+        <div class="w-px h-4 bg-gray-300"></div>
+        <span class="text-xs text-gray-400"><%= format_time_gap(time_gaps[i]) %></span>
+      </div>
+    <% end %>
+  <% end %>
+
+  <% if sessions.any? %>
+    <div class="ml-4 flex items-center gap-2 py-1">
+      <div class="w-px h-4 bg-gray-300"></div>
+      <% last_gap = (conversion.converted_at - sessions.last.started_at) / 1.day %>
+      <span class="text-xs text-gray-400"><%= format_time_gap(last_gap) %></span>
+    </div>
+  <% end %>
+
+  <div class="border-l-4 border-green-500 bg-green-50 rounded-r-lg p-3">
+    <div class="text-xs font-semibold text-green-700">Converted</div>
+    <div class="text-xs text-gray-900 font-medium mt-0.5"><%= conversion.conversion_type %></div>
+    <% if conversion.revenue.present? %>
+      <div class="text-xs text-green-600 font-semibold mt-0.5"><%= number_to_currency(conversion.revenue) %></div>
+    <% end %>
+    <div class="text-xs text-gray-400 mt-1"><%= conversion.converted_at.strftime("%b %-d, %Y") %></div>
+  </div>
+</div>

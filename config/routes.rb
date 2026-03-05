@@ -53,6 +53,9 @@ Rails.application.routes.draw do
     scope :dashboard, as: :dashboard do
       get "conversions", to: "dashboard/conversions#show"
       get "funnel", to: "dashboard/funnel#show"
+      get "spend", to: "dashboard/spend#show"
+      get "conversion_list", to: "dashboard/conversion_list#index"
+      get "conversion_list/:id", to: "dashboard/conversion_list#show", as: :conversion_detail
       patch "clv_mode", to: "dashboard/clv_mode#update"
     end
   end

@@ -6,8 +6,9 @@
     <main>
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Main Dashboard Container -->
+        <% active_tab = %w[conversions funnel spend events].include?(params[:tab]) ? params[:tab] : "conversions" %>
         <div data-controller="toggle"
-          data-toggle-default-value="conversions"
+          data-toggle-default-value="<%= active_tab %>"
           data-toggle-active-class="border-indigo-500 text-indigo-600"
           data-toggle-inactive-class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
 
@@ -30,14 +31,29 @@
                   class="py-3 px-1 text-sm font-medium border-b-2 whitespace-nowrap">
                   Funnel
                 </button>
+                <button type="button"
+                  data-toggle-target="trigger"
+                  data-action="toggle#select"
+                  data-value="spend"
+                  class="py-3 px-1 text-sm font-medium border-b-2 whitespace-nowrap">
+                  Spend
+                </button>
                 <button type="button" disabled
                   class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-400 whitespace-nowrap cursor-not-allowed">
                   Events <span class="text-xs">(Live only)</span>
                 </button>
               </nav>
 
-              <!-- Filters & Export Buttons -->
+              <!-- Filters, Browse & Export Buttons -->
               <div class="flex items-center gap-2 pt-2 pb-3 sm:pt-0">
+                <!-- Browse Conversions -->
+                <%= link_to demo_dashboard_conversion_list_path,
+                    class: "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50" do %>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                  </svg>
+                  Browse
+                <% end %>
                 <!-- Filters Toggle -->
                 <button type="button"
                   data-action="click->toggle#toggleFilters"
@@ -96,6 +112,15 @@
                 src: demo_dashboard_funnel_path,
                 loading: :lazy do %>
                 <%= render "dashboard/funnel/skeleton" %>
+              <% end %>
+            </div>
+
+            <!-- Spend Tab -->
+            <div data-toggle-target="content" data-value="spend" class="hidden">
+              <%= turbo_frame_tag "demo_spend",
+                src: demo_dashboard_spend_path,
+                loading: :lazy do %>
+                <%= render "dashboard/spend/skeleton" %>
               <% end %>
             </div>
 
