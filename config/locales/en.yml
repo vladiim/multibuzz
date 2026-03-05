@@ -56,14 +56,14 @@ en:
         hub: "mbuzz"
         output: "Unified Attribution"
       features:
-        title: "Everything you need. Nothing you don't."
-        subtitle: "Built for technical teams who value control without complexity."
+        title: "Under the hood"
+        subtitle: "Built for technical marketers who value control without complexity."
         privacy_tracking:
           title: "10-Minute Setup"
           description: "Framework-native SDKs for Rails, Django, Laravel, and Node.js. Drop in a gem, add your API key, and you're tracking. No complicated tag managers or JavaScript snippets to debug."
         dark_funnel:
-          title: "8 Attribution Models"
-          description: "6 heuristic models plus data-driven Markov Chain and Shapley Value. Compare them side-by-side to understand which channels actually drive conversions."
+          title: "7 Attribution Models"
+          description: "Heuristic models plus data-driven Markov Chain and Shapley Value. Compare them side-by-side to understand which channels actually drive conversions."
         quick_setup:
           title: "Roll Your Own Custom Models"
           description: "Write custom attribution rules in minutes with a simple modelling language. No need to wait for your analytics vendor to ship your feature request—just define the logic and run it."
