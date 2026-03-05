@@ -1,3 +1,6 @@
+exclude:
+  - app/content/articles/models/**
+
 linters:
   SpaceAroundErbTag:
     enabled: true
