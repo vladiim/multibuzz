@@ -23,22 +23,22 @@ seo:
   title: "7 Best GA4 Attribution Alternatives (2026) - Beyond Data-Driven"
 aeo:
   target_query: "GA4 attribution alternatives"
-  tldr: "GA4 removed first-click, linear, time-decay, and position-based models in 2023—leaving only Data-Driven Attribution (a black box requiring 400+ conversions that favors Google channels). <strong>mbuzz</strong> gives you 8 models + custom rules at $29-299/mo. <strong>HockeyStack</strong> and <strong>Dreamdata</strong> handle B2B attribution. <strong>Cometly</strong> and <strong>Triple Whale</strong> optimize paid ads. Most teams should keep GA4 for web analytics and add a dedicated attribution layer alongside it."
+  tldr: "GA4 removed first-click, linear, time-decay, and position-based models in 2023—leaving only Data-Driven Attribution (a black box requiring 400+ conversions that favors Google channels). <strong>HockeyStack</strong> replaces GA4 entirely for B2B teams. <strong>Dreamdata</strong> offers B2B attribution with a free tier. <strong>mbuzz</strong> gives you 8 models + custom rules at $29-299/mo. <strong>Triple Whale</strong> is purpose-built for Shopify. Most teams should keep GA4 for web analytics and add a dedicated attribution layer alongside it."
   key_takeaways:
     - "GA4 removed first-click, linear, time-decay, and position-based models in 2023—only Data-Driven Attribution remains"
     - "GA4's Data-Driven Attribution requires 400+ conversions and favors Google channels"
     - "Most teams should keep GA4 for web analytics and add a dedicated attribution layer"
-    - "Server-side tracking captures 30-40% more data than GA4's client-side approach"
-    - "Alternatives range from $29/mo (mbuzz) to $2,200+/mo (HockeyStack) depending on needs"
+    - "B2B teams should consider HockeyStack ($2,200+/mo) or Dreamdata (free tier) for account-level attribution"
+    - "Alternatives range from free tiers (Dreamdata, mbuzz) to $2,200+/mo (HockeyStack) depending on needs"
   faq:
     - q: "Why look for GA4 attribution alternatives?"
       a: "GA4 removed first-click, linear, time-decay, and position-based attribution models in 2023. You're now limited to Data-Driven Attribution—a black box that requires 400+ conversions and has documented bias toward Google channels. If you want to compare models or see non-Google channels fairly, you need a dedicated tool."
     - q: "Should I replace GA4 entirely?"
       a: "No. GA4 is still excellent for web analytics, traffic analysis, and Google Ads integration. Most teams should keep GA4 for those purposes and add a dedicated attribution tool alongside it. They're complementary, not replacements."
     - q: "What's the cheapest GA4 attribution alternative?"
-      a: "mbuzz offers a free tier with 8 attribution models and custom rules. Paid plans start at $29/mo. Dreamdata also has a free tier for individuals. For pure attribution needs, these are the most affordable starting points."
+      a: "Dreamdata has a free tier for individuals. mbuzz offers a free tier with 8 attribution models. Triple Whale starts at $129/mo for Shopify. For pure attribution needs, these are the most affordable starting points."
     - q: "Which GA4 alternative is best for B2B?"
-      a: "HockeyStack ($2,200+/mo) for all-in-one B2B analytics, Dreamdata ($999/mo) for journey visualization on a budget, or mbuzz ($29-299/mo) for model flexibility and server-side tracking. Choice depends on budget and whether you need bundled analytics."
+      a: "HockeyStack ($2,200+/mo) for all-in-one B2B analytics, Dreamdata ($999/mo, free tier) for journey visualization on a budget, or mbuzz ($29-299/mo) for model flexibility and server-side tracking. Choice depends on budget and whether you need bundled analytics."
     - q: "Does GA4's Data-Driven Attribution actually favor Google channels?"
       a: "Yes, documented analyses show GA4's DDA model tends to give more credit to Google properties (Ads, organic search) compared to non-Google channels. This isn't necessarily intentional—the model is trained on Google's data and optimizes for conversions it can measure most accurately."
 schema:
@@ -57,20 +57,20 @@ GA4 removed first-click, linear, time-decay, and position-based models in 2023. 
 
 ### Quick Answer
 
+**B2B with long sales cycles?** GA4 doesn't understand 6-month buying journeys.
+→ **HockeyStack** for all-in-one, **Dreamdata** for journey visualization
+
 **Want model flexibility?** GA4 gives you one model. You want eight.
 → **mbuzz** — 8 models + custom rules, server-side tracking, $29-299/mo
 
-**Need LTV attribution?** GA4 attributes to first purchase only.
-→ **mbuzz** — tracks every renewal, upsell, and expansion back to source
-
-**B2B with long sales cycles?** GA4 doesn't understand 6-month buying journeys.
-→ **mbuzz** for server-side accuracy + model flexibility, **HockeyStack** for all-in-one, **Dreamdata** for journey visualization
+**Shopify store?** GA4's e-commerce tracking is clunky.
+→ **Triple Whale** — $129-279/mo, installs in minutes
 
 **AI-powered ad optimization?** You want channel-level recommendations.
 → **Cometly** or **Triple Whale**
 
 **Full measurement stack (MTA + MMM)?** GA4 can't do media mix modeling.
-→ **Northbeam** or **Rockerbox** (note: MMM requires $5M+ annual ad spend to be statistically valid)
+→ **Northbeam** or **Rockerbox**
 
 ### The Uncomfortable Truth
 
@@ -102,105 +102,7 @@ If any of these resonate, here are your best options.
 
 ---
 
-<%= render "articles/embeds/competitor_section", competitor: "mbuzz", number: 1, title: "Best for Model Flexibility" %>
-
-**Why consider mbuzz:** GA4 gives you one attribution model. mbuzz gives you 8 built-in models plus custom rules—so you can compare how credit shifts between channels under different assumptions.
-
-### What mbuzz Offers
-
-**Server-side tracking that ad blockers can't touch.** GA4 relies on client-side JavaScript that gets blocked by 30-40% of browsers. mbuzz tracks events on your backend—capturing 95%+ of customer journeys, including the ones GA4 never sees.
-
-**8 attribution models, not 1.** Compare first-touch, last-touch, linear, time-decay, U-shaped, W-shaped, plus data-driven Markov Chain and Shapley Value models side-by-side. See how credit shifts between channels under different models—the exact capability GA4 removed:
-
-<%= render "articles/embeds/model_comparison" %>
-
-**Custom attribution rules via rule editor.** GA4 never had this. Build your own attribution logic—weight touchpoints by channel, stage, or recency:
-
-<%= render "articles/embeds/dsl_editor" %>
-
-**No minimum conversion threshold.** GA4's DDA requires 400+ conversions to activate. mbuzz runs all 8 models from day one, regardless of traffic volume.
-
-**LTV attribution for recurring revenue.** GA4 attributes to first purchase only. mbuzz tracks every renewal, upsell, and expansion back to the original acquisition source—critical for SaaS and subscription businesses.
-
-<%= render "articles/embeds/mbuzz_showcase" %>
-
-**Transparent pricing, complement to GA4:**
-
-| Tier | Records/Month | Price |
-|------|-------------|-------|
-| Free | Up to <%= free_event_limit_display %> | $0 |
-| Starter | Up to 1M | $29/mo |
-| Growth | Up to 5M | $99/mo |
-| Pro | Up to 25M | $299/mo |
-
-**10-minute setup** with native SDKs for [Rails](https://rubygems.org/gems/mbuzz), [Django](https://pypi.org/project/mbuzz), [Laravel](https://packagist.org/packages/mbuzz/mbuzz-php), and [Node.js](https://www.npmjs.com/package/mbuzz) — [setup guide](/docs/getting-started). Runs alongside GA4—no need to replace anything.
-
-### mbuzz vs GA4
-
-| Factor | GA4 | mbuzz |
-|--------|-----|-------|
-| Attribution models | 1 (DDA only) | 8 + custom rules |
-| Custom models | ✗ No | ✓ Yes (rule editor) |
-| Tracking method | Client-side | Server-side |
-| Platform bias | Favors Google channels | None |
-| Minimum conversions | 400+ for DDA | None |
-| Data sampling | Yes (at scale) | No |
-| LTV attribution | ✗ No | ✓ Yes |
-| Price | Free | Free / $29-299/mo |
-
-### Pros & Cons
-
-<div class="my-6 not-prose grid md:grid-cols-2 gap-6">
-  <div class="bg-emerald-50 rounded-lg p-5 border border-emerald-200">
-    <h4 class="font-semibold text-emerald-800 mb-3 flex items-center gap-2">
-      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-      Pros
-    </h4>
-    <ul class="space-y-2 text-sm text-emerald-900">
-      <li>8 attribution models vs GA4's single remaining model</li>
-      <li>Server-side tracking captures what GA4 misses</li>
-      <li>No platform bias—every channel measured equally</li>
-      <li>Custom rules for your own attribution logic</li>
-      <li>No minimum conversion threshold</li>
-    </ul>
-  </div>
-  <div class="bg-red-50 rounded-lg p-5 border border-red-200">
-    <h4 class="font-semibold text-red-800 mb-3 flex items-center gap-2">
-      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
-      Cons
-    </h4>
-    <ul class="space-y-2 text-sm text-red-900">
-      <li>Not free (GA4's biggest advantage)</li>
-      <li>Requires SDK integration, not a tag drop-in</li>
-      <li>No built-in web analytics—you still need GA4 for that</li>
-    </ul>
-  </div>
-</div>
-
-### Who mbuzz is NOT For
-
-Let's be honest—mbuzz isn't right for everyone:
-
-- **Teams with zero budget** — GA4 is free; mbuzz's free tier is limited
-- **Teams who only need web analytics** — GA4 is better for traffic analysis and behavior flow
-- **Heavy Google Ads spenders happy with DDA** — If you trust Google's model and it works, keep it
-
-### Best For
-
-- Teams who want to compare multiple attribution models
-- Companies where non-Google channels are significant revenue drivers
-- Those frustrated with GA4's data sampling at scale
-- Server-side tracking needs (ad blocker mitigation)
-
-<%= render "articles/cta_banner",
-  title: "See what GA4's black box hides",
-  description: "Compare 8 attribution models side-by-side. See how credit shifts when you change the model. Start free.",
-  cta_text: "Try mbuzz Free →",
-  style: :light %>
-
----
-
-<%= render "articles/embeds/competitor_section", competitor: "hockeystack", number: 2, title: "Best All-in-One for B2B" %>
+<%= render "articles/embeds/competitor_section", competitor: "hockeystack", number: 1, title: "Best All-in-One for B2B" %>
 
 **Why consider HockeyStack:** Replaces GA4 entirely for B2B teams—bundles attribution, web analytics, and surveys in one platform.
 
@@ -229,6 +131,66 @@ HockeyStack replaces GA4's analytics entirely and adds B2B-specific attribution 
 - Fast deployment (~2 weeks)
 
 **Also consider:** [HockeyStack alternatives](/articles/hockeystack-alternatives) for more B2B options at lower price points.
+
+---
+
+<%= render "articles/embeds/competitor_section", competitor: "mbuzz", number: 2, title: "Best for Model Flexibility" %>
+
+**Why consider mbuzz:** GA4 gives you one attribution model. mbuzz gives you 8 built-in models plus custom rules—so you can compare how credit shifts between channels under different assumptions. *Full disclosure: mbuzz is our product.*
+
+Server-side tracking captures 95%+ of customer journeys that GA4's client-side JavaScript misses (30-40% blocked by browsers). 8 attribution models with side-by-side comparison — see how First Touch, Last Touch, Markov Chain, Shapley Value, and others credit the same channels differently. Custom rules let you define your own attribution logic. No minimum conversion threshold (GA4's DDA requires 400+). LTV attribution tracks renewals and upsells back to acquisition source.
+
+**10-minute setup** with native SDKs for [Rails](https://rubygems.org/gems/mbuzz), [Django](https://pypi.org/project/mbuzz), [Laravel](https://packagist.org/packages/mbuzz/mbuzz-php), and [Node.js](https://www.npmjs.com/package/mbuzz). Pricing: Free tier, then $29-299/mo. Runs alongside GA4—no need to replace anything.
+
+### mbuzz vs GA4
+
+| Factor | GA4 | mbuzz |
+|--------|-----|-------|
+| Attribution models | 1 (DDA only) | 8 + custom rules |
+| Tracking method | Client-side | Server-side |
+| Platform bias | Favors Google channels | None |
+| Minimum conversions | 400+ for DDA | None |
+| Price | Free | Free / $29-299/mo |
+
+### Pros & Cons
+
+<div class="my-6 not-prose grid md:grid-cols-2 gap-6">
+  <div class="bg-emerald-50 rounded-lg p-5 border border-emerald-200">
+    <h4 class="font-semibold text-emerald-800 mb-3 flex items-center gap-2">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+      Pros
+    </h4>
+    <ul class="space-y-2 text-sm text-emerald-900">
+      <li>8 attribution models vs GA4's single remaining model</li>
+      <li>Server-side tracking captures what GA4 misses</li>
+      <li>No platform bias—every channel measured equally</li>
+      <li>No minimum conversion threshold</li>
+    </ul>
+  </div>
+  <div class="bg-red-50 rounded-lg p-5 border border-red-200">
+    <h4 class="font-semibold text-red-800 mb-3 flex items-center gap-2">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>
+      Cons
+    </h4>
+    <ul class="space-y-2 text-sm text-red-900">
+      <li>Not free (GA4's biggest advantage)</li>
+      <li>Requires SDK integration, not a tag drop-in</li>
+      <li>No built-in web analytics—you still need GA4 for that</li>
+    </ul>
+  </div>
+</div>
+
+### Best For
+
+- Teams who want to compare multiple attribution models
+- Companies where non-Google channels are significant revenue drivers
+- Server-side tracking needs (ad blocker mitigation)
+
+<%= render "articles/cta_banner",
+  title: "See what GA4's black box hides",
+  description: "Compare 8 attribution models side-by-side. See how credit shifts when you change the model. Start free.",
+  cta_text: "Try mbuzz Free →",
+  style: :light %>
 
 ---
 
@@ -395,14 +357,12 @@ If you invest in awareness channels—podcasts, connected TV, influencer partner
 
 | If You Need... | Best Alternative |
 |----------------|------------------|
+| B2B SaaS attribution | HockeyStack, Dreamdata, mbuzz |
+| E-commerce/DTC attribution | Triple Whale, Cometly, Northbeam |
 | Multiple attribution models | mbuzz (8 models + custom) |
-| LTV / recurring revenue attribution | mbuzz (tracks renewals + upsells to source) |
 | Server-side tracking (no ad blocker gaps) | mbuzz (95%+ event capture) |
-| B2B SaaS attribution | mbuzz, HockeyStack, Dreamdata |
-| E-commerce/DTC attribution | mbuzz, Triple Whale, Cometly, Northbeam |
 | Multi-channel including offline | Rockerbox |
-| Model transparency + custom rules | mbuzz |
-| Unbiased channel measurement | mbuzz, Northbeam |
+| Unbiased channel measurement | Northbeam, mbuzz |
 
 ### By Technical Depth
 
@@ -419,8 +379,8 @@ If you invest in awareness channels—podcasts, connected TV, influencer partner
 
 | Alternative | Primary Strength | Starting Price |
 |-------------|------------------|----------------|
-| **mbuzz** | 8 models + custom rules, no bias | Free tier, $29-299/mo |
 | **HockeyStack** | All-in-one B2B replacement | $2,200+/mo |
+| **mbuzz** | 8 models + custom rules, no bias | Free tier, $29-299/mo |
 | **Dreamdata** | B2B with free tier | Free / $999/mo |
 | **Cometly** | Paid ad CAPI enrichment | ~$199/mo |
 | **Triple Whale** | Shopify-native simplicity | $129-279/mo |
