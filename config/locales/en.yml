@@ -40,8 +40,8 @@ en:
         login: "Login"
         cta: "Get Started Free"
       hero:
-        title: "No-Frills Multi-Touch Attribution"
-        subtitle: "You don't need another all-in-one analytics platform. You need attribution that works."
+        title: "See what's actually driving revenue."
+        subtitle: "Independent attribution that captures 30-40% more of your customer journey."
         cta_primary: "Get Started Free"
         cta_secondary: "View Documentation"
       attribution_flow:
@@ -66,7 +66,7 @@ en:
           description: "6 heuristic models plus data-driven Markov Chain and Shapley Value. Compare them side-by-side to understand which channels actually drive conversions."
         quick_setup:
           title: "Roll Your Own Custom Models"
-          description: "Write custom attribution rules in minutes with a simple DSL. No need to wait for your analytics vendor to ship your feature request—just define the logic and run it."
+          description: "Write custom attribution rules in minutes with a simple modelling language. No need to wait for your analytics vendor to ship your feature request—just define the logic and run it."
         user_mapping:
           title: "Server-Side All The Way"
           description: "Track events on your backend, not in the browser. No client-side scripts means no ad blockers, no privacy extensions, and no missing data. Just accurate attribution."
@@ -77,12 +77,12 @@ en:
           title: "Attribution Dashboards"
           description: "Attribution model dashboards let you compare any attribution model side-by-side. Funnel analysis shows you exactly where users drop off in their journey by channel and compare customer revenue across channels."
       cta:
-        title: "Ready to unify your attribution?"
-        subtitle: "Start tracking in 5 minutes. No credit card required."
+        title: "What would you do differently if you knew what was actually working?"
+        subtitle: "Set up in under 5 minutes. No credit card required."
         button: "Get Started Free"
       footer:
         brand: "mbuzz"
-        tagline: "No-frills multi-touch attribution"
+        tagline: "Server-side multi-touch attribution"
         product: "Product"
         product_features: "Features"
         product_pricing: "Pricing"
