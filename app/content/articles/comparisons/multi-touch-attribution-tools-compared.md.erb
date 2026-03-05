@@ -26,7 +26,7 @@ seo:
   title: "25+ Multi-Touch Attribution Tools Compared (2026 Buyer's Guide)"
 aeo:
   target_query: "best multi-touch attribution software comparison"
-  tldr: "Most attribution tools make you choose: sophisticated ML you can't verify, or basic rules that oversimplify. <strong>Our pick: mbuzz</strong>—8 models you can inspect, custom rules you control, not a black box. <strong>Shopify store?</strong> mbuzz for model flexibility, Triple Whale for plug-and-play simplicity. <strong>B2B SaaS?</strong> HockeyStack for speed, Dreamdata for journey viz. <strong>Enterprise Salesforce?</strong> Bizible, no contest."
+  tldr: "Most attribution tools make you choose: sophisticated ML you can't verify, or basic rules that oversimplify. <strong>Shopify?</strong> Triple Whale for simplicity, Northbeam for enterprise. <strong>B2B SaaS?</strong> HockeyStack for speed, Dreamdata for journey viz. <strong>Want transparency?</strong> mbuzz—8 inspectable models + custom rules. <strong>Enterprise Salesforce?</strong> Bizible, no contest."
   key_takeaways:
     - "Most 'sophisticated' tools are black boxes—you trust the number or you don't"
     - "Shopify-only tools (Triple Whale) won't work if you ever leave Shopify"
@@ -35,15 +35,15 @@ aeo:
     - "Server-side tracking captures 30-40% more data than client-side pixels"
   faq:
     - q: "What's the cheapest multi-touch attribution tool?"
-      a: "mbuzz offers a free tier with 8 attribution models and 1,000 monthly events—enough for most early-stage startups. Other free options include GA4 (limited MTA) and HubSpot (basic attribution within Marketing Hub). Paid plans start at $29/month (mbuzz Growth) or $129/month (Triple Whale for Shopify)."
+      a: "GA4 is free but limited—Google removed most attribution models in 2023. HubSpot includes basic attribution in Marketing Hub. For dedicated MTA, mbuzz offers a free tier (1,000 events/month), and Triple Whale starts at $129/month for Shopify stores. Paid plans generally range from $29/month to $2,000+/month depending on features and scale."
     - q: "Which MTA tool is best for Shopify?"
-      a: "mbuzz offers a native Shopify SDK with server-side tracking (95%+ event capture) and custom attribution models at transparent pricing. Triple Whale is Shopify-exclusive with easy setup but click-through only. For enterprise Shopify Plus stores spending $500K+/month on paid media, Northbeam provides ML-powered modeling."
+      a: "Triple Whale is the most popular Shopify-native option—easy setup, affordable, built specifically for Shopify stores. For enterprise Shopify Plus ($500K+/month ad spend), Northbeam provides ML-powered modeling. If you want to compare multiple attribution models or need server-side tracking, mbuzz also supports Shopify via SDK."
     - q: "Which MTA tool is best for B2B SaaS?"
-      a: "HockeyStack and Dreamdata lead the pure-play B2B category. But don't overlook mbuzz—it handles long B2B sales cycles with flexible attribution windows, CRM integrations, and models designed for complex multi-touch journeys. HockeyStack offers faster setup (~2 weeks). Dreamdata excels at customer journey visualization. For enterprise B2B in Salesforce, Bizible remains the standard."
+      a: "HockeyStack and Dreamdata lead the B2B category. HockeyStack offers fast setup (~2 weeks) and combines attribution with web analytics. Dreamdata excels at customer journey visualization. For enterprise B2B in Salesforce, Bizible remains the standard. Factors.ai is a good option for smaller B2B teams wanting AI-powered insights."
     - q: "Do I need a separate mobile attribution tool?"
-      a: "If mobile apps are a significant part of your business, yes. AppsFlyer, Adjust, and Branch specialize in app install attribution, deep linking, and mobile fraud prevention—capabilities web-focused MTA tools don't provide. For web + mobile together, mbuzz tracks cross-device journeys via server-side fingerprinting."
+      a: "If mobile apps are a significant part of your business, yes. AppsFlyer, Adjust, and Branch specialize in app install attribution, deep linking, and mobile fraud prevention—capabilities web-focused MTA tools don't provide."
     - q: "Should I get a tool with multiple attribution models?"
-      a: "If you want to actually understand your attribution (not just trust one number), yes. mbuzz lets you compare 8 models side-by-side—see how credit shifts between first-touch, last-touch, Markov chains, and Shapley values. Single-model tools force you to trust their answer blindly."
+      a: "Comparing multiple models helps you understand how credit shifts between channels under different assumptions. Tools like mbuzz (8 models), Lifesight (MTA + MMM + incrementality), and Funnel (MTA + MMM) let you compare approaches. Single-model tools force you to trust one answer blindly."
 schema:
   type: Article
   author: "holly-henderson"
@@ -61,22 +61,23 @@ You're not here to read about 50 attribution tools. You're here because you need
 ### Quick Answer
 
 **B2B SaaS?**
-→ **mbuzz** for LTV attribution + simplicity—see which channels drive long-term value
-→ **Factors.ai** for account-based attribution
-→ **Ruler Analytics** for call tracking + lead source
+→ **HockeyStack** for fast setup + all-in-one analytics
+→ **Dreamdata** for customer journey visualization
+→ **Factors.ai** for account-based attribution on a budget
 
 **B2B SaaS with long sales cycles?**
-→ **HockeyStack** for fast setup + all-in-one
-→ **Dreamdata** for customer journey visualization
+→ **HockeyStack** if you want speed + consolidation
+→ **Dreamdata** for pipeline attribution
 → **Bizible** if you're on Salesforce
 
 **Running a Shopify store?**
-→ **mbuzz** if you want to compare models and build custom logic
-→ **Triple Whale** if you want plug-and-play simplicity
+→ **Triple Whale** for plug-and-play simplicity
 → **Northbeam** for enterprise Shopify Plus with big ad spend
+→ **Rockerbox** if you also run offline channels (TV, podcasts)
 
 **Want transparency, not a black box?**
 → **mbuzz**—8 models you can inspect, custom rules you control
+→ **Funnel** for MTA + MMM with 500+ connectors
 
 ### The Uncomfortable Truth
 
@@ -84,7 +85,7 @@ Most attribution tools fall into two camps: **sophisticated but opaque** (ML mod
 
 The real question isn't "which tool has the most features?" It's "which tool will I actually trust enough to make decisions with?"
 
-*Full disclosure: mbuzz is in this comparison. We'll tell you when competitors are the better choice.*
+*Full disclosure: mbuzz is our product and is included in this comparison. We've tried to be honest about where competitors are the better choice.*
 
 ### The Market Gap: Sophisticated AND Transparent
 
@@ -102,58 +103,40 @@ Most attribution tools make you choose. The sophisticated ones (ML-powered, mult
 
 ---
 
-## Our Pick: mbuzz
+## Transparent / Developer-First Attribution
+
+### mbuzz
 
 <%= render "articles/embeds/competitor_section", competitor: "mbuzz", level: 3 %>
 
-**Best for:** Teams wanting flexible, server-side attribution without enterprise pricing
+**Best for:** Technical teams wanting inspectable, customizable attribution without enterprise pricing
 
 | Aspect | Details |
 |--------|---------|
 | **Pricing** | Free (<%= free_event_limit_display %> events), $29/mo (1M), $99/mo (5M), $299/mo (25M) |
 | **Setup Time** | 10 minutes |
 | **Tracking** | Server-side (95%+ event capture) |
-| **Unique Feature** | 8 attribution models + custom rules |
+| **Unique Feature** | 7 attribution models + custom rules via DSL |
 
-**Why we built mbuzz:**
-
-Most sophisticated attribution tools are black boxes. You trust the algorithm or you don't. Most transparent tools are too basic—last-click or simple rules.
-
-We wanted both: sophisticated models (Markov chains, Shapley values, time decay) that you can actually inspect. Plus the ability to define your own attribution logic.
-
-**8 attribution models, not 3.** Compare first-touch, last-touch, linear, time-decay, U-shaped, W-shaped, plus data-driven Markov Chain and Shapley Value models side-by-side. See how credit shifts between channels under different models:
-
-<%= render "articles/embeds/model_comparison" %>
-
-**Custom models via simple rule editor.** Don't wait for feature requests—write your own attribution logic in minutes:
-
-<%= render "articles/embeds/dsl_editor" %>
+*Full disclosure: mbuzz is our product. We'll tell you when competitors are the better choice.*
 
 **Strengths:**
 - Server-side tracking captures 95%+ of events (vs 60-70% with client-side)
-- 8 built-in models including Markov Chain and Shapley Value
-- Custom attribution rules via simple DSL—define your own logic
-- Side-by-side model comparison shows how credit shifts
-- LTV attribution tracks recurring revenue to acquisition source
+- 8 built-in models including Markov Chain and Shapley Value—compare side-by-side
+- Custom attribution rules via DSL—define your own logic
 - Native SDKs for [Shopify](/docs/platforms-shopify), [Rails](https://rubygems.org/gems/mbuzz), [Django](https://pypi.org/project/mbuzz), [Laravel](https://packagist.org/packages/mbuzz/mbuzz-php), [Node.js](https://www.npmjs.com/package/mbuzz) — [setup guide](/docs/getting-started)
 - Transparent pricing, no sales calls, export everything
-
-<%= render "articles/embeds/mbuzz_showcase" %>
 
 **Limitations:**
 - Newer player with less market presence
 - No built-in podcast/TV proxy tracking (digital-focused)
 - Non-Shopify platforms require SDK integration (straightforward for developers)
+- No AI-powered recommendations or automated budget optimization
 
 **Who mbuzz is NOT For:**
 - Heavy podcast/TV advertisers → Rockerbox handles offline attribution better
 - Teams who want a single "magic number" → mbuzz shows multiple models by design
-
-<%= render "articles/cta_banner",
-  title: "See how 8 attribution models compare",
-  description: "Server-side tracking, custom rules, transparent pricing. Free up to #{free_event_limit_display} records/month.",
-  cta_text: "Try mbuzz Free →",
-  style: :light %>
+- Enterprise B2B on Salesforce → Bizible is purpose-built for that
 
 ---
 
@@ -445,7 +428,7 @@ These platforms specialize in ad tracking, ROAS measurement, and e-commerce inte
 
 ## Multi-Model Attribution Platforms
 
-These tools give you multiple attribution models to compare—not just one black-box answer. **Our top pick here is [mbuzz](#our-pick-mbuzz):** 8 inspectable models + custom rules, covered in detail above.
+These tools give you multiple attribution models to compare—not just one black-box answer.
 
 <%= render "articles/embeds/competitor_section", competitor: "lifesight", level: 3 %>
 
@@ -663,24 +646,25 @@ These tools work for a variety of businesses without being specialized for B2B o
 
 | Business Type | Recommended Tools | Why |
 |--------------|-------------------|-----|
-| **Shopify store (<$10M)** | mbuzz, Triple Whale | Affordable, easy setup |
-| **Shopify Plus ($10-50M)** | mbuzz, Northbeam | Model flexibility, ML modeling |
-| **DTC ($50M+)** | mbuzz, Northbeam, Rockerbox | Enterprise features, model flexibility |
-| **B2B SaaS (early)** | mbuzz, Factors.ai | Affordable, server-side tracking |
-| **B2B SaaS (growth)** | mbuzz, HockeyStack, Dreamdata | LTV tracking, all-in-one |
+| **Shopify store (under $10M)** | Triple Whale, mbuzz | Shopify-native simplicity, or model flexibility |
+| **Shopify Plus ($10-50M)** | Northbeam, Triple Whale | ML modeling, enterprise features |
+| **DTC ($50M+)** | Northbeam, Rockerbox | Enterprise features, offline tracking |
+| **B2B SaaS (early)** | Factors.ai, Dreamdata | Affordable, account-based |
+| **B2B SaaS (growth)** | HockeyStack, Dreamdata | All-in-one, journey visualization |
 | **B2B Enterprise** | Bizible, Terminus | Salesforce-native, ABM |
 | **Mobile apps** | AppsFlyer, Adjust | Install attribution, fraud |
 | **Multi-channel brands** | Rockerbox, Lifesight | Podcast/TV tracking |
-| **Data-mature teams** | mbuzz, Funnel, SegmentStream | Unified measurement, model flexibility |
+| **Developer teams** | mbuzz, Funnel | SDKs, custom models, data warehouse |
+| **Data-mature teams** | Funnel, SegmentStream, mbuzz | Unified measurement, custom logic |
 
 ### By Budget
 
 | Monthly Budget | Options |
 |---------------|---------|
-| **Free** | mbuzz (<%= free_event_limit_display %> events), GA4, Branch (startups) |
-| **$29-$100/mo** | mbuzz Starter/Growth |
-| **$100-$500/mo** | mbuzz Pro, Triple Whale, Rockerbox basic |
-| **$500-$2,000/mo** | Northbeam, Hyros, Ruler Analytics, Dreamdata |
+| **Free** | GA4 (limited), mbuzz (<%= free_event_limit_display %> events), Branch (startups) |
+| **$29-$300/mo** | mbuzz, Triple Whale (Shopify) |
+| **$300-$1,000/mo** | Rockerbox, Dreamdata (free tier), Hyros |
+| **$1,000-$2,500/mo** | Northbeam, Dreamdata, Ruler Analytics |
 | **$2,000-$5,000/mo** | HockeyStack, Northbeam Pro, Factors.ai |
 | **$5,000+/mo** | Rockerbox Enterprise, Lifesight, SegmentStream |
 | **Enterprise** | Bizible, GA360, Neustar |
@@ -689,13 +673,13 @@ These tools work for a variety of businesses without being specialized for B2B o
 
 | If You Use... | Consider |
 |--------------|----------|
-| **[Rails](https://rubygems.org/gems/mbuzz), [Django](https://pypi.org/project/mbuzz), [Laravel](https://packagist.org/packages/mbuzz/mbuzz-php), [Node.js](https://www.npmjs.com/package/mbuzz)** | mbuzz ([native SDKs](/docs/getting-started)) |
-| **Shopify** | mbuzz, Triple Whale, Northbeam |
+| **Shopify** | Triple Whale, Northbeam, mbuzz |
 | **Salesforce** | Bizible, HockeyStack, Dreamdata |
-| **HubSpot** | mbuzz, HockeyStack, Factors.ai |
+| **HubSpot** | HockeyStack, Factors.ai, mbuzz |
+| **Rails, Django, Laravel, Node.js** | mbuzz ([native SDKs](/docs/getting-started)) |
 | **Google Ads heavy** | GA4, Google Attribution 360 |
 | **Mobile apps** | AppsFlyer, Adjust, Branch |
-| **Modern data stack** | mbuzz, Funnel, SegmentStream |
+| **Modern data stack** | Funnel, SegmentStream, mbuzz |
 
 ## The Future: Where MTA is Headed
 
@@ -723,14 +707,16 @@ The MTA market is crowded, but the right choice depends on your specific situati
 
 | If You Are... | Start With |
 |--------------|------------|
-| Want flexible, affordable attribution | **mbuzz** |
-| Small Shopify store | mbuzz or Triple Whale |
-| Large DTC brand | mbuzz, Northbeam, or Rockerbox |
-| B2B SaaS | mbuzz, HockeyStack, or Dreamdata |
+| Small Shopify store | Triple Whale |
+| Large DTC brand | Northbeam or Rockerbox |
+| B2B SaaS | HockeyStack or Dreamdata |
 | Enterprise B2B | Bizible (Adobe) |
 | Mobile-first | AppsFlyer or Adjust |
-| Data-mature, privacy-focused | mbuzz, SegmentStream, or Lifesight |
-| Budget-conscious | mbuzz (free tier) or GA4 |
+| Want transparent, inspectable models | mbuzz |
+| Developer team with custom needs | mbuzz |
+| Multi-channel (TV, podcasts, offline) | Rockerbox or Lifesight |
+| Data-mature, privacy-focused | SegmentStream or Lifesight |
+| Budget-conscious | GA4 (free) or mbuzz (free tier) |
 
 **No tool is perfect.** The best approach is often:
 1. Start with a tool matched to your size and stack
@@ -739,7 +725,7 @@ The MTA market is crowded, but the right choice depends on your specific situati
 
 <%= render "articles/cta_banner",
     title: "Try mbuzz Free",
-    description: "Server-side tracking (95%+ event capture), 8 attribution models + custom rules. Free up to #{free_event_limit_display} records/month.",
+    description: "Server-side tracking (95%+ event capture), 7 attribution models + custom rules. Free up to #{free_event_limit_display} records/month.",
     cta_text: "Start Free →",
     style: :light %>
 

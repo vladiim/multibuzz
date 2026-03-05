@@ -112,7 +112,7 @@ Conversions can carry a revenue value (e.g., "$99.00 purchase") which gets distr
 
 This is the core of mbuzz. When a customer converts after touching 5 different channels, how do you divide the credit?
 
-mbuzz offers 8 attribution models. Each answers the question differently:
+mbuzz offers 7 attribution models. Each answers the question differently:
 
 **Simple Models (rule-based):**
 
@@ -183,7 +183,7 @@ Everything updates in real time. No waiting for data processing.
 
 **Server-side intelligence.** Most analytics tools run in the browser. mbuzz runs on the server. This means accurate session management, bot detection that actually works, and tracking that survives ad blockers.
 
-**Multi-model comparison.** Most tools give you one attribution model. mbuzz runs all 8 simultaneously. Compare first-touch and last-touch side by side. See how Markov chain differs from linear. The truth emerges from the differences.
+**Multi-model comparison.** Most tools give you one attribution model. mbuzz runs all 7 simultaneously. Compare first-touch and last-touch side by side. See how Markov chain differs from linear. The truth emerges from the differences.
 
 **Privacy-first design.** IP addresses are anonymized. No personal data is stored unless you explicitly identify users. Cookie-based tracking respects browser settings. Server-side processing means no third-party scripts loading on your site.
 
@@ -206,7 +206,7 @@ mbuzz API (4 endpoints)
     |
     +--> Event Storage (TimescaleDB -- optimized for time-series data)
     |
-    +--> Conversion Detection --> Attribution Engine (8 models, runs async)
+    +--> Conversion Detection --> Attribution Engine (7 models, runs async)
     |
     +--> Dashboard (real-time charts, channel performance, funnels, CLV)
 ```

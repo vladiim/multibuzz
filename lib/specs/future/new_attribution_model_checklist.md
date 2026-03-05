@@ -63,7 +63,7 @@ When adding a new attribution model, update all locations below.
 
 | File | What to Update | Required |
 |------|----------------|----------|
-| `config/locales/en.yml` | Update "6 Attribution Models" count in features | Yes |
+| `config/locales/en.yml` | Update "7 Attribution Models" count in features | Yes |
 | `app/views/pages/home/_aml_editor.html.erb` | Add tab for new model (heuristic only) | Optional |
 | `app/javascript/controllers/aml_showcase_controller.js` | Add model definition to MODELS object | Optional |
 

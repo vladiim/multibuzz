@@ -28,7 +28,7 @@ aeo:
   tldr: "HockeyStack's $2,200+/mo too steep? <strong>Dreamdata</strong> offers similar B2B features from $999/mo with a free tier. Want model flexibility? <strong>mbuzz</strong> lets you compare 8 models and build custom rules at $29-299/mo. Need enterprise Salesforce? <strong>Bizible</strong> is the native choice. The trade-off: HockeyStack bundles everything—alternatives let you pick best-of-breed tools."
   key_takeaways:
     - "HockeyStack is expensive ($2,200+/mo)—Dreamdata offers similar features from $999/mo with a free tier"
-    - "HockeyStack lacks custom attribution models—mbuzz validates B2B attribution with experiments"
+    - "Most HockeyStack alternatives lack custom attribution models—look for tools with model flexibility"
     - "HockeyStack's all-in-one approach isn't for everyone—best-of-breed may fit better"
     - "Enterprise teams often outgrow HockeyStack—Bizible and CaliberMind scale further"
     - "HockeyStack setup is fast (~2 weeks)—but other tools may be faster for simpler needs"
@@ -36,7 +36,7 @@ aeo:
     - q: "Why look for HockeyStack alternatives?"
       a: "Common reasons: HockeyStack is expensive ($2,200+/mo), you don't need all-in-one (already have web analytics), enterprise data governance needs exceed HockeyStack's capabilities, or you want model flexibility-validated attribution."
     - q: "What's the cheapest HockeyStack alternative?"
-      a: "mbuzz offers a free tier with 8 attribution models, LTV tracking, and flexible attribution windows for B2B sales cycles. Paid plans start at $29/mo. Dreamdata has a free tier for individuals ($999/mo Team). GA4 is free but lacks B2B-specific features."
+      a: "mbuzz offers a free tier with 7 attribution models, LTV tracking, and flexible attribution windows for B2B sales cycles. Paid plans start at $29/mo. Dreamdata has a free tier for individuals ($999/mo Team). GA4 is free but lacks B2B-specific features."
     - q: "Which HockeyStack alternative is best for enterprise?"
       a: "Bizible (Adobe Marketo Measure) is the enterprise standard for Salesforce-heavy organizations. CaliberMind also serves enterprise B2B with strong governance and scale."
     - q: "Does any HockeyStack alternative have custom attribution models?"
@@ -107,36 +107,13 @@ If any of these resonate, here are your best options.
 
 ---
 
-<%= render "articles/embeds/competitor_section", competitor: "mbuzz", number: 1, title: "Best for Model Flexibility" %>
+<%= render "articles/embeds/competitor_section", competitor: "mbuzz", number: 2, title: "Best for Model Flexibility" %>
 
-**Why consider mbuzz:** HockeyStack gives you one attribution view. mbuzz lets you compare 8 models side-by-side and build custom logic for B2B.
+**Why consider mbuzz:** HockeyStack gives you one attribution view. mbuzz lets you compare 8 models side-by-side and build custom logic for B2B. *Disclosure: mbuzz is our product.*
 
-### What mbuzz Offers
+Server-side tracking captures events on your backend — no ad blockers, no missing touches across long B2B buyer journeys. 7 attribution models for long sales cycles: compare First Touch, Last Touch, Markov Chain, Shapley Value, and more side-by-side. Custom attribution rules via DSL let you weight touchpoints by stage, channel, or engagement depth. LTV attribution tracks renewals and expansion back to acquisition source.
 
-**Server-side tracking built for B2B complexity.** While HockeyStack relies on client-side tracking, mbuzz captures events on your backend—no ad blockers, no missing touches. This matters for B2B where buyer journeys span months and multiple devices.
-
-**8 attribution models for long sales cycles.** Compare first-touch (who opened the door?), last-touch (who closed?), linear, time-decay, U-shaped, W-shaped, Markov Chain, and Shapley Value side-by-side. See how each model credits the same deal differently:
-
-<%= render "articles/embeds/model_comparison" %>
-
-**Custom attribution rules via rule editor.** Weight touchpoints by stage, channel, or engagement depth:
-
-<%= render "articles/embeds/dsl_editor" %>
-
-**LTV attribution for recurring revenue.** Your best first-month CAC channel might be your worst LTV channel. mbuzz tracks every renewal, upsell, and expansion back to original acquisition source—see which campaigns drive customers who renew at 130% NDR vs 80%.
-
-<%= render "articles/embeds/mbuzz_showcase" %>
-
-**Transparent pricing, not $2,200+/month:**
-
-| Tier | Records/Month | Price |
-|------|-------------|-------|
-| Free | Up to <%= free_event_limit_display %> | $0 |
-| Starter | Up to 1M | $29/mo |
-| Growth | Up to 5M | $99/mo |
-| Pro | Up to 25M | $299/mo |
-
-**10-minute setup** with native SDKs for [Rails](https://rubygems.org/gems/mbuzz), [Django](https://pypi.org/project/mbuzz), [Laravel](https://packagist.org/packages/mbuzz/mbuzz-php), and [Node.js](https://www.npmjs.com/package/mbuzz) — [setup guide](/docs/getting-started). Export raw data anytime—your pipeline data, no lock-in.
+**10-minute setup** with native SDKs for [Rails](https://rubygems.org/gems/mbuzz), [Django](https://pypi.org/project/mbuzz), [Laravel](https://packagist.org/packages/mbuzz/mbuzz-php), and [Node.js](https://www.npmjs.com/package/mbuzz). Pricing: Free tier, then $29-299/mo (vs HockeyStack's $2,200+).
 
 ### mbuzz vs HockeyStack
 
@@ -153,7 +130,9 @@ If any of these resonate, here are your best options.
 <div class="my-6 not-prose grid md:grid-cols-2 gap-6">
   <div class="bg-emerald-50 rounded-lg p-5 border border-emerald-200">
     <h4 class="font-semibold text-emerald-800 mb-3 flex items-center gap-2">
-      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+      </svg>
       Pros
     </h4>
     <ul class="space-y-2 text-sm text-emerald-900">
@@ -166,7 +145,9 @@ If any of these resonate, here are your best options.
   </div>
   <div class="bg-red-50 rounded-lg p-5 border border-red-200">
     <h4 class="font-semibold text-red-800 mb-3 flex items-center gap-2">
-      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+      </svg>
       Cons
     </h4>
     <ul class="space-y-2 text-sm text-red-900">
@@ -201,7 +182,7 @@ Let's be honest—mbuzz isn't right for everyone:
 
 ---
 
-<%= render "articles/embeds/competitor_section", competitor: "dreamdata", number: 2, title: "Best for Budget-Conscious B2B" %>
+<%= render "articles/embeds/competitor_section", competitor: "dreamdata", number: 1, title: "Best for Budget-Conscious B2B" %>
 
 **Why consider Dreamdata:** Similar B2B focus, transparent pricing, free tier available.
 
@@ -375,10 +356,10 @@ If you're bootstrapped or early-stage, GA4's free attribution is better than not
 | Monthly Budget | Best Options |
 |----------------|--------------|
 | Free | GA4, Dreamdata Individual |
-| Under $500 | Factors.ai, Dreamdata Team |
+| Under $500 | mbuzz, Factors.ai, Dreamdata Team |
 | $500-2000 | Dreamdata Business, Factors.ai |
-| $2000+ | mbuzz, HockeyStack, CaliberMind |
-| Enterprise | Bizible, CaliberMind, mbuzz |
+| $2000+ | HockeyStack, CaliberMind |
+| Enterprise | Bizible, CaliberMind |
 
 ### By Primary Need
 
@@ -397,9 +378,9 @@ If you're bootstrapped or early-stage, GA4's free attribution is better than not
 |-------|----------|
 | Pre-revenue | GA4 |
 | Seed - Series A | Dreamdata, Factors.ai |
-| Series B-C | HockeyStack, Dreamdata, mbuzz |
-| Growth ($20-50M) | mbuzz, Dreamdata, CaliberMind |
-| Enterprise ($50M+) | Bizible, CaliberMind, mbuzz |
+| Series B-C | HockeyStack, Dreamdata |
+| Growth ($20-50M) | Dreamdata, CaliberMind, mbuzz |
+| Enterprise ($50M+) | Bizible, CaliberMind |
 
 ---
 
@@ -430,7 +411,7 @@ HockeyStack bundles attribution + web analytics + surveys. Is that what you want
     </div>
   </div>
   <div class="bg-indigo-50 rounded-lg p-5 border border-indigo-200">
-    <h4 class="font-semibold text-indigo-800 mb-4">Best-of-Breed (mbuzz + tools)</h4>
+    <h4 class="font-semibold text-indigo-800 mb-4">Best-of-Breed (specialized tools)</h4>
     <div class="mb-4">
       <p class="text-xs text-emerald-600 font-medium uppercase mb-2">Pros</p>
       <ul class="space-y-1 text-sm text-indigo-900">
@@ -460,8 +441,8 @@ If you already have web analytics (GA4, Heap, Amplitude), HockeyStack's bundled 
 
 | Alternative | Primary Strength | Starting Price |
 |-------------|------------------|----------------|
+| **Dreamdata** | Budget-friendly B2B with free tier | Free / $999/mo |
 | **mbuzz** | 8 models + custom rules | Free tier, $29-299/mo |
-| **Dreamdata** | Budget-friendly with free tier | Free / $999/mo |
 | **Bizible** | Enterprise Salesforce-native | Enterprise |
 | **Factors.ai** | AI-powered on budget | $399/mo |
 | **Terminus** | ABM-focused measurement | Custom |

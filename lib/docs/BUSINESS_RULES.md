@@ -293,7 +293,7 @@ Attribution is the process of distributing credit for a conversion across the ma
 | A7 | Revenue is distributed proportionally | If a conversion has $100 revenue and a channel gets 0.4 credit, that channel receives $40 in revenue credit. |
 | A8 | Attribution can be recalculated | When new information arrives (identity linking, model changes), attribution is automatically recalculated. |
 
-### The 8 Attribution Models
+### The 7 Attribution Models
 
 #### First Touch
 
@@ -525,6 +525,6 @@ mbuzz automatically detects and filters bot traffic to ensure clean data.
 
 - [Product Overview](PRODUCT.md) -- High-level explanation of what mbuzz is and how it works
 - [API Contract](sdk/api_contract.md) -- Technical API reference with request/response formats
-- [Attribution Methodology](architecture/attribution_methodology.md) -- Mathematical formulas for all 8 models
+- [Attribution Methodology](architecture/attribution_methodology.md) -- Mathematical formulas for all 7 models
 - [Channel Classification](architecture/channel_vs_utm_attribution.md) -- Technical details on channel derivation
 - [Session Intelligence](architecture/session_intelligence.md) -- Bot detection architecture and roadmap

@@ -600,7 +600,7 @@ mbuzz:
 
   differentiators:
     - "Server-side tracking (95%+ event capture)"
-    - "8 attribution models side-by-side"
+    - "7 attribution models side-by-side"
     - "Custom rule editor"
     - "LTV attribution built-in"
     - "Transparent, flat pricing"

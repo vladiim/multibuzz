@@ -36,7 +36,7 @@ aeo:
     - q: "Should I replace GA4 entirely?"
       a: "No. GA4 is still excellent for web analytics, traffic analysis, and Google Ads integration. Most teams should keep GA4 for those purposes and add a dedicated attribution tool alongside it. They're complementary, not replacements."
     - q: "What's the cheapest GA4 attribution alternative?"
-      a: "Dreamdata has a free tier for individuals. mbuzz offers a free tier with 8 attribution models. Triple Whale starts at $129/mo for Shopify. For pure attribution needs, these are the most affordable starting points."
+      a: "Dreamdata has a free tier for individuals. mbuzz offers a free tier with 7 attribution models. Triple Whale starts at $129/mo for Shopify. For pure attribution needs, these are the most affordable starting points."
     - q: "Which GA4 alternative is best for B2B?"
       a: "HockeyStack ($2,200+/mo) for all-in-one B2B analytics, Dreamdata ($999/mo, free tier) for journey visualization on a budget, or mbuzz ($29-299/mo) for model flexibility and server-side tracking. Choice depends on budget and whether you need bundled analytics."
     - q: "Does GA4's Data-Driven Attribution actually favor Google channels?"
@@ -138,7 +138,7 @@ HockeyStack replaces GA4's analytics entirely and adds B2B-specific attribution 
 
 **Why consider mbuzz:** GA4 gives you one attribution model. mbuzz gives you 8 built-in models plus custom rules—so you can compare how credit shifts between channels under different assumptions. *Full disclosure: mbuzz is our product.*
 
-Server-side tracking captures 95%+ of customer journeys that GA4's client-side JavaScript misses (30-40% blocked by browsers). 8 attribution models with side-by-side comparison — see how First Touch, Last Touch, Markov Chain, Shapley Value, and others credit the same channels differently. Custom rules let you define your own attribution logic. No minimum conversion threshold (GA4's DDA requires 400+). LTV attribution tracks renewals and upsells back to acquisition source.
+Server-side tracking captures 95%+ of customer journeys that GA4's client-side JavaScript misses (30-40% blocked by browsers). 7 attribution models with side-by-side comparison — see how First Touch, Last Touch, Markov Chain, Shapley Value, and others credit the same channels differently. Custom rules let you define your own attribution logic. No minimum conversion threshold (GA4's DDA requires 400+). LTV attribution tracks renewals and upsells back to acquisition source.
 
 **10-minute setup** with native SDKs for [Rails](https://rubygems.org/gems/mbuzz), [Django](https://pypi.org/project/mbuzz), [Laravel](https://packagist.org/packages/mbuzz/mbuzz-php), and [Node.js](https://www.npmjs.com/package/mbuzz). Pricing: Free tier, then $29-299/mo. Runs alongside GA4—no need to replace anything.
 
@@ -161,7 +161,7 @@ Server-side tracking captures 95%+ of customer journeys that GA4's client-side J
       Pros
     </h4>
     <ul class="space-y-2 text-sm text-emerald-900">
-      <li>8 attribution models vs GA4's single remaining model</li>
+      <li>7 attribution models vs GA4's single remaining model</li>
       <li>Server-side tracking captures what GA4 misses</li>
       <li>No platform bias—every channel measured equally</li>
       <li>No minimum conversion threshold</li>
@@ -188,7 +188,7 @@ Server-side tracking captures 95%+ of customer journeys that GA4's client-side J
 
 <%= render "articles/cta_banner",
   title: "See what GA4's black box hides",
-  description: "Compare 8 attribution models side-by-side. See how credit shifts when you change the model. Start free.",
+  description: "Compare 7 attribution models side-by-side. See how credit shifts when you change the model. Start free.",
   cta_text: "Try mbuzz Free →",
   style: :light %>
 
@@ -390,7 +390,7 @@ If you invest in awareness channels—podcasts, connected TV, influencer partner
 **The bottom line:** GA4 is great for web analytics—keep it for that. But GA4's attribution is now a single black-box model that favors Google channels and requires 400+ conversions. If attribution matters to your business, add a dedicated tool alongside GA4.
 
 <%= render "articles/cta_banner",
-    title: "GA4 removed 5 attribution models. We added 8.",
+    title: "GA4 removed 5 attribution models. We added 7.",
     description: "Compare First Touch, Last Touch, Linear, Time Decay, U-Shaped, W-Shaped, Markov Chain, and Shapley Value—side by side. Start free.",
     cta_text: "Try mbuzz Free →",
     style: :dark %>

@@ -25,12 +25,12 @@ seo:
   title: "6 Best Northbeam Attribution Alternatives (2026) - Enterprise DTC"
 aeo:
   target_query: "Northbeam alternatives"
-  tldr: "Northbeam too expensive or too black-box? <strong>mbuzz</strong> gives you transparent models at $29-299/mo (vs $2K+). Want simpler? <strong>Triple Whale</strong> ($129/mo) works great for Shopify stores. Need multi-channel with MMM? <strong>Rockerbox</strong> includes podcast/TV tracking. The core trade-off: Northbeam's ML is sophisticated but opaque—alternatives offer transparency, lower cost, or both."
+  tldr: "Northbeam too expensive or too black-box? <strong>Rockerbox</strong> ($200/mo, free tier) covers multi-channel including podcast/TV with MMM. <strong>Triple Whale</strong> ($129/mo) is simpler for Shopify stores. <strong>mbuzz</strong> ($29-299/mo) offers 8 transparent models plus custom rules. The core trade-off: Northbeam's ML is sophisticated but opaque—alternatives offer transparency, lower cost, or both."
   key_takeaways:
     - "Northbeam is expensive and complex—alternatives range from $129/mo to enterprise pricing"
-    - "Northbeam's ML is a black box—mbuzz offers 8 transparent models plus custom rules"
-    - "Northbeam requires dedicated media buyers—simpler tools suit smaller teams"
-    - "Northbeam pricing scales with traffic—mbuzz has transparent, flat pricing"
+    - "Northbeam's ML is a black box—alternatives like Rockerbox and mbuzz offer more transparent approaches"
+    - "Northbeam requires dedicated media buyers—simpler tools like Triple Whale suit smaller teams"
+    - "For multi-channel brands, Rockerbox includes MMM alongside MTA"
     - "For smaller brands, Northbeam is overkill—Triple Whale or Rockerbox may suffice"
   faq:
     - q: "Why look for Northbeam alternatives?"
@@ -38,11 +38,11 @@ aeo:
     - q: "Is Northbeam worth the price?"
       a: "For enterprise DTC brands ($40M+ revenue) with dedicated media buying teams, Northbeam's ML-powered attribution can be valuable. For smaller brands or teams without dedicated analysts, simpler alternatives often provide better ROI."
     - q: "What's the best cheap alternative to Northbeam?"
-      a: "mbuzz offers a free tier with 8 attribution models (including Markov Chain and Shapley Value—same sophistication as Northbeam's ML approach, but transparent). Paid plans start at $29/mo. Rockerbox also has a free tier ($200/mo paid). Triple Whale starts at $129/mo (Shopify only)."
+      a: "Triple Whale starts at $129/mo for Shopify stores. Rockerbox has a free tier ($200/mo paid) with multi-channel coverage. mbuzz offers a free tier with 7 attribution models. All are dramatically cheaper than Northbeam's $2-5K+/mo."
     - q: "Which Northbeam alternative offers the most model flexibility?"
-      a: "mbuzz includes 8 attribution models (First Touch, Last Touch, Linear, Time Decay, U-Shaped, W-Shaped, Markov Chain, Shapley Value) plus a custom rules to build your own logic. Most competitors offer 3-4 models with no customization."
+      a: "mbuzz includes 7 attribution models plus custom rules. Rockerbox combines MTA with MMM for aggregate insights. Most competitors offer 3-4 models with no customization."
     - q: "Can I use Northbeam and another tool together?"
-      a: "Some brands run multiple attribution tools for comparison. However, this adds cost and complexity. Consider whether one tool with more model flexibility (like mbuzz) could serve both needs."
+      a: "Some brands run multiple attribution tools for comparison. However, this adds cost and complexity. Consider whether a single tool with broader coverage (like Rockerbox for multi-channel or mbuzz for model flexibility) could serve both needs."
 schema:
   type: Article
   author: "holly-henderson"
@@ -59,17 +59,17 @@ Northbeam is expensive and opaque. You're here because you want the same sophist
 
 ### Quick Answer
 
-**Budget constrained?** Northbeam scales to $2-5K+/mo for high-traffic sites.
-→ **mbuzz** at $29-299/mo with transparent, flat pricing
-
-**Want to understand the math?** Northbeam's ML is a black box.
-→ **mbuzz**—8 inspectable models, build your own logic
+**Need multi-channel with offline?** Northbeam is digital-focused.
+→ **Rockerbox** for podcast/TV/direct mail tracking + MMM
 
 **Simpler Shopify store?** Northbeam is overkill under $40M revenue.
 → **Triple Whale** at $129/mo for basic DTC attribution
 
-**Need multi-channel with offline?** Northbeam is digital-focused.
-→ **Rockerbox** for podcast/TV/direct mail tracking
+**Want to understand the math?** Northbeam's ML is a black box.
+→ **mbuzz**—8 inspectable models, build your own logic
+
+**Budget constrained?** Northbeam scales to $2-5K+/mo for high-traffic sites.
+→ **Rockerbox** free tier, **Triple Whale** at $129/mo, or **mbuzz** at $29-299/mo
 
 ### The Uncomfortable Truth
 
@@ -106,128 +106,7 @@ If any of these resonate, here are your best options.
 
 ---
 
-<%= render "articles/embeds/competitor_section", competitor: "mbuzz", number: 1, title: "Best for Model Flexibility + Transparent Pricing" %>
-
-**Why consider mbuzz:** Northbeam gives you one ML-generated number. mbuzz gives you 8 models to compare, plus a rule editor to build your own logic—at a fraction of the price.
-
-### What mbuzz Offers
-
-**Transparent attribution you can actually understand.** No black-box ML—just clear models with logic you can inspect and customize. 8 built-in models including Markov Chain and Shapley Value, plus a rule editor for custom rules.
-
-**Server-side tracking that captures 95%+ of events.** Northbeam still relies on client-side pixels that ad blockers defeat. mbuzz tracks on your backend—no missing data.
-
-**Side-by-side model comparison.** See how First Touch, Last Touch, Linear, Time Decay, U-Shaped, and data-driven models credit the same conversions differently. Northbeam gives you one number; mbuzz shows you the range:
-
-<%= render "articles/embeds/model_comparison" %>
-
-**Custom models via simple rule editor.** Don't wait for feature requests—write your own attribution logic in minutes:
-
-<%= render "articles/embeds/dsl_editor" %>
-
-**LTV attribution, not just first purchase.** Your worst first-month channel might be your best LTV channel. mbuzz tracks recurring revenue back to original acquisition source—see which campaigns drive customers who stick around.
-
-<%= render "articles/embeds/mbuzz_showcase" %>
-
-**Pricing without traffic penalties:**
-
-| Tier | Records/Month | Price |
-|------|-------------|-------|
-| Free | Up to <%= free_event_limit_display %> | $0 |
-| Starter | Up to 1M | $29/mo |
-| Growth | Up to 5M | $99/mo |
-| Pro | Up to 25M | $299/mo |
-
-Compare to Northbeam's pageview-based pricing that can hit $2-5K/month for high-traffic sites.
-
-**10-minute setup** with native SDKs for [Rails](https://rubygems.org/gems/mbuzz), [Django](https://pypi.org/project/mbuzz), [Laravel](https://packagist.org/packages/mbuzz/mbuzz-php), and [Node.js](https://www.npmjs.com/package/mbuzz) — [setup guide](/docs/getting-started). Export everything anytime—your data, no lock-in.
-
-### mbuzz vs Northbeam
-
-| Factor | Northbeam | mbuzz |
-|--------|-----------|-------|
-| Attribution method | ML fractional credit | 8 models + custom rules |
-| Transparency | Black box | Inspect any model |
-| Custom logic | ✗ No | ✓ custom rules |
-| Pricing | $400+/mo, scales with traffic | Free tier, $29-299/mo |
-| Target size | $40M+ brands | All sizes |
-
-### The Transparency Difference
-
-<div class="my-6 not-prose grid md:grid-cols-2 gap-4">
-  <div class="bg-slate-100 rounded-lg p-5 border border-slate-200">
-    <h4 class="font-semibold text-slate-800 mb-3">Northbeam Approach</h4>
-    <ul class="space-y-2 text-sm text-slate-700">
-      <li>ML assigns fractional credit</li>
-      <li>Total sums to 100% (no over-attribution)</li>
-      <li>But why does Facebook get 30% vs Google's 25%?</li>
-      <li class="italic">"Trust the algorithm"</li>
-    </ul>
-  </div>
-  <div class="bg-indigo-50 rounded-lg p-5 border border-indigo-200">
-    <h4 class="font-semibold text-indigo-800 mb-3">mbuzz Approach</h4>
-    <ul class="space-y-2 text-sm text-indigo-900">
-      <li>Pick your model (or compare all 8)</li>
-      <li>See exactly how each model assigns credit</li>
-      <li>Build custom logic: "weight branded search lower"</li>
-      <li class="font-medium">Understand why—not just what</li>
-    </ul>
-  </div>
-</div>
-
-### Pros & Cons
-
-<div class="my-6 not-prose grid md:grid-cols-2 gap-6">
-  <div class="bg-emerald-50 rounded-lg p-5 border border-emerald-200">
-    <h4 class="font-semibold text-emerald-800 mb-3 flex items-center gap-2">
-      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-      Pros
-    </h4>
-    <ul class="space-y-2 text-sm text-emerald-900">
-      <li>Transparent models you can inspect—no black-box ML</li>
-      <li>$29-299/mo vs Northbeam's $2-5K+ pricing</li>
-      <li>Compare 8 models side-by-side, not one magic number</li>
-      <li>Flat pricing—no surprise bills as traffic grows</li>
-      <li>Custom rules to define your own attribution logic</li>
-    </ul>
-  </div>
-  <div class="bg-red-50 rounded-lg p-5 border border-red-200">
-    <h4 class="font-semibold text-red-800 mb-3 flex items-center gap-2">
-      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
-      Cons
-    </h4>
-    <ul class="space-y-2 text-sm text-red-900">
-      <li>Requires SDK integration (not a pixel drop-in)</li>
-      <li>More hands-on than Northbeam's "set and forget" approach</li>
-      <li>You choose between models—no single auto-generated answer</li>
-    </ul>
-  </div>
-</div>
-
-### Who mbuzz is NOT For
-
-Let's be honest—mbuzz isn't right for everyone:
-
-- **Teams wanting a single ML-generated number** — Northbeam's black box is simpler if you trust it
-- **Teams who want a single "magic number"** — mbuzz shows multiple models by design
-- **Those who prefer "set and forget"** — mbuzz rewards teams who engage with their data
-- **Enterprise brands with unlimited budget** — If cost isn't a factor, Northbeam's ML is sophisticated
-
-### Best For
-
-- Teams who want to understand their attribution, not just trust it
-- Brands skeptical of black-box ML
-- Those who need custom attribution logic
-- Companies wanting enterprise features without enterprise pricing
-
-<%= render "articles/cta_banner",
-  title: "Transparent attribution, transparent pricing",
-  description: "No black-box ML. No enterprise sales calls. See exactly how each model works.",
-  cta_text: "Try mbuzz Free →",
-  style: :light %>
-
----
-
-<%= render "articles/embeds/competitor_section", competitor: "rockerbox", number: 2, title: "Best for Multi-Channel Brands" %>
+<%= render "articles/embeds/competitor_section", competitor: "rockerbox", number: 1, title: "Best for Multi-Channel Brands" %>
 
 **Why consider Rockerbox:** If you run podcasts, TV, or influencer campaigns, Rockerbox measures channels Northbeam handles less well.
 
@@ -257,7 +136,7 @@ Northbeam excels at digital performance marketing. Rockerbox captures brand/awar
 
 ---
 
-<%= render "articles/embeds/competitor_section", competitor: "triple-whale", number: 3, title: "Best for Simplicity and Budget" %>
+<%= render "articles/embeds/competitor_section", competitor: "triple-whale", number: 2, title: "Best for Simplicity and Budget" %>
 
 **Why consider Triple Whale:** If Northbeam feels like overkill, Triple Whale delivers 80% of the value at 30% of the cost.
 
@@ -284,6 +163,48 @@ For Shopify brands under $30M revenue, Triple Whale provides solid attribution w
 - Budget-conscious brands
 
 **Limitation:** Shopify-only. See [Triple Whale alternatives](/articles/triple-whale-alternatives) for multi-platform options.
+
+---
+
+<%= render "articles/embeds/competitor_section", competitor: "mbuzz", number: 3, title: "Best for Model Flexibility + Transparent Pricing" %>
+
+*Full disclosure: mbuzz is our product. We'll tell you when competitors are the better choice.*
+
+**Why consider mbuzz:** Northbeam gives you one ML-generated number. mbuzz gives you 8 models to compare, plus a rule editor to build your own logic—at a fraction of the price.
+
+Transparent attribution you can actually understand—no black-box ML, just clear models with logic you can inspect and customize. 8 built-in models including Markov Chain and Shapley Value, plus a rule editor for custom rules. Server-side tracking captures 95%+ of events that ad blockers hide from client-side tools.
+
+### mbuzz vs Northbeam
+
+| Factor | Northbeam | mbuzz |
+|--------|-----------|-------|
+| Attribution method | ML fractional credit | 8 models + custom rules |
+| Transparency | Black box | Inspect any model |
+| Custom logic | ✗ No | ✓ custom rules |
+| Pricing | $400+/mo, scales with traffic | Free tier, $29-299/mo |
+| Target size | $40M+ brands | All sizes |
+| AI recommendations | ✗ No | ✗ No |
+
+### Best For
+
+- Teams who want to understand their attribution, not just trust it
+- Brands skeptical of black-box ML
+- Those who need custom attribution logic
+- Companies wanting enterprise features without enterprise pricing
+
+### Not For
+
+- Teams wanting a single ML-generated number—Northbeam's black box is simpler if you trust it
+- Enterprise brands with unlimited budget—Northbeam's ML is sophisticated
+- Those who prefer "set and forget"—mbuzz rewards teams who engage with their data
+
+---
+
+<%= render "articles/cta_banner",
+  title: "Transparent attribution, transparent pricing",
+  description: "No black-box ML. No enterprise sales calls. See exactly how each model works.",
+  cta_text: "Try mbuzz Free →",
+  style: :light %>
 
 ---
 
@@ -378,9 +299,9 @@ Northbeam is platform-agnostic. Hyros is purpose-built for info products, coachi
 
 | If You Need... | Best Alternative |
 |----------------|------------------|
-| Model flexibility + transparent pricing | mbuzz |
+| Multi-channel + podcast/TV | Rockerbox |
 | Simpler and cheaper | Triple Whale |
-| Podcast/TV measurement | Rockerbox |
+| Model flexibility + transparent pricing | mbuzz |
 | Full measurement stack | Lifesight |
 | Cookieless preparation | SegmentStream |
 | High-ticket optimization | Hyros |
@@ -389,19 +310,19 @@ Northbeam is platform-agnostic. Hyros is purpose-built for info products, coachi
 
 | Monthly Budget | Best Options |
 |----------------|--------------|
-| Under $200 | Triple Whale (Shopify), Rockerbox free tier |
-| $200-500 | Rockerbox, Hyros, Triple Whale |
-| $500-2000 | mbuzz, Hyros, Rockerbox paid |
-| $2000+ | mbuzz, Lifesight, SegmentStream |
+| Under $200 | Triple Whale (Shopify), Rockerbox free tier, mbuzz free tier |
+| $200-500 | Rockerbox, Triple Whale, mbuzz |
+| $500-2000 | Rockerbox paid, Hyros, Lifesight |
+| $2000+ | Lifesight, SegmentStream |
 
 ### By Team Sophistication
 
 | Team Type | Best Fit |
 |-----------|----------|
 | Owner-operator | Triple Whale |
-| Small marketing team | Rockerbox, Triple Whale |
-| Growth team with analyst | mbuzz, Rockerbox |
-| Dedicated media buyers | mbuzz, Lifesight |
+| Small marketing team | Triple Whale, Rockerbox |
+| Growth team with analyst | Rockerbox, mbuzz |
+| Dedicated media buyers | Lifesight, mbuzz |
 | Data science team | SegmentStream, Lifesight |
 
 ---
@@ -410,9 +331,9 @@ Northbeam is platform-agnostic. Hyros is purpose-built for info products, coachi
 
 | Alternative | Primary Strength | Starting Price |
 |-------------|------------------|----------------|
-| **mbuzz** | 8 models + custom rules + transparent pricing | Free tier |
-| **Rockerbox** | Multi-channel + MMM | $200/mo |
+| **Rockerbox** | Multi-channel + MMM | $200/mo (free tier) |
 | **Triple Whale** | Simple + affordable | $129/mo |
+| **mbuzz** | 8 models + custom rules + transparent pricing | Free tier, $29-299/mo |
 | **Lifesight** | Unified measurement stack | Custom |
 | **SegmentStream** | Cookieless AI attribution | Custom |
 | **Hyros** | High-ticket optimization | ~$500/mo |
