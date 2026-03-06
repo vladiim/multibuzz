@@ -3,7 +3,6 @@
 module Dashboard
   class ConversionsDataService < ApplicationService
     CACHE_TTL = 5.minutes
-    METRIC_AOV = "aov"
 
     def initialize(account, filter_params)
       @account = account
@@ -70,12 +69,14 @@ module Dashboard
     end
 
     def time_series_metric
-      metrics = Queries::TimeSeriesQuery::Metrics
-
       case filter_params[:metric]
-      when metrics::REVENUE, METRIC_AOV then metrics::REVENUE
-      when metrics::CONVERSIONS then metrics::CONVERSIONS
-      else metrics::CREDITS
+      when DashboardMetrics::REVENUE then DashboardMetrics::REVENUE
+      when DashboardMetrics::AOV then DashboardMetrics::AOV
+      when DashboardMetrics::CONVERSIONS then DashboardMetrics::CONVERSIONS
+      when DashboardMetrics::AVG_VISITS then DashboardMetrics::AVG_VISITS
+      when DashboardMetrics::AVG_CHANNELS then DashboardMetrics::AVG_CHANNELS
+      when DashboardMetrics::AVG_DAYS then DashboardMetrics::AVG_DAYS
+      else DashboardMetrics::CREDITS
       end
     end
 

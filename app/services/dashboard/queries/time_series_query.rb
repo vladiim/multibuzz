@@ -5,23 +5,21 @@ module Dashboard
     class TimeSeriesQuery
       DEFAULT_CHANNEL_LIMIT = 5
 
-      module Metrics
-        CREDITS = "credits"
-        REVENUE = "revenue"
-        CONVERSIONS = "conversions"
-      end
-
       METRIC_CONFIG = {
-        Metrics::CREDITS => { order: "SUM(credit) DESC" },
-        Metrics::REVENUE => { order: "SUM(revenue_credit) DESC" },
-        Metrics::CONVERSIONS => { order: "COUNT(DISTINCT conversion_id) DESC" }
+        DashboardMetrics::CREDITS => { order: "SUM(credit) DESC" },
+        DashboardMetrics::REVENUE => { order: "SUM(revenue_credit) DESC" },
+        DashboardMetrics::CONVERSIONS => { order: "COUNT(DISTINCT conversion_id) DESC" },
+        DashboardMetrics::AOV => { order: "SUM(revenue_credit) DESC" },
+        DashboardMetrics::AVG_VISITS => { order: "SUM(credit) DESC" },
+        DashboardMetrics::AVG_CHANNELS => { order: "SUM(credit) DESC" },
+        DashboardMetrics::AVG_DAYS => { order: "SUM(credit) DESC" }
       }.freeze
 
       def initialize(scope, date_range:, channel_limit: DEFAULT_CHANNEL_LIMIT, metric: nil)
         @scope = scope
         @date_range = date_range
         @channel_limit = channel_limit
-        @metric = metric.presence || Metrics::CREDITS
+        @metric = metric.presence || DashboardMetrics::CREDITS
       end
 
       def call
@@ -48,7 +46,7 @@ module Dashboard
       end
 
       def metric_config
-        METRIC_CONFIG.fetch(metric, METRIC_CONFIG[Metrics::CREDITS])
+        METRIC_CONFIG.fetch(metric, METRIC_CONFIG[DashboardMetrics::CREDITS])
       end
 
       def build_series(channel)
@@ -74,19 +72,102 @@ module Dashboard
         @raw_daily_data ||= aggregate_daily_data
       end
 
+      AGGREGATORS = {
+        DashboardMetrics::CONVERSIONS => :aggregate_conversions,
+        DashboardMetrics::REVENUE => :aggregate_revenue,
+        DashboardMetrics::AOV => :aggregate_aov,
+        DashboardMetrics::AVG_VISITS => :aggregate_avg_visits,
+        DashboardMetrics::AVG_CHANNELS => :aggregate_avg_channels,
+        DashboardMetrics::AVG_DAYS => :aggregate_avg_days
+      }.freeze
+
       def aggregate_daily_data
-        base_query = scope
+        send(AGGREGATORS.fetch(metric, :aggregate_credits))
+      end
+
+      def aggregate_credits = base_grouped_query.sum(:credit)
+      def aggregate_revenue = base_grouped_query.sum(:revenue_credit)
+      def aggregate_conversions = base_grouped_query.count("DISTINCT conversion_id")
+
+      def base_grouped_query
+        scope
           .where(channel: top_channels)
           .group(:channel, Arel.sql("DATE(conversions.converted_at)"))
+      end
 
-        case metric
-        when Metrics::CONVERSIONS
-          base_query.count("DISTINCT conversion_id")
-        when Metrics::REVENUE
-          base_query.sum(:revenue_credit)
-        else
-          base_query.sum(:credit)
+      # --- AOV ---
+
+      def aggregate_aov
+        revenue = base_grouped_query.sum(:revenue_credit)
+        credits = base_grouped_query.sum(:credit)
+
+        revenue.each_with_object({}) do |((channel, date), rev), result|
+          cred = credits[[ channel, date ]] || 0
+          result[[ channel, date ]] = cred.zero? ? 0 : (rev.to_f / cred.to_f).round(2)
         end
+      end
+
+      # --- Journey Metrics ---
+
+      def aggregate_avg_visits
+        tuples = distinct_conversion_tuples(exclude_empty_journeys: true)
+        return {} if tuples.empty?
+
+        average_metric_by_group(tuples, journey_visits_per_conversion(tuples))
+      end
+
+      def aggregate_avg_channels
+        tuples = distinct_conversion_tuples
+        return {} if tuples.empty?
+
+        average_metric_by_group(tuples, scope.group(:conversion_id).distinct.count(:channel))
+      end
+
+      def aggregate_avg_days
+        tuples = distinct_conversion_tuples(exclude_empty_journeys: true)
+        return {} if tuples.empty?
+
+        average_metric_by_group(tuples, journey_days_per_conversion(tuples))
+      end
+
+      def distinct_conversion_tuples(exclude_empty_journeys: false)
+        base = scope.where(channel: top_channels)
+        base = base.where.not("conversions.journey_session_ids = '{}'") if exclude_empty_journeys
+
+        base.distinct.pluck(:channel, :conversion_id, Arel.sql("DATE(conversions.converted_at)"))
+      end
+
+      def journey_visits_per_conversion(tuples)
+        Conversion
+          .where(id: tuples.map { |_, cid, _| cid }.uniq)
+          .where.not(journey_session_ids: [])
+          .pluck(:id, Arel.sql("ARRAY_LENGTH(journey_session_ids, 1)"))
+          .to_h
+      end
+
+      def journey_days_per_conversion(tuples)
+        Conversion
+          .where(id: tuples.map { |_, cid, _| cid }.uniq)
+          .where.not(journey_session_ids: [])
+          .joins(
+            "INNER JOIN LATERAL (
+              SELECT MIN(s.started_at) as first_session_at
+              FROM sessions s
+              WHERE s.id = ANY(conversions.journey_session_ids)
+            ) first_session ON true"
+          )
+          .pluck(:id, Arel.sql("EXTRACT(EPOCH FROM (conversions.converted_at - first_session.first_session_at)) / 86400.0"))
+          .to_h
+          .transform_values(&:to_f)
+      end
+
+      def average_metric_by_group(tuples, per_conversion_values)
+        tuples
+          .group_by { |ch, _, dt| [ ch, dt.respond_to?(:strftime) ? dt.strftime("%Y-%m-%d") : dt.to_s ] }
+          .transform_values do |records|
+            values = records.filter_map { |_, cid, _| per_conversion_values[cid] }
+            values.empty? ? 0 : (values.sum.to_f / values.size).round(1)
+          end
       end
     end
   end

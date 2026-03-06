@@ -15,7 +15,7 @@
   <!-- KPI Cards: Compact for comparison -->
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
     <%= render "dashboard/conversions/kpi_card_compact",
-      metric: "conversions",
+      metric: DashboardMetrics::CONVERSIONS,
       label: "Conversions",
       value: totals[:conversions],
       prior_value: prior[:conversions],
@@ -23,7 +23,7 @@
       clickable: false %>
 
     <%= render "dashboard/conversions/kpi_card_compact",
-      metric: "revenue",
+      metric: DashboardMetrics::REVENUE,
       label: "Revenue",
       value: totals[:revenue],
       prior_value: prior[:revenue],
@@ -32,7 +32,7 @@
       clickable: false %>
 
     <%= render "dashboard/conversions/kpi_card_compact",
-      metric: "aov",
+      metric: DashboardMetrics::AOV,
       label: "Avg Order Value",
       value: totals[:aov],
       prior_value: prior[:aov],
@@ -41,21 +41,21 @@
       clickable: false %>
 
     <%= render "dashboard/conversions/kpi_card_compact",
-      metric: "avg_channels",
+      metric: DashboardMetrics::AVG_CHANNELS,
       label: "Avg Channels",
       value: totals[:avg_channels_to_convert],
       accent_color: accent_color,
       clickable: false %>
 
     <%= render "dashboard/conversions/kpi_card_compact",
-      metric: "avg_visits",
+      metric: DashboardMetrics::AVG_VISITS,
       label: "Avg Visits",
       value: totals[:avg_visits_to_convert],
       accent_color: accent_color,
       clickable: false %>
 
     <%= render "dashboard/conversions/kpi_card_compact",
-      metric: "avg_days",
+      metric: DashboardMetrics::AVG_DAYS,
       label: "Avg Days",
       value: totals[:avg_days_to_convert],
       accent_color: accent_color,
@@ -83,7 +83,7 @@
     <div id="channel-chart-<%= panel_id %>"
       data-controller="chart"
       data-chart-type-value="bar"
-      data-chart-metric-value="credits"
+      data-chart-metric-value="<%= DashboardMetrics::CREDITS %>"
       data-chart-drilldown-value="true"
       data-chart-campaigns-value="<%= data[:top_campaigns].to_json %>"
       data-chart-data-value="<%= data[:by_channel].to_json %>"

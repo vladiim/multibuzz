@@ -76,7 +76,7 @@ module Dashboard
         create_credit_on_date(3.days.ago.to_date, channel: Channels::PAID_SEARCH, credit: 0.5, revenue_credit: 100.0)
         create_credit_on_date(3.days.ago.to_date, channel: Channels::EMAIL, credit: 0.5, revenue_credit: 50.0)
 
-        result = query(metric: "revenue").call
+        result = query(metric: DashboardMetrics::REVENUE).call
 
         paid_search = result[:series].find { |s| s[:channel] == Channels::PAID_SEARCH }
         email = result[:series].find { |s| s[:channel] == Channels::EMAIL }
@@ -95,7 +95,7 @@ module Dashboard
         conversion2 = create_conversion(converted_at: 3.days.ago.to_datetime)
         create_credit_for_conversion(conversion2, channel: Channels::PAID_SEARCH, credit: 1.0)
 
-        result = query(metric: "conversions").call
+        result = query(metric: DashboardMetrics::CONVERSIONS).call
 
         # paid_search has credits from 2 conversions
         paid_search = result[:series].find { |s| s[:channel] == Channels::PAID_SEARCH }
@@ -113,14 +113,163 @@ module Dashboard
         create_credit_on_date(2.days.ago.to_date, channel: Channels::PAID_SEARCH, credit: 1.0, revenue_credit: 10.0)
         create_credit_on_date(2.days.ago.to_date, channel: Channels::EMAIL, credit: 0.5, revenue_credit: 100.0)
 
-        credits_result = query(metric: "credits").call
-        revenue_result = query(metric: "revenue").call
+        credits_result = query(metric: DashboardMetrics::CREDITS).call
+        revenue_result = query(metric: DashboardMetrics::REVENUE).call
 
         # Credits: paid_search first (1.0 > 0.5)
         assert_equal Channels::PAID_SEARCH, credits_result[:series].first[:channel]
 
         # Revenue: email first (100.0 > 10.0)
         assert_equal Channels::EMAIL, revenue_result[:series].first[:channel]
+      end
+
+      # ==========================================
+      # AOV Metric
+      # ==========================================
+
+      test "returns average order value per day per channel" do
+        # Day 1: paid_search has 2 credits totaling 1.5, revenue 150 → AOV = 100
+        day1 = 3.days.ago.to_date
+        c1 = create_conversion(converted_at: day1.to_datetime)
+        create_credit_for_conversion(c1, channel: Channels::PAID_SEARCH, credit: 1.0, revenue_credit: 100.0)
+        c2 = create_conversion(converted_at: day1.to_datetime)
+        create_credit_for_conversion(c2, channel: Channels::PAID_SEARCH, credit: 0.5, revenue_credit: 50.0)
+
+        result = query(metric: DashboardMetrics::AOV).call
+
+        paid_search = result[:series].find { |s| s[:channel] == Channels::PAID_SEARCH }
+        day1_value = day_value(paid_search, day1, result[:dates])
+
+        assert_in_delta(100.0, day1_value, 0.01, "AOV should be 150/1.5 = 100")
+      end
+
+      test "aov returns zero for days with no credits" do
+        create_credit_on_date(3.days.ago.to_date, channel: Channels::PAID_SEARCH, credit: 1.0, revenue_credit: 50.0)
+
+        result = query(metric: DashboardMetrics::AOV).call
+
+        paid_search = result[:series].find { |s| s[:channel] == Channels::PAID_SEARCH }
+        empty_day_value = day_value(paid_search, 2.days.ago.to_date, result[:dates])
+
+        assert_in_delta(0.0, empty_day_value)
+      end
+
+      # ==========================================
+      # Avg Visits Metric
+      # ==========================================
+
+      test "returns average journey visits per conversion per day" do
+        day1 = 3.days.ago.to_date
+        session1 = create_session(started_at: day1.to_datetime - 2.days)
+        session2 = create_session(started_at: day1.to_datetime - 1.day)
+        session3 = create_session(started_at: day1.to_datetime - 3.hours)
+
+        # Conversion with 3 journey sessions
+        c1 = create_conversion(converted_at: day1.to_datetime, journey_session_ids: [ session1.id, session2.id, session3.id ])
+        create_credit_for_conversion(c1, channel: Channels::PAID_SEARCH, credit: 1.0)
+
+        # Conversion with 1 journey session
+        session4 = create_session(started_at: day1.to_datetime - 1.hour)
+        c2 = create_conversion(converted_at: day1.to_datetime, journey_session_ids: [ session4.id ])
+        create_credit_for_conversion(c2, channel: Channels::PAID_SEARCH, credit: 1.0)
+
+        result = query(metric: DashboardMetrics::AVG_VISITS).call
+
+        paid_search = result[:series].find { |s| s[:channel] == Channels::PAID_SEARCH }
+        day1_value = day_value(paid_search, day1, result[:dates])
+
+        # Average of 3 and 1 = 2.0
+        assert_in_delta(2.0, day1_value, 0.1)
+      end
+
+      test "avg_visits excludes conversions without journey data" do
+        day1 = 3.days.ago.to_date
+        session1 = create_session(started_at: day1.to_datetime - 1.day)
+
+        # Conversion WITH journey
+        c1 = create_conversion(converted_at: day1.to_datetime, journey_session_ids: [ session1.id ])
+        create_credit_for_conversion(c1, channel: Channels::PAID_SEARCH, credit: 1.0)
+
+        # Conversion WITHOUT journey (empty array)
+        c2 = create_conversion(converted_at: day1.to_datetime, journey_session_ids: [])
+        create_credit_for_conversion(c2, channel: Channels::PAID_SEARCH, credit: 1.0)
+
+        result = query(metric: DashboardMetrics::AVG_VISITS).call
+
+        paid_search = result[:series].find { |s| s[:channel] == Channels::PAID_SEARCH }
+        day1_value = day_value(paid_search, day1, result[:dates])
+
+        # Only c1 counted: 1 visit
+        assert_in_delta(1.0, day1_value, 0.1)
+      end
+
+      # ==========================================
+      # Avg Channels Metric
+      # ==========================================
+
+      test "returns average distinct channels per conversion per day" do
+        day1 = 3.days.ago.to_date
+
+        # Conversion touching 2 channels
+        c1 = create_conversion(converted_at: day1.to_datetime)
+        create_credit_for_conversion(c1, channel: Channels::PAID_SEARCH, credit: 0.5)
+        create_credit_for_conversion(c1, channel: Channels::EMAIL, credit: 0.5)
+
+        # Conversion touching 1 channel
+        c2 = create_conversion(converted_at: day1.to_datetime)
+        create_credit_for_conversion(c2, channel: Channels::PAID_SEARCH, credit: 1.0)
+
+        result = query(metric: DashboardMetrics::AVG_CHANNELS).call
+
+        paid_search = result[:series].find { |s| s[:channel] == Channels::PAID_SEARCH }
+        day1_value = day_value(paid_search, day1, result[:dates])
+
+        # paid_search sees both conversions: c1 has 2 channels, c2 has 1 → avg = 1.5
+        assert_in_delta(1.5, day1_value, 0.1)
+      end
+
+      # ==========================================
+      # Avg Days to Convert Metric
+      # ==========================================
+
+      test "returns average days from first session to conversion" do
+        day1 = 3.days.ago.to_date
+
+        # Conversion 1: first session 4 days before conversion → 4 days
+        session1 = create_session(started_at: day1.to_datetime - 4.days)
+        c1 = create_conversion(converted_at: day1.to_datetime, journey_session_ids: [ session1.id ])
+        create_credit_for_conversion(c1, channel: Channels::PAID_SEARCH, credit: 1.0)
+
+        # Conversion 2: first session 2 days before conversion → 2 days
+        session2 = create_session(started_at: day1.to_datetime - 2.days)
+        c2 = create_conversion(converted_at: day1.to_datetime, journey_session_ids: [ session2.id ])
+        create_credit_for_conversion(c2, channel: Channels::PAID_SEARCH, credit: 1.0)
+
+        result = query(metric: DashboardMetrics::AVG_DAYS).call
+
+        paid_search = result[:series].find { |s| s[:channel] == Channels::PAID_SEARCH }
+        day1_value = day_value(paid_search, day1, result[:dates])
+
+        # Average of 4 and 2 = 3.0
+        assert_in_delta(3.0, day1_value, 0.1)
+      end
+
+      test "avg_days uses earliest session from journey_session_ids" do
+        day1 = 3.days.ago.to_date
+
+        # Two sessions: 5 days ago and 1 day ago → first touch is 5 days
+        early_session = create_session(started_at: day1.to_datetime - 5.days)
+        late_session = create_session(started_at: day1.to_datetime - 1.day)
+
+        c1 = create_conversion(converted_at: day1.to_datetime, journey_session_ids: [ early_session.id, late_session.id ])
+        create_credit_for_conversion(c1, channel: Channels::PAID_SEARCH, credit: 1.0)
+
+        result = query(metric: DashboardMetrics::AVG_DAYS).call
+
+        paid_search = result[:series].find { |s| s[:channel] == Channels::PAID_SEARCH }
+        day1_value = day_value(paid_search, day1, result[:dates])
+
+        assert_in_delta(5.0, day1_value, 0.1)
       end
 
       private
@@ -167,12 +316,29 @@ module Dashboard
         )
       end
 
-      def create_conversion(converted_at:)
+      def create_conversion(converted_at:, journey_session_ids: [])
         account.conversions.create!(
           visitor: visitors(:one),
           conversion_type: "purchase",
-          converted_at: converted_at
+          converted_at: converted_at,
+          journey_session_ids: journey_session_ids
         )
+      end
+
+      def create_session(started_at:)
+        account.sessions.create!(
+          visitor: visitors(:one),
+          session_id: "sess_#{SecureRandom.hex(8)}",
+          started_at: started_at,
+          page_view_count: 1
+        )
+      end
+
+      def day_value(series, date, dates_array)
+        index = dates_array.index(date.iso8601)
+        return 0.0 unless index
+
+        series[:data][index]
       end
     end
   end

@@ -26,14 +26,26 @@ module Dashboard
       end
 
       def build_channel_row(row)
+        credits = row.total_credits.to_f
+        revenue = row.total_revenue.to_f
+        channel = row.channel
+        channel_journeys = journey_metrics_for(channel)
+
         {
-          channel: row.channel,
-          credits: row.total_credits.to_f,
-          revenue: row.total_revenue.to_f,
+          channel: channel,
+          credits: credits,
+          revenue: revenue,
+          aov: credits.zero? ? 0 : (revenue / credits).round(2),
           percentage: percentage(row.total_credits),
-          avg_channels: journey_metrics.avg_channels_by_channel[row.channel],
-          avg_visits: journey_metrics.avg_visits_by_channel[row.channel],
-          avg_days: journey_metrics.avg_days_by_channel[row.channel]
+          **channel_journeys
+        }
+      end
+
+      def journey_metrics_for(channel)
+        {
+          avg_channels: journey_metrics.avg_channels_by_channel[channel],
+          avg_visits: journey_metrics.avg_visits_by_channel[channel],
+          avg_days: journey_metrics.avg_days_by_channel[channel]
         }
       end
 

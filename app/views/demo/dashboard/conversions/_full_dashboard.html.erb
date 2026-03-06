@@ -5,60 +5,46 @@
 <%# Calculate metric-driven values upfront %>
 <%
 metric_key = @filter_params[:metric].to_s
-chart_metric = case metric_key
-  when "revenue" then "revenue"
-  when "aov" then "aov"
-  when "avg_channels" then "avg_channels"
-  when "avg_visits" then "avg_visits"
-  when "avg_days" then "avg_days"
-  else "credits"
-  end
-chart_title = case metric_key
-  when "revenue" then "Revenue"
-  when "aov" then "Avg Order Value"
-  when "avg_channels" then "Avg Channels"
-  when "avg_visits" then "Avg Visits"
-  when "avg_days" then "Avg Days"
-  else "Conversions"
-  end
+chart_metric = DashboardMetrics.chart_key_for(metric_key)
+chart_title = DashboardMetrics.chart_title_for(metric_key)
 %>
 
 <!-- KPI Cards: Match real dashboard layout -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
   <%= render "demo/dashboard/conversions/kpi_card",
-    metric: "conversions",
+    metric: DashboardMetrics::CONVERSIONS,
     label: "Conversions",
     value: totals[:conversions],
     prior_value: prior[:conversions] %>
 
   <%= render "demo/dashboard/conversions/kpi_card",
-    metric: "revenue",
+    metric: DashboardMetrics::REVENUE,
     label: "Revenue",
     value: totals[:revenue],
     prior_value: prior[:revenue],
     type: :currency %>
 
   <%= render "demo/dashboard/conversions/kpi_card",
-    metric: "aov",
+    metric: DashboardMetrics::AOV,
     label: "Avg Order Value",
     value: totals[:aov],
     prior_value: prior[:aov],
     type: :currency %>
 
   <%= render "demo/dashboard/conversions/kpi_card",
-    metric: "avg_days",
+    metric: DashboardMetrics::AVG_DAYS,
     label: "Avg Days to Convert",
     value: totals[:avg_days_to_convert],
     subtitle: "from first touch" %>
 
   <%= render "demo/dashboard/conversions/kpi_card",
-    metric: "avg_channels",
+    metric: DashboardMetrics::AVG_CHANNELS,
     label: "Avg Channels",
     value: totals[:avg_channels_to_convert],
     subtitle: "per conversion" %>
 
   <%= render "demo/dashboard/conversions/kpi_card",
-    metric: "avg_visits",
+    metric: DashboardMetrics::AVG_VISITS,
     label: "Avg Visits",
     value: totals[:avg_visits_to_convert],
     subtitle: "per conversion" %>

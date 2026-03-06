@@ -16,14 +16,14 @@
   <!-- KPI Cards: 1 col on phones, 2 on sm+ -->
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
     <%= render "dashboard/conversions/kpi_card_compact",
-      metric: "conversions",
+      metric: DashboardMetrics::CONVERSIONS,
       label: "Conversions",
       value: totals[:conversions],
       prior_value: prior[:conversions],
       accent_color: accent_color %>
 
     <%= render "dashboard/conversions/kpi_card_compact",
-      metric: "revenue",
+      metric: DashboardMetrics::REVENUE,
       label: "Revenue",
       value: totals[:revenue],
       prior_value: prior[:revenue],
@@ -31,7 +31,7 @@
       accent_color: accent_color %>
 
     <%= render "dashboard/conversions/kpi_card_compact",
-      metric: "aov",
+      metric: DashboardMetrics::AOV,
       label: "Avg Order Value",
       value: totals[:aov],
       prior_value: prior[:aov],
@@ -39,19 +39,19 @@
       accent_color: accent_color %>
 
     <%= render "dashboard/conversions/kpi_card_compact",
-      metric: "avg_channels",
+      metric: DashboardMetrics::AVG_CHANNELS,
       label: "Avg Channels",
       value: totals[:avg_channels_to_convert],
       accent_color: accent_color %>
 
     <%= render "dashboard/conversions/kpi_card_compact",
-      metric: "avg_visits",
+      metric: DashboardMetrics::AVG_VISITS,
       label: "Avg Visits",
       value: totals[:avg_visits_to_convert],
       accent_color: accent_color %>
 
     <%= render "dashboard/conversions/kpi_card_compact",
-      metric: "avg_days",
+      metric: DashboardMetrics::AVG_DAYS,
       label: "Avg Days",
       value: totals[:avg_days_to_convert],
       accent_color: accent_color %>
@@ -65,21 +65,13 @@
     <div id="time-series-chart-<%= panel_id %>"
       data-controller="chart"
       data-chart-type-value="line"
+      data-chart-metric-value="<%= DashboardMetrics.chart_key_for(selected_metric) %>"
       data-chart-data-value="<%= data[:time_series].to_json %>"
       class="h-48">
     </div>
   </div>
 
   <!-- Attribution Chart -->
-  <%
-  chart_metric = case selected_metric
-    when "revenue", "aov" then "revenue"
-    when "avg_channels" then "avg_channels"
-    when "avg_visits" then "avg_visits"
-    when "avg_days" then "avg_days"
-    else "credits"
-    end
-  %>
   <div class="bg-white p-4 rounded-lg shadow">
     <div class="flex items-center justify-between mb-3">
       <h4 class="text-sm font-medium text-gray-900">By Channel</h4>
@@ -87,7 +79,7 @@
     <div id="channel-chart-<%= panel_id %>"
       data-controller="chart"
       data-chart-type-value="bar"
-      data-chart-metric-value="<%= chart_metric %>"
+      data-chart-metric-value="<%= DashboardMetrics.chart_key_for(selected_metric) %>"
       data-chart-drilldown-value="true"
       data-chart-campaigns-value="<%= data[:top_campaigns].to_json %>"
       data-chart-data-value="<%= data[:by_channel].to_json %>"

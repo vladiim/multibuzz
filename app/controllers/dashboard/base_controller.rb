@@ -6,8 +6,8 @@ module Dashboard
 
     PRESET_DATE_RANGES = %w[7d 30d 90d].freeze
     DEFAULT_DATE_RANGE = "30d"
-    VALID_METRICS = %w[conversions revenue aov avg_days avg_channels avg_visits].freeze
-    DEFAULT_METRIC = "conversions"
+    VALID_METRICS = DashboardMetrics::ALL
+    DEFAULT_METRIC = DashboardMetrics::DEFAULT
 
     private
 

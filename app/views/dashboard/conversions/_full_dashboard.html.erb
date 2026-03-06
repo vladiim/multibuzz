@@ -6,39 +6,39 @@
 <!-- KPI Cards: 1 col on phones, 2 on sm+, 3 on lg+ -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
   <%= render "dashboard/conversions/kpi_card",
-    metric: "conversions",
+    metric: DashboardMetrics::CONVERSIONS,
     label: "Conversions",
     value: totals[:conversions],
     prior_value: prior[:conversions] %>
 
   <%= render "dashboard/conversions/kpi_card",
-    metric: "revenue",
+    metric: DashboardMetrics::REVENUE,
     label: "Revenue",
     value: totals[:revenue],
     prior_value: prior[:revenue],
     type: :currency %>
 
   <%= render "dashboard/conversions/kpi_card",
-    metric: "aov",
+    metric: DashboardMetrics::AOV,
     label: "Avg Order Value",
     value: totals[:aov],
     prior_value: prior[:aov],
     type: :currency %>
 
   <%= render "dashboard/conversions/kpi_card",
-    metric: "avg_days",
+    metric: DashboardMetrics::AVG_DAYS,
     label: "Avg Days to Convert",
     value: totals[:avg_days_to_convert],
     subtitle: "from first touch" %>
 
   <%= render "dashboard/conversions/kpi_card",
-    metric: "avg_channels",
+    metric: DashboardMetrics::AVG_CHANNELS,
     label: "Avg Channels",
     value: totals[:avg_channels_to_convert],
     subtitle: "per conversion" %>
 
   <%= render "dashboard/conversions/kpi_card",
-    metric: "avg_visits",
+    metric: DashboardMetrics::AVG_VISITS,
     label: "Avg Visits",
     value: totals[:avg_visits_to_convert],
     subtitle: "per conversion" %>
@@ -59,19 +59,10 @@
       </div>
     </div>
   </div>
-  <%
-  time_series_metric = case selected_metric
-    when "revenue", "aov" then "revenue"
-    when "avg_channels" then "avg_channels"
-    when "avg_visits" then "avg_visits"
-    when "avg_days" then "avg_days"
-    else "credits"
-    end
-  %>
   <div id="time-series-chart"
     data-controller="chart"
     data-chart-type-value="line"
-    data-chart-metric-value="<%= time_series_metric %>"
+    data-chart-metric-value="<%= DashboardMetrics.chart_key_for(selected_metric) %>"
     data-chart-data-value="<%= data[:time_series].to_json %>"
     class="h-48 sm:h-64 lg:h-72">
   </div>
@@ -79,22 +70,8 @@
 
 <!-- Attribution Chart (metric-driven) -->
 <%
-chart_metric = case selected_metric
-  when "revenue", "aov" then "revenue"
-  when "avg_channels" then "avg_channels"
-  when "avg_visits" then "avg_visits"
-  when "avg_days" then "avg_days"
-  else "credits"
-  end
-chart_titles = {
-  "conversions" => "Conversions",
-  "revenue" => "Revenue",
-  "aov" => "Revenue",
-  "avg_channels" => "Avg Channels",
-  "avg_visits" => "Avg Visits",
-  "avg_days" => "Avg Days"
-}
-chart_title = chart_titles[selected_metric] || "Conversions"
+chart_metric = DashboardMetrics.chart_key_for(selected_metric)
+chart_title = DashboardMetrics.chart_title_for(selected_metric)
 %>
 <div class="bg-white p-4 sm:p-6 rounded-lg shadow mb-6">
   <div class="flex items-center justify-between mb-4">
