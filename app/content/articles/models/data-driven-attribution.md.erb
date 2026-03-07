@@ -50,7 +50,7 @@ has_download: false
 
 <%= render_tldr(@article.tldr) %>
 
-## What Data-Driven Attribution Is
+## What is data-driven attribution?
 
 Data-driven attribution answers: **"Based on our actual conversion data, how much did each touchpoint contribute?"**
 
@@ -84,7 +84,7 @@ The appeal: let data determine importance rather than imposing assumptions.
 
 All three learn from data, but with different math and tradeoffs.
 
-## Markov Chain Attribution
+## How does Markov chain attribution work?
 
 ### How It Works
 
@@ -199,7 +199,7 @@ end
   <strong>When to use Markov:</strong> You have 2,000-10,000 monthly conversions, want interpretable results, and are comfortable with the removal effect logic.
 <% end %>
 
-## Shapley Value Attribution
+## How does Shapley value attribution work?
 
 ### How It Works
 
@@ -312,7 +312,7 @@ end
 <strong>The Shapley paradox:</strong> It's the most theoretically fair model, but also the hardest to explain. If stakeholders don't trust what they can't understand, Shapley's elegance doesn't help.
 <% end %>
 
-## Machine Learning Attribution
+## How does machine learning attribution work?
 
 ### How It Works
 
@@ -386,7 +386,7 @@ Each touchpoint's SHAP value = its marginal contribution to THIS conversion.
 - Easy to overfit
 - Needs ML expertise to implement correctly
 
-## Google's Data-Driven Attribution
+## How does Google's data-driven attribution work?
 
 Google Ads and GA4 offer "data-driven attribution" (DDA). What's inside?
 
@@ -418,7 +418,7 @@ Google Ads and GA4 offer "data-driven attribution" (DDA). What's inside?
   <strong>The Google DDA trap:</strong> It's convenient, but you're trusting a black box from the company that sells you ads. For unbiased cross-channel attribution, consider building your own or using independent tools.
 <% end %>
 
-## When to Use Data-Driven Attribution
+## When should you use data-driven attribution?
 
 ### Use Data-Driven When:
 
@@ -458,7 +458,7 @@ Analytics resources?
 └─ Strong: Custom ML with validation
 ```
 
-## Validating Data-Driven Models
+## How do you validate data-driven attribution models?
 
 All attribution is correlational—including data-driven. Validate with:
 
@@ -510,7 +510,7 @@ Email      | 18%    | 25%    | 12%    | 22%    | Unstable ✗
 
 Unstable channels may need more data or model refinement.
 
-## Common Data-Driven Mistakes
+## What are common data-driven attribution mistakes?
 
 ### Mistake 1: Using Data-Driven with Low Volume
 
@@ -536,7 +536,7 @@ Garbage in, garbage out. If your touchpoint data is messy—duplicate sessions, 
 
 **Fix:** Clean data before modeling. Validate path quality.
 
-## Implementing Data-Driven Attribution in mbuzz
+## How do you implement data-driven attribution in mbuzz?
 
 <%# TODO: CTA - "Use This Template" buttons for AML examples below %>
 
@@ -656,7 +656,7 @@ comparison:
   report_frequency: weekly
 ```
 
-## Tuning Data-Driven Models for Your Business
+## How do you tune data-driven models for your business?
 
 Data-driven models have more parameters and require more careful tuning than rule-based models.
 
@@ -884,7 +884,7 @@ reporting:
   show_model_diagnostics: true
 ```
 
-## Summary
+## Which data-driven model should you choose?
 
 Data-driven attribution uses algorithms—Markov chains, Shapley values, or machine learning—to learn touchpoint importance from conversion data. Unlike rule-based models, it calculates rather than assumes credit distribution.
 
