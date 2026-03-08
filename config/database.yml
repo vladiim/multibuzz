@@ -107,7 +107,6 @@ production:
   queue:
     <<: *primary_production
     database: <%= ENV["POSTGRES_DB"] %>_queue
-    pool: 5
     migrations_paths: db/queue_migrate
   cable:
     <<: *primary_production

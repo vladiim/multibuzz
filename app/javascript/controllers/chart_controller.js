@@ -326,7 +326,12 @@ export default class extends Controller {
       name: this.formatChannelName(s.channel),
       color: CHANNEL_COLORS[s.channel] || CHANNEL_COLORS.other,
       // Handle both old format (array of numbers) and new format (array of objects with metrics)
-      data: s.data.map(d => typeof d === "object" ? (d[metricConfig.dataKey] || 0) : d)
+      // Note: typeof null === "object" in JS, so check null first to preserve gaps for Highcharts
+      data: s.data.map(d => {
+        if (d === null || d === undefined) return null
+        return typeof d === "object" ? (d[metricConfig.dataKey] || 0) : d
+      }),
+      connectNulls: true
     }))
 
     this.chart = Highcharts.chart(this.chartElement, {

@@ -1,6 +1,9 @@
 -- Production database initialization script for Multibuzz
 -- This script runs automatically when the TimescaleDB container first starts
 
+-- Allow headroom for deploy overlap (2 containers × 5 DBs × 5 pool × 2 workers)
+ALTER SYSTEM SET max_connections = 200;
+
 -- Enable TimescaleDB extension
 CREATE EXTENSION IF NOT EXISTS timescaledb;
 
