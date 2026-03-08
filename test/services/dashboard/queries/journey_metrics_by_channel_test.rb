@@ -10,22 +10,26 @@ module Dashboard
         Conversion.where(account: account).delete_all
       end
 
-      test "returns avg_channels per channel" do
-        # Conversion 1: paid_search + email (2 channels)
-        conv1 = create_conversion
-        create_credit(conv1, channel: Channels::PAID_SEARCH, session_id: 1)
-        create_credit(conv1, channel: Channels::EMAIL, session_id: 2)
+      test "returns avg_channels per channel from journey sessions" do
+        # Conversion 1: journey spans 3 channels, credits in paid_search + email
+        s1 = create_session(channel: Channels::PAID_SEARCH)
+        s2 = create_session(channel: Channels::EMAIL)
+        s3 = create_session(channel: Channels::DIRECT)
+        conv1 = create_conversion(journey_session_ids: [ s1.id, s2.id, s3.id ])
+        create_credit(conv1, channel: Channels::PAID_SEARCH, session_id: s1.id)
+        create_credit(conv1, channel: Channels::EMAIL, session_id: s2.id)
 
-        # Conversion 2: paid_search only (1 channel)
-        conv2 = create_conversion
-        create_credit(conv2, channel: Channels::PAID_SEARCH, session_id: 3)
+        # Conversion 2: journey spans 1 channel, credit in paid_search
+        s4 = create_session(channel: Channels::PAID_SEARCH)
+        conv2 = create_conversion(journey_session_ids: [ s4.id ])
+        create_credit(conv2, channel: Channels::PAID_SEARCH, session_id: s4.id)
 
         result = query.avg_channels_by_channel
 
-        # paid_search appears in both conversions: (2 + 1) / 2 = 1.5
-        assert_in_delta(1.5, result[Channels::PAID_SEARCH])
-        # email appears in 1 conversion with 2 channels: 2 / 1 = 2.0
-        assert_in_delta(2.0, result[Channels::EMAIL])
+        # paid_search sees both: conv1 (3 journey channels) + conv2 (1) → avg = 2.0
+        assert_in_delta(2.0, result[Channels::PAID_SEARCH])
+        # email sees only conv1: 3 journey channels → avg = 3.0
+        assert_in_delta(3.0, result[Channels::EMAIL])
       end
 
       test "returns avg_visits per channel based on journey_session_ids" do
@@ -115,11 +119,12 @@ module Dashboard
         )
       end
 
-      def create_session
+      def create_session(channel: Channels::DIRECT)
         account.sessions.create!(
           visitor: visitors(:one),
           session_id: "sess_#{SecureRandom.hex(8)}",
-          started_at: rand(1..30).days.ago
+          started_at: rand(1..30).days.ago,
+          channel: channel
         )
       end
 

@@ -32,20 +32,27 @@ module Dashboard
         assert_in_delta(100.0, result[:aov])
       end
 
-      test "returns avg_channels_to_convert" do
-        # Conversion 1: 2 channels (paid_search, email)
-        conv1 = create_conversion
-        create_credit_for_conversion(conv1, channel: Channels::PAID_SEARCH)
-        create_credit_for_conversion(conv1, channel: Channels::EMAIL)
+      test "returns avg_channels_to_convert from journey sessions" do
+        # Conversion 1: journey spans 3 channels
+        s1 = create_session(started_at: 3.days.ago, channel: Channels::PAID_SEARCH)
+        s2 = create_session(started_at: 2.days.ago, channel: Channels::EMAIL)
+        s3 = create_session(started_at: 1.day.ago, channel: Channels::DIRECT)
+        conv1 = create_conversion_with_journey(
+          converted_at: Time.current,
+          journey_session_ids: [ s1.id, s2.id, s3.id ]
+        )
+        create_credit_for_conversion(conv1)
 
-        # Conversion 2: 3 channels (paid_search, email, direct)
-        conv2 = create_conversion
-        create_credit_for_conversion(conv2, channel: Channels::PAID_SEARCH)
-        create_credit_for_conversion(conv2, channel: Channels::EMAIL)
-        create_credit_for_conversion(conv2, channel: Channels::DIRECT)
+        # Conversion 2: journey spans 1 channel
+        s4 = create_session(started_at: 1.day.ago, channel: Channels::PAID_SEARCH)
+        conv2 = create_conversion_with_journey(
+          converted_at: Time.current,
+          journey_session_ids: [ s4.id ]
+        )
+        create_credit_for_conversion(conv2)
 
-        # Average: (2 + 3) / 2 = 2.5
-        assert_in_delta(2.5, result[:avg_channels_to_convert])
+        # Median of [1, 3] = (1 + 3) / 2 = 2.0
+        assert_in_delta(2.0, result[:avg_channels_to_convert])
       end
 
       test "returns avg_visits_to_convert based on journey_session_ids count" do
@@ -270,22 +277,27 @@ module Dashboard
       test "uses median for avg_channels_to_convert to resist outliers" do
         # 4 conversions with 1 channel each
         4.times do
-          conv = create_conversion
-          create_credit_for_conversion(conv, channel: Channels::DIRECT)
+          s = create_session(started_at: 1.day.ago, channel: Channels::DIRECT)
+          conv = create_conversion_with_journey(
+            converted_at: Time.current,
+            journey_session_ids: [ s.id ]
+          )
+          create_credit_for_conversion(conv)
         end
 
-        # 1 outlier with 10 channels
-        outlier = create_conversion
-        [
-          Channels::PAID_SEARCH, Channels::ORGANIC_SEARCH, Channels::PAID_SOCIAL,
-          Channels::ORGANIC_SOCIAL, Channels::EMAIL, Channels::DIRECT,
-          Channels::REFERRAL, Channels::DISPLAY, Channels::VIDEO, Channels::OTHER
-        ].each do |channel|
-          create_credit_for_conversion(outlier, channel: channel)
-        end
+        # 1 outlier with 5 different channels
+        s1 = create_session(started_at: 5.days.ago, channel: Channels::PAID_SEARCH)
+        s2 = create_session(started_at: 4.days.ago, channel: Channels::ORGANIC_SEARCH)
+        s3 = create_session(started_at: 3.days.ago, channel: Channels::EMAIL)
+        s4 = create_session(started_at: 2.days.ago, channel: Channels::DIRECT)
+        s5 = create_session(started_at: 1.day.ago, channel: Channels::PAID_SOCIAL)
+        outlier = create_conversion_with_journey(
+          converted_at: Time.current,
+          journey_session_ids: [ s1.id, s2.id, s3.id, s4.id, s5.id ]
+        )
+        create_credit_for_conversion(outlier)
 
-        # Median of [1, 1, 1, 1, 10] = 1 (middle value)
-        # Mean would be 2.8, but median is 1
+        # Median of [1, 1, 1, 1, 5] = 1 (middle value)
         assert_in_delta(1.0, result[:avg_channels_to_convert])
       end
 
@@ -393,11 +405,12 @@ module Dashboard
         )
       end
 
-      def create_session(started_at:)
+      def create_session(started_at:, channel: Channels::DIRECT)
         account.sessions.create!(
           visitor: visitor,
           session_id: "sess_#{SecureRandom.hex(8)}",
-          started_at: started_at
+          started_at: started_at,
+          channel: channel
         )
       end
 

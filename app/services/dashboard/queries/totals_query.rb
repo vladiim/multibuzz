@@ -97,10 +97,25 @@ module Dashboard
       end
 
       def channels_per_conversion
-        @channels_per_conversion ||= scope
-          .group(:conversion_id)
-          .distinct
-          .count(:channel)
+        @channels_per_conversion ||= calculate_journey_channels
+      end
+
+      def calculate_journey_channels
+        conversion_ids = scope.distinct.pluck(:conversion_id)
+        return {} if conversion_ids.empty?
+
+        Conversion
+          .where(id: conversion_ids)
+          .where.not(journey_session_ids: [])
+          .joins(
+            "INNER JOIN LATERAL (
+              SELECT COUNT(DISTINCT s.channel) as channel_count
+              FROM sessions s
+              WHERE s.id = ANY(conversions.journey_session_ids)
+            ) journey_channels ON true"
+          )
+          .pluck(:id, Arel.sql("journey_channels.channel_count"))
+          .to_h
       end
 
       def visits_per_conversion

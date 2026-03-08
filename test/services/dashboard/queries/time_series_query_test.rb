@@ -143,15 +143,15 @@ module Dashboard
         assert_in_delta(100.0, day1_value, 0.01, "AOV should be 150/1.5 = 100")
       end
 
-      test "aov returns zero for days with no credits" do
+      test "aov returns nil for days with no credits" do
         create_credit_on_date(3.days.ago.to_date, channel: Channels::PAID_SEARCH, credit: 1.0, revenue_credit: 50.0)
 
         result = query(metric: DashboardMetrics::AOV).call
 
         paid_search = result[:series].find { |s| s[:channel] == Channels::PAID_SEARCH }
-        empty_day_value = day_value(paid_search, 2.days.ago.to_date, result[:dates])
+        empty_day_index = result[:dates].index(2.days.ago.to_date.iso8601)
 
-        assert_in_delta(0.0, empty_day_value)
+        assert_nil paid_search[:data][empty_day_index], "No-data days should be nil for AOV"
       end
 
       # ==========================================
@@ -207,16 +207,20 @@ module Dashboard
       # Avg Channels Metric
       # ==========================================
 
-      test "returns average distinct channels per conversion per day" do
+      test "returns average distinct journey channels per conversion per day" do
         day1 = 3.days.ago.to_date
 
-        # Conversion touching 2 channels
-        c1 = create_conversion(converted_at: day1.to_datetime)
-        create_credit_for_conversion(c1, channel: Channels::PAID_SEARCH, credit: 0.5)
-        create_credit_for_conversion(c1, channel: Channels::EMAIL, credit: 0.5)
+        # Conversion 1: journey spans 3 channels (paid_search, email, direct)
+        s1 = create_session(started_at: day1.to_datetime - 3.days, channel: Channels::PAID_SEARCH)
+        s2 = create_session(started_at: day1.to_datetime - 2.days, channel: Channels::EMAIL)
+        s3 = create_session(started_at: day1.to_datetime - 1.day, channel: Channels::DIRECT)
+        c1 = create_conversion(converted_at: day1.to_datetime, journey_session_ids: [ s1.id, s2.id, s3.id ])
+        # First-touch model: only 1 credit row, but journey has 3 channels
+        create_credit_for_conversion(c1, channel: Channels::PAID_SEARCH, credit: 1.0)
 
-        # Conversion touching 1 channel
-        c2 = create_conversion(converted_at: day1.to_datetime)
+        # Conversion 2: journey spans 1 channel
+        s4 = create_session(started_at: day1.to_datetime - 1.hour, channel: Channels::PAID_SEARCH)
+        c2 = create_conversion(converted_at: day1.to_datetime, journey_session_ids: [ s4.id ])
         create_credit_for_conversion(c2, channel: Channels::PAID_SEARCH, credit: 1.0)
 
         result = query(metric: DashboardMetrics::AVG_CHANNELS).call
@@ -224,8 +228,29 @@ module Dashboard
         paid_search = result[:series].find { |s| s[:channel] == Channels::PAID_SEARCH }
         day1_value = day_value(paid_search, day1, result[:dates])
 
-        # paid_search sees both conversions: c1 has 2 channels, c2 has 1 → avg = 1.5
-        assert_in_delta(1.5, day1_value, 0.1)
+        # paid_search sees both conversions: c1 has 3 journey channels, c2 has 1 → avg = 2.0
+        assert_in_delta(2.0, day1_value, 0.1)
+      end
+
+      # ==========================================
+      # Null Fill for Average Metrics
+      # ==========================================
+
+      test "average metrics use nil for days with no data instead of zero" do
+        create_credit_on_date(3.days.ago.to_date, channel: Channels::PAID_SEARCH, credit: 1.0, revenue_credit: 50.0)
+
+        result = query(metric: DashboardMetrics::AOV).call
+
+        paid_search = result[:series].find { |s| s[:channel] == Channels::PAID_SEARCH }
+        # Day with data should have a value
+        data_day = day_value(paid_search, 3.days.ago.to_date, result[:dates])
+
+        assert_in_delta(50.0, data_day, 0.01)
+
+        # Day without data should be nil, not 0
+        empty_day_index = result[:dates].index(2.days.ago.to_date.iso8601)
+
+        assert_nil paid_search[:data][empty_day_index], "No-data days should be nil for average metrics"
       end
 
       # ==========================================
@@ -325,11 +350,12 @@ module Dashboard
         )
       end
 
-      def create_session(started_at:)
+      def create_session(started_at:, channel: Channels::DIRECT)
         account.sessions.create!(
           visitor: visitors(:one),
           session_id: "sess_#{SecureRandom.hex(8)}",
           started_at: started_at,
+          channel: channel,
           page_view_count: 1
         )
       end

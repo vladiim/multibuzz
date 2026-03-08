@@ -49,11 +49,23 @@ module Dashboard
         METRIC_CONFIG.fetch(metric, METRIC_CONFIG[DashboardMetrics::CREDITS])
       end
 
+      AVERAGE_METRICS = [
+        DashboardMetrics::AOV, DashboardMetrics::AVG_VISITS,
+        DashboardMetrics::AVG_CHANNELS, DashboardMetrics::AVG_DAYS
+      ].freeze
+
       def build_series(channel)
         {
           channel: channel,
-          data: dates.map { |date| (daily_data_for_channel(channel)[date.to_s] || 0).to_f }
+          data: dates.map { |date| series_value(channel, date) }
         }
+      end
+
+      def series_value(channel, date)
+        value = daily_data_for_channel(channel)[date.to_s]
+        return value&.to_f if AVERAGE_METRICS.include?(metric)
+
+        (value || 0).to_f
       end
 
       def daily_data_for_channel(channel)
@@ -109,25 +121,15 @@ module Dashboard
 
       # --- Journey Metrics ---
 
-      def aggregate_avg_visits
+      def aggregate_avg_visits = aggregate_journey_metric(:journey_visits_per_conversion)
+      def aggregate_avg_channels = aggregate_journey_metric(:journey_channels_per_conversion)
+      def aggregate_avg_days = aggregate_journey_metric(:journey_days_per_conversion)
+
+      def aggregate_journey_metric(method)
         tuples = distinct_conversion_tuples(exclude_empty_journeys: true)
         return {} if tuples.empty?
 
-        average_metric_by_group(tuples, journey_visits_per_conversion(tuples))
-      end
-
-      def aggregate_avg_channels
-        tuples = distinct_conversion_tuples
-        return {} if tuples.empty?
-
-        average_metric_by_group(tuples, scope.group(:conversion_id).distinct.count(:channel))
-      end
-
-      def aggregate_avg_days
-        tuples = distinct_conversion_tuples(exclude_empty_journeys: true)
-        return {} if tuples.empty?
-
-        average_metric_by_group(tuples, journey_days_per_conversion(tuples))
+        average_metric_by_group(tuples, send(method, tuples))
       end
 
       def distinct_conversion_tuples(exclude_empty_journeys: false)
@@ -142,6 +144,21 @@ module Dashboard
           .where(id: tuples.map { |_, cid, _| cid }.uniq)
           .where.not(journey_session_ids: [])
           .pluck(:id, Arel.sql("ARRAY_LENGTH(journey_session_ids, 1)"))
+          .to_h
+      end
+
+      def journey_channels_per_conversion(tuples)
+        Conversion
+          .where(id: tuples.map { |_, cid, _| cid }.uniq)
+          .where.not(journey_session_ids: [])
+          .joins(
+            "INNER JOIN LATERAL (
+              SELECT COUNT(DISTINCT s.channel) as channel_count
+              FROM sessions s
+              WHERE s.id = ANY(conversions.journey_session_ids)
+            ) journey_channels ON true"
+          )
+          .pluck(:id, Arel.sql("journey_channels.channel_count"))
           .to_h
       end
 
