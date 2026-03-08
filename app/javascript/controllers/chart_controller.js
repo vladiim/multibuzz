@@ -433,21 +433,32 @@ export default class extends Controller {
     const categories = data.map(d => d.channel) // conversion name/type
     const metric = this.metricValue
     const metricConfig = this.getMetricConfig(metric)
+    const isAverageMetric = ["avg_channels", "avg_visits", "avg_days", "aov"].includes(metric)
 
-    // Get all unique channels across all rows
-    const allChannels = [...new Set(
-      data.flatMap(d => (d.by_channel || []).map(c => c.channel))
-    )]
+    let series
+    if (isAverageMetric) {
+      // Averages don't stack — show single bar per conversion type
+      series = [{
+        name: metricConfig.seriesName,
+        color: "#6366F1",
+        data: data.map(d => d[metricConfig.dataKey] || 0)
+      }]
+    } else {
+      // Get all unique channels across all rows
+      const allChannels = [...new Set(
+        data.flatMap(d => (d.by_channel || []).map(c => c.channel))
+      )]
 
-    // Build series for each channel
-    const series = allChannels.map(channel => ({
-      name: this.formatChannelName(channel),
-      color: CHANNEL_COLORS[channel] || CHANNEL_COLORS.other,
-      data: data.map(d => {
-        const channelData = (d.by_channel || []).find(c => c.channel === channel)
-        return channelData ? (channelData[metricConfig.dataKey] || 0) : 0
-      })
-    }))
+      // Build stacked series for each channel
+      series = allChannels.map(channel => ({
+        name: this.formatChannelName(channel),
+        color: CHANNEL_COLORS[channel] || CHANNEL_COLORS.other,
+        data: data.map(d => {
+          const channelData = (d.by_channel || []).find(c => c.channel === channel)
+          return channelData ? (channelData[metricConfig.dataKey] || 0) : 0
+        })
+      }))
+    }
 
     this.chart = Highcharts.chart(this.chartElement, {
       chart: { type: "bar" },
@@ -488,7 +499,7 @@ export default class extends Controller {
         shared: true
       },
       plotOptions: {
-        series: { stacking: "normal" }
+        series: { stacking: isAverageMetric ? undefined : "normal" }
       },
       series: series,
       credits: { enabled: false }

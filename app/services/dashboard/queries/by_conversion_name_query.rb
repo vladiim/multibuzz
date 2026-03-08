@@ -114,60 +114,44 @@ module Dashboard
         @total_credits ||= scope.sum(:credit).to_f
       end
 
-      def calculate_avg_channels(conversion_ids)
-        values = conversion_ids.filter_map { |id| channels_per_conversion[id] }
+      def calculate_avg(conversion_ids, lookup)
+        values = conversion_ids.filter_map { |id| lookup[id] }
         return nil if values.empty?
 
         (values.sum.to_f / values.size).round(1)
       end
 
-      def calculate_avg_visits(conversion_ids)
-        values = conversion_ids.filter_map { |id| visits_per_conversion[id] }
-        return nil if values.empty?
+      def calculate_avg_channels(ids) = calculate_avg(ids, channels_per_conversion)
+      def calculate_avg_visits(ids) = calculate_avg(ids, visits_per_conversion)
+      def calculate_avg_days(ids) = calculate_avg(ids, days_per_conversion)
 
-        (values.sum.to_f / values.size).round(1)
-      end
-
-      def calculate_avg_days(conversion_ids)
-        values = conversion_ids.filter_map { |id| days_per_conversion[id] }
-        return nil if values.empty?
-
-        (values.sum.to_f / values.size).round(1)
+      def journey_conversions
+        @journey_conversions ||= Conversion
+          .where(id: scope.distinct.pluck(:conversion_id))
+          .where.not(journey_session_ids: [])
       end
 
       def channels_per_conversion
-        @channels_per_conversion ||= scope
-          .group(:conversion_id)
-          .distinct
-          .count(:channel)
+        @channels_per_conversion ||= journey_conversions
+          .joins(
+            "INNER JOIN LATERAL (
+              SELECT COUNT(DISTINCT s.channel) as channel_count
+              FROM sessions s
+              WHERE s.id = ANY(conversions.journey_session_ids)
+            ) journey_channels ON true"
+          )
+          .pluck(:id, Arel.sql("journey_channels.channel_count"))
+          .to_h
       end
 
       def visits_per_conversion
-        @visits_per_conversion ||= calculate_journey_visits
-      end
-
-      def calculate_journey_visits
-        conversion_ids = scope.distinct.pluck(:conversion_id)
-        return {} if conversion_ids.empty?
-
-        Conversion
-          .where(id: conversion_ids)
-          .where.not(journey_session_ids: [])
+        @visits_per_conversion ||= journey_conversions
           .pluck(:id, Arel.sql("ARRAY_LENGTH(journey_session_ids, 1)"))
           .to_h
       end
 
       def days_per_conversion
-        @days_per_conversion ||= calculate_days_per_conversion
-      end
-
-      def calculate_days_per_conversion
-        conversion_ids = scope.distinct.pluck(:conversion_id)
-        return {} if conversion_ids.empty?
-
-        Conversion
-          .where(id: conversion_ids)
-          .where.not(journey_session_ids: [])
+        @days_per_conversion ||= journey_conversions
           .joins(
             "INNER JOIN LATERAL (
               SELECT MIN(s.started_at) as first_session_at
@@ -175,10 +159,7 @@ module Dashboard
               WHERE s.id = ANY(conversions.journey_session_ids)
             ) first_session ON true"
           )
-          .pluck(
-            :id,
-            Arel.sql("EXTRACT(EPOCH FROM (conversions.converted_at - first_session.first_session_at)) / 86400.0")
-          )
+          .pluck(:id, Arel.sql("EXTRACT(EPOCH FROM (conversions.converted_at - first_session.first_session_at)) / 86400.0"))
           .to_h
           .transform_values(&:to_f)
       end
