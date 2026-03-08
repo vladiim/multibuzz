@@ -52,11 +52,11 @@ has_download: false
 
 <%= render_tldr(@article.tldr) %>
 
-## Dreamdata Pricing at a Glance
+## How much does Dreamdata cost in 2026?
 
-Dreamdata restructured its pricing in 2025, moving from four named tiers (Free/Team/Business/Enterprise) to a product-line model. Here's what each tier costs and includes.
+Dreamdata restructured its pricing in 2025, moving from four named tiers to a product-line model. There are three tiers: Free, Activation Starter ($750/mo), and Attribution Advanced (custom pricing).
 
-### Free Tier
+### What do you get on Dreamdata's free tier?
 
 | Feature | Included |
 |---------|----------|
@@ -75,7 +75,7 @@ Dreamdata restructured its pricing in 2025, moving from four named tiers (Free/T
 
 The free tier is genuinely useful for evaluation — more generous than most competitors. You can identify companies visiting your site, see basic attribution, and track ad spend across channels. The 2-month history limit is the main constraint.
 
-### Activation Starter — From $750/month
+### What does Dreamdata's Activation Starter include?
 
 | Feature | Included |
 |---------|----------|
@@ -92,7 +92,7 @@ This tier adds Dreamdata's standout feature — the 360-degree customer journey 
 
 The $750/mo starting price represents a ~25% increase from the previous Team plan ($599/mo). Actual cost may be higher depending on data volume and monthly tracked users (MTUs).
 
-### Attribution Advanced — Custom Pricing
+### What does Dreamdata's Attribution Advanced tier include?
 
 | Feature | Included |
 |---------|----------|
@@ -110,35 +110,35 @@ The $750/mo starting price represents a ~25% increase from the previous Team pla
 
 This is where Dreamdata's full attribution capabilities live. Custom attribution models, BigQuery data access, and enterprise features like SSO and multi-business-unit support. Pricing requires a sales conversation.
 
-### What Typical Customers Pay
+### What do most Dreamdata customers actually pay?
 
-According to Vendr marketplace data, the median Dreamdata annual contract is approximately **$27,000/year** (~$2,250/month). This suggests most paid customers land somewhere between the Activation Starter floor and the Attribution Advanced tier.
+The median Dreamdata annual contract is approximately **$27,000/year** (~$2,250/month) according to Vendr marketplace data. This suggests most paid customers pay well above the $750/mo Activation Starter floor, likely due to MTU-based scaling or Attribution Advanced tier pricing.
 
 ---
 
-## The Hidden Costs
+## What are Dreamdata's hidden costs?
 
-### 1. MTU-Based Scaling
+### Does Dreamdata's pricing scale with traffic?
 
 Dreamdata's pricing scales with monthly tracked users (MTUs). As your traffic grows, so does your bill — even if you're on the same tier. The $750/mo starting price is exactly that: a starting price. High-traffic B2B sites can see costs climb significantly.
 
-### 2. Custom Attribution Requires the Top Tier
+### Do you need the top tier for custom attribution models?
 
 If you need custom attribution models — defining your own rules for how credit is assigned to touchpoints — you need Attribution Advanced (custom pricing). On Activation Starter, you get 6 pre-built models but no customization. This is a meaningful limitation for teams with complex B2B sales motions.
 
-### 3. Implementation Time
+### How long does Dreamdata take to set up?
 
 Dreamdata's setup takes 4-8 weeks for CRM integration, data pipeline configuration, and historical data processing. That's not a direct cost, but it's a real cost — engineering time, delayed time-to-value, and the opportunity cost of waiting.
 
-### 4. BigQuery Access Is Gated
+### Can you access Dreamdata's raw data in BigQuery?
 
 If you want to query your attribution data directly in BigQuery, that requires Attribution Advanced tier. On lower tiers, you work within Dreamdata's UI.
 
 ---
 
-## Dreamdata's 6 Attribution Models
+## Which attribution models does Dreamdata include?
 
-All paid plans include access to these models:
+All paid plans include these 6 models:
 
 | Model | How It Works |
 |-------|-------------|
@@ -153,11 +153,11 @@ Custom attribution models — where you define your own rules — require the At
 
 ---
 
-## 5 Alternatives With Transparent Pricing
+## What are the cheapest Dreamdata alternatives?
 
-If Dreamdata's pricing doesn't fit, here are alternatives across different budget ranges. We've included actual prices where published and estimates where not.
+If Dreamdata's pricing doesn't fit, here are alternatives across different budget ranges with actual prices where published.
 
-### Pricing Comparison Table
+### How does Dreamdata's pricing compare to alternatives?
 
 | Platform | Free Tier | Entry Paid | Mid-Tier | Enterprise | Best For |
 |----------|-----------|------------|----------|------------|----------|
@@ -224,9 +224,9 @@ Read more: [GA4 Attribution Alternatives](/articles/ga4-attribution-alternatives
 
 ---
 
-## Decision Framework: Is Dreamdata Worth It?
+## Is Dreamdata worth the price?
 
-### By Budget
+### Which attribution tool fits your budget?
 
 | Monthly Budget | Best Option |
 |----------------|-------------|
@@ -237,7 +237,7 @@ Read more: [GA4 Attribution Alternatives](/articles/ga4-attribution-alternatives
 | $1,500-3,000 | Dreamdata Attribution Advanced, HockeyStack |
 | Enterprise | Bizible, Dreamdata Attribution Advanced |
 
-### By Primary Need
+### Which tool is best for your primary need?
 
 | If You Need... | Best Choice |
 |----------------|-------------|
@@ -250,7 +250,7 @@ Read more: [GA4 Attribution Alternatives](/articles/ga4-attribution-alternatives
 | Server-side tracking | mbuzz |
 | Free starting point | Dreamdata free tier, GA4 |
 
-### By Company Stage
+### Which tool fits your company stage?
 
 | Stage | Best Fit |
 |-------|----------|
@@ -262,13 +262,17 @@ Read more: [GA4 Attribution Alternatives](/articles/ga4-attribution-alternatives
 
 ---
 
-## Bottom Line
+## Should you pay for Dreamdata or use an alternative?
 
 Dreamdata's free tier is one of the most generous in B2B attribution — worth trying before evaluating paid tools. The Activation Starter at $750/mo is reasonable for mid-market B2B teams who need journey visualization and LinkedIn audience activation.
 
 The key question: **do you need custom attribution models?** If yes, you're looking at Attribution Advanced (custom pricing, likely $2,000+/mo based on Vendr data). If basic models are sufficient, Activation Starter covers most B2B teams.
 
 If Dreamdata is too expensive, mbuzz ($29-299/mo) and Factors.ai ($399/mo) offer multi-touch attribution at significantly lower price points — though neither matches Dreamdata's journey visualization depth.
+
+<%= render_key_takeaways(@article.key_takeaways) %>
+
+<%= render_faq(@article.faq) %>
 
 ---
 
@@ -279,7 +283,3 @@ If Dreamdata is too expensive, mbuzz ($29-299/mo) and Factors.ai ($399/mo) offer
 - [mbuzz vs Dreamdata](/articles/mbuzz-vs-dreamdata) — Head-to-head comparison
 - [HockeyStack Alternatives](/articles/hockeystack-alternatives) — More B2B attribution options
 - [Multi-Touch Attribution Tools Compared](/articles/multi-touch-attribution-tools-compared) — Full market overview
-
-<%= render_key_takeaways(@article.key_takeaways) %>
-
-<%= render_faq(@article.faq) %>
