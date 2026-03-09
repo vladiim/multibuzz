@@ -117,7 +117,7 @@ An attribution model is the algorithm that determines how conversion credit is d
 
 #### Data-Driven Attribution Models
 
-Data-driven models use machine learning to analyze your actual conversion data and determine credit allocation. Instead of following a fixed formula, they identify which touchpoint patterns correlate with conversions.
+Data-driven models use machine learning to analyze your actual conversion data and determine credit allocation. Instead of following a fixed formula, they identify which touchpoint patterns correlate with conversions. See [how data-driven attribution models work](/articles/data-driven-attribution) for a deep technical breakdown.
 
 The main approaches are:
 
@@ -215,7 +215,7 @@ MTA isn't always the right tool:
 
 - **Journeys are single-session** — Impulse purchases, low-consideration products. If 80%+ of conversions happen in one session, simple last-touch is fine.
 - **One channel dominates** — If 90% of traffic is direct or organic, there's little to attribute.
-- **You need to measure brand lift or offline impact** — MTA tracks digital touchpoints. For brand awareness or offline channels, you need media mix modeling (MMM) or incrementality tests.
+- **You need to measure brand lift or offline impact** — MTA tracks digital touchpoints. For brand awareness or offline channels, you need [media mix modeling (MMM) or incrementality tests](/articles/mta-vs-mmm).
 - **Low conversion volume** — Below 500 conversions/month, statistical noise overwhelms signal. Use simpler models.
 
 ## Common MTA Implementation Mistakes
@@ -230,7 +230,7 @@ A user researches on mobile, then purchases on desktop. Without cross-device ide
 
 If your lookback window is 7 days but your sales cycle is 30 days, you're missing the touchpoints that started the journey.
 
-**Solution**: Set lookback windows based on your actual sales cycle. Analyze time-to-conversion data before choosing a window.
+**Solution**: Set [lookback windows based on your actual sales cycle](/articles/attribution-lookback-window). Analyze time-to-conversion data before choosing a window.
 
 ### Mistake 3: Trusting Platform-Reported Attribution
 
@@ -284,7 +284,7 @@ You need to track users across sessions. This typically means:
 
 ### 2. Server-Side Tracking
 
-Client-side tracking (JavaScript) is blocked by ad blockers, Safari ITP, and Firefox ETP. With [ad blockers affecting 25-30% of web traffic](https://snowplow.io/blog/server-side-vs-client-side-tracking/) and blocking over 40% of client-side pixels, client-side tracking typically captures only [60-70% of actual conversions](https://www.admetrics.io/en/post/server-side-tracking-the-ultimate-2025-guide-to-unlocking-3x-more-accurate-ad-data). Server-side tracking captures 95-98% by sending data directly from your servers, recovering the 20-40% of events that client-side misses.
+Client-side tracking (JavaScript) is blocked by ad blockers, Safari ITP, and Firefox ETP. With [ad blockers affecting 25-30% of web traffic](https://snowplow.io/blog/server-side-vs-client-side-tracking/) and blocking over 40% of client-side pixels, client-side tracking typically captures only [60-70% of actual conversions](https://www.admetrics.io/en/post/server-side-tracking-the-ultimate-2025-guide-to-unlocking-3x-more-accurate-ad-data). Server-side tracking captures 95-98% by sending data directly from your servers, recovering the 20-40% of events that client-side misses. See [server-side vs client-side tracking](/articles/server-side-vs-client-side-tracking) for a full comparison.
 
 ### 3. Journey Stitching
 
@@ -295,7 +295,7 @@ Connect individual events into complete journeys. This requires:
 
 ### 4. Attribution Logic
 
-Choose and implement an attribution model. Start simple (linear), then add complexity as your data and needs grow.
+Choose and implement an attribution model. Start simple (linear), then add complexity as your data and needs grow. See [how to choose the right attribution model](/articles/how-to-choose-attribution-model) for a decision framework.
 
 <%= render_key_takeaways(@article.key_takeaways) %>
 
@@ -314,6 +314,14 @@ The main requirements:
 - **A neutral measurement system** that isn't biased toward specific platforms
 
 Start with linear attribution as a baseline, validate against your business intuition, and evolve your approach as your data maturity grows.
+
+## Related Reading
+
+- [How to Choose the Right Attribution Model](/articles/how-to-choose-attribution-model) — Decision framework for rule-based vs data-driven models
+- [Data-Driven Attribution Explained](/articles/data-driven-attribution) — Deep dive into Markov chains, Shapley values, and ML models
+- [MTA vs MMM](/articles/mta-vs-mmm) — When to use multi-touch attribution vs marketing mix modeling
+- [GA4 Attribution Alternatives](/articles/ga4-attribution-alternatives) — Options after Google removed most attribution models
+- [Multi-Touch Attribution Tools Compared](/articles/multi-touch-attribution-tools-compared) — Full market comparison of MTA platforms
 
 <blockquote class="not-prose my-8 border-l-4 border-indigo-500 bg-gray-50 rounded-r-lg">
   <div class="p-4">

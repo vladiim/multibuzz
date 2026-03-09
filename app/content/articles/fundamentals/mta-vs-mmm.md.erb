@@ -16,8 +16,8 @@ tags:
   - marketing analytics
 related_articles:
   - what-is-multi-touch-attribution
-  - incrementality-testing
-  - calibrating-mta-with-lift
+  - data-driven-attribution
+  - server-side-vs-client-side-tracking
 seo:
   title: "MTA vs MMM: When to Use Multi-Touch Attribution vs Media Mix Modeling"
 aeo:
@@ -78,13 +78,13 @@ MTA follows each user's path through your marketing:
 
 1. **Collect touchpoints**: Every ad click, page view, email open, and conversion is logged with a user identifier
 2. **Stitch sessions**: Connect anonymous browsing to identified users when they log in or convert
-3. **Apply attribution model**: Distribute credit across touchpoints using rules (linear, time decay, U-shaped) or algorithms (Markov, Shapley)
+3. **Apply attribution model**: Distribute credit across touchpoints using rules (linear, time decay, U-shaped) or [data-driven algorithms like Markov and Shapley](/articles/data-driven-attribution)
 4. **Aggregate results**: Roll up individual attributions to get channel-level performance
 
 The strength of MTA is granularity. You can see exactly which campaigns, ad groups, or even creatives drove conversions. You can optimize in real-time based on yesterday's data.
 
 The weakness is scope. MTA only sees what it can track:
-- Users who accept cookies and aren't blocked by Safari ITP
+- Users who accept cookies and aren't blocked by Safari ITP — [server-side tracking](/articles/server-side-vs-client-side-tracking) recovers much of this lost data
 - Digital channels with click or impression tracking
 - Journeys that stay within your measurement window
 
@@ -184,6 +184,8 @@ MTA is the right tool when you need:
 - A/B testing landing pages or creatives
 - Optimizing toward ROAS in near real-time
 - Responding quickly to performance changes
+
+For a deeper dive into how MTA works, see [What is Multi-Touch Attribution?](/articles/what-is-multi-touch-attribution)
 
 ## When to Use MMM
 

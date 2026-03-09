@@ -1,3 +1,42 @@
+<% content_for :head do %>
+  <script type="application/ld+json">
+    <%= {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      name: App::PUBLISHER_NAME,
+      url: App::BASE_URL,
+      logo: "#{App::BASE_URL}/logo.svg",
+      description: "Server-side multi-touch attribution platform for technical marketers",
+      email: App::EMAIL,
+      foundingDate: "2025"
+    }.to_json.html_safe %>
+  </script>
+  <script type="application/ld+json">
+    <%= {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      name: App::PUBLISHER_NAME,
+      applicationCategory: "BusinessApplication",
+      operatingSystem: "Web",
+      url: App::BASE_URL,
+      description: "Server-side multi-touch attribution you own. Track customer journeys, measure marketing ROI, and understand what drives conversions—without black-box models or data lock-in.",
+      offers: [
+        { "@type": "Offer", name: "Free", price: "0", priceCurrency: "USD" },
+        { "@type": "Offer", name: "Starter", price: "29", priceCurrency: "USD" },
+        { "@type": "Offer", name: "Growth", price: "99", priceCurrency: "USD" },
+        { "@type": "Offer", name: "Pro", price: "299", priceCurrency: "USD" }
+      ],
+      featureList: [
+        "8 attribution models built-in",
+        "Custom attribution rules (Attribution DSL)",
+        "Server-side tracking SDKs (Ruby, Node, Python, PHP)",
+        "Bottom-up funnel forecasting",
+        "Full data ownership and export"
+      ]
+    }.to_json.html_safe %>
+  </script>
+<% end %>
+
 <div class="min-h-screen bg-white">
   <%= render "pages/home/navigation" %>
   <%= render "pages/home/hero" %>
