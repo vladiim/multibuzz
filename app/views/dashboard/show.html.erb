@@ -81,16 +81,16 @@
                     Export
                   </button>
                   <div data-toggle-target="content" class="hidden absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10 p-2">
-                    <%= form_with url: dashboard_export_path, method: :post, data: { turbo: false } do %>
+                    <%= form_with url: dashboard_export_path, method: :post do %>
                       <%= hidden_params_for(request.query_parameters) %>
-                      <button type="submit" data-action="click->export#submit" class="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded">
+                      <button type="submit" class="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded">
                         Conversions CSV
                       </button>
                     <% end %>
-                    <%= form_with url: dashboard_export_path, method: :post, data: { turbo: false } do %>
+                    <%= form_with url: dashboard_export_path, method: :post do %>
                       <%= hidden_params_for(request.query_parameters) %>
                       <input type="hidden" name="export_type" value="funnel">
-                      <button type="submit" data-action="click->export#submit" class="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded">
+                      <button type="submit" class="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded">
                         Funnel CSV
                       </button>
                     <% end %>

@@ -7,157 +7,158 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
     accounts(:one).update!(onboarding_progress: (1 << Account::Onboarding::ONBOARDING_STEPS.size) - 1)
   end
 
-  test "returns CSV with attachment disposition" do
-    sign_in
-    post dashboard_export_path
-
-    assert_response :success
-    assert_equal "text/csv", response.content_type
-    assert_match "attachment", response.headers["Content-Disposition"]
+  teardown do
+    Export.where(account: [ accounts(:one), accounts(:two) ]).find_each(&:cleanup!)
   end
 
-  test "filename includes export type and current date" do
-    sign_in
-    post dashboard_export_path
+  # ==========================================
+  # Authentication
+  # ==========================================
 
-    assert_match "mbuzz-conversions-#{Date.current}.csv", response.headers["Content-Disposition"]
-  end
-
-  test "requires authentication" do
+  test "requires authentication for create" do
     post dashboard_export_path
 
     assert_response :redirect
   end
 
-  test "dashboard export form has spinner and stimulus controller" do
-    sign_in
-    get dashboard_path
+  test "requires authentication for show" do
+    export = create_completed_export
 
-    assert_response :success
-    assert_select "[data-controller~='export']"
-    assert_select "#export-spinner"
+    get dashboard_export_download_path(id: export.prefix_id)
+
+    assert_response :redirect
   end
 
-  test "broadcasts spinner removal after export" do
+  # ==========================================
+  # Create (enqueue export)
+  # ==========================================
+
+  test "create enqueues export job" do
     sign_in
 
-    assert_broadcasts("account_#{account.prefix_id}_exports", 1) do
-      post dashboard_export_path
+    assert_enqueued_with(job: Dashboard::ExportJob) do
+      post dashboard_export_path, params: { export_type: "conversions" }
+    end
+  end
+
+  test "create returns turbo stream response" do
+    sign_in
+    post dashboard_export_path,
+      params: { export_type: "conversions" },
+      headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+    assert_response :success
+    assert_match "text/vnd.turbo-stream", response.content_type
+  end
+
+  test "create persists export record" do
+    sign_in
+
+    assert_difference "Export.count", 1 do
+      post dashboard_export_path, params: { export_type: "conversions" }
     end
 
-    assert_response :success
+    export = Export.last
+
+    assert_equal account.id, export.account_id
+    assert_predicate export, :pending?
   end
 
-  test "returns 200 with empty data" do
+  test "create stores serialized filter params" do
     sign_in
-    AttributionCredit.delete_all
+    post dashboard_export_path, params: {
+      export_type: "funnel",
+      date_range: "7d",
+      channels: [ Channels::PAID_SEARCH, Channels::EMAIL ],
+      funnel: "sales",
+      view_mode: "test"
+    }
 
+    export = Export.last
+
+    assert_equal "7d", export.filter_params["date_range"]
+    assert_equal "sales", export.filter_params["funnel"]
+    assert export.filter_params["test_mode"]
+  end
+
+  test "create defaults to conversions export type" do
+    sign_in
     post dashboard_export_path
 
-    assert_response :success
-    csv = CSV.parse(response.body, headers: true)
+    export = Export.last
 
-    assert_equal 0, csv.size
+    assert_equal "conversions", export.export_type
   end
 
-  test "includes all attribution models regardless of filter params" do
-    sign_in
-    create_credit(model: first_touch_model)
-    create_credit(model: last_touch_model)
-
-    post dashboard_export_path, params: { models: [ first_touch_model.prefix_id ] }
-
-    csv = CSV.parse(response.body, headers: true)
-    models = csv.map { |row| row["attribution_model"] }
-
-    assert_includes models, first_touch_model.name
-    assert_includes models, last_touch_model.name
-  end
-
-  test "includes all channels regardless of filter params" do
-    sign_in
-    create_credit(channel: Channels::PAID_SEARCH)
-    create_credit(channel: Channels::EMAIL)
-
-    post dashboard_export_path, params: { channels: [ Channels::PAID_SEARCH ] }
-
-    csv = CSV.parse(response.body, headers: true)
-    channels = csv.map { |row| row["channel"] }
-
-    assert_includes channels, Channels::PAID_SEARCH
-    assert_includes channels, Channels::EMAIL
-  end
-
-  # ==========================================
-  # Funnel export
-  # ==========================================
-
-  test "funnel export returns CSV with attachment disposition" do
+  test "create with funnel export type" do
     sign_in
     post dashboard_export_path, params: { export_type: "funnel" }
+
+    export = Export.last
+
+    assert_equal "funnel", export.export_type
+  end
+
+  # ==========================================
+  # Show (download file)
+  # ==========================================
+
+  test "show downloads completed export file" do
+    sign_in
+    export = create_completed_export
+
+    get dashboard_export_download_path(id: export.prefix_id)
 
     assert_response :success
     assert_equal "text/csv", response.content_type
     assert_match "attachment", response.headers["Content-Disposition"]
   end
 
-  test "funnel export filename includes funnel type and current date" do
+  test "show returns 404 for pending export" do
     sign_in
-    post dashboard_export_path, params: { export_type: "funnel" }
+    export = Export.create!(account: account, export_type: "conversions")
 
-    assert_match "mbuzz-funnel-#{Date.current}.csv", response.headers["Content-Disposition"]
+    get dashboard_export_download_path(id: export.prefix_id)
+
+    assert_response :not_found
   end
 
-  test "funnel export returns 200 with empty data" do
+  test "show returns 410 for expired export" do
     sign_in
-    Session.where(account: account).delete_all
+    export = create_completed_export(expires_at: 1.minute.ago)
 
-    post dashboard_export_path, params: { export_type: "funnel" }
+    get dashboard_export_download_path(id: export.prefix_id)
+
+    assert_response :gone
+  end
+
+  test "show returns 404 for other account's export" do
+    sign_in
+    other_export = create_completed_export(account: accounts(:two))
+
+    get dashboard_export_path(id: other_export.prefix_id)
+
+    assert_response :not_found
+  end
+
+  # ==========================================
+  # Dashboard UI
+  # ==========================================
+
+  test "dashboard has export dropdown with stimulus controller" do
+    sign_in
+    get dashboard_path
 
     assert_response :success
-    csv = CSV.parse(response.body, headers: true)
-
-    assert_equal 0, csv.size
+    assert_select "[data-controller~='export']"
   end
 
-  test "funnel export includes visit rows" do
+  test "dashboard subscribes to exports turbo stream" do
     sign_in
-    account.sessions.create!(
-      visitor: visitors(:one),
-      session_id: "sess_export_test_#{SecureRandom.hex(4)}",
-      started_at: 1.hour.ago,
-      channel: Channels::PAID_SEARCH,
-      is_test: true
-    )
+    get dashboard_path
 
-    post dashboard_export_path, params: { export_type: "funnel", view_mode: "test" }
-
-    csv = CSV.parse(response.body, headers: true)
-    types = csv.map { |row| row["type"] }.uniq
-
-    assert_includes types, FunnelStages::VISIT
-  end
-
-  # ==========================================
-  # Conversion export
-  # ==========================================
-
-  test "ignores conversion filters" do
-    sign_in
-    create_credit(conversion_type: "purchase")
-    create_credit(conversion_type: "signup")
-
-    post dashboard_export_path, params: {
-      conversion_filters: {
-        "0" => { field: "conversion_type", operator: "is", values: [ "purchase" ] }
-      }
-    }
-
-    csv = CSV.parse(response.body, headers: true)
-    names = csv.map { |row| row["name"] }
-
-    assert_includes names, "purchase"
-    assert_includes names, "signup"
+    assert_response :success
+    assert_select "turbo-cable-stream-source[signed-stream-name]"
   end
 
   private
@@ -166,33 +167,25 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
     post login_path, params: { email: users(:one).email, password: "password123" }
   end
 
-  def account
-    @account ||= accounts(:one)
-  end
+  def account = @account ||= accounts(:one)
 
-  def first_touch_model
-    @first_touch_model ||= attribution_models(:first_touch)
-  end
-
-  def last_touch_model
-    @last_touch_model ||= attribution_models(:last_touch)
-  end
-
-  def create_credit(model: first_touch_model, channel: Channels::PAID_SEARCH, conversion_type: "purchase")
-    conversion = account.conversions.create!(
-      visitor: visitors(:one),
-      conversion_type: conversion_type,
-      converted_at: 5.days.ago,
-      is_test: true
+  def create_completed_export(account: self.account, expires_at: 1.hour.from_now)
+    export = Export.create!(
+      account: account,
+      export_type: "conversions",
+      status: :completed,
+      filename: "mbuzz-conversions-#{Date.current}.csv",
+      completed_at: Time.current,
+      expires_at: expires_at
     )
 
-    account.attribution_credits.create!(
-      conversion: conversion,
-      attribution_model: model,
-      session_id: rand(100..999),
-      channel: channel,
-      credit: 1.0,
-      is_test: true
-    )
+    # Write a real file
+    dir = Rails.root.join("tmp/exports")
+    FileUtils.mkdir_p(dir)
+    file_path = dir.join("#{export.prefix_id}.csv")
+    File.write(file_path, CSV.generate { |csv| csv << %w[date type name] })
+    export.update!(file_path: file_path.to_s)
+
+    export
   end
 end

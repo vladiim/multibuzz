@@ -10,10 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_03_060001) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_10_230646) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
-  # enable_extension "timescaledb" # Removed for test compatibility
+  enable_extension "timescaledb"
 
   create_table "account_memberships", force: :cascade do |t|
     t.bigint "user_id", null: false
@@ -339,6 +339,21 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_03_060001) do
     t.index ["visitor_id"], name: "index_events_on_visitor_id"
   end
 
+  create_table "exports", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.integer "status", default: 0, null: false
+    t.string "export_type", null: false
+    t.string "filename"
+    t.string "file_path"
+    t.jsonb "filter_params", default: {}
+    t.datetime "completed_at"
+    t.datetime "expires_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "status"], name: "index_exports_on_account_id_and_status"
+    t.index ["account_id"], name: "index_exports_on_account_id"
+  end
+
   create_table "form_submissions", force: :cascade do |t|
     t.string "type", null: false
     t.string "email", null: false
@@ -532,6 +547,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_03_060001) do
   add_foreign_key "data_integrity_checks", "accounts"
   add_foreign_key "events", "accounts"
   add_foreign_key "events", "visitors"
+  add_foreign_key "exports", "accounts"
   add_foreign_key "identities", "accounts"
   add_foreign_key "rerun_jobs", "accounts"
   add_foreign_key "rerun_jobs", "attribution_models"
@@ -540,10 +556,4 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_03_060001) do
   add_foreign_key "solid_errors_occurrences", "solid_errors", column: "error_id"
   add_foreign_key "visitors", "accounts"
   add_foreign_key "visitors", "identities"
-
-  # TimescaleDB calls removed for test compatibility (see CLAUDE.md)
-  # create_hypertable "events", ...
-  # create_hypertable "sessions", ...
-  # create_continuous_aggregate "channel_attribution_daily", ...
-  # create_continuous_aggregate "source_attribution_daily", ...
 end

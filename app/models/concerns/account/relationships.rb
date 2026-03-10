@@ -23,5 +23,6 @@ module Account::Relationships
     has_many :ad_spend_records, dependent: :destroy
     has_many :ad_platform_connections, dependent: :destroy
     has_many :data_integrity_checks, dependent: :destroy
+    has_many :exports, dependent: :destroy
   end
 end
