@@ -1,6 +1,14 @@
 {
   "ignored_warnings": [
     {
+      "fingerprint": "6bf668bfbf006e0e6f186438403dbb30e6fbd472d0ae69ae2b0db15b630b7238",
+      "code": "send_file(current_account.exports.completed.find_by_prefix_id!(params[:id]).file_path...)",
+      "message": "Parameter value used in file name",
+      "file": "app/controllers/dashboard/exports_controller.rb",
+      "line": 30,
+      "note": "Safe: file_path comes from DB record scoped to current_account, not directly from user input"
+    },
+    {
       "fingerprint": "2165082db5ae0dea2471ccd84ccb07a3c84673ccd6cd43c5e43df757d946e631",
       "code": "scope.where(\"#{column} ILIKE ?\", \"%#{query}%\")",
       "message": "Possible SQL injection",
