@@ -13,7 +13,7 @@ module Dashboard
     # ==========================================
 
     test "returns CSV string with correct headers" do
-      csv = parse_csv(service.call)
+      csv = export_and_parse
 
       assert_equal expected_headers, csv.headers
     end
@@ -21,7 +21,7 @@ module Dashboard
     test "returns headers-only CSV when no data" do
       Session.where(account: account).delete_all
 
-      csv = parse_csv(service.call)
+      csv = export_and_parse
 
       assert_equal expected_headers, csv.headers
       assert_equal 0, csv.size
@@ -32,7 +32,7 @@ module Dashboard
     # ==========================================
 
     test "visit rows have type visit and nil name" do
-      csv = parse_csv(service.call)
+      csv = export_and_parse
       visits = csv.select { |row| row["type"] == FunnelStages::VISIT }
 
       assert_predicate visits, :any?, "expected at least one visit row"
@@ -42,7 +42,7 @@ module Dashboard
     test "visit rows use session started_at as date" do
       session = create_session(started_at: 3.days.ago)
 
-      csv = parse_csv(service.call)
+      csv = export_and_parse
       visit = csv.find { |row| row["type"] == FunnelStages::VISIT && row["date"] == 3.days.ago.to_date.to_s }
 
       assert visit, "expected visit row with correct date"
@@ -51,7 +51,7 @@ module Dashboard
     test "visit rows include channel from session" do
       create_session(channel: Channels::EMAIL)
 
-      csv = parse_csv(service.call)
+      csv = export_and_parse
       email_visit = csv.find { |row| row["type"] == FunnelStages::VISIT && row["channel"] == Channels::EMAIL }
 
       assert email_visit, "expected visit row with email channel"
@@ -60,7 +60,7 @@ module Dashboard
     test "visit rows include UTM from session initial_utm" do
       create_session(initial_utm: { "utm_source" => "bing", "utm_medium" => "display", "utm_campaign" => "winter" })
 
-      csv = parse_csv(service.call)
+      csv = export_and_parse
       visit = csv.find { |row| row["type"] == FunnelStages::VISIT && row["utm_source"] == "bing" }
 
       assert visit, "expected visit with UTM data"
@@ -75,7 +75,7 @@ module Dashboard
     test "event rows have type event and event_type as name" do
       create_event(event_type: "add_to_cart")
 
-      csv = parse_csv(service.call)
+      csv = export_and_parse
       event = csv.find { |row| row["type"] == FunnelStages::EVENT && row["name"] == "add_to_cart" }
 
       assert event, "expected event row with name=add_to_cart"
@@ -84,7 +84,7 @@ module Dashboard
     test "event rows use occurred_at as date" do
       create_event(occurred_at: 2.days.ago)
 
-      csv = parse_csv(service.call)
+      csv = export_and_parse
       event = csv.find { |row| row["type"] == FunnelStages::EVENT && row["date"] == 2.days.ago.to_date.to_s }
 
       assert event, "expected event row with correct date"
@@ -94,7 +94,7 @@ module Dashboard
       session = create_session(channel: Channels::ORGANIC_SEARCH)
       create_event(session: session)
 
-      csv = parse_csv(service.call)
+      csv = export_and_parse
       event = csv.find { |row| row["type"] == FunnelStages::EVENT && row["channel"] == Channels::ORGANIC_SEARCH }
 
       assert event, "expected event row with session channel"
@@ -104,7 +104,7 @@ module Dashboard
       session = create_session(initial_utm: { "utm_source" => "fb", "utm_medium" => "social", "utm_campaign" => "launch" })
       create_event(session: session)
 
-      csv = parse_csv(service.call)
+      csv = export_and_parse
       event = csv.find { |row| row["type"] == FunnelStages::EVENT && row["utm_source"] == "fb" }
 
       assert event, "expected event with session UTM"
@@ -115,7 +115,7 @@ module Dashboard
     test "event rows include properties as JSON" do
       create_event(properties: { "page" => "/checkout", "url" => "https://example.com" })
 
-      csv = parse_csv(service.call)
+      csv = export_and_parse
       event = csv.find { |row| row["type"] == FunnelStages::EVENT }
 
       assert_includes event["properties"], "checkout"
@@ -128,7 +128,7 @@ module Dashboard
     test "conversion rows have type conversion and conversion_type as name" do
       create_conversion(conversion_type: "purchase")
 
-      csv = parse_csv(service.call)
+      csv = export_and_parse
       conversion = csv.find { |row| row["type"] == FunnelStages::CONVERSION && row["name"] == "purchase" }
 
       assert conversion, "expected conversion row with name=purchase"
@@ -137,7 +137,7 @@ module Dashboard
     test "conversion rows use converted_at as date" do
       create_conversion(converted_at: 4.days.ago)
 
-      csv = parse_csv(service.call)
+      csv = export_and_parse
       conversion = csv.find { |row| row["type"] == FunnelStages::CONVERSION && row["date"] == 4.days.ago.to_date.to_s }
 
       assert conversion, "expected conversion row with correct date"
@@ -146,7 +146,7 @@ module Dashboard
     test "conversion rows include revenue, currency, is_acquisition" do
       create_conversion(revenue: 99.99, currency: "EUR", is_acquisition: true, identity: identities(:one))
 
-      csv = parse_csv(service.call)
+      csv = export_and_parse
       conversion = csv.find { |row| row["type"] == FunnelStages::CONVERSION }
 
       assert_equal "99.99", conversion["revenue"]
@@ -158,7 +158,7 @@ module Dashboard
       session = create_session(channel: Channels::AFFILIATE)
       create_conversion(session: session)
 
-      csv = parse_csv(service.call)
+      csv = export_and_parse
       conversion = csv.find { |row| row["type"] == FunnelStages::CONVERSION && row["channel"] == Channels::AFFILIATE }
 
       assert conversion, "expected conversion row with session channel"
@@ -173,7 +173,7 @@ module Dashboard
       create_event(occurred_at: 3.days.ago)
       create_conversion(converted_at: 1.day.ago)
 
-      csv = parse_csv(service.call)
+      csv = export_and_parse
       dates = csv.map { |row| Date.parse(row["date"]) }
 
       assert_equal dates, dates.sort
@@ -188,7 +188,7 @@ module Dashboard
       create_session(started_at: 5.days.ago)
       create_session(started_at: 35.days.ago)
 
-      csv = parse_csv(service(date_range: "7d").call)
+      csv = export_and_parse(service(date_range: "7d"))
       visits = csv.select { |row| row["type"] == FunnelStages::VISIT }
 
       assert_equal 1, visits.size
@@ -199,7 +199,7 @@ module Dashboard
       create_session(channel: Channels::PAID_SEARCH)
       create_session(channel: Channels::EMAIL)
 
-      csv = parse_csv(service(channels: [ Channels::PAID_SEARCH ]).call)
+      csv = export_and_parse(service(channels: [ Channels::PAID_SEARCH ]))
       visits = csv.select { |row| row["type"] == FunnelStages::VISIT }
 
       assert_equal 1, visits.size
@@ -210,7 +210,7 @@ module Dashboard
       create_event(funnel: "sales")
       create_event(funnel: "marketing")
 
-      csv = parse_csv(service(funnel: "sales").call)
+      csv = export_and_parse(service(funnel: "sales"))
       events = csv.select { |row| row["type"] == FunnelStages::EVENT }
 
       assert events.all? { |row| row["funnel"] == "sales" }
@@ -221,7 +221,7 @@ module Dashboard
       create_session(is_test: false)
       create_session(is_test: true)
 
-      csv = parse_csv(service(test_mode: true).call)
+      csv = export_and_parse(service(test_mode: true))
       visits = csv.select { |row| row["type"] == FunnelStages::VISIT }
 
       assert_equal 1, visits.size
@@ -235,7 +235,7 @@ module Dashboard
       Session.where(account: account).delete_all
       create_session(initial_utm: {})
 
-      csv = parse_csv(service.call)
+      csv = export_and_parse
       row = csv.first
 
       assert_nil row["utm_source"]
@@ -258,7 +258,7 @@ module Dashboard
         channel: Channels::DIRECT
       )
 
-      csv = parse_csv(service.call)
+      csv = export_and_parse
 
       assert csv.none? { |row| row["channel"] == Channels::DIRECT }
     end
@@ -295,8 +295,12 @@ module Dashboard
       @default_session ||= sessions(:one)
     end
 
-    def parse_csv(csv_string)
-      CSV.parse(csv_string, headers: true)
+    def export_and_parse(svc = service)
+      file = Tempfile.new([ "export_test", ".csv" ])
+      svc.write_to(file.path)
+      CSV.parse(File.read(file.path), headers: true)
+    ensure
+      file&.close!
     end
 
     def create_session(started_at: 1.hour.ago, channel: Channels::PAID_SEARCH, initial_utm: nil, is_test: false)

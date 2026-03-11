@@ -14,13 +14,13 @@ module Dashboard
     # ==========================================
 
     test "returns CSV string with correct headers" do
-      csv = parse_csv(service.call)
+      csv = export_and_parse
 
       assert_equal expected_headers, csv.headers
     end
 
     test "returns headers-only CSV when no data" do
-      csv = parse_csv(service.call)
+      csv = export_and_parse
 
       assert_equal expected_headers, csv.headers
       assert_equal 0, csv.size
@@ -33,7 +33,7 @@ module Dashboard
     test "rows contain denormalized credit, conversion, and model data" do
       create_full_credit
 
-      csv = parse_csv(service.call)
+      csv = export_and_parse
 
       assert_equal 1, csv.size
       row = csv.first
@@ -64,7 +64,7 @@ module Dashboard
       create_full_credit
       create_minimal_credit
 
-      csv = parse_csv(service.call)
+      csv = export_and_parse
 
       csv.each { |row| assert_equal "conversion", row["type"] }
     end
@@ -76,7 +76,7 @@ module Dashboard
     test "handles nil revenue, UTM params, funnel, and properties" do
       create_minimal_credit
 
-      csv = parse_csv(service.call)
+      csv = export_and_parse
       row = csv.first
 
       assert_nil row["revenue"]
@@ -96,7 +96,7 @@ module Dashboard
       create_credit_at(5.days.ago)
       create_credit_at(35.days.ago)
 
-      csv = parse_csv(service(date_range: "7d").call)
+      csv = export_and_parse(service(date_range: "7d"))
 
       assert_equal 1, csv.size
     end
@@ -105,7 +105,7 @@ module Dashboard
       create_credit(channel: Channels::PAID_SEARCH)
       create_credit(channel: Channels::EMAIL)
 
-      csv = parse_csv(service(channels: [ Channels::PAID_SEARCH ]).call)
+      csv = export_and_parse(service(channels: [ Channels::PAID_SEARCH ]))
 
       assert_equal 1, csv.size
       assert_equal Channels::PAID_SEARCH, csv.first["channel"]
@@ -120,7 +120,7 @@ module Dashboard
       create_credit(model: first_touch_model)
       create_credit(model: other_model)
 
-      csv = parse_csv(service(models: [ first_touch_model ]).call)
+      csv = export_and_parse(service(models: [ first_touch_model ]))
 
       assert_equal 1, csv.size
       assert_equal first_touch_model.name, csv.first["attribution_model"]
@@ -130,7 +130,7 @@ module Dashboard
       create_credit(is_test: false)
       create_credit(is_test: true)
 
-      csv = parse_csv(service(test_mode: true).call)
+      csv = export_and_parse(service(test_mode: true))
 
       assert_equal 1, csv.size
     end
@@ -155,7 +155,7 @@ module Dashboard
         credit: 1.0
       )
 
-      csv = parse_csv(service.call)
+      csv = export_and_parse
       row = csv.first
 
       assert_equal AttributionAlgorithms::FIRST_TOUCH, row["journey_position"]
@@ -182,7 +182,7 @@ module Dashboard
         )
       end
 
-      csv = parse_csv(service.call)
+      csv = export_and_parse
       rows = csv.sort_by { |r| r["touchpoint_index"].to_i }
 
       assert_equal AttributionAlgorithms::FIRST_TOUCH, rows[0]["journey_position"]
@@ -211,7 +211,7 @@ module Dashboard
         )
       end
 
-      csv = parse_csv(service.call)
+      csv = export_and_parse
       rows = csv.sort_by { |r| r["touchpoint_index"].to_i }
 
       assert_equal AttributionAlgorithms::FIRST_TOUCH, rows[0]["journey_position"]
@@ -236,7 +236,7 @@ module Dashboard
         credit: 1.0
       )
 
-      csv = parse_csv(service.call)
+      csv = export_and_parse
       row = csv.first
 
       assert_equal "7", row["days_to_conversion"]
@@ -257,7 +257,7 @@ module Dashboard
         credit: 1.0
       )
 
-      csv = parse_csv(service.call)
+      csv = export_and_parse
       row = csv.first
 
       assert_nil row["journey_position"]
@@ -281,7 +281,7 @@ module Dashboard
         credit: 1.0
       )
 
-      csv = parse_csv(service.call)
+      csv = export_and_parse
       row = csv.first
 
       assert_nil row["journey_position"]
@@ -306,7 +306,7 @@ module Dashboard
         credit: 1.0
       )
 
-      csv = parse_csv(service.call)
+      csv = export_and_parse
       row = csv.first
 
       assert_nil row["journey_position"]
@@ -334,7 +334,7 @@ module Dashboard
         credit: 1.0
       )
 
-      csv = parse_csv(service.call)
+      csv = export_and_parse
 
       assert_equal 1, csv.size
       channels = csv.map { |row| row["channel"] }
@@ -373,8 +373,12 @@ module Dashboard
       @first_touch_model ||= attribution_models(:first_touch)
     end
 
-    def parse_csv(csv_string)
-      CSV.parse(csv_string, headers: true)
+    def export_and_parse(svc = service)
+      file = Tempfile.new([ "export_test", ".csv" ])
+      svc.write_to(file.path)
+      CSV.parse(File.read(file.path), headers: true)
+    ensure
+      file&.close!
     end
 
     def create_full_credit

@@ -21,10 +21,8 @@ module Dashboard
     attr_reader :export
 
     def generate_csv
-      csv_data = export_service.call
-
       FileUtils.mkdir_p(export_dir)
-      File.write(file_path, csv_data)
+      export_service.write_to(file_path)
     end
 
     def complete_export

@@ -14,13 +14,14 @@ module Dashboard
       @filter_params = filter_params
     end
 
-    def call
-      credits = credits_scope.to_a
-      preload_journey_sessions(credits)
+    def write_to(file_path)
+      File.open(file_path, "w") do |file|
+        file.write(CSV.generate_line(HEADERS))
 
-      CSV.generate do |csv|
-        csv << HEADERS
-        credits.each { |credit| csv << row_for(credit) }
+        credits_scope.find_in_batches(batch_size: 500) do |batch|
+          preload_journey_sessions(batch)
+          batch.each { |credit| file.write(CSV.generate_line(row_for(credit))) }
+        end
       end
     end
 

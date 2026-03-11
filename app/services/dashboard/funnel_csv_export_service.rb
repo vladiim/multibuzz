@@ -13,10 +13,10 @@ module Dashboard
       @filter_params = filter_params
     end
 
-    def call
-      CSV.generate do |csv|
-        csv << HEADERS
-        sorted_rows.each { |row| csv << row }
+    def write_to(file_path)
+      File.open(file_path, "w") do |file|
+        file.write(CSV.generate_line(HEADERS))
+        sorted_rows.each { |row| file.write(CSV.generate_line(row)) }
       end
     end
 
