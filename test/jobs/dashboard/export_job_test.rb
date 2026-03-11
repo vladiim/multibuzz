@@ -142,6 +142,19 @@ module Dashboard
       assert_predicate @export, :completed?
     end
 
+    test "handles custom date range after JSONB roundtrip" do
+      @export.update!(filter_params: {
+        "date_range" => { "start_date" => "2026-02-01", "end_date" => "2026-02-28" },
+        "test_mode" => false
+      })
+
+      perform_job
+
+      @export.reload
+
+      assert_predicate @export, :completed?
+    end
+
     # ==========================================
     # Multi-account isolation
     # ==========================================

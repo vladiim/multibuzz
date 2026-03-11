@@ -69,7 +69,7 @@ module Dashboard
     end
 
     def filter_params
-      @filter_params ||= export.filter_params.symbolize_keys
+      @filter_params ||= export.filter_params.deep_symbolize_keys
     end
 
     def account
