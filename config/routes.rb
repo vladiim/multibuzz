@@ -195,7 +195,8 @@ Rails.application.routes.draw do
     get "identities/:id", to: "identities#show", as: :identity_detail
 
     resource :export, only: [ :create ], controller: "exports"
-    get "exports/:id", to: "exports#show", as: :export_download
+    get "exports/:id", to: "exports#show", as: :export_status
+    get "exports/:id/download", to: "exports#download", as: :export_download
 
     # Conversion filter endpoints
     namespace :conversion_filters do

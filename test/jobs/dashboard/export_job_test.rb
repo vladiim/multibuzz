@@ -116,7 +116,7 @@ module Dashboard
     # ==========================================
 
     test "broadcasts download link on completion" do
-      stream = "account_#{account.prefix_id}_exports"
+      stream = "export_#{@export.prefix_id}"
 
       assert_broadcasts(stream, 1) do
         perform_job

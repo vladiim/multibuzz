@@ -24,6 +24,14 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
   test "requires authentication for show" do
     export = create_completed_export
 
+    get dashboard_export_status_path(id: export.prefix_id)
+
+    assert_response :redirect
+  end
+
+  test "requires authentication for download" do
+    export = create_completed_export
+
     get dashboard_export_download_path(id: export.prefix_id)
 
     assert_response :redirect
@@ -41,14 +49,13 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "create returns turbo stream response" do
+  test "create redirects to export status page" do
     sign_in
-    post dashboard_export_path,
-      params: { export_type: "conversions" },
-      headers: { "Accept" => "text/vnd.turbo-stream.html" }
+    post dashboard_export_path, params: { export_type: "conversions" }
 
-    assert_response :success
-    assert_match "text/vnd.turbo-stream", response.content_type
+    export = Export.last
+
+    assert_redirected_to dashboard_export_status_path(id: export.prefix_id)
   end
 
   test "create persists export record" do
@@ -100,10 +107,74 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # ==========================================
-  # Show (download file)
+  # Show (export status page)
   # ==========================================
 
-  test "show downloads completed export file" do
+  test "show renders processing state for pending export" do
+    sign_in
+    export = Export.create!(account: account, export_type: "conversions")
+
+    get dashboard_export_status_path(id: export.prefix_id)
+
+    assert_response :success
+    assert_select "h2", "Preparing your export"
+  end
+
+  test "show renders processing state for processing export" do
+    sign_in
+    export = Export.create!(account: account, export_type: "conversions", status: :processing)
+
+    get dashboard_export_status_path(id: export.prefix_id)
+
+    assert_response :success
+    assert_select "h2", "Preparing your export"
+  end
+
+  test "show renders download button for completed export" do
+    sign_in
+    export = create_completed_export
+
+    get dashboard_export_status_path(id: export.prefix_id)
+
+    assert_response :success
+    assert_select "h2", "Export ready"
+    assert_select "a[href=?]", dashboard_export_download_path(id: export.prefix_id)
+  end
+
+  test "show renders error for failed export" do
+    sign_in
+    export = Export.create!(account: account, export_type: "conversions", status: :failed)
+
+    get dashboard_export_status_path(id: export.prefix_id)
+
+    assert_response :success
+    assert_select "h2", "Export failed"
+  end
+
+  test "show subscribes to export turbo stream" do
+    sign_in
+    export = Export.create!(account: account, export_type: "conversions")
+
+    get dashboard_export_status_path(id: export.prefix_id)
+
+    assert_response :success
+    assert_select "turbo-cable-stream-source[signed-stream-name]"
+  end
+
+  test "show returns 404 for other account's export" do
+    sign_in
+    other_export = Export.create!(account: accounts(:two), export_type: "conversions")
+
+    get dashboard_export_status_path(id: other_export.prefix_id)
+
+    assert_response :not_found
+  end
+
+  # ==========================================
+  # Download (file delivery)
+  # ==========================================
+
+  test "download sends completed export file" do
     sign_in
     export = create_completed_export
 
@@ -114,7 +185,7 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
     assert_match "attachment", response.headers["Content-Disposition"]
   end
 
-  test "show returns 404 for pending export" do
+  test "download returns 404 for pending export" do
     sign_in
     export = Export.create!(account: account, export_type: "conversions")
 
@@ -123,7 +194,7 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test "show returns 410 for expired export" do
+  test "download returns 410 for expired export" do
     sign_in
     export = create_completed_export(expires_at: 1.minute.ago)
 
@@ -132,11 +203,11 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
     assert_response :gone
   end
 
-  test "show returns 404 for other account's export" do
+  test "download returns 404 for other account's export" do
     sign_in
     other_export = create_completed_export(account: accounts(:two))
 
-    get dashboard_export_path(id: other_export.prefix_id)
+    get dashboard_export_download_path(id: other_export.prefix_id)
 
     assert_response :not_found
   end
@@ -145,20 +216,12 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
   # Dashboard UI
   # ==========================================
 
-  test "dashboard has export dropdown with stimulus controller" do
+  test "dashboard has export dropdown" do
     sign_in
     get dashboard_path
 
     assert_response :success
-    assert_select "[data-controller~='export']"
-  end
-
-  test "dashboard subscribes to exports turbo stream" do
-    sign_in
-    get dashboard_path
-
-    assert_response :success
-    assert_select "turbo-cable-stream-source[signed-stream-name]"
+    assert_select "button", text: /Export/
   end
 
   private

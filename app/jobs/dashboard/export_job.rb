@@ -37,9 +37,9 @@ module Dashboard
 
     def broadcast_download_link
       Turbo::StreamsChannel.broadcast_replace_to(
-        "account_#{account.prefix_id}_exports",
-        target: "export-spinner",
-        partial: "dashboard/exports/download_link",
+        "export_#{export.prefix_id}",
+        target: "export-status",
+        partial: "dashboard/exports/download_ready",
         locals: { export: export }
       )
     end

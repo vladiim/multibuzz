@@ -10,18 +10,16 @@ module Dashboard
 
       ExportJob.perform_later(export.id)
 
-      respond_to do |format|
-        format.turbo_stream do
-          render turbo_stream: turbo_stream.replace(
-            "export-spinner",
-            partial: "dashboard/exports/processing"
-          )
-        end
-        format.html { redirect_to dashboard_path, notice: "Export started" }
-      end
+      redirect_to dashboard_export_status_path(id: export.prefix_id)
     end
 
     def show
+      @export = current_account.exports.find_by_prefix_id!(params[:id])
+    rescue ActiveRecord::RecordNotFound
+      head :not_found
+    end
+
+    def download
       export = current_account.exports.completed.find_by_prefix_id!(params[:id])
 
       if export.expired?
