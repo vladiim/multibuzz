@@ -45,6 +45,9 @@ env:
     # Set number of processes dedicated to Solid Queue (default: 1)
     # JOB_CONCURRENCY: 3
 
+    # Align DB pool size with Puma thread count (avoids wasting PG connections)
+    RAILS_MAX_THREADS: 3
+
     # Set number of cores available to the application on each server (default: 1).
     WEB_CONCURRENCY: 2
 
