@@ -2,18 +2,18 @@
 
 **Date:** 2026-02-13
 **Priority:** P0
-**Status:** Draft
+**Status:** UAT
 **Branch:** `feature/ad-spend-intelligence`
 
 ---
 
-> **UAT BLOCKED** — 4 Mar 2026. OAuth flow, MCC sub-account discovery, and sync pipeline are code-complete but cannot be tested end-to-end until Google approves Basic Access (developer token returns `DEVELOPER_TOKEN_INVALID` with Explorer Access). Bugs found and fixed during UAT attempt: API version `v18` → `v23`, session key serialization (symbol → string), MCC sub-account discovery via `customer_client` query, `login-customer-id` header propagation. **When Basic Access is approved, re-run the full UAT checklist in the Testing Strategy section.**
+> **UAT UNBLOCKED** — 11 Mar 2026. Google Ads Basic Access approved. OAuth flow, MCC sub-account discovery, and sync pipeline are code-complete. Bugs found and fixed during earlier UAT attempt: API version `v18` → `v23`, session key serialization (symbol → string), MCC sub-account discovery via `customer_client` query, `login-customer-id` header propagation. **Next step: run the full UAT checklist in the Testing Strategy section against a live Google Ads account.**
 
 ---
 
 ## Step Zero: Google Ads API Setup
 
-> **COMPLETED** — 2 Mar 2026. All setup steps done except Basic Access approval (pending) and OAuth consent screen verification (not yet submitted — requires working demo video first).
+> **COMPLETED** — 2 Mar 2026. All setup steps done. Basic Access approved 11 Mar 2026. OAuth consent screen verification not yet submitted (requires working demo video first).
 
 ### Accounts & Credentials
 
@@ -32,7 +32,7 @@
 
 | Approval | Status | Submitted | Expected |
 |---|---|---|---|
-| **Basic Access** | Pending review | Mon 2 Mar 2026, 13:42 AEDT | ~3 business days |
+| **Basic Access** | Approved | Mon 2 Mar 2026, 13:42 AEDT | Approved 11 Mar 2026 |
 | **OAuth consent screen verification** | Not yet submitted | — | Submit after demo video (2-6 weeks review) |
 
 ### Gotchas Discovered

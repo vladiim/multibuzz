@@ -6,7 +6,7 @@
 
 ---
 
-> **Context**: Google Ads Basic Access approval is blocking UAT for Ad Spend Intelligence (see `ad_spend_intelligence_spec.md`). To avoid the same bottleneck for future platforms, we're preemptively starting approval processes that don't require working code.
+> **Context**: Google Ads Basic Access was approved 11 Mar 2026 — UAT for Ad Spend Intelligence is now unblocked (see `ad_spend_intelligence_spec.md`). To avoid similar bottlenecks for future platforms, we're preemptively starting approval processes that don't require working code.
 
 ---
 
@@ -179,7 +179,7 @@ Pre-register for ad platform API access across Meta Ads, LinkedIn Ads, and TikTo
 
 | Platform | Status | API Complexity | Notes |
 |---|---|---|---|
-| **Google Ads** | Basic Access pending (submitted 2 Mar 2026) | High | OAuth + developer token + consent screen verification |
+| **Google Ads** | **Basic Access approved** (11 Mar 2026) | High | OAuth + developer token + consent screen verification |
 | **Meta Ads** | App created, Business Verification blocked on entity | High | Tech Provider path, Business + Access Verification + App Review |
 | **LinkedIn Ads** | Submitted 5 Mar 2026 (expect 2-4 weeks) | Medium | Development tier sufficient for read-only |
 | **TikTok Ads** | Deferred | Low | Sandbox → Production, single approval, fast |
