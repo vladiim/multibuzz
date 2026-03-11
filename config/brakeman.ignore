@@ -1,11 +1,11 @@
 {
   "ignored_warnings": [
     {
-      "fingerprint": "6bf668bfbf006e0e6f186438403dbb30e6fbd472d0ae69ae2b0db15b630b7238",
+      "fingerprint": "eb65bb2cccabbc676c5a57be2dd9e9a3726c59c12f21c1fd8533b7919add1781",
       "code": "send_file(current_account.exports.completed.find_by_prefix_id!(params[:id]).file_path...)",
       "message": "Parameter value used in file name",
       "file": "app/controllers/dashboard/exports_controller.rb",
-      "line": 30,
+      "line": 28,
       "note": "Safe: file_path comes from DB record scoped to current_account, not directly from user input"
     },
     {
