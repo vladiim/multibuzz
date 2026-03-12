@@ -27,11 +27,13 @@ module Api
       end
 
       def conversion_params
-        params.require(:conversion).permit(
+        @conversion_params ||= params.require(:conversion).permit(
           :event_id, :visitor_id, :conversion_type, :revenue, :currency,
           :user_id, :is_acquisition, :inherit_acquisition, :ip, :user_agent,
           :idempotency_key, properties: {}
-        )
+        ).tap do |p|
+          p[:idempotency_key] ||= idempotency_key
+        end
       end
 
       def log_conversion_failure

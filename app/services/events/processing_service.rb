@@ -13,6 +13,8 @@ module Events
     attr_reader :account, :event_data, :is_test
 
     def run
+      return idempotent_result if existing_by_request_id
+
       return error_result(visitor_result[:errors]) unless visitor_result[:success]
       return error_result(session_result[:errors]) unless session_result[:success]
 
@@ -76,6 +78,20 @@ module Events
 
     def event_identifier
       event_data["identifier"] || event_data[:identifier]
+    end
+
+    def event_request_id
+      event_data["request_id"] || event_data[:request_id]
+    end
+
+    def existing_by_request_id
+      return nil unless event_request_id.present?
+
+      @existing_event = account.events.find_by(request_id: event_request_id)
+    end
+
+    def idempotent_result
+      success_result(event: @existing_event)
     end
 
     def device_fingerprint
@@ -158,11 +174,7 @@ module Events
     end
 
     def event
-      @event ||= build_event
-    end
-
-    def build_event
-      account.events.build(
+      @event ||= account.events.build(
         event_type: event_data["event_type"],
         visitor: visitor,
         session: session,
@@ -170,12 +182,9 @@ module Events
         properties: event_data["properties"],
         funnel: event_data["funnel"] || event_data[:funnel],
         is_test: is_test,
-        locked: should_lock_event?
+        locked: account.should_lock_events?,
+        request_id: event_request_id
       )
-    end
-
-    def should_lock_event?
-      account.should_lock_events?
     end
   end
 end

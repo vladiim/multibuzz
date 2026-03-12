@@ -15,6 +15,10 @@ module Api
 
       attr_reader :current_account, :current_api_key
 
+      def idempotency_key
+        request.headers["X-Idempotency-Key"].presence
+      end
+
       def authenticate_api_key
         auth_result = ApiKeys::AuthenticationService.new(authorization_header).call
 

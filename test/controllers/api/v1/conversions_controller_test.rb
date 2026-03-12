@@ -132,6 +132,52 @@ module Api
         assert_response :created
       end
 
+      # ==========================================
+      # X-Idempotency-Key header wiring
+      # ==========================================
+
+      test "X-Idempotency-Key header used as idempotency_key when not in params" do
+        headers = auth_headers.merge("X-Idempotency-Key" => "req_conv_header")
+
+        post api_v1_conversions_path,
+          params: { conversion: { event_id: event.prefix_id, conversion_type: "signup" } },
+          headers: headers
+
+        assert_response :created
+        conv = account.conversions.find_by(idempotency_key: "req_conv_header")
+
+        assert conv, "Conversion should use X-Idempotency-Key as idempotency_key"
+      end
+
+      test "param idempotency_key takes precedence over X-Idempotency-Key header" do
+        headers = auth_headers.merge("X-Idempotency-Key" => "req_from_header")
+
+        post api_v1_conversions_path,
+          params: { conversion: { event_id: event.prefix_id, conversion_type: "signup", idempotency_key: "key_from_param" } },
+          headers: headers
+
+        assert_response :created
+        assert account.conversions.exists?(idempotency_key: "key_from_param")
+        assert_not account.conversions.exists?(idempotency_key: "req_from_header")
+      end
+
+      test "duplicate X-Idempotency-Key returns 200 with duplicate flag" do
+        headers = auth_headers.merge("X-Idempotency-Key" => "req_conv_dedup")
+
+        post api_v1_conversions_path,
+          params: { conversion: { event_id: event.prefix_id, conversion_type: "signup" } },
+          headers: headers
+
+        assert_response :created
+
+        post api_v1_conversions_path,
+          params: { conversion: { event_id: event.prefix_id, conversion_type: "signup" } },
+          headers: headers
+
+        assert_response :ok
+        assert response.parsed_body["duplicate"]
+      end
+
       private
 
       def event
@@ -140,6 +186,10 @@ module Api
 
       def visitor
         @visitor ||= visitors(:one)
+      end
+
+      def account
+        @account ||= event.account
       end
 
       def auth_headers

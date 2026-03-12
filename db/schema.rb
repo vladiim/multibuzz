@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_10_230646) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_13_045737) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -319,6 +319,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_10_230646) do
     t.boolean "is_test", default: false, null: false
     t.boolean "locked", default: false, null: false
     t.string "funnel"
+    t.string "request_id"
     t.index "((properties -> 'host'::text))", name: "index_events_on_host", using: :gin
     t.index "((properties -> 'path'::text))", name: "index_events_on_path", using: :gin
     t.index "((properties -> 'referrer_host'::text))", name: "index_events_on_referrer_host", using: :gin
@@ -329,6 +330,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_10_230646) do
     t.index "((properties ->> 'funnel_step'::text))", name: "index_events_on_funnel_step"
     t.index ["account_id", "event_type"], name: "index_events_on_account_id_and_event_type"
     t.index ["account_id", "funnel"], name: "index_events_on_account_funnel"
+    t.index ["account_id", "request_id"], name: "index_events_on_account_request_id", where: "request_id IS NOT NULL"
     t.index ["account_id", "occurred_at"], name: "index_events_on_account_id_and_occurred_at"
     t.index ["account_id"], name: "index_events_on_account_id"
     t.index ["is_test"], name: "index_events_on_is_test"
@@ -460,7 +462,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_10_230646) do
     t.string "landing_page_host"
     t.text "user_agent"
     t.string "suspect_reason"
+    t.string "request_id"
     t.index ["account_id", "landing_page_host"], name: "index_sessions_on_account_and_landing_page_host"
+    t.index ["account_id", "request_id"], name: "index_sessions_on_account_request_id", where: "request_id IS NOT NULL"
     t.index ["account_id", "session_id", "started_at"], name: "index_sessions_on_account_id_and_session_id", unique: true
     t.index ["account_id"], name: "index_sessions_on_account_id"
     t.index ["channel"], name: "index_sessions_on_channel"

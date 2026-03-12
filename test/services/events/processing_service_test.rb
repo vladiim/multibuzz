@@ -364,6 +364,79 @@ class Events::ProcessingServiceTest < ActiveSupport::TestCase
     end
   end
 
+  # --- Idempotency (request_id) ---
+
+  test "stores request_id on event when provided" do
+    @event_data = valid_event_data.merge("request_id" => "req_evt_abc123")
+
+    assert result[:success]
+    assert_equal "req_evt_abc123", result[:event].request_id
+  end
+
+  test "duplicate request_id returns existing event without creating new one" do
+    first_data = valid_event_data.merge("request_id" => "req_evt_dedup")
+    first = Events::ProcessingService.new(account, first_data).call
+
+    assert first[:success]
+
+    second_data = valid_event_data.merge("request_id" => "req_evt_dedup")
+    second = Events::ProcessingService.new(account, second_data).call
+
+    assert second[:success]
+    assert_equal first[:event].id, second[:event].id
+  end
+
+  test "duplicate request_id does not create additional event" do
+    first_data = valid_event_data.merge("request_id" => "req_evt_count")
+    Events::ProcessingService.new(account, first_data).call
+
+    assert_no_difference -> { Event.count } do
+      second_data = valid_event_data.merge("request_id" => "req_evt_count")
+      Events::ProcessingService.new(account, second_data).call
+    end
+  end
+
+  test "same request_id in different account creates new event" do
+    first_data = valid_event_data.merge("request_id" => "req_evt_cross")
+    first = Events::ProcessingService.new(account, first_data).call
+
+    assert first[:success]
+
+    other_account = accounts(:two)
+    other_visitor = other_account.visitors.first || other_account.visitors.create!(visitor_id: "vis_other_acct")
+    other_session = other_account.sessions.first || other_account.sessions.create!(
+      visitor: other_visitor, session_id: "sess_other", started_at: Time.current
+    )
+
+    other_data = {
+      "event_type" => "page_view",
+      "visitor_id" => other_visitor.visitor_id,
+      "session_id" => other_session.session_id,
+      "timestamp" => "2025-11-07T10:30:45Z",
+      "request_id" => "req_evt_cross",
+      "properties" => { "url" => "https://example.com/other" }
+    }
+    second = Events::ProcessingService.new(other_account, other_data).call
+
+    assert second[:success]
+    assert_not_equal first[:event].id, second[:event].id
+  end
+
+  test "nil request_id does not trigger dedup" do
+    first_data = valid_event_data.merge("request_id" => nil)
+    first = Events::ProcessingService.new(account, first_data).call
+
+    second_data = valid_event_data.merge(
+      "request_id" => nil,
+      "timestamp" => "2025-11-07T10:31:00Z"
+    )
+    second = Events::ProcessingService.new(account, second_data).call
+
+    assert first[:success]
+    assert second[:success]
+    assert_not_equal first[:event].id, second[:event].id
+  end
+
   def test_ip
     "192.168.1.100"
   end

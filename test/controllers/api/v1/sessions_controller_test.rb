@@ -57,6 +57,47 @@ class Api::V1::SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :bad_request
   end
 
+  # --- Idempotency via X-Idempotency-Key header ---
+
+  test "passes X-Idempotency-Key header as request_id to service" do
+    payload = session_payload
+    headers = auth_headers.merge("X-Idempotency-Key" => "req_header_session_123")
+
+    post api_v1_sessions_path, params: payload, headers: headers, as: :json
+
+    assert_response :accepted
+    session = account.sessions.find_by(request_id: "req_header_session_123")
+
+    assert session, "Session should have request_id from X-Idempotency-Key header"
+  end
+
+  test "duplicate X-Idempotency-Key returns original response without creating new session" do
+    payload = session_payload
+    headers = auth_headers.merge("X-Idempotency-Key" => "req_header_dedup")
+
+    post api_v1_sessions_path, params: payload, headers: headers, as: :json
+
+    assert_response :accepted
+    first_response = response.parsed_body
+
+    assert_no_difference -> { account.sessions.count } do
+      post api_v1_sessions_path, params: payload, headers: headers, as: :json
+    end
+
+    assert_response :accepted
+    second_response = response.parsed_body
+
+    assert_equal first_response["session_id"], second_response["session_id"]
+    assert_equal first_response["channel"], second_response["channel"]
+  end
+
+  test "works normally without X-Idempotency-Key header" do
+    post api_v1_sessions_path, params: session_payload, headers: auth_headers, as: :json
+
+    assert_response :accepted
+    assert_predicate response.parsed_body["session_id"], :present?
+  end
+
   private
 
   def auth_headers

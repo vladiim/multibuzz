@@ -12,25 +12,56 @@ module Sessions
 
     attr_reader :account, :params, :is_test
 
+    def request_id
+      params[:request_id]
+    end
+
     def device_fingerprint
       params[:device_fingerprint]
     end
 
+    def existing_by_request_id
+      return nil unless request_id.present?
+
+      @existing_session = account.sessions.find_by(request_id: request_id)
+    end
+
+    def idempotent_result
+      success_result(
+        visitor_id: @existing_session.visitor.visitor_id,
+        session_id: @existing_session.session_id,
+        channel: @existing_session.channel
+      )
+    end
+
+    def store_request_id
+      return unless request_id.present?
+
+      session.update_column(:request_id, request_id)
+    end
+
     def run
-      return error_result([ "visitor_id is required" ]) unless visitor_id.present?
-      return error_result([ "session_id is required" ]) unless session_id.present?
-      return error_result([ "url is required" ]) unless url.present?
+      return validation_error if validation_error
+      return idempotent_result if existing_by_request_id
 
       with_session_lock do
         process_visitor
         process_session
       end
 
+      store_request_id
+
       success_result(
         visitor_id: visitor_id,
         session_id: session_id,
         channel: session.channel
       )
+    end
+
+    def validation_error
+      return error_result([ "visitor_id is required" ]) unless visitor_id.present?
+      return error_result([ "session_id is required" ]) unless session_id.present?
+      error_result([ "url is required" ]) unless url.present?
     end
 
     def with_session_lock

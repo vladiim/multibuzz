@@ -32,7 +32,7 @@ module Api
           :started_at,
           :device_fingerprint,
           :user_agent
-        )
+        ).merge(request_id: idempotency_key)
       end
 
       def render_accepted

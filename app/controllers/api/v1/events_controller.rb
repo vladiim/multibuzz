@@ -101,16 +101,22 @@ module Api
       end
 
       def enriched_events_data
-        events_data.map { |event_data| enrich_event(event_data) }
+        events_data.each_with_index.map { |event_data, index| enrich_event(event_data, index) }
       end
 
-      def enrich_event(event_data)
+      def enrich_event(event_data, index)
         Events::EnrichmentService.new(
           request,
           event_data,
           visitor_id: resolve_visitor_id(event_data),
           session_id: resolve_session_id(event_data)
-        ).call
+        ).call.merge(event_request_id(index))
+      end
+
+      def event_request_id(index)
+        return {} unless idempotency_key
+
+        { request_id: "#{idempotency_key}_#{index}" }
       end
 
       def resolve_visitor_id(event_data)

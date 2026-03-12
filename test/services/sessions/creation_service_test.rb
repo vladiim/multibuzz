@@ -785,6 +785,103 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
     assert_equal "petresortsaustralia.com.au", session.landing_page_host
   end
 
+  # --- Idempotency (request_id) ---
+
+  test "stores request_id on session when provided" do
+    result = Sessions::CreationService.new(account, {
+      visitor_id: "vis_idem_1",
+      session_id: "sess_idem_1",
+      url: "https://example.com/page",
+      request_id: "req_proxy_abc123"
+    }).call
+
+    assert result[:success]
+    session = account.sessions.find_by(session_id: "sess_idem_1")
+
+    assert_equal "req_proxy_abc123", session.request_id
+  end
+
+  test "duplicate request_id returns original session without creating new one" do
+    first = Sessions::CreationService.new(account, {
+      visitor_id: "vis_idem_dup_1",
+      session_id: "sess_idem_dup_1",
+      url: "https://example.com/page",
+      request_id: "req_duplicate_session"
+    }).call
+
+    assert first[:success]
+
+    second = Sessions::CreationService.new(account, {
+      visitor_id: "vis_idem_dup_1",
+      session_id: "sess_idem_dup_1",
+      url: "https://example.com/page",
+      request_id: "req_duplicate_session"
+    }).call
+
+    assert second[:success]
+    assert_equal first[:session_id], second[:session_id]
+    assert_equal first[:visitor_id], second[:visitor_id]
+    assert_equal first[:channel], second[:channel]
+  end
+
+  test "duplicate request_id does not increment billing usage" do
+    Sessions::CreationService.new(account, {
+      visitor_id: "vis_idem_bill_1",
+      session_id: "sess_idem_bill_1",
+      url: "https://example.com/page",
+      request_id: "req_billing_dedup"
+    }).call
+
+    assert_no_difference -> { usage_counter.current_usage } do
+      Sessions::CreationService.new(account, {
+        visitor_id: "vis_idem_bill_1",
+        session_id: "sess_idem_bill_1",
+        url: "https://example.com/page",
+        request_id: "req_billing_dedup"
+      }).call
+    end
+  end
+
+  test "same request_id in different account creates new session" do
+    Sessions::CreationService.new(account, {
+      visitor_id: "vis_idem_cross_1",
+      session_id: "sess_idem_cross_1",
+      url: "https://example.com/page",
+      request_id: "req_cross_account"
+    }).call
+
+    other = Sessions::CreationService.new(other_account, {
+      visitor_id: "vis_idem_cross_2",
+      session_id: "sess_idem_cross_2",
+      url: "https://example.com/page",
+      request_id: "req_cross_account"
+    }).call
+
+    assert other[:success]
+    assert account.sessions.exists?(request_id: "req_cross_account")
+    assert other_account.sessions.exists?(request_id: "req_cross_account")
+  end
+
+  test "nil request_id does not trigger dedup" do
+    first = Sessions::CreationService.new(account, {
+      visitor_id: "vis_idem_nil_1",
+      session_id: "sess_idem_nil_1",
+      url: "https://example.com/page",
+      request_id: nil
+    }).call
+
+    second = Sessions::CreationService.new(account, {
+      visitor_id: "vis_idem_nil_2",
+      session_id: "sess_idem_nil_2",
+      url: "https://example.com/page",
+      request_id: nil
+    }).call
+
+    assert first[:success]
+    assert second[:success]
+    assert_not_equal first[:session_id], second[:session_id]
+  end
+
   # --- Self-Referral Detection ---
 
   test "classifies cross-domain self-referral as direct" do
@@ -831,6 +928,10 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
 
   def account
     @account ||= accounts(:one)
+  end
+
+  def other_account
+    @other_account ||= accounts(:two)
   end
 
   def visitor
