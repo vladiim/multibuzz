@@ -222,14 +222,22 @@ await env.INGEST_BUCKET.put(key, JSON.stringify(payload));
 try {
   const response = await forwardToOrigin(env, payload);
   if (response.ok) {
-    // Rails processed it — archive R2 object, return Rails response
+    // 2xx — Rails processed it. Archive R2 object, return Rails response.
     ctx.waitUntil(moveToArchive(env.INGEST_BUCKET, key));
     return new Response(await response.text(), {
       status: response.status,
       headers: { "content-type": "application/json" },
     });
   }
-  // Rails returned error — leave in pending for replay
+  if (response.status >= 400 && response.status < 500 && response.status !== 429) {
+    // 4xx (client error) — pass through Rails error. Delete R2 (bad request, no value).
+    ctx.waitUntil(env.INGEST_BUCKET.delete(key));
+    return new Response(await response.text(), {
+      status: response.status,
+      headers: { "content-type": "application/json" },
+    });
+  }
+  // 5xx or 429 — Rails down or rate-limited, leave in pending for replay
 } catch {
   // Forward failed (timeout/network) — leave in pending for replay
 }
@@ -397,7 +405,7 @@ Updated the Worker to implement A+Y decisions. TDD: RED tests first, then GREEN 
 - [x] **1b.3** Dependency-ordered replay: `handleReplay()` makes 4 sequential `R2.list()` calls: `pending/sessions/`, `pending/events/`, `pending/conversions/`, `pending/identify/`
 - [x] **1b.4** Retryable 422 handling: `isRetryableError()` checks response body for "Visitor not found" and "Billing blocked" → leaves in `pending/` instead of dead-lettering
 - [x] **1b.5** `extractApiKey()` + `buildArchiveKey()` extract API key from `headers.authorization` for archive path
-- [x] **1b.6** 29 tests: 7 validation, 5 sync pass-through, 4 archive, 3 dependency ordering, 2 replay archive, 6 retryable 422, 2 circuit breaker
+- [x] **1b.6** 32 tests: 7 validation, 5 sync pass-through, 3 4xx pass-through (client errors returned to SDK, R2 deleted), 4 archive, 3 dependency ordering, 2 replay archive, 6 retryable 422, 2 circuit breaker
 - [ ] **1b.7** Deploy updated Worker, E2E verify: session → event → conversion → identify through proxy with full Rails responses
 
 ### Phase 2: Rails Idempotency Layer
@@ -511,6 +519,9 @@ Each SDK change is the same: update the default base URL from `https://mbuzz.co/
 | Test | Verifies |
 |------|----------|
 | POST to valid endpoint + Rails up → full Rails response returned | Sync pass-through |
+| POST to valid endpoint + Rails 401 → 401 passed through to SDK | 4xx pass-through |
+| POST to valid endpoint + Rails 422 → 422 passed through to SDK | 4xx pass-through |
+| POST to valid endpoint + Rails 4xx → R2 object deleted (bad request) | 4xx cleanup |
 | POST to valid endpoint + Rails down → 202 receipt | Graceful degradation |
 | POST to valid endpoint → R2 object created in `pending/` | Durable storage |
 | POST with invalid auth header → 401, no R2 write | Auth format validation |
@@ -579,12 +590,13 @@ Rolling migration, no big bang:
 ## Definition of Done
 
 - [x] Cloudflare Worker deployed on `api.mbuzz.co`, accepting all 4 API endpoints
-- [ ] Proxy uses sync pass-through (full Rails response when up, 202 when down)
-- [ ] Replay worker processes in dependency order (sessions → events → conversions → identify)
-- [ ] Replay worker handles retryable 422s (leaves in `pending/`, doesn't dead-letter)
-- [ ] R2 archive: successful payloads moved to `archive/{api_key}/...` (not deleted)
+- [x] Proxy uses sync pass-through (full Rails response when up, 202 when down)
+- [x] Proxy passes through 4xx client errors (401, 422) to SDK, deletes R2 object
+- [x] Replay worker processes in dependency order (sessions → events → conversions → identify)
+- [x] Replay worker handles retryable 422s (leaves in `pending/`, doesn't dead-letter)
+- [x] R2 archive: successful payloads moved to `archive/{api_key}/...` (not deleted)
 - [ ] R2 lifecycle rules: IA after 30d, delete archive after 25mo, delete failed after 90d
-- [ ] Circuit breaker preventing thundering herd on recovery
+- [x] Circuit breaker preventing thundering herd on recovery
 - [ ] Rails idempotency layer preventing duplicate processing
 - [ ] All SDK defaults updated to `api.mbuzz.co` with configurable fallback to `mbuzz.co`
 - [ ] SDKs handle degraded 202 gracefully (return `{ success: true }` with nil IDs, not `false`)
@@ -592,7 +604,7 @@ Rolling migration, no big bang:
 - [ ] E2E test: replay ordering verified (sessions before events before conversions)
 - [ ] Monitoring: pending count, dead letters, replay lag
 - [ ] API docs and `api_contract.md` updated
-- [ ] Architecture doc with full flow, Cloudflare setup, and runbook in `lib/docs/architecture/`
+- [x] Architecture doc with full flow, Cloudflare setup, and runbook in `lib/docs/architecture/`
 - [ ] Direct `mbuzz.co/api/v1` endpoint documented as permanent fallback
 - [ ] Spec updated and moved to `old/`
 
