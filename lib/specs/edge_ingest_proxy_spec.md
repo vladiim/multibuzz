@@ -428,28 +428,28 @@ Each SDK change is the same: update the default base URL from `https://mbuzz.co/
 - [x] Repo: `github.com/mbuzzco/mbuzz-ruby` (local: `../mbuzz-ruby/`)
 - [x] File: `lib/mbuzz/configuration.rb:29` — default URL updated
 - [x] Bump version to `0.8.0`, update CHANGELOG, README, docstring
-- [ ] `gem build && gem push`
+- [x] Published to rubygems.org (`gem push mbuzz-0.8.0.gem`)
 
 #### 3.2 Node.js SDK (`mbuzz-node`) — 0.7.5 → 0.8.0
 
 - [x] Repo: `github.com/mbuzzco/mbuzz-node` (local: `../mbuzz-node/`)
 - [x] File: `src/config.ts:11` — default URL updated
 - [x] Bump version to `0.8.0`, update CHANGELOG, README, test assertion
-- [ ] `npm publish`
+- [x] Published to npmjs.com (`npm publish`)
 
 #### 3.3 Python SDK (`mbuzz-python`) — 0.7.5 → 0.8.0
 
 - [x] Repo: `github.com/mbuzzco/mbuzz-python` (local: `../mbuzz-python/`)
 - [x] File: `src/mbuzz/config.py:6` — default URL updated
 - [x] Bump version to `0.8.0`, update CHANGELOG, docstring
-- [ ] `python -m build && twine upload dist/*`
+- [x] Published to pypi.org (`python -m build && twine upload`)
 
 #### 3.4 PHP SDK (`mbuzz-php`) — 0.7.5 → 0.8.0
 
 - [x] Repo: `github.com/mbuzzco/mbuzz-php` (local: `../mbuzz-php/`)
 - [x] File: `src/Mbuzz/Config.php:11` — default URL updated
 - [x] Update CHANGELOG, README, test assertion
-- [ ] Tag `v0.8.0` release (Packagist auto-publishes from GitHub tags)
+- [x] Tagged `v0.8.0`, pushed to Packagist via GitHub tag
 
 #### 3.5 Shopify App (`mbuzz-shopify`) — 3 files
 
@@ -457,7 +457,7 @@ Each SDK change is the same: update the default base URL from `https://mbuzz.co/
 - [x] File 1: `extensions/mbuzz-pixel/src/index.js:8` — updated
 - [x] File 2: `extensions/mbuzz-tracking/assets/mbuzz-shopify.js:14` — updated
 - [x] File 3: `extensions/mbuzz-tracking/blocks/tracking.liquid:4` and `:38` — both updated
-- [ ] Deploy via `shopify app deploy`
+- [x] Deployed via `shopify app deploy` (mbuzz-attribution-6)
 
 #### 3.6 sGTM Tag (`mbuzz-sgtm`) — 2 locations in 1 file
 
