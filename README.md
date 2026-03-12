@@ -66,6 +66,7 @@ multibuzz/
 **Core Design**:
 - [Attribution Methodology](lib/docs/architecture/attribution_methodology.md) - Multi-touch attribution principles
 - [Server-Side Attribution Architecture](lib/docs/architecture/server_side_attribution_architecture.md) - System design
+- [Edge Ingest Proxy](lib/docs/architecture/edge_ingest_proxy.md) - Cloudflare Worker proxy for durable event ingestion
 - [Session Qualification](lib/docs/architecture/session_qualification.md) - Ghost session detection and filtering
 - [Code Highlighting Implementation](lib/docs/architecture/code_highlighting_implementation.md) - Stripe-style docs
 
@@ -176,6 +177,7 @@ multibuzz/
 - Attribution credits
 
 **Security & Infrastructure**:
+- Edge ingest proxy (Cloudflare Worker + R2) for durable event capture
 - API key authentication with Bearer tokens
 - Rate limiting per account
 - Multi-tenancy with account isolation
@@ -326,7 +328,8 @@ See [sdk_integration_tests/README.md](sdk_integration_tests/README.md) for detai
 
 ## API Overview
 
-**Base URL**: `https://multibuzz.co/api/v1`
+**Primary URL**: `https://api.mbuzz.co/api/v1` (edge proxy — recommended)
+**Direct URL**: `https://mbuzz.co/api/v1` (permanent fallback)
 
 **Authentication**: Bearer token in `Authorization` header
 

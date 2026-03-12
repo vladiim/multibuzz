@@ -200,16 +200,24 @@ Your Website / App
     |
     |  SDK sends events (sessions, page views, conversions)
     v
-mbuzz API (4 endpoints)
+Edge Ingest Proxy (api.mbuzz.co — Cloudflare Worker)
     |
-    +--> Session Resolution (visitor + session + channel classification)
+    +--> Durable storage (Cloudflare R2 — data safe before processing)
     |
-    +--> Event Storage (TimescaleDB -- optimized for time-series data)
+    +--> Forward to mbuzz API (synchronous pass-through)
+    |         |
+    |         +--> Session Resolution (visitor + session + channel classification)
+    |         |
+    |         +--> Event Storage (TimescaleDB -- optimized for time-series data)
+    |         |
+    |         +--> Conversion Detection --> Attribution Engine (7 models, runs async)
+    |         |
+    |         +--> Dashboard (real-time charts, channel performance, funnels, CLV)
     |
-    +--> Conversion Detection --> Attribution Engine (7 models, runs async)
-    |
-    +--> Dashboard (real-time charts, channel performance, funnels, CLV)
+    +--> Replay Worker (if API is down, retries until data is processed)
 ```
+
+SDKs send to `api.mbuzz.co`, an edge ingest proxy that durably stores every payload in Cloudflare R2 before forwarding to the Rails API. If the API is down (deploy, crash, DB issue), data is safe in R2 and a replay worker retries every minute until it succeeds. The direct endpoint (`mbuzz.co/api/v1`) remains available as a permanent fallback.
 
 The entire system is built on Ruby on Rails 8, PostgreSQL with TimescaleDB for time-series performance, and uses no external dependencies like Redis -- everything runs on the database (Solid Stack architecture).
 

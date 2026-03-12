@@ -2,7 +2,7 @@
 
 > The definitive reference for every rule mbuzz enforces. Written for anyone -- technical or not -- who needs to understand exactly how the system behaves.
 
-**Last Updated:** 2026-02-21
+**Last Updated:** 2026-03-12
 
 ---
 
@@ -478,6 +478,24 @@ mbuzz automatically detects and filters bot traffic to ensure clean data.
 | AP4 | SDKs must never crash the host application | All errors are caught and logged. The SDK returns false on failure, never raises exceptions. |
 | AP5 | The API is non-blocking | Ingestion endpoints return 202 (Accepted) immediately. Processing happens asynchronously in the background. |
 | AP6 | Sessions must be created before events | SDKs must call the session endpoint before tracking events. This is enforced server-side (see V5). |
+
+### Edge Ingest Proxy
+
+| # | Rule | Detail |
+|---|------|--------|
+| AP7 | SDKs send to the edge proxy by default | The primary endpoint is `api.mbuzz.co`, a Cloudflare Worker that durably stores payloads in R2 before forwarding to Rails. |
+| AP8 | The direct endpoint is a permanent fallback | `mbuzz.co/api/v1` remains available forever. SDKs can be configured to use it directly. It is not deprecated. |
+| AP9 | The proxy returns full Rails responses | When Rails is up (99%+), the proxy forwards synchronously and returns the Rails response verbatim. When Rails is down, the proxy returns a simplified `202 { "status": "accepted", "request_id": "..." }`. |
+| AP10 | Replay preserves dependency order | The replay worker processes pending payloads in order: sessions → events → conversions → identify. This ensures visitors exist before events reference them. |
+
+### Idempotency
+
+| # | Rule | Detail |
+|---|------|--------|
+| ID1 | Ingestion endpoints support idempotency keys | The proxy sends an `X-Idempotency-Key` header with each forwarded request. Rails uses this to prevent duplicate processing during replay. |
+| ID2 | Duplicate requests return the original result | If a session, event, or conversion with the same `request_id` already exists for the account, the service returns the existing record instead of creating a new one. |
+| ID3 | Idempotency is optional | Requests without an `X-Idempotency-Key` header are processed normally. Direct API calls and older SDK versions are unaffected. |
+| ID4 | Conversions use `idempotency_key` param | Conversions already had an `idempotency_key` field before the proxy. The `X-Idempotency-Key` header serves as a fallback if the param is not set. |
 
 ### The Four API Endpoints
 
