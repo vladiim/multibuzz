@@ -59,7 +59,7 @@ Authorization: Bearer sk_test_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
 
 **cURL Example:**
 ```bash
-curl -X POST https://mbuzz.co/api/v1/events \
+curl -X POST https://api.mbuzz.co/api/v1/events \
   -H "Authorization: Bearer sk_test_YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"events": [...]}'
@@ -69,7 +69,7 @@ curl -X POST https://mbuzz.co/api/v1/events \
 ```ruby
 require 'net/http'
 
-uri = URI('https://mbuzz.co/api/v1/events')
+uri = URI('https://api.mbuzz.co/api/v1/events')
 request = Net::HTTP::Post.new(uri)
 request['Authorization'] = "Bearer #{ENV['MBUZZ_API_KEY']}"
 request['Content-Type'] = 'application/json'
@@ -77,7 +77,7 @@ request['Content-Type'] = 'application/json'
 
 **JavaScript Example:**
 ```javascript
-fetch('https://mbuzz.co/api/v1/events', {
+fetch('https://api.mbuzz.co/api/v1/events', {
   method: 'POST',
   headers: {
     'Authorization': `Bearer ${process.env.MBUZZ_API_KEY}`,
@@ -91,7 +91,7 @@ fetch('https://mbuzz.co/api/v1/events', {
 Test your API key before making tracking requests:
 
 ```bash
-curl -X GET https://mbuzz.co/api/v1/validate \
+curl -X GET https://api.mbuzz.co/api/v1/validate \
   -H "Authorization: Bearer sk_test_YOUR_API_KEY"
 ```
 
@@ -157,7 +157,7 @@ Best practice: Rotate keys periodically (every 90 days recommended).
 
 **Request:**
 ```bash
-curl -X POST https://mbuzz.co/api/v1/events \
+curl -X POST https://api.mbuzz.co/api/v1/events \
   -H "Content-Type: application/json" \
   -d '{"events": [...]}'
 ```
@@ -345,18 +345,18 @@ API keys are **hashed** before storage using SHA256:
 **Solutions:**
 ```bash
 # ❌ Wrong
-curl -X POST https://mbuzz.co/api/v1/events
+curl -X POST https://api.mbuzz.co/api/v1/events
 
 # ❌ Wrong header name
-curl -X POST https://mbuzz.co/api/v1/events \
+curl -X POST https://api.mbuzz.co/api/v1/events \
   -H "X-API-Key: sk_test_..."
 
 # ❌ Missing "Bearer" prefix
-curl -X POST https://mbuzz.co/api/v1/events \
+curl -X POST https://api.mbuzz.co/api/v1/events \
   -H "Authorization: sk_test_..."
 
 # ✅ Correct
-curl -X POST https://mbuzz.co/api/v1/events \
+curl -X POST https://api.mbuzz.co/api/v1/events \
   -H "Authorization: Bearer sk_test_..."
 ```
 

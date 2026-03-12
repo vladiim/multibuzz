@@ -480,13 +480,13 @@ Each SDK change is the same: update the default base URL from `https://mbuzz.co/
 
 #### 3.7 REST API Docs (mbuzz main repo)
 
-- [ ] File: `config/sdk_registry.yml` — update `rest_api.event_code`, `rest_api.conversion_code`, `rest_api.identify_code` curl examples from `https://mbuzz.co/api/v1/` → `https://api.mbuzz.co/api/v1/`
-- [ ] Update any API reference docs pages that hardcode the old URL
+- [x] File: `config/sdk_registry.yml` — update `rest_api.event_code`, `rest_api.conversion_code`, `rest_api.identify_code` curl examples from `https://mbuzz.co/api/v1/` → `https://api.mbuzz.co/api/v1/`
+- [x] Update any API reference docs pages that hardcode the old URL
 
 #### 3.8 Documentation
 
-- [ ] Update `lib/docs/sdk/api_contract.md` — document proxy behavior, 202 response format, `X-Idempotency-Key` header, permanent dual-endpoint policy
-- [ ] Update API docs pages — recommend `api.mbuzz.co` as primary, document `mbuzz.co` as permanent direct fallback
+- [x] Update `lib/docs/sdk/api_contract.md` — document proxy behavior, 202 response format, `X-Idempotency-Key` header, permanent dual-endpoint policy
+- [x] Update API docs pages — recommend `api.mbuzz.co` as primary, document `mbuzz.co` as permanent direct fallback
 
 #### 3.9 Integration Testing
 
@@ -503,12 +503,12 @@ Each SDK change is the same: update the default base URL from `https://mbuzz.co/
 
 ### Phase 5: Documentation
 
-- [ ] **5.1** Document Cloudflare setup in `lib/docs/architecture/edge_ingest_proxy.md` — account details, DNS config, R2 bucket, Worker bindings, cron schedule, Cloudflare dashboard settings (SSL Full Strict, bypass cache, email obfuscation off, etc.)
-- [ ] **5.2** Update `lib/docs/sdk/api_contract.md` — document `api.mbuzz.co` as primary endpoint, proxy 202 response format, `X-Idempotency-Key` header, direct `mbuzz.co/api/v1` as permanent fallback
+- [x] **5.1** Document Cloudflare setup in `lib/docs/architecture/edge_ingest_proxy.md` — account details, DNS config, R2 bucket, Worker bindings, cron schedule, Cloudflare dashboard settings (SSL Full Strict, bypass cache, email obfuscation off, etc.)
+- [x] **5.2** Update `lib/docs/sdk/api_contract.md` — document `api.mbuzz.co` as primary endpoint, proxy 202 response format, `X-Idempotency-Key` header, direct `mbuzz.co/api/v1` as permanent fallback
 - [ ] **5.3** Update `lib/docs/PRODUCT.md` — mention edge proxy as part of platform reliability
 - [ ] **5.4** Update `lib/docs/BUSINESS_RULES.md` — dual-endpoint behavior, idempotency semantics
 - [ ] **5.5** Update `README.md` — link to architecture doc, note Cloudflare dependency
-- [ ] **5.6** Add runbook to `lib/docs/architecture/edge_ingest_proxy.md` — how to check R2 pending count, how to flush dead letters, how to bypass proxy in an emergency, how to deploy Worker updates
+- [x] **5.6** Add runbook to `lib/docs/architecture/edge_ingest_proxy.md` — how to check R2 pending count, how to flush dead letters, how to bypass proxy in an emergency, how to deploy Worker updates
 
 ---
 
@@ -603,7 +603,7 @@ Rolling migration, no big bang:
 - [ ] E2E test: outage simulation with zero data loss
 - [ ] E2E test: replay ordering verified (sessions before events before conversions)
 - [ ] Monitoring: pending count, dead letters, replay lag
-- [ ] API docs and `api_contract.md` updated
+- [x] API docs and `api_contract.md` updated
 - [x] Architecture doc with full flow, Cloudflare setup, and runbook in `lib/docs/architecture/`
 - [ ] Direct `mbuzz.co/api/v1` endpoint documented as permanent fallback
 - [ ] Spec updated and moved to `old/`

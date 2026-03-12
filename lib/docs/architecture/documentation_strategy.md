@@ -148,7 +148,7 @@ Configure mbuzz in your Rails initializer:
 # config/initializers/mbuzz.rb
 Mbuzz.configure do |config|
   config.api_key = ENV['MBUZZ_API_KEY']
-  config.api_url = 'https://mbuzz.co/api/v1'
+  config.api_url = 'https://api.mbuzz.co/api/v1'
 end
 ```
 

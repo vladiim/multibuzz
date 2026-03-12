@@ -25,7 +25,7 @@ module OnboardingHelper
       const DEBUG = false;
 
       // DO NOT EDIT BELOW
-      const API_URL = "https://mbuzz.co/api/v1";
+      const API_URL = "https://api.mbuzz.co/api/v1";
       const VID_ATTR = "_mbuzz_visitor_id";
       const SID_ATTR = "_mbuzz_session_id";
 

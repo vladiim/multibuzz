@@ -27,7 +27,7 @@ info:
     name: Proprietary
 
 servers:
-  - url: https://mbuzz.co/api/v1
+  - url: https://api.mbuzz.co/api/v1
     description: Production
   - url: https://staging.mbuzz.co/api/v1
     description: Staging

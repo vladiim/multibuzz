@@ -237,7 +237,7 @@ gem 'mbuzz'
 **Required Configuration**:
 ```
 api_key (required)
-api_url (default: https://mbuzz.co/api/v1)
+api_url (default: https://api.mbuzz.co/api/v1)
 enabled (default: true)
 debug (default: false)
 ```
@@ -377,7 +377,7 @@ Before releasing any SDK version:
 | Purpose | Variable Name | Example |
 |---------|--------------|---------|
 | API Key | `MBUZZ_API_KEY` | `sk_test_abc123...` |
-| API URL | `MBUZZ_API_URL` | `https://mbuzz.co/api/v1` |
+| API URL | `MBUZZ_API_URL` | `https://api.mbuzz.co/api/v1` |
 
 ### Response Formats (MUST BE IDENTICAL)
 

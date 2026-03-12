@@ -322,17 +322,17 @@ rest_api:
     # Set your API key as an environment variable
     export MBUZZ_API_KEY=sk_live_your_key_here
   event_code: |
-    curl -X POST https://mbuzz.co/api/v1/events \
+    curl -X POST https://api.mbuzz.co/api/v1/events \
       -H "Authorization: Bearer $MBUZZ_API_KEY" \
       -H "Content-Type: application/json" \
       -d '{"events": [{"event_type": "page_view", "visitor_id": "abc123", "session_id": "xyz789", "properties": {"url": "https://example.com"}}]}'
   conversion_code: |
-    curl -X POST https://mbuzz.co/api/v1/conversions \
+    curl -X POST https://api.mbuzz.co/api/v1/conversions \
       -H "Authorization: Bearer $MBUZZ_API_KEY" \
       -H "Content-Type: application/json" \
       -d '{"conversion": {"conversion_type": "purchase", "visitor_id": "abc123", "revenue": 99.99}}'
   identify_code: |
-    curl -X POST https://mbuzz.co/api/v1/identify \
+    curl -X POST https://api.mbuzz.co/api/v1/identify \
       -H "Authorization: Bearer $MBUZZ_API_KEY" \
       -H "Content-Type: application/json" \
       -d '{"user_id": "user_123", "visitor_id": "abc123", "traits": {"email": "user@example.com"}}'

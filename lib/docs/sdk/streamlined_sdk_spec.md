@@ -264,7 +264,7 @@ All SDKs MUST implement these 4 methods:
 | Name | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
 | `api_key` | string | Yes | - | API key (`sk_live_*` or `sk_test_*`) |
-| `api_url` | string | No | `https://mbuzz.co/api/v1` | API base URL |
+| `api_url` | string | No | `https://api.mbuzz.co/api/v1` | API base URL |
 | `debug` | boolean | No | `false` | Enable debug logging |
 
 **Fixed Values** (not configurable):

@@ -144,7 +144,7 @@ MD
 
       # Use in Authorization header
       curl -H "Authorization: Bearer $MBUZZ_API_KEY" \\
-           https://mbuzz.co/api/v1/events
+           https://api.mbuzz.co/api/v1/events
     CODE
   }
 }), default: :ruby) %>
@@ -346,7 +346,7 @@ MD
     syntax: 'bash',
     code: <<~CODE
       # Include funnel in event properties
-      curl -X POST https://mbuzz.co/api/v1/events \\
+      curl -X POST https://api.mbuzz.co/api/v1/events \\
         -H "Authorization: Bearer $MBUZZ_API_KEY" \\
         -H "Content-Type: application/json" \\
         -d '{
@@ -890,7 +890,7 @@ MD
     syntax: 'bash',
     code: <<~CODE
       # Create conversion from event
-      curl -X POST https://mbuzz.co/api/v1/conversions \\
+      curl -X POST https://api.mbuzz.co/api/v1/conversions \\
         -H "Authorization: Bearer $MBUZZ_API_KEY" \\
         -H "Content-Type: application/json" \\
         -d '{
@@ -957,7 +957,7 @@ MD
     syntax: 'bash',
     code: <<~CODE
       # Create conversion from visitor ID
-      curl -X POST https://mbuzz.co/api/v1/conversions \\
+      curl -X POST https://api.mbuzz.co/api/v1/conversions \\
         -H "Authorization: Bearer $MBUZZ_API_KEY" \\
         -H "Content-Type: application/json" \\
         -d '{
@@ -1079,12 +1079,12 @@ MD
     syntax: 'bash',
     code: <<~CODE
       # 1. Acquisition conversion
-      curl -X POST https://mbuzz.co/api/v1/conversions \\
+      curl -X POST https://api.mbuzz.co/api/v1/conversions \\
         -H "Authorization: Bearer $MBUZZ_API_KEY" \\
         -d '{"conversion": {"conversion_type": "signup", "user_id": "123", "is_acquisition": true}}'
 
       # 2. Recurring revenue
-      curl -X POST https://mbuzz.co/api/v1/conversions \\
+      curl -X POST https://api.mbuzz.co/api/v1/conversions \\
         -H "Authorization: Bearer $MBUZZ_API_KEY" \\
         -d '{"conversion": {"conversion_type": "payment", "user_id": "123", "revenue": 49.00, "inherit_acquisition": true}}'
     CODE
@@ -1353,7 +1353,7 @@ MD
     syntax: 'bash',
     code: <<~CODE
       # Check HTTP response codes
-      curl -v -X POST https://mbuzz.co/api/v1/events \\
+      curl -v -X POST https://api.mbuzz.co/api/v1/events \\
         -H "Authorization: Bearer $MBUZZ_API_KEY" \\
         -H "Content-Type: application/json" \\
         -d '{"events": [{"event_type": "test", "visitor_id": "abc123"}]}'

@@ -25,7 +25,7 @@ This document provides a comprehensive UAT test plan for mbuzz, covering event t
 |-------------|---------|---------|
 | **Development** | `http://localhost:3000/api/v1` | Local Rails server testing |
 | **Staging** | `https://staging.mbuzz.co/api/v1` | Pre-production validation |
-| **Production** | `https://mbuzz.co/api/v1` | Final verification |
+| **Production** | `https://api.mbuzz.co/api/v1` | Final verification |
 
 ### Test API Key Format
 

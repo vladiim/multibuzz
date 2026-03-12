@@ -61,7 +61,7 @@ module DocsHelper
 
           # Use in Authorization header
           curl -H "Authorization: Bearer $MBUZZ_API_KEY" \\
-               https://mbuzz.co/api/v1/events
+               https://api.mbuzz.co/api/v1/events
         CODE
       }
     }))
@@ -129,7 +129,7 @@ module DocsHelper
         label: "REST API",
         syntax: "bash",
         code: <<~CODE
-          curl -X POST https://mbuzz.co/api/v1/events \\
+          curl -X POST https://api.mbuzz.co/api/v1/events \\
             -H "Authorization: Bearer $MBUZZ_API_KEY" \\
             -H "Content-Type: application/json" \\
             -d '{

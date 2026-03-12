@@ -9,10 +9,11 @@
 
 ## Base URL
 
-**Production**: `https://mbuzz.co/api/v1`
+**Production**: `https://api.mbuzz.co/api/v1`
+**Direct (fallback)**: `https://mbuzz.co/api/v1`
 **Staging**: `https://staging.mbuzz.co/api/v1` (if available)
 
-All endpoints are relative to this base URL.
+All endpoints are relative to this base URL. The `api.mbuzz.co` endpoint routes through the edge ingest proxy for durability. The `mbuzz.co` endpoint hits Rails directly and serves as a permanent fallback.
 
 ---
 

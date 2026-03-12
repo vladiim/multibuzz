@@ -162,7 +162,8 @@ Deploy: `kamal deploy -d staging`
 
 Monitor:
 - `https://mbuzz.co/up` — app health
-- `https://mbuzz.co/api/v1/health` — API health
+- `https://api.mbuzz.co/api/v1/health` — API health (proxy)
+- `https://mbuzz.co/api/v1/health` — API health (direct)
 
 Alert via: email (free) or Slack webhook (free).
 
