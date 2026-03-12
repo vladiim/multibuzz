@@ -481,6 +481,35 @@ Each SDK change is the same: update the default base URL from `https://mbuzz.co/
 - [ ] Run E2E integration tests (`sdk_integration_tests/`) against `api.mbuzz.co` for each SDK
 - [ ] Verify session → event → conversion → identify flow through proxy for at least Ruby + Node
 
+#### 3.10 SDK Degraded 202 Handling (0.8.1)
+
+When the proxy accepts a request but Rails is unreachable, it returns `{ "status": "accepted", "request_id": "..." }` instead of the full Rails response. Without this fix, `track()` and `conversion()` return `false` despite data being safely buffered. The fix: detect `status == "accepted"` without endpoint-specific keys and return `{ success: true }` with nil IDs.
+
+**Approach: Ruby first, verify live, then publish all.**
+
+**Code changes** (implemented, not yet committed):
+- [x] Ruby: `track_request.rb` — split `valid?` into `input_valid?`, add `proxy_accepted?` + `proxy_result`
+- [x] Ruby: `conversion_request.rb` — same pattern
+- [x] Node: `trackRequest.ts` — add `isProxyAccepted()` guard in `parseResponse()`
+- [x] Node: `conversionRequest.ts` — same pattern
+- [x] Node: `types.ts` — make `eventId` and `conversionId` optional
+- [x] Python: `track.py` — add proxy check in `_parse_response()`
+- [x] PHP: `TrackRequest.php` — add proxy check after null response guard
+
+**Tests + publish** (Ruby first):
+- [ ] Ruby: write tests for proxy 202 on track + conversion
+- [ ] Ruby: bump to 0.8.1, update CHANGELOG
+- [ ] Ruby: run full test suite, publish gem
+- [ ] Ruby: **verify with live production data through `api.mbuzz.co`**
+- [ ] Node: write tests, bump 0.8.1, publish
+- [ ] Python: write tests, bump 0.8.1, publish
+- [ ] PHP: write tests, bump 0.8.1, publish (tag `v0.8.1`)
+
+**Not in scope for 0.8.1 (deferred to 0.9.0):**
+- SDK-level fallback URL (`fallback_url` config + retry to `mbuzz.co/api/v1` on proxy timeout/5xx)
+- This is Option Y from the decisions — adds resilience against CF outages but is not required for the core proxy flow
+- Without fallback, CF-down behavior = same as today's Rails-down behavior (SDK returns false)
+
 ### Phase 4: Monitoring + Observability
 
 - [ ] **4.1** CF Worker analytics: track request count, latency, error rate (built-in CF dashboard)
@@ -587,7 +616,7 @@ Rolling migration, no big bang:
 - [x] Circuit breaker preventing thundering herd on recovery
 - [x] Rails idempotency layer preventing duplicate processing
 - [x] All SDK defaults updated to `api.mbuzz.co` with configurable fallback to `mbuzz.co`
-- [ ] SDKs handle degraded 202 gracefully (return `{ success: true }` with nil IDs, not `false`)
+- [ ] SDKs handle degraded 202 gracefully (code done in all 4 SDKs — tests + publish pending, Ruby first)
 - [ ] E2E test: outage simulation with zero data loss
 - [ ] E2E test: replay ordering verified (sessions before events before conversions)
 - [ ] Monitoring: pending count, dead letters, replay lag
