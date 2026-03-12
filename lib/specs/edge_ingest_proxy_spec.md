@@ -425,58 +425,46 @@ Each SDK change is the same: update the default base URL from `https://mbuzz.co/
 
 #### 3.1 Ruby SDK (`mbuzz-ruby`) — 0.7.5 → 0.8.0
 
-- [ ] Repo: `github.com/mbuzzco/mbuzz-ruby` (local: `../mbuzz-ruby/`)
-- [ ] File: `lib/mbuzz/configuration.rb:29`
-- [ ] Change: `@api_url = "https://mbuzz.co/api/v1"` → `@api_url = "https://api.mbuzz.co/api/v1"`
-- [ ] Bump version in gemspec to `0.8.0`
-- [ ] Update CHANGELOG
+- [x] Repo: `github.com/mbuzzco/mbuzz-ruby` (local: `../mbuzz-ruby/`)
+- [x] File: `lib/mbuzz/configuration.rb:29` — default URL updated
+- [x] Bump version to `0.8.0`, update CHANGELOG, README, docstring
 - [ ] `gem build && gem push`
 
 #### 3.2 Node.js SDK (`mbuzz-node`) — 0.7.5 → 0.8.0
 
-- [ ] Repo: `github.com/mbuzzco/mbuzz-node` (local: `../mbuzz-node/`)
-- [ ] File: `src/config.ts:11`
-- [ ] Change: `const DEFAULT_API_URL = 'https://mbuzz.co/api/v1'` → `const DEFAULT_API_URL = 'https://api.mbuzz.co/api/v1'`
-- [ ] Bump version in `package.json` to `0.8.0`
-- [ ] Update CHANGELOG
+- [x] Repo: `github.com/mbuzzco/mbuzz-node` (local: `../mbuzz-node/`)
+- [x] File: `src/config.ts:11` — default URL updated
+- [x] Bump version to `0.8.0`, update CHANGELOG, README, test assertion
 - [ ] `npm publish`
 
 #### 3.3 Python SDK (`mbuzz-python`) — 0.7.5 → 0.8.0
 
-- [ ] Repo: `github.com/mbuzzco/mbuzz-python` (local: `../mbuzz-python/`)
-- [ ] File: `src/mbuzz/config.py:6`
-- [ ] Change: `DEFAULT_API_URL = "https://mbuzz.co/api/v1"` → `DEFAULT_API_URL = "https://api.mbuzz.co/api/v1"`
-- [ ] Bump version in `pyproject.toml` to `0.8.0`
-- [ ] Update CHANGELOG
+- [x] Repo: `github.com/mbuzzco/mbuzz-python` (local: `../mbuzz-python/`)
+- [x] File: `src/mbuzz/config.py:6` — default URL updated
+- [x] Bump version to `0.8.0`, update CHANGELOG, docstring
 - [ ] `python -m build && twine upload dist/*`
 
 #### 3.4 PHP SDK (`mbuzz-php`) — 0.7.5 → 0.8.0
 
-- [ ] Repo: `github.com/mbuzzco/mbuzz-php` (local: `../mbuzz-php/`)
-- [ ] File: `src/Mbuzz/Config.php:11`
-- [ ] Change: `private const DEFAULT_API_URL = 'https://mbuzz.co/api/v1'` → `private const DEFAULT_API_URL = 'https://api.mbuzz.co/api/v1'`
-- [ ] Bump version in `composer.json` to `0.8.0`
-- [ ] Update CHANGELOG
-- [ ] Tag release (Packagist auto-publishes from GitHub tags)
+- [x] Repo: `github.com/mbuzzco/mbuzz-php` (local: `../mbuzz-php/`)
+- [x] File: `src/Mbuzz/Config.php:11` — default URL updated
+- [x] Update CHANGELOG, README, test assertion
+- [ ] Tag `v0.8.0` release (Packagist auto-publishes from GitHub tags)
 
 #### 3.5 Shopify App (`mbuzz-shopify`) — 3 files
 
-- [ ] Repo: local `../mbuzz-shopify/` (no public GitHub repo)
-- [ ] File 1: `extensions/mbuzz-pixel/src/index.js:8`
-  - Change: `const API_URL = "https://mbuzz.co/api/v1"` → `const API_URL = "https://api.mbuzz.co/api/v1"`
-- [ ] File 2: `extensions/mbuzz-tracking/assets/mbuzz-shopify.js:14`
-  - Change: default fallback `'https://mbuzz.co/api/v1'` → `'https://api.mbuzz.co/api/v1'`
-- [ ] File 3: `extensions/mbuzz-tracking/blocks/tracking.liquid:4` and `:38`
-  - Change: default value `"https://mbuzz.co/api/v1"` → `"https://api.mbuzz.co/api/v1"` (both the Liquid default and the schema default)
+- [x] Repo: local `../mbuzz-shopify/` (no public GitHub repo)
+- [x] File 1: `extensions/mbuzz-pixel/src/index.js:8` — updated
+- [x] File 2: `extensions/mbuzz-tracking/assets/mbuzz-shopify.js:14` — updated
+- [x] File 3: `extensions/mbuzz-tracking/blocks/tracking.liquid:4` and `:38` — both updated
 - [ ] Deploy via `shopify app deploy`
 
 #### 3.6 sGTM Tag (`mbuzz-sgtm`) — 2 locations in 1 file
 
-- [ ] Repo: `github.com/mbuzzco/mbuzz-sgtm` (local: `../mbuzz-sgtm/`)
-- [ ] File: `template.tpl`
-  - Line 195: `var DEFAULT_API_URL = 'https://mbuzz.co/api/v1'` → `var DEFAULT_API_URL = 'https://api.mbuzz.co/api/v1'`
-  - Line 140: `"defaultValue": "https://mbuzz.co/api/v1"` → `"defaultValue": "https://api.mbuzz.co/api/v1"`
-- [ ] Push to GitHub (GTM Community Template Gallery auto-syncs)
+- [x] Repo: `github.com/mbuzzco/mbuzz-sgtm` (local: `../mbuzz-sgtm/`)
+- [x] File: `template.tpl` — both `defaultValue` (line 140) and `DEFAULT_API_URL` (line 195) updated
+- [x] README updated
+- [x] Pushed to GitHub (GTM Community Template Gallery auto-syncs)
 
 #### 3.7 REST API Docs (mbuzz main repo)
 
@@ -598,7 +586,7 @@ Rolling migration, no big bang:
 - [ ] R2 lifecycle rules: IA after 30d, delete archive after 25mo, delete failed after 90d
 - [x] Circuit breaker preventing thundering herd on recovery
 - [x] Rails idempotency layer preventing duplicate processing
-- [ ] All SDK defaults updated to `api.mbuzz.co` with configurable fallback to `mbuzz.co`
+- [x] All SDK defaults updated to `api.mbuzz.co` with configurable fallback to `mbuzz.co`
 - [ ] SDKs handle degraded 202 gracefully (return `{ success: true }` with nil IDs, not `false`)
 - [ ] E2E test: outage simulation with zero data loss
 - [ ] E2E test: replay ordering verified (sessions before events before conversions)
