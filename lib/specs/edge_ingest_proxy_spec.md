@@ -406,18 +406,18 @@ Updated the Worker to implement A+Y decisions. TDD: RED tests first, then GREEN 
 - [x] **1b.4** Retryable 422 handling: `isRetryableError()` checks response body for "Visitor not found" and "Billing blocked" → leaves in `pending/` instead of dead-lettering
 - [x] **1b.5** `extractApiKey()` + `buildArchiveKey()` extract API key from `headers.authorization` for archive path
 - [x] **1b.6** 32 tests: 7 validation, 5 sync pass-through, 3 4xx pass-through (client errors returned to SDK, R2 deleted), 4 archive, 3 dependency ordering, 2 replay archive, 6 retryable 422, 2 circuit breaker
-- [ ] **1b.7** Deploy updated Worker, E2E verify: session → event → conversion → identify through proxy with full Rails responses
+- [x] **1b.7** Deploy updated Worker, E2E verify: session → event → conversion → identify through proxy with full Rails responses
 
 ### Phase 2: Rails Idempotency Layer
 
-- [ ] **2.1** Add migration: `request_id` column (string, nullable) to `sessions`, `events`, `conversions`
-- [ ] **2.2** Add unique index: `(account_id, request_id)` where `request_id IS NOT NULL`
-- [ ] **2.3** Update `Sessions::CreationService` — check for existing `request_id` before creating
-- [ ] **2.4** Update `Events::IngestionService` — check for existing `request_id` before creating
-- [ ] **2.5** Update `Conversions::TrackingService` — check for existing `request_id` before creating (note: conversions already have `idempotency_key` — wire `request_id` through same mechanism)
-- [ ] **2.6** Update `Api::V1::BaseController` — extract `X-Idempotency-Key` header, pass to services
-- [ ] **2.7** Write tests for idempotency: duplicate request returns original response, no double-counting
-- [ ] **2.8** Write tests for backwards compatibility: requests without idempotency key still work
+- [x] **2.1** Add migration: `request_id` column (string, nullable) to `sessions`, `events` (conversions already have `idempotency_key`)
+- [x] **2.2** Add partial index: `(account_id, request_id) WHERE request_id IS NOT NULL` (non-unique — TimescaleDB hypertables require partition column in unique indexes; service-layer dedup instead)
+- [x] **2.3** Update `Sessions::CreationService` — check for existing `request_id` before creating
+- [x] **2.4** Update `Events::ProcessingService` — check for existing `request_id` before creating; events controller generates per-event request_ids (`{key}_{index}`)
+- [x] **2.5** Update `Conversions::TrackingService` — wire `X-Idempotency-Key` header as fallback for `idempotency_key` param
+- [x] **2.6** Update `Api::V1::BaseController` — extract `X-Idempotency-Key` header, pass to services
+- [x] **2.7** Write tests for idempotency: duplicate request returns original response, no double-counting (16 tests: 5 session service + 5 event service + 3 session controller + 3 conversion controller)
+- [x] **2.8** Write tests for backwards compatibility: requests without idempotency key still work
 
 ### Phase 3: SDK Updates
 
@@ -597,7 +597,7 @@ Rolling migration, no big bang:
 - [x] R2 archive: successful payloads moved to `archive/{api_key}/...` (not deleted)
 - [ ] R2 lifecycle rules: IA after 30d, delete archive after 25mo, delete failed after 90d
 - [x] Circuit breaker preventing thundering herd on recovery
-- [ ] Rails idempotency layer preventing duplicate processing
+- [x] Rails idempotency layer preventing duplicate processing
 - [ ] All SDK defaults updated to `api.mbuzz.co` with configurable fallback to `mbuzz.co`
 - [ ] SDKs handle degraded 202 gracefully (return `{ success: true }` with nil IDs, not `false`)
 - [ ] E2E test: outage simulation with zero data loss

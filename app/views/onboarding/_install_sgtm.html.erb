@@ -33,6 +33,20 @@
     </details>
   </div>
 
+  <!-- GA4 Forwarding Warning -->
+  <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+    <p class="text-red-800 text-sm mb-2">
+      <strong>Important — Keep GA4 working:</strong> If you set a <code class="bg-red-100 px-1 rounded">server_container_url</code>
+      on your client-side Google Tag (to route hits through sGTM), you <strong>must</strong> also add a
+      <strong>Google Analytics: GA4</strong> tag in your server-side container to forward hits onward to Google.
+      Without it, GA4 stops receiving data entirely.
+    </p>
+    <p class="text-red-700 text-sm">
+      See <strong>Step 7</strong> below for setup instructions. If you don't use <code class="bg-red-100 px-1 rounded">server_container_url</code>,
+      you can skip this.
+    </p>
+  </div>
+
   <!-- Step 1: Import Tag Template -->
   <div class="border border-gray-200 rounded-lg p-6">
     <div class="flex items-center gap-3 mb-4">
@@ -285,6 +299,36 @@
       <div class="mt-4 bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-800">
         <strong>Tip:</strong> Use a <code class="bg-green-100 px-1 rounded text-xs">sk_test_*</code> API key during testing.
         Test data stays separate from production.
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 7: GA4 Forwarding Tag -->
+  <div class="border-2 border-red-200 rounded-lg p-6 bg-red-50">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="flex-shrink-0 w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center font-semibold">7</div>
+      <h3 class="text-lg font-medium text-gray-900">Add a GA4 forwarding tag <span class="text-sm font-normal text-red-600">(required if using server_container_url)</span></h3>
+    </div>
+    <div class="pl-11">
+      <p class="text-gray-700 mb-4">
+        If your client-side Google Tag has a <code class="bg-red-100 px-1 rounded text-xs">server_container_url</code> set,
+        all GA4 hits are redirected to your sGTM server instead of going directly to Google. You need a tag in the server
+        container to forward them onward, otherwise <strong>GA4 will stop receiving data entirely</strong>.
+      </p>
+
+      <ol class="list-decimal list-inside space-y-2 text-gray-700 mb-4">
+        <li>In your <strong>server-side</strong> GTM container, go to <strong>Tags</strong> &rarr; <strong>New</strong></li>
+        <li>Choose <strong>Google Analytics: GA4</strong> as the tag type</li>
+        <li>Leave the <strong>Measurement ID blank</strong> — it inherits automatically from the incoming request</li>
+        <li>Set the trigger to <strong>All Pages</strong></li>
+        <li>Name it <code class="bg-gray-100 px-1 rounded">GA4 - Forward</code> and <strong>Save</strong></li>
+        <li>Click <strong>Submit</strong> to publish</li>
+      </ol>
+
+      <div class="bg-white border border-red-200 rounded-lg p-3 text-sm text-gray-700">
+        <strong>How to tell if you need this:</strong> Check your client-side Google Tag configuration. If you see
+        <code class="bg-gray-100 px-1 rounded text-xs">server_container_url</code> pointing to your sGTM domain,
+        you need this tag. If your GA4 hits go directly to Google (no server_container_url), you can skip this step.
       </div>
     </div>
   </div>

@@ -596,6 +596,14 @@
           (from Step 1). In GTM, go to <strong>Admin</strong> &rarr; <strong>Container Settings</strong> &rarr; set the
           <strong>Server Container URL</strong> to your sGTM URL.
         </div>
+
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-800 mt-4">
+          <strong>Warning — GA4 will stop working without a forwarding tag.</strong> Setting a Server Container URL
+          redirects <em>all</em> GA4 hits to your sGTM server instead of to Google. If your server container doesn't
+          have a <strong>Google Analytics: GA4</strong> tag to forward the data onward, GA4 will receive nothing.
+          See <a href="#ga4-forwarding" class="text-red-700 underline font-medium">GA4 Forwarding</a> below for the
+          one-minute fix.
+        </div>
       </div>
     </div>
 
@@ -1094,6 +1102,47 @@
   </div>
 
   <!-- ============================================================ -->
+  <!-- SECTION: GA4 Forwarding -->
+  <!-- ============================================================ -->
+  <div id="ga4-forwarding" class="mb-16 scroll-mt-24">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">GA4 Forwarding <span class="text-base font-normal text-red-600">(don't skip this)</span></h2>
+
+    <div class="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+      <p class="text-red-800 mb-3">
+        If your client-side Google Tag has a <code class="bg-red-100 px-1 rounded text-sm">server_container_url</code>,
+        all GA4 hits are routed through your sGTM server instead of going directly to Google. Your server container
+        needs a <strong>GA4 tag</strong> to forward those hits onward — without it, <strong>GA4 stops receiving data entirely</strong>.
+      </p>
+      <p class="text-red-700 text-sm">
+        This is the most common issue we see after sGTM setup. If GA4 Realtime or DebugView shows nothing after configuring
+        <code class="bg-red-100 px-1 rounded text-xs">server_container_url</code>, this is almost certainly the cause.
+      </p>
+    </div>
+
+    <div class="border border-gray-200 rounded-lg p-6">
+      <h3 class="font-semibold text-gray-900 mb-4">Add a GA4 forwarding tag (1 minute)</h3>
+      <ol class="list-decimal list-inside space-y-2 text-gray-700 mb-4">
+        <li>In your <strong>server-side</strong> GTM container, go to <strong>Tags</strong> &rarr; <strong>New</strong></li>
+        <li>Choose <strong>Google Analytics: GA4</strong> as the tag type</li>
+        <li>Leave the <strong>Measurement ID blank</strong> — it inherits automatically from the incoming request</li>
+        <li>Set the trigger to <strong>All Pages</strong></li>
+        <li>Name it <code class="bg-gray-100 px-1 rounded text-sm">GA4 - Forward</code> and click <strong>Save</strong></li>
+        <li>Click <strong>Submit</strong> &rarr; <strong>Publish</strong></li>
+      </ol>
+
+      <p class="text-sm text-gray-600 mb-4">
+        This single tag forwards <strong>all</strong> GA4 events (page views, custom events, conversions) to Google.
+        You don't need a separate forwarding tag for each event type.
+      </p>
+
+      <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-gray-600">
+        <strong>Already have GA4 tags in your server container?</strong> You're fine — mbuzz runs alongside your existing
+        tags and doesn't interfere. This step is only needed if your server container doesn't already forward hits to GA4.
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
   <!-- SECTION: Client-side to server-side conversions -->
   <!-- ============================================================ -->
   <div id="client-side-conversions" class="mb-16 scroll-mt-24">
@@ -1500,6 +1549,18 @@
         <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 text-sm text-gray-600 space-y-2">
           <p><strong>For testing only.</strong> The "Automatically provision tagging server" button in GTM creates a Cloud Run instance in us-central1 that runs on a <code class="bg-gray-100 px-1 rounded text-xs">.run.app</code> domain. Cookies set from this domain are third-party — Safari limits them to 7 days and ad blockers can block them.</p>
           <p>It's fine for a quick test to see how sGTM works, but for production you'll need either a managed provider (Stape, Addingwell) with a custom domain, or a manual GCP setup with a load balancer and your own subdomain. See <a href="#step-1" class="text-indigo-600 underline">Step 1</a> for the full walkthrough.</p>
+        </div>
+      </details>
+
+      <details class="border border-red-200 rounded-lg overflow-hidden group">
+        <summary class="px-5 py-4 bg-red-50 hover:bg-red-100 cursor-pointer flex items-center justify-between">
+          <span class="font-medium text-gray-900">GA4 stopped working after setting up sGTM / mbuzz</span>
+          <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+        </summary>
+        <div class="px-5 py-4 bg-red-50 border-t border-red-200 text-sm text-gray-600 space-y-2">
+          <p><strong>This is almost always a missing GA4 forwarding tag.</strong> When you set <code class="bg-gray-100 px-1 rounded text-xs">server_container_url</code> on your client-side Google Tag, all GA4 hits are redirected to your sGTM server. If the server container doesn't have a <strong>Google Analytics: GA4</strong> tag to forward them to Google, GA4 receives nothing.</p>
+          <p><strong>Quick fix:</strong> In your server-side container, create a new <strong>Google Analytics: GA4</strong> tag with an <strong>All Pages</strong> trigger. Leave the Measurement ID blank (it inherits automatically). Publish the container. See <a href="#ga4-forwarding" class="text-red-700 underline">GA4 Forwarding</a> for full instructions.</p>
+          <p><strong>Emergency rollback:</strong> If you need GA4 working immediately, remove the <code class="bg-gray-100 px-1 rounded text-xs">server_container_url</code> parameter from your client-side Google Tag. This restores direct GA4 tracking while you fix the server container. mbuzz will stop receiving data until you re-add it.</p>
         </div>
       </details>
 
