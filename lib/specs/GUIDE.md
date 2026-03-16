@@ -305,7 +305,10 @@ Every spec should feed the development cycle:
       |
 6. Update spec (check off tasks, note decisions)
       |
-7. Commit: type(scope): description
+7. Update lib/docs/ if significant architectural/technical changes
+   (update existing files if possible, create new file otherwise)
+      |
+8. Commit: type(scope): description
 ```
 
 **The bridge:** Acceptance criteria in the spec become test assertions. If a criterion can't be turned into a test, it's not specific enough.

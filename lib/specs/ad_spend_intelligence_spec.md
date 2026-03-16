@@ -1546,6 +1546,26 @@ Google Ads data for a given day is considered final after **48 hours**. For the 
 
 > **Implementation notes (Phase 3)**: Sync pipeline decomposed into 4 SRP classes: `ApiClient` (shared HTTP client with auth headers), `RowParser` (API row → upsert hash), `CampaignChannelMapper` (campaign type → mbuzz channel, PMax network splitting), `SpendSyncService` (orchestrate: fetch, parse, `upsert_all`, meter). All use memoized methods. Jobs are thin wrappers: `SpendSyncSchedulerJob` iterates `active_connections`, `SpendSyncJob` delegates to `ConnectionSyncService`. `ConnectionSyncService` handles lifecycle: token refresh (memoized `token_refresh`), sync run creation/completion, connection status transitions. Campaign types and network types use `AdPlatformChannels` constants — no magic strings. 90-day backfill enqueued from `create_connection` via `SpendSyncJob` with custom `date_range:`. Daily incremental sync covers last 3 days for Google Ads correction window. Manual refresh via `IntegrationsController#refresh` (scoped to `current_account`). Schedule: 6am daily via `recurring.yml`. 40 new tests (2809 suite total).
 
+### Phase 3b: API Usage Monitoring + UAT Verification
+
+Google Ads Basic Access limits us to **15,000 operations/day**. Each GAQL `search()` call = 1 operation. Daily sync uses 2 operations per connection (standard + PMax query). At current scale this is negligible, but we need monitoring before it becomes a problem.
+
+- [x] **3b.1** Create `AdPlatforms::Google::ApiUsageTracker` — cache-based daily counter. Class methods: `increment!(count)`, `current_usage`, `usage_percentage`, `approaching_limit?`, `remaining_operations`. Constants: `DAILY_OPERATION_LIMIT = 15_000`, `WARNING_THRESHOLD = 80`. Cache key: `google_ads_api_ops/{date}`, expires at end of day.
+
+- [x] **3b.2** Instrument `AdPlatforms::Google::ApiClient#execute` to call `ApiUsageTracker.increment!` on each HTTP request.
+
+- [x] **3b.3** Create `AdPlatformMailer` with `api_usage_warning(operations_today:, limit:, percentage:)` method. Sends to `FormSubmissionMailer::NOTIFICATION_EMAIL` (vlad@forebrite.com). Subject: `[mbuzz] Google Ads API usage at {percentage}% ({operations_today}/15,000)`.
+
+- [x] **3b.4** Create email view `app/views/ad_platform_mailer/api_usage_warning.html.erb` — operations count, percentage, remaining operations, note about Basic Access limit and when to apply for Standard Access.
+
+- [x] **3b.5** Add usage check to `SpendSyncSchedulerJob#perform` — after iterating all connections, call `ApiUsageTracker.approaching_limit?` and send `AdPlatformMailer.api_usage_warning` if true. Cache guard sends at most once per day.
+
+- [x] **3b.6** Create rake task `ad_platforms:verify_basic_access` — takes first active `AdPlatformConnection`, refreshes token if needed, calls `ListAccessibleCustomers`, reports success/failure + developer token status + daily API usage count.
+
+- [x] **3b.7** Write tests: `ApiUsageTracker` (16 tests: increment, threshold, percentage, ApiClient instrumentation), `AdPlatformMailer` (5 tests: delivery, subject, body content), `SpendSyncSchedulerJob` (3 new tests: sends email above threshold, doesn't send below, once-per-day guard). 3024 total suite, no regressions.
+
+**Volume context**: 2 ops/connection/sync. 7,500 connections = daily limit. Warning at 12,000 ops (6,000 connections synced). We are nowhere near this, but monitoring prevents silent failures when scaling.
+
 ### Phase 4: Core Metrics
 
 - [x] **4.1** Create `SpendIntelligence::Scopes::SpendScope` (account, date_range, channels, devices, hours, test_mode)

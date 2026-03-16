@@ -6,6 +6,7 @@
 
 - **Product name is mbuzz** (lowercase, never "Multibuzz"). Repo dir `multibuzz` is legacy.
 - **NEVER use EnterPlanMode.** Spec first, step-by-step, no bulk commits. You propose, user approves, you execute.
+- **NEVER use TaskCreate, TaskUpdate, TaskList, or any task/todo tools.** Specs are the plan. Work from specs, not task lists.
 - **No AI attribution** in commits (no "Co-Authored-By: Claude", etc.)
 - **Every query MUST be scoped to account** (multi-tenancy).
 - **Never expose raw database IDs** — use `prefixed_ids` gem.
