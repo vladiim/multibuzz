@@ -11,6 +11,7 @@
 - **Every query MUST be scoped to account** (multi-tenancy).
 - **Never expose raw database IDs** — use `prefixed_ids` gem.
 - **Sessions are server-side** — SDKs do NOT manage sessions.
+- **NEVER write secrets, tokens, API keys, account IDs, email addresses, or any credentials to files that are committed to git.** This includes specs, docs, code comments, and config files. Secrets go in Rails credentials or 1Password only. Use placeholders like "see Rails credentials" or "see 1Password".
 
 ## Philosophy
 

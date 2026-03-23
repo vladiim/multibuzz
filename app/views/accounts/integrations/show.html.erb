@@ -38,3 +38,14 @@
     </div>
   </div>
 </div>
+
+<%= render "shared/upgrade_modal",
+  modal_id: "subscription-required-modal",
+  title: "Subscription Required",
+  body: "Ad platform integrations are available on paid plans. Connect Google Ads to unlock:",
+  features: [
+    "Attributed ROAS across all channels",
+    "Customer acquisition cost (CAC)",
+    "Budget recommendations",
+    "Automated daily spend sync"
+  ] %>

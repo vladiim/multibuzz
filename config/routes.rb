@@ -17,6 +17,7 @@ Rails.application.routes.draw do
     get "google_ads/callback", to: "google_ads#callback"
     get "google_ads/select_account", to: "google_ads#select_account"
     post "google_ads/create_connection", to: "google_ads#create_connection"
+    get "google_ads/reconnect/:id", to: "google_ads#reconnect", as: :google_ads_reconnect
     delete "google_ads/:id", to: "google_ads#disconnect", as: :google_ads_disconnect
   end
 
@@ -59,6 +60,10 @@ Rails.application.routes.draw do
       patch "clv_mode", to: "dashboard/clv_mode#update"
     end
   end
+
+  # PPC landing pages (noindex)
+  get "lp/:slug", to: "landing_pages#show", as: :landing_page,
+    constraints: { slug: Regexp.new(LandingPages::Registry.slugs.join("|")) }
 
   # Public pages
   get "home", to: "pages#home"
@@ -163,6 +168,8 @@ Rails.application.routes.draw do
         post "refresh/:id", action: :refresh, as: :refresh
         post "notify", action: :notify, as: :notify
         post "request", action: :request_integration, as: :request_integration
+        get "google_ads", action: :google_ads
+        get "google_ads/:id", action: :google_ads_account, as: :google_ads_detail
       end
       resources :attribution_models, except: [ :show ] do
         collection do

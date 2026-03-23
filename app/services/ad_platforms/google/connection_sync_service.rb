@@ -15,7 +15,7 @@ module AdPlatforms
         ensure_fresh_token
         sync_result[:success] ? complete_sync : fail_sync
       rescue TokenRefreshError => e
-        fail_sync(e.message)
+        fail_reauth(e.message)
       end
 
       private
@@ -32,11 +32,28 @@ module AdPlatforms
       def complete_sync
         sync_run.update!(status: :completed, records_synced: sync_result[:records_synced], completed_at: Time.current)
         connection.mark_connected!
+        broadcast_sync_result
       end
 
       def fail_sync(message = sync_result[:errors]&.first)
         sync_run.update!(status: :failed, error_message: message, completed_at: Time.current)
         connection.mark_error!(message)
+        broadcast_sync_result
+      end
+
+      def fail_reauth(message)
+        sync_run.update!(status: :failed, error_message: message, completed_at: Time.current)
+        connection.mark_needs_reauth!
+        broadcast_sync_result
+      end
+
+      def broadcast_sync_result
+        Turbo::StreamsChannel.broadcast_replace_to(
+          "connection_#{connection.prefix_id}",
+          target: "sync-run-pending",
+          partial: "accounts/integrations/sync_run_row",
+          locals: { run: sync_run }
+        )
       end
 
       def sync_result

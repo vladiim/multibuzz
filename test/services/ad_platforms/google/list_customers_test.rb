@@ -83,6 +83,16 @@ class AdPlatforms::Google::ListCustomersTest < ActiveSupport::TestCase
     end
   end
 
+  test "search requests include login-customer-id header" do
+    svc = AdPlatforms::Google::ListCustomers.new(access_token: "tok")
+
+    AdPlatforms::Google.stub(:credentials, test_credentials) do
+      req = svc.send(:build_search_request, "1234567890", query: "SELECT customer.id FROM customer")
+
+      assert_equal "1234567890", req["login-customer-id"]
+    end
+  end
+
   test "returns empty list when manager has no sub-accounts" do
     empty_sub = { "results" => [] }
     responses = {

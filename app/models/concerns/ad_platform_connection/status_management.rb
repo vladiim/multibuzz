@@ -23,6 +23,10 @@ module AdPlatformConnection::StatusManagement
     update!(status: :error, last_sync_error: message)
   end
 
+  def mark_needs_reauth!
+    update!(status: :needs_reauth)
+  end
+
   def mark_disconnected!
     update!(status: :disconnected, access_token: nil, refresh_token: nil, token_expires_at: nil)
   end

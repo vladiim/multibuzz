@@ -18,14 +18,16 @@ module Oauth
       return redirect_with_state_error unless valid_state?
       return redirect_with_error(exchange_result) unless exchange_result[:success]
 
-      store_tokens_in_session
-      session.delete(:oauth_state)
-      redirect_to oauth_google_ads_select_account_path
+      reconnecting? ? complete_reconnect : begin_account_selection
     end
 
     def select_account
-      @customers = customer_list_result[:customers] if customer_list_result[:success]
-      @customers ||= []
+      if customer_list_result[:success]
+        @customers = customer_list_result[:customers]
+      else
+        @customers = []
+        @error = customer_list_result[:errors]&.first
+      end
     end
 
     def create_connection
@@ -35,6 +37,13 @@ module Oauth
       enqueue_backfill
       clear_oauth_session!
       redirect_to account_integrations_path, notice: "Google Ads account connected."
+    end
+
+    def reconnect
+      session[:oauth_state] = state
+      session[:oauth_account_id] = current_account.id
+      session[:oauth_reconnect_id] = connection.prefix_id
+      redirect_to oauth_url, allow_other_host: true
     end
 
     def disconnect
@@ -62,6 +71,32 @@ module Oauth
       @exchange_result ||= AdPlatforms::Google::TokenExchanger.new(code: params[:code]).call
     end
 
+    def reconnecting?
+      session[:oauth_reconnect_id].present?
+    end
+
+    def begin_account_selection
+      store_tokens_in_session
+      session.delete(:oauth_state)
+      redirect_to oauth_google_ads_select_account_path
+    end
+
+    def complete_reconnect
+      reconnect_connection.update!(
+        access_token: exchange_result[:access_token],
+        refresh_token: exchange_result[:refresh_token],
+        token_expires_at: exchange_result[:expires_at],
+        status: :connected,
+        last_sync_error: nil
+      )
+      clear_oauth_session!
+      redirect_to account_integrations_path, notice: "Google Ads re-authenticated."
+    end
+
+    def reconnect_connection
+      @reconnect_connection ||= oauth_account.ad_platform_connections.find_by_prefix_id!(session[:oauth_reconnect_id])
+    end
+
     def store_tokens_in_session
       session[:google_ads_tokens] = {
         "access_token" => exchange_result[:access_token],
@@ -76,9 +111,13 @@ module Oauth
       session[:google_ads_tokens]
     end
 
+    def access_token
+      session_tokens&.dig("access_token")
+    end
+
     def customer_list_result
       @customer_list_result ||= AdPlatforms::Google::ListCustomers.new(
-        access_token: session_tokens["access_token"]
+        access_token: access_token
       ).call
     end
 
@@ -128,6 +167,7 @@ module Oauth
       session.delete(:oauth_account_id)
       session.delete(:google_ads_tokens)
       session.delete(:oauth_state)
+      session.delete(:oauth_reconnect_id)
     end
 
     # --- Guards ---
@@ -148,7 +188,7 @@ module Oauth
     # --- Error redirects ---
 
     def redirect_with_limit_error
-      redirect_to account_integrations_path, alert: "Your plan's ad platform connection limit has been reached. Please upgrade to connect more platforms."
+      redirect_to account_integrations_path, alert: "Ad platform integrations require a paid plan. Please upgrade to connect."
     end
 
     def redirect_with_state_error

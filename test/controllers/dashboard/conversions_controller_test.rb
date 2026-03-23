@@ -385,18 +385,22 @@ module Dashboard
     end
 
     def create_multi_channel_conversion
+      s1 = account.sessions.create!(visitor: visitors(:one), session_id: "sess_chan_#{SecureRandom.hex(6)}", channel: Channels::PAID_SEARCH, started_at: 6.days.ago, last_activity_at: 6.days.ago, is_test: false)
+      s2 = account.sessions.create!(visitor: visitors(:one), session_id: "sess_chan_#{SecureRandom.hex(6)}", channel: Channels::EMAIL, started_at: 5.days.ago, last_activity_at: 5.days.ago, is_test: false)
+
       conversion = account.conversions.create!(
         visitor: visitors(:one),
         conversion_type: "purchase",
         converted_at: 5.days.ago,
-        is_test: false
+        is_test: false,
+        journey_session_ids: [ s1.id, s2.id ]
       )
 
       # 2 different channels for this conversion
       account.attribution_credits.create!(
         conversion: conversion,
         attribution_model: first_touch_model,
-        session_id: 1,
+        session_id: s1.id,
         channel: Channels::PAID_SEARCH,
         credit: 0.5,
         is_test: false
@@ -405,7 +409,7 @@ module Dashboard
       account.attribution_credits.create!(
         conversion: conversion,
         attribution_model: first_touch_model,
-        session_id: 2,
+        session_id: s2.id,
         channel: Channels::EMAIL,
         credit: 0.5,
         is_test: false

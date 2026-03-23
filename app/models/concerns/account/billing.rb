@@ -198,19 +198,10 @@ module Account::Billing
     ((free_until - Time.current) / 1.day).ceil
   end
 
-  # --- Ad Platform Connection Limits ---
+  # --- Ad Platform Connections ---
 
   def can_connect_ad_platform?
-    limit = ad_platform_connection_limit
-    return false if limit == 0
-    return true if limit.nil?
-
-    ad_platform_connections.active_connections.count < limit
-  end
-
-  def ad_platform_connection_limit
-    plan_slug = plan&.slug || ::Billing::PLAN_FREE
-    ::Billing::AD_PLATFORM_CONNECTION_LIMITS.fetch(plan_slug, 0)
+    ::Billing::PAID_PLANS.include?(plan&.slug)
   end
 
   # --- Attribution Model Limits ---

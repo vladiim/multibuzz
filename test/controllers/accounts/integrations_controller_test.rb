@@ -23,7 +23,7 @@ class Accounts::IntegrationsControllerTest < ActionDispatch::IntegrationTest
     assert_select "[data-platform='google-ads']"
   end
 
-  test "show displays connected status for existing connection" do
+  test "show displays connected status for platform card" do
     sign_in
 
     get account_integrations_path
@@ -31,31 +31,89 @@ class Accounts::IntegrationsControllerTest < ActionDispatch::IntegrationTest
     assert_select "span", /Connected/i
   end
 
-  test "show displays connect button when no connection exists" do
+  test "show links to Google Ads platform page" do
     sign_in
-    connection.mark_disconnected!
 
     get account_integrations_path
 
-    assert_select "a", text: /Connect/i
+    assert_select "a[href='#{google_ads_account_integrations_path}']"
   end
 
-  test "show displays last synced time for connected account" do
+  test "show displays account count for connected platform" do
     sign_in
 
     get account_integrations_path
 
-    assert_match(/Last synced/, response.body)
+    assert_match(/account.* connected/i, response.body)
   end
 
-  test "show displays upgrade CTA when cannot connect" do
+  # --- google_ads (platform page) ---
+
+  test "google_ads renders platform page with breadcrumb" do
     sign_in
-    account.ad_platform_connections.each(&:mark_disconnected!)
-    account.update!(plan: nil)
 
-    get account_integrations_path
+    get google_ads_account_integrations_path
 
-    assert_select "a", text: /Upgrade/i
+    assert_response :success
+    assert_match(/Integrations/, response.body)
+    assert_match(/Google Ads/, response.body)
+  end
+
+  test "google_ads lists connected accounts" do
+    sign_in
+
+    get google_ads_account_integrations_path
+
+    assert_select "[data-connection-id='#{connection.prefix_id}']"
+  end
+
+  test "google_ads shows connect button for paid accounts" do
+    sign_in
+    account.update!(plan: plans(:growth))
+
+    get google_ads_account_integrations_path
+
+    assert_select "a", text: /Connect Account/
+  end
+
+  # --- google_ads_account (account detail page) ---
+
+  test "google_ads_account renders account detail with breadcrumb" do
+    sign_in
+
+    get google_ads_detail_account_integrations_path(connection)
+
+    assert_response :success
+    assert_match connection.platform_account_name, response.body
+  end
+
+  test "google_ads_account shows sync history" do
+    sign_in
+    connection.ad_spend_sync_runs.create!(
+      sync_date: Date.current, status: :completed,
+      records_synced: 100, started_at: 1.minute.ago, completed_at: Time.current
+    )
+
+    get google_ads_detail_account_integrations_path(connection)
+
+    assert_match(/100/, response.body)
+  end
+
+  test "google_ads_account shows re-authenticate for needs_reauth" do
+    sign_in
+    connection.mark_needs_reauth!
+
+    get google_ads_detail_account_integrations_path(connection)
+
+    assert_select "a[href*='reconnect']"
+  end
+
+  test "google_ads_account cannot access other account connections" do
+    sign_in
+
+    get google_ads_detail_account_integrations_path(other_connection)
+
+    assert_response :not_found
   end
 
   # --- auth ---
@@ -170,10 +228,10 @@ class Accounts::IntegrationsControllerTest < ActionDispatch::IntegrationTest
 
   # --- multi-tenancy ---
 
-  test "does not show other account connections" do
+  test "google_ads does not show other account connections" do
     sign_in
 
-    get account_integrations_path
+    get google_ads_account_integrations_path
 
     assert_select "[data-connection-id='#{other_connection.prefix_id}']", count: 0
   end

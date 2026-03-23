@@ -1,0 +1,15 @@
+<div id="sync-run-<%= run.id %>" class="flex items-center justify-between py-2 text-sm">
+  <span class="text-gray-500"><%= run.created_at.strftime("%b %-d, %-I:%M %p") %></span>
+  <% if run.completed? %>
+    <span class="text-green-600">
+      <%= number_with_delimiter(run.records_synced) %> records
+      <% if run.completed_at && run.started_at %>
+        <span class="text-gray-400 ml-1"><%= (run.completed_at - run.started_at).round %>s</span>
+      <% end %>
+    </span>
+  <% elsif run.failed? %>
+    <span class="text-red-600"><%= run.error_message&.truncate(60) || "Failed" %></span>
+  <% elsif run.running? %>
+    <span class="text-blue-600">Running...</span>
+  <% end %>
+</div>

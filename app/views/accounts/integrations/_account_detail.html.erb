@@ -1,0 +1,72 @@
+<% date_range = connection.spend_date_range %>
+
+<% if connection.needs_reauth? %>
+  <div class="mb-4 rounded-md bg-amber-50 border border-amber-200 p-3">
+    <p class="text-sm text-amber-800 mb-2">Your Google authorization has expired.</p>
+    <%= link_to "Re-authenticate with Google",
+      oauth_google_ads_reconnect_path(connection),
+      class: "text-sm font-medium text-amber-800 hover:text-amber-900 underline" %>
+  </div>
+<% end %>
+
+<% if connection.error? && connection.last_sync_error.present? %>
+  <div class="mb-4 rounded-md bg-red-50 border border-red-200 p-3">
+    <p class="text-sm text-red-700"><%= connection.last_sync_error %></p>
+  </div>
+<% end %>
+
+<dl class="grid grid-cols-3 gap-4 text-sm mb-4">
+  <div>
+    <dt class="text-gray-500">Data coverage</dt>
+    <dd class="font-medium text-gray-900">
+      <% if date_range&.first %>
+        <%= date_range.first.strftime("%b %-d") %> – <%= date_range.last.strftime("%b %-d, %Y") %>
+      <% else %>
+        No data yet
+      <% end %>
+    </dd>
+  </div>
+  <div>
+    <dt class="text-gray-500">Total records</dt>
+    <dd class="font-medium text-gray-900"><%= number_with_delimiter(connection.spend_records_count) %></dd>
+  </div>
+  <div>
+    <dt class="text-gray-500">Currency</dt>
+    <dd class="font-medium text-gray-900"><%= connection.currency %></dd>
+  </div>
+</dl>
+
+<% sync_runs = connection.recent_sync_runs %>
+<% if sync_runs.any? %>
+  <div class="mb-4">
+    <h4 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Sync History</h4>
+    <div class="divide-y divide-gray-100">
+      <% sync_runs.each do |run| %>
+        <div class="flex items-center justify-between py-1.5 text-xs">
+          <span class="text-gray-500"><%= run.created_at.strftime("%b %-d, %-I:%M %p") %></span>
+          <% if run.completed? %>
+            <span class="text-green-600"><%= number_with_delimiter(run.records_synced) %> records
+              <% if run.completed_at && run.started_at %>
+                <span class="text-gray-400 ml-1"><%= (run.completed_at - run.started_at).round %>s</span>
+              <% end %>
+            </span>
+          <% elsif run.failed? %>
+            <span class="text-red-600"><%= run.error_message&.truncate(40) || "Failed" %></span>
+          <% elsif run.running? %>
+            <span class="text-blue-600">Running...</span>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<div class="flex items-center gap-4 pt-2 border-t border-gray-100">
+  <% if connection.connected? || connection.error? %>
+    <%= button_to "Sync Now", refresh_account_integrations_path(connection),
+      method: :post, class: "text-sm text-indigo-600 hover:text-indigo-800 font-medium" %>
+  <% end %>
+  <%= link_to "Disconnect", oauth_google_ads_disconnect_path(connection),
+    data: { turbo_method: :delete, turbo_confirm: "Disconnect this account? Historical data will be kept." },
+    class: "text-sm text-red-600 hover:text-red-800" %>
+</div>

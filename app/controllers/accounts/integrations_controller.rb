@@ -6,15 +6,24 @@ module Accounts
 
     def show
       @connections = current_account.ad_platform_connections.order(created_at: :desc)
-      @can_connect = current_account.can_connect_ad_platform?
       @notified_platforms = IntegrationRequestSubmission
         .where(email: current_user.email)
         .pluck(Arel.sql("data->>'platform_name'"))
     end
 
+    def google_ads
+      @connections = current_account.ad_platform_connections.where(platform: :google_ads).where.not(status: :disconnected).order(created_at: :desc)
+    end
+
+    def google_ads_account
+      @connection = connection
+    end
+
     def refresh
+      return dismiss_verification if params[:dismiss_verification]
+
       AdPlatforms::SpendSyncJob.perform_later(connection.id)
-      redirect_to account_integrations_path, notice: "Sync started. Data will update shortly."
+      redirect_back fallback_location: account_integrations_path
     end
 
     def notify
@@ -28,6 +37,11 @@ module Accounts
     end
 
     private
+
+    def dismiss_verification
+      connection.update!(settings: connection.settings.merge(AdPlatformConnection::SETTING_VERIFICATION_DISMISSED => true))
+      redirect_to account_integrations_path
+    end
 
     def connection
       @connection ||= current_account.ad_platform_connections.find_by_prefix_id!(params[:id])

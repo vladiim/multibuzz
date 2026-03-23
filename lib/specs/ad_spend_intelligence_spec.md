@@ -2,12 +2,14 @@
 
 **Date:** 2026-02-13
 **Priority:** P0
-**Status:** UAT
+**Status:** UAT — OAuth flow verified 24 Mar 2026
 **Branch:** `feature/ad-spend-intelligence`
 
 ---
 
-> **UAT UNBLOCKED** — 11 Mar 2026. Google Ads Basic Access approved. OAuth flow, MCC sub-account discovery, and sync pipeline are code-complete. Bugs found and fixed during earlier UAT attempt: API version `v18` → `v23`, session key serialization (symbol → string), MCC sub-account discovery via `customer_client` query, `login-customer-id` header propagation. **Next step: run the full UAT checklist in the Testing Strategy section against a live Google Ads account.**
+> **UAT IN PROGRESS** — 24 Mar 2026. OAuth flow fully working. Original developer token was broken from day one (Google never associated it with GCP project despite correct setup). Fixed by resetting token in MCC API Center — Basic Access retained. ListAccessibleCustomers returns 5 accounts, ListCustomers correctly filters to 3 selectable (excludes managers + disabled accounts). Connection created, backfill enqueued. **Next: verify backfill data, test sync pipeline, test disconnect/reconnect, update production credentials.**
+>
+> Previous bugs fixed: API version `v18` → `v23`, session key serialization (symbol → string), MCC sub-account discovery via `customer_client` query, `login-customer-id` header propagation. Added error logging to `ListCustomers#search` (24 Mar).
 
 ---
 
@@ -19,13 +21,13 @@
 
 | Resource | Value |
 |---|---|
-| **Google account** | vlad@mehakovic.com |
-| **MCC account** | mbuzz — `652-093-6525` |
-| **MCC sub-account** | mbuzz — `851-548-6033` |
-| **Developer token** | `eXga_FDm2uazzjhgdlpwJw` (Explorer Access) |
-| **GCP project** | mbuzz (`mbuzz-489003`) under mehakovic.com org |
+| **Google account** | See 1Password / Rails credentials |
+| **MCC account** | mbuzz (see 1Password for account ID) |
+| **MCC sub-account** | mbuzz (see 1Password for account ID) |
+| **Developer token** | In Rails credentials (never commit to git) |
+| **GCP project** | mbuzz (see 1Password for project ID) |
 | **OAuth client** | Web application, redirect URIs: `https://mbuzz.co/oauth/google_ads/callback` + `http://localhost:3000/oauth/google_ads/callback` |
-| **OAuth consent screen** | External, Testing status, scope: `auth/adwords`, test user: vlad@mehakovic.com |
+| **OAuth consent screen** | External, Testing status, scope: `auth/adwords` |
 | **Rails credentials** | `google_ads.client_id`, `google_ads.client_secret`, `google_ads.developer_token` — added to development + production |
 
 ### Pending Approvals
@@ -37,7 +39,7 @@
 
 ### Gotchas Discovered
 
-- **marketing@mbuzz.co Google account was auto-disabled** by Google's abuse detection (brand new account + custom domain + immediate Ads access). Appeal submitted. Using vlad@mehakovic.com instead.
+- **marketing@mbuzz.co Google account was auto-disabled** by Google's abuse detection (brand new account + custom domain + immediate Ads access). Appeal submitted. Using personal account instead.
 - **Google Ads forces campaign creation wizard** when creating sub-accounts. Hit X to close, Discard the draft.
 - **7-day refresh token expiry** while consent screen is in "Testing" status. Tokens will silently break weekly during development.
 
@@ -67,7 +69,7 @@
 2. Choose **External** (our customers connect their own accounts)
 3. Fill in: app name (mbuzz), support email, `mbuzz.co` authorized domain, privacy policy URL
 4. Add scope: `https://www.googleapis.com/auth/adwords` — this is **sensitive**, triggering Google's verification review
-5. Add test users (vlad@mehakovic.com — max 100 while in Testing status)
+5. Add test users (max 100 while in Testing status)
 
 > **GOTCHA: 7-day refresh token expiry.** While the consent screen is in "Testing" status (before verification), refresh tokens expire after 7 days. Your integration will silently break weekly. Budget for regenerating tokens during development, or build a re-auth utility.
 
@@ -80,11 +82,8 @@
 
 ```bash
 bin/rails credentials:edit
-# Add:
-# google_ads:
-#   client_id: "xxx.apps.googleusercontent.com"
-#   client_secret: "GOCSPX-xxx"
-#   developer_token: "eXga_FDm2uazzjhgdlpwJw"
+# Add google_ads.client_id, google_ads.client_secret, google_ads.developer_token
+# Values in 1Password — NEVER commit credential values to git
 ```
 
 #### 5. Apply for Basic Access (5 min, then wait 2-7 business days)
@@ -211,19 +210,33 @@ Integrations  ← NEW (/account/integrations)
 Attribution
 ```
 
-The Integrations page shows platform cards:
-- **Google Ads** card: Connect/Disconnect button, status dot (green/red), account name/ID, last synced, sync error if any
+The Integrations page experience depends on the account's plan:
+
+**Free accounts (0 connections allowed):** See an upsell card for Google Ads explaining spend intelligence value, with CTA to upgrade. Coming Soon cards and Request Integration form still visible (builds anticipation, captures demand signal).
+
+**Paid accounts:** Full connection management:
+- **Google Ads** connections: each connected account renders as its own row showing status, account name/ID, currency, last synced, records synced, date range. Actions: Sync Now, Sync History, Disconnect, Re-authenticate (when token expired).
+- **"Connect another"** button appears if plan limit allows more connections.
 - **Coming Soon** cards (greyed out with "Notify Me" button): Meta Ads, TikTok Ads, LinkedIn Ads, Microsoft Ads (Bing), Pinterest Ads, Snapchat Ads, Reddit Ads, X (Twitter) Ads, Apple Search Ads, Phone/Call Tracking
 - **CSV Import** card (coming soon): manual spend import for any platform
-- **Request Integration** card: always-visible card at the bottom of the list, prompting users to request a platform we don't support yet
+- **Request Integration** card: always-visible card at the bottom of the list
+
+**At-limit accounts:** Connect button replaced with "Your plan allows N connections. Upgrade for more." with link to billing.
 
 Connect flow:
-1. User clicks "Connect Google Ads" → redirect to Google OAuth consent
+1. User clicks "Connect Google Ads" → plan limit check → redirect to Google OAuth consent
 2. User grants read-only access → callback to `/oauth/google_ads/callback`
 3. Account picker: list accessible Google Ads accounts via `ListAccessibleCustomers` → user selects
 4. `AdPlatformConnection` created (status: connected) → redirect back to Integrations
 5. Background job: 90-day backfill starts (status: syncing)
-6. Integrations page shows "Syncing historical data..." → completes in ~2-5 min
+6. Integrations page shows syncing state with progress
+7. On first sync completion, verification banner: "Yesterday's spend: $X across Y campaigns"
+
+Re-auth flow (when token expires):
+1. User sees amber "Re-auth Required" status with "Re-authenticate" button
+2. Button triggers OAuth flow scoped to the existing connection
+3. On callback, existing connection's tokens are updated (no new connection created)
+4. Sync resumes automatically
 
 ### Coming Soon Cards
 
@@ -274,7 +287,7 @@ Each upcoming platform gets a card on the Integrations page. Cards are greyed ou
 |----------|----------|-------|
 | Meta Ads | Ad platform | API approval in progress |
 | TikTok Ads | Ad platform | Deferred — fast approval when ready |
-| LinkedIn Ads | Ad platform | API access submitted 5 Mar 2026 |
+| LinkedIn Ads | Ad platform | API access approved — Development Tier, app ID 231055434 (5 Mar 2026) |
 | Microsoft Ads (Bing) | Ad platform | Similar API to Google, easy build |
 | Pinterest Ads | Ad platform | High value for e-commerce/DTC |
 | Snapchat Ads | Ad platform | Younger demographics |
@@ -740,13 +753,20 @@ AdSpendRecord                             AttributionCredit
 | Google Ads hierarchy | Campaign-level aggregation | Ad Group and Ad level are too granular for attribution join. Campaign maps to utm_campaign. Keyword-level deferred to future phase. |
 | Reporting granularity | Hourly × device × network_type | Finest cost granularity Google Ads API offers. Enables dayparting analysis, device-level ROAS, and near-real-time spend monitoring. ~39K rows/campaign/year. |
 | Metered billing | Ad spend rows count toward usage meter | Each synced row increments same `Billing::UsageCounter` as SDK events. Natural alignment: bigger advertisers = more campaigns = more rows = higher plan. |
-| Connection limits | Gated by plan tier | Free: 0, Starter: 1, Growth: 3, Pro: unlimited. Prevents Free accounts from consuming sync resources. |
+| Connection limits | Unlimited for paid plans, 0 for free | Metered billing gates usage naturally — more connections = more synced rows = higher usage = upgrade. Connection limits are friction at the wrong moment. Removed `AD_PLATFORM_CONNECTION_LIMITS` constant. |
 | OAuth scope | `https://www.googleapis.com/auth/adwords` (read-only) | We never write to their ad accounts. Read-only builds trust. |
 | Channel mapping | Automatic via Google campaign type + network segment | Search → paid_search, Display → display, Video → video, Shopping → paid_search. PMax split by `segments.ad_network_type` (API v23). Configurable override. |
 | PMax handling | Split by sub-channel | Google exposes channel-level PMax data since API v23 (Jan 2026). Distributes spend correctly across paid_search, display, video. |
 | Response curves | Hill saturation function, fitted in Ruby | Industry standard (PyMC-Marketing, Robyn). Pure Ruby via `matrix` stdlib — 3 parameters, ~50 data points, ~50 lines. |
 | Token encryption | Rails `encrypts` (ActiveRecord Encryption) | Built into Rails 8. No gem needed. Non-deterministic AES-256-GCM. |
 | Adapter pattern | `AdPlatforms::BaseAdapter` with platform-specific subclasses | Mirrors existing `Attribution::Algorithms` strategy pattern. Google first, Meta/TikTok/LinkedIn plug in identically. |
+| **Free account UX** | Connect button opens subscription-required modal | Users discover the feature at moment of highest intent. Same button visual for all users — modal explains upgrade path. |
+| **Re-auth vs disconnect** | Re-auth updates existing connection tokens | Preserves data continuity, no re-backfill needed. Industry standard (Supermetrics, Funnel.io). |
+| **Token refresh strategy** | Proactive (check before API call) + lazy fallback (catch 401, refresh, retry) | Proactive avoids failed requests. Lazy catches edge cases. `ConnectionSyncService` already handles both. |
+| **Multi-account display** | Each connection renders as its own row | Users with MCC access may have multiple accounts. Each has independent sync status and controls. |
+| **Data verification** | Show yesterday's spend after first sync | Cheap confidence signal. Matches Triple Whale pattern. Dismissible banner stored in connection settings. |
+| **Sync history visibility** | Expose `AdSpendSyncRun` in UI | Already tracked in DB. Users need this to debug "is my data fresh?" without contacting support. |
+| **OAuth consent screen** | Push to Production ASAP | Testing mode = 7-day token expiry. Production = indefinite tokens. Requires Google verification (2-6 weeks). |
 
 ---
 
@@ -768,7 +788,7 @@ create_table :ad_platform_connections do |t|
   t.text :access_token                        # encrypted via Rails `encrypts`
   t.text :refresh_token                       # encrypted via Rails `encrypts`
   t.datetime :token_expires_at
-  t.integer :status, null: false, default: 0  # enum: connected: 0, syncing: 1, error: 2, disconnected: 3
+  t.integer :status, null: false, default: 0  # enum: connected: 0, syncing: 1, error: 2, disconnected: 3, needs_reauth: 4
   t.datetime :last_synced_at
   t.string :last_sync_error
   t.jsonb :settings, default: {}              # channel_mapping overrides, sync preferences
@@ -797,7 +817,7 @@ class AdPlatformConnection < ApplicationRecord
     microsoft_ads: 4, pinterest_ads: 5, snapchat_ads: 6,
     reddit_ads: 7, x_ads: 8, apple_search_ads: 9
   }
-  enum :status, { connected: 0, syncing: 1, error: 2, disconnected: 3 }
+  enum :status, { connected: 0, syncing: 1, error: 2, disconnected: 3, needs_reauth: 4 }
 end
 ```
 
@@ -1575,6 +1595,188 @@ Google Ads Basic Access limits us to **15,000 operations/day**. Each GAQL `searc
 - [x] **4.5** Create `SpendIntelligence::MetricsService` (aggregates all metrics for dashboard, delegates to scope + queries, caches 5 min)
 - [x] **4.6** Write comprehensive metric tests (27 tests: 9 SpendScope, 11 ChannelMetrics, 7 MetricsService)
 
+### Phase 4b: Connection Management & Data Verification
+
+Integrations page is the operational control center for ad platform connections. Hierarchy: **Platform → Accounts → Detail**. All on one page with progressive disclosure.
+
+#### Information Architecture
+
+```
+Integrations (page)
+├── Google Ads (platform section)
+│   ├── Nine_Advisory (account row, collapsed)
+│   │   └── [expand: detail panel with sync history, data coverage, actions]
+│   ├── Another Account (account row, collapsed)
+│   │   └── [expand: detail panel]
+│   └── [Connect Account] button
+├── Meta Ads (coming soon card)
+├── TikTok Ads (coming soon card)
+├── ...
+└── Request Integration (form)
+```
+
+#### Page Layout
+
+**Platform section — Google Ads (with connected accounts):**
+
+```
+┌─ GOOGLE ADS ──────────────────────────────────────────────────────┐
+│                                                                    │
+│  [G] Google Ads                              [Connect Account]    │
+│      2 accounts connected                                         │
+│                                                                    │
+│  ┌──────────────────────────────────────────────────────────────┐ │
+│  │  Nine_Advisory                                ● Connected    │ │
+│  │  xxx-xxx-2662 · AUD                                          │ │
+│  │  Synced 2h ago · 12,450 records                         [▾] │ │
+│  │                                                              │ │
+│  │  ┌─ Detail Panel (expanded) ──────────────────────────────┐ │ │
+│  │  │                                                        │ │ │
+│  │  │  Data coverage     Jan 1 – Mar 24, 2026                │ │ │
+│  │  │  Total records     12,450                               │ │ │
+│  │  │  Currency          AUD                                  │ │ │
+│  │  │                                                        │ │ │
+│  │  │  Sync History                                          │ │ │
+│  │  │  ──────────────────────────────────────────────────── │ │ │
+│  │  │  Mar 24, 10:30  ✓ 1,240 records   8s                  │ │ │
+│  │  │  Mar 23, 06:00  ✓ 1,180 records   7s                  │ │ │
+│  │  │  Mar 22, 06:00  ✗ Token expired                        │ │ │
+│  │  │                                                        │ │ │
+│  │  │  [Sync Now]               [Disconnect]                 │ │ │
+│  │  └────────────────────────────────────────────────────────┘ │ │
+│  └──────────────────────────────────────────────────────────────┘ │
+│                                                                    │
+│  ┌──────────────────────────────────────────────────────────────┐ │
+│  │  Untitled Account                             ● Syncing      │ │
+│  │  xxx-xxx-5345 · AUD                                          │ │
+│  │  Initial sync in progress...                            [▾] │ │
+│  └──────────────────────────────────────────────────────────────┘ │
+│                                                                    │
+└────────────────────────────────────────────────────────────────────┘
+```
+
+**Account rows are collapsed by default.** Click `[▾]` chevron to expand detail panel. All actions (Sync Now, Disconnect, Re-authenticate) live inside the detail panel — collapsed view stays clean.
+
+**Needs re-auth state (expanded):**
+
+```
+│  Nine_Advisory                             ⚠ Re-auth Required    │
+│  xxx-xxx-2662 · AUD                                              │
+│  Last synced 3 days ago                                     [▾] │
+│                                                                  │
+│  ┌─ Detail Panel ─────────────────────────────────────────────┐ │
+│  │                                                            │ │
+│  │  ┌──────────────────────────────────────────────────────┐ │ │
+│  │  │  Your Google authorization has expired.               │ │ │
+│  │  │  [Re-authenticate with Google →]                      │ │ │
+│  │  └──────────────────────────────────────────────────────┘ │ │
+│  │                                                            │ │
+│  │  Sync History                                              │ │
+│  │  ...                                                       │ │
+│  │                                                            │ │
+│  │  [Disconnect]                                              │ │
+│  └────────────────────────────────────────────────────────────┘ │
+```
+
+Amber status dot. Re-auth banner prominent inside detail panel. No "Sync Now" (would fail).
+
+#### Subscription Gating — Modal Pattern
+
+The [Connect Account] button always renders. What happens on click depends on plan:
+
+**Has capacity:** starts OAuth flow (current behavior).
+
+**No subscription (Free plan):** opens modal:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  Subscription Required                                  │
+│                                                         │
+│  Ad platform integrations are available on paid         │
+│  plans. Connect Google Ads to unlock:                   │
+│                                                         │
+│    ✓  Attributed ROAS across all channels               │
+│    ✓  Customer acquisition cost (CAC)                   │
+│    ✓  Budget recommendations                            │
+│    ✓  Automated daily spend sync                        │
+│                                                         │
+│                        [View Plans]     [Cancel]        │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+```
+
+**At plan limit:** opens modal:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  Connection Limit Reached                               │
+│                                                         │
+│  Your Starter plan allows 1 ad platform connection.     │
+│  Upgrade to connect more accounts.                      │
+│                                                         │
+│    Starter    1 connection                               │
+│    Growth     3 connections                              │
+│    Pro        Unlimited                                  │
+│                                                         │
+│                        [View Plans]     [Cancel]        │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+```
+
+Both modals use existing `modal` Stimulus controller. Shared partial: `shared/_upgrade_modal.html.erb` — accepts `title`, `body`, `features` (optional list). Reusable across any feature that requires a subscription (standard pattern going forward).
+
+**Decision:** The button always looks the same regardless of plan. The modal explains why they can't proceed and gives a clear upgrade path. This is better than conditional rendering because: (1) users discover the feature naturally, (2) the upgrade pitch happens at the moment of highest intent, (3) less view logic.
+
+#### Data Verification Banner
+
+After first backfill sync completes for a connection, show a green-tinted banner at the top of the platform section:
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  ✓ Initial sync complete — 12,450 records from 90 days  [Dismiss]│
+│    Yesterday's spend: $1,234.56 across 8 campaigns               │
+│    Check this matches your Google Ads dashboard.                  │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+Dismissible. Dismissed state stored in `connection.settings["verification_dismissed"]`.
+
+#### Connection Statuses
+
+| Status | Enum | Color | Dot | Collapsed Row Shows | Detail Panel Shows |
+|--------|------|-------|-----|--------------------|--------------------|
+| Connected | `0` | Green | `bg-green-500` | "Synced {time} ago · {N} records" | Sync Now, Disconnect |
+| Syncing | `1` | Blue | `bg-blue-500 animate-pulse` | "Syncing..." or "Initial sync in progress..." | Progress info, Disconnect |
+| Error | `2` | Red | `bg-red-500` | Last sync error message | Sync Now (retry), error details, Disconnect |
+| Disconnected | `3` | Gray | `bg-gray-400` | "Disconnected" | Reconnect, Delete |
+| Needs Re-auth | `4` | Amber | `bg-amber-500` | "Last synced {time} ago" | Re-auth banner, Disconnect |
+
+#### Re-authentication Flow
+
+1. `TokenRefresher` fails with auth error (401/403 from Google token endpoint)
+2. `ConnectionSyncService` calls `connection.mark_needs_reauth!` instead of `mark_error!`
+3. Integrations page shows amber status + "Re-authenticate with Google" button in detail panel
+4. Button triggers `Oauth::GoogleAdsController#reconnect` — same OAuth flow but pins `connection_id` in session
+5. On callback, existing connection's tokens are updated (no new connection created)
+6. Connection status returns to `connected`, sync resumes on next schedule
+
+#### Implementation Tasks
+
+- [x] **4b.1** Create `shared/_upgrade_modal.html.erb` — reusable subscription/limit modal. Accepts `modal_id`, `title`, `body`, `features` (checkmark list), `tiers` (plan comparison), `cta_path`/`cta_text`. Uses existing `modal` Stimulus controller.
+- [x] **4b.2** Add `needs_reauth` status (value `4`) to `AdPlatformConnection` enum. Add `mark_needs_reauth!` to `StatusManagement`. Update `ConnectionSyncService` to detect auth errors from `TokenRefresher` and call `mark_needs_reauth!` instead of `mark_error!`.
+- [x] **4b.3** Add re-auth flow: `Oauth::GoogleAdsController#reconnect` action. Pins `session[:oauth_reconnect_id]` with connection prefix_id, runs standard OAuth flow, callback detects reconnect via `reconnecting?` ternary and patches existing connection's tokens + resets status to `connected`. Route: `get "google_ads/reconnect/:id"`.
+- [x] **4b.4** Page-based IA (not nested accordions): `Integrations` → `Google Ads` (platform page) → `Account Detail`. Breadcrumb nav: "Integrations > Google Ads > Nine_Advisory". Index page shows platform cards with connection count + worst-status dot. Platform page (`google_ads` action) lists accounts as clickable rows. Account detail page (`google_ads_account` action) shows full detail.
+- [x] **4b.5** `AdPlatformConnection::AdSpend` concern: `spend_date_range`, `spend_records_count`, `recent_sync_runs(limit)`, `verification_data`, `verification_dismissed?`. Constants: `SETTING_VERIFICATION_DISMISSED`. No magic strings, no inline queries in views.
+- [x] **4b.6** Connect Account button gating: `can_connect_ad_platform?` → OAuth link. No paid plan → subscription-required modal. Removed `AD_PLATFORM_CONNECTION_LIMITS` — unlimited connections for any paid plan, metered billing handles the rest.
+- [x] **4b.7** Update `_connection_status.html.erb`: 5 statuses with colors + pulse animation for syncing.
+- [x] **4b.8** Tests: 3044 runs, 7418 assertions, 0 failures, 0 errors. Fixed pre-existing `avg_channels_to_convert` test.
+- [x] **4b.9** Verification banner: `_verification_banner.html.erb` + dismiss via controller. `SETTING_VERIFICATION_DISMISSED` constant.
+- [x] **4b.10** Live sync updates via Turbo Streams: click Sync Now → `toggle` reveals hidden spinner row in sync history, form submits to enqueue job. `ConnectionSyncService` broadcasts `Turbo::StreamsChannel.broadcast_replace_to` on completion, replacing spinner with real result (`_sync_run_row.html.erb` partial). Actions (Sync Now, Re-authenticate, Disconnect) in header, not buried at bottom.
+
+> **Implementation notes (Phase 4b)**: Page-based navigation (Integrations → Platform → Account) instead of nested accordions — cleaner at scale. Reused existing `toggle` Stimulus controller — no new JS controllers. Sync Now uses Hotwire: hidden spinner row toggled on click, background job broadcasts completed row via Turbo Streams. `can_connect_ad_platform?` simplified to `PAID_PLANS.include?(plan&.slug)` — unlimited connections, metered billing is the gate. `shared/_upgrade_modal.html.erb` reusable across features. Routes: `google_ads` and `google_ads/:id` nested under `resource :integrations`.
+
 ### Phase 5: Dashboard UI
 
 - [ ] **5.1** Create `Dashboard::SpendIntelligenceController`
@@ -1626,7 +1828,7 @@ Priority order based on market share, customer demand signals (from Notify Me / 
 **Tier 1 — Core platforms (covers ~90% of paid spend):**
 - [ ] **8.1** Meta Ads integration (API approval in progress — see `platform_api_approvals_spec.md`)
 - [ ] **8.2** TikTok Ads integration (deferred — fast approval when ready)
-- [ ] **8.3** LinkedIn Ads integration (API access submitted 5 Mar 2026)
+- [ ] **8.3** LinkedIn Ads integration (API access approved — Development Tier, app ID 231055434)
 - [ ] **8.4** CSV Import (manual spend upload for any platform — zero API overhead)
 
 **Tier 2 — Secondary platforms:**

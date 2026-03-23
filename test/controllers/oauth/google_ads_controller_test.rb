@@ -36,13 +36,13 @@ class Oauth::GoogleAdsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to login_path
   end
 
-  test "connect redirects with error when connection limit reached" do
+  test "connect redirects with error when no paid plan" do
     sign_in
 
     get oauth_google_ads_connect_path
 
     assert_redirected_to account_integrations_path
-    assert_match(/limit/i, flash[:alert])
+    assert_match(/paid plan/i, flash[:alert])
   end
 
   # --- callback ---
@@ -258,6 +258,78 @@ class Oauth::GoogleAdsControllerTest < ActionDispatch::IntegrationTest
     assert_nil session[:oauth_account_id]
     assert_nil session[:google_ads_tokens]
     assert_nil session[:oauth_state]
+  end
+
+  # --- reconnect (re-auth) ---
+
+  test "reconnect redirects to Google OAuth" do
+    sign_in
+    connection.mark_needs_reauth!
+
+    AdPlatforms::Google.stub(:credentials, test_credentials) do
+      get oauth_google_ads_reconnect_path(connection)
+    end
+
+    assert_response :redirect
+    assert_includes response.location, "accounts.google.com"
+  end
+
+  test "reconnect pins connection id in session" do
+    sign_in
+    connection.mark_needs_reauth!
+
+    AdPlatforms::Google.stub(:credentials, test_credentials) do
+      get oauth_google_ads_reconnect_path(connection)
+    end
+
+    assert_equal connection.prefix_id, session[:oauth_reconnect_id]
+  end
+
+  test "reconnect callback updates existing connection tokens" do
+    sign_in
+    connection.mark_needs_reauth!
+
+    # Simulate full reconnect flow: reconnect → callback
+    AdPlatforms::Google.stub(:credentials, test_credentials) do
+      get oauth_google_ads_reconnect_path(connection)
+    end
+    state = URI.decode_www_form(URI.parse(response.location).query).to_h["state"]
+
+    stub_exchanger(success_tokens) do
+      get oauth_google_ads_callback_path, params: { state: state, code: "reauth_code" }
+    end
+
+    connection.reload
+
+    assert_equal "access_123", connection.access_token
+    assert_equal "refresh_456", connection.refresh_token
+    assert_predicate connection, :connected?
+  end
+
+  test "reconnect callback does not create a new connection" do
+    sign_in
+    connection.mark_needs_reauth!
+
+    AdPlatforms::Google.stub(:credentials, test_credentials) do
+      get oauth_google_ads_reconnect_path(connection)
+    end
+    state = URI.decode_www_form(URI.parse(response.location).query).to_h["state"]
+
+    assert_no_difference "AdPlatformConnection.count" do
+      stub_exchanger(success_tokens) do
+        get oauth_google_ads_callback_path, params: { state: state, code: "reauth_code" }
+      end
+    end
+  end
+
+  test "reconnect cannot access other account connections" do
+    sign_in
+
+    AdPlatforms::Google.stub(:credentials, test_credentials) do
+      get oauth_google_ads_reconnect_path(other_connection)
+    end
+
+    assert_response :not_found
   end
 
   # --- disconnect ---

@@ -1,0 +1,23 @@
+<% data = connection.verification_data %>
+<% return if data.nil? || connection.verification_dismissed? %>
+
+<% spend = data[:spend_micros].to_d / AdSpendRecord::MICRO_UNIT %>
+
+<div class="mb-4 rounded-md bg-green-50 border border-green-200 p-4" data-controller="toggle">
+  <div class="flex justify-between items-start">
+    <div>
+      <p class="text-sm font-medium text-green-800">
+        Initial sync complete — <%= number_with_delimiter(connection.spend_records_count) %> records
+      </p>
+      <p class="text-sm text-green-700 mt-1">
+        Yesterday's spend: <%= number_to_currency(spend, unit: connection.currency + " ") %> across <%= pluralize(data[:campaign_count], "campaign") %>.
+        Check this matches your Google Ads dashboard.
+      </p>
+    </div>
+    <%= button_to "Dismiss",
+      refresh_account_integrations_path(connection),
+      params: { dismiss_verification: true },
+      method: :post,
+      class: "text-sm text-green-600 hover:text-green-800 font-medium flex-shrink-0" %>
+  </div>
+</div>

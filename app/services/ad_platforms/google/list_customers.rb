@@ -82,8 +82,19 @@ module AdPlatforms
       # --- HTTP ---
 
       def search(customer_id, query:)
-        response = api_post(search_uri(customer_id), query: query)
-        JSON.parse(response.body) if response.is_a?(Net::HTTPSuccess)
+        uri = search_uri(customer_id)
+        response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+          http.request(build_search_request(customer_id, query: query))
+        end
+
+        return log_search_error(customer_id, response) unless response.is_a?(Net::HTTPSuccess)
+
+        JSON.parse(response.body)
+      end
+
+      def log_search_error(customer_id, response)
+        Rails.logger.error("[Google::ListCustomers] customer #{customer_id}: #{response.code} — #{response.body}")
+        nil
       end
 
       def search_uri(customer_id)
@@ -96,11 +107,14 @@ module AdPlatforms
         end
       end
 
-      def api_post(uri, body)
-        Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
-          request = build_request(Net::HTTP::Post, uri)
-          request.body = body.to_json
-          http.request(request)
+      def build_search_request(customer_id, query:)
+        uri = search_uri(customer_id)
+        Net::HTTP::Post.new(uri).tap do |req|
+          req["Authorization"] = "Bearer #{access_token}"
+          req[HEADER_DEVELOPER_TOKEN] = Google.credentials.fetch(:developer_token)
+          req[HEADER_LOGIN_CUSTOMER_ID] = customer_id
+          req.content_type = "application/json"
+          req.body = { query: query }.to_json
         end
       end
 
@@ -113,7 +127,9 @@ module AdPlatforms
       end
 
       def list_error
-        { success: false, errors: [ "Failed to list Google Ads accounts" ] }
+        Rails.logger.error("[Google::ListCustomers] #{list_response&.code}: #{list_response&.body}")
+        Rails.logger.error("[Google::ListCustomers] access_token present: #{access_token.present?}, length: #{access_token&.length}, prefix: #{access_token&.first(10)}...")
+        { success: false, errors: [ "Failed to list Google Ads accounts (#{list_response&.code})" ] }
       end
     end
   end

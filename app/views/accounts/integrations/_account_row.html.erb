@@ -1,0 +1,33 @@
+<div class="border border-gray-200 rounded-lg" data-connection-id="<%= connection.prefix_id %>" data-controller="toggle">
+  <button type="button"
+    data-action="click->toggle#toggle"
+    class="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-gray-50 rounded-lg">
+    <div class="min-w-0">
+      <div class="flex items-center gap-2">
+        <p class="text-sm font-medium text-gray-900 truncate">
+          <%= connection.platform_account_name.presence || "Google Ads Account" %>
+        </p>
+        <%= render "connection_status", connection: connection %>
+      </div>
+      <p class="text-xs text-gray-500 mt-0.5">
+        xxx-xxx-<%= connection.platform_account_id.last(4) %> · <%= connection.currency %>
+        <% if connection.connected? && connection.last_synced_at %>
+          · Synced <%= time_ago_in_words(connection.last_synced_at) %> ago
+        <% elsif connection.syncing? %>
+          · Syncing...
+        <% elsif connection.needs_reauth? && connection.last_synced_at %>
+          · Last synced <%= time_ago_in_words(connection.last_synced_at) %> ago
+        <% elsif connection.error? %>
+          · <%= connection.last_sync_error&.truncate(60) %>
+        <% end %>
+      </p>
+    </div>
+    <svg class="h-5 w-5 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+    </svg>
+  </button>
+
+  <div data-toggle-target="content" class="hidden border-t border-gray-200 px-4 py-4">
+    <%= render "account_detail", connection: connection %>
+  </div>
+</div>

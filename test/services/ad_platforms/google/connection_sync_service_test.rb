@@ -71,12 +71,12 @@ class AdPlatforms::Google::ConnectionSyncServiceTest < ActiveSupport::TestCase
     assert_predicate run, :failed?
   end
 
-  test "marks connection as error when token refresh fails" do
+  test "marks connection as needs_reauth when token refresh fails" do
     connection.update!(token_expires_at: 1.hour.ago, refresh_token: nil)
 
     service.call
 
-    assert_predicate connection.reload, :error?
+    assert_predicate connection.reload, :needs_reauth?
   end
 
   test "uses provided date range when given" do

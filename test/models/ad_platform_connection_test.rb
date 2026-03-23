@@ -72,6 +72,10 @@ class AdPlatformConnectionTest < ActiveSupport::TestCase
     assert_equal 3, AdPlatformConnection.statuses[:disconnected]
   end
 
+  test "status enum includes needs_reauth" do
+    assert_equal 4, AdPlatformConnection.statuses[:needs_reauth]
+  end
+
   # --- Encryption ---
 
   test "encrypts access_token" do
@@ -116,6 +120,25 @@ class AdPlatformConnectionTest < ActiveSupport::TestCase
     assert_equal "Something broke", connection.last_sync_error
   end
 
+  test "mark_needs_reauth! sets status" do
+    connection.mark_needs_reauth!
+
+    assert_predicate connection, :needs_reauth?
+  end
+
+  test "mark_needs_reauth! preserves tokens" do
+    connection.mark_needs_reauth!
+
+    assert_not_nil connection.access_token
+    assert_not_nil connection.refresh_token
+  end
+
+  test "active_connections excludes needs_reauth" do
+    connection.mark_needs_reauth!
+
+    assert_not_includes AdPlatformConnection.active_connections, connection
+  end
+
   test "mark_disconnected! sets status" do
     connection.mark_disconnected!
 
@@ -128,6 +151,70 @@ class AdPlatformConnectionTest < ActiveSupport::TestCase
     assert_nil connection.access_token
     assert_nil connection.refresh_token
     assert_nil connection.token_expires_at
+  end
+
+  # --- Ad Spend ---
+
+  test "spend_date_range returns min and max spend dates" do
+    range = connection.spend_date_range
+
+    assert_instance_of Date, range.first
+    assert_instance_of Date, range.last
+  end
+
+  test "spend_date_range returns nil pair when no records" do
+    other = ad_platform_connections(:google_ads_error)
+    other.ad_spend_records.delete_all
+
+    assert_nil other.spend_date_range.first
+  end
+
+  test "spend_records_count returns count of ad spend records" do
+    assert_predicate connection.spend_records_count, :positive?
+  end
+
+  test "recent_sync_runs returns ordered sync runs" do
+    connection.ad_spend_sync_runs.create!(sync_date: Date.current, status: :completed, records_synced: 10, started_at: 1.minute.ago, completed_at: Time.current)
+
+    runs = connection.recent_sync_runs
+
+    assert_equal runs.first.created_at, runs.map(&:created_at).max
+  end
+
+  test "verification_data returns yesterday's spend summary" do
+    connection.ad_spend_records.where(spend_date: Date.yesterday).delete_all
+
+    connection.ad_spend_records.create!(
+      account: connection.account, spend_date: Date.yesterday, spend_hour: 10,
+      channel: "paid_search", platform_campaign_id: "c1", campaign_name: "Campaign A",
+      device: "DESKTOP", spend_micros: 5_000_000, currency: "USD",
+      impressions: 100, clicks: 10, platform_conversions_micros: 0, platform_conversion_value_micros: 0, is_test: false
+    )
+    connection.ad_spend_records.create!(
+      account: connection.account, spend_date: Date.yesterday, spend_hour: 11,
+      channel: "paid_search", platform_campaign_id: "c2", campaign_name: "Campaign B",
+      device: "MOBILE", spend_micros: 3_000_000, currency: "USD",
+      impressions: 50, clicks: 5, platform_conversions_micros: 0, platform_conversion_value_micros: 0, is_test: false
+    )
+
+    data = connection.verification_data
+
+    assert_equal 8_000_000, data[:spend_micros]
+    assert_equal 2, data[:campaign_count]
+  end
+
+  test "verification_data returns nil when no yesterday data" do
+    connection.ad_spend_records.where(spend_date: Date.yesterday).delete_all
+
+    assert_nil connection.verification_data
+  end
+
+  test "verification_dismissed? reads from settings" do
+    assert_not connection.verification_dismissed?
+
+    connection.update!(settings: { AdPlatformConnection::SETTING_VERIFICATION_DISMISSED => true })
+
+    assert_predicate connection, :verification_dismissed?
   end
 
   # --- Prefix ID ---

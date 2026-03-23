@@ -33,7 +33,11 @@
           </div>
         <% else %>
           <div class="px-6 py-12 text-center">
-            <p class="text-sm text-gray-500">No Google Ads accounts found. Make sure your Google account has access to at least one non-manager Google Ads account.</p>
+            <% if @error %>
+              <p class="text-sm text-red-600"><%= @error %></p>
+            <% else %>
+              <p class="text-sm text-gray-500">No Google Ads accounts found. Make sure your Google account has access to at least one non-manager Google Ads account.</p>
+            <% end %>
           </div>
         <% end %>
       </div>

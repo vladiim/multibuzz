@@ -1,0 +1,57 @@
+<div id="<%= modal_id %>"
+     data-controller="modal"
+     class="hidden fixed inset-0 z-50">
+  <!-- Backdrop -->
+  <div class="fixed inset-0 bg-black/50" data-action="click->modal#close"></div>
+
+  <!-- Modal -->
+  <div class="fixed inset-0 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold text-gray-900"><%= title %></h3>
+        <button type="button" data-action="click->modal#close" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <p class="text-sm text-gray-600 mb-4"><%= body %></p>
+
+      <% if local_assigns[:features] && features.present? %>
+        <ul class="space-y-2 mb-6">
+          <% features.each do |feature| %>
+            <li class="flex items-center gap-2 text-sm text-gray-700">
+              <svg class="h-4 w-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+              </svg>
+              <%= feature %>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+
+      <% if local_assigns[:tiers] && tiers.present? %>
+        <div class="bg-gray-50 rounded-md p-4 mb-6">
+          <% tiers.each do |tier| %>
+            <div class="flex justify-between text-sm <%= tier[:current] ? 'font-medium text-gray-900' : 'text-gray-600' %>">
+              <span><%= tier[:name] %><%= " (current)" if tier[:current] %></span>
+              <span><%= tier[:value] %></span>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+
+      <div class="flex justify-end gap-3">
+        <button type="button"
+                data-action="click->modal#close"
+                class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">
+          Cancel
+        </button>
+        <%= link_to(local_assigns[:cta_text] || "View Plans",
+              local_assigns[:cta_path] || account_billing_path,
+              class: "px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-500 rounded-md") %>
+      </div>
+    </div>
+  </div>
+</div>
