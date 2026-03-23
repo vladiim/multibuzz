@@ -6,7 +6,7 @@
 
 <%# SEO Meta Tags %>
 <meta name="description" content="<%= content_for(:meta_description) || "Server-side multi-touch attribution you own. Track customer journeys, measure marketing ROI, and understand what drives conversions—without black-box models or data lock-in." %>">
-<meta name="robots" content="index, follow">
+<meta name="robots" content="<%= content_for(:robots_meta).presence || "index, follow" %>">
 <link rel="canonical" href="<%= content_for(:canonical_url) || request.original_url.split("?").first %>">
 
 <%# Favicon Links %>

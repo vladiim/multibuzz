@@ -13,6 +13,12 @@
         <p class="mt-1 text-sm text-gray-600"><%= t('auth.login.subtitle') %></p>
       </div>
 
+      <% if flash[:alert] %>
+        <div class="mb-4 px-3 py-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-md">
+          <%= flash[:alert] %>
+        </div>
+      <% end %>
+
       <%= form_with url: login_path, method: :post, class: "space-y-5" do |form| %>
         <!-- Email Field -->
         <div>
