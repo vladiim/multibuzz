@@ -1,0 +1,190 @@
+<% content_for :title, @page.title %>
+
+<div class="min-h-[80vh]">
+  <%# ── Hero ── %>
+  <section class="py-16 md:py-24 px-6 bg-pattern-dots">
+    <div class="max-w-4xl mx-auto text-center">
+      <p class="text-sm font-medium text-blue-600 uppercase tracking-wide mb-4">mbuzz vs GA4 Attribution</p>
+      <h1 class="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight">
+        You're letting Google tell you how well Google is working.
+      </h1>
+      <p class="mt-6 text-xl text-gray-600 max-w-3xl mx-auto">
+        GA4's single attribution model is a black box that requires 400+ conversions, favors Google channels, and gives you no way to compare or customize. That's not measurement — it's a conflict of interest.
+      </p>
+      <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
+        <%= link_to "Try independent attribution", signup_path, class: "px-8 py-3 text-base font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-all" %>
+        <%= link_to "Explore the live demo", demo_path, class: "px-8 py-3 text-base font-semibold text-gray-900 bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 rounded-md transition-all" %>
+      </div>
+      <p class="mt-4 text-sm text-gray-500">Keep GA4 for web analytics. Add mbuzz for attribution. They're complementary.</p>
+    </div>
+  </section>
+
+  <%# ── Dashboard preview ── %>
+  <%= render "pages/home/dashboard_preview" %>
+
+  <%# ── Pain points (buyer problems, not feature gaps) ── %>
+  <section class="py-16 md:py-20 px-6 bg-white">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="text-3xl font-bold text-gray-900 text-center mb-4">Sound familiar?</h2>
+      <p class="text-lg text-gray-600 text-center mb-12 max-w-2xl mx-auto">
+        These are the problems that lead teams to search for a GA4 attribution alternative.
+      </p>
+      <div class="space-y-8">
+        <div class="flex gap-5">
+          <div class="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mt-1">
+            <span class="text-red-600 font-bold text-sm">1</span>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900">"Facebook says 200 conversions. Google says 180. GA4 says 150. Which number do I put in the board deck?"</h3>
+            <p class="mt-1 text-gray-600">Every platform inflates its own numbers by 1.5–3x. GA4 is supposed to be the neutral arbiter — but it's built by the same company that sells you Google Ads. You need a truly independent source of truth.</p>
+          </div>
+        </div>
+        <div class="flex gap-5">
+          <div class="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mt-1">
+            <span class="text-red-600 font-bold text-sm">2</span>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900">"We have 200 conversions/month. GA4 says we don't have enough data for attribution."</h3>
+            <p class="mt-1 text-gray-600">GA4's Data-Driven Attribution needs 400+ conversions to work. Below that, it silently falls back to last-click — the model everyone agrees is least useful. Most startups and mid-market teams live below this threshold.</p>
+          </div>
+        </div>
+        <div class="flex gap-5">
+          <div class="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mt-1">
+            <span class="text-red-600 font-bold text-sm">3</span>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900">"Google removed the models we were using and gave us a black box."</h3>
+            <p class="mt-1 text-gray-600">In 2023, GA4 dropped first-click, linear, time-decay, and position-based models. The one that's left is opaque — you can't see how it assigns credit, compare alternatives, or build custom rules. You went from 6 models to trusting one you can't inspect.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <%# ── Model count visual (GA4-specific) ── %>
+  <section class="py-16 md:py-20 px-6 bg-gray-50">
+    <div class="max-w-3xl mx-auto text-center">
+      <h2 class="text-3xl font-bold text-gray-900 mb-10">Attribution models: 1 vs 8</h2>
+      <div class="flex flex-col sm:flex-row items-stretch justify-center gap-6">
+        <div class="bg-white rounded-xl border border-gray-200 p-8 w-full sm:w-72 text-center">
+          <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">GA4</p>
+          <p class="mt-4 text-5xl font-bold text-gray-900">1</p>
+          <p class="mt-2 text-sm text-gray-500">Data-Driven (black box)</p>
+          <div class="mt-4 text-left space-y-1">
+            <p class="text-xs text-gray-400 line-through">First Click — removed 2023</p>
+            <p class="text-xs text-gray-400 line-through">Linear — removed 2023</p>
+            <p class="text-xs text-gray-400 line-through">Time Decay — removed 2023</p>
+            <p class="text-xs text-gray-400 line-through">Position Based — removed 2023</p>
+            <p class="text-xs text-gray-400 line-through">Last Click — removed 2023</p>
+          </div>
+        </div>
+        <div class="flex items-center justify-center">
+          <div class="text-3xl font-bold text-gray-400">vs</div>
+        </div>
+        <div class="bg-white rounded-xl border-2 border-blue-600 p-8 w-full sm:w-72 text-center shadow-lg">
+          <p class="text-sm font-medium text-blue-600 uppercase tracking-wide">mbuzz</p>
+          <p class="mt-4 text-5xl font-bold text-gray-900">8+</p>
+          <p class="mt-2 text-sm text-gray-500">Built-in + custom rules</p>
+          <div class="mt-4 text-left space-y-1">
+            <p class="text-xs text-gray-700">First Touch</p>
+            <p class="text-xs text-gray-700">Last Touch</p>
+            <p class="text-xs text-gray-700">Linear</p>
+            <p class="text-xs text-gray-700">Time Decay</p>
+            <p class="text-xs text-gray-700">U-Shaped (Position Based)</p>
+            <p class="text-xs text-gray-700">W-Shaped</p>
+            <p class="text-xs text-gray-700">Data-Driven</p>
+            <p class="text-xs text-gray-700">Custom (Attribution DSL)</p>
+          </div>
+        </div>
+      </div>
+      <p class="mt-8 text-gray-600">Both have free tiers. But GA4's single model favors Google channels by design.</p>
+    </div>
+  </section>
+
+  <%# ── LTV Leaderboard bridge + component ── %>
+  <section class="pt-16 md:pt-20 px-6 bg-gray-900">
+    <div class="max-w-3xl mx-auto text-center pb-8">
+      <h2 class="text-3xl font-bold text-white mb-4">Here's what teams discover when they add independent attribution</h2>
+      <p class="text-lg text-gray-400">GA4 shows you which channels get first-month credit. But the channel rankings completely change when you look at lifetime revenue. Toggle to 12-month LTV.</p>
+    </div>
+  </section>
+  <%= render "pages/home/ltv_leaderboard" %>
+
+  <%# ── Comparison table with tradeoff framing ── %>
+  <section class="py-16 md:py-20 px-6 bg-white">
+    <div class="max-w-3xl mx-auto">
+      <h2 class="text-3xl font-bold text-gray-900 text-center mb-4">Honest comparison</h2>
+      <p class="text-lg text-gray-600 text-center mb-10 max-w-2xl mx-auto">GA4 is an excellent web analytics tool. Attribution just isn't its strength. Here's the full picture.</p>
+      <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <table class="w-full">
+          <thead>
+            <tr class="bg-gray-900 text-white">
+              <th class="px-6 py-4 text-left text-sm font-semibold w-1/3"></th>
+              <th class="px-6 py-4 text-left text-sm font-semibold w-1/3">GA4</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold w-1/3">mbuzz</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <tr>
+              <td class="px-6 py-4 text-sm font-medium text-gray-900">Attribution models</td>
+              <td class="px-6 py-4 text-sm text-gray-500">1 (Data-Driven)</td>
+              <td class="px-6 py-4 text-sm text-gray-900 font-medium">8 + custom rules (DSL)</td>
+            </tr>
+            <tr>
+              <td class="px-6 py-4 text-sm font-medium text-gray-900">Minimum conversions</td>
+              <td class="px-6 py-4 text-sm text-gray-500">400+</td>
+              <td class="px-6 py-4 text-sm text-gray-900 font-medium">None</td>
+            </tr>
+            <tr>
+              <td class="px-6 py-4 text-sm font-medium text-gray-900">Platform bias</td>
+              <td class="px-6 py-4 text-sm text-gray-500">Favors Google channels</td>
+              <td class="px-6 py-4 text-sm text-gray-900 font-medium">Independent</td>
+            </tr>
+            <tr>
+              <td class="px-6 py-4 text-sm font-medium text-gray-900">Model transparency</td>
+              <td class="px-6 py-4 text-sm text-gray-500">Black box</td>
+              <td class="px-6 py-4 text-sm text-gray-900 font-medium">Every rule visible and editable</td>
+            </tr>
+            <tr>
+              <td class="px-6 py-4 text-sm font-medium text-gray-900">Tracking method</td>
+              <td class="px-6 py-4 text-sm text-gray-500">Client-side JS</td>
+              <td class="px-6 py-4 text-sm text-gray-900 font-medium">Server-side SDKs</td>
+            </tr>
+            <tr>
+              <td class="px-6 py-4 text-sm font-medium text-gray-900">Web analytics</td>
+              <td class="px-6 py-4 text-sm text-gray-900 font-medium">Excellent (full suite)</td>
+              <td class="px-6 py-4 text-sm text-gray-500">Attribution only</td>
+            </tr>
+            <tr>
+              <td class="px-6 py-4 text-sm font-medium text-gray-900">Google Ads integration</td>
+              <td class="px-6 py-4 text-sm text-gray-900 font-medium">Native (deep)</td>
+              <td class="px-6 py-4 text-sm text-gray-500">Via API (coming soon)</td>
+            </tr>
+            <tr>
+              <td class="px-6 py-4 text-sm font-medium text-gray-900">Price</td>
+              <td class="px-6 py-4 text-sm text-gray-900 font-medium">Free</td>
+              <td class="px-6 py-4 text-sm text-gray-900 font-medium">Free tier available</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="mt-4 text-sm text-gray-500 text-center">GA4 wins on web analytics and Google Ads integration. mbuzz wins on attribution depth, independence, and transparency. Run both.</p>
+    </div>
+  </section>
+
+  <%# ── Bottom CTA ── %>
+  <section class="py-20 px-6 bg-gray-900">
+    <div class="max-w-3xl mx-auto text-center">
+      <h2 class="text-3xl md:text-4xl font-bold text-white">
+        See real attribution data — no signup required
+      </h2>
+      <p class="mt-4 text-lg text-gray-400">
+        Explore the live demo with sample data. Compare 8 models side-by-side. Then decide if it's worth 5 minutes to set up.
+      </p>
+      <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
+        <%= link_to "Explore the live demo", demo_path, class: "px-8 py-3 text-base font-semibold text-gray-900 bg-white hover:bg-gray-100 rounded-md transition-all inline-block" %>
+        <%= link_to "Sign up free", signup_path, class: "px-8 py-3 text-base font-semibold text-white border border-gray-600 hover:border-gray-400 rounded-md transition-all inline-block" %>
+      </div>
+    </div>
+  </section>
+</div>
