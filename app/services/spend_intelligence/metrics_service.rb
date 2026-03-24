@@ -29,7 +29,8 @@ module SpendIntelligence
         time_series: breakdowns.time_series,
         by_device: breakdowns.by_device,
         by_hour: breakdowns.by_hour,
-        payback: payback_data
+        payback: payback_data,
+        recommendations: recommendations
       }
     end
 
@@ -83,6 +84,40 @@ module SpendIntelligence
 
     def primary_attribution_model
       @primary_attribution_model ||= attribution_models.first
+    end
+
+    # --- Response Curves & Recommendations ---
+
+    def response_curves
+      @response_curves ||= ResponseCurveService.new(
+        spend_scope: spend_scope,
+        credits_scope: credits_scope
+      ).call
+    end
+
+    def recommendations
+      @recommendations ||= channel_metrics.call
+        .select { |row| fittable_curve?(row[:channel]) }
+        .map(&method(:build_recommendation))
+    end
+
+    def fittable_curve?(channel)
+      response_curves.dig(channel, :k).present? && response_curves.dig(channel, :r_squared)&.positive?
+    end
+
+    def build_recommendation(row)
+      RecommendationService.recommend(
+        channel: row[:channel],
+        roas: row[:roas] || 0,
+        marginal_roas: response_curves.dig(row[:channel], :marginal_roas_at_current) || marginal_roas_for(row),
+        current_spend: spend_in_units(row[:spend_micros])
+      )
+    end
+
+    def marginal_roas_for(row)
+      response_curves[row[:channel]]&.then do |curve|
+        HillFunction.derivative(spend_in_units(row[:spend_micros]), curve[:k], curve[:s], curve[:ec50])
+      end || 0
     end
 
     def channel_metrics

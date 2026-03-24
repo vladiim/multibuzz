@@ -620,8 +620,14 @@ module Dev
       "video" => 2.0
     }.freeze
 
+    # Weekly budget multiplier — varies 0.5x to 1.5x to create spend variation for response curve fitting
+    def weekly_budget_scale(date)
+      week_index = (Date.current - date).to_i / 7
+      0.5 + Math.sin(week_index * 0.7) * 0.4 + random.rand * 0.2
+    end
+
     def generate_campaign_day(date, channel, config, campaign)
-      budget_share = DAILY_BUDGETS[channel] * campaign[:weight]
+      budget_share = (DAILY_BUDGETS[channel] * campaign[:weight] * weekly_budget_scale(date)).to_i
       rows = []
 
       24.times do |hour|
