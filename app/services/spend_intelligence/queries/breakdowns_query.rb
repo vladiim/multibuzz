@@ -5,9 +5,10 @@ module SpendIntelligence
     class BreakdownsQuery
       MICRO_UNIT = AdSpendRecord::MICRO_UNIT
 
-      def initialize(spend_scope:, credits_scope:)
+      def initialize(spend_scope:, credits_scope:, timezone_offset: nil)
         @spend_scope = spend_scope
         @credits_scope = credits_scope
+        @timezone_offset = timezone_offset || 0
       end
 
       def time_series
@@ -21,14 +22,15 @@ module SpendIntelligence
       end
 
       def by_hour
-        spend_scope.group(:spend_hour).sum(:spend_micros)
+        raw_hourly_spend
+          .each_with_object(Hash.new(0)) { |(hour, spend), shifted| shifted[shift_hour(hour)] += spend }
           .sort_by(&:first)
           .map { |hour, spend| { hour: hour, spend_micros: spend } }
       end
 
       private
 
-      attr_reader :spend_scope, :credits_scope
+      attr_reader :spend_scope, :credits_scope, :timezone_offset
 
       # --- Time Series ---
 
@@ -70,6 +72,14 @@ module SpendIntelligence
           cpc_micros: row.total_clicks.positive? ? row.total_spend / row.total_clicks : nil
         }
       end
+
+      # --- Hourly ---
+
+      def raw_hourly_spend
+        @raw_hourly_spend ||= spend_scope.group(:spend_hour).sum(:spend_micros)
+      end
+
+      def shift_hour(hour) = (hour + timezone_offset) % 24
 
       # --- Helpers ---
 

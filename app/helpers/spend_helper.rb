@@ -3,6 +3,13 @@
 module SpendHelper
   MICRO_UNIT = AdSpendRecord::MICRO_UNIT
 
+  TIMEZONE_OPTIONS = ActiveSupport::TimeZone.all
+    .select { |tz| (tz.utc_offset % 3600).zero? }
+    .map { |tz| [ tz.to_s, tz.utc_offset / 3600 ] }
+    .uniq(&:last)
+    .sort_by(&:last)
+    .freeze
+
   def format_spend(micros)
     return "$0.00" if micros.nil? || micros.zero?
 

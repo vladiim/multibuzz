@@ -76,8 +76,13 @@ module Dashboard
         funnel: funnel_param,
         conversion_filters: conversion_filters_param,
         breakdown_dimension: breakdown_dimension_param,
-        test_mode: test_mode?
+        test_mode: test_mode?,
+        timezone_offset: timezone_offset_param
       }
+    end
+
+    def timezone_offset_param
+      params[:timezone_offset]&.to_i
     end
 
     def funnel_param

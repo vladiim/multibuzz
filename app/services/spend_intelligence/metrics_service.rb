@@ -49,7 +49,11 @@ module SpendIntelligence
     # --- Delegated Queries ---
 
     def breakdowns
-      @breakdowns ||= Queries::BreakdownsQuery.new(spend_scope: spend_scope, credits_scope: credits_scope)
+      @breakdowns ||= Queries::BreakdownsQuery.new(
+        spend_scope: spend_scope,
+        credits_scope: credits_scope,
+        timezone_offset: timezone_offset
+      )
     end
 
     def payback_data
@@ -153,6 +157,7 @@ module SpendIntelligence
     def channels = @channels ||= filter_params[:channels] || Channels::ALL
     def attribution_models = @attribution_models ||= filter_params[:models] || account.attribution_models.active
     def test_mode = @test_mode ||= filter_params[:test_mode] || false
+    def timezone_offset = @timezone_offset ||= filter_params[:timezone_offset]&.to_i
     def cache_key = "spend_intelligence/#{account.prefix_id}/#{params_hash}"
     def params_hash = Digest::MD5.hexdigest(cache_params.to_json)[0..11]
 
