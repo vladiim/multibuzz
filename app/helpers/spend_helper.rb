@@ -6,7 +6,6 @@ module SpendHelper
   TIMEZONE_OPTIONS = ActiveSupport::TimeZone.all
     .select { |tz| (tz.utc_offset % 3600).zero? }
     .map { |tz| [ tz.to_s, tz.utc_offset / 3600 ] }
-    .uniq(&:last)
     .sort_by(&:last)
     .freeze
 
