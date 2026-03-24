@@ -42,16 +42,36 @@
             </td>
             <td class="py-3">
               <% if row[:clv_curve].present? %>
-                <div class="flex items-end gap-px h-6">
-                  <% max_clv = row[:clv_curve].map { |p| p[:cumulative_clv] }.max %>
-                  <% row[:clv_curve].each do |point| %>
-                    <% pct = max_clv&.positive? ? (point[:cumulative_clv] / max_clv * 100).round : 0 %>
-                    <div class="flex-1 bg-indigo-300 rounded-t-sm"
-                      style="height: <%= [pct, 4].max %>%"
-                      title="Month <%= point[:month] %>: <%= number_to_currency(point[:cumulative_clv], precision: 0) %>">
-                    </div>
+                <% max_clv = row[:clv_curve].map { |p| p[:cumulative_clv] }.max %>
+                <% curve_width = 120 %>
+                <% curve_height = 28 %>
+                <% step_x = curve_width.to_f / [row[:clv_curve].size - 1, 1].max %>
+                <svg width="<%= curve_width %>" height="<%= curve_height %>" class="overflow-visible">
+                  <% points = row[:clv_curve].each_with_index.map { |p, i|
+                    y = max_clv&.positive? ? (1 - p[:cumulative_clv] / max_clv.to_f) * curve_height : curve_height
+                    "#{(i * step_x).round(1)},#{y.round(1)}"
+                  } %>
+                  <polyline
+                    fill="none"
+                    stroke="#818CF8"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    points="<%= points.join(' ') %>" />
+                  <polygon
+                    fill="#818CF8"
+                    fill-opacity="0.1"
+                    points="0,<%= curve_height %> <%= points.join(' ') %> <%= curve_width %>,<%= curve_height %>" />
+                  <% row[:clv_curve].each_with_index do |point, i| %>
+                    <circle
+                      cx="<%= (i * step_x).round(1) %>"
+                      cy="<%= max_clv&.positive? ? ((1 - point[:cumulative_clv] / max_clv.to_f) * curve_height).round(1) : curve_height %>"
+                      r="1.5"
+                      fill="#818CF8">
+                      <title>Month <%= point[:month] %>: <%= number_to_currency(point[:cumulative_clv], precision: 0) %></title>
+                    </circle>
                   <% end %>
-                </div>
+                </svg>
               <% else %>
                 <span class="text-gray-400 text-xs">No data</span>
               <% end %>
