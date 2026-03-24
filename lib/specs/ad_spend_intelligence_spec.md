@@ -2,7 +2,7 @@
 
 **Date:** 2026-02-13
 **Priority:** P0
-**Status:** UAT — Phases 1–4b complete, Phase 5 + 7b partially built. Spec updated 25 Mar 2026.
+**Status:** UAT — Phases 1–6 + 7b complete. Phase 7 (Scenario Modeling) next. Spec updated 25 Mar 2026.
 **Branch:** `feature/ad-spend-intelligence`
 
 ---
@@ -11,7 +11,7 @@
 >
 > Previous bugs fixed: API version `v18` → `v23`, session key serialization (symbol → string), MCC sub-account discovery via `customer_client` query, `login-customer-id` header propagation. Added error logging to `ListCustomers#search` (24 Mar).
 >
-> **25 Mar 2026 — Spec audit.** Phases 1–4b fully complete with tests. Phase 5 (Dashboard UI) ~70% built: controller, hero metrics, trend chart, channel table, hourly/device, empty state all exist. Missing: payback period partial, "Preliminary" data badge, Platform vs Attributed ROAS column. Phase 7b (Request Integration) ~85% built: model, service, controller actions, partials, coming-soon cards, tests all complete. Missing: admin show view detail block, admin filter for integration requests. Phases 6 (Response Curves), 7 (Scenario Modeling), 8 (Platform Expansion) not started.
+> **25 Mar 2026 — Phases 1–6 + 7b complete.** All dashboard tabs live: Overview (channel table + platform ROAS), Hourly/Device (client-side timezone selector via Stimulus, 138 zones from ActiveSupport::TimeZone), Payback Period (SVG area curve sparklines), Recommendations (wired to ResponseCurveService + RecommendationService). Phase 6: HillFunction, LinearRegression, HillFit, HillBootstrap, ResponseCurveService, RecommendationService — all TDD'd. Demo aligned with all tabs + hardcoded data. Phase 7b complete: admin type filters + detail view. Dev seed data: weekly budget variation for response curve fitting, platform ROAS values. **Next: Phase 7 (Scenario Modeling), then UAT on real Google Ads account.**
 
 ---
 
@@ -1792,7 +1792,7 @@ Dismissible. Dismissed state stored in `connection.settings["verification_dismis
 - [x] **5.9** Add "Attributed vs Platform" ROAS comparison in channel table — `platform_roas` computed in `ChannelMetricsQuery` from `platform_conversion_value_micros`, displayed as "vs Xx" subtext under attributed ROAS with tooltip explaining discrepancy
 - [x] **5.10** Write controller + view tests (8 tests: renders, empty state, hero metrics, channels, tabs, channel detail, scoping, error state)
 
-> **Implementation notes (Phase 5)**: Controller named `Dashboard::SpendController` (not `SpendIntelligenceController`). Views in `dashboard/spend/`. Tab navigation via Stimulus toggle: Overview, Hourly/Device, Payback Period. Recommendations tab rendered but disabled ("Soon"). `MetricsService` wires `PaybackPeriodQuery` for NCAC/payback, computes MER from total business revenue / total spend, delegates `platform_roas` to `ChannelMetricsQuery.channel_platform_value`. All derived metrics memoized. `_dashboard.html.erb` wraps tabs + partials. `_channel_summary.html.erb` provides compact 3-column view alongside trend chart. `SpendHelper` provides `format_spend`, `spend_channel_color`, `spend_ctr`, `spend_cpc`. Skeleton loading partial at `_skeleton.html.erb`. 3044 tests, 7417 assertions, 0 failures.
+> **Implementation notes (Phase 5)**: Controller named `Dashboard::SpendController` (not `SpendIntelligenceController`). Views in `dashboard/spend/`. 4 tabs: Overview, Hourly/Device, Payback Period, Recommendations (all live). `MetricsService` wires `PaybackPeriodQuery` for NCAC/payback, computes MER, delegates `platform_roas` to `ChannelMetricsQuery.channel_platform_value`, wires `ResponseCurveService` + `RecommendationService` for recommendations. All derived metrics memoized. Hourly/Device tab: `hourly_timezone_controller.js` (Stimulus) shifts bars client-side — no server round-trip, no tab reset. 138 timezone options from `ActiveSupport::TimeZone` (whole-hour offsets). `BreakdownsQuery` also supports server-side `timezone_offset` for API/export use. CLV sparklines: SVG polyline + filled polygon area chart (replaced unreadable bars). `SpendHelper` provides `format_spend`, `spend_channel_color`, `spend_ctr`, `spend_cpc`, `TIMEZONE_OPTIONS`.
 
 ### Phase 6: Response Curves + Recommendations ✓
 
@@ -1802,7 +1802,7 @@ Dismissible. Dismissed state stored in `connection.settings["verification_dismis
 - [x] **6.4** Create `_recommendations.html.erb` partial (Scale/Maintain/Reduce grouped sections with channel color dots, ROAS, mROAS, change amounts, rationale)
 - [x] **6.5** Write tests: `HillFunction` (10), `LinearRegression` (5), `HillFit` (7), `HillBootstrap` (4), `ResponseCurveService` (2), `RecommendationService` (8) — 36 new tests, 3080 total, 0 failures
 
-> **Implementation notes (Phase 6)**: Decomposed into 6 SRP classes. `HillFunction` — stateless module, two class methods. `LinearRegression` — memoized OLS sums, `slope`/`intercept` as endless methods. `HillFit` — log-linearizes weekly data, fits via `LinearRegression`, computes r², delegates confidence to `HillBootstrap`. All intermediate values are memoized methods, no local variable assignments. `HillBootstrap` — seeded `Random.new(42)` for determinism, resamples → linearizes → regresses → extracts EC50, returns `Data.define(:low, :high)`. `ResponseCurveService` — aggregates weekly spend/revenue from scopes, filters by `MIN_WEEKS`, transforms via `HillFit`. `RecommendationService` — pure function via `.recommend` class method, threshold constants, action/rationale from frozen hashes. TDD throughout: RED → GREEN for each class.
+> **Implementation notes (Phase 6)**: Decomposed into 6 SRP classes. `HillFunction` — stateless module, two class methods. `LinearRegression` — memoized OLS sums, `slope`/`intercept` as endless methods. `HillFit` — log-linearizes weekly data, fits via `LinearRegression`, computes r², delegates confidence to `HillBootstrap`. All intermediate values are memoized methods, no local variable assignments. `HillBootstrap` — seeded `Random.new(42)` for determinism, resamples → linearizes → regresses → extracts EC50, returns `Data.define(:low, :high)`. `ResponseCurveService` — aggregates weekly spend/revenue from scopes, filters by `MIN_WEEKS`, transforms via `HillFit`. `RecommendationService` — pure function via `.recommend` class method, threshold constants, action/rationale from frozen hashes. Wired into `MetricsService`: `response_curves` → `recommendations` with `fittable_curve?` guard (skips nil k or negative r²). Live Recommendations tab enabled (no longer "Soon"). TDD throughout: RED → GREEN for each class. 3086 tests, 7482 assertions, 0 failures.
 
 ### Phase 7: Scenario Modeling
 
@@ -1831,15 +1831,15 @@ Dismissible. Dismissed state stored in `connection.settings["verification_dismis
 
 ### Demo Alignment (25 Mar 2026)
 
-Demo dashboard (`/demo/dashboard` → Spend tab) now mirrors the full spend intelligence feature:
+Demo dashboard (`/demo/dashboard` → Spend tab) mirrors the full spend intelligence feature:
 
 - **Hero metrics**: Blended ROAS, Total Spend, Attributed Revenue, NCAC ($47), MER (4.1x)
 - **Channel table**: 5 channels with Attributed ROAS + Platform ROAS ("vs Xx") comparison
-- **Hourly / Device**: 24-hour bar chart + 3 device cards
-- **Payback Period**: 5 channels with NCAC, customer count, payback months, CLV sparklines
+- **Hourly / Device**: 24-hour bar chart + 3 device cards + timezone selector (client-side Stimulus)
+- **Payback Period**: 5 channels with NCAC, customer count, payback months, SVG area curve CLV sparklines
 - **Recommendations**: Scale/Maintain/Reduce groups with ROAS, mROAS, $ change, rationale
 
-All data via `Dashboard::Dummy::SpendDataService` — hardcoded realistic numbers, no real accounts. Dev seed data (`bin/rails dev:generate_spend_data`) also updated with platform ROAS values and `insert_all` for speed.
+All data via `Dashboard::Dummy::SpendDataService` — hardcoded realistic numbers, no real accounts. Demo and live dashboard share all partials (`dashboard/spend/`). Dev seed data (`bin/rails dev:generate_spend_data`) updated with platform ROAS values, weekly budget variation for response curve fitting, and `insert_all` for speed.
 
 ### Phase 8: Platform Expansion (Future)
 
