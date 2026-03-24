@@ -1794,15 +1794,15 @@ Dismissible. Dismissed state stored in `connection.settings["verification_dismis
 
 > **Implementation notes (Phase 5)**: Controller named `Dashboard::SpendController` (not `SpendIntelligenceController`). Views in `dashboard/spend/`. Tab navigation via Stimulus toggle: Overview, Hourly/Device, Payback Period. Recommendations tab rendered but disabled ("Soon"). `MetricsService` wires `PaybackPeriodQuery` for NCAC/payback, computes MER from total business revenue / total spend, delegates `platform_roas` to `ChannelMetricsQuery.channel_platform_value`. All derived metrics memoized. `_dashboard.html.erb` wraps tabs + partials. `_channel_summary.html.erb` provides compact 3-column view alongside trend chart. `SpendHelper` provides `format_spend`, `spend_channel_color`, `spend_ctr`, `spend_cpc`. Skeleton loading partial at `_skeleton.html.erb`. 3044 tests, 7417 assertions, 0 failures.
 
-### Phase 6: Response Curves + Recommendations ◐
+### Phase 6: Response Curves + Recommendations ✓
 
-- [ ] **6.1** Create `SpendIntelligence::ResponseCurveService` (Hill function fitting per channel)
-- [ ] **6.2** Create `SpendIntelligence::MarginalRoasQuery` (derivative at current spend)
-- [ ] **6.3** Create `SpendIntelligence::RecommendationService` (Scale/Maintain/Reduce per channel)
+- [x] **6.1** Create `SpendIntelligence::ResponseCurveService` (weekly spend/revenue aggregation, delegates fitting to `HillFit`, `marginal_roas` method via `HillFunction.derivative`)
+- [x] **6.2** `HillFunction` module (pure math: `evaluate` + `derivative`), `LinearRegression` (OLS via memoized sums), `HillFit` (log-linearization → regression → parameters + r²), `HillBootstrap` (seeded resampling → EC50 confidence bounds via `Data.define(:low, :high)`)
+- [x] **6.3** Create `SpendIntelligence::RecommendationService` (Scale/Maintain/Reduce per channel via marginal ROAS thresholds: ≥1.5 scale, <0.8 reduce, else maintain)
 - [x] **6.4** Create `_recommendations.html.erb` partial (Scale/Maintain/Reduce grouped sections with channel color dots, ROAS, mROAS, change amounts, rationale)
-- [ ] **6.5** Write recommendation service tests
+- [x] **6.5** Write tests: `HillFunction` (10), `LinearRegression` (5), `HillFit` (7), `HillBootstrap` (4), `ResponseCurveService` (2), `RecommendationService` (8) — 36 new tests, 3080 total, 0 failures
 
-> **Implementation notes (Phase 6 partial)**: Recommendations partial built ahead of services to unblock demo. Uses grouped layout (scale → maintain → reduce) with green/gray/red borders. Each row: channel, rationale, ROAS, marginal ROAS, recommended $ change. Empty state shows "12+ weeks required" message. Services (6.1–6.3) still needed for real data.
+> **Implementation notes (Phase 6)**: Decomposed into 6 SRP classes. `HillFunction` — stateless module, two class methods. `LinearRegression` — memoized OLS sums, `slope`/`intercept` as endless methods. `HillFit` — log-linearizes weekly data, fits via `LinearRegression`, computes r², delegates confidence to `HillBootstrap`. All intermediate values are memoized methods, no local variable assignments. `HillBootstrap` — seeded `Random.new(42)` for determinism, resamples → linearizes → regresses → extracts EC50, returns `Data.define(:low, :high)`. `ResponseCurveService` — aggregates weekly spend/revenue from scopes, filters by `MIN_WEEKS`, transforms via `HillFit`. `RecommendationService` — pure function via `.recommend` class method, threshold constants, action/rationale from frozen hashes. TDD throughout: RED → GREEN for each class.
 
 ### Phase 7: Scenario Modeling
 
@@ -1956,6 +1956,43 @@ All platform adapters follow the same `AdPlatforms::BaseAdapter` interface. See 
 - **Ad creative analysis** -- Which ad copy/image performs best is a different feature.
 - **Offline conversion upload** -- Sending our attributed conversions back to Google Ads. Future consideration.
 - **Automated budget execution** -- We recommend; humans decide. No auto-pilot.
+
+---
+
+## Educational Content
+
+Users need to understand the metrics to act on them. Each concept below becomes an article on the docs site, linked from dashboard tooltips and the "Learn more" affordances in the UI.
+
+### Articles
+
+| # | Topic | Dashboard Link Points | Key Insight |
+|---|-------|----------------------|-------------|
+| 1 | **Attributed ROAS vs Platform ROAS** | Channel table "vs Xx" tooltip, ROAS header tooltip | Platforms overcount via view-through and overlapping credit. Our MTA models distribute fairly. The discrepancy is expected and healthy. |
+| 2 | **Marginal ROAS vs Average ROAS** | Recommendations tab, mROAS column | A 4x average ROAS channel can have 0.5x marginal ROAS. Average tells you where you've been, marginal tells you where to go. |
+| 3 | **NCAC (New Customer Acquisition Cost)** | Hero metric tooltip, Payback tab | Differs from CAC: only counts first-purchase conversions. Critical for growth-stage businesses tracking new customer economics. |
+| 4 | **MER (Marketing Efficiency Ratio)** | Hero metric tooltip | Total revenue / total spend — includes organic. The blended "are we making money?" number that doesn't over-index on any single channel. |
+| 5 | **Payback Period** | Payback tab info bar | Months until cumulative CLV exceeds NCAC. Short payback = reinvest faster. Long payback = cash flow risk even if profitable long-term. |
+| 6 | **Response Curves & the Hill Function** | Recommendations tab info bar, Scenario Modeling | How we model diminishing returns. Same approach as Meta's Robyn, Google's Meridian, PyMC-Marketing. Needs 12+ weeks of data. |
+| 7 | **Scale / Maintain / Reduce** | Recommendations tab | Derived from marginal ROAS thresholds. mROAS > 1.5 = scale, 0.8–1.5 = maintain, < 0.8 = reduce. Simple framework for budget decisions. |
+| 8 | **Conversion Date vs Spend Date** | Channel table info bar, Trend chart | Spend today, conversions arrive over 7–30 days. Single-day ROAS is misleading. Use 7d+ windows. Industry standard (Northbeam, Triple Whale). |
+| 9 | **Multi-Currency in Spend Intelligence** | Hero metric currency label | We display in the ad platform's native currency. Cross-currency ROAS requires normalization (Phase 2). Apples-to-apples needs same denomination. |
+
+### Implementation
+
+- [ ] **E.1** Write 9 articles as markdown files in docs site
+- [ ] **E.2** Add tooltip "Learn more →" links from dashboard to relevant articles
+- [ ] **E.3** Add "Understanding Your Metrics" section to docs navigation
+- [ ] **E.4** Cross-link articles where concepts reference each other (e.g., Recommendations → Marginal ROAS → Response Curves)
+
+### Article Structure (template)
+
+Each article follows a consistent structure:
+
+1. **One-sentence definition** — what it is, in plain English
+2. **Why it matters** — the business question it answers
+3. **How mbuzz calculates it** — the formula, with an example using real numbers
+4. **Common misconceptions** — what people get wrong
+5. **What to do with it** — actionable takeaway
 
 ---
 
