@@ -1,0 +1,53 @@
+<%# Required locals: recommendations %>
+
+<h4 class="text-base font-medium text-gray-900 mb-4">Budget Recommendations</h4>
+
+<% if recommendations.present? %>
+  <% grouped = recommendations.group_by { |r| r[:action] } %>
+  <div class="space-y-4">
+    <% { "scale" => { label: "Scale", icon: "↑", color: "green" }, "maintain" => { label: "Maintain", icon: "→", color: "gray" }, "reduce" => { label: "Reduce", icon: "↓", color: "red" } }.each do |action, config| %>
+      <% rows = grouped[action] %>
+      <% next unless rows&.any? %>
+
+      <div class="border border-<%= config[:color] %>-200 rounded-lg overflow-hidden">
+        <div class="px-4 py-2 bg-<%= config[:color] %>-50 border-b border-<%= config[:color] %>-200">
+          <span class="text-sm font-semibold text-<%= config[:color] %>-700"><%= config[:icon] %> <%= config[:label] %></span>
+        </div>
+
+        <div class="divide-y divide-gray-100">
+          <% rows.each do |rec| %>
+            <div class="px-4 py-3 flex items-start gap-4">
+              <div class="flex items-center gap-2 min-w-[120px]">
+                <span class="w-2.5 h-2.5 rounded-full" style="background-color: <%= spend_channel_color(rec[:channel]) %>"></span>
+                <span class="font-medium text-gray-900 text-sm"><%= rec[:channel].titleize %></span>
+              </div>
+              <div class="flex-1 text-sm text-gray-600"><%= rec[:rationale] %></div>
+              <div class="text-right text-sm whitespace-nowrap space-y-0.5">
+                <div class="text-gray-500">ROAS <%= rec[:roas] %>x · mROAS <%= rec[:marginal_roas] %>x</div>
+                <% if rec[:change_amount] && rec[:change_amount] != 0 %>
+                  <div class="font-medium text-<%= config[:color] %>-600">
+                    <%= rec[:change_amount].positive? ? "+" : "" %><%= number_to_currency(rec[:change_amount], precision: 0) %> recommended
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="mt-4 flex items-center gap-2 text-xs text-gray-400">
+    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    <span>Based on response curve analysis. mROAS > 1.0 = additional spend is profitable.</span>
+  </div>
+<% else %>
+  <div class="h-32 flex items-center justify-center text-sm text-gray-500">
+    <div class="text-center">
+      <p>Recommendations require 12+ weeks of spend data</p>
+      <p class="mt-1 text-xs text-gray-400">Keep syncing — we're building your response curves</p>
+    </div>
+  </div>
+<% end %>

@@ -1,10 +1,19 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-  <div class="flex items-center justify-between mb-8">
+  <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-bold text-gray-900">Form Submissions</h1>
     <nav class="flex gap-4 text-sm">
       <%= link_to "Billing", admin_billing_path, class: "text-indigo-600 hover:text-indigo-800" %>
       <%= link_to "Data Integrity", admin_data_integrity_index_path, class: "text-indigo-600 hover:text-indigo-800" %>
     </nav>
+  </div>
+
+  <div class="flex flex-wrap gap-2 mb-6">
+    <%= link_to "All", admin_submissions_path,
+      class: "px-3 py-1.5 text-sm rounded-full #{@type_filter.blank? ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}" %>
+    <% Admin::SubmissionsHelper::TYPE_BADGES.each do |type, config| %>
+      <%= link_to config[:label], admin_submissions_path(type: type),
+        class: "px-3 py-1.5 text-sm rounded-full #{@type_filter == type ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}" %>
+    <% end %>
   </div>
 
   <div class="bg-white shadow rounded-lg overflow-hidden">

@@ -26,9 +26,10 @@ module SpendIntelligence
       {
         totals: totals,
         by_channel: channel_metrics.call,
-        time_series: time_series,
-        by_device: by_device,
-        by_hour: by_hour
+        time_series: breakdowns.time_series,
+        by_device: breakdowns.by_device,
+        by_hour: breakdowns.by_hour,
+        payback: payback_data
       }
     end
 
@@ -38,57 +39,51 @@ module SpendIntelligence
         total_spend_micros: channel_metrics.total_spend_micros,
         total_spend: spend_in_units(channel_metrics.total_spend_micros),
         attributed_revenue: channel_metrics.total_revenue,
-        currency: primary_currency
+        currency: primary_currency,
+        ncac: ncac,
+        mer: mer
       }
     end
 
-    # --- Time Series ---
+    # --- Delegated Queries ---
 
-    def time_series
-      daily_spend = spend_scope.group(:spend_date).sum(:spend_micros)
+    def breakdowns
+      @breakdowns ||= Queries::BreakdownsQuery.new(spend_scope: spend_scope, credits_scope: credits_scope)
+    end
 
-      daily_spend.keys.sort.map do |date|
-        spend = daily_spend[date] || 0
-        revenue = (daily_revenue[date] || 0).to_f
-        {
-          date: date.to_s,
-          spend_micros: spend,
-          spend: spend_in_units(spend),
-          revenue: revenue,
-          roas: spend.positive? ? (revenue / spend_in_units(spend)).round(2) : nil
-        }
+    def payback_data
+      @payback_data ||= payback_query&.call || []
+    end
+
+    def payback_query
+      primary_attribution_model&.then do |model|
+        Queries::PaybackPeriodQuery.new(spend_scope: spend_scope, account: account, attribution_model: model, test_mode: test_mode)
       end
     end
 
-    def daily_revenue
-      @daily_revenue ||= credits_scope.joins(:conversion)
-        .group(Arel.sql("DATE(conversions.converted_at)")).sum(:revenue_credit)
+    def ncac
+      @ncac ||= payback_data
+        .select { |row| row[:ncac] && row[:customers]&.positive? }
+        .then { |rows| rows.empty? ? nil : (rows.sum { |r| r[:ncac] * r[:customers] } / rows.sum { |r| r[:customers] }).round(2) }
     end
 
-    # --- Device & Hour Breakdowns ---
-
-    def by_device
-      spend_scope.group(:device)
-        .select("device, SUM(spend_micros) AS total_spend, SUM(impressions) AS total_impressions, SUM(clicks) AS total_clicks")
-        .map do |row|
-          {
-            device: row.device,
-            spend_micros: row.total_spend,
-            impressions: row.total_impressions,
-            clicks: row.total_clicks,
-            cpc_micros: row.total_clicks.positive? ? row.total_spend / row.total_clicks : nil
-          }
-        end
-        .sort_by { |d| -(d[:spend_micros] || 0) }
+    def mer
+      @mer ||= total_business_revenue
+        &.then { |rev| rev / spend_in_units(channel_metrics.total_spend_micros) }
+        &.then { |ratio| ratio.round(2) }
     end
 
-    def by_hour
-      spend_scope.group(:spend_hour).sum(:spend_micros)
-        .sort_by(&:first)
-        .map { |hour, spend| { hour: hour, spend_micros: spend } }
+    def total_business_revenue
+      @total_business_revenue ||= account.conversions
+        .where(converted_at: date_range)
+        .then { |scope| test_mode ? scope.test_data : scope.production }
+        .sum(:revenue).to_f
+        .then { |rev| rev.positive? && channel_metrics.total_spend_micros.positive? ? rev : nil }
     end
 
-    # --- Queries ---
+    def primary_attribution_model
+      @primary_attribution_model ||= attribution_models.first
+    end
 
     def channel_metrics
       @channel_metrics ||= Queries::ChannelMetricsQuery.new(
@@ -96,8 +91,6 @@ module SpendIntelligence
         credits_scope: credits_scope
       )
     end
-
-    # --- Scopes ---
 
     def spend_scope
       @spend_scope ||= Scopes::SpendScope.new(
@@ -118,47 +111,15 @@ module SpendIntelligence
       ).call
     end
 
-    # --- Helpers ---
-
-    def spend_in_units(micros)
-      (micros.to_d / MICRO_UNIT).round(2)
-    end
-
-    def primary_currency
-      account.ad_platform_connections.active_connections.first&.currency
-    end
-
-    # --- Filter extraction ---
-
-    def date_range
-      date_range_parser.start_date..date_range_parser.end_date
-    end
-
-    def date_range_parser
-      @date_range_parser ||= Dashboard::DateRangeParser.new(filter_params[:date_range])
-    end
-
-    def channels
-      @channels ||= filter_params[:channels] || Channels::ALL
-    end
-
-    def attribution_models
-      @attribution_models ||= filter_params[:models] || account.attribution_models.active
-    end
-
-    def test_mode
-      @test_mode ||= filter_params[:test_mode] || false
-    end
-
-    # --- Cache ---
-
-    def cache_key
-      "spend_intelligence/#{account.prefix_id}/#{params_hash}"
-    end
-
-    def params_hash
-      Digest::MD5.hexdigest(cache_params.to_json)[0..11]
-    end
+    def spend_in_units(micros) = (micros.to_d / MICRO_UNIT).round(2)
+    def primary_currency = account.ad_platform_connections.active_connections.first&.currency
+    def date_range = date_range_parser.start_date..date_range_parser.end_date
+    def date_range_parser = @date_range_parser ||= Dashboard::DateRangeParser.new(filter_params[:date_range])
+    def channels = @channels ||= filter_params[:channels] || Channels::ALL
+    def attribution_models = @attribution_models ||= filter_params[:models] || account.attribution_models.active
+    def test_mode = @test_mode ||= filter_params[:test_mode] || false
+    def cache_key = "spend_intelligence/#{account.prefix_id}/#{params_hash}"
+    def params_hash = Digest::MD5.hexdigest(cache_params.to_json)[0..11]
 
     def cache_params
       {

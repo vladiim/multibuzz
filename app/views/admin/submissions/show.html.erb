@@ -97,6 +97,44 @@
             </div>
           <% end %>
         </div>
+
+      <% when IntegrationRequestSubmission %>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Platform</dt>
+            <dd class="mt-1 text-sm text-gray-900"><%= @submission.platform_name %></dd>
+          </div>
+          <% if @submission.platform_name == "Other" && @submission.platform_name_other.present? %>
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Platform (Other)</dt>
+              <dd class="mt-1 text-sm text-gray-900"><%= @submission.platform_name_other %></dd>
+            </div>
+          <% end %>
+          <% if @submission.monthly_spend.present? %>
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Monthly Spend</dt>
+              <dd class="mt-1 text-sm text-gray-900"><%= @submission.monthly_spend %></dd>
+            </div>
+          <% end %>
+          <% if @submission.plan_name.present? %>
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Account Plan</dt>
+              <dd class="mt-1 text-sm text-gray-900"><%= @submission.plan_name %></dd>
+            </div>
+          <% end %>
+          <% if @submission.account_id.present? %>
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Account ID</dt>
+              <dd class="mt-1 text-sm text-gray-900 font-mono"><%= @submission.account_id %></dd>
+            </div>
+          <% end %>
+          <% if @submission.notes.present? %>
+            <div class="col-span-2">
+              <dt class="text-sm font-medium text-gray-500">Notes</dt>
+              <dd class="mt-1 text-sm text-gray-900 bg-gray-50 p-4 rounded-lg whitespace-pre-wrap"><%= @submission.notes %></dd>
+            </div>
+          <% end %>
+        </div>
       <% end %>
 
       <hr class="border-gray-200">

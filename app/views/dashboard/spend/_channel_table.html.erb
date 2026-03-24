@@ -9,7 +9,17 @@
           <th class="pb-3 pr-4">Channel</th>
           <th class="pb-3 pr-4 text-right">Spend</th>
           <th class="pb-3 pr-4 text-right">Revenue</th>
-          <th class="pb-3 pr-4 text-right">ROAS</th>
+          <th class="pb-3 pr-4 text-right">
+            <div class="group relative inline-flex items-center gap-1">
+              ROAS
+              <svg class="w-3 h-3 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div class="hidden group-hover:block absolute z-10 w-56 p-2 text-xs font-normal normal-case text-gray-600 bg-white border border-gray-200 rounded shadow-lg right-0 top-5">
+                Attributed ROAS vs Platform ROAS (Google's self-reported number). Discrepancy is expected — platforms overcount via view-through attribution and overlapping credit.
+              </div>
+            </div>
+          </th>
           <th class="pb-3 pr-4 text-right">Impressions</th>
           <th class="pb-3 pr-4 text-right">Clicks</th>
           <th class="pb-3 pr-4 text-right">CTR</th>
@@ -27,7 +37,12 @@
             </td>
             <td class="py-3 pr-4 text-right text-gray-700"><%= format_spend(row[:spend_micros]) %></td>
             <td class="py-3 pr-4 text-right text-gray-700"><%= number_to_currency(row[:attributed_revenue], precision: 0) %></td>
-            <td class="py-3 pr-4 text-right font-semibold text-gray-900"><%= row[:roas] ? "#{row[:roas]}x" : "—" %></td>
+            <td class="py-3 pr-4 text-right">
+              <span class="font-semibold text-gray-900"><%= row[:roas] ? "#{row[:roas]}x" : "—" %></span>
+              <% if row[:platform_roas] %>
+                <div class="text-xs text-gray-400">vs <%= row[:platform_roas] %>x</div>
+              <% end %>
+            </td>
             <td class="py-3 pr-4 text-right text-gray-600"><%= number_with_delimiter(row[:impressions]) %></td>
             <td class="py-3 pr-4 text-right text-gray-600"><%= number_with_delimiter(row[:clicks]) %></td>
             <td class="py-3 pr-4 text-right text-gray-600"><%= spend_ctr(row) %></td>

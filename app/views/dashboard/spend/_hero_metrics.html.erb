@@ -33,11 +33,13 @@
     </dd>
   </div>
 
-  <!-- NCAC (placeholder — requires PaybackPeriodQuery integration) -->
+  <!-- NCAC -->
   <div class="bg-white p-3 sm:p-5 rounded-lg shadow">
     <dt class="text-xs sm:text-sm font-medium text-gray-500">NCAC</dt>
     <dd class="mt-1">
-      <span class="text-lg sm:text-2xl font-semibold text-gray-900">&mdash;</span>
+      <span class="text-lg sm:text-2xl font-semibold text-gray-900">
+        <%= totals[:ncac] ? number_to_currency(totals[:ncac], precision: 0) : "—" %>
+      </span>
     </dd>
     <div class="mt-1 text-xs text-gray-400">new customer acq. cost</div>
   </div>
@@ -46,7 +48,9 @@
   <div class="bg-white p-3 sm:p-5 rounded-lg shadow col-span-2 sm:col-span-1">
     <dt class="text-xs sm:text-sm font-medium text-gray-500">MER</dt>
     <dd class="mt-1">
-      <span class="text-lg sm:text-2xl font-semibold text-gray-900">&mdash;</span>
+      <span class="text-lg sm:text-2xl font-semibold text-gray-900">
+        <%= totals[:mer] ? "#{totals[:mer]}x" : "—" %>
+      </span>
     </dd>
     <div class="mt-1 text-xs text-gray-400">marketing efficiency ratio</div>
   </div>

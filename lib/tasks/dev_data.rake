@@ -611,8 +611,18 @@ module Dev
       end
     end
 
+    # Platform ROAS by channel — Google's self-reported numbers
+    # (deliberately higher than attributed, ~30-50% inflated via view-through)
+    PLATFORM_ROAS = {
+      "paid_search" => 4.5,
+      "paid_social" => 2.8,
+      "display" => 1.6,
+      "video" => 2.0
+    }.freeze
+
     def generate_campaign_day(date, channel, config, campaign)
       budget_share = DAILY_BUDGETS[channel] * campaign[:weight]
+      rows = []
 
       24.times do |hour|
         hour_weight = hour_distribution(hour)
@@ -620,11 +630,14 @@ module Dev
           spend = (budget_share * hour_weight * device_weight * variance).to_i
           next if spend.zero?
 
-          impressions = (spend.to_f / config[:cpm] * 1000 * variance).to_i
-          clicks = (impressions * config[:ctr] * variance).to_i
+          impressions = [(spend.to_f / config[:cpm] * 1000 * variance).to_i, 1].max
+          clicks = [impressions * config[:ctr] * variance, 0].max.to_i
+          platform_value = (spend * PLATFORM_ROAS[channel] * variance).to_i
+          platform_conversions = (clicks * 0.02 * variance * 1_000_000).to_i
 
-          account.ad_spend_records.create!(
-            ad_platform_connection: @connection,
+          rows << {
+            account_id: account.id,
+            ad_platform_connection_id: @connection.id,
             spend_date: date,
             spend_hour: hour,
             channel: channel,
@@ -634,16 +647,20 @@ module Dev
             device: device,
             spend_micros: spend,
             currency: CURRENCY,
-            impressions: [ impressions, 1 ].max,
-            clicks: [ clicks, 0 ].max,
-            platform_conversions_micros: 0,
-            platform_conversion_value_micros: 0,
-            is_test: false
-          )
+            impressions: impressions,
+            clicks: clicks,
+            platform_conversions_micros: platform_conversions,
+            platform_conversion_value_micros: platform_value,
+            is_test: false,
+            created_at: Time.current,
+            updated_at: Time.current
+          }
           stats[:records] += 1
           stats[:spend] += spend
         end
       end
+
+      AdSpendRecord.insert_all(rows) if rows.any?
     end
 
     def hour_distribution(hour)

@@ -10,6 +10,9 @@
   <% connection = current_account.ad_platform_connections.active_connections.first %>
   <% if connection&.last_synced_at %>
     <span class="text-xs text-gray-400">Last sync: <%= time_ago_in_words(connection.last_synced_at) %> ago</span>
+    <% if connection.last_synced_at < 48.hours.ago %>
+      <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700">Preliminary</span>
+    <% end %>
   <% end %>
 </div>
 
@@ -35,6 +38,8 @@
         class="py-3 px-1 text-sm font-medium border-b-2 whitespace-nowrap">Overview</button>
       <button type="button" data-toggle-target="trigger" data-action="toggle#select" data-value="hourly_device"
         class="py-3 px-1 text-sm font-medium border-b-2 whitespace-nowrap">Hourly / Device</button>
+      <button type="button" data-toggle-target="trigger" data-action="toggle#select" data-value="payback"
+        class="py-3 px-1 text-sm font-medium border-b-2 whitespace-nowrap">Payback Period</button>
       <button type="button" disabled
         class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-400 whitespace-nowrap cursor-not-allowed">
         Recommendations
@@ -53,6 +58,13 @@
     <div data-toggle-target="content" data-value="hourly_device" class="hidden">
       <div class="py-4 sm:py-6">
         <%= render "dashboard/spend/hourly_device", by_hour: data[:by_hour], by_device: data[:by_device] %>
+      </div>
+    </div>
+
+    <!-- Payback Period Sub-Tab -->
+    <div data-toggle-target="content" data-value="payback" class="hidden">
+      <div class="py-4 sm:py-6">
+        <%= render "dashboard/spend/payback_period", payback: data[:payback], totals: totals %>
       </div>
     </div>
   </div>

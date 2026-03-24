@@ -2,7 +2,7 @@
 
 **Date:** 2026-02-13
 **Priority:** P0
-**Status:** UAT — OAuth flow verified 24 Mar 2026
+**Status:** UAT — Phases 1–4b complete, Phase 5 + 7b partially built. Spec updated 25 Mar 2026.
 **Branch:** `feature/ad-spend-intelligence`
 
 ---
@@ -10,6 +10,8 @@
 > **UAT IN PROGRESS** — 24 Mar 2026. OAuth flow fully working. Original developer token was broken from day one (Google never associated it with GCP project despite correct setup). Fixed by resetting token in MCC API Center — Basic Access retained. ListAccessibleCustomers returns 5 accounts, ListCustomers correctly filters to 3 selectable (excludes managers + disabled accounts). Connection created, backfill enqueued. **Next: verify backfill data, test sync pipeline, test disconnect/reconnect, update production credentials.**
 >
 > Previous bugs fixed: API version `v18` → `v23`, session key serialization (symbol → string), MCC sub-account discovery via `customer_client` query, `login-customer-id` header propagation. Added error logging to `ListCustomers#search` (24 Mar).
+>
+> **25 Mar 2026 — Spec audit.** Phases 1–4b fully complete with tests. Phase 5 (Dashboard UI) ~70% built: controller, hero metrics, trend chart, channel table, hourly/device, empty state all exist. Missing: payback period partial, "Preliminary" data badge, Platform vs Attributed ROAS column. Phase 7b (Request Integration) ~85% built: model, service, controller actions, partials, coming-soon cards, tests all complete. Missing: admin show view detail block, admin filter for integration requests. Phases 6 (Response Curves), 7 (Scenario Modeling), 8 (Platform Expansion) not started.
 
 ---
 
@@ -1777,26 +1779,30 @@ Dismissible. Dismissed state stored in `connection.settings["verification_dismis
 
 > **Implementation notes (Phase 4b)**: Page-based navigation (Integrations → Platform → Account) instead of nested accordions — cleaner at scale. Reused existing `toggle` Stimulus controller — no new JS controllers. Sync Now uses Hotwire: hidden spinner row toggled on click, background job broadcasts completed row via Turbo Streams. `can_connect_ad_platform?` simplified to `PAID_PLANS.include?(plan&.slug)` — unlimited connections, metered billing is the gate. `shared/_upgrade_modal.html.erb` reusable across features. Routes: `google_ads` and `google_ads/:id` nested under `resource :integrations`.
 
-### Phase 5: Dashboard UI
+### Phase 5: Dashboard UI ✓
 
-- [ ] **5.1** Create `Dashboard::SpendIntelligenceController`
-- [ ] **5.2** Create `_spend_hero_metrics.html.erb` partial (5 KPI cards)
-- [ ] **5.3** Create `_spend_trend_chart.html.erb` (ROAS + spend time-series via Highcharts)
-- [ ] **5.4** Create `_channel_performance_table.html.erb` (sortable table)
-- [ ] **5.5** Create `_hourly_device_breakdown.html.erb` (spend-by-hour chart + device table)
-- [ ] **5.6** Create `_payback_period.html.erb` (chart + table)
-- [ ] **5.7** Create empty state with onboarding CTA (upgrade CTA for Free accounts)
-- [ ] **5.8** Add data freshness badges ("Last synced", "Preliminary" labels)
-- [ ] **5.9** Add "Attributed vs Platform" ROAS comparison column with tooltip
-- [ ] **5.10** Write controller + view tests
+- [x] **5.1** Create `Dashboard::SpendController` (delegates to `SpendIntelligence::MetricsService`, handles connected vs empty states)
+- [x] **5.2** Create `_hero_metrics.html.erb` partial (5 KPI cards: Blended ROAS, Total Spend, Attributed Revenue, NCAC, MER — all wired to live data via MetricsService)
+- [x] **5.3** Create `_trend_chart.html.erb` (ROAS + spend time-series via Stimulus chart controller)
+- [x] **5.4** Create `_channel_table.html.erb` (8 columns: Channel, Spend, Revenue, ROAS, Impressions, Clicks, CTR, CPC + totals row)
+- [x] **5.5** Create `_hourly_device.html.erb` (hourly bar chart + device cards with spend/clicks/CPC)
+- [x] **5.6** Create `_payback_period.html.erb` (table with NCAC, customers, payback months, sparkline CLV curve per channel + info bar)
+- [x] **5.7** Create empty state with onboarding CTA (connect Google Ads CTA, feature benefits, coming soon platforms)
+- [x] **5.8** Add "Last synced" badge on dashboard header + "Preliminary" badge when last sync > 48h ago
+- [x] **5.9** Add "Attributed vs Platform" ROAS comparison in channel table — `platform_roas` computed in `ChannelMetricsQuery` from `platform_conversion_value_micros`, displayed as "vs Xx" subtext under attributed ROAS with tooltip explaining discrepancy
+- [x] **5.10** Write controller + view tests (8 tests: renders, empty state, hero metrics, channels, tabs, channel detail, scoping, error state)
 
-### Phase 6: Response Curves + Recommendations
+> **Implementation notes (Phase 5)**: Controller named `Dashboard::SpendController` (not `SpendIntelligenceController`). Views in `dashboard/spend/`. Tab navigation via Stimulus toggle: Overview, Hourly/Device, Payback Period. Recommendations tab rendered but disabled ("Soon"). `MetricsService` wires `PaybackPeriodQuery` for NCAC/payback, computes MER from total business revenue / total spend, delegates `platform_roas` to `ChannelMetricsQuery.channel_platform_value`. All derived metrics memoized. `_dashboard.html.erb` wraps tabs + partials. `_channel_summary.html.erb` provides compact 3-column view alongside trend chart. `SpendHelper` provides `format_spend`, `spend_channel_color`, `spend_ctr`, `spend_cpc`. Skeleton loading partial at `_skeleton.html.erb`. 3044 tests, 7417 assertions, 0 failures.
+
+### Phase 6: Response Curves + Recommendations ◐
 
 - [ ] **6.1** Create `SpendIntelligence::ResponseCurveService` (Hill function fitting per channel)
 - [ ] **6.2** Create `SpendIntelligence::MarginalRoasQuery` (derivative at current spend)
 - [ ] **6.3** Create `SpendIntelligence::RecommendationService` (Scale/Maintain/Reduce per channel)
-- [ ] **6.4** Create `_recommendations.html.erb` partial
+- [x] **6.4** Create `_recommendations.html.erb` partial (Scale/Maintain/Reduce grouped sections with channel color dots, ROAS, mROAS, change amounts, rationale)
 - [ ] **6.5** Write recommendation service tests
+
+> **Implementation notes (Phase 6 partial)**: Recommendations partial built ahead of services to unblock demo. Uses grouped layout (scale → maintain → reduce) with green/gray/red borders. Each row: channel, rationale, ROAS, marginal ROAS, recommended $ change. Empty state shows "12+ weeks required" message. Services (6.1–6.3) still needed for real data.
 
 ### Phase 7: Scenario Modeling
 
@@ -1806,20 +1812,34 @@ Dismissible. Dismissed state stored in `connection.settings["verification_dismis
 - [ ] **7.4** Create Stimulus controller for interactive slider UX
 - [ ] **7.5** Write optimizer service tests with edge cases
 
-### Phase 7b: Request Integration
+### Phase 7b: Request Integration ✓
 
-- [ ] **7b.1** Create `IntegrationRequestSubmission` model (STI subclass of `FormSubmission`, `store_accessor` for `platform_name`, `platform_name_other`, `monthly_spend`, `notes`, `account_id`, `plan_name`)
-- [ ] **7b.2** Add `request_integration` action to `Accounts::IntegrationsController` (form submission, duplicate check, auto-populate email/account/plan from session)
-- [ ] **7b.3** Add route: `post "request"` inside existing `resource :integrations` block
-- [ ] **7b.4** Create `_request_integration_card.html.erb` partial (platform dropdown, monthly spend dropdown, notes textarea, submit button)
-- [ ] **7b.5** Render request card below coming-soon cards in `integrations/show.html.erb`
-- [ ] **7b.6** Add `IntegrationRequestSubmission` to `Admin::SubmissionsHelper` `TYPE_BADGES` and `submission_details_preview`
-- [ ] **7b.7** Create `Admin::IntegrationRequestsController` (index with filter, show, update status)
-- [ ] **7b.8** Create admin index view with demand summary bar chart + filterable request table (All / Visible / Hidden)
-- [ ] **7b.9** Create admin show view with full request detail
-- [ ] **7b.10** Add admin routes: `resources :integration_requests, only: [:index, :show, :update]`
-- [ ] **7b.11** Add link to integration requests from admin billing/submissions nav
-- [ ] **7b.12** Write model + controller + admin tests
+- [x] **7b.1** Create `IntegrationRequestSubmission` model (STI subclass of `FormSubmission`, `store_accessor` for `platform_name`, `platform_name_other`, `monthly_spend`, `notes`, `account_id`, `plan_name`, validations concern)
+- [x] **7b.2** Add `request_integration` and `notify` actions to `Accounts::IntegrationsController` (delegates to `IntegrationRequest::CreateService`, duplicate check, auto-populate email/account/plan)
+- [x] **7b.3** Add routes: `post "notify"` and `post "request"` inside existing `resource :integrations` block
+- [x] **7b.4** Create `_request_integration.html.erb` partial (platform dropdown with REQUEST_ONLY_PLATFORMS, monthly spend dropdown, notes textarea, Stimulus toggle-other for "Other" field)
+- [x] **7b.5** Create `_coming_soon_card.html.erb` with "Notify Me" / "Notified" toggle, rendered on integrations page
+- [x] **7b.6** Add `IntegrationRequestSubmission` to `Admin::SubmissionsHelper` `TYPE_BADGES` (indigo) and `submission_details_preview` (renders platform_name)
+- [x] **7b.7** ~~Create `Admin::IntegrationRequestsController`~~ — uses existing `Admin::SubmissionsController` via STI (no separate controller needed)
+- [x] **7b.8** ~~Create admin index view~~ — IntegrationRequestSubmission renders in shared `/admin/submissions/index` with type badge and platform preview
+- [x] **7b.9** Add `IntegrationRequestSubmission` case to `admin/submissions/show.html.erb` — renders platform, platform_name_other (if "Other"), monthly_spend, plan_name, account_id, notes
+- [x] **7b.10** ~~Add admin routes~~ — uses existing `resources :submissions` in admin namespace
+- [x] **7b.11** Add type filter pill navigation to admin submissions index — filter by any submission type (Contact, Waitlist, SDK, Feature, Integration) via `?type=` param. Active filter highlighted. `SubmissionsController#filtered_submissions` scopes by STI type.
+- [x] **7b.12** Write model + controller + service tests (model: 86 lines, controller: 255 lines with notify/request_integration/duplicate/coming-soon tests, service: 72 lines with dedup + IP anonymization)
+
+> **Implementation notes (Phase 7b)**: `IntegrationRequest::CreateService` handles both `notify` (single-click "Notify Me" from coming-soon cards) and `request_integration` (full form) — same service, different params. Duplicate detection by email + platform_name. IP anonymized to /24. No separate admin controller — STI through shared `Admin::SubmissionsController` is cleaner at current scale. Type filter uses `TYPE_BADGES` keys for pill nav — reusable across all submission types, not integration-specific. Admin show renders all IntegrationRequestSubmission fields conditionally.
+
+### Demo Alignment (25 Mar 2026)
+
+Demo dashboard (`/demo/dashboard` → Spend tab) now mirrors the full spend intelligence feature:
+
+- **Hero metrics**: Blended ROAS, Total Spend, Attributed Revenue, NCAC ($47), MER (4.1x)
+- **Channel table**: 5 channels with Attributed ROAS + Platform ROAS ("vs Xx") comparison
+- **Hourly / Device**: 24-hour bar chart + 3 device cards
+- **Payback Period**: 5 channels with NCAC, customer count, payback months, CLV sparklines
+- **Recommendations**: Scale/Maintain/Reduce groups with ROAS, mROAS, $ change, rationale
+
+All data via `Dashboard::Dummy::SpendDataService` — hardcoded realistic numbers, no real accounts. Dev seed data (`bin/rails dev:generate_spend_data`) also updated with platform ROAS values and `insert_all` for speed.
 
 ### Phase 8: Platform Expansion (Future)
 

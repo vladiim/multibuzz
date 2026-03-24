@@ -7,11 +7,21 @@ module Admin
     per_page 25
 
     def index
-      @submissions = paginate(FormSubmission.order(created_at: :desc))
+      @type_filter = params[:type]
+      @submissions = paginate(filtered_submissions)
     end
 
     def show
       @submission = FormSubmission.find_by_prefix_id!(params[:id])
+    end
+
+    private
+
+    def filtered_submissions
+      scope = FormSubmission.order(created_at: :desc)
+      return scope unless @type_filter.present?
+
+      scope.where(type: @type_filter)
     end
   end
 end

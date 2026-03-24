@@ -40,12 +40,14 @@ module SpendIntelligence
       def build_channel_metrics(channel)
         spend = channel_spend[channel] || 0
         revenue = (channel_revenue[channel] || 0).to_f
+        platform_value = (channel_platform_value[channel] || 0).to_f
 
         {
           channel: channel,
           spend_micros: spend,
           attributed_revenue: revenue,
           roas: roas(spend, revenue),
+          platform_roas: roas(spend, platform_value),
           impressions: channel_impressions[channel] || 0,
           clicks: channel_clicks[channel] || 0
         }
@@ -77,6 +79,12 @@ module SpendIntelligence
 
       def channel_clicks
         @channel_clicks ||= spend_scope.group(:channel).sum(:clicks)
+      end
+
+      def channel_platform_value
+        @channel_platform_value ||= spend_scope.group(:channel)
+          .sum(:platform_conversion_value_micros)
+          .transform_values { |v| spend_in_units(v) }
       end
     end
   end
