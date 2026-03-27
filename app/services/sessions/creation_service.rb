@@ -43,6 +43,7 @@ module Sessions
     def run
       return validation_error if validation_error
       return idempotent_result if existing_by_request_id
+      return bot_rejection_result if known_bot?
 
       with_session_lock do
         process_visitor
@@ -268,6 +269,18 @@ module Sessions
         user_agent: user_agent,
         landing_page_host: normalized_page_host
       }.compact
+    end
+
+    def known_bot?
+      BotPatterns::Matcher.bot?(user_agent)
+    end
+
+    def bot_rejection_result
+      success_result(
+        visitor_id: visitor_id,
+        session_id: session_id,
+        channel: "bot"
+      )
     end
 
     def classification

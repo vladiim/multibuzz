@@ -3,6 +3,10 @@
 module Api
   module V1
     class SessionsController < BaseController
+      rate_limit to: 10, within: 3.seconds,
+        by: -> { real_client_ip },
+        with: -> { render json: { error: "Rate limit exceeded" }, status: :too_many_requests }
+
       def create
         return render_bad_request("Missing 'session' parameter") unless session_param_present?
 

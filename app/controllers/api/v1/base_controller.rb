@@ -6,14 +6,14 @@ module Api
       before_action :authenticate_api_key
       rescue_from StandardError, with: :handle_unexpected_error
       rescue_from ActionController::ParameterMissing, with: :handle_parameter_missing
-      # Rate limiting disabled for MVP - usage tracked via Billing::UsageCounter
-      # Re-enable with smarter limits when billing tiers are implemented
-      # before_action :check_rate_limit
-      # after_action :set_rate_limit_headers
 
       private
 
       attr_reader :current_account, :current_api_key
+
+      def real_client_ip
+        request.headers["CF-Connecting-IP"].presence || request.remote_ip
+      end
 
       def idempotency_key
         request.headers["X-Idempotency-Key"].presence

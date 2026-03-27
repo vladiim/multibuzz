@@ -680,10 +680,80 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
     }).call
 
     assert result[:success]
-    session = account.sessions.find_by(session_id: "sess_bot_1")
+    assert_equal "bot", result[:channel]
+  end
 
-    assert_predicate session, :suspect?, "Bot UA should be suspect even with attribution signals"
-    assert_equal Sessions::BotClassifier::KNOWN_BOT, session.suspect_reason
+  test "bot UA skips visitor and session creation" do
+    load_bot_patterns!
+
+    assert_no_difference -> { account.visitors.count } do
+      assert_no_difference -> { account.sessions.count } do
+        Sessions::CreationService.new(account, {
+          visitor_id: "vis_bot_skip",
+          session_id: "sess_bot_skip",
+          url: "https://example.com/.secrets",
+          user_agent: "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+        }).call
+      end
+    end
+  end
+
+  test "bot UA skips billing usage" do
+    load_bot_patterns!
+
+    assert_no_difference -> { usage_counter.current_usage } do
+      Sessions::CreationService.new(account, {
+        visitor_id: "vis_bot_billing",
+        session_id: "sess_bot_billing",
+        url: "https://example.com/credentials.json",
+        user_agent: "Mozilla/5.0 (compatible; AhrefsBot/7.0; +http://ahrefs.com/robot/)"
+      }).call
+    end
+  end
+
+  test "bot UA returns passed-through visitor_id and session_id" do
+    load_bot_patterns!
+
+    result = Sessions::CreationService.new(account, {
+      visitor_id: "vis_bot_passthrough",
+      session_id: "sess_bot_passthrough",
+      url: "https://example.com/page",
+      user_agent: "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+    }).call
+
+    assert result[:success]
+    assert_equal "vis_bot_passthrough", result[:visitor_id]
+    assert_equal "sess_bot_passthrough", result[:session_id]
+  end
+
+  test "spam referrer still processes fully" do
+    result = Sessions::CreationService.new(account, {
+      visitor_id: "vis_spam_ref",
+      session_id: "sess_spam_ref",
+      url: "https://example.com/page",
+      referrer: "https://binance.com/spam",
+      user_agent: "Mozilla/5.0 Chrome/120.0.0.0"
+    }).call
+
+    assert result[:success]
+    session = account.sessions.find_by(session_id: "sess_spam_ref")
+
+    assert session, "Spam referrer sessions should still be created in DB"
+    assert_predicate session, :suspect?
+    assert_equal Sessions::BotClassifier::SPAM_REFERRER, session.suspect_reason
+  end
+
+  test "bot rejection degrades gracefully when patterns unavailable" do
+    BotPatterns::Matcher.reset!
+
+    assert_difference -> { account.sessions.count }, 1 do
+      Sessions::CreationService.new(account, {
+        visitor_id: "vis_no_patterns",
+        session_id: "sess_no_patterns",
+        url: "https://example.com/page",
+        user_agent: "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+      }).call
+    end
   end
 
   test "real UA with signals stores user_agent and is qualified" do

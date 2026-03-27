@@ -57,6 +57,46 @@ class Api::V1::SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :bad_request
   end
 
+  # --- Rate Limiting ---
+
+  test "allows requests under rate limit" do
+    10.times do
+      post api_v1_sessions_path, params: session_payload, headers: auth_headers, as: :json
+
+      assert_response :accepted
+    end
+  end
+
+  test "returns 429 when rate limit exceeded" do
+    10.times do
+      post api_v1_sessions_path, params: session_payload, headers: auth_headers, as: :json
+    end
+
+    post api_v1_sessions_path, params: session_payload, headers: auth_headers, as: :json
+
+    assert_response :too_many_requests
+    assert_equal "Rate limit exceeded", response.parsed_body["error"]
+  end
+
+  test "rate limits by CF-Connecting-IP when present" do
+    blocked_headers = auth_headers.merge("CF-Connecting-IP" => "1.2.3.4")
+    other_headers = auth_headers.merge("CF-Connecting-IP" => "5.6.7.8")
+
+    10.times do
+      post api_v1_sessions_path, params: session_payload, headers: blocked_headers, as: :json
+    end
+
+    # 11th from same IP — blocked
+    post api_v1_sessions_path, params: session_payload, headers: blocked_headers, as: :json
+
+    assert_response :too_many_requests
+
+    # Different IP — allowed
+    post api_v1_sessions_path, params: session_payload, headers: other_headers, as: :json
+
+    assert_response :accepted
+  end
+
   # --- Idempotency via X-Idempotency-Key header ---
 
   test "passes X-Idempotency-Key header as request_id to service" do
