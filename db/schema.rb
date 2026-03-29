@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_13_045737) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_30_024924) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -441,6 +441,49 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_13_045737) do
     t.index ["attribution_model_id"], name: "index_rerun_jobs_on_attribution_model_id"
   end
 
+  create_table "score_assessments", force: :cascade do |t|
+    t.bigint "user_id"
+    t.float "overall_score", null: false
+    t.integer "overall_level", null: false
+    t.jsonb "dimension_scores", default: {}, null: false
+    t.jsonb "answers", default: [], null: false
+    t.jsonb "context", default: {}, null: false
+    t.string "source"
+    t.jsonb "utm_params", default: {}
+    t.string "claim_token"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["claim_token"], name: "index_score_assessments_on_claim_token", unique: true, where: "(claim_token IS NOT NULL)"
+    t.index ["created_at"], name: "index_score_assessments_on_created_at"
+    t.index ["overall_level"], name: "index_score_assessments_on_overall_level"
+    t.index ["user_id"], name: "index_score_assessments_on_user_id"
+  end
+
+  create_table "score_team_memberships", force: :cascade do |t|
+    t.bigint "score_team_id", null: false
+    t.bigint "user_id", null: false
+    t.bigint "score_assessment_id", null: false
+    t.string "role_label"
+    t.datetime "joined_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["score_assessment_id"], name: "index_score_team_memberships_on_score_assessment_id"
+    t.index ["score_team_id", "user_id"], name: "index_score_team_memberships_on_score_team_id_and_user_id", unique: true
+    t.index ["score_team_id"], name: "index_score_team_memberships_on_score_team_id"
+    t.index ["user_id"], name: "index_score_team_memberships_on_user_id"
+  end
+
+  create_table "score_teams", force: :cascade do |t|
+    t.bigint "created_by_id", null: false
+    t.string "invite_slug", null: false
+    t.integer "member_count", default: 1, null: false
+    t.float "alignment_score"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_score_teams_on_created_by_id"
+    t.index ["invite_slug"], name: "index_score_teams_on_invite_slug", unique: true
+  end
+
   create_table "sessions", primary_key: ["id", "started_at"], force: :cascade do |t|
     t.bigserial "id", null: false
     t.bigint "account_id", null: false
@@ -555,6 +598,11 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_13_045737) do
   add_foreign_key "identities", "accounts"
   add_foreign_key "rerun_jobs", "accounts"
   add_foreign_key "rerun_jobs", "attribution_models"
+  add_foreign_key "score_assessments", "users"
+  add_foreign_key "score_team_memberships", "score_assessments"
+  add_foreign_key "score_team_memberships", "score_teams"
+  add_foreign_key "score_team_memberships", "users"
+  add_foreign_key "score_teams", "users", column: "created_by_id"
   add_foreign_key "sessions", "accounts"
   add_foreign_key "sessions", "visitors"
   add_foreign_key "solid_errors_occurrences", "solid_errors", column: "error_id"

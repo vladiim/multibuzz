@@ -65,6 +65,13 @@ Rails.application.routes.draw do
   get "lp/:slug", to: "landing_pages#show", as: :landing_page,
     constraints: { slug: Regexp.new(LandingPages::Registry.slugs.join("|")) }
 
+  # Measurement Maturity Score
+  get "score", to: "score/assessments#show", as: :score
+  scope :score, module: :score do
+    resources :assessments, only: [ :create ]
+    post "claim", to: "assessments#claim", as: :claim_score_assessment
+  end
+
   # Public pages
   get "home", to: "pages#home"
   get "about", to: "pages#about"
