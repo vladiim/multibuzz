@@ -1,5 +1,8 @@
 
-<div data-controller="score-landing" data-score-landing-target="container">
+<div data-controller="score-landing score-assessment"
+     data-score-assessment-api-url-value="<%= assessments_path %>"
+     data-score-assessment-claim-url-value="<%= claim_score_assessment_path %>"
+     data-score-assessment-signup-url-value="<%= score_signup_path %>">
 <div class="scroll-glow" data-score-landing-target="scrollGlow" id="scroll-glow"></div>
 
 <!-- NAV -->
@@ -312,12 +315,7 @@
 <!-- ============================================ -->
 <!-- ASSESSMENT OVERLAY -->
 <!-- ============================================ -->
-<div data-controller="score-assessment"
-     data-score-assessment-api-url-value="<%= assessments_path %>"
-     data-score-assessment-claim-url-value="<%= claim_score_assessment_path %>"
-     data-score-assessment-signup-url-value="<%= score_signup_path %>">
-
-  <div class="assessment-overlay" data-score-assessment-target="overlay">
+<div class="assessment-overlay" data-score-assessment-target="overlay">
     <div class="assessment-progress"><div class="assessment-progress-bar" data-score-assessment-target="progressBar"></div></div>
     <button class="assessment-close" data-action="click->score-assessment#close">&larr; Exit</button>
     <div class="assessment-counter" data-score-assessment-target="counter"></div>
@@ -354,6 +352,5 @@
       </div>
     </div>
   </div>
-</div>
 
-</div><%# close score-landing controller %>
+</div><%# close score-landing + score-assessment controllers %>

@@ -58,6 +58,8 @@ class ApplicationController < ActionController::Base
   # Dogfooding: Track page views
   def track_page_view
     Mbuzz.event("page_view", path: request.path)
+  rescue SocketError, Errno::ECONNREFUSED => e
+    Rails.logger.debug { "[mbuzz] tracking skipped: #{e.message}" }
   end
 
   def should_track_page_view?
