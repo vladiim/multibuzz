@@ -1,10 +1,1321 @@
 <% content_for :head do %>
-  <style>
-    /* Score landing page styles will go here — ported from score/index.html */
-  </style>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg-card: #13131a;
+    --bg-card-hover: #1a1a24;
+    --text: #e8e8ed;
+    --text-muted: #8888a0;
+    --text-dim: #55556a;
+    --accent: #4d7fff;
+    --accent-hover: #6b93ff;
+    --accent-glow: rgba(77, 127, 255, 0.15);
+    --red: #ff4d6a;
+    --green: #4dff91;
+    --orange: #ff9f4d;
+    --border: #222233;
+    --radius: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html {
+    scroll-behavior: smooth;
+    font-size: 16px;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---- NAV (minimal) ---- */
+  .nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: 16px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(10, 10, 15, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .nav-logo {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    text-decoration: none;
+    letter-spacing: -0.5px;
+  }
+  .nav-logo span { color: var(--accent); }
+  .nav-cta {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    background: var(--accent);
+    padding: 8px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+  .nav-cta:hover { background: var(--accent-hover); }
+
+  /* ---- HERO ---- */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 120px 24px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 800px;
+    background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+    pointer-events: none;
+    animation: glow-breathe 6s ease-in-out infinite;
+  }
+  @keyframes glow-breathe {
+    0%, 100% { opacity: 1; transform: translateX(-50%) scale(1); }
+    50% { opacity: 0.6; transform: translateX(-50%) scale(1.1); }
+  }
+  .hero-floor-glow { display: none; }
+
+  /* Floating glow that drifts down the page */
+  .scroll-glow {
+    position: absolute;
+    width: 700px;
+    height: 700px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    transition: left 1.4s cubic-bezier(0.22, 1, 0.36, 1),
+                top 1.4s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 1.4s cubic-bezier(0.22, 1, 0.36, 1),
+                background 2s ease;
+    will-change: left, top, transform;
+    opacity: 0;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 32px;
+  }
+  .hero-badge .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse-dot 2s infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .hero h1 {
+    font-size: clamp(36px, 5vw, 64px);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -2px;
+    max-width: 800px;
+    margin-bottom: 24px;
+  }
+  .hero h1 .highlight {
+    background: linear-gradient(135deg, var(--accent) 0%, #a78bfa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-sub {
+    font-size: clamp(16px, 2vw, 20px);
+    color: var(--text-muted);
+    max-width: 580px;
+    margin-bottom: 40px;
+    line-height: 1.6;
+  }
+  .hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--accent);
+    padding: 16px 40px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+    box-shadow: 0 0 40px var(--accent-glow);
+  }
+  .hero-cta:hover {
+    background: var(--accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 0 60px rgba(77, 127, 255, 0.25);
+  }
+  .hero-cta svg {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.2s;
+  }
+  .hero-cta:hover svg { transform: translateX(3px); }
+  .hero-micro {
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .hero-trust {
+    display: flex;
+    gap: 24px;
+    margin-top: 48px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .hero-trust-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .hero-trust-item svg {
+    width: 16px;
+    height: 16px;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  /* ---- SECTIONS ---- */
+  section {
+    padding: 100px 24px;
+    max-width: 1100px;
+    margin: 0 auto;
+    position: relative;
+  }
+  .section-label {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--accent);
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  .section-title {
+    font-size: clamp(28px, 3.5vw, 44px);
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    line-height: 1.15;
+    margin: 0 auto 20px;
+    max-width: 100%;
+    text-align: center;
+  }
+  .section-desc {
+    font-size: 18px;
+    color: var(--text-muted);
+    max-width: 100%;
+    line-height: 1.7;
+    margin: 0 auto 48px;
+    text-align: center;
+  }
+
+  /* ---- CHAOS SECTION (The Measurement Zoo) ---- */
+  .chaos {
+    border-top: 1px solid var(--border);
+  }
+  .chaos-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 768px) {
+    .chaos-grid { grid-template-columns: 1fr; }
+  }
+  .chaos-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    transition: all 0.3s;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  .chaos-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .chaos-card:hover {
+    border-color: rgba(77, 127, 255, 0.3);
+    background: var(--bg-card-hover);
+  }
+  .chaos-card-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .chaos-card-icon svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 1.5;
+    fill: none;
+  }
+  .chaos-card h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .chaos-card .vendors {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+  .chaos-card p {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .chaos-punchline {
+    margin-top: 48px;
+    padding: 32px;
+    background: linear-gradient(135deg, rgba(77, 127, 255, 0.08) 0%, rgba(167, 139, 250, 0.05) 100%);
+    border: 1px solid rgba(77, 127, 255, 0.15);
+    border-radius: var(--radius);
+    text-align: center;
+  }
+  .chaos-punchline p {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.5;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  .chaos-punchline .stat {
+    color: var(--accent);
+    font-weight: 800;
+  }
+
+  /* ---- MATURITY LEVELS ---- */
+  .levels {
+    border-top: 1px solid var(--border);
+  }
+  .levels-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .level-row {
+    display: flex;
+    align-items: stretch;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: all 0.5s;
+  }
+  .level-row.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  .level-row:hover {
+    border-color: rgba(77, 127, 255, 0.2);
+  }
+  .level-indicator {
+    width: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .level-content {
+    flex: 1;
+    padding: 24px 28px;
+  }
+  .level-content h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+  .level-content .tagline {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .level-content .detail {
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+  .level-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 24px 28px;
+    flex-shrink: 0;
+    min-width: 140px;
+    text-align: right;
+  }
+  .level-meta .spend {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+  .level-meta .pct {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+  .level-callout {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 77, 106, 0.12);
+    border: 1px solid rgba(255, 77, 106, 0.25);
+    color: var(--red);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 4px 12px;
+    border-radius: 6px;
+    margin-top: 8px;
+  }
+  @media (max-width: 768px) {
+    .level-row { flex-direction: column; }
+    .level-meta { align-items: flex-start; padding: 0 28px 24px; min-width: auto; text-align: left; }
+    .level-indicator { width: 100%; height: 40px; }
+  }
+
+  /* Dropbox callout */
+  .evidence-callout {
+    margin-top: 24px;
+    padding: 24px 28px;
+    background: var(--bg-card);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0;
+  }
+  .evidence-callout p {
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  .evidence-callout .source {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-top: 8px;
+  }
+
+  /* ---- WHAT YOU GET ---- */
+  .deliverables {
+    border-top: 1px solid var(--border);
+  }
+  .deliverables-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  @media (max-width: 768px) {
+    .deliverables-grid { grid-template-columns: 1fr; }
+  }
+  .deliverable-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px 28px;
+    text-align: center;
+    transition: all 0.3s;
+  }
+  .deliverable-card:hover {
+    border-color: rgba(77, 127, 255, 0.3);
+    transform: translateY(-4px);
+  }
+  .deliverable-icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 20px;
+    border-radius: 14px;
+    background: rgba(77, 127, 255, 0.08);
+    border: 1px solid rgba(77, 127, 255, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(8px);
+  }
+  .deliverable-icon svg {
+    width: 26px;
+    height: 26px;
+    stroke: var(--accent);
+    stroke-width: 1.5;
+    fill: none;
+  }
+  .deliverable-card h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .deliverable-card p {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  /* ---- HOW IT WORKS ---- */
+  .how-it-works {
+    border-top: 1px solid var(--border);
+  }
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    position: relative;
+  }
+  @media (max-width: 768px) {
+    .steps { grid-template-columns: 1fr; gap: 24px; }
+  }
+  .step {
+    text-align: center;
+    position: relative;
+  }
+  .step-number {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--accent-glow);
+    border: 2px solid var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--accent);
+    margin: 0 auto 16px;
+  }
+  .step h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .step p {
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+
+  /* ---- RESEARCH BACKING ---- */
+  .research {
+    border-top: 1px solid var(--border);
+  }
+  .research-sources {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  @media (max-width: 768px) {
+    .research-sources { grid-template-columns: 1fr; }
+  }
+  .research-source {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 16px 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .research-source .icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(77, 127, 255, 0.08);
+    border: 1px solid rgba(77, 127, 255, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    backdrop-filter: blur(8px);
+  }
+  .research-source .icon svg {
+    width: 16px;
+    height: 16px;
+    stroke: var(--accent);
+    stroke-width: 1.5;
+    fill: none;
+  }
+  .research-source .meta {
+    flex: 1;
+  }
+  .research-source .meta strong {
+    font-size: 14px;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .research-source .meta span {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  /* ---- FAQ ---- */
+  .faq {
+    border-top: 1px solid var(--border);
+  }
+  .faq-list {
+    max-width: 100%;
+  }
+  .faq-item {
+    border-bottom: 1px solid var(--border);
+  }
+  .faq-q {
+    padding: 20px 0;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+  }
+  .faq-q:hover { color: var(--accent); }
+  .faq-q .chevron {
+    transition: transform 0.3s;
+    font-size: 20px;
+    color: var(--text-dim);
+  }
+  .faq-item.open .chevron { transform: rotate(180deg); }
+  .faq-a {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s, padding 0.3s;
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  .faq-item.open .faq-a {
+    max-height: 200px;
+    padding-bottom: 20px;
+  }
+
+  /* ---- FINAL CTA ---- */
+  .final-cta {
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 100px 24px 120px;
+    max-width: 1100px;
+    margin: 0 auto;
+    position: relative;
+  }
+  .final-cta::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 400px;
+    background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .final-cta .section-title {
+    max-width: 600px;
+    margin: 0 auto 16px;
+    text-align: center;
+  }
+  .final-cta .section-desc {
+    max-width: 500px;
+    margin: 0 auto 40px;
+    text-align: center;
+  }
+
+  /* ---- FOOTER ---- */
+  .footer {
+    padding: 32px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-dim);
+    border-top: 1px solid var(--border);
+  }
+  .footer a {
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+  .footer a:hover { color: var(--accent); }
+
+  /* ---- ASSESSMENT OVERLAY ---- */
+  .assessment-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: var(--bg);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .assessment-overlay.active { display: flex; }
+
+  .assessment-progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--border);
+  }
+  .assessment-progress-bar {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.4s ease;
+    border-radius: 0 2px 2px 0;
+  }
+  .assessment-counter {
+    position: absolute;
+    top: 20px;
+    right: 32px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dim);
+  }
+  .assessment-close {
+    position: absolute;
+    top: 16px;
+    left: 32px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-dim);
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 4px 8px;
+  }
+  .assessment-close:hover { color: var(--text); }
+
+  .question-container {
+    max-width: 640px;
+    width: 100%;
+    text-align: center;
+  }
+  .question-text {
+    font-size: clamp(20px, 3vw, 28px);
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 40px;
+    letter-spacing: -0.5px;
+  }
+  .answers {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .answer-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 24px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .answer-card:hover {
+    border-color: var(--accent);
+    background: var(--bg-card-hover);
+    color: var(--text);
+  }
+  .answer-card.selected {
+    border-color: var(--accent);
+    background: rgba(77, 127, 255, 0.1);
+    color: var(--text);
+  }
+
+  /* Insight interstitial */
+  .insight-interstitial {
+    display: none;
+    max-width: 500px;
+    text-align: center;
+  }
+  .insight-interstitial.active { display: block; }
+  .insight-interstitial .insight-icon {
+    font-size: 32px;
+    margin-bottom: 16px;
+  }
+  .insight-interstitial p {
+    font-size: 18px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  .insight-interstitial .insight-source {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-top: 12px;
+  }
+
+  /* Context questions */
+  .context-label {
+    font-size: 14px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+  .context-skip {
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--text-dim);
+    cursor: pointer;
+    background: none;
+    border: none;
+    text-decoration: underline;
+  }
+  .context-skip:hover { color: var(--text-muted); }
+
+  /* ---- RESULTS ---- */
+  .results-container {
+    display: none;
+    max-width: 640px;
+    width: 100%;
+    text-align: center;
+  }
+  .results-container.active { display: block; }
+
+  .result-level-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 28px;
+    border-radius: 16px;
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 16px;
+    letter-spacing: -1px;
+  }
+  .result-insight {
+    font-size: 18px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    max-width: 500px;
+    margin: 0 auto 40px;
+  }
+
+  /* Radar chart */
+  .radar-container {
+    width: 320px;
+    height: 320px;
+    margin: 0 auto 40px;
+  }
+  .radar-container svg text {
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Results actions */
+  .results-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    margin-top: 32px;
+  }
+  .results-actions .primary-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--accent);
+    padding: 14px 32px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .results-actions .primary-action:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+  }
+  .results-actions .secondary-action {
+    font-size: 14px;
+    color: var(--text-muted);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 10px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+  .results-actions .secondary-action:hover {
+    border-color: var(--accent);
+    color: var(--text);
+  }
+
+  /* Dimension breakdown */
+  .dimension-breakdown {
+    margin-top: 40px;
+    text-align: left;
+  }
+  .dimension-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .dimension-name {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .dimension-bar-bg {
+    width: 200px;
+    height: 8px;
+    background: var(--bg-card);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .dimension-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1s ease;
+  }
+  .dimension-score {
+    font-size: 14px;
+    font-weight: 700;
+    width: 60px;
+    text-align: right;
+  }
+
+  /* Loading animation */
+  .loading-screen {
+    display: none;
+    text-align: center;
+  }
+  .loading-screen.active { display: block; }
+  .loading-text {
+    font-size: 18px;
+    font-weight: 600;
+    margin-top: 24px;
+  }
+  .loading-sub {
+    font-size: 14px;
+    color: var(--text-dim);
+    margin-top: 8px;
+  }
+  .spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    margin: 0 auto;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---- UTILITY ---- */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s, transform 0.6s;
+  }
+  .fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
 <% end %>
 
-<div id="score-landing">
-  <h1>Measurement Maturity Score</h1>
-  <p>Landing page placeholder — port from score/index.html</p>
+<div data-controller="score-landing" data-score-landing-target="container">
+<div class="scroll-glow" data-score-landing-target="scrollGlow" id="scroll-glow"></div>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="<%= root_path %>" class="nav-logo">m<span>buzz</span></a>
+  <a href="#start" class="nav-cta" data-action="click->score-assessment#start">Take the Assessment</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-badge">
+    <span class="dot"></span>
+    Free &middot; Private &middot; Research-backed
+  </div>
+  <h1>Could you <span class="highlight">prove</span> your marketing budget is working?</h1>
+  <p class="hero-sub">Your CFO will ask. Your board will ask. When they do, you need more than dashboards and gut feel. Find out where your measurement actually stands &mdash; before someone else does.</p>
+  <a href="#start" class="hero-cta" data-action="click->score-assessment#start">
+    Find Out in 3 Minutes
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+  </a>
+  <p class="hero-micro">No signup &middot; No credit card &middot; See your score instantly</p>
+  <div class="hero-trust">
+    <div class="hero-trust-item">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+      Based on peer-reviewed research
+    </div>
+    <div class="hero-trust-item">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+      10 questions, 3 minutes
+    </div>
+    <div class="hero-trust-item">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+      Vendor-neutral &mdash; no sales pitch
+    </div>
+  </div>
+</section>
+
+<!-- THE MEASUREMENT ZOO -->
+<section class="chaos" id="chaos">
+
+  <div class="section-label">It's not your fault</div>
+  <h2 class="section-title">There's a reason you can't give a straight answer.</h2>
+  <p class="section-desc">95+ vendors. 6 competing methods. Every one of them says they're the solution. This is the landscape you're supposed to navigate while also hitting your numbers.</p>
+
+  <div class="chaos-grid">
+    <div class="chaos-card" data-delay="0">
+      <div class="chaos-card-icon" style="background: rgba(255, 77, 106, 0.08);"><svg viewBox="0 0 24 24" stroke="var(--red)"><path d="M12 9v4m0 4h.01M12 3l9.5 16.5H2.5L12 3z" /></svg></div>
+      <h3>Platform Attribution</h3>
+      <div class="vendors">Google Ads &middot; Meta &middot; TikTok &middot; LinkedIn &middot; Amazon</div>
+      <p>Every channel grades its own homework. Combined, they claim 2&ndash;3x your actual conversions. Try explaining that to your CFO.</p>
+    </div>
+    <div class="chaos-card" data-delay="100">
+      <div class="chaos-card-icon" style="background: rgba(77, 127, 255, 0.08);"><svg viewBox="0 0 24 24" stroke="var(--accent)"><path d="M8 3v3a2 2 0 01-2 2H3m18 0h-3a2 2 0 01-2-2V3m0 18v-3a2 2 0 012-2h3M3 16h3a2 2 0 012 2v3" /></svg></div>
+      <h3>Multi-Touch Attribution</h3>
+      <div class="vendors">mbuzz &middot; Northbeam &middot; Triple Whale &middot; Rockerbox &middot; Cometly &middot; Ruler</div>
+      <p>Distributes credit across touchpoints. Better than last-click. But 20+ vendors all claiming different numbers. Which one do you trust?</p>
+    </div>
+    <div class="chaos-card" data-delay="200">
+      <div class="chaos-card-icon" style="background: rgba(167, 139, 250, 0.08);"><svg viewBox="0 0 24 24" stroke="#a78bfa"><path d="M3 3v18h18" /><path d="M7 16l4-8 4 4 4-8" /></svg></div>
+      <h3>Media Mix Modeling</h3>
+      <div class="vendors">Mutinex &middot; Recast &middot; Meridian &middot; Robyn &middot; Paramark</div>
+      <p>Statistical models that work without cookies. But you need $2M+ in spend and months of data before they're reliable. Not exactly a quick win.</p>
+    </div>
+    <div class="chaos-card" data-delay="300">
+      <div class="chaos-card-icon" style="background: rgba(77, 255, 145, 0.08);"><svg viewBox="0 0 24 24" stroke="var(--green)"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg></div>
+      <h3>Incrementality Testing</h3>
+      <div class="vendors">Haus &middot; Measured &middot; LiftLab</div>
+      <p>The gold standard &mdash; actual causal proof. But it means turning off channels for weeks and hoping you were right. $5M+ spend minimum. 3 vendors.</p>
+    </div>
+    <div class="chaos-card" data-delay="400">
+      <div class="chaos-card-icon" style="background: rgba(255, 159, 77, 0.08);"><svg viewBox="0 0 24 24" stroke="var(--orange)"><path d="M18 20V10m-6 10V4M6 20v-6" /></svg></div>
+      <h3>Analytics Platforms</h3>
+      <div class="vendors">GA4 &middot; Adobe &middot; Mixpanel &middot; Amplitude &middot; PostHog</div>
+      <p>GA4 removed most attribution models in 2023. Everyone still uses it as a source of truth. It tells you what happened. Not whether your spend caused it.</p>
+    </div>
+    <div class="chaos-card" data-delay="500">
+      <div class="chaos-card-icon" style="background: rgba(255, 255, 255, 0.04);"><svg viewBox="0 0 24 24" stroke="var(--text-muted)"><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M21 12c0 1.66-4.03 3-9 3s-9-1.34-9-3" /><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5" /></svg></div>
+      <h3>Server-Side &amp; CDPs</h3>
+      <div class="vendors">Segment &middot; RudderStack &middot; Snowplow &middot; Stape &middot; Tealium</div>
+      <p>Essential plumbing. Captures better data. But 16+ vendors and none of them answers the question your CFO is actually asking.</p>
+    </div>
+  </div>
+
+  <div class="chaos-punchline fade-in">
+    <p><span class="stat">95+ vendors. 6 methods. Zero consensus.</span><br>This is why &ldquo;is marketing working?&rdquo; is the hardest question in business. Most teams can't answer it. The first step is knowing where you actually stand.</p>
+  </div>
+</section>
+
+<!-- THE FOUR LEVELS -->
+<section class="levels" id="levels">
+
+  <div class="section-label">The framework</div>
+  <h2 class="section-title">Four levels of confidence in your spend.</h2>
+  <p class="section-desc">Each level answers a harder question. Most teams are stuck at Level 1 &mdash; relying on the same platforms they're trying to measure.</p>
+
+  <div class="levels-stack">
+    <div class="level-row" data-delay="0">
+      <div class="level-indicator" style="background: rgba(255, 77, 106, 0.08); color: var(--red);">1</div>
+      <div class="level-content">
+        <h3>Ad Hoc</h3>
+        <div class="tagline">"The platforms say it's working, so it must be working"</div>
+        <div class="detail">Each channel grades its own homework. When the CFO asks for proof, you open a dashboard and hope the numbers look good enough.</div>
+        <div class="level-callout">&#8592; Most companies are here</div>
+      </div>
+      <div class="level-meta">
+        <div class="spend">Any spend</div>
+        <div class="pct">Most companies</div>
+      </div>
+    </div>
+
+    <div class="level-row" data-delay="150">
+      <div class="level-indicator" style="background: rgba(77, 127, 255, 0.08); color: var(--accent);">2</div>
+      <div class="level-content">
+        <h3>Operational</h3>
+        <div class="tagline">"We have our own numbers, not just the platform's"</div>
+        <div class="detail">Independent tracking. Cross-channel deduplication. You can answer &ldquo;what happened?&rdquo; with confidence. You're still working out &ldquo;did it actually work?&rdquo;</div>
+      </div>
+      <div class="level-meta">
+        <div class="spend">$60K+/yr spend</div>
+        <div class="pct"></div>
+      </div>
+    </div>
+
+    <div class="level-row" data-delay="300">
+      <div class="level-indicator" style="background: rgba(167, 139, 250, 0.08); color: #a78bfa;">3</div>
+      <div class="level-content">
+        <h3>Analytical</h3>
+        <div class="tagline">"We cross-check before we commit budget"</div>
+        <div class="detail">MTA and MMM triangulated. When methods disagree, you investigate instead of panic. You can walk into a board meeting with a real answer.</div>
+      </div>
+      <div class="level-meta">
+        <div class="spend">$500K+/yr spend</div>
+        <div class="pct"></div>
+      </div>
+    </div>
+
+    <div class="level-row" data-delay="450">
+      <div class="level-indicator" style="background: rgba(77, 255, 145, 0.08); color: var(--green);">4</div>
+      <div class="level-content">
+        <h3>Leader</h3>
+        <div class="tagline">"We can prove it. Causally."</div>
+        <div class="detail">Controlled experiments prove what's actually driving revenue. Budget flows to proven winners automatically. When the CFO asks, you don't flinch.</div>
+      </div>
+      <div class="level-meta">
+        <div class="spend">$2M+/yr spend</div>
+        <div class="pct">Very few companies</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="evidence-callout fade-in">
+    <p><strong>The biggest ROI is moving from Level 1 to Level 2.</strong> Dropbox's data science team found that platform attribution overstates performance by 2&ndash;10x. Even at $100K ad spend, that's $20K&ndash;$50K in budget you can't defend &mdash; every year. MTA tools that fix this start at $29/month.</p>
+    <div class="source">Chivukula, Jin &amp; Zhan &mdash; "From Attribution to Causality in Digital Advertising," IEEE Access, March 2026</div>
+  </div>
+</section>
+
+<!-- WHAT YOU GET -->
+<section class="deliverables">
+
+  <div class="section-label">What you'll walk away with</div>
+  <h2 class="section-title">An honest answer. A defensible plan.</h2>
+  <p class="section-desc">The kind of diagnosis a consulting firm charges $15K to run &mdash; free, in 3 minutes, backed by research you can cite.</p>
+
+  <div class="deliverables-grid">
+    <div class="deliverable-card fade-in">
+      <div class="deliverable-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><circle cx="12" cy="12" r="1" fill="var(--accent)" stroke="none" /></svg></div>
+      <h3>Where You Stand</h3>
+      <p>Your maturity level (1&ndash;4) with honest context. Not flattery. Not a sales pitch. Where you actually are.</p>
+    </div>
+    <div class="deliverable-card fade-in">
+      <div class="deliverable-icon"><svg viewBox="0 0 24 24"><path d="M21 21H4.6c-.56 0-.84 0-1.054-.109a1 1 0 01-.437-.437C3 20.24 3 19.96 3 19.4V3" /><path d="M7 14l4-4 4 4 6-6" /></svg></div>
+      <h3>Where You're Exposed</h3>
+      <p>Scored across 6 dimensions. See exactly which areas you could defend today &mdash; and which ones would unravel under scrutiny.</p>
+    </div>
+    <div class="deliverable-card fade-in">
+      <div class="deliverable-icon"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" /></svg></div>
+      <h3>What to Fix First</h3>
+      <p>A specific, sequenced roadmap to close your biggest gaps. The kind of thing you can take to leadership and say &ldquo;here's the plan.&rdquo;</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-it-works">
+  <div class="section-label">How it works</div>
+  <h2 class="section-title">Shine the light yourself. Before someone else does.</h2>
+  <div class="steps">
+    <div class="step fade-in">
+      <div class="step-number">1</div>
+      <h3>Answer 10 questions</h3>
+      <p>Real scenarios, not jargon. Pick the answer that sounds like your team &mdash; not the one you wish were true.</p>
+    </div>
+    <div class="step fade-in">
+      <div class="step-number">2</div>
+      <h3>See where you stand</h3>
+      <p>Instant results. Your maturity level, dimension breakdown, and biggest gaps. No email required.</p>
+    </div>
+    <div class="step fade-in">
+      <div class="step-number">3</div>
+      <h3>Go deeper — free</h3>
+      <p>Create an account to unlock your full report, invite your team, and track progress over time. Export to PDF anytime.</p>
+    </div>
+  </div>
+</section>
+
+<!-- RESEARCH BACKING -->
+<section class="research">
+  <div class="section-label">Your air cover</div>
+  <h2 class="section-title">Cite the research, not the vendor.</h2>
+  <p class="section-desc">Every claim in your report is traceable to peer-reviewed studies. When leadership asks &ldquo;where did you get this?&rdquo;, you have an answer that holds up.</p>
+
+  <div class="research-sources">
+    <div class="research-source">
+      <div class="icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><path d="M14 2v6h6" /><path d="M16 13H8m8 4H8m2-8H8" /></svg></div>
+      <div class="meta">
+        <strong>Dropbox &middot; IEEE Access 2026</strong>
+        <span>Click attribution overstates by 2&ndash;10x vs. causal incrementality</span>
+      </div>
+    </div>
+    <div class="research-source">
+      <div class="icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><path d="M14 2v6h6" /><path d="M16 13H8m8 4H8m2-8H8" /></svg></div>
+      <div class="meta">
+        <strong>eBay &middot; Econometrica 2015</strong>
+        <span>Paid search effectiveness massively overstated by standard attribution</span>
+      </div>
+    </div>
+    <div class="research-source">
+      <div class="icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><path d="M14 2v6h6" /><path d="M16 13H8m8 4H8m2-8H8" /></svg></div>
+      <div class="meta">
+        <strong>Gordon et al. &middot; Marketing Science 2019</strong>
+        <span>Facebook ad lift experiments show attribution inflates true lift</span>
+      </div>
+    </div>
+    <div class="research-source">
+      <div class="icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><path d="M14 2v6h6" /><path d="M16 13H8m8 4H8m2-8H8" /></svg></div>
+      <div class="meta">
+        <strong>IAB State of Data 2026</strong>
+        <span>60&ndash;75% of ad buyers say measurement falls short</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY WE BUILT THIS -->
+<section class="why-we-built" style="border-top: 1px solid var(--border); padding: 80px 24px; max-width: 1100px; margin: 0 auto; text-align: center;">
+  <div class="section-label">Full disclosure</div>
+  <h2 class="section-title" style="font-size: clamp(24px, 3vw, 36px);">Yes, we're a vendor. No, this doesn't lean to us.</h2>
+  <div style="font-size: 16px; color: var(--text-muted); line-height: 1.8; max-width: 680px; margin: 0 auto;">
+    <p style="margin-bottom: 16px;">mbuzz is a server-side multi-touch attribution platform. We sit at Level 2 of this framework. We sell measurement tools for a living.</p>
+    <p style="margin-bottom: 16px;">So why give away a free assessment that might tell you that you don't need what we sell?</p>
+    <p style="margin-bottom: 16px;">Because the biggest problem in marketing measurement isn't bad tools. It's confusion. 95+ vendors all claiming different things. Maturity models designed to sell you the next tier. "Assessments" that always conclude you need the vendor's product.</p>
+    <p style="margin-bottom: 16px;">We built this tool because we believe clarity comes first. If you're at Level 1 and need to move to Level 2, we'd love to help &mdash; but we'll also tell you about Ruler Analytics, Attribution App, and a dozen other options. If you're at Level 3, you've outgrown us and we'll tell you that too.</p>
+    <p style="color: var(--text);">Open scoring methodology. Vendor-neutral recommendations. No gate on your results. That's the deal.</p>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq">
+  <div class="section-label">Questions</div>
+  <h2 class="section-title">FAQ</h2>
+  <div class="faq-list">
+    <div class="faq-item" data-faq-item data-score-landing-target="faqItem">
+      <div class="faq-q" data-action="click->score-landing#toggleFaq">Is it really free? <span class="chevron">&#8964;</span></div>
+      <div class="faq-a">Yes. The assessment and your instant score are free forever, no account needed. Creating a free account unlocks the full interactive report &mdash; dimension deep-dives, business case, roadmap, team comparison, and the ability to retake and track progress over time. Export to PDF or Word anytime.</div>
+    </div>
+    <div class="faq-item" data-faq-item data-score-landing-target="faqItem">
+      <div class="faq-q" data-action="click->score-landing#toggleFaq">Do I need to create an account? <span class="chevron">&#8964;</span></div>
+      <div class="faq-a">No. Click start, answer 10 questions, get your score. No signup, no credit card, no commitment.</div>
+    </div>
+    <div class="faq-item" data-faq-item data-score-landing-target="faqItem">
+      <div class="faq-q" data-action="click->score-landing#toggleFaq">What data do you collect? <span class="chevron">&#8964;</span></div>
+      <div class="faq-a">Your answers and optional context (company size, ad spend, role). We never share individual data. Aggregate, anonymised data may appear in industry benchmark reports.</div>
+    </div>
+    <div class="faq-item" data-faq-item data-score-landing-target="faqItem">
+      <div class="faq-q" data-action="click->score-landing#toggleFaq">Who is this for? <span class="chevron">&#8964;</span></div>
+      <div class="faq-a">Marketing leaders, marketing ops, growth teams, and analytics teams who manage paid media budgets. Most useful for teams spending $100K+ per year.</div>
+    </div>
+    <div class="faq-item" data-faq-item data-score-landing-target="faqItem">
+      <div class="faq-q" data-action="click->score-landing#toggleFaq">Can my whole team take it? <span class="chevron">&#8964;</span></div>
+      <div class="faq-a">Yes. Create a free account after your assessment, then invite colleagues from your dashboard. When 3+ people complete it, you unlock a team view showing alignment &mdash; and disagreement &mdash; across your organisation. The gap between how different roles see measurement is usually the real insight.</div>
+    </div>
+    <div class="faq-item" data-faq-item data-score-landing-target="faqItem">
+      <div class="faq-q" data-action="click->score-landing#toggleFaq">How is this different from other maturity models? <span class="chevron">&#8964;</span></div>
+      <div class="faq-a">Most maturity models are vendor-shaped &mdash; they define maturity in terms of tools you need to buy. This one is built around questions you can answer, backed by peer-reviewed research, not vendor marketing.</div>
+    </div>
+    <div class="faq-item" data-faq-item data-score-landing-target="faqItem">
+      <div class="faq-q" data-action="click->score-landing#toggleFaq">What's mbuzz? <span class="chevron">&#8964;</span></div>
+      <div class="faq-a">mbuzz is a server-side multi-touch attribution platform &mdash; we're a vendor in this space. We built this tool because we see too much confusion and too many vendor-shaped maturity models. Your results are vendor-neutral, your recommendations include our competitors, and we'll tell you if you don't need us.</div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta" id="start">
+
+  <h2 class="section-title">The question is coming. Will you have an answer?</h2>
+  <p class="section-desc">3 minutes now saves a painful conversation later. Find out where you stand &mdash; privately.</p>
+  <a href="#" class="hero-cta" data-action="click->score-assessment#start">
+    Find Out Now
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+  </a>
+  <p class="hero-micro">Free &middot; Private &middot; No sales pitch &middot; Instant results</p>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p>&copy; 2026 mbuzz &middot; <a href="/privacy">Privacy</a> &middot; Built by a measurement vendor who thinks the industry needs more clarity, not more confusion.</p>
+</footer>
+
+<!-- ============================================ -->
+<!-- ASSESSMENT OVERLAY -->
+<!-- ============================================ -->
+<div data-controller="score-assessment"
+     data-score-assessment-api-url-value="<%= assessments_path %>"
+     data-score-assessment-claim-url-value="<%= claim_score_assessment_path %>"
+     data-score-assessment-signup-url-value="<%= signup_path %>">
+
+  <div class="assessment-overlay" data-score-assessment-target="overlay">
+    <div class="assessment-progress"><div class="assessment-progress-bar" data-score-assessment-target="progressBar"></div></div>
+    <button class="assessment-close" data-action="click->score-assessment#close">&larr; Exit</button>
+    <div class="assessment-counter" data-score-assessment-target="counter"></div>
+
+    <!-- Question view -->
+    <div class="question-container" data-score-assessment-target="questionView">
+      <div class="question-text" data-score-assessment-target="questionText"></div>
+      <div class="answers" data-score-assessment-target="answers"></div>
+    </div>
+
+    <!-- Insight interstitial -->
+    <div class="insight-interstitial" data-score-assessment-target="insightView">
+      <div data-score-assessment-target="insightIcon"></div>
+      <p data-score-assessment-target="insightText"></p>
+      <div class="insight-source" data-score-assessment-target="insightSource"></div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-screen" data-score-assessment-target="loadingView">
+      <div class="spinner"></div>
+      <div class="loading-text">Calculating your score...</div>
+      <div class="loading-sub">Analysing 6 dimensions across 10 responses</div>
+    </div>
+
+    <!-- Results -->
+    <div class="results-container" data-score-assessment-target="resultsView">
+      <div class="result-level-badge" data-score-assessment-target="resultBadge"></div>
+      <p class="result-insight" data-score-assessment-target="resultInsight"></p>
+      <div class="radar-container" data-score-assessment-target="radarChart"></div>
+      <div class="dimension-breakdown" data-score-assessment-target="dimensionBreakdown"></div>
+      <div class="results-actions">
+        <button class="primary-action" data-action="click->score-assessment#createAccount">Create Free Account &mdash; Unlock Full Report</button>
+        <button class="secondary-action" data-action="click->score-assessment#share">Share on LinkedIn</button>
+      </div>
+    </div>
+  </div>
 </div>
+
+</div><%# close score-landing controller %>

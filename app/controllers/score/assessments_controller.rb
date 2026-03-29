@@ -2,6 +2,7 @@
 
 module Score
   class AssessmentsController < ApplicationController
+    layout "score", only: [ :show ]
     skip_forgery_protection only: [ :create, :claim ]
 
     def show
