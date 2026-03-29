@@ -108,7 +108,7 @@ GEM
       erubi (~> 1.4)
       parser (>= 2.4)
       smart_properties
-    bigdecimal (4.0.1)
+    bigdecimal (4.1.0)
     bindex (0.8.1)
     bootsnap (1.23.0)
       msgpack (~> 1.2)
@@ -225,7 +225,7 @@ GEM
       activesupport (>= 7.0.0)
     jmespath (1.6.2)
     json (2.19.3)
-    json-schema (6.1.0)
+    json-schema (6.2.0)
       addressable (~> 2.8)
       bigdecimal (>= 3.1, < 5)
     kamal (2.10.1)
@@ -255,7 +255,7 @@ GEM
     matrix (0.4.3)
     mbuzz (0.7.5)
       rack (>= 2.0)
-    mcp (0.7.1)
+    mcp (0.10.0)
       json-schema (>= 4.1)
     memory_profiler (1.1.0)
     mini_mime (1.1.5)
@@ -323,7 +323,7 @@ GEM
     psych (5.3.1)
       date
       stringio
-    public_suffix (7.0.2)
+    public_suffix (7.0.5)
     puma (7.2.0)
       nio4r (~> 2.0)
     raabro (1.4.0)
