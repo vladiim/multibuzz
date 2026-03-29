@@ -14,7 +14,9 @@ export default class extends Controller {
   static values = {
     apiUrl: String,
     claimUrl: String,
-    signupUrl: String
+    signupUrl: String,
+    loggedIn: { type: Boolean, default: false },
+    reportUrl: { type: String, default: "" }
   }
 
   connect() {
@@ -41,12 +43,34 @@ export default class extends Controller {
     document.body.style.overflow = ""
   }
 
-  share() {
-    const url = window.location.origin + "/score"
+  shareLinkedIn() {
+    const url = window.location.origin + "/measurement-maturity-assessment"
     window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, "_blank")
   }
 
+  shareTwitter() {
+    const url = window.location.origin + "/measurement-maturity-assessment"
+    const text = "Just took a marketing measurement maturity assessment. Turns out most teams can\u2019t prove their spend works."
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, "_blank")
+  }
+
+  copyLink() {
+    const url = window.location.origin + "/measurement-maturity-assessment"
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = this.element.querySelector("[data-copy-btn]")
+      if (btn) {
+        const orig = btn.textContent
+        btn.textContent = "Copied!"
+        setTimeout(() => { btn.textContent = orig }, 2000)
+      }
+    })
+  }
+
   createAccount() {
+    if (this.loggedInValue) {
+      window.location.href = this.reportUrlValue
+      return
+    }
     const token = localStorage.getItem("score_claim_token")
     const url = this.signupUrlValue + (token ? `?claim_token=${token}` : "")
     window.location.href = url
@@ -118,22 +142,30 @@ export default class extends Controller {
     this.disableCards(card)
 
     const insight = this.insights.find(i => i.after === this.currentStep + 1)
-    if (insight) {
-      setTimeout(() => this.showInsight(insight), 400)
-    } else {
-      setTimeout(() => this.showStep(this.currentStep + 1), 400)
-    }
+    const nextAction = insight
+      ? () => this.showInsight(insight)
+      : () => this.showStep(this.currentStep + 1)
+
+    this.transitionOut(nextAction)
   }
 
   selectContext(cId, answerId, card) {
     this.contextResponses[cId] = answerId
     this.disableCards(card)
-    setTimeout(() => this.showStep(this.currentStep + 1), 400)
+    this.transitionOut(() => this.showStep(this.currentStep + 1))
   }
 
   disableCards(selectedCard) {
     this.answersTarget.querySelectorAll(".answer-card").forEach(c => c.style.pointerEvents = "none")
     selectedCard.classList.add("selected")
+  }
+
+  transitionOut(callback) {
+    this.questionViewTarget.classList.add("exiting")
+    setTimeout(() => {
+      this.questionViewTarget.classList.remove("exiting")
+      callback()
+    }, 250)
   }
 
   showInsight(insight) {
@@ -143,10 +175,17 @@ export default class extends Controller {
     this.insightSourceTarget.textContent = insight.source
     this.insightViewTarget.classList.add("active")
 
-    setTimeout(() => {
+    const existing = this.insightViewTarget.querySelector(".insight-continue")
+    if (existing) existing.remove()
+
+    const btn = document.createElement("button")
+    btn.className = "insight-continue"
+    btn.textContent = "Continue"
+    btn.addEventListener("click", () => {
       this.insightViewTarget.classList.remove("active")
       this.showStep(this.currentStep + 1)
-    }, 3000)
+    })
+    this.insightViewTarget.appendChild(btn)
   }
 
   showLoading() {
@@ -259,7 +298,7 @@ export default class extends Controller {
   renderRadar(dimensions) {
     const container = this.radarChartTarget
     container.innerHTML = ""
-    const size = 320, cx = size / 2, cy = size / 2, maxR = 120
+    const size = 380, cx = size / 2, cy = size / 2, maxR = 140
     const dims = ["reporting", "attribution", "experimentation", "forecasting", "channels", "infrastructure"]
     const labels = ["Reporting", "Attribution", "Experimentation", "Forecasting", "Channels", "Infrastructure"]
     const n = dims.length
@@ -390,9 +429,9 @@ export default class extends Controller {
         { id: "d", text: "Multiple methods compared \u2014 we triangulate before answering", score: 3.5 },
         { id: "e", text: "I\u2019m not sure \u2014 we don\u2019t have a consistent answer", score: 1.0 }
       ]},
-      { id: "q2", dimension: "attribution", weight: 1.5, text: "Google Ads says it drove 100 conversions. Meta says 80. Your CRM shows 120 total. What do you do?", answers: [
+      { id: "q2", dimension: "attribution", weight: 1.5, text: "You made 100 sales yesterday. Google Ads claims it drove 70 of them. Meta claims 40. What do you do?", answers: [
         { id: "a", text: "Report each platform\u2019s numbers separately", score: 1.0 },
-        { id: "b", text: "Use one platform as the \u201cofficial\u201d source and ignore the others", score: 1.0 },
+        { id: "b", text: "Pick one platform as the \u201cofficial\u201d source and ignore the others", score: 1.0 },
         { id: "c", text: "Use a multi-touch model to deduplicate and assign fractional credit", score: 2.5 },
         { id: "d", text: "Run the MTA numbers, then validate with a holdout test or MMM", score: 3.5 },
         { id: "e", text: "I\u2019m not sure how we\u2019d handle this", score: 1.0 }

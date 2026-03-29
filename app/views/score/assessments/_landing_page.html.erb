@@ -2,7 +2,9 @@
 <div data-controller="score-landing score-assessment"
      data-score-assessment-api-url-value="<%= assessments_path %>"
      data-score-assessment-claim-url-value="<%= claim_score_assessment_path %>"
-     data-score-assessment-signup-url-value="<%= score_signup_path %>">
+     data-score-assessment-signup-url-value="<%= score_signup_path %>"
+     data-score-assessment-logged-in-value="<%= logged_in? %>"
+     data-score-assessment-report-url-value="<%= score_dashboard_path %>">
 <div class="scroll-glow" data-score-landing-target="scrollGlow" id="scroll-glow"></div>
 
 <!-- NAV -->
@@ -346,9 +348,29 @@
       <p class="result-insight" data-score-assessment-target="resultInsight"></p>
       <div class="radar-container" data-score-assessment-target="radarChart"></div>
       <div class="dimension-breakdown" data-score-assessment-target="dimensionBreakdown"></div>
+      <div style="margin-top:40px;padding:24px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);text-align:left;">
+        <h3 style="font-size:18px;font-weight:700;margin-bottom:8px;">What's next?</h3>
+        <p style="font-size:15px;color:var(--text-muted);line-height:1.7;margin-bottom:0;">
+          <% if logged_in? %>
+            Your full report includes a dimension-by-dimension deep dive, a business case tailored to your spend level, and a specific roadmap to move up one level. You can also invite your team to see where you agree &mdash; and where you don't.
+          <% else %>
+            Create a free account to unlock your full report: dimension deep-dives, a business case tailored to your ad spend, a specific roadmap to level up, team comparison, and progress tracking over time. Export to PDF anytime.
+          <% end %>
+        </p>
+      </div>
+
       <div class="results-actions">
-        <button class="primary-action" data-action="click->score-assessment#createAccount">Create Free Account &mdash; Unlock Full Report</button>
-        <button class="secondary-action" data-action="click->score-assessment#share">Share on LinkedIn</button>
+        <% if logged_in? %>
+          <button class="primary-action" data-action="click->score-assessment#createAccount">View Full Report</button>
+        <% else %>
+          <button class="primary-action" data-action="click->score-assessment#createAccount">Create Free Account &mdash; Unlock Full Report</button>
+        <% end %>
+
+        <div class="share-row">
+          <button class="secondary-action" data-action="click->score-assessment#shareLinkedIn">LinkedIn</button>
+          <button class="secondary-action" data-action="click->score-assessment#shareTwitter">X / Twitter</button>
+          <button class="secondary-action" data-action="click->score-assessment#copyLink" data-copy-btn>Copy Link</button>
+        </div>
       </div>
     </div>
   </div>
