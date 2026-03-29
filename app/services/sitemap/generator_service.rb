@@ -5,6 +5,7 @@ module Sitemap
     STATIC_PAGES = [
       { path: :root_url, priority: PRIORITY_HIGHEST, changefreq: CHANGEFREQ_WEEKLY },
       { path: :academy_url, priority: PRIORITY_HIGH, changefreq: CHANGEFREQ_DAILY },
+      { path: :score_url, priority: PRIORITY_HIGH, changefreq: CHANGEFREQ_MONTHLY },
       { path: :demo_dashboard_url, priority: PRIORITY_MEDIUM_LOW, changefreq: CHANGEFREQ_MONTHLY },
       { path: :about_url, priority: PRIORITY_LOW, changefreq: CHANGEFREQ_MONTHLY },
       { path: :contact_url, priority: PRIORITY_LOWEST, changefreq: CHANGEFREQ_YEARLY }

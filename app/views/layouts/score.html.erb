@@ -3,12 +3,17 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= content_for(:title) || "Measurement Maturity Score — Free Marketing Assessment | mbuzz" %></title>
-    <meta name="description" content="<%= content_for(:meta_description) || "Could you prove your marketing budget is working? 10 questions. 3 minutes. A measurement maturity score based on peer-reviewed research." %>">
-    <meta property="og:title" content="<%= content_for(:og_title) || "Could You Defend Your Marketing Budget Tomorrow?" %>">
+    <title><%= content_for(:title) || "Marketing Measurement Maturity Assessment — Free | mbuzz" %></title>
+    <meta name="description" content="<%= content_for(:meta_description) || "Could you prove your marketing budget is working? Free assessment based on peer-reviewed research. 10 questions. 3 minutes. Instant results." %>">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="<%= request.protocol %><%= request.host_with_port %>/measurement-maturity-assessment">
+    <meta property="og:title" content="<%= content_for(:og_title) || "Marketing Measurement Maturity Assessment — Free" %>">
     <meta property="og:description" content="<%= content_for(:og_description) || "Most marketing leaders can't prove their spend is working. Find out where you stand in 3 minutes — free, private, research-backed." %>">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="<%= request.original_url.split("?").first %>">
+    <meta property="og:url" content="<%= request.protocol %><%= request.host_with_port %>/measurement-maturity-assessment">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Marketing Measurement Maturity Assessment — Free">
+    <meta name="twitter:description" content="Could you prove your marketing budget is working? Free assessment. 10 questions. 3 minutes.">
     <%= csrf_meta_tags %>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,6 +21,7 @@
     <%= stylesheet_link_tag "pages/score/landing", "pages/score/signup", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
     <%= yield :head %>
+    <%= render "score/assessments/structured_data" if content_for?(:structured_data) || controller.action_name == "show" %>
   </head>
   <body>
     <%= yield %>

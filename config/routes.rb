@@ -66,8 +66,9 @@ Rails.application.routes.draw do
     constraints: { slug: Regexp.new(LandingPages::Registry.slugs.join("|")) }
 
   # Measurement Maturity Score
-  get "score", to: "score/assessments#show", as: :score
-  scope :score, module: :score do
+  get "measurement-maturity-assessment", to: "score/assessments#show", as: :score
+  get "score", to: redirect("/measurement-maturity-assessment", status: 301)
+  scope "measurement-maturity-assessment", module: :score do
     resources :assessments, only: [ :create ]
     post "claim", to: "assessments#claim", as: :claim_score_assessment
     get "join", to: "signup#new", as: :score_signup
