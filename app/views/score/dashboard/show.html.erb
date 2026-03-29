@@ -1,0 +1,9 @@
+<div class="score-signup">
+  <h1>Your Measurement Maturity Report</h1>
+
+  <% if @assessment %>
+    <p class="subtitle">Level <%= @assessment.overall_level %>: <%= @assessment.level_name %></p>
+  <% else %>
+    <p class="subtitle">No assessment found. <a href="<%= score_path %>">Take the assessment</a> first.</p>
+  <% end %>
+</div>

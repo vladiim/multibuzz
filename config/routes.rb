@@ -70,6 +70,9 @@ Rails.application.routes.draw do
   scope :score, module: :score do
     resources :assessments, only: [ :create ]
     post "claim", to: "assessments#claim", as: :claim_score_assessment
+    get "join", to: "signup#new", as: :score_signup
+    post "join", to: "signup#create"
+    get "dashboard", to: "dashboard#show", as: :score_dashboard
   end
 
   # Public pages

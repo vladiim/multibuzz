@@ -48,8 +48,8 @@ export default class extends Controller {
 
   createAccount() {
     const token = localStorage.getItem("score_claim_token")
-    const signupUrl = this.signupUrlValue + (token ? `?claim_token=${token}` : "")
-    window.location.href = signupUrl
+    const url = this.signupUrlValue + (token ? `?claim_token=${token}` : "")
+    window.location.href = url
   }
 
   // ── Step navigation ──

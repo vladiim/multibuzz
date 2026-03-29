@@ -6,5 +6,6 @@ module User::Relationships
   included do
     has_many :account_memberships, dependent: :destroy
     has_many :accounts, through: :account_memberships
+    has_many :score_assessments, dependent: :nullify
   end
 end
