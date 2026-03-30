@@ -1,0 +1,169 @@
+---
+title: "Why Google Ads and GA4 Show Different Conversion Numbers"
+slug: "why-google-ads-ga4-different-conversions"
+description: "Google Ads says 85 conversions. GA4 says 62. Your CRM shows 100 actual sales. Here's why the numbers never match—and which one to trust for which decisions."
+published_at:
+section: fundamentals
+section_order: 10
+status: draft
+priority: P1
+category: "Attribution Fundamentals"
+tags:
+  - Google Ads
+  - GA4
+  - conversion tracking
+  - attribution discrepancy
+  - marketing measurement
+related_articles:
+  - platform-reports-dont-match
+  - ga4-attribution-models-removed
+  - roas-inflation-platform-over-reporting
+  - ga4-attribution-alternatives
+seo:
+  title: "Why Google Ads and GA4 Conversions Don't Match (2026 Fix)"
+aeo:
+  target_query: "why google ads and ga4 show different conversions"
+  tldr: "Google Ads and GA4 use different attribution models, different counting methods, and different time windows—so they will <strong>never match exactly</strong>. Google Ads uses 30-day click / 1-day view attribution optimised for ad performance. GA4 uses cross-channel Data-Driven Attribution. Google Ads counts every conversion (one click → two purchases = two conversions). GA4 can count one-per-click. Normal variance is 10-25%. Above 30%, something is misconfigured."
+  key_takeaways:
+    - "Google Ads and GA4 use fundamentally different attribution models and counting methods"
+    - "Normal discrepancy is 10-25%—above 30% suggests a configuration issue"
+    - "Google Ads counts every conversion; GA4 can count one per session"
+    - "Google Ads uses 30-day click windows; GA4 uses property-level settings (up to 90 days)"
+    - "Neither is 'right'—use Google Ads for ad optimisation, GA4 for cross-channel, CRM for truth"
+  faq:
+    - q: "Should Google Ads and GA4 conversion numbers match?"
+      a: "No. They use different attribution, different counting, and different time windows. A 10-25% discrepancy is normal and expected. Exact matching would actually be suspicious—it would mean both tools are making the same simplifications."
+    - q: "Which should I trust—Google Ads or GA4?"
+      a: "Use Google Ads data for Google Ads optimisation—bid strategy, campaign performance, keyword decisions. Use GA4 for cross-channel comparison—relative channel performance. Use your CRM for absolute truth—actual revenue. Each tool has a purpose."
+    - q: "Why does Google Ads show more conversions than GA4?"
+      a: "Three common reasons: (1) Google Ads counts every conversion by default while GA4 may count one per session, (2) Google Ads uses view-through attribution that GA4 doesn't, (3) Google Ads has a broader click window. Check your counting method settings first."
+    - q: "When should I be worried about the discrepancy?"
+      a: "Above 30% discrepancy, investigate. Common causes: consent mode blocking GA4 but not Google Ads, tag firing issues, cross-domain tracking gaps, or different conversion actions mapped between platforms. A 50%+ gap means something is broken."
+schema:
+  type: Article
+  author: "holly-henderson"
+has_code_examples: false
+has_calculator: false
+has_download: false
+---
+
+<%= render_tldr(@article.tldr) %>
+
+## The Mismatch Every Marketer Has Seen
+
+You pull your monthly report. Google Ads says 85 conversions. GA4 says 62. Your CRM shows 100 actual sales.
+
+Three Google products. Three different numbers. None of them match your actual sales.
+
+This isn't a tracking error. It's three systems measuring the same thing in three different ways.
+
+## The 5 Reasons They Never Match
+
+### 1. Different Attribution Models
+
+**Google Ads** uses its own attribution model, optimised for showing ad performance in the best possible light. It credits conversions to the ad click, even if the user interacted with 10 other channels between clicking the ad and converting.
+
+**GA4** uses Data-Driven Attribution across all channels. It distributes credit between Google Ads, organic search, social, email, direct — everything it can see. Your Google Ads conversions get diluted because GA4 is sharing credit with other channels.
+
+Same user, same conversion. Google Ads gives the ad 100% credit. GA4 might give it 35%.
+
+### 2. Different Counting Methods
+
+| Setting | Google Ads | GA4 |
+|---------|-----------|-----|
+| **Default counting** | Every conversion | Depends on configuration |
+| **Example** | 1 click → 2 purchases = 2 conversions | Can be set to 1 per session or every occurrence |
+
+If a user clicks your ad once and makes two purchases, Google Ads counts two conversions by default. GA4's counting depends on how you configured the conversion event.
+
+Check: Google Ads → Conversions → Settings → Count. If it says "Every" and your GA4 conversion counts "One per session," there's your gap.
+
+### 3. Different Attribution Windows
+
+| Window Type | Google Ads | GA4 |
+|-------------|-----------|-----|
+| **Click-through** | 30 days (default) | Up to 90 days (property setting) |
+| **View-through** | 1 day (default) | Not used for most conversions |
+| **Engaged view** | 3 days (video) | Not applicable |
+
+Google Ads counts view-through conversions by default — someone saw your ad but didn't click, then converted within 1 day. GA4 generally doesn't count these. That's a one-directional gap: Google Ads will always count these extra conversions that GA4 doesn't see.
+
+### 4. Consent Mode & Ad Blockers
+
+This is the silent discrepancy source that's growing fast.
+
+**Google Ads** uses conversion modelling to estimate conversions from users who declined tracking consent. If 30% of your users decline cookies, Google Ads models those missing conversions and adds them to your total.
+
+**GA4** in default mode doesn't model unconsented conversions. If a user blocks tracking, GA4 simply doesn't see them.
+
+Result: Google Ads reports conversions for users that GA4 never knew existed.
+
+With iOS 26 stripping click IDs and Safari capping JS cookies at 7 days, this gap is widening. Google Ads' modelling fills in what it can't see. GA4 just has a hole.
+
+### 5. Data Processing Timing
+
+Google Ads processes conversion data faster. GA4 has a 24-72 hour processing delay for some data, and conversion data can continue to update for up to 7 days as late-arriving hits are processed.
+
+If you pull reports on the 1st of the month for the previous month, Google Ads data is essentially final. GA4 data might still be processing the last few days. Wait 3-5 days into the new month before comparing.
+
+## What's "Normal" vs. What's Broken
+
+| Discrepancy | Interpretation | Action |
+|-------------|---------------|--------|
+| **5-15%** | Healthy variance from different models and windows | Normal. No action needed. |
+| **15-25%** | Typical when view-through and consent modelling are factors | Review consent settings. Check view-through attribution is appropriate. |
+| **25-40%** | Something is likely misconfigured | Audit counting methods, tag firing, cross-domain tracking. |
+| **40%+** | Configuration is broken | Check: Is GA4 tag firing on all pages? Are conversion events properly defined? Is cross-domain tracking working? |
+
+### The Audit Checklist
+
+If you're above 25%, check these in order:
+
+1. **Counting method.** Google Ads → Conversions → does it say "Every" or "One"? Match to your GA4 configuration.
+2. **Attribution window.** Google Ads → Conversions → click-through window. Set to same period as your GA4 property attribution settings.
+3. **View-through.** Google Ads → Conversions → include view-through conversions? If yes, that's conversions GA4 will never count.
+4. **Consent mode.** Is Google Ads modelling consented conversions while GA4 isn't? Check both implementations.
+5. **Tag firing.** Use Google Tag Assistant to verify both GA4 and Google Ads tags fire on every page, including post-conversion pages.
+6. **Cross-domain.** If your checkout is on a different domain, verify GA4 cross-domain tracking is configured. Google Ads conversion tag doesn't need this — it tracks at the click level.
+
+## Which Number to Trust (For What)
+
+None of them are "right" in an absolute sense. Each serves a different purpose.
+
+| Decision | Use | Why |
+|----------|-----|-----|
+| Should I increase Google Ads spend? | Google Ads data | Optimised for within-platform performance |
+| Which channel drives the most value? | GA4 data | Cross-channel view with consistent attribution |
+| How many actual sales did we make? | CRM / backend | The ground truth — money in, money out |
+| Is my Google Ads ROAS real? | Compare GA4 + CRM | Google Ads ROAS is inflated by ~18% (median) |
+
+The dangerous mistake is using Google Ads data for cross-channel budget allocation. Google Ads data tells you how Google Ads is performing according to Google. That's useful for Google Ads. It's not useful for deciding whether to shift budget to Meta.
+
+## When the Discrepancy Is Actually Useful
+
+Here's the counterintuitive thing: the gap between Google Ads and GA4 tells you something.
+
+**If Google Ads reports 85 and GA4 reports 40 for the same campaign**, that means GA4 is giving 45 of those conversions to other channels. Those channels contributed to the conversion journey, and Google Ads was just the last (or one of many) touchpoints.
+
+The bigger the gap, the more Google Ads is overclaiming. A large gap on a particular campaign suggests that campaign captures existing demand rather than creating it.
+
+A small gap suggests the campaign drives genuinely incremental conversions that other channels didn't contribute to.
+
+This is crude, but it's directional signal you already have in your data.
+
+<%= render "articles/cta_banner",
+  title: "How mature is your measurement setup?",
+  description: "If discrepancies between platforms confuse your reporting, the Measurement Maturity Assessment shows exactly where your gaps are. 3 minutes, free.",
+  cta_text: "Take the Assessment",
+  cta_url: "/score",
+  style: :dark %>
+
+<%= render_key_takeaways(@article.key_takeaways) %>
+
+<%= render_faq(@article.faq) %>
+
+## Related Reading
+
+- [Why Your Platform Reports Don't Match](/articles/platform-reports-dont-match) — the broader problem across all platforms, not just Google
+- [How Much Are Your Ad Platforms Over-Reporting?](/articles/roas-inflation-platform-over-reporting) — the data on platform inflation (Meta: 134%, Google: 18%)
+- [Why Did GA4 Remove Most Attribution Models?](/articles/ga4-attribution-models-removed) — what changed in GA4's attribution and why

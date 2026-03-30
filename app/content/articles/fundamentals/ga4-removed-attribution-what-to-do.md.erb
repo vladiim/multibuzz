@@ -1,0 +1,221 @@
+---
+title: "GA4 Removed Your Attribution Models. Here's What to Do Now."
+slug: "ga4-removed-attribution-what-to-do"
+description: "Google removed first-click, linear, time-decay, and position-based from GA4. Only DDA and last-click remain—and DDA silently fails below 400 conversions. Here's what actually works instead."
+published_at:
+section: fundamentals
+section_order: 9
+status: draft
+priority: P0
+category: "Attribution Fundamentals"
+tags:
+  - GA4
+  - Google Analytics
+  - attribution models removed
+  - data-driven attribution
+  - last-click fallback
+  - marketing measurement
+related_articles:
+  - ga4-attribution-models-removed
+  - ga4-attribution-alternatives
+  - what-is-multi-touch-attribution
+  - how-to-choose-attribution-model
+seo:
+  title: "GA4 Removed Attribution Models — What to Do Now (2026 Guide)"
+aeo:
+  target_query: "ga4 removed attribution models what to do"
+  tldr: "GA4 removed first-click, linear, time-decay, and position-based in late 2023. Only Data-Driven Attribution (DDA) and last-click remain. <strong>The hidden problem:</strong> DDA requires 400+ conversions in 28 days to function. Below that, GA4 silently falls back to last-click—no warning. Most companies spending under $500K/year are affected. Your options: keep GA4 for web analytics and add a dedicated attribution tool, export to BigQuery and build your own models, or run incrementality tests alongside MTA."
+  key_takeaways:
+    - "GA4 removed 4 of 6 attribution models in late 2023"
+    - "Data-Driven Attribution requires 400+ conversions per 28 days to activate"
+    - "Below that threshold, GA4 silently falls back to last-click—no notification"
+    - "Google said the removed models represented <3% of conversions—but that's their data, not yours"
+    - "Most companies spending under $500K/year are below the DDA threshold"
+    - "Keep GA4 for web analytics. Add independent attribution alongside it."
+  faq:
+    - q: "Does GA4 Data-Driven Attribution actually work?"
+      a: "It works well—if you have enough data. DDA needs 400+ conversions per conversion type in 28 days, with path lengths of 2+ interactions. Below that, it silently reverts to last-click. Google says 600+ conversions and 15,000+ clicks is optimal. The median small-to-mid-size company doesn't hit these thresholds."
+    - q: "How do I know if GA4 is silently using last-click?"
+      a: "GA4 doesn't tell you. There's no indicator in the interface showing which model is actually running. If you have fewer than 400 conversions of a given type in 28 days, assume you're on last-click. Check your conversion report for the specific conversion actions—each one needs to independently hit the threshold."
+    - q: "Can I get the removed models back in GA4?"
+      a: "No. Google permanently removed them. You can export raw event data to BigQuery and build first-click, linear, time-decay, or position-based models yourself using SQL. Or use a third-party tool that supports all models natively."
+    - q: "Is GA4 still worth using?"
+      a: "Yes—for web analytics, traffic analysis, and Google Ads integration. It's still the best free tool for understanding how people use your website. Just don't rely on it as your only attribution source. Treat GA4's attribution as one input, not the answer."
+    - q: "What attribution tool should I use instead of GA4?"
+      a: "It depends on your stack and budget. For B2B: Dreamdata (free tier) or HockeyStack ($2,200+/mo). For ecommerce: Triple Whale ($129/mo+). For model flexibility on any stack: mbuzz ($29-299/mo) with 8 models + custom rules. All of these complement GA4—you don't need to replace it entirely."
+schema:
+  type: Article
+  author: "holly-henderson"
+has_code_examples: false
+has_calculator: false
+has_download: false
+---
+
+<%= render_tldr(@article.tldr) %>
+
+## What Google Took Away
+
+In late 2023, Google removed four attribution models from GA4:
+
+- **First-click** — 100% credit to the first touchpoint
+- **Linear** — equal credit across all touchpoints
+- **Time-decay** — more credit to recent touchpoints
+- **Position-based** — 40% first, 40% last, 20% middle
+
+What's left:
+
+- **Last-click** — 100% credit to the final click before conversion
+- **Data-Driven Attribution (DDA)** — algorithmic credit using Shapley values
+
+Google's justification: the removed models accounted for less than 3% of conversions. Translation: most people were already using DDA or last-click. Google decided the other models weren't worth maintaining.
+
+## The Problem Google Didn't Mention
+
+Here's what the announcement didn't say: **DDA requires a minimum of 400 conversions per conversion type in a 28-day window to function.**
+
+Below that threshold, GA4 silently falls back to last-click.
+
+No warning. No notification. No "your data-driven model couldn't run this period." It just quietly switches to last-click and reports numbers as if everything is fine.
+
+Some sources cite 600+ conversions and 15,000+ clicks for DDA to work reliably. Google's own documentation (buried in help articles) confirms the 400-conversion minimum.
+
+### Who This Affects
+
+Let's do the maths.
+
+400 conversions in 28 days = roughly 14 conversions per day.
+
+If your conversion rate is 2-3% (typical for B2B and mid-market):
+- 14 conversions/day ÷ 2.5% conversion rate = **560 visitors per day minimum**
+- That's ~17,000 monthly sessions with a single conversion type
+
+If you're spending $60K-$500K/year on ads and have a typical conversion rate, you're probably below the threshold for at least some of your conversion types. Lead form submissions, demo requests, trial signups—each one needs to independently hit 400/month.
+
+**The businesses most needing accurate attribution are structurally excluded from GA4's best model.**
+
+Companies spending $2M+/year? They clear the threshold easily. They also have budget for Haus, Measured, or Northbeam. GA4's DDA is a feature for companies that already have better options.
+
+## What "<3% of Conversions" Actually Means
+
+Google's claim that the removed models represented "less than 3% of conversions" deserves scrutiny.
+
+That statistic is across all GA4 properties globally. It includes:
+
+- Massive e-commerce sites with millions of conversions (DDA works well for them)
+- Properties that never changed from the default model
+- Properties where the admin didn't know other models existed
+
+It does not tell you whether YOUR team was using those models. If you were in that 3% — maybe you ran linear for baseline measurement, or position-based for your demand gen team — you lost a tool you relied on.
+
+"Almost nobody used it" is Google's reason. "I used it and now I can't" is your problem.
+
+## Your Three Options
+
+### Option 1: Keep GA4, Accept the Limitations
+
+**Cost:** $0
+**Effort:** None
+**Best for:** Companies with 400+ monthly conversions per type
+
+If you clear the DDA threshold, GA4's remaining model is decent. It uses Shapley values — game theory that calculates each channel's marginal contribution. It's not perfect (documented bias toward Google channels), but it's better than last-click.
+
+The trade-off: you can't compare models. First-touch told you what generated awareness. Time-decay told you what closed deals. DDA gives you one blended answer. If that's enough, stay.
+
+**What to watch for:**
+- DDA's documented bias toward Google properties (organic search, Google Ads)
+- No visibility into whether DDA is actually running or falling back to last-click
+- 90-day maximum lookback window (too short for B2B sales cycles)
+
+### Option 2: Keep GA4 for Analytics, Add Independent Attribution
+
+**Cost:** $0-299/mo
+**Effort:** 1-2 hours setup
+**Best for:** Most companies, especially those below 400 conversions/month
+
+This is what we recommend for most teams. GA4 is excellent at what it does — web analytics, traffic analysis, audience insights, Google Ads integration. Those features still work perfectly.
+
+What GA4 can't do well is cross-channel attribution. It can't see your email performance fairly, it favours Google channels, and below 400 conversions it's just last-click.
+
+Add a dedicated attribution tool alongside GA4:
+
+| Need | Tool | Price | Why |
+|------|------|-------|-----|
+| Model flexibility (8 models) | mbuzz | $0-299/mo | Compare first-touch, linear, time-decay, position-based, custom rules |
+| B2B account-level | Dreamdata | $0-999/mo | Links touchpoints to accounts and revenue |
+| Shopify/ecommerce | Triple Whale | $129-279/mo | Purpose-built for Shopify attribution |
+| B2B all-in-one analytics | HockeyStack | $2,200+/mo | Attribution + analytics + engagement bundled |
+
+*Full disclosure: mbuzz is our product. We've listed alternatives at every price point because the right tool depends on your stack, not our revenue.*
+
+### Option 3: Build Your Own in BigQuery
+
+**Cost:** BigQuery compute costs (~$5-50/mo for most)
+**Effort:** 20-40 hours engineering time
+**Best for:** Teams with data engineers and specific model requirements
+
+GA4 exports raw event data to BigQuery. You can rebuild any attribution model in SQL:
+
+```sql
+-- Simple first-touch attribution in BigQuery
+SELECT
+  FIRST_VALUE(source) OVER (
+    PARTITION BY user_pseudo_id
+    ORDER BY event_timestamp
+  ) AS first_touch_source,
+  COUNT(DISTINCT user_pseudo_id) AS conversions
+FROM `your_project.analytics_XXXXX.events_*`
+WHERE event_name = 'purchase'
+GROUP BY first_touch_source
+```
+
+This gives you complete control, but requires:
+- A data engineer who understands attribution logic
+- Ongoing maintenance as GA4's schema evolves
+- Custom visualisation (BigQuery doesn't render dashboards)
+- No real-time data (GA4 to BigQuery export has a 24-48 hour delay)
+
+If you have the engineering capacity, this is the most flexible option. If you don't, Option 2 is faster and cheaper than hiring for it.
+
+## What Should Change in Your Workflow
+
+Regardless of which option you choose, the GA4 model removal forces three workflow changes:
+
+### 1. Stop Using GA4 for Budget Allocation
+
+GA4 should inform within-Google optimisation — which campaigns work, which keywords convert, which landing pages perform. It should not be the sole input for "should we spend more on Meta or Google?"
+
+For cross-channel budget decisions, use a tool that sees all channels neutrally.
+
+### 2. Check Whether DDA Is Actually Running
+
+For each conversion type in your GA4 property, check:
+- How many conversions in the last 28 days?
+- Is it above 400?
+- If not, you're on last-click whether you know it or not
+
+There's no UI indicator for this. You have to check the numbers yourself.
+
+### 3. Run Multiple Models in Parallel
+
+The reason Google removing models matters isn't that any one model was perfect. It's that comparing models reveals truth.
+
+When first-touch and last-touch disagree about a channel, that disagreement is information. It tells you the channel works differently at different funnel stages. Linear attribution giving a channel 15% credit while position-based gives it 35% tells you something.
+
+One model gives you a number. Multiple models give you a range. The range is closer to reality.
+
+<%= render "articles/cta_banner",
+  title: "See where your measurement actually stands",
+  description: "The free Measurement Maturity Assessment tells you where you are, where you're exposed, and what to fix first. 10 questions, 3 minutes.",
+  cta_text: "Take the Assessment",
+  cta_url: "/score",
+  style: :dark %>
+
+<%= render_key_takeaways(@article.key_takeaways) %>
+
+<%= render_faq(@article.faq) %>
+
+## Related Reading
+
+- [Why Did GA4 Remove Most Attribution Models?](/articles/ga4-attribution-models-removed) — the technical deep dive on what changed and why
+- [7 Best GA4 Attribution Alternatives](/articles/ga4-attribution-alternatives) — full comparison of replacement tools
+- [How Much Are Your Ad Platforms Over-Reporting?](/articles/roas-inflation-platform-over-reporting) — the data on platform attribution inflation

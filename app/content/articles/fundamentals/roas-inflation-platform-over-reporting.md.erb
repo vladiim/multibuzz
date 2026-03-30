@@ -1,0 +1,238 @@
+---
+title: "Is Your ROAS Real? How Ad Platforms Inflate Attribution by 134%"
+slug: "roas-inflation-platform-over-reporting"
+description: "Meta over-reports conversions by 134%. Google by 18%. We compiled 792 models and peer-reviewed research into a 5-minute check you can run right now."
+published_at:
+section: fundamentals
+section_order: 8
+status: draft
+priority: P0
+category: "Attribution Fundamentals"
+tags:
+  - ROAS inflation
+  - platform attribution
+  - Meta over-reporting
+  - Google over-reporting
+  - attribution accuracy
+  - marketing measurement
+  - iOS 26
+related_articles:
+  - platform-reports-dont-match
+  - what-is-multi-touch-attribution
+  - ga4-attribution-models-removed
+  - mta-vs-mmm
+  - why-google-ads-ga4-different-conversions
+seo:
+  title: "We Analyzed 792 Models. Here's How Much Each Ad Platform Over-Reports."
+aeo:
+  target_query: "ROAS inflation"
+  tldr: "An analysis of 792 marketing mix models found <strong>Meta over-reports conversions by a median 134%</strong> (range: 0.67x to 4.66x) and <strong>Google by 18%</strong> (range: 0.80x to 2.17x). Other platforms over-report by a median 90%. Dropbox's 2026 IEEE study confirmed click attribution overstates performance 2-10x versus causal measurement. You can check your own inflation in 5 minutes: compare platform-reported revenue against CRM revenue. A ratio above 1.5x means your budget decisions are based on inflated data."
+  key_takeaways:
+    - "Meta over-reports by 134% median (792-model analysis). Range: some campaigns under-report, others inflate 4.66x"
+    - "Google over-reports by 18% median—less inflated but still biased toward its own channels"
+    - "Other platforms (TikTok, LinkedIn, etc.) over-report by 90% median"
+    - "Dropbox's peer-reviewed study found click attribution overstates 2-10x vs incrementality"
+    - "20-35% of ad budgets flow to channels producing zero incremental return"
+    - "iOS 26 and Meta's March 2026 click redefinition are making inflation worse, not better"
+    - "The 5-minute check: compare platform-reported revenue to CRM revenue for the same period"
+  faq:
+    - q: "How much does Meta over-report conversions?"
+      a: "A 792-model analysis found Meta over-reports by a median of 2.34x (134% inflation). The range is wide—from 0.67x (under-reporting) to 4.66x (nearly 5x inflation). The median is the important number: for every 100 conversions Meta claims, roughly 43 actually happened because of the ad."
+    - q: "How much does Google over-report conversions?"
+      a: "Google over-reports by a median of 1.18x (18% inflation), significantly less than Meta. Range: 0.80x to 2.17x. Google's advantage is that search captures high-intent users who were already close to converting—so the inflation is lower, but it's still there."
+    - q: "Why do ad platforms over-report?"
+      a: "Incentive structure. Platforms sell ads. They measure the ads they sell. Every platform uses attribution windows and models that maximise their own credit—Meta uses 7-day click and 1-day view, Google uses 30-day click. Neither can see the other's touchpoints. It's not fraud—it's structural bias."
+    - q: "How do I check if my ROAS is inflated?"
+      a: "Compare platform-reported revenue against your CRM or backend revenue for the same period. If platforms claim $480K and your CRM shows $210K in paid-attributable revenue, your ratio is 2.29x—meaning platforms are claiming more than double the actual impact. This takes 5 minutes."
+    - q: "What percentage of ad budget is wasted on non-incremental channels?"
+      a: "Studies consistently find 20-35% of ad budgets go to channels producing zero incremental return. Dropbox found they could reallocate $25M and improve efficiency by 81%. The waste isn't in bad ads—it's in channels that take credit for conversions that would have happened anyway."
+    - q: "How often should I check for ROAS inflation?"
+      a: "Quarterly at minimum. Also re-check after any major platform attribution change. Meta redefined click attribution in March 2026. iOS 26 strips click IDs from URLs. Each change shifts the numbers. Set a calendar reminder."
+schema:
+  type: Article
+  author: "holly-henderson"
+has_code_examples: false
+has_calculator: false
+has_download: false
+---
+
+<%= render_tldr(@article.tldr) %>
+
+## The Question You Can't Answer
+
+Your Meta dashboard says ROAS is 4.2x. Your Google Ads dashboard says 6.8x. Your CFO asks: "So we made 4-7x on every dollar?" And you say yes, because the platforms say so.
+
+But did you?
+
+Every ad platform measures its own performance. That's like letting students grade their own exams. And a 792-model analysis of real marketing data says the grades are inflated.
+
+## How Much Do Ad Platforms Over-Report Conversions?
+
+In 2025, Cassandra published the most comprehensive public analysis of platform attribution accuracy: 792 marketing mix models across hundreds of brands.
+
+| Platform | Median Over-Reporting | Range | What It Means |
+|----------|----------------------|-------|---------------|
+| **Meta** | 2.34x (134% inflation) | 0.67x – 4.66x | For every 100 conversions Meta claims, ~43 were actually driven by the ad |
+| **Google** | 1.18x (18% inflation) | 0.80x – 2.17x | Closer to reality, but still biased toward its own channels |
+| **Other platforms** | 1.90x (90% inflation) | 0.75x – 3.03x | TikTok, LinkedIn, programmatic—all inflate |
+
+Source: Cassandra, 792-model analysis (2025)
+
+These aren't worst cases. These are medians. Half of the campaigns measured were inflated more than this.
+
+For every dollar of ROAS Meta reports, roughly $0.43 of it was actually caused by the ad. The rest was organic traffic, brand recognition, other channels, or people who would have bought anyway.
+
+## Why Meta Inflates More Than Google
+
+The gap between Meta (134%) and Google (18%) isn't random. It's structural.
+
+**Google captures high-intent users.** Someone searching "buy running shoes" was probably going to buy running shoes. Google Ads gets credit, but the ad's causal contribution is small. The inflation is lower because many of those conversions would have happened organically.
+
+**Meta creates demand from scroll.** Someone scrolling Instagram wasn't planning to buy anything. When they convert days later, Meta claims credit—but did the ad cause it, or did the person see 12 other touchpoints in between? Meta's 7-day click window and 1-day view window are designed to capture the widest possible credit.
+
+Neither platform is lying. Both are structurally incentivised to take maximum credit.
+
+## What Did Dropbox Find When They Measured Incrementality?
+
+In March 2026, Dropbox's Marketing Data Science team published a peer-reviewed paper in IEEE Access: "From Attribution to Causality in Digital Advertising."
+
+Their methodology: month-long geo-blackout experiments across the US, using Difference-in-Differences, Bayesian Structural Time Series (CausalImpact), and GeoLift analysis.
+
+| Metric | Before (Click Attribution) | After (Causal Measurement) |
+|--------|---------------------------|---------------------------|
+| Budget allocated based on | Platform-reported ROAS | Incremental contribution |
+| Reallocated spend | — | $25M shifted |
+| Efficiency gain | — | 81% improvement |
+| LTV:CAC improvement | Baseline | +53% |
+| Click attribution vs causal | Overstated by 2-10x | — |
+
+**Click-based attribution overstated actual performance by 2-10x** depending on the channel.
+
+This wasn't a vendor selling incrementality testing. This was Dropbox's own PhD team running controlled experiments with millions in ad spend.
+
+Honesty matters here: Dropbox's approach required a PhD-level data science team, millions in monthly ad spend, and month-long channel blackouts. Most companies spending $60K-$1.2M/year can't replicate this. That doesn't mean the data is irrelevant to you. It means you need a different approach to the same problem.
+
+## What Is ROAS Inflation? (And Why It's Getting Worse)
+
+ROAS inflation is the gap between what ad platforms report and what actually happened. It's driven by three structural forces—and two recent changes are making it worse.
+
+### The Three Structural Causes
+
+**Double-counting.** A customer clicks your Google ad on Monday, sees your Meta retargeting ad on Wednesday, buys on Friday. Google claims the sale. Meta claims the sale. You made one sale. Platforms claimed two.
+
+**View-through attribution.** Meta's default: if someone saw your ad (didn't click, just scrolled past it) and converted within 1 day, Meta claims it. On a high-traffic brand, thousands of "conversions" are people who happened to scroll past an ad before doing what they were already going to do.
+
+**Self-serving attribution windows.** Google Ads uses 30-day click, Meta uses 7-day click, LinkedIn uses 90-day click. Each platform sets its windows to maximise its own credit.
+
+### Two Changes Making It Worse Right Now
+
+<%= render_warning_box do %>
+**March 2026: Meta redefined click attribution.** Only link clicks count now—likes, shares, saves no longer qualify. Non-link interactions get "engage-through attribution" with a 1-day window. Video engaged-view threshold dropped from 10 seconds to 5. This shifts how ROAS is calculated across every Meta advertiser.
+
+**iOS 26: Safari strips tracking parameters.** fbclid, gclid, ttclid are removed from URLs. JavaScript cookies are capped at 7 days. Safari represents ~27% of mobile traffic globally (higher in AU/UK/US). Pixel-only tracking now misses 40-60% of conversions. Platforms fill the gap with modelling—estimated numbers, not measured ones.
+<% end %>
+
+These changes mean platform-reported ROAS is becoming less tethered to reality, not more. The modelling that replaces lost signal is a black box. You have less visibility into what's real.
+
+## What Percentage of Ad Budget Is Wasted?
+
+The 792-model analysis found that **20-35% of ad budgets flow to channels producing zero incremental return.**
+
+Not low return. Zero.
+
+The usual culprits: branded search (bidding on your own name for clicks you'd get organically), retargeting oversaturation (every platform claiming credit for the same warm lead), and view-through attribution on high-impression campaigns.
+
+## The 5-Minute ROAS Reality Check
+
+You don't need a PhD team to spot inflation. You need two numbers and a calculator.
+
+### Step 1: Pull Platform-Reported Revenue (2 minutes)
+
+Open each ad platform. Pull revenue attributed to ads for last month.
+
+| Platform | Reported Revenue |
+|----------|-----------------|
+| Google Ads | $________ |
+| Meta Ads | $________ |
+| LinkedIn Ads | $________ |
+| Other paid | $________ |
+| **Total platform-claimed** | **$________** |
+
+### Step 2: Pull Actual Revenue (2 minutes)
+
+Open your CRM, Stripe, or backend. Pull total revenue for the same period. Estimate what percentage came from paid channels (vs organic, direct, referral).
+
+| Source | Revenue |
+|--------|---------|
+| Total revenue (CRM/Stripe) | $________ |
+| Estimated % from paid channels | ______% |
+| **Paid-attributable revenue** | **$________** |
+
+If you can't estimate the paid percentage, use total revenue. The ratio will be conservative—reality is even worse than the number you get.
+
+### Step 3: Calculate the Ratio (1 minute)
+
+```
+Inflation ratio = Total platform-claimed revenue ÷ Paid-attributable revenue
+
+Example:
+  Platforms claim: $480,000
+  CRM paid-attributable: $210,000
+  Ratio: $480,000 ÷ $210,000 = 2.29x
+```
+
+### Step 4: Read Your Ratio
+
+| Your Ratio | What It Means | What to Do |
+|------------|---------------|------------|
+| **1.0-1.2x** | Healthy. Minor overlap between platforms. | Normal. Re-check quarterly. |
+| **1.2-1.5x** | Moderate. Common when running 2-3 channels. | Use CRM data for budget decisions, platform data for within-channel optimisation. |
+| **1.5-2.0x** | Significant. Budget allocation based on these numbers is unreliable. | Stop using platform ROAS for cross-channel decisions. Add independent measurement. |
+| **2.0-3.0x** | Severe. Platforms are double- and triple-counting. | You are likely funding channels with zero incremental return. |
+| **3.0x+** | Critical. More revenue is being claimed than exists. | You almost certainly have channels producing zero value. Reallocate now. |
+
+## How to Fix Inflated ROAS Reporting
+
+Three levels, depending on your budget and where you are.
+
+### Immediately: Separate Your Metrics
+
+Use platform ROAS for one thing only: within-platform optimisation. Which ad creative works? Which audience converts? Which keywords are efficient? Platform data is good at this.
+
+For cross-channel decisions ("should we spend more on Meta or Google?"), switch to CRM-based revenue:
+
+```
+Real ROAS = CRM revenue from paid ÷ Total ad spend
+
+Not: Platform-reported revenue ÷ Total ad spend
+```
+
+### This Month: Add Independent Measurement ($29-299/mo)
+
+Deploy a neutral attribution tool that sees all touchpoints and applies consistent logic. Server-side tracking captures 30-40% more data than client-side because it doesn't depend on browser JavaScript that ad blockers and iOS 26 strip out.
+
+When Meta says ROAS is 4.2x and your independent tool says 2.1x, you know the truth is closer to 2.1x. The goal isn't perfection—it's a second opinion.
+
+### This Quarter: Run an Incrementality Test ($5K+)
+
+Turn off a channel in a geographic region. Measure whether conversions actually drop. If they don't, the channel wasn't incremental. Google's Conversion Lift now starts at $5K minimum (down from $100K in 2024). Meta and TikTok have similar tools.
+
+This is the gold standard but requires enough spend per region for statistical significance. If you're spending $60K-$1.2M/year, start with independent measurement first. You can't run geo-holdout experiments at that spend level, but you can absolutely measure whether your platforms are double-counting.
+
+<%= render "articles/cta_banner",
+  title: "Find out where your measurement actually stands",
+  description: "The free Measurement Maturity Assessment tells you where you are, where you're exposed, and what to fix first. 10 questions, 3 minutes.",
+  cta_text: "Take the Assessment",
+  cta_url: "/score",
+  style: :dark %>
+
+<%= render_key_takeaways(@article.key_takeaways) %>
+
+<%= render_faq(@article.faq) %>
+
+## Related Reading
+
+- [Why Your Platform Reports Don't Match](/articles/platform-reports-dont-match) — the technical reasons platforms disagree
+- [Why Google Ads and GA4 Show Different Numbers](/articles/why-google-ads-ga4-different-conversions) — the specific Google Ads vs GA4 discrepancy explained
+- [Why Did GA4 Remove Most Attribution Models?](/articles/ga4-attribution-models-removed) — what changed and your options
+- [MTA vs MMM: Which Do You Actually Need?](/articles/mta-vs-mmm) — choosing the right measurement approach for your spend level
