@@ -1,0 +1,256 @@
+---
+title: "The Algorithm Tax: What Happens When You Pause, Reduce, or Restart Ad Spend"
+slug: "algorithm-tax-pause-reduce-restart"
+description: "Every budget change triggers a learning phase. Google needs 7-14 days. Meta needs 7 days. Pausing Meta for 7+ days forces a full restart. Here's the unified guide to what each platform costs you when you change spend."
+published_at:
+section: implementation
+section_order: 4
+status: draft
+priority: P0
+category: "Implementation"
+tags:
+  - learning phase
+  - Google Ads
+  - Meta Ads
+  - algorithm warm-up
+  - ad stock
+  - budget optimization
+  - pausing ads
+related_articles:
+  - when-to-change-marketing-budget
+  - budget-reallocation-attribution
+  - diminishing-returns-ad-spend
+  - roas-inflation-platform-over-reporting
+seo:
+  title: "The Algorithm Tax: Learning Phases, Ad Stock & Budget Change Costs"
+aeo:
+  target_query: "what happens when you pause Google Ads"
+  tldr: "Every significant budget change triggers a learning phase that costs you 7-14 days of elevated CPA. <strong>Google Ads</strong> needs 7-14 days and ~50 conversions to recalibrate (Performance Max: 4-6 weeks). <strong>Meta</strong> needs 7 days and ~50 optimisation events — pausing for 7+ days forces a full restart. Budget changes over 20% trigger resets on both platforms. CPA rises 25-40% during learning. After you stop spending, awareness doesn't vanish instantly — <strong>adstock</strong> means effects decay over days to weeks depending on the channel."
+  key_takeaways:
+    - "Google Ads learning phase: 7-14 days. Performance Max: 4-6 weeks"
+    - "Meta learning phase: 7 days. Pausing 7+ days = full restart from scratch"
+    - "Budget changes over 20% trigger learning resets on both platforms"
+    - "CPA rises 25-40% during learning phase — don't judge performance during this period"
+    - "Adstock: search ad effects stop immediately, social decays in days, brand/TV lingers 2-5 weeks"
+    - "Safe zone: changes under 15-20% with 7+ days between adjustments"
+  faq:
+    - q: "Does pausing Google Ads hurt quality score?"
+      a: "Pausing doesn't directly lower quality score. But when you restart, the campaign re-enters learning phase (7-14 days of elevated CPCs and unstable performance). Smart Bidding strategies lose their calibration and need ~50 new conversions to re-optimise. Short pauses (a few days) have minimal impact. Pauses longer than 2 weeks mean essentially starting over."
+    - q: "How long does Meta learning phase take?"
+      a: "About 7 days. Meta needs approximately 50 optimisation events within that window. If your daily budget can't produce ~7 optimisation events per day, the learning phase will take longer or may never complete. Meta recommends a daily budget of 5-7x your target cost per event."
+    - q: "What triggers a learning phase reset?"
+      a: "On both Google and Meta: budget changes over 20%, bid strategy changes, audience targeting changes, significant ad copy changes, adding/removing conversion actions. On Meta specifically: pausing an ad set for 7+ days. The safest approach is changing one variable at a time with 7+ days between changes."
+    - q: "Can I pause ads on weekends to save budget?"
+      a: "Not recommended. Short pauses (1-2 days) cause minimal algorithmic disruption, but they break the continuous data signal platforms use for optimisation. If your product doesn't sell on weekends, use dayparting or ad scheduling instead — this adjusts delivery without pausing."
+    - q: "What is adstock and why does it matter?"
+      a: "Adstock is the lingering effect of advertising after you stop spending. If you pause ads and sales don't drop immediately, that's adstock — not proof ads weren't working. Search ads have near-zero adstock (effect stops immediately). Social has rapid decay (days). Brand/TV has 2-5 week half-life. Understanding adstock prevents you from wrongly concluding that a paused channel wasn't contributing."
+schema:
+  type: Article
+  author: "holly-henderson"
+has_code_examples: false
+has_calculator: false
+has_download: false
+---
+
+<%= render_tldr(@article.tldr) %>
+
+## The Hidden Cost of Budget Changes
+
+Every significant budget change comes with a tax you don't see on your invoice. Platforms call it the "learning phase." Practitioners call it wasted spend.
+
+When you change budget by more than 20%, both Google and Meta throw out their accumulated optimisation data and start exploring again. CPCs spike. CPA jumps 25-40%. Conversions become erratic. This lasts 7-14 days — sometimes longer.
+
+If you make another change during this period, the clock resets. You pay the tax again.
+
+Understanding this cost is essential before acting on any budget recommendation.
+
+## Google Ads Learning Phase
+
+### Standard Search Campaigns
+
+| Metric | Value |
+|--------|-------|
+| Duration | 7-14 days formal learning; 3-4 weeks for fully stable performance |
+| Conversion requirement | ~50 conversion events or 3 conversion cycles |
+| Minimum monthly conversions | 30-50 per campaign for Smart Bidding to function |
+| Below 15 conversions/month | Campaign struggles to exit learning meaningfully |
+
+Google's learning phase depends on conversion volume, not click volume. A campaign with 1,000 clicks but 8 conversions per month will never optimise well, regardless of budget.
+
+### Performance Max (PMax)
+
+PMax takes longer — 4-6 weeks despite the "Learning" status disappearing earlier. The algorithm continues internal calibration for roughly 45 days. Performance during weeks 2-4 often looks worse than during the initial learning status period.
+
+Don't judge PMax performance until week 6.
+
+### What Resets Google Ads Learning
+
+Any of these changes restart the learning phase:
+
+- Budget changes exceeding 20%
+- Switching bid strategy (e.g., Target CPA → Target ROAS)
+- Adjusting bid targets significantly
+- Changing conversion actions (adding, removing, or modifying tracking)
+- Major ad copy changes (multiple ads rewritten simultaneously)
+- Audience or geographic targeting changes
+- Pausing and reactivating campaigns
+
+The key insight: changes under 20% generally don't reset learning. Conservative practitioners use 15% as their threshold.
+
+**Recommended:** incremental adjustments of 10-15% with at least one week between changes. If you need a 40% increase, do it as two 20% steps with a week gap.
+
+## Meta Ads Learning Phase
+
+### Standard Campaigns
+
+| Metric | Value |
+|--------|-------|
+| Duration | 7 days |
+| Event requirement | ~50 optimisation events within 7 days |
+| Recommended daily budget | 5-7x target cost per optimisation event |
+| Example | $40 target CPA = $200-280/day minimum |
+
+Meta's learning phase is shorter than Google's but more fragile. Small changes that wouldn't affect Google can reset Meta.
+
+### What Resets Meta Learning
+
+- Budget changes over 20-25% in a single adjustment
+- Changing bid strategy or bid cap
+- Editing target audience (even minor refinements)
+- Switching optimisation event
+- Adding or removing creatives from an ad set
+- Pausing an ad set for 7+ days
+
+That last one is critical. **Pausing a Meta ad set for more than 7 days effectively kills it.** When you restart, you're starting from scratch — no accumulated learning, no optimised delivery, no audience signals.
+
+### The Pause Penalty
+
+| Pause Duration | Meta Impact |
+|---------------|-------------|
+| 1-3 days | Minimal disruption |
+| 3-7 days | Some learning decay, mild CPA increase on restart |
+| 7+ days | Full restart. Learning phase from zero. CPA spike of 25-40%. |
+
+Meta now shows a useful indicator: "You can increase your budget to $X without restarting learning." Use this. It tells you exactly how much headroom you have before paying the tax.
+
+### CPA Impact During Learning
+
+Expect CPA to rise 25-40% during any learning phase reset. This isn't the algorithm failing — it's deliberately exploring different audience segments, placements, and creative combinations. The instability is the learning.
+
+The temptation is to intervene. Resist it. Every intervention during learning resets the clock.
+
+## Other Platforms
+
+### TikTok
+
+- Learning phase: 50 conversions needed, similar to Meta
+- Highly variable results — coefficient of variation of 1.26 in benchmark tests (vs 0.7-0.8 for Meta)
+- More volatile by nature; longer evaluation windows recommended (8-12 weeks)
+- Minimum: $20/ad group, $50/campaign daily
+
+### LinkedIn
+
+- Slower learning, higher minimum costs ($10/day minimum, $25-50 realistic)
+- 90-day click attribution window (longest of any major platform)
+- B2B conversion cycles are longer — give LinkedIn 12+ weeks before judging
+- Minimum lifetime budget: $100
+
+### Pinterest
+
+- Similar learning mechanics to Meta
+- Smaller audience = slower learning
+- Minimum: $0.01/day technically, $500/month realistically
+
+## Adstock: Why Sales Don't Drop Immediately
+
+You pause all ads on Monday. By Friday, sales look... fine. So the ads weren't working?
+
+Not necessarily. This is adstock — the lingering effect of advertising after you stop spending.
+
+### How Adstock Works
+
+Advertising builds awareness that decays gradually, not instantly. The decay rate depends on the channel:
+
+| Channel | Adstock Half-Life | What This Means |
+|---------|------------------|-----------------|
+| Search ads | Near-zero | Effect stops almost immediately. If you pause search ads, you lose that traffic today. |
+| Social ads | Days | Quick saturation, rapid decay. 3-5 days after pausing, most effect is gone. |
+| Display / programmatic | 1-2 weeks | Slower decay. Brand impression lingers. |
+| TV / brand campaigns | 2-5 weeks | Significant carryover. A month after stopping TV, 30-50% of effect may remain. |
+
+### The Adstock Trap
+
+If you pause a channel and sales hold steady for a week, the natural conclusion is "that channel wasn't working." But if the channel has 2+ weeks of adstock, you're measuring during the carryover period. Sales haven't dropped yet because awareness hasn't decayed yet.
+
+The true impact shows up 2-4 weeks after pausing, by which time you've already reallocated the budget and can't easily run a controlled comparison.
+
+This is why incrementality testing uses geo holdout experiments with 30-day minimum durations — long enough for adstock to fully decay and reveal the true incremental impact.
+
+### What Adstock Means for Budget Decisions
+
+- **Don't judge a pause too quickly.** Wait the full adstock half-life (channel-dependent) before concluding a channel wasn't contributing.
+- **Search is the exception.** Search ads have near-zero adstock. If you pause Google search and traffic drops immediately, that's expected.
+- **Brand effects last longer.** If you've been running brand awareness campaigns, the effects linger for weeks. This is good — it means you don't need to spend continuously at maximum. But it also means you can't run a quick pause/restart test and draw valid conclusions.
+
+## The Safe Change Protocol
+
+A framework for changing budget without paying unnecessary algorithm tax:
+
+### Step 1: Size the Change
+
+Is the total adjustment under 20%? If yes, proceed directly. No learning phase disruption expected.
+
+If over 20%, break it into 2-3 steps of 10-15% each.
+
+### Step 2: Change One Variable
+
+Never change budget, bid strategy, and audience simultaneously. Change budget first. Wait 7-14 days. If performance stabilises, make the next change.
+
+### Step 3: Wait the Full Learning Period
+
+| Platform | Wait Time |
+|----------|-----------|
+| Google Search | 14 days minimum |
+| Google PMax | 6 weeks |
+| Meta | 7 days |
+| TikTok | 14 days |
+| LinkedIn | 14 days |
+
+Don't judge performance during this window. Don't make additional changes. Don't panic.
+
+### Step 4: Evaluate with Enough Data
+
+After the learning period, give the new budget level 2-4 additional weeks before evaluating. You need at least one full conversion cycle (for B2B, this might be 30-90 days) to see the real impact.
+
+## Minimum Viable Budgets by Platform
+
+If you're considering a new channel or restarting a paused one, these are the practical minimums for meaningful data:
+
+| Platform | Min Daily Budget | Realistic Starting Budget | Key Constraint |
+|----------|-----------------|--------------------------|----------------|
+| Google Search | No minimum | 5x expected daily CPA | 50 conversions/month for Smart Bidding |
+| Google PMax | No minimum | Higher (needs 4-6 weeks) | Diverse signal inputs required |
+| Meta | $1/day | 10x avg cost per event | 50 events/week to exit learning |
+| LinkedIn | $10/day | $25-50/day | Expensive CPCs. $100 minimum lifetime. |
+| TikTok | $20/ad group | 20x target CPA | Highly variable results |
+| Pinterest | $0.01/day | $500/month | Small sample sizes |
+| Reddit | $5/day | $20/day | Various bid models |
+| Programmatic | N/A | $5,000/month | Enterprise minimum |
+
+<%= render "articles/cta_banner",
+  title: "Is your measurement setup ready for budget changes?",
+  description: "The Measurement Maturity Assessment tells you whether your data is reliable enough to make confident budget decisions. 3 minutes, free.",
+  cta_text: "Take the Assessment",
+  cta_url: "/score",
+  style: :dark %>
+
+<%= render_key_takeaways(@article.key_takeaways) %>
+
+<%= render_faq(@article.faq) %>
+
+## Related Reading
+
+- [When to Change Your Marketing Budget](/articles/when-to-change-marketing-budget) — the decision framework for when a budget change is actually warranted
+- [Diminishing Returns: When More Spend Stops Working](/articles/diminishing-returns-ad-spend) — how to spot saturation before you waste budget
+- [How to Test Budget Changes](/articles/how-to-test-budget-changes) — from simple checks to statistically significant experiments
+- [How to Reallocate Marketing Budget Using Attribution](/articles/budget-reallocation-attribution) — the full reallocation process

@@ -1,0 +1,281 @@
+---
+title: "How to Test Budget Changes: From Simple Checks to Statistical Experiments"
+slug: "how-to-test-budget-changes"
+description: "Uber saved $135M by testing before reallocating. eBay proved 99.5% of branded search was waste. Here's how to test budget changes at every level — from a 5-minute CRM check to full geo holdout experiments."
+published_at:
+section: implementation
+section_order: 7
+status: draft
+priority: P0
+category: "Implementation"
+tags:
+  - incrementality testing
+  - geo holdout
+  - budget testing
+  - marketing experiments
+  - CausalImpact
+  - GeoLift
+  - statistical testing
+related_articles:
+  - budget-reallocation-attribution
+  - when-to-change-marketing-budget
+  - algorithm-tax-pause-reduce-restart
+  - diminishing-returns-ad-spend
+  - roas-inflation-platform-over-reporting
+seo:
+  title: "How to Test Marketing Budget Changes (5 Levels, $0 to $5K+)"
+aeo:
+  target_query: "how to test marketing budget changes"
+  tldr: "Test budget changes at 5 levels of sophistication: <strong>Level 1 ($0):</strong> CRM cross-check in 5 minutes. <strong>Level 2 ($0):</strong> before/after analysis over 4+ weeks. <strong>Level 3 (cost of withheld spend):</strong> geo holdout test — pause channel in one region for 30+ days. <strong>Level 4 ($5K+):</strong> Google/Meta Conversion Lift studies. <strong>Level 5 (ongoing):</strong> full incrementality program. Uber saved $135M by running a Level 3 test on Meta. eBay proved branded search was 99.5% non-incremental. Even Level 1 (5 minutes, free) reveals whether your platform data matches reality."
+  key_takeaways:
+    - "5 levels of budget testing: CRM check ($0) → before/after ($0) → geo holdout → platform lift ($5K) → full program"
+    - "Uber saved $135M by testing Meta before cutting — 3-month test proved non-incremental"
+    - "eBay proved 99.5% of branded search clicks happen organically — ad spend was waste"
+    - "Google Conversion Lift minimum dropped from $100K to $5K in 2025 (Bayesian methods)"
+    - "Geo holdouts need 10-15 matched markets, 30+ day duration, 6 months historical data"
+    - "At $60K-$500K/yr spend, Level 1-2 are always available. Level 3+ requires $500K+"
+  faq:
+    - q: "How long should I run a budget test?"
+      a: "Minimum 30 days for geo holdouts (adstock needs time to fully decay). 14 days minimum for Google/Meta Conversion Lift (7 days technically permitted but underpowered). Before/after comparisons need 4 weeks on each side. Longer is always more reliable — 60-90 days is ideal for channels with longer conversion cycles."
+    - q: "What sample size do I need?"
+      a: "It depends on the method. Geo holdouts need 10-15 matched geographic markets with ≥95% historical correlation. Google Conversion Lift needs $5,000 minimum spend and 1,000 conversions during the test period. Before/after analysis needs at least 4 weeks of data on each side with 50+ conversions per period."
+    - q: "Can I test during peak season?"
+      a: "You can, but interpretation is harder. During seasonal peaks, baseline demand is already elevated — it's difficult to separate the effect of your budget change from the natural seasonal lift. Off-peak testing produces cleaner results. If you must test during peak season, use a geo holdout with closely matched control markets."
+    - q: "What's the cheapest way to test a budget change?"
+      a: "Level 1: Compare platform-reported conversions to CRM data. Takes 5 minutes, costs $0, and tells you whether platform data is trustworthy. If platforms claim 200 conversions and your CRM shows 120, you know there's a 67% inflation gap. This doesn't prove incrementality, but it reveals whether the data you'd base a reallocation on is reliable."
+    - q: "What is incrementality testing?"
+      a: "Incrementality testing measures whether an ad actually caused a conversion, or whether the conversion would have happened anyway. The gold standard is turning off ads in one geographic region while keeping them on in a comparable region, then comparing. If sales stay the same in the region without ads, those ads weren't incremental — the conversions were organic."
+    - q: "What tools can I use for geo holdout tests?"
+      a: "GeoLift (Meta's open-source R package) uses synthetic control methods for test design and analysis. CausalImpact (Google's R/Python package) uses Bayesian time-series modeling for retrospective analysis. Both are free. GeoLift is better for prospective test design (planning the test). CausalImpact is better for retrospective analysis (analysing a natural experiment that already happened)."
+schema:
+  type: HowTo
+  author: "holly-henderson"
+has_code_examples: false
+has_calculator: false
+has_download: false
+---
+
+<%= render_tldr(@article.tldr) %>
+
+## Why Test Before You Reallocate
+
+Uber was spending heavily on Meta performance marketing across the US and Canada. The dashboard said it was working. Platform-reported ROAS looked strong.
+
+Then they ran a test. Three months of incrementality measurement on Meta ads. The finding: Meta performance marketing was not adding incremental value. The signups attributed to Meta would have happened anyway.
+
+They turned off Meta performance marketing in the US and Canada. Reinvested $135M into Uber Eats and driver acquisition. No loss in rider signups.
+
+Without the test, they'd still be spending $135M/year on a channel that wasn't working. Platform data would still say it was.
+
+## The 5 Levels of Budget Testing
+
+Not every company can run geo holdout experiments. Here's what you can do at every budget and sophistication level.
+
+### Level 1: The CRM Cross-Check (5 minutes, $0)
+
+The simplest test. Compare what ad platforms say happened versus what your CRM shows.
+
+**How:**
+1. Pull platform-reported conversions for the channel you want to test. Last 30 days.
+2. Pull actual conversions from your CRM or backend for the same period.
+3. Calculate the gap.
+
+```
+Platform-reported: 200 conversions
+CRM actual: 120 conversions
+Gap: 67% inflation
+```
+
+**What this tells you:**
+- If the gap is under 20%, platform data is directionally trustworthy. Changes based on this data are reasonable.
+- If the gap is 50%+, platform data is significantly inflated. Any budget decision based on it is unreliable.
+- If the gap is 100%+, the channel is claiming conversions it didn't drive. Major reallocation decisions need a better data source.
+
+**What this doesn't tell you:** Whether the channel is incremental. The 120 actual conversions might have happened without the ads too. For that, you need Level 3+.
+
+**Reference:** The full methodology is in [How Much Are Your Ad Platforms Over-Reporting?](/articles/roas-inflation-platform-over-reporting)
+
+### Level 2: Before/After Analysis (4+ weeks each side, $0)
+
+Change the budget and measure what happens. The simplest experiment.
+
+**How:**
+1. Record 4 weeks of baseline performance (the "before" period)
+2. Make the budget change
+3. Wait through the learning phase (7-14 days — don't count this period)
+4. Record 4 weeks of new performance (the "after" period)
+5. Compare: did conversions, CPA, and revenue change proportionally to the budget change?
+
+**Example:**
+- Before: $10K/month → 100 conversions
+- Change: Reduce to $8K/month
+- After (post-learning): $8K/month → 92 conversions
+
+If cutting 20% of budget only reduced conversions by 8%, the last 12% of spend was low-incremental. That's a positive signal to reallocate.
+
+**Limitations:**
+- No control group. You don't know what would have happened without the change.
+- Seasonality confounds. If sales went up because it's Q4, not because of your budget change, you'll draw wrong conclusions.
+- Other changes confound. New landing page, competitor activity, PR mention — any of these happening during the test period corrupts the result.
+- Regression to the mean. If you changed budget because of a bad month, the next month might improve regardless.
+
+**When to use:** When you can't run a controlled experiment but need directional signal. Better than nothing. Worse than Level 3+.
+
+### Level 3: Geo Holdout Test (30+ days, cost of withheld spend)
+
+Turn off a channel in one geographic region. Keep it running in comparable regions. Compare.
+
+This is the gold standard for incrementality testing at a practical level.
+
+**How:**
+1. **Define the question:** "Does Google non-brand search drive incremental sales?"
+2. **Select markets:** 10-15 geographic regions (DMAs, states, postcodes). Split into test (ads off) and control (ads on).
+3. **Match markets:** Test and control must have ≥95% historical correlation on your KPI. Match on size, demographics, and historical performance.
+4. **Run the test:** Minimum 30 days. Ads off in test markets, on in control markets.
+5. **Analyse:** Compare conversion rates in test vs control. The difference is your incremental lift.
+
+**Requirements:**
+- 10-15 matched markets minimum
+- 6 months of clean historical data for baseline modeling
+- Weekly (or better) sales data at geographic level
+- 30 days minimum test duration (longer for channels with high adstock)
+- 80% statistical power target
+
+**Key formulas:**
+```
+Incremental Conversions = Test Conversions - Control Conversions
+Lift % = (Incremental / Counterfactual) × 100
+iCPA = Test Spend / Incremental Conversions
+iROAS = Incremental Revenue / Test Spend
+```
+
+**Open-source tools:**
+- **GeoLift** (Meta) — R package for designing and analysing geo experiments. Uses synthetic control methods.
+- **CausalImpact** (Google) — R/Python package for Bayesian time-series causal inference. Better for retrospective analysis.
+
+GeoLift is better for planning a prospective test (before you run it). CausalImpact is better for analysing a natural experiment (something that already happened, like a campaign outage).
+
+**Who can do this:** Companies with $500K+/year ad spend and geographic diversity. You need enough conversions per geographic region to reach statistical significance. With $60K/year total spend, individual regions won't have enough volume.
+
+### Level 4: Platform Lift Studies ($5K+)
+
+Google and Meta offer built-in lift measurement tools.
+
+**Google Conversion Lift:**
+- Randomised controlled experiment splitting audience into test and control
+- Supports Video, Discovery, Demand Gen, and geo-based studies
+- **2025 update:** Minimum budget dropped from ~$100K to $5,000 and 1,000 conversions
+- Uses Bayesian methodology (requires less data than traditional approaches)
+- Minimum 7 days (14 days recommended)
+- "Study Power" metric estimates certainty before you run the test
+
+**Meta Conversion Lift:**
+- Previously required a Meta rep to set up; becoming more accessible
+- 2-4 weeks recommended duration
+- Don't extend beyond 4 weeks — introduces noise without improving significance
+- Study Power / Feasibility tool estimates likelihood of meaningful results
+
+**Advantages over geo holdouts:**
+- Randomised at user level (more precise than geographic splitting)
+- Platform handles the statistical analysis
+- Lower minimum budget ($5K vs hundreds of thousands in ad spend)
+
+**Disadvantages:**
+- Platform is measuring its own effectiveness (conflict of interest)
+- Limited to that platform's campaigns (can't test cross-channel effects)
+- Study design is a black box
+
+### Level 5: Full Incrementality Program (Ongoing)
+
+A regular cadence of experiments across all major channels.
+
+**What this looks like:**
+- Quarterly geo holdouts rotating across channels
+- Build internal iROAS benchmarks by channel
+- Cross-validate with multi-touch attribution and MMM
+- Use historical test results to calibrate response curves
+
+**Benchmark data (Stella, 225 DTC incrementality tests):**
+
+| Channel | Median iROAS | Platform-Reported ROAS | Inflation |
+|---------|-------------|----------------------|-----------|
+| Meta | 2.92x | ~6-8x | 2-3x |
+| Google PMax | 2.98x | ~5-7x | 2-3x |
+| Google Shopping | 1.86x | ~4-6x | 2-3x |
+| Google Search (Non-Brand) | 1.46x | ~3-5x | 2-3x |
+| Google Search (Branded) | 0.70x | ~5-10x | 5-10x |
+| TikTok | 0.94x | ~2-4x | 2-3x |
+| YouTube | 2.17x | ~3-5x | 1.5-2x |
+
+Key finding: branded search and retargeting are 5-10x inflated. Non-brand search and social are 2-3x inflated. Meta is actually one of the most consistent channels (lowest variance in results).
+
+88.4% of tests reached statistical significance at 90%+ confidence. 83.1% achieved breakeven or better.
+
+**Who can do this:** Companies spending $2M+/year. The investment in testing infrastructure pays back in reallocation gains. At smaller scales, the testing costs outweigh the savings.
+
+## The Case Studies
+
+### eBay: The Branded Search Experiment
+
+eBay halted paid search on brand keywords (their own name) across Yahoo and MSN while continuing on Google.
+
+**Finding:** 99.5% substitution. Natural search captured almost all the traffic that had been going to paid ads. eBay was paying for clicks they would have gotten organically.
+
+**On non-brand keywords:** Near-zero substitution. Paid search was genuinely incremental for non-brand terms, but the effect was small and statistically insignificant.
+
+**Implication:** If you rank #1 organically for your brand name, your branded search spend is almost certainly waste. Test it.
+
+### Uber: The $135M Meta Experiment
+
+Uber overlaid seasonality on signups and found the pattern was identical regardless of Meta ad spend fluctuations.
+
+They ran a 3-month incrementality test on Meta performance marketing in the US and Canada. Result: non-incremental. Signups didn't decrease when ads were off.
+
+Uber turned off Meta performance marketing and reinvested $135M into Uber Eats and driver acquisition.
+
+### Dropbox: The IEEE-Published Proof
+
+Dropbox's PhD data science team ran month-long geo-blackout experiments using Difference-in-Differences, Bayesian Structural Time Series, and GeoLift.
+
+Finding: click attribution overstated actual performance by 2-10x depending on the channel. They reallocated $25M, gained 81% efficiency improvement, and improved LTV:CAC by 53%.
+
+### Grocery Chain: Non-Brand Search Geo Test
+
+A grocery chain paused non-brand paid search in 12 matched markets for 30 days.
+
+Finding: zero sales lift from non-brand paid search. The entire budget was reallocated to CTV (connected TV), which showed positive incremental lift.
+
+## Honest Assessment: Testing at $60K-$1.2M/Year
+
+Not every company can run geo holdouts. Here's what's realistic at each spend level:
+
+| Annual Ad Spend | Feasible Test Levels | Why |
+|----------------|---------------------|-----|
+| $60K-$200K | Level 1-2 only | Not enough spend per geographic region for statistical significance |
+| $200K-$500K | Level 1-3 (limited) | Can run simple geo holdouts on largest channel only |
+| $500K-$1.2M | Level 1-4 | Geo holdouts feasible. Google Lift affordable ($5K). |
+| $1.2M-$5M | Level 1-5 | Full incrementality program justified |
+| $5M+ | All levels, ongoing | Standard practice. Regular cadence expected. |
+
+**At $60K-$200K/year:** Level 1 and 2 are always available and always worth doing. Level 1 takes 5 minutes. Level 2 costs nothing but time. Together, they give you enough signal to make directional budget decisions.
+
+You don't need a PhD team to improve your budget allocation. You need to check whether your platform data matches reality (Level 1) and whether budget changes produce proportional results (Level 2).
+
+<%= render "articles/cta_banner",
+  title: "Before you test, measure",
+  description: "mbuzz's response curve analysis gives you Level 2.5 — continuous monitoring of diminishing returns without running experiments. See marginal ROAS by channel.",
+  cta_text: "Start Free",
+  cta_url: "/signup",
+  style: :dark %>
+
+<%= render_key_takeaways(@article.key_takeaways) %>
+
+<%= render_faq(@article.faq) %>
+
+## Related Reading
+
+- [How Much Are Your Ad Platforms Over-Reporting?](/articles/roas-inflation-platform-over-reporting) — Level 1 (CRM cross-check) methodology in full
+- [When to Change Your Marketing Budget](/articles/when-to-change-marketing-budget) — the decision framework for when a change is warranted
+- [The Algorithm Tax](/articles/algorithm-tax-pause-reduce-restart) — the hidden cost of budget changes during testing
+- [How to Reallocate Marketing Budget Using Attribution](/articles/budget-reallocation-attribution) — the full reallocation process
+- [Diminishing Returns: When More Spend Stops Working](/articles/diminishing-returns-ad-spend) — detecting saturation without experiments

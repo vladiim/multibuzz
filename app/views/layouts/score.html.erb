@@ -18,7 +18,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <%= stylesheet_link_tag "pages/score/landing", "pages/score/signup", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "pages/score/landing", "pages/score/signup", "pages/score/dashboard", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
     <%= yield :head %>
     <%= render "score/assessments/structured_data" if content_for?(:structured_data) || controller.action_name == "show" %>

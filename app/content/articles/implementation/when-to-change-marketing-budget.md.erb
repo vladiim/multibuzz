@@ -1,0 +1,217 @@
+---
+title: "When to Change Your Marketing Budget: The Decision Framework"
+slug: "when-to-change-marketing-budget"
+description: "Not every bad week means you should cut budget. Not every good month means you should scale. Here's the data-backed framework for when to actually change your marketing spend."
+published_at:
+section: implementation
+section_order: 3
+status: draft
+priority: P0
+category: "Implementation"
+tags:
+  - marketing budget
+  - budget reallocation
+  - ad spend
+  - budget optimization
+  - diminishing returns
+related_articles:
+  - budget-reallocation-attribution
+  - algorithm-tax-pause-reduce-restart
+  - diminishing-returns-ad-spend
+  - how-to-test-budget-changes
+seo:
+  title: "When to Change Your Marketing Budget (Decision Framework)"
+aeo:
+  target_query: "when to change marketing budget"
+  tldr: "Change your marketing budget when you have <strong>4+ weeks of data</strong> showing a clear trend — not after one bad week. The six valid triggers: channel underperforming marginal ROAS threshold for 4+ weeks, competitive CPM spike sustained 2+ weeks, seasonal demand shift, product launch window, attribution data showing saturation, or a new channel opportunity with strong early signal. Budget changes under 20% are safe. Above 20% triggers algorithm learning phase resets on Google and Meta that cost you 7-14 days of unstable performance."
+  key_takeaways:
+    - "Minimum 4 weeks of data before any budget change — one bad week is noise, not signal"
+    - "Changes under 20% are safe — above 20% triggers Google/Meta learning phase reset"
+    - "Six valid triggers: sustained underperformance, CPM spikes, seasonality, product launches, saturation, new channel opportunity"
+    - "Four bad reasons: one bad week, learning phase volatility, competitor spending more, gut feeling"
+    - "Q1 has the cheapest CPMs (best time to test). Q4 is most expensive (worst time to experiment)."
+    - "Keep 10-15% of budget uncommitted as a reallocation reserve"
+  faq:
+    - q: "How often should I review my marketing budget?"
+      a: "Weekly for tactical paid media checks (is anything broken?). Monthly for strategic allocation review (are channels trending in the right direction?). Quarterly for major reallocation decisions (should we shift significant budget between channels?). Don't make major changes more often than monthly — you need full conversion cycles to see the effect."
+    - q: "What's the minimum data I need before changing budget?"
+      a: "Four weeks minimum for any budget change. Twelve weeks for confident response curve analysis. One bad week is noise. Two bad weeks might be a trend. Four bad weeks is a pattern worth acting on. Exception: if something is clearly broken (tracking failure, landing page down), fix it immediately."
+    - q: "Should I increase budget when a channel is performing well?"
+      a: "Only if marginal ROAS (not average ROAS) supports it. A channel with 4x average ROAS might have 0.8x marginal ROAS — meaning the next dollar spent returns less than a dollar. Check your response curve before scaling. If marginal ROAS is above 1.5x, there's likely room to grow."
+    - q: "How much budget should I keep as a reserve?"
+      a: "10-15% of total budget as an uncommitted reserve for quarterly reallocation. The 70/20/10 framework works well: 70% to proven channels, 20% to channels you're actively testing, 10% reserve for opportunities or experiments."
+    - q: "Does reducing budget hurt long-term performance?"
+      a: "Depends on the channel and the size of the cut. Cuts under 15-20% are generally safe and don't trigger algorithm resets. Larger cuts or full pauses trigger learning phase restarts (7-14 days of volatile performance on Google, 7 days on Meta) and lose accumulated adstock (brand awareness decay). Reduce gradually, not all at once."
+schema:
+  type: Article
+  author: "holly-henderson"
+has_code_examples: false
+has_calculator: false
+has_download: false
+---
+
+<%= render_tldr(@article.tldr) %>
+
+## The Wrong Reasons to Change Budget
+
+Most budget changes happen for the wrong reasons. Recognising these saves you from expensive mistakes.
+
+### One Bad Week
+
+A single week of poor performance is noise. Paid channels have natural variance — conversion rates fluctuate, CPMs shift with auction dynamics, and small sample sizes create misleading patterns.
+
+The minimum decision window is 4 weeks. Anything shorter and you're reacting to randomness.
+
+### Learning Phase Volatility
+
+After any significant change to a Google Ads or Meta campaign, both platforms enter a learning phase. Google takes 7-14 days. Meta takes about 7 days. During this period, CPCs spike, CPA is elevated, and performance looks terrible.
+
+This is the algorithm exploring, not failing. Making another change during this period resets the clock and makes things worse. Let the learning phase complete before judging.
+
+### Competitor Increased Spend
+
+Your competitor doubled their Google Ads budget. CPMs went up in your category. The instinct is to match them or pull back.
+
+Neither is automatically right. Higher CPMs mean your cost per conversion increases — but it also means your competitor is bidding up prices for both of you. If your marginal ROAS is still above 1.0, stay the course. If it drops below 0.8, that's a real signal to reduce or shift.
+
+### Gut Feeling
+
+"I think we should spend more on TikTok" is not a budget strategy. Every budget change should be backed by at least 4 weeks of data showing a trend. If you don't have the data, the answer is "collect more data," not "change the budget."
+
+## The Six Triggers That Justify a Budget Change
+
+These are data-backed signals that a budget change is warranted. Each requires a minimum evidence threshold.
+
+### 1. Channel Underperforming for 4+ Weeks
+
+**What to watch:** Marginal ROAS (not average ROAS) dropping below your threshold — typically 0.8x.
+
+Average ROAS can look healthy while marginal ROAS collapses. A channel showing 3x average ROAS might have 0.6x marginal ROAS — meaning every additional dollar returns only $0.60. The average masks the decline at the margin.
+
+**Threshold:** mROAS below 0.8x for 4 consecutive weeks → reduce by 10-15%.
+
+### 2. Competitive CPM Spike (Sustained 2+ Weeks)
+
+**What to watch:** CPMs increasing 20%+ without a corresponding increase in your conversion rate.
+
+CPM spikes driven by competitor activity or seasonal demand directly reduce your efficiency. A 20% CPM increase with flat conversion rates means your CPA just rose 20%.
+
+**Threshold:** CPM up 20%+ sustained 2+ weeks with flat/declining conversion rates → reduce spend or shift to cheaper channels temporarily.
+
+### 3. Seasonal Demand Shift
+
+CPMs follow predictable quarterly patterns:
+
+| Quarter | CPM Level | Strategic Move |
+|---------|-----------|----------------|
+| Q1 (Jan-Mar) | Lowest | Best time for testing, audience building, new channel experiments |
+| Q2 (Apr-Jun) | Rising | Moderate. June spikes (fiscal year-end) |
+| Q3 (Jul-Sep) | Summer dip then rise | Good for scaling tests. Lower competition in July |
+| Q4 (Oct-Dec) | Highest | BFCM competition. Worst time to experiment. Defend core channels. |
+
+A 30% budget increase in summer (when competitors pull back) can boost PPC ROI by 50% due to lower competition. Conversely, paying Q4 prices for B2B SaaS that isn't seasonal is waste.
+
+**Action:** Allocate 60-70% of annual budget to peak months, 30-40% to off-peak. Adjust quarterly, not reactively.
+
+### 4. Product Launch or Promotion Window
+
+Temporary increases tied to specific events are different from ongoing allocation changes. A product launch justifies a 2-4 week budget spike on relevant channels.
+
+**Rules:**
+- Define the window upfront (start and end date)
+- Increase from reserve budget, not by starving other channels
+- Return to baseline after the window closes
+- Judge success on campaign metrics, not ongoing channel efficiency
+
+### 5. Attribution Data Shows Saturation
+
+Your response curve analysis shows a channel has plateaued — spending more doesn't produce proportionally more conversions.
+
+**Signals:**
+- Marginal ROAS declining for 4+ weeks while spend is flat or rising
+- Frequency metrics climbing (Meta: >3x/week, Google: impression share plateauing)
+- New customer acquisition rate flattening while retargeting dominates
+
+**Threshold:** 12+ weeks of data showing consistent plateau → shift 10-15% to under-invested channels.
+
+### 6. New Channel Opportunity With Strong Early Signal
+
+A new channel or campaign type shows promising early results in a test budget.
+
+**Rules for scaling:**
+- Minimum 8-12 weeks of test data before scaling (platforms need learning phase + enough conversions)
+- Scale by 20% increments, not 100% jumps
+- Each increment needs 2-3 weeks to stabilise before the next
+- Use the 70/20/10 framework: 10% experimental budget for new channels
+
+## The Safe Change Zone
+
+Budget changes trigger algorithm responses. The size of the change determines the cost.
+
+| Change Size | Google Ads | Meta | Risk |
+|-------------|-----------|------|------|
+| **<15%** | No learning reset | No learning reset | Safe. Make changes this size freely. |
+| **15-20%** | Borderline | Borderline | Usually safe. Conservative practitioners stay under 15%. |
+| **20-25%** | Learning phase reset (7-14 days) | Learning phase reset (7 days) | CPA spikes 25-40% during reset. Factor this into projections. |
+| **>25%** | Full reset. PMax: 4-6 weeks recovery. | Full reset. 7+ days, higher CPA. | Only do this with strong justification and testing data. |
+
+The safest approach: make incremental changes of 10-15% with at least 7 days between each adjustment.
+
+## The Decision Framework
+
+When you see a potential trigger, run through this sequence:
+
+```
+1. Is this signal based on 4+ weeks of data?
+   → No: Wait. Collect more data.
+   → Yes: Continue.
+
+2. Is the channel in a learning phase?
+   → Yes: Wait for learning to complete (7-14 days).
+   → No: Continue.
+
+3. Is this a seasonal pattern or a structural change?
+   → Seasonal: Adjust temporarily, with a return date planned.
+   → Structural: Plan a permanent reallocation.
+
+4. Is the change under 20%?
+   → Yes: Proceed. Safe zone.
+   → No: Can you achieve the same result with 2-3 smaller changes over 4-6 weeks?
+      → Yes: Do that instead.
+      → No: Accept the learning phase cost. Plan for 7-14 days of elevated CPA.
+
+5. Do you have a fallback?
+   → Define: what does "this didn't work" look like?
+   → Define: at what point do you reverse the change?
+   → Proceed with the change and monitor weekly.
+```
+
+## Budget Structure That Enables Smart Changes
+
+The 70/20/10 framework gives you flexibility without chaos:
+
+| Bucket | % of Budget | Purpose |
+|--------|------------|---------|
+| **Core (70%)** | Proven channels with consistent ROI | Stable. Only change quarterly based on 12+ weeks of data. |
+| **Growth (20%)** | Channels you're actively scaling or testing | Monthly review. Promote to Core or demote to Experimental. |
+| **Experimental (10%)** | New channels, new audiences, new formats | Accept that some will fail. Judge on learning value, not immediate ROI. |
+
+Keep an additional 10-15% uncommitted reserve for quarterly reallocation. This means your "core" is actually 55-60% of total budget — still the majority, but with real room to move.
+
+<%= render "articles/cta_banner",
+  title: "How mature is your budget decision-making?",
+  description: "The Measurement Maturity Assessment scores your setup across 6 dimensions — including forecasting and optimisation. See where you stand.",
+  cta_text: "Take the Assessment",
+  cta_url: "/score",
+  style: :dark %>
+
+<%= render_key_takeaways(@article.key_takeaways) %>
+
+<%= render_faq(@article.faq) %>
+
+## Related Reading
+
+- [The Algorithm Tax: What Happens When You Change Ad Spend](/articles/algorithm-tax-pause-reduce-restart) — the hidden cost of budget changes across Google, Meta, and TikTok
+- [Diminishing Returns: When More Spend Stops Working](/articles/diminishing-returns-ad-spend) — how to spot saturation and what to do about it
+- [How to Reallocate Marketing Budget Using Attribution](/articles/budget-reallocation-attribution) — the full reallocation process, step by step
+- [How to Test Budget Changes](/articles/how-to-test-budget-changes) — from simple checks to statistically significant experiments

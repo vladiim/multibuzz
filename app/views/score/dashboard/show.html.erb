@@ -1,9 +1,101 @@
-<div class="score-signup">
-  <h1>Your Measurement Maturity Report</h1>
+<div class="score-report" data-controller="toggle" data-toggle-default-value="overview">
+  <!-- Header -->
+  <div class="report-header">
+    <div class="report-level-badge" style="background: <%= level_bg(@assessment.overall_level) %>; color: <%= level_color(@assessment.overall_level) %>;">
+      Level <%= @assessment.overall_level %>: <%= @assessment.level_name %>
+    </div>
+    <p class="report-insight"><%= level_insight(@assessment.overall_level) %></p>
+  </div>
 
-  <% if @assessment %>
-    <p class="subtitle">Level <%= @assessment.overall_level %>: <%= @assessment.level_name %></p>
-  <% else %>
-    <p class="subtitle">No assessment found. <a href="<%= score_path %>">Take the assessment</a> first.</p>
-  <% end %>
+  <!-- Tabs -->
+  <div class="report-tabs">
+    <button class="report-tab" data-action="click->toggle#select" data-toggle-target="trigger" data-value="overview">Overview</button>
+    <button class="report-tab" data-action="click->toggle#select" data-toggle-target="trigger" data-value="dimensions">Dimensions</button>
+    <button class="report-tab" data-action="click->toggle#select" data-toggle-target="trigger" data-value="roadmap">Roadmap</button>
+    <button class="report-tab" data-action="click->toggle#select" data-toggle-target="trigger" data-value="business-case">Business Case</button>
+  </div>
+
+  <!-- Overview -->
+  <div class="report-tab-content" data-toggle-target="content" data-value="overview">
+    <div class="report-radar" id="report-radar"
+         data-controller="score-radar"
+         data-score-radar-dimensions-value="<%= @assessment.dimension_scores.to_json %>">
+    </div>
+
+    <div class="report-dimensions-summary">
+      <% @report[:dimensions].each do |dim, analysis| %>
+        <div class="dim-summary-card">
+          <h4><%= analysis[:label] %></h4>
+          <div class="dim-score" style="color: <%= level_color(analysis[:level]) %>;">Level <%= analysis[:level] %></div>
+          <div class="dim-label"><%= Score::LEVEL_NAMES[analysis[:level]] %></div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Dimensions -->
+  <div class="report-tab-content" data-toggle-target="content" data-value="dimensions">
+    <% @report[:dimensions].each do |dim, analysis| %>
+      <div class="dimension-section">
+        <h3><%= analysis[:label] %></h3>
+        <span class="dim-level-tag" style="background: <%= level_bg(analysis[:level]) %>; color: <%= level_color(analysis[:level]) %>;">
+          Level <%= analysis[:level] %>: <%= Score::LEVEL_NAMES[analysis[:level]] %>
+        </span>
+
+        <h4>What this means</h4>
+        <p><%= analysis[:what_this_means] %></p>
+
+        <% unless analysis[:level] >= Score::MAX_LEVEL %>
+          <h4>What Level <%= analysis[:level] + 1 %> looks like</h4>
+          <p><%= analysis[:next_level] %></p>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Roadmap -->
+  <div class="report-tab-content" data-toggle-target="content" data-value="roadmap">
+    <% @report[:roadmap].each_with_index do |action, i| %>
+      <div class="roadmap-action">
+        <div class="action-number"><%= i + 1 %></div>
+        <h3><%= action[:title] %></h3>
+        <p class="action-why"><%= action[:why] %></p>
+        <div class="action-meta">
+          <strong>Effort:</strong> <%= action[:effort] %><br>
+          <strong>Tools:</strong>
+          <% action[:tools].each do |tool| %>
+            <span class="tool-tag"><%= tool %></span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Business Case -->
+  <div class="report-tab-content" data-toggle-target="content" data-value="business-case">
+    <div class="biz-case-card">
+      <h3>Estimated misallocated spend</h3>
+      <div class="biz-case-stat" style="color: var(--red);">
+        $<%= number_with_delimiter(@report[:business_case][:estimated_waste_low]) %> &ndash; $<%= number_with_delimiter(@report[:business_case][:estimated_waste_high]) %>
+      </div>
+      <div class="biz-case-label">
+        per year at your spend level (<%= @report[:business_case][:waste_pct_range] %> misallocation rate)
+      </div>
+    </div>
+
+    <div class="cfo-slide">
+      <h4>The CFO slide</h4>
+      <p><%= @report[:business_case][:cfo_slide] %></p>
+      <div class="source">Source: Chivukula, Jin & Zhan — "From Attribution to Causality in Digital Advertising," IEEE Access, 2026</div>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="report-actions">
+    <a href="<%= score_path %>" class="report-cta-btn">Retake Assessment</a>
+    <button class="report-cta-btn" data-controller="clipboard" data-action="click->clipboard#copy" data-clipboard-target="button">
+      <span data-clipboard-target="label">Share Assessment Link</span>
+      <span data-clipboard-target="source" class="hidden"><%= request.protocol %><%= request.host_with_port %>/measurement-maturity-assessment</span>
+    </button>
+  </div>
 </div>
