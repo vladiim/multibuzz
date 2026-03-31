@@ -5,10 +5,7 @@ export default class extends Controller {
     "overlay", "progressBar", "counter",
     "questionView", "questionText", "answers",
     "insightView", "insightIcon", "insightText", "insightSource",
-    "loadingView", "resultsView",
-    "resultBadge", "resultInsight",
-    "radarChart", "dimensionBreakdown",
-    "shareBtn", "reportBtn"
+    "loadingView", "resultsView"
   ]
 
   static values = {
@@ -238,13 +235,75 @@ export default class extends Controller {
     const desc = this.levelDescriptions[level - 1]
 
     this.saveToApi(overallScore, level, dimensions)
-    this.renderResultBadge(desc, level)
-    this.resultInsightTarget.textContent = desc.insight
-    this.renderRadar(dimensions)
-    this.renderDimensionBreakdown(dimensions)
+    this.renderFullResults(desc, level, dimensions)
 
     this.resultsViewTarget.classList.add("active")
     this.counterTarget.textContent = ""
+  }
+
+  renderFullResults(desc, level, dimensions) {
+    const container = this.resultsViewTarget
+    const nextLevel = this.levelDescriptions[Math.min(level, 3)]
+    const cta = this.levelCtas[level - 1]
+    const articles = this.levelArticles[level - 1]
+
+    container.innerHTML = `
+      <div class="result-level-badge" style="background:${desc.bg};color:${desc.color};">
+        Level ${level}: ${desc.name}
+      </div>
+      <p class="result-insight">${desc.insight}</p>
+
+      <div class="result-cta-block">
+        <button class="hero-cta" data-action="click->score-assessment#createAccount">
+          ${cta.button}
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+        </button>
+        <p class="result-cta-sub">${cta.sub}</p>
+      </div>
+
+      <div class="radar-container" id="instant-radar"></div>
+
+      <div class="dimension-breakdown"></div>
+
+      <div class="result-teasers">
+        <h3>What's in your full report</h3>
+        <div class="teaser-grid">
+          <div class="teaser-card">
+            <div class="teaser-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+            <strong>Your roadmap to Level ${Math.min(level + 1, 4)}</strong>
+            <p>${cta.roadmapTeaser}</p>
+          </div>
+          <div class="teaser-card">
+            <div class="teaser-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 21H4.6c-.56 0-.84 0-1.054-.109a1 1 0 01-.437-.437C3 20.24 3 19.96 3 19.4V3"/><path d="M7 14l4-4 4 4 6-6"/></svg></div>
+            <strong>Business case for your CFO</strong>
+            <p>Research-backed waste estimates tailored to your spend level. Copy-paste ready for a board slide.</p>
+          </div>
+          <div class="teaser-card">
+            <div class="teaser-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+            <strong>Get your team's perspective</strong>
+            <p>Assign specific questions to colleagues. The gap between how roles see measurement is usually the real insight.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="result-articles">
+        <h3>Relevant reading based on your results</h3>
+        <div class="article-links">
+          ${articles.map(a => `<a href="${a.url}?utm_source=score&utm_medium=results&utm_content=level${level}" class="article-link">${a.title} <span>\u2192</span></a>`).join("")}
+        </div>
+      </div>
+
+      <div class="result-share">
+        <div class="share-row">
+          <button class="secondary-action" data-action="click->score-assessment#shareLinkedIn">LinkedIn</button>
+          <button class="secondary-action" data-action="click->score-assessment#shareTwitter">X / Twitter</button>
+          <button class="secondary-action" data-action="click->score-assessment#copyLink" data-copy-btn>Copy Link</button>
+        </div>
+      </div>
+    `
+
+    this.renderRadarInto(container.querySelector("#instant-radar"), dimensions, 500)
+    this.renderDimensionBars(container.querySelector(".dimension-breakdown"), dimensions)
   }
 
   renderResultBadge(desc, level) {
@@ -254,7 +313,10 @@ export default class extends Controller {
   }
 
   renderDimensionBreakdown(dimensions) {
-    const container = this.dimensionBreakdownTarget
+    this.renderDimensionBars(this.dimensionBreakdownTarget, dimensions)
+  }
+
+  renderDimensionBars(container, dimensions) {
     container.innerHTML = `<h3 style="font-size:16px;font-weight:700;margin-bottom:16px;">Dimension Breakdown</h3>`
 
     const dimOrder = ["reporting", "attribution", "experimentation", "forecasting", "channels", "infrastructure"]
@@ -296,9 +358,12 @@ export default class extends Controller {
   }
 
   renderRadar(dimensions) {
-    const container = this.radarChartTarget
+    this.renderRadarInto(this.radarChartTarget, dimensions, 380)
+  }
+
+  renderRadarInto(container, dimensions, size) {
     container.innerHTML = ""
-    const size = 380, cx = size / 2, cy = size / 2, maxR = 140
+    const cx = size / 2, cy = size / 2, maxR = size * 0.36
     const dims = ["reporting", "attribution", "experimentation", "forecasting", "channels", "infrastructure"]
     const labels = ["Reporting", "Attribution", "Experimentation", "Forecasting", "Channels", "Infrastructure"]
     const n = dims.length
@@ -492,6 +557,42 @@ export default class extends Controller {
         { id: "d", text: "Yes \u2014 we\u2019ve run controlled experiments that isolate marketing\u2019s causal impact", score: 4.0 },
         { id: "e", text: "I\u2019m not sure what \u201cincremental\u201d means in this context", score: 1.0 }
       ]}
+    ]
+  }
+
+  get levelCtas() {
+    return [
+      { button: "Get Your Roadmap to Level 2", sub: "Independent tracking, cross-channel dedup, and 30-40% more data captured", roadmapTeaser: "5 specific actions to deploy independent tracking, deduplicate conversions, and connect CRM revenue to touchpoints." },
+      { button: "Get Your Roadmap to Level 3", sub: "MMM cross-validation, geo-holdout experiments, scenario modelling", roadmapTeaser: "4 actions to add a second measurement method, run your first holdout experiment, and build scenario-based budget models." },
+      { button: "Get Your Roadmap to Level 4", sub: "Continuous incrementality testing, causal forecasting, automated reallocation", roadmapTeaser: "3 actions to establish structured experimentation, calibrate MTA with causal data, and automate budget reallocation." },
+      { button: "View Your Full Report", sub: "You\u2019re at the top \u2014 see your full dimension breakdown and share with your team", roadmapTeaser: "Maintain your edge: testing cadence, new channel expansion, and methodology documentation." }
+    ]
+  }
+
+  get levelArticles() {
+    return [
+      [ // Level 1
+        { title: "What is multi-touch attribution?", url: "/articles/what-is-multi-touch-attribution" },
+        { title: "Why platform reports don\u2019t match", url: "/articles/platform-reports-dont-match" },
+        { title: "Server-side vs client-side tracking", url: "/articles/server-side-vs-client-side-tracking" },
+        { title: "GA4 attribution models removed \u2014 now what?", url: "/articles/ga4-attribution-models-removed" },
+        { title: "How to choose an attribution model", url: "/articles/how-to-choose-attribution-model" }
+      ],
+      [ // Level 2
+        { title: "MTA vs MMM: when to use which", url: "/articles/mta-vs-mmm" },
+        { title: "How to shift budget between channels", url: "/articles/shift-budget-between-channels" },
+        { title: "When to change your marketing budget", url: "/articles/when-to-change-marketing-budget" },
+        { title: "The triangulation approach", url: "/articles/mta-mmm-incrementality-triangulation" }
+      ],
+      [ // Level 3
+        { title: "How to test budget changes safely", url: "/articles/how-to-test-budget-changes" },
+        { title: "Diminishing returns in ad spend", url: "/articles/diminishing-returns-ad-spend" },
+        { title: "The algorithm tax: pause, reduce, restart", url: "/articles/algorithm-tax-pause-reduce-restart" }
+      ],
+      [ // Level 4
+        { title: "Bottom-up revenue forecasting", url: "/articles/bottom-up-revenue-forecast" },
+        { title: "Funnel-stage attribution", url: "/articles/funnel-stage-attribution" }
+      ]
     ]
   }
 

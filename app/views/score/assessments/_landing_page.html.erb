@@ -342,10 +342,10 @@
 <!-- FINAL CTA -->
 <section class="final-cta" id="start">
 
-  <h2 class="section-title">The question is coming. Will you have an answer?</h2>
-  <p class="section-desc">3 minutes now saves a painful conversation later. Find out where you stand &mdash; privately.</p>
+  <h2 class="section-title">Find out which channels are working. Fix the ones that aren't.</h2>
+  <p class="section-desc">10 questions. 3 minutes. A personalised report with a roadmap, business case, and team alignment view.</p>
   <a href="#" class="hero-cta" data-action="click->score-assessment#start">
-    Find Out Now
+    Start Free Assessment
     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
   </a>
   <p class="hero-micro">Free &middot; Private &middot; No sales pitch &middot; Instant results</p>
@@ -353,7 +353,8 @@
 
 <!-- FOOTER -->
 <footer class="footer">
-  <p>&copy; 2026 mbuzz &middot; <a href="/privacy">Privacy</a> &middot; Built by a measurement vendor who thinks the industry needs more clarity, not more confusion.</p>
+  <p>&copy; 2026 <a href="/">mbuzz</a> &middot; <a href="/privacy">Privacy</a> &middot; <a href="/academy?utm_source=score&utm_medium=footer">MTA Academy</a> &middot; <a href="/about?utm_source=score&utm_medium=footer">About</a></p>
+  <p>Built by a measurement vendor who thinks the industry needs more clarity, not more confusion.</p>
 </footer>
 
 <!-- ============================================ -->
@@ -384,37 +385,8 @@
       <div class="loading-sub">Analysing 6 dimensions across 10 responses</div>
     </div>
 
-    <!-- Results -->
-    <div class="results-container" data-score-assessment-target="resultsView">
-      <div class="result-level-badge" data-score-assessment-target="resultBadge"></div>
-      <p class="result-insight" data-score-assessment-target="resultInsight"></p>
-      <div class="radar-container" data-score-assessment-target="radarChart"></div>
-      <div class="dimension-breakdown" data-score-assessment-target="dimensionBreakdown"></div>
-      <div style="margin-top:40px;padding:24px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);text-align:left;">
-        <h3 style="font-size:18px;font-weight:700;margin-bottom:8px;">What's next?</h3>
-        <p style="font-size:15px;color:var(--text-muted);line-height:1.7;margin-bottom:0;">
-          <% if logged_in? %>
-            Your full report includes a dimension-by-dimension deep dive, a business case tailored to your spend level, and a specific roadmap to move up one level. You can also invite your team to see where you agree &mdash; and where you don't.
-          <% else %>
-            Create a free account to unlock your full report: dimension deep-dives, a business case tailored to your ad spend, a specific roadmap to level up, team comparison, and progress tracking over time. Export to PDF anytime.
-          <% end %>
-        </p>
-      </div>
-
-      <div class="results-actions">
-        <% if logged_in? %>
-          <button class="primary-action" data-action="click->score-assessment#createAccount">View Full Report</button>
-        <% else %>
-          <button class="primary-action" data-action="click->score-assessment#createAccount">Create Free Account &mdash; Unlock Full Report</button>
-        <% end %>
-
-        <div class="share-row">
-          <button class="secondary-action" data-action="click->score-assessment#shareLinkedIn">LinkedIn</button>
-          <button class="secondary-action" data-action="click->score-assessment#shareTwitter">X / Twitter</button>
-          <button class="secondary-action" data-action="click->score-assessment#copyLink" data-copy-btn>Copy Link</button>
-        </div>
-      </div>
-    </div>
+    <!-- Results (rendered by JS) -->
+    <div class="results-container" data-score-assessment-target="resultsView"></div>
   </div>
 
 </div><%# close score-landing + score-assessment controllers %>
