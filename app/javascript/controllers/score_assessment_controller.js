@@ -363,12 +363,14 @@ export default class extends Controller {
 
   renderRadarInto(container, dimensions, size) {
     container.innerHTML = ""
-    const cx = size / 2, cy = size / 2, maxR = size * 0.36
+    const pad = 80
+    const totalSize = size + pad * 2
+    const cx = totalSize / 2, cy = totalSize / 2, maxR = size * 0.36
     const dims = ["reporting", "attribution", "experimentation", "forecasting", "channels", "infrastructure"]
     const labels = ["Reporting", "Attribution", "Experimentation", "Forecasting", "Channels", "Infrastructure"]
     const n = dims.length
 
-    let svg = `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="font-family:Inter,sans-serif">`
+    let svg = `<svg width="100%" viewBox="0 0 ${totalSize} ${totalSize}" style="font-family:Inter,sans-serif">`
 
     for (let r = 1; r <= 4; r++) {
       const radius = (r / 4) * maxR
@@ -396,10 +398,10 @@ export default class extends Controller {
       const angle = (Math.PI * 2 * i) / n - Math.PI / 2
       svg += `<circle cx="${cx + radius * Math.cos(angle)}" cy="${cy + radius * Math.sin(angle)}" r="4" fill="var(--accent)"/>`
 
-      const lx = cx + (maxR + 28) * Math.cos(angle)
-      const ly = cy + (maxR + 28) * Math.sin(angle)
+      const lx = cx + (maxR + 40) * Math.cos(angle)
+      const ly = cy + (maxR + 40) * Math.sin(angle)
       const anchor = Math.abs(angle + Math.PI / 2) < 0.1 ? "middle" : (lx > cx ? "start" : "end")
-      svg += `<text x="${lx}" y="${ly + 4}" text-anchor="${anchor}" fill="var(--text-dim)" font-size="11" font-weight="500">${labels[i]}</text>`
+      svg += `<text x="${lx}" y="${ly + 5}" text-anchor="${anchor}" fill="#8888a0" font-size="13" font-weight="500">${labels[i]}</text>`
     })
 
     svg += "</svg>"

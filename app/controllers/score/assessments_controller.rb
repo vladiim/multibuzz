@@ -36,7 +36,7 @@ module Score
         :overall_score, :overall_level, :source,
         dimension_scores: {},
         answers: [ :question_id, :answer_id, :score, :time_ms ],
-        context: [ :company_size, :ad_spend, :role ],
+        context: [ :company_size, :ad_spend, :role, :c1, :c2, :c3 ],
         utm_params: [ :utm_source, :utm_medium, :utm_campaign, :utm_content, :utm_term ]
       )
     end
