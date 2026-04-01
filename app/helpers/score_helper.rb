@@ -33,4 +33,15 @@ module ScoreHelper
   def level_insight(level)
     LEVEL_INSIGHTS.fetch(level, LEVEL_INSIGHTS[1])
   end
+
+  # Generate a shareable result URL from an assessment's answers
+  def score_share_url(assessment)
+    answer_ids = %w[a b c d e]
+    answers = assessment.answers || []
+    return score_url if answers.length != Score::QUESTION_COUNT
+
+    indices = answers.map { |a| answer_ids.index(a["answer_id"]) || 0 }
+    code = Score.encode_answers(indices)
+    code ? score_results_url(code: code) : score_url
+  end
 end

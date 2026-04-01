@@ -95,7 +95,7 @@
     <a href="<%= score_path %>" class="report-cta-btn">Retake Assessment</a>
     <button class="report-cta-btn" data-controller="clipboard" data-action="click->clipboard#copy" data-clipboard-target="button">
       <span data-clipboard-target="label">Share Assessment Link</span>
-      <span data-clipboard-target="source" class="hidden"><%= request.protocol %><%= request.host_with_port %>/measurement-maturity-assessment</span>
+      <span data-clipboard-target="source" class="hidden"><%= score_share_url(@assessment) %></span>
     </button>
   </div>
 </div>

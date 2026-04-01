@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { renderRadar } from "helpers/radar_chart"
 
 export default class extends Controller {
   static targets = [
@@ -30,6 +31,7 @@ export default class extends Controller {
     this.currentStep = 0
     this.responses = {}
     this.contextResponses = {}
+    this.startedAt = Date.now()
     this.overlayTarget.classList.add("active")
     document.body.style.overflow = "hidden"
     this.showStep(0)
@@ -41,18 +43,18 @@ export default class extends Controller {
   }
 
   shareLinkedIn() {
-    const url = window.location.origin + "/measurement-maturity-assessment"
+    const url = this.shareUrl()
     window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, "_blank")
   }
 
   shareTwitter() {
-    const url = window.location.origin + "/measurement-maturity-assessment"
+    const url = this.shareUrl()
     const text = "Just took a marketing measurement maturity assessment. Turns out most teams can\u2019t prove their spend works."
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, "_blank")
   }
 
   copyLink() {
-    const url = window.location.origin + "/measurement-maturity-assessment"
+    const url = this.shareUrl()
     navigator.clipboard.writeText(url).then(() => {
       const btn = this.element.querySelector("[data-copy-btn]")
       if (btn) {
@@ -61,6 +63,22 @@ export default class extends Controller {
         setTimeout(() => { btn.textContent = orig }, 2000)
       }
     })
+  }
+
+  shareUrl() {
+    const code = this.encodeAnswers()
+    return `${window.location.origin}/measurement-maturity-assessment/r/${code}`
+  }
+
+  // Encode answer indices (a=0..e=4) as a base36 string
+  encodeAnswers() {
+    const answerIds = ["a", "b", "c", "d", "e"]
+    const indices = this.questions.map(q => {
+      const r = this.responses[q.id]
+      return r ? answerIds.indexOf(r.id) : 0
+    })
+    let num = indices.reduce((acc, a) => acc * 5 + a, 0)
+    return num.toString(36)
   }
 
   createAccount() {
@@ -295,9 +313,18 @@ export default class extends Controller {
 
       <div class="result-share">
         <div class="share-row">
-          <button class="secondary-action" data-action="click->score-assessment#shareLinkedIn">LinkedIn</button>
-          <button class="secondary-action" data-action="click->score-assessment#shareTwitter">X / Twitter</button>
-          <button class="secondary-action" data-action="click->score-assessment#copyLink" data-copy-btn>Copy Link</button>
+          <button class="share-btn" data-action="click->score-assessment#shareLinkedIn">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+            LinkedIn
+          </button>
+          <button class="share-btn" data-action="click->score-assessment#shareTwitter">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            X / Twitter
+          </button>
+          <button class="share-btn" data-action="click->score-assessment#copyLink" data-copy-btn>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+            Copy Link
+          </button>
         </div>
       </div>
     `
@@ -357,55 +384,8 @@ export default class extends Controller {
     container.appendChild(callout)
   }
 
-  renderRadar(dimensions) {
-    this.renderRadarInto(this.radarChartTarget, dimensions, 380)
-  }
-
-  renderRadarInto(container, dimensions, size) {
-    container.innerHTML = ""
-    const pad = 80
-    const totalSize = size + pad * 2
-    const cx = totalSize / 2, cy = totalSize / 2, maxR = size * 0.36
-    const dims = ["reporting", "attribution", "experimentation", "forecasting", "channels", "infrastructure"]
-    const labels = ["Reporting", "Attribution", "Experimentation", "Forecasting", "Channels", "Infrastructure"]
-    const n = dims.length
-
-    let svg = `<svg width="100%" viewBox="0 0 ${totalSize} ${totalSize}" style="font-family:Inter,sans-serif">`
-
-    for (let r = 1; r <= 4; r++) {
-      const radius = (r / 4) * maxR
-      const points = Array.from({ length: n }, (_, i) => {
-        const angle = (Math.PI * 2 * i) / n - Math.PI / 2
-        return `${cx + radius * Math.cos(angle)},${cy + radius * Math.sin(angle)}`
-      })
-      svg += `<polygon points="${points.join(" ")}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>`
-    }
-
-    for (let i = 0; i < n; i++) {
-      const angle = (Math.PI * 2 * i) / n - Math.PI / 2
-      svg += `<line x1="${cx}" y1="${cy}" x2="${cx + maxR * Math.cos(angle)}" y2="${cy + maxR * Math.sin(angle)}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>`
-    }
-
-    const dataPoints = dims.map((d, i) => {
-      const radius = ((dimensions[d] || 1) / 4) * maxR
-      const angle = (Math.PI * 2 * i) / n - Math.PI / 2
-      return `${cx + radius * Math.cos(angle)},${cy + radius * Math.sin(angle)}`
-    })
-    svg += `<polygon points="${dataPoints.join(" ")}" fill="rgba(77,127,255,0.15)" stroke="var(--accent)" stroke-width="2"/>`
-
-    dims.forEach((d, i) => {
-      const radius = ((dimensions[d] || 1) / 4) * maxR
-      const angle = (Math.PI * 2 * i) / n - Math.PI / 2
-      svg += `<circle cx="${cx + radius * Math.cos(angle)}" cy="${cy + radius * Math.sin(angle)}" r="4" fill="var(--accent)"/>`
-
-      const lx = cx + (maxR + 40) * Math.cos(angle)
-      const ly = cy + (maxR + 40) * Math.sin(angle)
-      const anchor = Math.abs(angle + Math.PI / 2) < 0.1 ? "middle" : (lx > cx ? "start" : "end")
-      svg += `<text x="${lx}" y="${ly + 5}" text-anchor="${anchor}" fill="#8888a0" font-size="13" font-weight="500">${labels[i]}</text>`
-    })
-
-    svg += "</svg>"
-    container.innerHTML = svg
+  renderRadarInto(container, dimensions) {
+    renderRadar(container, dimensions)
   }
 
   // ── API ──
@@ -423,8 +403,10 @@ export default class extends Controller {
         answers: answersPayload,
         context: this.contextResponses,
         source: this.detectSource(),
-        utm_params: this.extractUtmParams()
-      }
+        utm_params: this.extractUtmParams(),
+        elapsed_ms: Date.now() - (this.startedAt || Date.now())
+      },
+      website_url: ""
     }
 
     fetch(this.apiUrlValue, {
@@ -481,7 +463,7 @@ export default class extends Controller {
 
   get insights() {
     return [
-      { after: 3,  icon: "\u{1F4E1}", text: "Companies using server-side tracking capture 30\u201340% more conversion data than client-side only. Ad blockers and ITP eat the rest.", source: "mbuzz benchmark data" },
+      { after: 3,  icon: "\u{1F4E1}", text: "Server-side tracking captures 30\u201340% more conversion data than client-side only. Ad blockers and browser privacy features (ITP, ETP) silently eat the rest.", source: "TAGGRS / Simo Ahava case studies" },
       { after: 6,  icon: "\u{1F4B8}", text: "The average marketer reallocates budget once a quarter. Leaders do it weekly. The gap between these two approaches compounds over 12 months.", source: "" },
       { after: 9,  icon: "\u{1F3AF}", text: "Only 39% of companies use more than one measurement method. Let\u2019s see where you stand.", source: "IAB State of Data 2026" }
     ]

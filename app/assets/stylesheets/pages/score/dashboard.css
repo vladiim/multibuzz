@@ -74,9 +74,8 @@
 
 /* Overview tab */
 .report-radar {
-  width: 400px;
-  height: 400px;
-  margin: 0 auto 40px;
+  max-width: 480px;
+  margin: -8px auto 16px;
 }
 
 .report-radar svg text {
@@ -92,7 +91,7 @@
 
 @media (max-width: 600px) {
   .report-dimensions-summary { grid-template-columns: 1fr; }
-  .report-radar { width: 320px; height: 320px; }
+  .report-radar { max-width: 360px; }
 }
 
 .dim-summary-card {

@@ -1,0 +1,22 @@
+<div class="score-report"
+     data-controller="score-results"
+     data-score-results-answers-value="<%= @answers.to_json %>">
+  <div class="results-loading" data-score-results-target="loading">
+    <p>Calculating results&hellip;</p>
+  </div>
+  <div data-score-results-target="content" style="display:none">
+    <div class="report-header">
+      <div class="report-level-badge" data-score-results-target="badge"></div>
+      <p class="report-insight" data-score-results-target="insight"></p>
+    </div>
+
+    <div class="report-radar" data-score-results-target="radar"></div>
+
+    <div class="report-dimensions-summary" data-score-results-target="dimensions"></div>
+
+    <div class="results-cta">
+      <p>Want your full roadmap, business case, and team comparison?</p>
+      <a href="<%= score_path %>" class="report-cta-btn primary">Take the Assessment</a>
+    </div>
+  </div>
+</div>

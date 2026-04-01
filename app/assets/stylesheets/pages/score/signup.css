@@ -27,6 +27,7 @@
   margin-bottom: 6px;
 }
 
+.score-signup input[type="text"],
 .score-signup input[type="email"],
 .score-signup input[type="password"] {
   width: 100%;

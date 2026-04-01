@@ -15,8 +15,11 @@
       <input type="hidden" name="claim_token" value="<%= @claim_token %>">
     <% end %>
 
+    <label for="user_company_name">Company name</label>
+    <input type="text" name="user[company_name]" id="user_company_name" value="<%= @company_name %>" placeholder="e.g. Acme Corp" autofocus>
+
     <label for="user_email">Email</label>
-    <input type="email" name="user[email]" id="user_email" value="<%= @user.email %>" autofocus>
+    <input type="email" name="user[email]" id="user_email" value="<%= @user.email %>">
 
     <label for="user_password">Password</label>
     <input type="password" name="user[password]" id="user_password" minlength="8">
@@ -25,6 +28,6 @@
   <% end %>
 
   <div class="login-link">
-    Already have an account? <a href="/login">Log in</a>
+    Already have an account? <a href="<%= login_path(return_to: score_dashboard_path, claim_token: @claim_token) %>">Log in</a>
   </div>
 </div>

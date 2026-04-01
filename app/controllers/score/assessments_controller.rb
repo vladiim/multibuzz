@@ -5,10 +5,18 @@ module Score
     layout "score", only: [ :show ]
     skip_forgery_protection only: [ :create, :claim ]
 
+    RATE_LIMIT = 5
+    RATE_WINDOW = 1.hour
+    MIN_ELAPSED_MS = 10_000
+
     def show
     end
 
     def create
+      return head :too_many_requests if rate_limited?
+      return head :unprocessable_entity if honeypot_filled?
+      return head :unprocessable_entity if too_fast?
+
       assessment = ScoreAssessment.new(assessment_params)
       assessment.user = current_user if logged_in?
 
@@ -30,6 +38,31 @@ module Score
     end
 
     private
+
+    # Honeypot: bots fill the hidden `website_url` field, humans leave it blank
+    def honeypot_filled?
+      params[:website_url].present?
+    end
+
+    # Timing: assessment takes 2-3 minutes, anything under 10s is a bot
+    def too_fast?
+      elapsed = params.dig(:assessment, :elapsed_ms).to_i
+      elapsed > 0 && elapsed < MIN_ELAPSED_MS
+    end
+
+    # Rate limit: 5 assessments per IP per hour
+    def rate_limited?
+      count = Rails.cache.increment(rate_limit_key, 1, expires_in: RATE_WINDOW)
+      count ||= begin
+        Rails.cache.write(rate_limit_key, 1, expires_in: RATE_WINDOW)
+        1
+      end
+      count > RATE_LIMIT
+    end
+
+    def rate_limit_key
+      "score_rate:#{request.remote_ip}"
+    end
 
     def assessment_params
       params.require(:assessment).permit(

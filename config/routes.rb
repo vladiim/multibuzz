@@ -74,6 +74,7 @@ Rails.application.routes.draw do
     get "join", to: "signup#new", as: :score_signup
     post "join", to: "signup#create"
     get "dashboard", to: "dashboard#show", as: :score_dashboard
+    get "r/:code", to: "results#show", as: :score_results
   end
 
   # Public pages

@@ -5,11 +5,12 @@ module Score
   # Derives account name from email domain (no company name field needed).
   # Optionally claims an unclaimed assessment via claim_token.
   class SignupService < ApplicationService
-    attr_reader :email, :password, :claim_token
+    attr_reader :email, :password, :company_name, :claim_token
 
-    def initialize(email:, password:, claim_token: nil)
+    def initialize(email:, password:, company_name: nil, claim_token: nil)
       @email = email&.strip&.downcase
       @password = password
+      @company_name = company_name&.strip.presence
       @claim_token = claim_token
     end
 
@@ -61,6 +62,8 @@ module Score
     end
 
     def account_name
+      return company_name if company_name
+
       domain = email.split("@").last
       domain.presence || email
     end
