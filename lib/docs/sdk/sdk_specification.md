@@ -310,6 +310,78 @@ Note: Server enriches `request_metadata` from HTTP headers, so client-side SDKs 
 
 ---
 
+## Navigation Detection (Required)
+
+> **Added in SDK v0.7.3.** See [Navigation Detection Reference](./navigation_detection.md) for full implementation guide.
+
+Server-side SDKs intercept **all** HTTP requests via middleware, but only **real page navigations** should create sessions. Sub-requests — Turbo frames, htmx partials, fetch/XHR, prefetch, service workers — must be filtered out. Failing to do so inflates visit counts by the number of concurrent sub-requests per page load (typically 3-5x).
+
+### What to Gate vs What to Allow
+
+| Action | Gated by navigation detection? |
+|--------|-------------------------------|
+| Session creation (`POST /sessions`) | **Yes** — only on real navigations |
+| Visitor cookie (`_mbuzz_vid`) | **No** — set on ALL responses |
+| Event tracking (`POST /events`) | **No** — fire on any request where tracking is needed |
+
+### Detection Algorithm
+
+SDKs MUST implement `should_create_session?` using browser-enforced `Sec-Fetch-*` headers as the primary signal, with a framework-specific blacklist fallback for old browsers.
+
+**Primary path (modern browsers):**
+
+Only create a session when ALL of the following are true:
+- `Sec-Fetch-Mode: navigate`
+- `Sec-Fetch-Dest: document`
+- `Sec-Purpose` header is **absent** (filters prefetch/prerender)
+
+**Fallback path (old browsers without Sec-Fetch-\* headers):**
+
+Create a session unless ANY of these headers are present:
+- `Turbo-Frame` (Hotwire/Turbo)
+- `HX-Request` (htmx)
+- `X-Up-Version` (Unpoly)
+- `X-Requested-With: XMLHttpRequest` (jQuery/legacy XHR)
+
+### Header Reference
+
+| Request Type | Sec-Fetch-Mode | Sec-Fetch-Dest | Create Session? |
+|---|---|---|---|
+| User clicks link / types URL | `navigate` | `document` | **Yes** |
+| Form POST submission | `navigate` | `document` | **Yes** |
+| Turbo Frame lazy load | `same-origin` | `empty` | No |
+| htmx partial update | `same-origin` | `empty` | No |
+| fetch() / XHR | `cors` or `same-origin` | `empty` | No |
+| Prefetch / prerender | `navigate` | `document` | No (`Sec-Purpose: prefetch`) |
+| iframe navigation | `navigate` | `iframe` | No |
+| Service worker | `same-origin` | `empty` | No |
+| Image / script / font | `no-cors` | varies | No |
+
+### Pseudocode
+
+```
+function should_create_session(request):
+    mode = request.header("Sec-Fetch-Mode")
+    dest = request.header("Sec-Fetch-Dest")
+
+    if mode is present:
+        return mode == "navigate"
+           AND dest == "document"
+           AND request.header("Sec-Purpose") is absent
+
+    # Fallback: old browsers / bots — blacklist known sub-requests
+    return request.header("Turbo-Frame") is absent
+       AND request.header("HX-Request") is absent
+       AND request.header("X-Up-Version") is absent
+       AND request.header("X-Requested-With") != "XMLHttpRequest"
+```
+
+### Client-Side SDKs (JavaScript, Shopify)
+
+Client-side SDKs are **exempt** from navigation detection. Browser JavaScript cannot read `Sec-Fetch-*` headers (they are forbidden headers), and client-side SDKs don't intercept HTTP requests via middleware — they explicitly call `fetch()` for tracking.
+
+---
+
 ## Configuration
 
 SDKs MUST support these configuration options:
@@ -576,6 +648,14 @@ An SDK is valid if it passes all these checks:
 - [ ] Supports `api_url` configuration
 - [ ] Supports `enabled` flag
 - [ ] Supports `debug` flag
+
+### Navigation Detection (v0.7.3+ Server-Side)
+- [ ] Only creates sessions for real page navigations (`Sec-Fetch-Mode: navigate` + `Sec-Fetch-Dest: document`)
+- [ ] Skips session creation for sub-requests (Turbo frames, htmx, fetch, XHR, prefetch, iframes)
+- [ ] Falls back to framework-specific blacklist when `Sec-Fetch-*` headers are absent
+- [ ] Visitor cookie set on ALL responses (not gated by navigation detection)
+- [ ] Computes device fingerprint as `SHA256(ip|user_agent)[0:32]`
+- [ ] Sends `device_fingerprint` in `POST /sessions` payload
 
 ### Server-Side Specific
 - [ ] Provides middleware for cookie management

@@ -32,7 +32,8 @@ module Sessions
     end
 
     def with_session_lock
-      lock_key = Digest::MD5.hexdigest("#{account.id}:#{session_id}").to_i(16) % (2**31)
+      lock_value = device_fingerprint.presence || session_id
+      lock_key = Digest::MD5.hexdigest("#{account.id}:#{lock_value}").to_i(16) % (2**31)
       ActiveRecord::Base.transaction do
         ActiveRecord::Base.connection.execute("SELECT pg_advisory_xact_lock(#{lock_key})")
         yield

@@ -89,7 +89,9 @@ Content-Type: application/json
 
 **Purpose**: Create a session when a visitor lands on the site. This is the foundation of attribution tracking.
 
-**When to call**: SDK middleware should call this on every new session (no session cookie, or session expired).
+**When to call**: SDK middleware should call this on every new session triggered by a **real page navigation**. Do NOT call for sub-requests (Turbo frames, htmx partials, fetch/XHR, prefetch, iframes).
+
+> **Navigation Detection (v0.7.3+)**: SDKs MUST implement `Sec-Fetch-*` header checking before calling this endpoint. The API does not validate whether the request was a real navigation — this is the SDK's responsibility. Failing to implement navigation detection will inflate visit counts by the number of concurrent sub-requests per page load (typically 3-5x). See [Navigation Detection Reference](./navigation_detection.md) for the full algorithm.
 
 **Request Headers**:
 ```
@@ -108,6 +110,7 @@ X-Mbuzz-User-Agent: Mozilla/5.0... # Visitor's real UA (for server-side SDKs)
     "session_id": "x1y2z3a4b5c6d7e8f9g0h1i2j3k4l5m6x1y2z3a4b5c6d7e8f9g0h1i2j3k4l5m6",
     "url": "https://example.com/landing?utm_source=google&utm_medium=cpc&utm_campaign=q4",
     "referrer": "https://www.google.com/search?q=analytics",
+    "device_fingerprint": "ea687534a507e203bdef87cee3cc60c5",
     "started_at": "2025-11-28T10:30:00Z"
   }
 }
@@ -115,11 +118,12 @@ X-Mbuzz-User-Agent: Mozilla/5.0... # Visitor's real UA (for server-side SDKs)
 
 **Required Fields**:
 - `visitor_id` (String, 64 hex chars) - SDK-generated visitor identifier
-- `session_id` (String, 64 hex chars) - SDK-generated session identifier
+- `session_id` (String, UUID v4 or 64 hex chars) - SDK-generated session identifier
 - `url` (String) - Full landing page URL including query parameters
 
 **Optional Fields**:
 - `referrer` (String) - Referring URL
+- `device_fingerprint` (String, 32 hex chars) - `SHA256(ip|user_agent)[0:32]` — enables server-side advisory lock serialization for concurrent requests from the same device
 - `started_at` (String, ISO8601) - Session start time (defaults to now)
 
 **What the API does**:
@@ -518,7 +522,9 @@ _mbuzz_vid=<64 hex chars>; Max-Age=63072000; Path=/; HttpOnly; SameSite=Lax; Sec
 - ✅ User identification with cross-device linking (`POST /identify`)
 - ✅ Include URL and referrer in event properties
 - ✅ Conversion tracking (`POST /conversions`)
-- ✅ Session creation (`POST /sessions`) - async, on new session
+- ✅ Session creation (`POST /sessions`) - async, on real page navigations only
+- ✅ Navigation detection (`Sec-Fetch-*` whitelist + framework blacklist fallback) - v0.7.3+
+- ✅ Device fingerprint (`SHA256(ip|user_agent)[0:32]`) in session creation - v0.7.3+
 
 ### Legacy (Deprecated)
 

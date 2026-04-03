@@ -2,7 +2,7 @@
 
 **Purpose**: Central registry of all mbuzz SDKs with version info, status, and maintenance notes.
 
-**Last Updated**: 2026-01-10
+**Last Updated**: 2026-02-05
 
 ---
 
@@ -28,11 +28,11 @@ See [Visitor & Session Tracking Spec](../../specs/1_visitor_session_tracking_spe
 
 **Repository**: `/Users/vlad/code/m/mbuzz-ruby`
 **Package**: https://rubygems.org/gems/mbuzz
-**Status**: ✅ Production Ready (v0.7.0)
-**Current Version**: 0.7.0
+**Status**: ✅ Production Ready (v0.7.3)
+**Current Version**: 0.7.3
 
 **Maintainer**: Vlad
-**Last Verified**: 2026-01-09
+**Last Verified**: 2026-02-05
 
 **Framework Support**:
 - ✅ Ruby on Rails (6.0+)
@@ -49,6 +49,13 @@ See [Visitor & Session Tracking Spec](../../specs/1_visitor_session_tracking_spe
 - ✅ **Server-side session resolution** (passes `ip`, `user_agent` to API)
 - ✅ **Cross-device identity** (passes `identifier` to API)
 - ✅ URL/referrer auto-enrichment via RequestContext
+- ✅ **Navigation-aware session creation** (Sec-Fetch-* whitelist + framework blacklist fallback)
+- ✅ **Device fingerprint** (`SHA256(ip|user_agent)[0:32]`) in session creation
+
+**v0.7.3 Changes** (navigation detection):
+- ✅ `should_create_session?` gates session creation on real page navigations only
+- ✅ Turbo frames, htmx, Unpoly, XHR, prefetch, iframes filtered out
+- ✅ Session cookie (`_mbuzz_sid`) fully removed (constants + methods deleted)
 
 **v0.7.0 Changes** (session simplification):
 - ❌ Session cookie (`_mbuzz_sid`) - **REMOVED**
@@ -68,8 +75,8 @@ gem 'mbuzz'
 
 **Repository**: `/Users/vlad/code/m/mbuzz-node`
 **Package**: https://www.npmjs.com/package/mbuzz
-**Status**: ✅ Production Ready (v0.7.0)
-**Current Version**: 0.7.0
+**Status**: ✅ Production Ready (v0.7.3)
+**Current Version**: 0.7.3
 
 **Framework Support**:
 - ✅ Express.js
@@ -81,6 +88,8 @@ gem 'mbuzz'
 - ✅ Full 4-Call Model
 - ✅ Server-side session resolution
 - ✅ TypeScript types included
+- ✅ Navigation-aware session creation (Sec-Fetch-* whitelist)
+- ✅ Device fingerprint in session creation
 
 ---
 
@@ -88,8 +97,8 @@ gem 'mbuzz'
 
 **Repository**: `/Users/vlad/code/m/mbuzz-python`
 **Package**: https://pypi.org/project/mbuzz/
-**Status**: ✅ Production Ready (v0.7.0)
-**Current Version**: 0.7.0
+**Status**: ✅ Production Ready (v0.7.3)
+**Current Version**: 0.7.3
 
 **Framework Support**:
 - ✅ Django
@@ -100,6 +109,8 @@ gem 'mbuzz'
 **Features**:
 - ✅ Full 4-Call Model
 - ✅ Server-side session resolution
+- ✅ Navigation-aware session creation (Sec-Fetch-* whitelist)
+- ✅ Device fingerprint in session creation
 
 ---
 
@@ -107,8 +118,8 @@ gem 'mbuzz'
 
 **Repository**: `/Users/vlad/code/m/mbuzz-php`
 **Package**: https://packagist.org/packages/mbuzz/mbuzz
-**Status**: ✅ Production Ready (v0.7.0)
-**Current Version**: 0.7.0
+**Status**: ✅ Production Ready (v0.7.3)
+**Current Version**: 0.7.3
 
 **Framework Support**:
 - ✅ Laravel
@@ -118,6 +129,8 @@ gem 'mbuzz'
 **Features**:
 - ✅ Full 4-Call Model
 - ✅ Server-side session resolution
+- ✅ Navigation-aware session creation (Sec-Fetch-* whitelist)
+- ✅ Device fingerprint in session creation
 
 ---
 
@@ -135,6 +148,7 @@ gem 'mbuzz'
 - ✅ Add to cart tracking
 - ✅ Server-side session resolution (passes `user_agent`)
 - ✅ Visitor cookie only (`_mbuzz_vid`)
+- N/A Navigation detection — client-side JS SDK, exempt (no middleware, no sub-request inflation)
 
 **v0.7.0 Changes** (2026-01-10):
 - Removed `_mbuzz_sid` session cookie
@@ -191,6 +205,8 @@ debug (default: false)
 - Never raise exceptions (return false on errors)
 - Log errors if debug mode enabled
 - Send timestamps in ISO8601 format
+- **Navigation detection (v0.7.3+)**: Only create sessions for requests where `Sec-Fetch-Mode: navigate` AND `Sec-Fetch-Dest: document` AND `Sec-Purpose` absent. Fall back to framework blacklist (`Turbo-Frame`, `HX-Request`, `X-Up-Version`, `X-Requested-With`) for old browsers
+- **Device fingerprint (v0.7.3+)**: Compute `SHA256(ip|user_agent)[0:32]` and include as `device_fingerprint` in `POST /sessions`
 
 **See**: [API Contract](./api_contract.md) for complete specification
 **See**: [Visitor & Session Tracking Spec](../../specs/1_visitor_session_tracking_spec.md) for session resolution
@@ -201,8 +217,11 @@ debug (default: false)
 
 | Backend Version | Ruby SDK | Python SDK | PHP SDK | Node SDK | Shopify |
 |----------------|----------|------------|---------|----------|---------|
-| 1.4.0 (current) | 0.7.0+ | 0.7.0+ | 0.7.0+ | 0.7.0+ | 0.7.0+ |
+| 1.4.0 (current) | 0.7.3+ | 0.7.3+ | 0.7.3+ | 0.7.3+ | 0.7.0+ |
+| 1.4.0 | 0.7.0+ | 0.7.0+ | 0.7.0+ | 0.7.0+ | 0.7.0+ |
 | 1.3.0 | 0.6.0+ | 0.6.0+ | 0.6.0+ | 0.6.0+ | Works (legacy) |
+
+**v0.7.3**: Navigation-aware session creation. All server-side SDKs should be at v0.7.3+ to prevent visit count inflation from sub-requests.
 
 **Breaking Change Policy**:
 - Backend maintains compatibility for 1 major version back
@@ -216,7 +235,7 @@ debug (default: false)
 
 Before releasing any SDK version:
 
-### Code (v0.7.0+ Server-Side SDKs)
+### Code (v0.7.3+ Server-Side SDKs)
 - [ ] All methods match API contract
 - [ ] Parameter names match backend expectations
 - [ ] Timestamp format is ISO8601
@@ -227,6 +246,10 @@ Before releasing any SDK version:
 - [ ] `identifier` param supported for cross-device resolution
 - [ ] URL and referrer included in event properties
 - [ ] **NO** session cookie management (server resolves)
+- [ ] Navigation detection implemented (Sec-Fetch-* whitelist + framework blacklist fallback)
+- [ ] Session creation only fires for real page navigations
+- [ ] Tests verify sub-requests (Turbo, htmx, fetch, XHR, prefetch) do NOT create sessions
+- [ ] Device fingerprint (`SHA256(ip|user_agent)[0:32]`) sent in `POST /sessions`
 
 ### Documentation
 - [ ] README updated with new features

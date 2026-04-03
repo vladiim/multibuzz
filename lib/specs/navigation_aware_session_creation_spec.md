@@ -1,6 +1,6 @@
 # Navigation-Aware Session Creation — Fix 5x Visit Inflation
 
-**Date:** 2026-01-29 | **Status:** Phases 1-4 Complete | **Severity:** Critical (client-facing data integrity)
+**Date:** 2026-01-29 | **Status:** Phases 1-8 Complete (full implementation done, data cleanup pending execution) | **Severity:** Critical (client-facing data integrity)
 **Branch:** fix/navigation-aware-session-creation
 
 ---
@@ -178,110 +178,45 @@ end
   skip_paths: %w[/order_items /account/bookings/load_bookings /account/pets/load_pets /account/orders/load_my_orders]
   ```
 
-### Phase 1: Ruby SDK (mbuzz-ruby) — Reference Implementation
+### Phase 1: Ruby SDK (mbuzz-ruby) — COMPLETE ✅ (2026-02-02)
 
-**Key files:**
+- [x] `should_create_session?` with `sec_fetch_headers?`, `page_navigation?`, `framework_sub_request?` methods
+- [x] Session creation gated by Sec-Fetch-* whitelist + framework blacklist fallback
+- [x] Session cookie (`_mbuzz_sid`) fully removed — constants and methods deleted
+- [x] `build_request_context` simplified — no `new_session` key, no session cookie check
+- [x] 13 navigation detection tests + integration tests in tracking_test.rb
+- [x] Bump to v0.7.3, CHANGELOG updated
 
-| File | Purpose |
-|------|---------|
-| `mbuzz-ruby/lib/mbuzz/middleware/tracking.rb` | Add `should_create_session?`, gate session creation, remove session cookie |
-| `mbuzz-ruby/lib/mbuzz.rb` | Remove `SESSION_COOKIE_NAME`, `SESSION_COOKIE_MAX_AGE` |
-| `mbuzz-ruby/lib/mbuzz/version.rb` | Bump `0.7.2` → `0.8.0` |
-| `mbuzz-ruby/test/mbuzz/middleware/tracking_test.rb` | Navigation detection tests, update session cookie tests |
-| `mbuzz-ruby/CHANGELOG.md` | v0.8.0 entry |
-
-**1. Add `should_create_session?` to tracking.rb** (public, between `skip_by_extension?` and `private`)
-
-```ruby
-def should_create_session?(env)
-  mode = env["HTTP_SEC_FETCH_MODE"]
-  dest = env["HTTP_SEC_FETCH_DEST"]
-
-  if mode
-    return mode == "navigate" &&
-           dest == "document" &&
-           env["HTTP_SEC_PURPOSE"].nil?
-  end
-
-  # Fallback for old browsers / bots: blacklist known sub-requests
-  env["HTTP_TURBO_FRAME"].nil? &&
-    env["HTTP_HX_REQUEST"].nil? &&
-    env["HTTP_X_UP_VERSION"].nil? &&
-    env["HTTP_X_REQUESTED_WITH"] != "XMLHttpRequest"
-end
-```
-
-**2. Gate session creation in `call`**
-
-Change:
-```ruby
-create_session_async(context, request) if context[:new_session]
-```
-To:
-```ruby
-create_session_async(context, request) if should_create_session?(env)
-```
-
-**3. Remove session cookie** — delete from `call`:
-```ruby
-set_session_cookie(headers, context, request)
-```
-Delete methods: `set_session_cookie`, `session_cookie_options`, `session_id_from_cookie`, `generate_session_id`
-
-**4. Simplify `build_request_context`** — remove `new_session` key, remove session cookie check:
-```ruby
-def build_request_context(request)
-  ip = extract_ip(request)
-  user_agent = request.user_agent.to_s
-
-  {
-    visitor_id: resolve_visitor_id(request),
-    session_id: SecureRandom.uuid,
-    user_id: user_id_from_session(request),
-    url: request.url,
-    referrer: request.referer,
-    ip: ip,
-    user_agent: user_agent,
-    device_fingerprint: Digest::SHA256.hexdigest("#{ip}|#{user_agent}")[0, 32]
-  }.freeze
-end
-```
-
-**5. Remove constants from `mbuzz.rb`**: `SESSION_COOKIE_NAME`, `SESSION_COOKIE_MAX_AGE`
-
-**6. Bump version**: `0.7.2` → `0.8.0`
-
-**7. Unit tests** — add `NavigationDetectionTest` class:
-
-| Test | Headers | Expected |
-|------|---------|----------|
-| Real page navigation | `Sec-Fetch-Mode: navigate`, `Sec-Fetch-Dest: document` | Session created |
-| Turbo frame | `Sec-Fetch-Mode: same-origin`, `Sec-Fetch-Dest: empty`, `Turbo-Frame: x` | No session |
-| htmx | `Sec-Fetch-Mode: same-origin`, `HX-Request: true` | No session |
-| fetch/XHR | `Sec-Fetch-Mode: cors`, `Sec-Fetch-Dest: empty` | No session |
-| Prefetch | `Sec-Fetch-Mode: navigate`, `Sec-Fetch-Dest: document`, `Sec-Purpose: prefetch` | No session |
-| iframe | `Sec-Fetch-Mode: navigate`, `Sec-Fetch-Dest: iframe` | No session |
-| Old browser, no framework | _(empty)_ | Session created (fallback) |
-| Old browser + Turbo-Frame | `Turbo-Frame: x` | No session (blacklist) |
-| Old browser + HX-Request | `HX-Request: true` | No session (blacklist) |
-| Old browser + XHR | `X-Requested-With: XMLHttpRequest` | No session (blacklist) |
-| Old browser + Unpoly | `X-Up-Version: 3.0` | No session (blacklist) |
-| Visitor cookie on all requests | _(turbo frame)_ | `_mbuzz_vid` present |
-| Session cookie never set | _(navigation)_ | `_mbuzz_sid` absent |
-
-Update existing `SessionCreationTest` to include `Sec-Fetch-Mode: navigate` / `Sec-Fetch-Dest: document` in env builders.
-
-**8. Update CHANGELOG.md** with v0.8.0 entry
+**Key files changed:**
+| File | Change |
+|------|--------|
+| `lib/mbuzz/middleware/tracking.rb` | Added `should_create_session?`, `sec_fetch_headers?`, `page_navigation?`, `framework_sub_request?`; removed `set_session_cookie`, `session_cookie_options` |
+| `lib/mbuzz.rb` | Removed `SESSION_COOKIE_NAME`, `SESSION_COOKIE_MAX_AGE` |
+| `lib/mbuzz/version.rb` | Version `0.7.2` → `0.7.3` |
+| `test/mbuzz/middleware/tracking_test.rb` | Navigation detection tests (lines 744-947) |
+| `CHANGELOG.md` | v0.7.3 entry |
 
 **E2E tests**: `sdk_integration_tests/scenarios/navigation_detection_test.rb` (19 tests, already written)
 
-### Phase 2: Node SDK (mbuzz-node)
+### Phase 2: Node SDK (mbuzz-node) — COMPLETE ✅ (2026-02-03)
 
-- [ ] Port `shouldCreateSession()` from Ruby reference implementation
-- [ ] Adapt for Express middleware: `req.headers['sec-fetch-mode']`, `req.headers['turbo-frame']`
-- [ ] Verify session cookie fully removed (v0.7.0 claimed removal)
-- [ ] Tests matching Ruby test suite
-- [ ] Bump to v0.8.0, update CHANGELOG/README
+- [x] `shouldCreateSession()` ported — Sec-Fetch-* whitelist + framework blacklist fallback
+- [x] Adapted for Express middleware: `req.headers['sec-fetch-mode']`, `req.headers['turbo-frame']`
+- [x] Session cookie fully removed (confirmed — not present in v0.7.3)
+- [x] `deviceFingerprint()` utility — `SHA256(ip|user_agent)[0:32]` with Ruby parity
+- [x] `createSessionAsync()` — fire-and-forget `POST /sessions`
+- [x] 29 middleware tests + 4 fingerprint tests (all 135 tests passing)
+- [x] Bump to v0.7.3, CHANGELOG updated
+
+**Key files changed:**
+| File | Change |
+|------|--------|
+| `src/middleware/express.ts` | Added `shouldCreateSession()`, `createSessionAsync()`, wired into middleware |
+| `src/utils/fingerprint.ts` | NEW — `deviceFingerprint(ip, userAgent)` |
+| `test/middleware/express.test.ts` | 29 navigation detection + session creation tests |
+| `test/utils/fingerprint.test.ts` | 4 fingerprint utility tests |
+| `package.json` | Version `0.7.0` → `0.7.3` |
+| `CHANGELOG.md` | v0.7.3 entry |
 
 ### Phase 3: Python SDK (mbuzz-python) — COMPLETE ✅ (2026-02-03)
 
@@ -331,29 +266,61 @@ Update existing `SessionCreationTest` to include `Sec-Fetch-Mode: navigate` / `S
 
 **Note:** PHP SDK does not auto-generate visitor IDs — reads from cookie only. Session creation requires an existing visitor cookie (set by a previous request or JS SDK). The e2e navigation detection test skips PHP (`SDKS_WITH_AUTO_VISITOR` excludes it).
 
-### Phase 5: Shopify SDK (mbuzz-shopify)
+### Phase 5: Shopify SDK (mbuzz-shopify) — EXEMPT ✅ (2026-02-05)
 
-- [ ] Audit: Shopify uses client-side JavaScript — Sec-Fetch headers are NOT available in JS
-- [ ] Shopify theme extensions run in the browser — they don't fire sub-requests the same way
-- [ ] Document why Shopify SDK is not affected (or if it is, different mitigation needed)
+Shopify SDK is not affected by the navigation inflation bug:
 
-### Phase 6: Server-Side Defense (multibuzz)
+1. **Client-side only**: Runs as browser JavaScript in a Shopify theme app extension, not server-side middleware
+2. **Single session creation**: `trackSession()` called once on initial page load — no concurrent sub-request issue
+3. **Explicit API calls**: JavaScript explicitly calls `fetch()` for tracking, not intercepted HTTP requests
+4. **No framework sub-requests**: Theme extensions don't use Turbo/htmx/Unpoly lazy-loaded frames
+5. **Persistent visitor ID**: 2-year `_mbuzz_vid` cookie prevents duplicate visitor records
+6. **Sec-Fetch not applicable**: Browser JS cannot read forbidden `Sec-Fetch-*` headers
+7. **Session cookie already removed**: Confirmed removed in v0.7.0 — only visitor cookie set
 
-- [ ] Change advisory lock in `Sessions::CreationService` to use `device_fingerprint` when present
-- [ ] Test: concurrent requests with different session_ids but same fingerprint → serialize → single visitor
+**No action required.** Navigation detection is unnecessary for client-side JavaScript SDKs.
 
-### Phase 7: Documentation Updates
+### Phase 6: Server-Side Defense (multibuzz) — COMPLETE ✅ (2026-02-05)
 
-- [ ] Update `lib/docs/sdk/sdk_specification.md` with "Navigation Detection" section
-- [ ] Update `lib/docs/sdk/api_contract.md` session creation guidance
-- [ ] Update `lib/docs/sdk/sdk_registry.md` release checklist and SDK features
-- [ ] Reconcile registry claims (v0.7.0 removed session cookies) with actual code
+- [x] Advisory lock in `Sessions::CreationService` uses `device_fingerprint` when present, falls back to `session_id`
+- [x] Concurrent requests with different session_ids but same fingerprint serialize via shared lock
+- [x] 4 new tests: fingerprint dedup, burst dedup (3 requests), no-fingerprint fallback, cross-device isolation
 
-### Phase 8: Data Cleanup
+**Key change:**
+```ruby
+# Before: lock on session_id — different random UUIDs = different locks = parallel
+# After:  lock on device_fingerprint — same device = same lock = serialized
+lock_value = device_fingerprint.presence || session_id
+```
 
-- [ ] Rake task to merge duplicate visitors (same fingerprint, created within seconds)
-- [ ] Run against UAT client account
+**Files changed:**
+| File | Change |
+|------|--------|
+| `app/services/sessions/creation_service.rb` | `with_session_lock` uses fingerprint-based lock key |
+| `test/services/sessions/creation_service_test.rb` | 4 new fingerprint advisory lock tests |
+
+### Phase 7: Documentation Updates — COMPLETE ✅ (2026-02-05)
+
+- [x] `lib/docs/sdk/sdk_specification.md` — added "Navigation Detection (Required)" section with algorithm, header reference, pseudocode; updated Validation Checklist
+- [x] `lib/docs/sdk/api_contract.md` — updated `POST /sessions` "When to call" with navigation detection requirement; added `device_fingerprint` to request body; added navigation detection to SDK Feature Requirements
+- [x] `lib/docs/sdk/sdk_registry.md` — all SDKs updated to v0.7.3; navigation detection + device fingerprint added to features; release checklist updated with 4 new items; version compatibility matrix updated; Shopify marked exempt
+- [x] `lib/docs/sdk/navigation_detection.md` — **NEW** standalone reference document with algorithm, implementations in 4 languages, testing checklist (15 scenarios), edge cases, browser support, device fingerprint spec
+- [x] Registry reconciled — v0.7.0 session cookie removal confirmed across all SDKs; Ruby v0.7.3 completed the cleanup (removed constants + methods)
+
+### Phase 8: Data Cleanup — RAKE TASK READY ✅ (2026-02-05)
+
+- [x] `Visitors::DeduplicationService` — finds duplicate visitors (same `device_fingerprint`, created within 30s burst window), merges by reassigning sessions/events/conversions to canonical (earliest) visitor, preserves identity links, deletes duplicates
+- [x] `bin/rails visitors:deduplicate ACCOUNT_ID=N [DRY_RUN=true] [WINDOW=30]` — rake task with dry-run default
+- [x] 14 unit tests covering: merge, reassignment, identity preservation, boundary conditions, dry run
+- [ ] Run against UAT client account (`DRY_RUN=true` first, then `DRY_RUN=false`)
 - [ ] Verify dashboard numbers correct after cleanup
+
+**Files:**
+| File | Purpose |
+|------|---------|
+| `app/services/visitors/deduplication_service.rb` | Core merge logic |
+| `test/services/visitors/deduplication_service_test.rb` | 14 tests |
+| `lib/tasks/visitors.rake` | CLI wrapper with dry-run |
 
 ---
 
