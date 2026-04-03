@@ -1,6 +1,6 @@
 # Navigation-Aware Session Creation — Fix 5x Visit Inflation
 
-**Date:** 2026-01-29 | **Status:** Phases 1-3 Complete | **Severity:** Critical (client-facing data integrity)
+**Date:** 2026-01-29 | **Status:** Phases 1-4 Complete | **Severity:** Critical (client-facing data integrity)
 **Branch:** fix/navigation-aware-session-creation
 
 ---
@@ -305,13 +305,31 @@ Update existing `SessionCreationTest` to include `Sec-Fetch-Mode: navigate` / `S
 | `src/mbuzz/__init__.py` | `__version__` `0.7.0` → `0.7.3` |
 | `CHANGELOG.md` | NEW |
 
-### Phase 4: PHP SDK (mbuzz-php)
+### Phase 4: PHP SDK (mbuzz-php) — COMPLETE ✅ (2026-02-03)
 
-- [ ] Port `shouldCreateSession()` from Ruby reference implementation
-- [ ] Adapt for PSR-15 middleware: `$request->getHeaderLine('Sec-Fetch-Mode')`, `$request->getHeaderLine('Turbo-Frame')`
-- [ ] Verify session cookie fully removed
-- [ ] Tests matching Ruby test suite
-- [ ] Bump to v0.8.0, update CHANGELOG/README
+- [x] Port `shouldCreateSession()` as `NavigationDetector::shouldCreateSession()` — reads `$_SERVER` headers
+- [x] Accepts `$server` array parameter for testability (defaults to `$_SERVER`)
+- [x] Verify session cookie fully removed (was never added — PHP SDK started at v0.7.0)
+- [x] Tests matching Ruby test suite (11 navigation detection + 4 integration tests)
+- [x] `Fingerprint::compute()` — `SHA256(ip|user_agent)[0:32]` with Ruby parity test
+- [x] `IdGenerator::generateUuid()` — UUID v4 for session IDs
+- [x] Synchronous session creation via `POST /sessions` in `Client::initFromRequest()` (PHP has no fire-and-forget)
+- [x] Session only created when visitor cookie exists AND request is a real navigation
+- [x] Bump to v0.7.3, CHANGELOG created
+
+**Key files changed:**
+| File | Change |
+|------|--------|
+| `src/Mbuzz/NavigationDetector.php` | NEW — `shouldCreateSession($server)` |
+| `src/Mbuzz/Fingerprint.php` | NEW — `compute($ip, $userAgent)` |
+| `src/Mbuzz/IdGenerator.php` | Added `generateUuid()` |
+| `src/Mbuzz/Client.php` | Added `createSession()`, wired into `initFromRequest()` |
+| `src/Mbuzz/Api.php` | User-Agent `0.1.0` → `0.7.3` |
+| `tests/Unit/NavigationDetectorTest.php` | NEW — 15 tests |
+| `tests/Unit/FingerprintTest.php` | NEW — 4 tests |
+| `CHANGELOG.md` | NEW |
+
+**Note:** PHP SDK does not auto-generate visitor IDs — reads from cookie only. Session creation requires an existing visitor cookie (set by a previous request or JS SDK). The e2e navigation detection test skips PHP (`SDKS_WITH_AUTO_VISITOR` excludes it).
 
 ### Phase 5: Shopify SDK (mbuzz-shopify)
 
