@@ -1,6 +1,6 @@
 # Navigation-Aware Session Creation — Fix 5x Visit Inflation
 
-**Date:** 2026-01-29 | **Status:** Phase 1 In Progress | **Severity:** Critical (client-facing data integrity)
+**Date:** 2026-01-29 | **Status:** Phases 1-3 Complete | **Severity:** Critical (client-facing data integrity)
 **Branch:** fix/navigation-aware-session-creation
 
 ---
@@ -283,13 +283,27 @@ Update existing `SessionCreationTest` to include `Sec-Fetch-Mode: navigate` / `S
 - [ ] Tests matching Ruby test suite
 - [ ] Bump to v0.8.0, update CHANGELOG/README
 
-### Phase 3: Python SDK (mbuzz-python)
+### Phase 3: Python SDK (mbuzz-python) — COMPLETE ✅ (2026-02-03)
 
-- [ ] Port `should_create_session()` from Ruby reference implementation
-- [ ] Adapt for Flask/Django middleware: `request.headers.get('Sec-Fetch-Mode')`, `request.headers.get('Turbo-Frame')`
-- [ ] Verify session cookie fully removed
-- [ ] Tests matching Ruby test suite
-- [ ] Bump to v0.8.0, update CHANGELOG/README
+- [x] Port `should_create_session()` from Ruby reference implementation
+- [x] Adapt for Flask middleware: `request.headers.get('Sec-Fetch-Mode')`, `request.headers.get('Turbo-Frame')`
+- [x] Verify session cookie fully removed (was never added — Python SDK started at v0.7.0)
+- [x] Tests matching Ruby test suite (11 navigation detection + 4 integration tests)
+- [x] `device_fingerprint()` utility — `SHA256(ip|user_agent)[0:32]` with Ruby parity test
+- [x] Async session creation via `threading.Thread(daemon=True)` — fire-and-forget `POST /sessions`
+- [x] Bump to v0.7.3, CHANGELOG created
+
+**Key files changed:**
+| File | Change |
+|------|--------|
+| `src/mbuzz/utils/fingerprint.py` | NEW — `device_fingerprint(ip, user_agent)` |
+| `src/mbuzz/utils/__init__.py` | Export `device_fingerprint` |
+| `src/mbuzz/middleware/flask.py` | Added `should_create_session()`, `_create_session_async()`, wired into `before_request` |
+| `tests/test_fingerprint.py` | NEW — 4 tests (Ruby parity, deterministic, unique, 32-char hex) |
+| `tests/test_middleware.py` | Added `TestNavigationDetection` — 15 tests |
+| `pyproject.toml` | Version `0.7.0` → `0.7.3` |
+| `src/mbuzz/__init__.py` | `__version__` `0.7.0` → `0.7.3` |
+| `CHANGELOG.md` | NEW |
 
 ### Phase 4: PHP SDK (mbuzz-php)
 
