@@ -308,6 +308,148 @@ class NavigationDetectionTest < Minitest::Test
   end
 
   # -------------------------------------------------------------------
+  # Cookie-first SDKs (PHP/Symfony): pre-set visitor cookie
+  #
+  # PHP/Symfony don't auto-generate visitor IDs — they read from cookie.
+  # These tests pre-set _mbuzz_vid, then verify navigation detection
+  # gates session creation correctly.
+  # -------------------------------------------------------------------
+
+  def test_php_navigation_with_cookie_creates_session
+    skip "Requires local servers" unless servers_available?
+    skip_unless_cookie_first!
+
+    visitor_id = SecureRandom.hex(32)
+    make_request_with_visitor_cookie(visitor_id,
+      "Sec-Fetch-Mode" => "navigate",
+      "Sec-Fetch-Dest" => "document",
+      "Sec-Fetch-Site" => "none"
+    )
+
+    data = poll_for_visitor(visitor_id)
+
+    refute_nil data, "Visitor should exist"
+    refute_empty data[:sessions],
+      "Real page navigation with pre-set visitor cookie MUST create a session"
+  end
+
+  def test_php_turbo_frame_with_cookie_skips_session
+    skip "Requires local servers" unless servers_available?
+    skip_unless_cookie_first!
+
+    visitor_id = SecureRandom.hex(32)
+    make_request_with_visitor_cookie(visitor_id,
+      "Sec-Fetch-Mode" => "same-origin",
+      "Sec-Fetch-Dest" => "empty",
+      "Turbo-Frame" => "content_frame"
+    )
+
+    wait_for_async
+    data = verify_once(visitor_id)
+
+    assert_no_sessions data,
+      "Turbo frame with pre-set visitor cookie must NOT create a session"
+  end
+
+  def test_php_htmx_with_cookie_skips_session
+    skip "Requires local servers" unless servers_available?
+    skip_unless_cookie_first!
+
+    visitor_id = SecureRandom.hex(32)
+    make_request_with_visitor_cookie(visitor_id,
+      "Sec-Fetch-Mode" => "same-origin",
+      "Sec-Fetch-Dest" => "empty",
+      "HX-Request" => "true"
+    )
+
+    wait_for_async
+    data = verify_once(visitor_id)
+
+    assert_no_sessions data,
+      "htmx request with pre-set visitor cookie must NOT create a session"
+  end
+
+  def test_php_prefetch_with_cookie_skips_session
+    skip "Requires local servers" unless servers_available?
+    skip_unless_cookie_first!
+
+    visitor_id = SecureRandom.hex(32)
+    make_request_with_visitor_cookie(visitor_id,
+      "Sec-Fetch-Mode" => "navigate",
+      "Sec-Fetch-Dest" => "document",
+      "Sec-Purpose" => "prefetch"
+    )
+
+    wait_for_async
+    data = verify_once(visitor_id)
+
+    assert_no_sessions data,
+      "Prefetch with pre-set visitor cookie must NOT create a session"
+  end
+
+  def test_php_old_browser_no_framework_headers_creates_session
+    skip "Requires local servers" unless servers_available?
+    skip_unless_cookie_first!
+
+    visitor_id = SecureRandom.hex(32)
+    make_request_with_visitor_cookie(visitor_id, {})
+
+    data = poll_for_visitor(visitor_id)
+
+    refute_nil data, "Visitor should exist"
+    refute_empty data[:sessions],
+      "Old browser with pre-set visitor cookie and no framework headers MUST create a session"
+  end
+
+  def test_php_old_browser_turbo_frame_with_cookie_skips_session
+    skip "Requires local servers" unless servers_available?
+    skip_unless_cookie_first!
+
+    visitor_id = SecureRandom.hex(32)
+    make_request_with_visitor_cookie(visitor_id,
+      "Turbo-Frame" => "lazy_banner"
+    )
+
+    wait_for_async
+    data = verify_once(visitor_id)
+
+    assert_no_sessions data,
+      "Old browser with Turbo-Frame and pre-set cookie must NOT create a session"
+  end
+
+  def test_php_old_browser_xhr_with_cookie_skips_session
+    skip "Requires local servers" unless servers_available?
+    skip_unless_cookie_first!
+
+    visitor_id = SecureRandom.hex(32)
+    make_request_with_visitor_cookie(visitor_id,
+      "X-Requested-With" => "XMLHttpRequest"
+    )
+
+    wait_for_async
+    data = verify_once(visitor_id)
+
+    assert_no_sessions data,
+      "Old browser with XHR and pre-set cookie must NOT create a session"
+  end
+
+  def test_php_no_cookie_skips_session_even_on_navigation
+    skip "Requires local servers" unless servers_available?
+    skip_unless_cookie_first!
+
+    # Without a visitor cookie, PHP SDK should NOT create a session
+    # (no orphan sessions for unknown visitors)
+    _visitor_id, _cookies = make_request(
+      "Sec-Fetch-Mode" => "navigate",
+      "Sec-Fetch-Dest" => "document"
+    )
+
+    # visitor_id will be nil (PHP doesn't auto-generate)
+    # No session should exist — nothing to verify on the server
+    # This test just confirms no crash occurs
+  end
+
+  # -------------------------------------------------------------------
   # Concurrent sub-requests: the inflation scenario
   # -------------------------------------------------------------------
 
@@ -356,12 +498,45 @@ class NavigationDetectionTest < Minitest::Test
   # PHP/Symfony read cookies but don't generate — visitor_id is nil without a cookie.
   SDKS_WITH_AUTO_VISITOR = %w[ruby node python].freeze
 
+  # SDKs that read visitor IDs from cookies (require pre-set cookie for session creation).
+  SDKS_COOKIE_FIRST = %w[php symfony].freeze
+
   def auto_generates_visitor?
     SDKS_WITH_AUTO_VISITOR.include?(@sdk)
   end
 
+  def cookie_first_sdk?
+    SDKS_COOKIE_FIRST.include?(@sdk)
+  end
+
   def skip_unless_auto_visitor!
     skip "#{@sdk} SDK does not auto-generate visitor IDs in middleware" unless auto_generates_visitor?
+  end
+
+  def skip_unless_cookie_first!
+    skip "#{@sdk} SDK auto-generates visitor IDs — use auto-visitor tests" unless cookie_first_sdk?
+  end
+
+  # Make an HTTP request with a pre-set visitor cookie. Used by cookie-first
+  # SDKs (PHP/Symfony) that don't auto-generate visitor IDs.
+  # Returns [visitor_id, response_cookies].
+  def make_request_with_visitor_cookie(visitor_id, extra_headers)
+    uri = URI.parse("#{sdk_app_url}/")
+    http = Net::HTTP.new(uri.host, uri.port)
+
+    request = Net::HTTP::Get.new(uri.path)
+    request["User-Agent"] = "NavigationDetectionTest/1.0 (req-#{SecureRandom.hex(8)})"
+    request["Accept"] = "text/html"
+    request["Cookie"] = "_mbuzz_vid=#{visitor_id}"
+
+    extra_headers.each { |k, v| request[k] = v }
+
+    response = http.request(request)
+    cookies = response.get_fields("Set-Cookie") || []
+
+    created_visitor_ids << visitor_id
+
+    [visitor_id, cookies]
   end
 
   # Make an HTTP request to the SDK test app with specific headers.
