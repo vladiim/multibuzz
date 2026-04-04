@@ -2,10 +2,10 @@
 title: "GA4 Removed Your Attribution Models. Here's What to Do Now."
 slug: "ga4-removed-attribution-what-to-do"
 description: "Google removed first-click, linear, time-decay, and position-based from GA4. Only DDA and last-click remain—and DDA silently fails below 400 conversions. Here's what actually works instead."
-published_at:
+published_at: 2026-04-04
 section: fundamentals
 section_order: 9
-status: draft
+status: published
 priority: P0
 category: "Attribution Fundamentals"
 tags:
@@ -20,6 +20,8 @@ related_articles:
   - ga4-attribution-alternatives
   - what-is-multi-touch-attribution
   - how-to-choose-attribution-model
+  - roas-inflation-platform-over-reporting
+  - why-google-ads-ga4-different-conversions
 seo:
   title: "GA4 Removed Attribution Models — What to Do Now (2026 Guide)"
 aeo:
@@ -53,6 +55,8 @@ has_download: false
 
 <%= render_tldr(@article.tldr) %>
 
+> **Looking for a tool-by-tool comparison?** See [7 Best GA4 Attribution Alternatives](/articles/ga4-attribution-alternatives).
+
 ## What Google Took Away
 
 In late 2023, Google removed four attribution models from GA4:
@@ -71,7 +75,7 @@ Google's justification: the removed models accounted for less than 3% of convers
 
 ## The Problem Google Didn't Mention
 
-Here's what the announcement didn't say: **DDA requires a minimum of 400 conversions per conversion type in a 28-day window to function.**
+Does GA4 Data-Driven Attribution actually work? That depends on your traffic. What the announcement didn't say: **DDA requires a minimum of 400 conversions per conversion type in a 28-day window to function.**
 
 Below that threshold, GA4 silently falls back to last-click.
 
@@ -168,17 +172,21 @@ WHERE event_name = 'purchase'
 GROUP BY first_touch_source
 ```
 
-This gives you complete control, but requires:
-- A data engineer who understands attribution logic
-- Ongoing maintenance as GA4's schema evolves
-- Custom visualisation (BigQuery doesn't render dashboards)
-- No real-time data (GA4 to BigQuery export has a 24-48 hour delay)
+This gives you complete control, but you'll need a data engineer and custom visualisation. GA4 to BigQuery has a 24-48 hour delay.
 
 If you have the engineering capacity, this is the most flexible option. If you don't, Option 2 is faster and cheaper than hiring for it.
 
+## Run Multiple Models in Parallel
+
+The reason Google removing models matters isn't that any one model was perfect. It's that comparing models reveals truth.
+
+When first-touch and last-touch disagree about a channel, that disagreement is information. It tells you the channel works differently at different funnel stages. Linear attribution giving a channel 15% credit while position-based gives it 35% tells you something.
+
+One model gives you a number. Multiple models give you a range. The range is closer to reality.
+
 ## What Should Change in Your Workflow
 
-Regardless of which option you choose, the GA4 model removal forces three workflow changes:
+Regardless of which option you choose, the GA4 model removal forces two workflow changes:
 
 ### 1. Stop Using GA4 for Budget Allocation
 
@@ -194,14 +202,6 @@ For each conversion type in your GA4 property, check:
 - If not, you're on last-click whether you know it or not
 
 There's no UI indicator for this. You have to check the numbers yourself.
-
-### 3. Run Multiple Models in Parallel
-
-The reason Google removing models matters isn't that any one model was perfect. It's that comparing models reveals truth.
-
-When first-touch and last-touch disagree about a channel, that disagreement is information. It tells you the channel works differently at different funnel stages. Linear attribution giving a channel 15% credit while position-based gives it 35% tells you something.
-
-One model gives you a number. Multiple models give you a range. The range is closer to reality.
 
 <%= render "articles/cta_banner",
   title: "See where your measurement actually stands",
