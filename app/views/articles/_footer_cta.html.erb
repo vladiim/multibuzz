@@ -1,13 +1,19 @@
-<div class="border-t border-slate-200 pt-8 mt-12 not-prose">
-  <div class="bg-slate-50 rounded-lg p-6">
-    <h3 class="text-lg font-bold text-slate-900">Ready to try it?</h3>
+<div class="border-t border-slate-200 pt-8 mt-12 not-prose space-y-4">
+  <div class="bg-indigo-50 border border-indigo-100 rounded-lg p-6">
+    <h3 class="text-lg font-bold text-slate-900">How mature is your marketing measurement?</h3>
     <p class="text-slate-600 text-sm mt-2 mb-4">
-      Set up server-side attribution in 10 minutes. Free up to <%= free_event_limit_display %> records/month.
+      The free Measurement Maturity Assessment shows where you stand, where you're exposed, and what to fix first. 10 questions, 3 minutes.
+    </p>
+    <%= link_to "Take the Assessment", "/measurement-maturity-assessment", class: "inline-block bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-500" %>
+  </div>
+  <div class="bg-slate-50 rounded-lg p-6">
+    <h3 class="text-lg font-bold text-slate-900">Ready to try server-side attribution?</h3>
+    <p class="text-slate-600 text-sm mt-2 mb-4">
+      Set up in 10 minutes. Free up to <%= free_event_limit_display %> records/month.
     </p>
     <div class="flex flex-wrap gap-3">
       <%= link_to "Get Started Free", signup_path, class: "bg-slate-900 text-white px-4 py-2 rounded hover:bg-slate-800" %>
       <%= link_to "Try Demo", demo_path, class: "bg-white text-slate-700 border border-slate-300 px-4 py-2 rounded hover:bg-slate-100 hover:border-slate-400" %>
-      <%= link_to "View Docs", "/docs", class: "text-slate-600 hover:text-slate-900 px-4 py-2" %>
     </div>
   </div>
 </div>
