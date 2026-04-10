@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "test_helper"
+require "minitest/mock"
 
 class ConsentHelperTest < ActionView::TestCase
   # --- visitor_country ---
@@ -112,7 +113,45 @@ class ConsentHelperTest < ActionView::TestCase
     assert_equal "granted", consent_default_state(request)
   end
 
+  # --- gtm_container_id / gtm_enabled? ---
+
+  test "gtm_container_id returns the credentials value when set" do
+    with_gtm_container("GTM-TESTING1") do
+      assert_equal "GTM-TESTING1", gtm_container_id
+    end
+  end
+
+  test "gtm_container_id returns nil when credentials value is blank" do
+    with_gtm_container(nil) do
+      assert_nil gtm_container_id
+    end
+  end
+
+  test "gtm_enabled? true when container id present" do
+    with_gtm_container("GTM-TESTING1") do
+      assert_predicate self, :gtm_enabled?
+    end
+  end
+
+  test "gtm_enabled? false when container id absent" do
+    with_gtm_container(nil) do
+      refute_predicate self, :gtm_enabled?
+    end
+  end
+
+  test "gtm_enabled? false when container id is empty string" do
+    with_gtm_container("") do
+      refute_predicate self, :gtm_enabled?
+    end
+  end
+
   private
+
+  def with_gtm_container(value)
+    fake_credentials = Object.new
+    fake_credentials.define_singleton_method(:dig) { |*| value }
+    Rails.application.stub(:credentials, fake_credentials) { yield }
+  end
 
   def mock_request(headers:, ip:)
     Struct.new(:headers, :remote_ip).new(headers, ip)

@@ -24,6 +24,7 @@
     <%= render "score/assessments/structured_data" if content_for?(:structured_data) || controller.action_name == "show" %>
   </head>
   <body>
+    <%= render "shared/gtm_loader" %>
     <%= yield %>
   </body>
 </html>

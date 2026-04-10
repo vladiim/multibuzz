@@ -1,0 +1,10 @@
+<%# Mount point for the gtm-loader Stimulus controller. Self-checks both
+    gates: gtm_enabled? (container ID configured) and marketing_analytics_enabled?
+    (controller has not opted out and path is not in SensitivePaths). Renders
+    nothing on sensitive routes — the load-bearing exclusion mechanism. %>
+<% if gtm_enabled? && marketing_analytics_enabled? %>
+  <div data-controller="gtm-loader"
+       data-gtm-loader-container-id-value="<%= gtm_container_id %>"
+       data-gtm-loader-consent-default-value="<%= consent_default_state(request) %>"
+       hidden></div>
+<% end %>

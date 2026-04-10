@@ -22,6 +22,17 @@ module ConsentHelper
   CONSENT_DENIED  = "denied"
   CONSENT_GRANTED = "granted"
 
+  GTM_CREDENTIALS_NAMESPACE = :gtm
+  GTM_CONTAINER_ID_KEY      = :container_id
+
+  def gtm_container_id
+    Rails.application.credentials.dig(GTM_CREDENTIALS_NAMESPACE, GTM_CONTAINER_ID_KEY).presence
+  end
+
+  def gtm_enabled?
+    gtm_container_id.present?
+  end
+
   def visitor_country(request)
     cf_country(request) || geocoded_country(request)
   end
