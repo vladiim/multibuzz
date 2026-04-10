@@ -5,7 +5,6 @@ class ApplicationController < ActionController::Base
 
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   allow_browser versions: :modern
-  after_action :track_page_view, if: :should_track_page_view?
 
   helper_method :view_mode, :test_mode?, :clv_mode, :clv_mode?, :demo_mode?
 
@@ -53,16 +52,5 @@ class ApplicationController < ActionController::Base
   # Enable with ?demo=true query param
   def demo_mode?
     params[:demo] == "true"
-  end
-
-  # Dogfooding: Track page views
-  def track_page_view
-    Mbuzz.event("page_view", path: request.path)
-  rescue SocketError, Errno::ECONNREFUSED, Errno::EHOSTUNREACH => e
-    Rails.logger.debug { "[mbuzz] tracking skipped: #{e.message}" }
-  end
-
-  def should_track_page_view?
-    request.get? && response.successful? && !request.xhr?
   end
 end
