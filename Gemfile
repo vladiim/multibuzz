@@ -57,6 +57,11 @@ gem "parser"
 # CSV processing (no longer default gem in Ruby 3.4+)
 gem "csv"
 
+# IP geocoding fallback for marketing-site consent banner geo gating.
+# Primary lookup is the CF-IPCountry header; this is the fallback when
+# Cloudflare is not in front of the request. [https://github.com/alexreisner/geocoder]
+gem "geocoder"
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
