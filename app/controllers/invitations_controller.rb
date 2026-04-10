@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class InvitationsController < ApplicationController
+  skip_marketing_analytics
+
   SHOW_ERROR_HANDLERS = {
     not_found: :render_not_found,
     expired: :render_expired,

@@ -2,6 +2,7 @@
 
 module Admin
   class BaseController < ApplicationController
+    skip_marketing_analytics
     before_action :require_login
     before_action :require_admin
 

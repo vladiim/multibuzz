@@ -2,6 +2,7 @@
 
 module Oauth
   class GoogleAdsController < ApplicationController
+    skip_marketing_analytics
     before_action :require_login
     before_action :require_oauth_account, only: [ :callback, :select_account, :create_connection ]
     before_action :require_session_tokens, only: [ :select_account, :create_connection ]

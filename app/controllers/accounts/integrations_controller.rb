@@ -3,6 +3,7 @@
 module Accounts
   class IntegrationsController < BaseController
     include RequireAdmin
+    skip_marketing_analytics
 
     def show
       @connections = current_account.ad_platform_connections.order(created_at: :desc)

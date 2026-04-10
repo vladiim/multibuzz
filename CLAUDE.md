@@ -12,6 +12,7 @@
 - **Never expose raw database IDs** — use `prefixed_ids` gem.
 - **Sessions are server-side** — SDKs do NOT manage sessions.
 - **NEVER write secrets, tokens, API keys, account IDs, email addresses, or any credentials to files that are committed to git.** This includes specs, docs, code comments, and config files. Secrets go in Rails credentials or 1Password only. Use placeholders like "see Rails credentials" or "see 1Password".
+- **Sensitive controllers MUST declare `skip_marketing_analytics`.** Any controller that renders secrets, credentials, API keys, billing data, OAuth tokens, visitor PII, identity strings, or admin tooling must call `skip_marketing_analytics` at the class level so GTM/GA4/Ads/Meta tags never load on its pages. URL paths reach GA4 and Meta as `page_location` regardless of consent — a leaked API key in a URL is a leaked API key in three vendor systems. When you create or modify a controller that handles any of the above, add `skip_marketing_analytics` immediately. The `SensitivePaths` deny-list in `app/constants/sensitive_paths.rb` is a safety net, not a substitute. See `lib/specs/marketing_analytics_ga4_ads_spec.md` for the full list and rationale.
 
 ## Philosophy
 

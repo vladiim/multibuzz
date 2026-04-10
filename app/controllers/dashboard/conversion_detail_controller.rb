@@ -3,6 +3,7 @@
 module Dashboard
   class ConversionDetailController < BaseController
     include Pagination
+    skip_marketing_analytics
 
     def index
       @conversions = paginate(conversions_scope)

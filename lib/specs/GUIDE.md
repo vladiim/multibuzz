@@ -324,6 +324,7 @@ Every spec should feed the development cycle:
 - **TimescaleDB** -- time-series queries use continuous aggregates in production but not in tests. Note this in specs that touch time-series data.
 - **Solid Stack** -- no Redis. Cache, queue, and cable are all database-backed.
 - **Minimise JavaScript** -- prefer Turbo Frames, Turbo Streams, and server-rendered HTML. When JS is needed, extend existing Stimulus controllers before creating new ones. Check `app/javascript/controllers/` for reusable controllers first.
+- **Sensitive routes MUST opt out of marketing analytics.** GTM loads GA4, Google Ads, and Meta Pixel on every page by default. Any new or modified controller that renders secrets, credentials, API keys, billing data, OAuth tokens, visitor PII, identity strings, or admin tooling must declare `skip_marketing_analytics` at the class level. URL paths reach GA4 and Meta as `page_location` regardless of consent state, so a leaked API key in a URL is a leaked API key in three vendor systems. Specs that introduce new controllers or change existing ones must explicitly state whether the routes are sensitive and, if so, list them in an Implementation Tasks step that declares `skip_marketing_analytics`. The `SensitivePaths` deny-list in `app/constants/sensitive_paths.rb` is a safety net, not a substitute — when in doubt, declare the opt-out and add a path pattern. See `lib/specs/marketing_analytics_ga4_ads_spec.md` for the canonical list.
 
 ### Frontend Decision Tree
 

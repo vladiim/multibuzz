@@ -3,6 +3,7 @@
 module Accounts
   class BillingController < BaseController
     include RequireAdmin
+    skip_marketing_analytics
 
     def show
       @plans = Plan.active.paid.sorted

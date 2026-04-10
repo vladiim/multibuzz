@@ -2,6 +2,8 @@
 
 module Dashboard
   class IdentitiesController < BaseController
+    skip_marketing_analytics
+
     def show
       @identity = identity_query.call(params[:id])
       return head(:not_found) unless @identity

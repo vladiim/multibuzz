@@ -2,6 +2,8 @@
 
 module Accounts
   class TeamController < BaseController
+    skip_marketing_analytics
+
     def show
       @memberships = team_memberships
       @can_manage = current_user.admin_of?(current_account)

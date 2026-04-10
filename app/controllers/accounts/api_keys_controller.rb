@@ -3,6 +3,7 @@
 module Accounts
   class ApiKeysController < BaseController
     include RequireAdmin
+    skip_marketing_analytics
 
     def index
       @api_keys = current_account.api_keys.order(created_at: :desc)

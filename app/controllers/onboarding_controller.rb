@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class OnboardingController < ApplicationController
+  skip_marketing_analytics
   before_action :require_login
   before_action :ensure_sdk_selected, only: [ :install, :verify, :conversion ]
 

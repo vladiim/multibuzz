@@ -2,6 +2,8 @@
 
 module Dashboard
   class ExportsController < BaseController
+    skip_marketing_analytics
+
     def create
       export = current_account.exports.create!(
         export_type: export_type,
