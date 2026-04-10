@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_30_024924) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_10_165525) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -247,6 +247,22 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_30_024924) do
     t.index ["event_type"], name: "index_billing_events_on_event_type"
     t.index ["processed_at"], name: "index_billing_events_on_processed_at"
     t.index ["stripe_event_id"], name: "index_billing_events_on_stripe_event_id", unique: true
+  end
+
+  create_table "consent_logs", force: :cascade do |t|
+    t.bigint "account_id"
+    t.string "visitor_id"
+    t.jsonb "consent_payload", default: {}, null: false
+    t.string "ip_hash", null: false
+    t.string "country", limit: 2
+    t.string "region", limit: 8
+    t.string "user_agent"
+    t.string "banner_version", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_consent_logs_on_account_id"
+    t.index ["created_at"], name: "index_consent_logs_on_created_at"
+    t.index ["visitor_id"], name: "index_consent_logs_on_visitor_id"
   end
 
   create_table "conversion_property_keys", force: :cascade do |t|
@@ -587,6 +603,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_30_024924) do
   add_foreign_key "attribution_credits", "conversions"
   add_foreign_key "attribution_models", "accounts"
   add_foreign_key "billing_events", "accounts"
+  add_foreign_key "consent_logs", "accounts"
   add_foreign_key "conversion_property_keys", "accounts"
   add_foreign_key "conversions", "accounts"
   add_foreign_key "conversions", "identities"

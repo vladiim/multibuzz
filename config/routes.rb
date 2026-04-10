@@ -45,6 +45,12 @@ Rails.application.routes.draw do
         end
       end
     end
+
+    # Internal endpoints called by browser JavaScript on the marketing
+    # site (not part of the public SDK API). Anonymous, no API key.
+    namespace :internal do
+      post "consent", to: "consent#create"
+    end
   end
 
   # Public demo dashboard (full dashboard experience, no auth)
