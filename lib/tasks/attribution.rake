@@ -1,6 +1,44 @@
 # frozen_string_literal: true
 
 namespace :attribution do
+  desc "Clear poisoned landing_page_host values (domains matching known referrer sources)"
+  task clean_poisoned_landing_hosts: :environment do
+    account_id = ENV["ACCOUNT_ID"]
+    dry_run = ENV["DRY_RUN"] == "true"
+
+    unless account_id
+      puts "Usage: bin/rails attribution:clean_poisoned_landing_hosts ACCOUNT_ID=123 [DRY_RUN=true]"
+      exit 1
+    end
+
+    account = Account.find(account_id)
+    puts "Cleaning poisoned landing_page_host for: #{account.name} (ID: #{account.id})"
+    puts "DRY RUN MODE - no changes will be made" if dry_run
+
+    distinct_hosts = account.sessions
+      .where.not(landing_page_host: nil)
+      .distinct.pluck(:landing_page_host)
+
+    poisoned = distinct_hosts.select do |host|
+      matches_pattern = Sessions::ChannelAttributionService::REFERRER_DOMAIN_PATTERNS
+        .any? { |pattern, _| host.match?(pattern) }
+      next true if matches_pattern
+
+      ReferrerSources::LookupService.new("https://#{host}").call.present?
+    end
+
+    puts "\nFound #{poisoned.size} poisoned landing_page_host values:"
+    poisoned.each { |host| puts "  - #{host}" }
+
+    affected = account.sessions.where(landing_page_host: poisoned).count
+    puts "\nAffected sessions: #{affected}"
+
+    if poisoned.any? && !dry_run
+      account.sessions.where(landing_page_host: poisoned).update_all(landing_page_host: nil)
+      puts "Cleared landing_page_host on #{affected} sessions"
+    end
+  end
+
   desc "Backfill session channels using corrected ChannelAttributionService"
   task backfill_channels: :environment do
     account_id = ENV["ACCOUNT_ID"]

@@ -642,6 +642,66 @@ class Sessions::ChannelAttributionServiceTest < ActiveSupport::TestCase
     assert_equal Channels::EMAIL, service({}, "https://webmail.bigpond.com/mail").call
   end
 
+  # ==========================================
+  # Self-Referral Poisoning Guard
+  # ==========================================
+
+  test "self_referral does not match search engine domains in account_domains" do
+    poisoned_domains = %w[petresortsaustralia.com.au google.com]
+
+    result = service(
+      {},
+      "https://www.google.com/",
+      {},
+      page_host: "petresortsaustralia.com.au",
+      account_domains: poisoned_domains
+    ).call
+
+    assert_equal Channels::ORGANIC_SEARCH, result
+  end
+
+  test "self_referral does not match social network domains in account_domains" do
+    poisoned_domains = %w[petresortsaustralia.com.au facebook.com]
+
+    result = service(
+      {},
+      "https://www.facebook.com/page",
+      {},
+      page_host: "petresortsaustralia.com.au",
+      account_domains: poisoned_domains
+    ).call
+
+    assert_equal Channels::ORGANIC_SOCIAL, result
+  end
+
+  test "self_referral does not match AI engine domains in account_domains" do
+    poisoned_domains = %w[petresortsaustralia.com.au chatgpt.com]
+
+    result = service(
+      {},
+      "https://chatgpt.com/share/abc",
+      {},
+      page_host: "petresortsaustralia.com.au",
+      account_domains: poisoned_domains
+    ).call
+
+    assert_equal Channels::AI, result
+  end
+
+  test "self_referral still works for legitimate account domains after guard" do
+    own_domains = %w[petresortsaustralia.com.au northshore.pettechpro.com.au]
+
+    result = service(
+      {},
+      "https://northshore.pettechpro.com.au/search",
+      {},
+      page_host: "petresortsaustralia.com.au",
+      account_domains: own_domains
+    ).call
+
+    assert_equal Channels::DIRECT, result
+  end
+
   private
 
   def service(utm_data = {}, referrer = nil, click_ids = {}, page_host: nil, account_domains: [])

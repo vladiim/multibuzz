@@ -954,6 +954,36 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
 
   # --- Self-Referral Detection ---
 
+  test "does not store referrer host as landing_page_host when url has no host" do
+    params = {
+      visitor_id: "vis_no_host",
+      session_id: "sess_no_host",
+      url: "/page/123",
+      referrer: "https://www.google.com/"
+    }
+
+    Sessions::CreationService.new(account, params).call
+
+    session = account.sessions.find_by(session_id: "sess_no_host")
+
+    assert_nil session.landing_page_host,
+      "Should not fall back to referrer host for landing_page_host"
+  end
+
+  test "stores nil landing_page_host when url has no host and no referrer" do
+    params = {
+      visitor_id: "vis_no_host_no_ref",
+      session_id: "sess_no_host_no_ref",
+      url: "/page/456"
+    }
+
+    Sessions::CreationService.new(account, params).call
+
+    session = account.sessions.find_by(session_id: "sess_no_host_no_ref")
+
+    assert_nil session.landing_page_host
+  end
+
   test "classifies cross-domain self-referral as direct" do
     # First session establishes the domain
     account.sessions.create!(

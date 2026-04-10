@@ -164,8 +164,13 @@ module Sessions
     def self_referral?
       return false unless referrer_domain.present?
       return false unless account_domains.any?
+      return false if known_referrer_source?
 
       account_domains.any? { |domain| normalize_host(referrer_domain) == normalize_host(domain) }
+    end
+
+    def known_referrer_source?
+      REFERRER_DOMAIN_PATTERNS.any? { |pattern, _| referrer_domain.match?(pattern) }
     end
 
     def internal_referrer?

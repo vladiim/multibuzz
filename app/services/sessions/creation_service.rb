@@ -319,9 +319,9 @@ module Sessions
     end
 
     def page_host
-      @page_host ||= URI.parse(url).host || host_from_referrer
+      @page_host ||= URI.parse(url).host
     rescue URI::InvalidURIError
-      host_from_referrer
+      nil
     end
 
     def normalized_page_host
@@ -333,15 +333,6 @@ module Sessions
         .where.not(landing_page_host: nil)
         .distinct
         .pluck(:landing_page_host)
-    end
-
-    def host_from_referrer
-      return nil unless referrer.present?
-
-      ref_url = referrer.include?("://") ? referrer : "https://#{referrer}"
-      URI.parse(ref_url).host
-    rescue URI::InvalidURIError
-      nil
     end
 
     def reuse_active_session?
