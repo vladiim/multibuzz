@@ -1,0 +1,87 @@
+<%# Marketing analytics consent banner. The Stimulus controller is mounted
+    on every page that loads GTM, but the banner UI is only rendered for
+    visitors in the EEA/UK/CH/CA. Non-banner geos still mount the controller
+    so it can record an auto-grant consent log row once per session. %>
+<% if gtm_enabled? && marketing_analytics_enabled? %>
+  <% banner_required = requires_consent_banner?(request) %>
+  <div data-controller="consent-banner"
+       data-consent-banner-auto-grant-value="<%= !banner_required %>"
+       data-consent-banner-banner-version-value="v1">
+    <% if banner_required %>
+      <div data-consent-banner-target="banner"
+           class="fixed bottom-0 inset-x-0 z-50 bg-white border-t border-gray-200 shadow-lg"
+           hidden>
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row sm:items-center gap-4">
+          <p class="text-sm text-gray-700 flex-1">
+            We use cookies for analytics and ad campaign measurement on mbuzz.co.
+            See our <%= link_to "Cookie Policy", cookies_path, class: "text-blue-600 hover:text-blue-500 underline" %> for details.
+          </p>
+          <div class="flex gap-2 flex-shrink-0">
+            <button type="button"
+                    data-action="click->consent-banner#openModal"
+                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+              Customise
+            </button>
+            <button type="button"
+                    data-action="click->consent-banner#rejectAll"
+                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+              Reject all
+            </button>
+            <button type="button"
+                    data-action="click->consent-banner#acceptAll"
+                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-500">
+              Accept all
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div data-consent-banner-target="modal"
+           class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4"
+           hidden>
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">Cookie preferences</h2>
+          <div class="space-y-4">
+            <div class="flex items-start gap-3">
+              <input type="checkbox" disabled checked class="mt-1">
+              <div>
+                <p class="text-sm font-medium text-gray-900">Essential</p>
+                <p class="text-xs text-gray-500">Required for the site to function. Always on.</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <input type="checkbox"
+                     data-consent-banner-target="analyticsToggle"
+                     class="mt-1">
+              <div>
+                <p class="text-sm font-medium text-gray-900">Analytics</p>
+                <p class="text-xs text-gray-500">Helps us measure how the site is performing. Google Analytics 4.</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <input type="checkbox"
+                     data-consent-banner-target="adsToggle"
+                     class="mt-1">
+              <div>
+                <p class="text-sm font-medium text-gray-900">Advertising</p>
+                <p class="text-xs text-gray-500">Used to optimise ad campaigns and build audiences. Google Ads, Meta Pixel.</p>
+              </div>
+            </div>
+          </div>
+          <div class="mt-6 flex justify-end gap-2">
+            <button type="button"
+                    data-action="click->consent-banner#closeModal"
+                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+              Cancel
+            </button>
+            <button type="button"
+                    data-action="click->consent-banner#savePreferences"
+                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-500">
+              Save preferences
+            </button>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% end %>
