@@ -102,6 +102,7 @@ Rails.application.routes.draw do
   # Signup
   get "signup", to: "signup#new", as: :signup
   post "signup", to: "signup#create"
+  get "signup/welcome", to: "signup#welcome", as: :signup_welcome
   get "register", to: redirect("/signup"), as: :new_registration
 
   # Onboarding (authenticated)

@@ -21,7 +21,7 @@ class SignupControllerTest < ActionDispatch::IntegrationTest
       }
     end
 
-    assert_redirected_to onboarding_path
+    assert_redirected_to signup_welcome_path
   end
 
   test "create logs in the new user" do
@@ -102,5 +102,35 @@ class SignupControllerTest < ActionDispatch::IntegrationTest
     account = Account.find_by(name: "New Company")
 
     assert_predicate account.api_keys.test, :exists?
+  end
+
+  test "welcome page mounts the gtm-event controller for signup_complete" do
+    post signup_path, params: {
+      user: { email: "newuser@example.com", password: "password123" },
+      account: { name: "New Company" }
+    }
+    get signup_welcome_path
+
+    assert_response :success
+    assert_includes response.body, 'data-controller="gtm-event"'
+    assert_includes response.body, 'data-gtm-event-name-value="signup_complete"'
+  end
+
+  test "welcome page hashes the user email for the user_id_hashed property" do
+    post signup_path, params: {
+      user: { email: "Newuser@Example.com", password: "password123" },
+      account: { name: "New Company" }
+    }
+    get signup_welcome_path
+
+    expected_hash = Digest::SHA256.hexdigest("newuser@example.com")
+
+    assert_includes response.body, expected_hash
+  end
+
+  test "welcome page redirects to signup when no user is signed in" do
+    get signup_welcome_path
+
+    assert_redirected_to signup_path
   end
 end

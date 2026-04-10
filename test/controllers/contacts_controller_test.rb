@@ -72,6 +72,13 @@ class ContactsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "GET show mounts gtm-event for lead_submitted conversion" do
+    get contact_thank_you_path
+
+    assert_includes response.body, 'data-controller="gtm-event"'
+    assert_includes response.body, 'data-gtm-event-name-value="lead_submitted"'
+  end
+
   private
 
   def valid_params

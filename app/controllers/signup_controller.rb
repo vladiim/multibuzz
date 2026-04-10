@@ -10,6 +10,11 @@ class SignupController < ApplicationController
     signup_successful? ? handle_success : handle_failure
   end
 
+  def welcome
+    return redirect_to signup_path unless current_user
+    @user_id_hashed = Digest::SHA256.hexdigest(current_user.email.downcase.strip)
+  end
+
   private
 
   def signup_successful?
@@ -19,7 +24,7 @@ class SignupController < ApplicationController
   def handle_success
     log_in_user
     track_signup
-    redirect_to onboarding_path
+    redirect_to signup_welcome_path
   end
 
   def handle_failure
