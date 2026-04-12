@@ -5,9 +5,7 @@ module DataIntegrity
     queue_as :default
 
     def perform
-      Account.active.find_each do |account|
-        SurveillanceJob.perform_later(account.id)
-      end
+      SurveillanceScheduler.new.call
     end
   end
 end

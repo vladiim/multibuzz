@@ -3,19 +3,16 @@
 module Billing
   module Handlers
     class CheckoutCompleted < Base
-      class PlanNotFoundError < StandardError; end
-
       private
 
       def handle_event
-        validate_plan!
+        return plan_not_found_error unless plan.present?
+
         activate_subscription
       end
 
-      def validate_plan!
-        return if plan.present?
-
-        raise PlanNotFoundError, "Plan not found for slug: #{plan_slug.inspect}"
+      def plan_not_found_error
+        error_result([ "Plan not found for slug: #{plan_slug.inspect}" ])
       end
 
       def activate_subscription

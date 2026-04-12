@@ -16,6 +16,16 @@ class ApplicationJobTest < ActiveJob::TestCase
       "ApplicationJob should have a discard handler for DeserializationError"
   end
 
+  test "discards on DatabaseConnectionError" do
+    assert ApplicationJob.rescue_handlers.any? { |h| h.first == "ActiveRecord::DatabaseConnectionError" },
+      "ApplicationJob should discard on DatabaseConnectionError"
+  end
+
+  test "discards on ConnectionNotEstablished" do
+    assert ApplicationJob.rescue_handlers.any? { |h| h.first == "ActiveRecord::ConnectionNotEstablished" },
+      "ApplicationJob should discard on ConnectionNotEstablished"
+  end
+
   private
 
   class FailingTestJob < ApplicationJob

@@ -14,6 +14,10 @@ production:
     command: "SolidQueue::Job.clear_finished_in_batches(sleep_between_batches: 0.3)"
     schedule: every hour at minute 12
 
+  queue_cleanup:
+    class: Infrastructure::QueueCleanupJob
+    schedule: at 2am every day
+
   data_integrity_surveillance:
     class: DataIntegrity::SurveillanceSchedulerJob
     schedule: every hour

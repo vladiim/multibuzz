@@ -14,7 +14,9 @@ module Billing
       def run
         return account_not_found_error unless account
 
-        handle_event
+        result = handle_event
+        return result if result.is_a?(Hash) && result[:success] == false
+
         success_result(account: account)
       end
 
