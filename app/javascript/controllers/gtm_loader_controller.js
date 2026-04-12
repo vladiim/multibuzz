@@ -58,6 +58,7 @@ export default class extends Controller {
   }
 
   injectGtmScript() {
+    window.dataLayer.push({ "gtm.start": new Date().getTime(), event: "gtm.js" })
     const script = document.createElement("script")
     script.async = true
     script.src = `${this.constructor.GTM_BASE_URL}?id=${encodeURIComponent(this.containerIdValue)}`
