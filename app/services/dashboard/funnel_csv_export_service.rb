@@ -16,7 +16,7 @@ module Dashboard
     def write_to(file_path)
       File.open(file_path, "w") do |file|
         file.write(CSV.generate_line(HEADERS))
-        execute_query.each { |row| file.write(CSV.generate_line(row.values)) }
+        stream_query { |row| file.write(CSV.generate_line(row)) }
       end
     end
 
@@ -24,8 +24,15 @@ module Dashboard
 
     attr_reader :account, :filter_params
 
-    def execute_query
-      ActiveRecord::Base.connection.exec_query(export_sql, "Funnel CSV Export", query_binds)
+    def stream_query(&block)
+      conn = ActiveRecord::Base.connection.raw_connection
+      conn.send_query_params(export_sql, raw_bind_values)
+      conn.set_single_row_mode
+
+      while result = conn.get_result
+        result.each_row(&block)
+        result.clear
+      end
     end
 
     def export_sql
@@ -125,18 +132,9 @@ module Dashboard
       "AND events.funnel = #{ActiveRecord::Base.connection.quote(funnel_param)}"
     end
 
-    def query_binds
+    def raw_bind_values
       range = date_range.to_range
-      [
-        bind_attr("account_id", account.id, :integer),
-        bind_attr("is_test", test_mode, :boolean),
-        bind_attr("start_date", range.begin, :datetime),
-        bind_attr("end_date", range.end, :datetime)
-      ]
-    end
-
-    def bind_attr(name, value, type_sym)
-      ActiveRecord::Relation::QueryAttribute.new(name, value, ActiveRecord::Type.lookup(type_sym))
+      [ account.id, test_mode, range.begin.iso8601, range.end.iso8601 ]
     end
 
     def channels
