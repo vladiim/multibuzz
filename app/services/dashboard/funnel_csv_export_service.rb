@@ -16,7 +16,7 @@ module Dashboard
     def write_to(file_path)
       File.open(file_path, "w") do |file|
         file.write(CSV.generate_line(HEADERS))
-        sorted_rows.each { |row| file.write(CSV.generate_line(row)) }
+        execute_query.each { |row| file.write(CSV.generate_line(row.values)) }
       end
     end
 
@@ -24,131 +24,131 @@ module Dashboard
 
     attr_reader :account, :filter_params
 
-    def sorted_rows
-      (visit_rows + event_rows + conversion_rows).sort_by { |row| row[0] }
+    def execute_query
+      ActiveRecord::Base.connection.exec_query(export_sql, "Funnel CSV Export", query_binds)
     end
 
-    # --- Visits ---
-
-    def visit_rows
-      sessions_scope.find_each.map { |session| visit_row(session) }
+    def export_sql
+      <<~SQL
+        (#{visits_sql})
+        UNION ALL
+        (#{events_sql})
+        UNION ALL
+        (#{conversions_sql})
+        ORDER BY 1
+      SQL
     end
 
-    def visit_row(session)
+    def visits_sql
+      <<~SQL
+        SELECT
+          sessions.started_at::date AS date,
+          'visit' AS type,
+          NULL AS name,
+          NULL AS funnel,
+          sessions.channel,
+          sessions.initial_utm ->> 'utm_source' AS utm_source,
+          sessions.initial_utm ->> 'utm_medium' AS utm_medium,
+          sessions.initial_utm ->> 'utm_campaign' AS utm_campaign,
+          NULL::numeric AS revenue,
+          NULL AS currency,
+          NULL::boolean AS is_acquisition,
+          NULL AS properties
+        FROM sessions
+        WHERE sessions.account_id = $1
+          AND sessions.is_test = $2
+          AND sessions.suspect = false
+          AND sessions.started_at BETWEEN $3 AND $4
+          #{channel_filter("sessions")}
+      SQL
+    end
+
+    def events_sql
+      <<~SQL
+        SELECT
+          events.occurred_at::date AS date,
+          'event' AS type,
+          events.event_type AS name,
+          events.funnel,
+          s.channel,
+          s.initial_utm ->> 'utm_source' AS utm_source,
+          s.initial_utm ->> 'utm_medium' AS utm_medium,
+          s.initial_utm ->> 'utm_campaign' AS utm_campaign,
+          NULL::numeric AS revenue,
+          NULL AS currency,
+          NULL::boolean AS is_acquisition,
+          COALESCE(events.properties::text, '{}') AS properties
+        FROM events
+        INNER JOIN sessions s ON s.id = events.session_id AND s.account_id = events.account_id
+        WHERE events.account_id = $1
+          AND events.is_test = $2
+          AND events.occurred_at BETWEEN $3 AND $4
+          #{channel_filter("s")}
+          #{funnel_filter}
+      SQL
+    end
+
+    def conversions_sql
+      <<~SQL
+        SELECT
+          conversions.converted_at::date AS date,
+          'conversion' AS type,
+          conversions.conversion_type AS name,
+          conversions.funnel,
+          s.channel,
+          s.initial_utm ->> 'utm_source' AS utm_source,
+          s.initial_utm ->> 'utm_medium' AS utm_medium,
+          s.initial_utm ->> 'utm_campaign' AS utm_campaign,
+          conversions.revenue,
+          conversions.currency,
+          conversions.is_acquisition,
+          COALESCE(conversions.properties::text, '{}') AS properties
+        FROM conversions
+        LEFT JOIN sessions s ON s.id = conversions.session_id AND s.account_id = conversions.account_id
+        WHERE conversions.account_id = $1
+          AND conversions.is_test = $2
+          AND conversions.converted_at BETWEEN $3 AND $4
+          #{channel_filter("s")}
+      SQL
+    end
+
+    def channel_filter(table_alias)
+      return "" if channels == Channels::ALL || channels.blank?
+
+      quoted = channels.map { |c| ActiveRecord::Base.connection.quote(c) }.join(", ")
+      "AND #{table_alias}.channel IN (#{quoted})"
+    end
+
+    def funnel_filter
+      return "" if funnel_param.blank? || funnel_param == "all"
+
+      "AND events.funnel = #{ActiveRecord::Base.connection.quote(funnel_param)}"
+    end
+
+    def query_binds
+      range = date_range.to_range
       [
-        session.started_at.to_date.to_s,
-        FunnelStages::VISIT,
-        nil,
-        nil,
-        session.channel,
-        utm_value(session, UtmKeys::SOURCE),
-        utm_value(session, UtmKeys::MEDIUM),
-        utm_value(session, UtmKeys::CAMPAIGN),
-        nil,
-        nil,
-        nil,
-        nil
+        bind_attr("account_id", account.id, :integer),
+        bind_attr("is_test", test_mode, :boolean),
+        bind_attr("start_date", range.begin, :datetime),
+        bind_attr("end_date", range.end, :datetime)
       ]
     end
 
-    # --- Events ---
-
-    def event_rows
-      events_scope.includes(:session).find_each.map { |event| event_row(event) }
+    def bind_attr(name, value, type_sym)
+      ActiveRecord::Relation::QueryAttribute.new(name, value, ActiveRecord::Type.lookup(type_sym))
     end
 
-    def event_row(event)
-      session = event.session
-
-      [
-        event.occurred_at.to_date.to_s,
-        FunnelStages::EVENT,
-        event.event_type,
-        event.funnel,
-        session&.channel,
-        utm_value(session, UtmKeys::SOURCE),
-        utm_value(session, UtmKeys::MEDIUM),
-        utm_value(session, UtmKeys::CAMPAIGN),
-        nil,
-        nil,
-        nil,
-        (event.properties || {}).to_json
-      ]
+    def channels
+      filter_params[:channels] || Channels::ALL
     end
 
-    # --- Conversions ---
-
-    def conversion_rows
-      conversions_with_sessions.map { |conversion, session| conversion_row(conversion, session) }
+    def funnel_param
+      filter_params[:funnel]
     end
 
-    def conversions_with_sessions
-      conversions_scope.find_each.map do |conversion|
-        session = sessions_by_id[conversion.session_id]
-        [ conversion, session ]
-      end
-    end
-
-    def sessions_by_id
-      @sessions_by_id ||= begin
-        ids = conversions_scope.pluck(:session_id).compact
-        account.sessions.where(id: ids).index_by(&:id)
-      end
-    end
-
-    def conversion_row(conversion, session)
-      [
-        conversion.converted_at.to_date.to_s,
-        FunnelStages::CONVERSION,
-        conversion.conversion_type,
-        conversion.funnel,
-        session&.channel,
-        utm_value(session, UtmKeys::SOURCE),
-        utm_value(session, UtmKeys::MEDIUM),
-        utm_value(session, UtmKeys::CAMPAIGN),
-        conversion.revenue&.to_s,
-        conversion.currency,
-        conversion.is_acquisition.to_s,
-        (conversion.properties || {}).to_json
-      ]
-    end
-
-    # --- Shared ---
-
-    def utm_value(session, key)
-      return nil unless session
-
-      session.initial_utm&.dig(key) || session.initial_utm&.dig(key.to_sym)
-    end
-
-    # --- Scopes ---
-
-    def sessions_scope
-      Scopes::SessionsScope.new(
-        account: account,
-        date_range: date_range,
-        channels: filter_params[:channels] || Channels::ALL,
-        test_mode: filter_params[:test_mode] || false
-      ).call
-    end
-
-    def events_scope
-      Scopes::EventsScope.new(
-        account: account,
-        date_range: date_range,
-        channels: filter_params[:channels] || Channels::ALL,
-        funnel: filter_params[:funnel],
-        test_mode: filter_params[:test_mode] || false
-      ).call
-    end
-
-    def conversions_scope
-      @conversions_scope ||= Scopes::ConversionsScope.new(
-        account: account,
-        date_range: date_range,
-        channels: filter_params[:channels] || Channels::ALL,
-        test_mode: filter_params[:test_mode] || false
-      ).call
+    def test_mode
+      filter_params[:test_mode] || false
     end
 
     def date_range

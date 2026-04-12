@@ -86,7 +86,9 @@ class GtmLoaderRenderingTest < ActionDispatch::IntegrationTest
   def with_gtm_container
     fake_credentials = Object.new
     fake_credentials.define_singleton_method(:dig) { |*| GTM_TEST_CONTAINER_ID }
-    Rails.application.stub(:credentials, fake_credentials) { yield }
+    Rails.application.stub(:credentials, fake_credentials) do
+      Rails.stub(:env, "production".inquiry) { yield }
+    end
   end
 
   def sign_in

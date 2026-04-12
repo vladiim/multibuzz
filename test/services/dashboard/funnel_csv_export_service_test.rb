@@ -116,8 +116,10 @@ module Dashboard
       create_event(properties: { "page" => "/checkout", "url" => "https://example.com" })
 
       csv = export_and_parse
-      event = csv.find { |row| row["type"] == FunnelStages::EVENT }
+      event = csv.select { |row| row["type"] == FunnelStages::EVENT }
+        .find { |row| row["properties"]&.include?("checkout") }
 
+      assert event, "expected event row with checkout in properties"
       assert_includes event["properties"], "checkout"
     end
 
@@ -241,6 +243,21 @@ module Dashboard
       assert_nil row["utm_source"]
       assert_nil row["utm_medium"]
       assert_nil row["utm_campaign"]
+    end
+
+    # ==========================================
+    # Multi-account isolation
+    # ==========================================
+
+    # ==========================================
+    # SQL-specific edge cases
+    # ==========================================
+
+    test "does not use find_each or in-memory sort" do
+      source = File.read(Rails.root.join("app/services/dashboard/funnel_csv_export_service.rb"))
+
+      assert_not source.include?("find_each"), "Should not use find_each"
+      assert_not source.include?("sort_by"), "Should not use in-memory sort_by"
     end
 
     # ==========================================

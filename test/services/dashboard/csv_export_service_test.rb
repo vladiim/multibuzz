@@ -53,7 +53,7 @@ module Dashboard
       assert_equal "cpc", row["utm_medium"]
       assert_equal "summer_sale", row["utm_campaign"]
       assert_equal "true", row["is_acquisition"]
-      assert_equal '{"plan":"pro"}', row["properties"]
+      assert_equal '{"plan": "pro"}', row["properties"]
       assert_equal AttributionAlgorithms::FIRST_TOUCH, row["journey_position"]
       assert_equal "1", row["touchpoint_index"]
       assert_equal "1", row["journey_length"]
@@ -311,6 +311,34 @@ module Dashboard
 
       assert_nil row["journey_position"]
       assert_nil row["touchpoint_index"]
+    end
+
+    # ==========================================
+    # SQL-specific edge cases
+    # ==========================================
+
+    test "does not use find_in_batches or preload_journey_sessions" do
+      source = File.read(Rails.root.join("app/services/dashboard/csv_export_service.rb"))
+
+      assert_not source.include?("find_in_batches"), "Should not use find_in_batches"
+      assert_not source.include?("preload_journey_sessions"), "Should not use preload_journey_sessions"
+    end
+
+    test "handles all algorithm enum values" do
+      algorithms = { linear: 2, time_decay: 3, u_shaped: 4, markov_chain: 7, shapley_value: 8 }
+
+      algorithms.each do |algo_name, _algo_val|
+        model = account.attribution_models.create!(name: "#{algo_name}_test", algorithm: algo_name, is_active: true)
+        create_credit(model: model)
+
+        csv = export_and_parse(service(models: [ model ]))
+        row = csv.first
+
+        assert_equal algo_name.to_s, row["algorithm"], "Algorithm #{algo_name} should be labeled correctly"
+
+        AttributionCredit.where(attribution_model: model).delete_all
+        model.destroy!
+      end
     end
 
     # ==========================================

@@ -11,7 +11,7 @@ class ApplicationService
     error_result([ "Record not found: #{e.message}" ])
   rescue StandardError => e
     report_error(e)
-    error_result([ "Internal error: #{e.message}" ])
+    error_result([ "Something went wrong. Please try again shortly." ])
   end
 
   private

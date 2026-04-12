@@ -24,7 +24,7 @@ class ApplicationServiceTest < ActiveSupport::TestCase
     result = FailingService.new.call
 
     refute result[:success]
-    assert_includes result[:errors].first, "Internal error"
+    assert_includes result[:errors].first, "Something went wrong"
   end
 
   test "still returns success_result on success" do

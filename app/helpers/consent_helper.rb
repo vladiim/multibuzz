@@ -30,7 +30,7 @@ module ConsentHelper
   end
 
   def gtm_enabled?
-    gtm_container_id.present?
+    Rails.env.production? && gtm_container_id.present?
   end
 
   def visitor_country(request)

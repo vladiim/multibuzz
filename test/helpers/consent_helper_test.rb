@@ -127,20 +127,32 @@ class ConsentHelperTest < ActionView::TestCase
     end
   end
 
-  test "gtm_enabled? true when container id present" do
+  test "gtm_enabled? true when production and container id present" do
     with_gtm_container("GTM-TESTING1") do
-      assert_predicate self, :gtm_enabled?
+      Rails.stub(:env, "production".inquiry) do
+        assert_predicate self, :gtm_enabled?
+      end
     end
   end
 
   test "gtm_enabled? false when container id absent" do
     with_gtm_container(nil) do
-      refute_predicate self, :gtm_enabled?
+      Rails.stub(:env, "production".inquiry) do
+        refute_predicate self, :gtm_enabled?
+      end
     end
   end
 
   test "gtm_enabled? false when container id is empty string" do
     with_gtm_container("") do
+      Rails.stub(:env, "production".inquiry) do
+        refute_predicate self, :gtm_enabled?
+      end
+    end
+  end
+
+  test "gtm_enabled? false in non-production even with container id" do
+    with_gtm_container("GTM-TESTING1") do
       refute_predicate self, :gtm_enabled?
     end
   end

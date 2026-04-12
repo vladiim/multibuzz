@@ -9,6 +9,12 @@ module Dashboard
       journey_position touchpoint_index journey_length days_to_conversion
     ].freeze
 
+    ALGORITHM_LABELS = {
+      0 => "first_touch", 1 => "last_touch", 2 => "linear",
+      3 => "time_decay", 4 => "u_shaped", 6 => "participation",
+      7 => "markov_chain", 8 => "shapley_value"
+    }.freeze
+
     def initialize(account, filter_params)
       @account = account
       @filter_params = filter_params
@@ -17,11 +23,7 @@ module Dashboard
     def write_to(file_path)
       File.open(file_path, "w") do |file|
         file.write(CSV.generate_line(HEADERS))
-
-        credits_scope.find_in_batches(batch_size: 500) do |batch|
-          preload_journey_sessions(batch)
-          batch.each { |credit| file.write(CSV.generate_line(row_for(credit))) }
-        end
+        execute_query.each { |row| file.write(CSV.generate_line(row.values)) }
       end
     end
 
@@ -29,73 +31,141 @@ module Dashboard
 
     attr_reader :account, :filter_params
 
-    def row_for(credit)
-      conversion = credit.conversion
-      journey = journey_data(credit, conversion)
+    def execute_query
+      ActiveRecord::Base.connection.exec_query(export_sql, "CSV Export", query_binds)
+    end
 
+    def export_sql
+      <<~SQL
+        SELECT
+          conversions.converted_at::date AS date,
+          'conversion' AS type,
+          conversions.conversion_type AS name,
+          conversions.funnel,
+          attribution_models.name AS attribution_model,
+          #{algorithm_case} AS algorithm,
+          attribution_credits.channel,
+          attribution_credits.credit,
+          conversions.revenue,
+          attribution_credits.revenue_credit,
+          conversions.currency,
+          attribution_credits.utm_source,
+          attribution_credits.utm_medium,
+          attribution_credits.utm_campaign,
+          conversions.is_acquisition,
+          COALESCE(conversions.properties::text, '{}') AS properties,
+          #{journey_position_case} AS journey_position,
+          #{touchpoint_index_case} AS touchpoint_index,
+          #{journey_length_expr} AS journey_length,
+          #{days_to_conversion_expr} AS days_to_conversion
+        FROM attribution_credits
+        INNER JOIN conversions ON conversions.id = attribution_credits.conversion_id
+        INNER JOIN attribution_models ON attribution_models.id = attribution_credits.attribution_model_id
+        LEFT JOIN sessions ON sessions.id = attribution_credits.session_id
+          AND sessions.account_id = attribution_credits.account_id
+        WHERE attribution_credits.account_id = $1
+          AND attribution_credits.is_test = $2
+          AND conversions.converted_at BETWEEN $3 AND $4
+          #{model_filter_clause}
+          #{channel_filter_clause}
+        ORDER BY conversions.converted_at
+      SQL
+    end
+
+    def algorithm_case
+      branches = ALGORITHM_LABELS.map { |k, v| "WHEN #{k} THEN '#{v}'" }.join(" ")
+      "CASE attribution_models.algorithm #{branches} END"
+    end
+
+    def journey_position_case
+      <<~SQL.squish
+        CASE
+          WHEN #{no_journey_guard} THEN NULL
+          WHEN #{session_not_in_journey} THEN NULL
+          WHEN #{journey_index} = 1 THEN 'first_touch'
+          WHEN #{journey_index} = #{journey_array_length} THEN 'last_touch'
+          ELSE 'assisted'
+        END
+      SQL
+    end
+
+    def touchpoint_index_case
+      <<~SQL.squish
+        CASE
+          WHEN #{no_journey_guard} THEN NULL
+          WHEN #{session_not_in_journey} THEN NULL
+          ELSE #{journey_index}
+        END
+      SQL
+    end
+
+    def journey_length_expr
+      "#{journey_array_length}"
+    end
+
+    def days_to_conversion_expr
+      <<~SQL.squish
+        CASE
+          WHEN sessions.started_at IS NULL THEN NULL
+          ELSE (conversions.converted_at::date - sessions.started_at::date)
+        END
+      SQL
+    end
+
+    def journey_index
+      "array_position(conversions.journey_session_ids, attribution_credits.session_id)"
+    end
+
+    def journey_array_length
+      "array_length(conversions.journey_session_ids, 1)"
+    end
+
+    def no_journey_guard
+      "conversions.journey_session_ids IS NULL OR #{journey_array_length} IS NULL"
+    end
+
+    def session_not_in_journey
+      "#{journey_index} IS NULL"
+    end
+
+    def model_filter_clause
+      return "" if models.blank?
+
+      ids = models.map(&:id).join(", ")
+      "AND attribution_credits.attribution_model_id IN (#{ids})"
+    end
+
+    def channel_filter_clause
+      return "" if channels == Channels::ALL || channels.blank?
+
+      quoted = channels.map { |c| ActiveRecord::Base.connection.quote(c) }.join(", ")
+      "AND attribution_credits.channel IN (#{quoted})"
+    end
+
+    def query_binds
+      range = date_range.to_range
       [
-        conversion.converted_at.to_date.to_s,
-        FunnelStages::CONVERSION,
-        conversion.conversion_type,
-        conversion.funnel,
-        credit.attribution_model.name,
-        credit.attribution_model.algorithm,
-        credit.channel,
-        credit.credit.to_s,
-        conversion.revenue&.to_s,
-        credit.revenue_credit&.to_s,
-        conversion.currency,
-        credit.utm_source,
-        credit.utm_medium,
-        credit.utm_campaign,
-        conversion.is_acquisition.to_s,
-        (conversion.properties || {}).to_json,
-        journey[:position],
-        journey[:index]&.to_s,
-        journey[:length]&.to_s,
-        journey[:days]&.to_s
+        bind_attr("account_id", account.id, :integer),
+        bind_attr("is_test", test_mode, :boolean),
+        bind_attr("start_date", range.begin, :datetime),
+        bind_attr("end_date", range.end, :datetime)
       ]
     end
 
-    def journey_data(credit, conversion)
-      journey_ids = conversion.journey_session_ids
-      return {} if journey_ids.blank?
-
-      index = journey_ids.index(credit.session_id)
-      return {} if index.nil?
-
-      length = journey_ids.length
-      session = @sessions_by_id[credit.session_id]
-
-      {
-        position: journey_position_for(index, length),
-        index: index + 1,
-        length: length,
-        days: session ? (conversion.converted_at.to_date - session.started_at.to_date).to_i : nil
-      }
+    def bind_attr(name, value, type_sym)
+      ActiveRecord::Relation::QueryAttribute.new(name, value, ActiveRecord::Type.lookup(type_sym))
     end
 
-    def journey_position_for(index, length)
-      return AttributionAlgorithms::FIRST_TOUCH if index.zero?
-      return AttributionAlgorithms::LAST_TOUCH if index == length - 1
-
-      AttributionAlgorithms::ASSISTED
+    def models
+      filter_params[:models]
     end
 
-    def preload_journey_sessions(credits)
-      session_ids = credits.flat_map { |c| c.conversion.journey_session_ids || [] }.uniq
-      @sessions_by_id = session_ids.any? ? account.sessions.where(id: session_ids).index_by(&:id) : {}
+    def channels
+      filter_params[:channels]
     end
 
-    def credits_scope
-      @credits_scope ||= Scopes::FilteredCreditsScope.new(
-        account: account,
-        models: filter_params[:models],
-        date_range: date_range,
-        channels: filter_params[:channels],
-        conversion_filters: filter_params[:conversion_filters] || [],
-        test_mode: filter_params[:test_mode] || false
-      ).call.includes(:conversion, :attribution_model)
+    def test_mode
+      filter_params[:test_mode] || false
     end
 
     def date_range
