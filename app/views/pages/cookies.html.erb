@@ -9,7 +9,7 @@
   <section class="py-16 px-6 border-b border-gray-200">
     <div class="max-w-3xl mx-auto">
       <h1 class="text-4xl font-bold text-gray-900 tracking-tight">Cookie Policy</h1>
-      <p class="mt-4 text-gray-600">Last updated: November 29, 2025</p>
+      <p class="mt-4 text-gray-600">Last updated: April 13, 2026</p>
       <div class="mt-6">
         <button type="button"
                 data-action="click->consent-banner#openModal"
@@ -29,25 +29,25 @@
           <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
           </svg>
-          <span>We use only essential cookies to keep you logged in</span>
+          <span>Essential cookies (login, security) are always on</span>
         </li>
         <li class="flex items-start gap-2">
           <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
           </svg>
-          <span>No tracking cookies, no advertising cookies, no third-party cookies</span>
+          <span>Analytics and advertising cookies load only after you consent</span>
         </li>
         <li class="flex items-start gap-2">
           <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
           </svg>
-          <span>Our analytics are server-side (we use mbuzz on our own site)</span>
+          <span>Full list below — we tell you exactly what each cookie does</span>
         </li>
         <li class="flex items-start gap-2">
           <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
           </svg>
-          <span>You can disable cookies, but you won't be able to log in</span>
+          <span>Manage your preferences anytime with the button above</span>
         </li>
       </ul>
     </div>
@@ -67,9 +67,9 @@
       <!-- Our Approach -->
       <h2>Our approach to cookies</h2>
       <p>
-        We believe in minimal data collection. Unlike most websites, we don't use cookies to track you
-        across the internet or serve you targeted ads. We only use cookies that are strictly necessary
-        to make mbuzz work.
+        We believe in minimal, transparent data collection. Essential cookies are always on because
+        they're required for the site to function. Analytics and advertising cookies are loaded only
+        after you give consent via the cookie banner. You can change your mind at any time.
       </p>
 
       <!-- Cookies We Use -->
@@ -78,11 +78,13 @@
         Here's a complete list of cookies we set:
       </p>
 
+      <h3>Essential cookies (always on)</h3>
       <div class="overflow-x-auto">
         <table>
           <thead>
             <tr>
               <th>Cookie</th>
+              <th>Provider</th>
               <th>Purpose</th>
               <th>Duration</th>
             </tr>
@@ -90,42 +92,112 @@
           <tbody>
             <tr>
               <td><code>_mbuzz_session</code></td>
+              <td>mbuzz</td>
               <td>Keeps you logged in to your account</td>
-              <td>Session (deleted when you close browser) or 2 weeks if "remember me"</td>
+              <td>Session or 2 weeks</td>
             </tr>
             <tr>
               <td><code>_csrf_token</code></td>
-              <td>Security token to prevent cross-site request forgery attacks</td>
+              <td>mbuzz</td>
+              <td>Security token to prevent cross-site request forgery</td>
               <td>Session</td>
+            </tr>
+            <tr>
+              <td><code>_mbuzz_vid</code></td>
+              <td>mbuzz</td>
+              <td>Visitor identifier for server-side attribution (first-party, no cross-site tracking)</td>
+              <td>2 years</td>
+            </tr>
+            <tr>
+              <td><code>mbuzz_consent</code></td>
+              <td>mbuzz</td>
+              <td>Stores your cookie preference choices so we don't re-ask</td>
+              <td>1 year</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <p>
-        That's it. Two cookies, both essential for security and functionality.
-      </p>
+      <h3>Analytics cookies (consent required)</h3>
+      <p>These load only after you accept analytics cookies via the cookie banner.</p>
+      <div class="overflow-x-auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Cookie</th>
+              <th>Provider</th>
+              <th>Purpose</th>
+              <th>Duration</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>_ga</code></td>
+              <td>Google Analytics 4</td>
+              <td>Distinguishes unique visitors</td>
+              <td>2 years</td>
+            </tr>
+            <tr>
+              <td><code>_ga_*</code></td>
+              <td>Google Analytics 4</td>
+              <td>Maintains session state</td>
+              <td>2 years</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-      <!-- What We Don't Use -->
-      <h2>What we don't use</h2>
+      <h3>Advertising cookies (consent required)</h3>
+      <p>These load only after you accept advertising cookies via the cookie banner.</p>
+      <div class="overflow-x-auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Cookie</th>
+              <th>Provider</th>
+              <th>Purpose</th>
+              <th>Duration</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>_gcl_au</code></td>
+              <td>Google Ads</td>
+              <td>Stores conversion information for Google Ads</td>
+              <td>90 days</td>
+            </tr>
+            <tr>
+              <td><code>_fbp</code></td>
+              <td>Meta Pixel</td>
+              <td>Identifies the browser for Meta ad delivery and measurement</td>
+              <td>90 days</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Consent and control -->
+      <h2>Your control</h2>
       <p>
-        We do <strong>not</strong> use:
+        If you're in the EU, UK, Switzerland, or California, we show a cookie banner before loading
+        any analytics or advertising cookies. You can accept all, reject all, or customise your
+        preferences. Everyone else can manage preferences anytime using the button at the top of this
+        page. Essential cookies cannot be disabled because the site doesn't work without them.
       </p>
-      <ul>
-        <li><strong>Analytics cookies</strong> — Our analytics are server-side. We use mbuzz to track
-        our own website, which doesn't require cookies</li>
-        <li><strong>Advertising cookies</strong> — We don't run ads or participate in ad networks</li>
-        <li><strong>Third-party cookies</strong> — We don't embed trackers from Google, Facebook,
-        or any other third party</li>
-        <li><strong>Preference cookies</strong> — We don't currently store preferences in cookies</li>
-      </ul>
 
       <!-- Third-Party Services -->
       <h2>Third-party services</h2>
       <p>
-        Some pages may load content from third-party services:
+        Some pages may load content from third-party services that set their own cookies:
       </p>
       <ul>
+        <li><strong>Google (Analytics 4 + Ads)</strong> — Sets <code>_ga</code>, <code>_ga_*</code>,
+        and <code>_gcl_au</code> cookies for analytics and ad conversion measurement. Loaded only
+        after consent. See
+        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener" class="text-blue-600 hover:text-blue-500">Google's privacy policy</a></li>
+        <li><strong>Meta (Pixel)</strong> — Sets the <code>_fbp</code> cookie for Meta ad measurement.
+        Loaded only after consent. See
+        <a href="https://www.facebook.com/privacy/policy" target="_blank" rel="noopener" class="text-blue-600 hover:text-blue-500">Meta's privacy policy</a></li>
         <li><strong>Stripe</strong> — For payment processing on the billing page. Stripe may set
         its own cookies for fraud prevention. See
         <a href="https://stripe.com/privacy" target="_blank" rel="noopener" class="text-blue-600 hover:text-blue-500">Stripe's privacy policy</a></li>
@@ -162,8 +234,8 @@
       <!-- Do Not Track -->
       <h2>Do Not Track</h2>
       <p>
-        Some browsers send a "Do Not Track" (DNT) signal. Since we don't track you in the first place,
-        there's nothing for us to disable. We respect your privacy by default.
+        Some browsers send a "Do Not Track" (DNT) signal. We respect DNT by defaulting all analytics
+        and advertising cookies to disabled until you explicitly consent.
       </p>
 
       <!-- Changes -->

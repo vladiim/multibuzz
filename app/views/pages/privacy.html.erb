@@ -9,7 +9,7 @@
   <section class="py-16 px-6 border-b border-gray-200">
     <div class="max-w-3xl mx-auto">
       <h1 class="text-4xl font-bold text-gray-900 tracking-tight">Privacy Policy</h1>
-      <p class="mt-4 text-gray-600">Last updated: November 29, 2025</p>
+      <p class="mt-4 text-gray-600">Last updated: April 13, 2026</p>
     </div>
   </section>
 
@@ -28,7 +28,7 @@
           <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
           </svg>
-          <span>Your tracking data belongs to you. We never sell it or use it for ads</span>
+          <span>Your tracking data belongs to you. We never sell it. On mbuzz.co we use Google Analytics, Google Ads, and Meta for our own marketing — separate from the data we process for you</span>
         </li>
         <li class="flex items-start gap-2">
           <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -142,11 +142,28 @@
         <li><strong>DigitalOcean</strong> — Hosting infrastructure</li>
       </ul>
       <p>
-        We never sell your data. We never share it with advertisers. We never share your data across
-        accounts or use it for other customers' benefit. When you enable data-driven attribution,
-        your data is analyzed solely to improve your own attribution insights — never mixed with
-        other customers' data.
+        We never sell your data. We never share your tracking data with advertisers. We never share
+        your data across accounts or use it for other customers' benefit. When you enable data-driven
+        attribution, your data is analyzed solely to improve your own attribution insights — never
+        mixed with other customers' data.
       </p>
+
+      <h3>Third parties on mbuzz.co (our marketing site only)</h3>
+      <p>
+        On our own marketing site (mbuzz.co), we use the following services for analytics and advertising
+        measurement. These are loaded only after you give consent via the cookie banner (for visitors in
+        the EEA, UK, Switzerland, and California) and do not apply to the data we process for you as a
+        customer.
+      </p>
+      <ul>
+        <li><strong>Google Analytics 4</strong> — Engagement analytics (page views, bounce rate, content
+        performance). See
+        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener" class="text-blue-600 hover:text-blue-500">Google's privacy policy</a></li>
+        <li><strong>Google Ads</strong> — Conversion tracking and remarketing for ad campaign optimisation.
+        <a href="https://adssettings.google.com" target="_blank" rel="noopener" class="text-blue-600 hover:text-blue-500">Manage your Google Ads settings</a></li>
+        <li><strong>Meta Pixel</strong> — Conversion tracking for Meta (Facebook/Instagram) ad campaigns.
+        <a href="https://www.facebook.com/adpreferences" target="_blank" rel="noopener" class="text-blue-600 hover:text-blue-500">Manage your Meta ad preferences</a></li>
+      </ul>
 
       <!-- Data Retention -->
       <h2>How long we keep data</h2>
@@ -190,6 +207,11 @@
         <li><strong>Legal obligation</strong> — To comply with laws (like keeping billing records)</li>
       </ul>
       <p>
+        Our lawful basis for analytics and advertising cookies on mbuzz.co is <strong>consent</strong>
+        (Art. 6(1)(a)). You can withdraw consent at any time via the cookie banner or the
+        <%= link_to "Cookie Policy", cookies_path, class: "text-blue-600 hover:text-blue-500" %> page.
+      </p>
+      <p>
         You can lodge a complaint with your local data protection authority if you believe we've
         violated your rights.
       </p>
@@ -201,23 +223,32 @@
         request deletion, and opt out of the sale of personal information.
       </p>
       <p>
-        <strong>We do not sell personal information.</strong> We never have, and we never will.
+        <strong>We do not sell personal information.</strong> We never have, and we never will. We share
+        limited identifiers with Google and Meta for measurement and advertising on mbuzz.co. Under
+        California law, sharing for cross-context behavioural advertising may be treated as a sale —
+        you may opt out via the cookie banner or the
+        <%= link_to "Cookie Policy", cookies_path, class: "text-blue-600 hover:text-blue-500" %> page.
       </p>
 
       <!-- Cookies -->
       <h2>Cookies</h2>
       <p>
-        We use minimal cookies to keep you logged in and remember your preferences. We don't use
-        tracking cookies or third-party advertising cookies. See our
+        On the mbuzz dashboard (your logged-in app), we use only essential first-party cookies for
+        session management and security. On mbuzz.co (our marketing site), we use Google Analytics,
+        Google Ads, and Meta cookies for analytics and ad measurement — these load only after you
+        give consent via the cookie banner. See our
         <%= link_to "Cookie Policy", cookies_path, class: "text-blue-600 hover:text-blue-500" %>
-        for details.
+        for a full list of cookies and how to manage your preferences.
       </p>
 
       <!-- Analytics -->
       <h2>Analytics on this website</h2>
       <p>
-        We use mbuzz to track analytics on our own website. We practice what we preach — privacy-respecting,
-        server-side tracking with no third-party cookies.
+        We use mbuzz for multi-touch attribution on our own website — server-side, first-party, the
+        same product we sell. For engagement analytics (bounce rate, page paths, content performance)
+        we use Google Analytics 4, because mbuzz is built for attribution, not behavioural analytics.
+        For ad campaign optimisation we use Google Ads and Meta Pixel. All three are gated by your
+        consent and load only if you accept on the cookie banner.
       </p>
 
       <!-- Changes -->
