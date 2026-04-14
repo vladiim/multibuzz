@@ -62,8 +62,8 @@ en:
           title: "10-Minute Setup"
           description: "Framework-native SDKs for Rails, Django, Laravel, and Node.js. Drop in a gem, add your API key, and you're tracking. No complicated tag managers or JavaScript snippets to debug."
         dark_funnel:
-          title: "7 Attribution Models"
-          description: "Heuristic models plus data-driven Markov Chain and Shapley Value. Compare them side-by-side to understand which channels actually drive conversions."
+          title: "8 Attribution Models"
+          description: "First-touch, last-touch, linear, time-decay, position-based, Markov chain, Shapley value, and data-driven — all running on the same data, side by side, so you can see the spread."
         quick_setup:
           title: "Roll Your Own Custom Models"
           description: "Write custom attribution rules in minutes with a simple modelling language. No need to wait for your analytics vendor to ship your feature request—just define the logic and run it."
