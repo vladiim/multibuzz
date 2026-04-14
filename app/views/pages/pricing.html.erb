@@ -1,0 +1,134 @@
+<% content_for(:title) { "Pricing" } %>
+<% content_for(:meta_description) { "mbuzz pricing: free tier plus Starter ($29), Growth ($99), and Pro ($299) per month. Event-based, overage transparent, no contracts. Cancel any time." } %>
+<% content_for(:og_title) { "mbuzz Pricing — Server-Side Attribution from $0" } %>
+<% content_for(:canonical_url) { pricing_url } %>
+
+<% content_for :head do %>
+  <script type="application/ld+json">
+    <%= {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: App::PUBLISHER_NAME,
+      description: "Multi-touch attribution that shows the model behind the number. Eight models side-by-side, a SQL-like DSL for custom models, open-source SDKs.",
+      brand: { "@type": "Brand", name: App::PUBLISHER_NAME },
+      offers: {
+        "@type": "AggregateOffer",
+        priceCurrency: "USD",
+        lowPrice: "0",
+        highPrice: "299",
+        offerCount: 4,
+        offers: [
+          { "@type": "Offer", name: "Free", price: "0", priceCurrency: "USD", description: "30,000 events/month. Full access to all 8 attribution models. No custom DSL models." },
+          { "@type": "Offer", name: "Starter", price: "29", priceCurrency: "USD", description: "1,000,000 events/month. 3 custom DSL attribution models. Overage: $5 per 250,000 events." },
+          { "@type": "Offer", name: "Growth", price: "99", priceCurrency: "USD", description: "5,000,000 events/month. 5 custom DSL attribution models. Overage: $15 per 1,000,000 events." },
+          { "@type": "Offer", name: "Pro", price: "299", priceCurrency: "USD", description: "25,000,000 events/month. 10 custom DSL attribution models. Overage: $50 per 5,000,000 events." }
+        ]
+      }
+    }.to_json.html_safe %>
+  </script>
+<% end %>
+
+<%= render "layouts/nav" %>
+
+<div class="min-h-screen bg-white">
+  <section class="py-20 px-6">
+    <div class="max-w-4xl mx-auto text-center">
+      <h1 class="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight">
+        Start free. Pay for events, not seats.
+      </h1>
+      <p class="mt-6 text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+        Every plan includes all eight attribution models, the Attribution DSL for writing your own,
+        and open-source SDKs for Ruby, Node, Python, and PHP. You pay for the events you track.
+      </p>
+      <p class="mt-4 text-base text-gray-500">
+        No contracts. No sales calls. Cancel any time.
+      </p>
+    </div>
+  </section>
+
+  <%= render "pages/home/pricing" %>
+
+  <section class="py-20 px-6 bg-gray-50">
+    <div class="max-w-3xl mx-auto">
+      <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">How pricing works</h2>
+
+      <div class="space-y-8 text-gray-700 leading-relaxed">
+        <div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">What's an event?</h3>
+          <p>
+            One tracked touchpoint in a customer journey: a pageview, a click, a signup, a purchase,
+            or any custom event you send to the mbuzz API. Events feed into the attribution models.
+            The more events you track, the more complete the journey mbuzz can reconstruct.
+          </p>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">What happens if I go over my plan limit?</h3>
+          <p>
+            Paid plans (Starter / Growth / Pro) have a transparent overage rate per additional block of events:
+            $5 per 250K on Starter, $15 per 1M on Growth, $50 per 5M on Pro. You keep tracking,
+            we charge the overage at the end of the billing period. No surprise invoices, no hard cutoffs.
+          </p>
+          <p class="mt-2">
+            The Free tier hard-caps at 30,000 events. No overage — events beyond the cap are dropped
+            until the next billing cycle or you upgrade.
+          </p>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">What are custom DSL models?</h3>
+          <p>
+            mbuzz ships with eight attribution models (first-touch, last-touch, linear, time-decay,
+            position-based, Markov, Shapley, data-driven). If none of them match how your business
+            actually works, you can write your own in the Attribution DSL — a SQL-like language for
+            defining attribution logic. Free includes 0, Starter 3, Growth 5, Pro 10.
+          </p>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">Do I own my data?</h3>
+          <p>
+            Yes. Every plan includes CSV export, API access, and an MCP server for agent-native
+            pulls. No premium-tier gate on data export, no vendor lock-in. Fork the open-source
+            SDKs and keep running if you ever leave.
+          </p>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">Is there an annual discount?</h3>
+          <p>
+            Not yet. Pricing is month-to-month because bootstrap-stage customers shouldn't have to
+            commit a year ahead to get a fair rate. We'll reconsider when the product hits its next
+            tier of maturity.
+          </p>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">Enterprise?</h3>
+          <p>
+            If you need more than 25M events/month, custom integrations, or a commercial agreement,
+            <%= link_to "get in touch", contact_path, class: "text-blue-600 hover:underline" %>
+            and we'll scope something. No MSA theatre, just a conversation.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-20 px-6 bg-blue-600">
+    <div class="max-w-4xl mx-auto text-center">
+      <h2 class="text-3xl font-bold text-white mb-4">
+        Start tracking in minutes
+      </h2>
+      <p class="text-lg text-blue-100 mb-8">
+        Free tier. No credit card. No sales call. SDKs for Ruby, Node, Python, and PHP.
+      </p>
+      <div class="flex flex-col sm:flex-row justify-center gap-4">
+        <%= link_to "Get Started Free", signup_path, class: "px-8 py-3 text-base font-semibold text-blue-600 bg-white hover:bg-blue-50 rounded-md transition-all" %>
+        <%= link_to "Read the Docs", docs_path('getting-started'), class: "px-8 py-3 text-base font-semibold text-white border border-white/30 hover:bg-white/10 rounded-md transition-all" %>
+      </div>
+    </div>
+  </section>
+</div>
+
+<%= render "layouts/footer" %>

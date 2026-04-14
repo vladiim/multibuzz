@@ -86,6 +86,7 @@ Rails.application.routes.draw do
   # Public pages
   get "home", to: "pages#home"
   get "about", to: "pages#about"
+  get "pricing", to: "pages#pricing"
   get "privacy", to: "pages#privacy"
   get "terms", to: "pages#terms"
   get "cookies", to: "pages#cookies"
