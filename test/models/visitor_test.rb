@@ -59,12 +59,28 @@ class VisitorTest < ActiveSupport::TestCase
     end
   end
 
+  test "should accept visitor_ids with dots colons and single characters" do
+    valid_ids = %w[
+      x
+      a1
+      ga4.1234567890.1234567890
+      segment:anonymous:abc123
+      user-123_v2
+    ]
+
+    valid_ids.each do |id|
+      visitor.visitor_id = id
+
+      assert_predicate visitor, :valid?, "#{id} should be valid"
+    end
+  end
+
   test "should reject invalid visitor_id formats" do
     invalid_ids = [
       "abc 123",           # spaces
-      "abc@123",           # special chars
-      "abc#123",           # special chars
-      "ab"                # too short
+      "abc@123",           # @ symbol
+      "abc#123",           # hash symbol
+      ""                   # empty string
     ]
 
     invalid_ids.each do |id|
@@ -72,6 +88,12 @@ class VisitorTest < ActiveSupport::TestCase
 
       assert_not visitor.valid?, "#{id} should be invalid"
     end
+  end
+
+  test "should reject visitor_id exceeding max length" do
+    visitor.visitor_id = "a" * 256
+
+    assert_not visitor.valid?
   end
 
   test "should have many sessions" do
