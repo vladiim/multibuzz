@@ -144,6 +144,9 @@ module Conversions
         is_acquisition: is_acquisition,
         idempotency_key: idempotency_key
       ).tap { |c| c.inherit_acquisition = inherit_acquisition }
+    rescue ActiveRecord::RecordNotUnique
+      @duplicate = true
+      account.conversions.find_by!(idempotency_key: idempotency_key)
     end
 
     def resolved_identity

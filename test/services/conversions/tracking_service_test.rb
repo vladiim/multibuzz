@@ -640,6 +640,22 @@ module Conversions
       refute second[:duplicate]
     end
 
+    test "handles concurrent duplicate idempotency key gracefully" do # rubocop:disable ThreadSafety/NewThread
+      key = "idem_race_#{SecureRandom.hex(4)}"
+      results = Array.new(2)
+
+      threads = 2.times.map do |i|
+        Thread.new do # rubocop:disable ThreadSafety/NewThread
+          results[i] = build_service(event_id: event.prefix_id, idempotency_key: key).call
+        end
+      end
+      threads.each(&:join)
+
+      results.each { |r| assert r[:success], "Expected success but got: #{r[:errors]}" }
+      assert_equal results[0][:conversion].id, results[1][:conversion].id
+      assert results.any? { |r| r[:duplicate] }
+    end
+
     # ==========================================
     # Session Activity Tracking tests
     # ==========================================
