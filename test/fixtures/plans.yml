@@ -7,7 +7,7 @@ free:
   stripe_price_id: null
   is_active: true
   sort_order: <%= Billing::FREE_SORT_ORDER %>
-  ad_platform_connection_limit: 0
+  ad_platform_connection_limit: <%= Billing::AD_PLATFORM_CONNECTION_LIMITS.fetch(Billing::PLAN_FREE) %>
 
 starter:
   name: "Starter"
@@ -18,7 +18,7 @@ starter:
   stripe_price_id: "price_starter_test"
   is_active: true
   sort_order: <%= Billing::STARTER_SORT_ORDER %>
-  ad_platform_connection_limit: 1
+  ad_platform_connection_limit: <%= Billing::AD_PLATFORM_CONNECTION_LIMITS.fetch(Billing::PLAN_STARTER) %>
 
 growth:
   name: "Growth"
@@ -29,7 +29,7 @@ growth:
   stripe_price_id: "price_growth_test"
   is_active: true
   sort_order: <%= Billing::GROWTH_SORT_ORDER %>
-  ad_platform_connection_limit: 3
+  ad_platform_connection_limit: <%= Billing::AD_PLATFORM_CONNECTION_LIMITS.fetch(Billing::PLAN_GROWTH) %>
 
 pro:
   name: "Pro"
@@ -40,4 +40,4 @@ pro:
   stripe_price_id: "price_pro_test"
   is_active: true
   sort_order: <%= Billing::PRO_SORT_ORDER %>
-  ad_platform_connection_limit: null
+  ad_platform_connection_limit: <%= Billing::AD_PLATFORM_CONNECTION_LIMITS.fetch(Billing::PLAN_PRO) || "null" %>

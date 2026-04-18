@@ -432,6 +432,150 @@ class Account::BillingTest < ActiveSupport::TestCase
     assert_predicate account, :can_connect_ad_platform?
   end
 
+  # --- Ad Platform Connection Limits ---
+
+  test "ad_platform_connection_limit returns 0 for free plan" do
+    account.update!(plan: free_plan)
+
+    assert_equal 0, account.ad_platform_connection_limit
+  end
+
+  test "ad_platform_connection_limit returns 2 for starter plan" do
+    account.update!(plan: starter_plan)
+
+    assert_equal 2, account.ad_platform_connection_limit
+  end
+
+  test "ad_platform_connection_limit returns 5 for growth plan" do
+    account.update!(plan: growth_plan)
+
+    assert_equal 5, account.ad_platform_connection_limit
+  end
+
+  test "ad_platform_connection_limit returns nil for pro plan" do
+    account.update!(plan: pro_plan)
+
+    assert_nil account.ad_platform_connection_limit
+  end
+
+  test "ad_platform_connection_limit returns 0 when plan is nil" do
+    account.update!(plan: nil)
+
+    assert_equal 0, account.ad_platform_connection_limit
+  end
+
+  test "ad_platform_connections_used counts non-disconnected connections" do
+    # account :one fixture has google_ads (connected) + google_ads_error (error)
+    assert_equal 2, account.ad_platform_connections_used
+  end
+
+  test "ad_platform_connections_used excludes disconnected connections" do
+    account.ad_platform_connections.first.update!(status: :disconnected)
+
+    assert_equal 1, account.ad_platform_connections_used
+  end
+
+  test "ad_platform_connections_used is scoped to account" do
+    # account :two fixture has one connection (other_account_google)
+    assert_equal 1, other_account.ad_platform_connections_used
+  end
+
+  test "ad_platform_connections_remaining returns Float::INFINITY for pro plan" do
+    account.update!(plan: pro_plan)
+
+    assert_equal Float::INFINITY, account.ad_platform_connections_remaining
+  end
+
+  test "ad_platform_connections_remaining subtracts used from limit" do
+    account.update!(plan: growth_plan)
+    # fixture has 2 connections; growth limit is 5 → 3 remaining
+
+    assert_equal 3, account.ad_platform_connections_remaining
+  end
+
+  test "ad_platform_connections_remaining floors at zero" do
+    account.update!(plan: starter_plan)
+    # fixture has 2 connections; starter limit is 2 → 0 remaining
+
+    assert_equal 0, account.ad_platform_connections_remaining
+  end
+
+  test "ad_platform_connections_remaining is zero for free plan" do
+    account.update!(plan: free_plan)
+
+    assert_equal 0, account.ad_platform_connections_remaining
+  end
+
+  test "can_add_ad_platform_connection? returns false for free plan" do
+    account.update!(plan: free_plan)
+
+    assert_not account.can_add_ad_platform_connection?
+  end
+
+  test "can_add_ad_platform_connection? returns false for nil plan" do
+    account.update!(plan: nil)
+
+    assert_not account.can_add_ad_platform_connection?
+  end
+
+  test "can_add_ad_platform_connection? returns false for starter at limit" do
+    account.update!(plan: starter_plan)
+    # fixture already has 2 connections → at limit
+
+    assert_not account.can_add_ad_platform_connection?
+  end
+
+  test "can_add_ad_platform_connection? returns true for starter with room" do
+    account.update!(plan: starter_plan)
+    account.ad_platform_connections.first.update!(status: :disconnected)
+    # 1 active connection, limit 2 → has room
+
+    assert_predicate account, :can_add_ad_platform_connection?
+  end
+
+  test "can_add_ad_platform_connection? returns true for growth with room" do
+    account.update!(plan: growth_plan)
+    # fixture has 2 connections, limit 5 → has room
+
+    assert_predicate account, :can_add_ad_platform_connection?
+  end
+
+  test "can_add_ad_platform_connection? returns true for pro regardless of count" do
+    account.update!(plan: pro_plan)
+    10.times do |i|
+      account.ad_platform_connections.create!(
+        platform: :google_ads,
+        platform_account_id: "bulk-#{i}",
+        platform_account_name: "Bulk #{i}",
+        currency: "USD",
+        access_token: "tok",
+        refresh_token: "ref",
+        token_expires_at: 1.hour.from_now,
+        status: :connected
+      )
+    end
+
+    assert_predicate account, :can_add_ad_platform_connection?
+  end
+
+  test "ad_platform_connections_unlimited? true for pro plan" do
+    account.update!(plan: pro_plan)
+
+    assert_predicate account, :ad_platform_connections_unlimited?
+  end
+
+  test "ad_platform_connections_unlimited? false for starter plan" do
+    account.update!(plan: starter_plan)
+
+    assert_not account.ad_platform_connections_unlimited?
+  end
+
+  test "ad_platform_connections_unlimited? false for free plan" do
+    account.update!(plan: free_plan)
+
+    assert_not account.ad_platform_connections_unlimited?
+  end
+
   # --- Attribution Model Limits ---
 
   test "custom_model_limit returns 0 for free plan" do

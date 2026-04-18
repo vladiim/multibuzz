@@ -204,6 +204,28 @@ module Account::Billing
     ::Billing::PAID_PLANS.include?(plan&.slug)
   end
 
+  def ad_platform_connection_limit
+    return 0 if plan.nil?
+    plan.ad_platform_connection_limit
+  end
+
+  def ad_platform_connections_used
+    ad_platform_connections.where.not(status: :disconnected).count
+  end
+
+  def ad_platform_connections_remaining
+    return Float::INFINITY if ad_platform_connections_unlimited?
+    [ ad_platform_connection_limit.to_i - ad_platform_connections_used, 0 ].max
+  end
+
+  def ad_platform_connections_unlimited?
+    can_connect_ad_platform? && ad_platform_connection_limit.nil?
+  end
+
+  def can_add_ad_platform_connection?
+    can_connect_ad_platform? && ad_platform_connections_remaining > 0
+  end
+
   # --- Attribution Model Limits ---
 
   def custom_model_limit

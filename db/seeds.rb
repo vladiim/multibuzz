@@ -18,7 +18,8 @@ plans = [
     events_included: Billing::FREE_EVENT_LIMIT,
     overage_price_cents: nil,
     stripe_price_id: nil,
-    sort_order: Billing::FREE_SORT_ORDER
+    sort_order: Billing::FREE_SORT_ORDER,
+    ad_platform_connection_limit: Billing::AD_PLATFORM_CONNECTION_LIMITS.fetch(Billing::PLAN_FREE)
   },
   {
     name: "Starter",
@@ -27,7 +28,8 @@ plans = [
     events_included: Billing::STARTER_EVENT_LIMIT,
     overage_price_cents: Billing::STARTER_OVERAGE_CENTS,
     stripe_price_id: stripe_prices[:starter],
-    sort_order: Billing::STARTER_SORT_ORDER
+    sort_order: Billing::STARTER_SORT_ORDER,
+    ad_platform_connection_limit: Billing::AD_PLATFORM_CONNECTION_LIMITS.fetch(Billing::PLAN_STARTER)
   },
   {
     name: "Growth",
@@ -36,7 +38,8 @@ plans = [
     events_included: Billing::GROWTH_EVENT_LIMIT,
     overage_price_cents: Billing::GROWTH_OVERAGE_CENTS,
     stripe_price_id: stripe_prices[:growth],
-    sort_order: Billing::GROWTH_SORT_ORDER
+    sort_order: Billing::GROWTH_SORT_ORDER,
+    ad_platform_connection_limit: Billing::AD_PLATFORM_CONNECTION_LIMITS.fetch(Billing::PLAN_GROWTH)
   },
   {
     name: "Pro",
@@ -45,7 +48,8 @@ plans = [
     events_included: Billing::PRO_EVENT_LIMIT,
     overage_price_cents: Billing::PRO_OVERAGE_CENTS,
     stripe_price_id: stripe_prices[:pro],
-    sort_order: Billing::PRO_SORT_ORDER
+    sort_order: Billing::PRO_SORT_ORDER,
+    ad_platform_connection_limit: Billing::AD_PLATFORM_CONNECTION_LIMITS.fetch(Billing::PLAN_PRO)
   }
 ]
 

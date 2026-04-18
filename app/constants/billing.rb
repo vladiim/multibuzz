@@ -59,6 +59,16 @@ module Billing
     PLAN_PRO => 10
   }.freeze
 
+  # --- Ad Platform Connection Limits ---
+  # nil = unlimited (Pro, Enterprise). Free is 0 (gated by can_connect_ad_platform?).
+  AD_PLATFORM_CONNECTION_LIMITS = {
+    PLAN_FREE => 0,
+    PLAN_STARTER => 2,
+    PLAN_GROWTH => 5,
+    PLAN_PRO => nil,
+    PLAN_ENTERPRISE => nil
+  }.freeze
+
   # --- Attribution Rerun Limits (matches event limits) ---
   RERUN_LIMITS = PLAN_LIMITS
 
