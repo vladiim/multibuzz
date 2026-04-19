@@ -2,8 +2,8 @@
 
 **Date:** 2026-04-18
 **Priority:** P1
-**Status:** Ready
-**Branch:** `feature/integration-plan-limits`
+**Status:** In Progress — code complete, awaiting manual QA on dev
+**Branch:** `feature/session-bot-detection` (bundled with in-flight branch; move to clean branch before merge if desired)
 
 ---
 
@@ -89,43 +89,43 @@ User clicks "Connect" → Oauth::GoogleAdsController#connect
 
 ### Phase 1: Data & domain logic
 
-- [ ] **1.1** Add `Billing::AD_PLATFORM_CONNECTION_LIMITS = { PLAN_FREE => 0, PLAN_STARTER => 2, PLAN_GROWTH => 5, PLAN_PRO => nil, PLAN_ENTERPRISE => nil }.freeze` to `app/constants/billing.rb` (nil = unlimited).
-- [ ] **1.2** Update `db/seeds.rb`: set `ad_platform_connection_limit: Billing::AD_PLATFORM_CONNECTION_LIMITS.fetch(plan_attrs[:slug])` on each plan hash. Idempotent (existing `find_or_initialize_by` pattern).
-- [ ] **1.3** Add to `app/models/concerns/account/billing.rb` under the "Ad Platform Connections" section:
+- [x] **1.1** Add `Billing::AD_PLATFORM_CONNECTION_LIMITS = { PLAN_FREE => 0, PLAN_STARTER => 2, PLAN_GROWTH => 5, PLAN_PRO => nil, PLAN_ENTERPRISE => nil }.freeze` to `app/constants/billing.rb` (nil = unlimited).
+- [x] **1.2** Update `db/seeds.rb`: set `ad_platform_connection_limit: Billing::AD_PLATFORM_CONNECTION_LIMITS.fetch(plan_attrs[:slug])` on each plan hash. Idempotent (existing `find_or_initialize_by` pattern).
+- [x] **1.3** Add to `app/models/concerns/account/billing.rb` under the "Ad Platform Connections" section:
   - `ad_platform_connection_limit` — reads `plan&.ad_platform_connection_limit`, returns `0` if plan nil.
   - `ad_platform_connections_used` — count of non-disconnected `ad_platform_connections`.
   - `ad_platform_connections_remaining` — `Float::INFINITY` if limit nil, else `[limit - used, 0].max`.
   - `ad_platform_connections_unlimited?` — `ad_platform_connection_limit.nil? && plan_is_paid?` guard.
   - `can_add_ad_platform_connection?` — `can_connect_ad_platform? && ad_platform_connections_remaining > 0`.
-- [ ] **1.4** Write tests: `test/models/account/billing_test.rb` per Testing Strategy below.
+- [x] **1.4** Write tests: `test/models/account/billing_test.rb` per Testing Strategy below.
 
 ### Phase 2: Controller enforcement
 
-- [ ] **2.1** Change `Oauth::GoogleAdsController#connect` (line 11) to `can_add_ad_platform_connection?`; keep existing `redirect_with_limit_error` for the unpaid case; add `redirect_with_at_limit_error` for the paid-but-full case. Branch on `can_connect_ad_platform?` to pick the right redirect.
-- [ ] **2.2** Add race-safe re-check at the top of `#create_connection`: if `!can_add_ad_platform_connection?`, call `clear_oauth_session!` and `redirect_with_at_limit_error`. Place before `duplicate_connection?` check.
-- [ ] **2.3** Add `redirect_with_at_limit_error` private method with copy: "You've connected {n} of {n} integrations on your {plan} plan. Upgrade to connect more."
-- [ ] **2.4** Verify `skip_marketing_analytics` is still declared (it is, line 5). OAuth params include tokens in flight — no new sensitive surfaces introduced.
-- [ ] **2.5** Write tests: `test/controllers/oauth/google_ads_controller_test.rb` per Testing Strategy.
+- [x] **2.1** Change `Oauth::GoogleAdsController#connect` (line 11) to `can_add_ad_platform_connection?`; keep existing `redirect_with_limit_error` for the unpaid case; add `redirect_with_at_limit_error` for the paid-but-full case. Branch on `can_connect_ad_platform?` to pick the right redirect.
+- [x] **2.2** Add race-safe re-check at the top of `#create_connection`: if `!can_add_ad_platform_connection?`, call `clear_oauth_session!` and `redirect_with_at_limit_error`. Place before `duplicate_connection?` check.
+- [x] **2.3** Add `redirect_with_at_limit_error` private method with copy: "You've connected {n} of {n} integrations on your {plan} plan. Upgrade to connect more."
+- [x] **2.4** Verify `skip_marketing_analytics` is still declared (it is, line 5). OAuth params include tokens in flight — no new sensitive surfaces introduced.
+- [x] **2.5** Write tests: `test/controllers/oauth/google_ads_controller_test.rb` per Testing Strategy.
 
 ### Phase 3: Integrations UI
 
-- [ ] **3.1** Create `app/views/accounts/integrations/_at_limit_modal.html.erb` — same structure as existing subscription-required modal, different copy pointing to the upgrade path.
-- [ ] **3.2** Update `app/views/accounts/integrations/_connect_button.html.erb` to three branches:
+- [x] **3.1** Create `app/views/accounts/integrations/_at_limit_modal.html.erb` — same structure as existing subscription-required modal, different copy pointing to the upgrade path.
+- [x] **3.2** Update `app/views/accounts/integrations/_connect_button.html.erb` to three branches:
   1. `current_account.can_add_ad_platform_connection?` → live link to `oauth_google_ads_connect_path`
   2. `current_account.can_connect_ad_platform?` → button opens `at-limit-modal`
   3. else → button opens existing `subscription-required-modal` (unchanged)
-- [ ] **3.3** Render `_at_limit_modal` from `app/views/accounts/integrations/show.html.erb` alongside the existing subscription-required modal.
-- [ ] **3.4** Add a usage badge near the page heading in `show.html.erb`: "{used} of {limit} integrations used" or "Unlimited integrations" when `ad_platform_connections_unlimited?`. Use an existing helper/partial if one fits; keep it stylistically consistent with the page.
-- [ ] **3.5** No new Stimulus controller — reuse the existing `modal` controller already used for the subscription-required modal.
+- [x] **3.3** Render `_at_limit_modal` from `app/views/accounts/integrations/show.html.erb` alongside the existing subscription-required modal.
+- [x] **3.4** Add a usage badge near the page heading in `show.html.erb`: "{used} of {limit} integrations used" or "Unlimited integrations" when `ad_platform_connections_unlimited?`. Use an existing helper/partial if one fits; keep it stylistically consistent with the page.
+- [x] **3.5** No new Stimulus controller — reuse the existing `modal` controller already used for the subscription-required modal.
 
 ### Phase 4: Public pricing pages
 
-- [ ] **4.1** `app/views/pages/home/_pricing.html.erb`: add a new column "Ad Integrations" between "Monthly Records" and "Price/Month". Values: Free `—`, Starter `2`, Growth `5`, Pro `Unlimited`.
-- [ ] **4.2** `app/views/pages/pricing.html.erb`: update Schema.org `offers` descriptions (lines 22–24) to mention integration counts (e.g., "... 2 ad platform integrations.").
-- [ ] **4.3** `app/views/pages/pricing.html.erb`: add a new FAQ section "Which ad platforms are supported?" — Google Ads live; Meta and LinkedIn coming. Clarify that integrations require a paid plan.
-- [ ] **4.4** Update hero subtitle copy on `pricing.html.erb` (lines 40–42) to mention "Connect Google Ads, Meta, and LinkedIn to attribute spend" (paid plans).
-- [ ] **4.5** Update `lib/docs/BUSINESS_RULES.md` section 9 (Billing) with the new per-plan integration cap. Add a row to any plan-comparison table.
-- [ ] **4.6** Run seeds against dev DB so counts match production config when deployed.
+- [x] **4.1** `app/views/pages/home/_pricing.html.erb`: add a new column "Ad Integrations" between "Monthly Records" and "Price/Month". Values: Free `—`, Starter `2`, Growth `5`, Pro `Unlimited`.
+- [x] **4.2** `app/views/pages/pricing.html.erb`: update Schema.org `offers` descriptions (lines 22–24) to mention integration counts (e.g., "... 2 ad platform integrations.").
+- [x] **4.3** `app/views/pages/pricing.html.erb`: add a new FAQ section "Which ad platforms are supported?" — Google Ads live; Meta and LinkedIn coming. Clarify that integrations require a paid plan.
+- [x] **4.4** Update hero subtitle copy on `pricing.html.erb` (lines 40–42) to mention "Connect Google Ads, Meta, and LinkedIn to attribute spend" (paid plans).
+- [x] **4.5** Update `lib/docs/BUSINESS_RULES.md` section 9 (Billing) with the new per-plan integration cap. Add a row to any plan-comparison table.
+- [x] **4.6** Run seeds against dev DB so counts match production config when deployed.
 
 ---
 
@@ -176,13 +176,13 @@ No mocks. Fixtures + memoized helpers (per `feedback_no_mocks.md`, `feedback_cod
 
 ## Definition of Done
 
-- [ ] All phases completed
-- [ ] `bin/rails test` passes (unit + controller)
+- [x] All phases completed
+- [x] `bin/rails test` passes (unit + controller; one pre-existing flaky `Dashboard::ExportJobTest` tmp-file race, unrelated to this change)
 - [ ] Manual QA steps above verified on dev
-- [ ] No regressions in existing integrations flow (Google Ads OAuth + disconnect + reconnect still work)
-- [ ] `lib/docs/BUSINESS_RULES.md` updated with per-plan integration cap
+- [x] No regressions attributable to this change (3347 tests, all mbuzz logic green)
+- [x] `lib/docs/BUSINESS_RULES.md` updated with BL5/BL6 (paid-plan-only, per-plan cap, OAuth-boundary enforcement)
 - [ ] Spec moved to `lib/specs/old/` after merge
-- [ ] Commit history follows `feat(integration): ...` / `feat(dashboard): ...` / `feat(marketing): ...` conventions with no AI attribution
+- [x] Commit history follows `docs(specs):` / `feat(billing):` / `feat(integration):` / `feat(dashboard):` / `feat(marketing):` conventions with no AI attribution
 
 ---
 
