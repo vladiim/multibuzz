@@ -41,10 +41,77 @@
   <%= render "pages/home/navigation" %>
   <%= render "pages/home/hero" %>
   <%= render "pages/home/dashboard_preview" %>
+
+  <%= render "landing_pages/lp_feature_showcase",
+    heading: "Models. DSL. Spend. LTV.",
+    bg_variant: "white",
+    cells: [
+      {
+        eyebrow: "Eight models, one view",
+        title: "Same data. Eight models. The spread is the answer.",
+        description: "Most attribution tools give you one number. mbuzz shows you what every model says — and where they disagree. The spread between first-touch and last-touch is the honest truth range.",
+        bullets: [
+          "First-touch, last-touch, linear, time-decay, position-based, Markov, Shapley, data-driven",
+          "Same underlying data — swap the lens, not the dataset",
+          "Export every model's output on every tier"
+        ],
+        screenshot_url: "https://mbuzz.sfo3.digitaloceanspaces.com/brand-assets/directory-listings/screenshot-02-channels.png",
+        screenshot_alt: "mbuzz channel comparison across 8 attribution models",
+        cta: "See the models side-by-side",
+        cta_path: demo_path,
+        modal_frame_id: "demo_conversions",
+        modal_frame_src: demo_dashboard_conversions_path(models: [ "first_touch", "last_touch" ])
+      },
+      {
+        eyebrow: "Attribution DSL",
+        title: "Write your own attribution. Audit the rest.",
+        description: "SQL-like language. Encode your sales cycle directly into the math. Fork any built-in model, tweak the decay, add lookback windows. You own the logic — not a vendor's black box.",
+        bullets: [
+          "Plain-text rules, diff-friendly, version-controlled",
+          "Fork and modify any built-in model in one line",
+          "Run custom models alongside the built-ins — no tier gate"
+        ],
+        screenshot_url: "https://mbuzz.sfo3.digitaloceanspaces.com/brand-assets/directory-listings/screenshot-03-dsl.png",
+        screenshot_alt: "mbuzz Attribution DSL — custom model examples",
+        cta: "See example models",
+        cta_path: root_path(anchor: "aml-editor"),
+        modal_partial: "pages/home/aml_editor"
+      },
+      {
+        eyebrow: "Spend Intelligence",
+        title: "Where does the next $10K go?",
+        description: "Most tools tell you ROAS. mbuzz tells you what happens when you shift budget. Diminishing-returns curves, payback period by channel, reallocation suggestions — the questions that matter above $100K/mo in spend.",
+        bullets: [
+          "Response curves per channel — see saturation before you hit it",
+          "Payback period by channel, not just ROAS",
+          "Platform-reported vs real-captured revenue, reconciled"
+        ],
+        screenshot_url: "https://mbuzz.sfo3.digitaloceanspaces.com/brand-assets/directory-listings/screenshot-04-roas-delta.png",
+        screenshot_alt: "mbuzz ROAS delta — platform-reported vs real-captured revenue",
+        cta: "See the spend breakdown",
+        cta_path: demo_dashboard_spend_path,
+        modal_frame_id: "demo_spend",
+        modal_frame_src: demo_dashboard_spend_path(preview: 1)
+      },
+      {
+        eyebrow: "LTV mode",
+        title: "Your worst channel might be your best.",
+        description: "Every report flips between first-month revenue and 12-month lifetime value in one click. The channel that looks worst on acquisition usually wins on lifetime revenue. Ships in every plan.",
+        bullets: [
+          "Toggle any channel ranking between first-month and 12-month LTV",
+          "See channel rank changes explicitly (up 2, down 4, same)",
+          "Works across every attribution model"
+        ],
+        screenshot_url: "https://mbuzz.sfo3.digitaloceanspaces.com/brand-assets/directory-listings/screenshot-05-channel-detail.png",
+        screenshot_alt: "mbuzz LTV leaderboard — channel rankings flip between first-month and 12-month",
+        cta: "See the channel flip",
+        cta_path: demo_path,
+        modal_partial: "pages/home/ltv_leaderboard"
+      }
+    ] %>
+
   <%= render "pages/home/why_broken" %>
   <%= render "pages/home/pillars" %>
-  <%= render "pages/home/ltv_leaderboard" %>
-  <%= render "pages/home/aml_editor" %>
   <%= render "pages/home/features" %>
   <%= render "pages/home/sdks" %>
   <%= render "pages/home/pricing" %>

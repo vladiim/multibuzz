@@ -1,0 +1,12 @@
+<%#
+  LP leaderboard bridge — renders the home ltv_leaderboard with LP-specific headline/subhead.
+  Replaces the home's default "Your worst channel might be your best" so the dark section
+  only has ONE H2 (not two stacked ones).
+
+  Locals:
+    headline — String. H2 shown above the leaderboard.
+    subhead  — String. Supporting paragraph.
+%>
+<%= render "pages/home/ltv_leaderboard",
+  leaderboard_headline: headline,
+  leaderboard_subhead: subhead %>

@@ -1,185 +1,146 @@
 <% content_for :title, @page.title %>
 
 <div class="min-h-[80vh]">
-  <%# ── Hero ── %>
-  <section class="py-16 md:py-24 px-6 bg-pattern-dots">
-    <div class="max-w-4xl mx-auto text-center">
-      <p class="text-sm font-medium text-blue-600 uppercase tracking-wide mb-4">mbuzz vs Dreamdata</p>
-      <h1 class="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight">
-        You need attribution answers this week. Not in 8 weeks.
-      </h1>
-      <p class="mt-6 text-xl text-gray-600 max-w-3xl mx-auto">
-        Dreamdata takes 4–8 weeks to deploy and starts at $750/mo. By the time you see your first insight, you've already spent $2,000+ and a quarter of runway on setup alone.
-      </p>
-      <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
-        <%= link_to "See your attribution in days, not weeks", signup_path, class: "px-8 py-3 text-base font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-all" %>
-        <%= link_to "Explore the live demo", demo_path, class: "px-8 py-3 text-base font-semibold text-gray-900 bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 rounded-md transition-all" %>
-      </div>
-      <p class="mt-4 text-sm text-gray-500">Free tier. No credit card.</p>
-    </div>
+  <%= render "landing_pages/lp_hero",
+    kicker: "mbuzz vs Dreamdata",
+    headline: "Attribution answers this week. Not in 8 weeks.",
+    subhead: "Dreamdata is the B2B journey platform — best-in-class journey visualization, deep CRM integration, LinkedIn audience activation. It starts at $750/mo and takes 4–8 weeks to deploy. mbuzz does four things — eight models, a SQL-like DSL, spend intelligence, LTV mode. Days to set up. $0 to start.",
+    primary_cta_text: "Start free" %>
 
-    <%# LP.1: Dashboard preview inside hero — visible above fold on desktop %>
-    <div class="mt-12 max-w-5xl mx-auto">
-      <%= render "pages/home/dashboard_preview" %>
-    </div>
-  </section>
+  <%= render "landing_pages/lp_stat_banner" %>
 
-  <%# LP.4: Bold stat banner — strongest proof point pre-revenue %>
-  <section class="py-6 px-6 bg-blue-600">
-    <div class="max-w-4xl mx-auto text-center">
-      <p class="text-lg md:text-xl font-semibold text-white">Server-side tracking captures <span class="text-2xl md:text-3xl font-bold">30–40% more data</span> than client-side pixels</p>
-      <p class="mt-1 text-sm text-blue-100">Ad blockers and browser privacy features can't block what they can't see.</p>
-    </div>
-  </section>
+  <%= render "landing_pages/lp_pain_points",
+    intro_text: "These are the problems that lead B2B teams to search for a Dreamdata alternative.",
+    points: [
+      {
+        title: "\"$9,000/year and still no ROI proof?\"",
+        description: "At $750/mo, Dreamdata costs more than some teams spend on the ads they're trying to measure. You need attribution that proves ROI before committing to enterprise pricing."
+      },
+      {
+        title: "\"Channel numbers by next week?\"",
+        description: "Dreamdata's CRM integration and historical processing takes 4–8 weeks. mbuzz's server-side SDKs capture data in days. When the board asks \"which channels work?\", you need an answer now."
+      },
+      {
+        title: "\"Custom attribution locked to the top tier?\"",
+        description: "Dreamdata gates custom attribution rules to the most expensive plan. mbuzz puts 8 built-in models plus the Attribution DSL on every tier — including free."
+      }
+    ] %>
 
-  <%# ── Pain points (buyer problems, not feature gaps) ── %>
-  <section class="py-16 md:py-20 px-6 bg-white">
-    <div class="max-w-4xl mx-auto">
-      <h2 class="text-3xl font-bold text-gray-900 text-center mb-4">Sound familiar?</h2>
-      <p class="text-lg text-gray-600 text-center mb-12 max-w-2xl mx-auto">
-        These are the problems that lead B2B teams to search for a Dreamdata alternative.
-      </p>
-      <div class="space-y-8">
-        <div class="flex gap-5">
-          <div class="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mt-1">
-            <span class="text-red-600 font-bold text-sm">1</span>
-          </div>
-          <div>
-            <h3 class="text-lg font-semibold text-gray-900">"We're spending $9,000/year on attribution and still can't prove ROI to the board."</h3>
-            <p class="mt-1 text-gray-600">At $750/mo, Dreamdata costs more than some teams spend on the ads they're trying to measure. You need to prove attribution works before committing to enterprise pricing.</p>
-          </div>
-        </div>
-        <div class="flex gap-5">
-          <div class="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mt-1">
-            <span class="text-red-600 font-bold text-sm">2</span>
-          </div>
-          <div>
-            <h3 class="text-lg font-semibold text-gray-900">"Our CMO needs channel numbers for the board meeting next week."</h3>
-            <p class="mt-1 text-gray-600">Dreamdata's CRM integration and historical data processing takes 4–8 weeks. mbuzz's server-side SDKs start capturing data in days. When the board asks "which channels work?", you need an answer now.</p>
-          </div>
-        </div>
-        <div class="flex gap-5">
-          <div class="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mt-1">
-            <span class="text-red-600 font-bold text-sm">3</span>
-          </div>
-          <div>
-            <h3 class="text-lg font-semibold text-gray-900">"We want to compare models, but custom attribution is locked to the top tier."</h3>
-            <p class="mt-1 text-gray-600">On Dreamdata, building your own attribution rules requires the most expensive plan. On mbuzz, every tier — including free — gets 8 built-in models plus a custom Attribution DSL.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+  <%= render "landing_pages/lp_comparison_table",
+    competitor_name: "Dreamdata",
+    bg_variant: "gray",
+    intro_text: "Dreamdata is a B2B journey platform. mbuzz is an attribution engine. Different products, different price points. Here's the full picture.",
+    rows: [
+      { feature: "Attribution model", competitor: { text: "Vendor-defined models", wins: false }, mbuzz: { text: "8 built-in + Attribution DSL (inspectable)", wins: true } },
+      { feature: "Tracking method", competitor: { text: "Client-side + CRM ingestion", wins: false }, mbuzz: { text: "Server-side SDKs (Ruby, Node, Python, PHP, Shopify, sGTM)", wins: true } },
+      { feature: "Starting price", competitor: { text: "$750/mo", wins: false }, mbuzz: { text: "$0 (paid from $29/mo)", wins: true } },
+      { feature: "Setup time", competitor: { text: "4–8 weeks", wins: false }, mbuzz: { text: "Days", wins: true } },
+      { feature: "Journey visualization", competitor: { text: "Best-in-class", wins: true }, mbuzz: { text: "Basic channel timeline", wins: false } },
+      { feature: "LinkedIn audience activation", competitor: { text: "Deep integration", wins: true }, mbuzz: { text: "Not supported", wins: false } },
+      { feature: "CRM integration", competitor: { text: "Salesforce, HubSpot, Pipedrive", wins: true }, mbuzz: { text: "Not included", wins: false } },
+      { feature: "Account-level (B2B) attribution", competitor: { text: "Deep account journeys", wins: true }, mbuzz: { text: "Contact-level only", wins: false } },
+      { feature: "Custom models", competitor: { text: "Top tier only", wins: false }, mbuzz: { text: "All tiers (Attribution DSL)", wins: true } },
+      { feature: "Data ownership", competitor: { text: "Their infrastructure", wins: false }, mbuzz: { text: "Your data, full export", wins: true } },
+      { feature: "Data export", competitor: { text: "Top tier", wins: false }, mbuzz: { text: "All tiers — CSV, API, MCP", wins: true } },
+      { feature: "LTV / cohort mode", competitor: { text: "Enterprise plans", wins: false }, mbuzz: { text: "Every tier", wins: true } }
+    ],
+    verdict: "Dreamdata is the B2B journey platform — worth $750/mo if you need CRM-deep journey visualization and LinkedIn audience activation. mbuzz is the fast, cheap attribution engine — 8 models, inspectable DSL, server-side data, $29 vs $750. Different scales, different jobs." %>
 
-  <%# LP.2: Mid-page CTA after pain points %>
-  <section class="py-8 px-6 bg-gray-50 text-center">
-    <p class="text-lg text-gray-700 font-medium">Ready to see what your real attribution looks like?</p>
-    <div class="mt-4 flex flex-col sm:flex-row justify-center gap-3">
-      <%= link_to "Explore the live demo", demo_path, class: "px-6 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-all inline-block" %>
-      <%= link_to "Start free", signup_path, class: "px-6 py-2.5 text-sm font-semibold text-gray-700 hover:text-gray-900 transition-all inline-block" %>
-    </div>
-  </section>
+  <%= render "landing_pages/lp_mid_cta",
+    prompt_text: "Want to see it running in minutes, not weeks?" %>
 
-  <%# ── Visual price comparison ── %>
-  <section class="py-16 md:py-20 px-6 bg-gray-50">
-    <div class="max-w-3xl mx-auto text-center">
-      <h2 class="text-3xl font-bold text-gray-900 mb-10">The price difference</h2>
-      <div class="flex flex-col sm:flex-row items-center justify-center gap-6">
-        <div class="bg-white rounded-xl border border-gray-200 p-8 w-full sm:w-64 text-center">
-          <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Dreamdata</p>
-          <p class="mt-3 text-5xl font-bold text-gray-900">$750</p>
-          <p class="mt-1 text-sm text-gray-500">/month</p>
-        </div>
-        <div class="text-3xl font-bold text-gray-400">vs</div>
-        <div class="bg-white rounded-xl border-2 border-blue-600 p-8 w-full sm:w-64 text-center shadow-lg">
-          <p class="text-sm font-medium text-blue-600 uppercase tracking-wide">mbuzz</p>
-          <p class="mt-3 text-5xl font-bold text-gray-900">$0</p>
-          <p class="mt-1 text-sm text-gray-500">/month to start</p>
-        </div>
-      </div>
-      <p class="mt-6 text-gray-600">Start free. Paid plans from $29/mo — that's 26x cheaper than Dreamdata's entry point.</p>
-    </div>
-  </section>
+  <%= render "landing_pages/lp_feature_showcase",
+    heading: "Models. DSL. Spend. LTV.",
+    bg_variant: "white",
+    cells: [
+      {
+        eyebrow: "Eight models, one view",
+        title: "Same data. Eight models. The spread is the answer.",
+        description: "Dreamdata runs its own set of models. mbuzz shows you what every model says — and where they disagree. The spread between first-touch and last-touch is the honest truth range.",
+        bullets: [
+          "First-touch, last-touch, linear, time-decay, position-based, Markov, Shapley, data-driven",
+          "Same underlying data — swap the lens, not the dataset",
+          "Export every model's output on every tier"
+        ],
+        screenshot_url: "https://mbuzz.sfo3.digitaloceanspaces.com/brand-assets/directory-listings/screenshot-02-channels.png",
+        screenshot_alt: "mbuzz channel comparison across 8 attribution models",
+        cta: "See the models side-by-side",
+        cta_path: demo_path,
+        modal_frame_id: "demo_conversions",
+        modal_frame_src: demo_dashboard_conversions_path(models: [ "first_touch", "last_touch" ])
+      },
+      {
+        eyebrow: "Attribution DSL",
+        title: "Write your own attribution. Audit the rest.",
+        description: "SQL-like language. Encode your sales cycle directly into the math — critical for B2B cycles that don't fit standard templates. Fork any built-in model in one line. On Dreamdata, custom rules are gated to the top tier; on mbuzz they ship on every plan.",
+        bullets: [
+          "Plain-text rules, diff-friendly, version-controlled",
+          "Fork and modify any built-in model in one line",
+          "No tier gate — custom models on free and paid alike"
+        ],
+        screenshot_url: "https://mbuzz.sfo3.digitaloceanspaces.com/brand-assets/directory-listings/screenshot-03-dsl.png",
+        screenshot_alt: "mbuzz Attribution DSL — custom model examples",
+        cta: "See example models",
+        cta_path: root_path(anchor: "aml-editor"),
+        modal_partial: "pages/home/aml_editor"
+      },
+      {
+        eyebrow: "Spend Intelligence",
+        title: "Where does the next $10K go?",
+        description: "Dreamdata tells you what happened. mbuzz also tells you what happens when you shift budget. Diminishing-returns curves, payback period by channel, reallocation suggestions — the questions that matter when every dollar is scrutinized.",
+        bullets: [
+          "Response curves per channel — see saturation before you hit it",
+          "Payback period by channel, not just ROAS",
+          "Platform-reported vs real-captured revenue, reconciled"
+        ],
+        screenshot_url: "https://mbuzz.sfo3.digitaloceanspaces.com/brand-assets/directory-listings/screenshot-04-roas-delta.png",
+        screenshot_alt: "mbuzz ROAS delta — platform-reported vs real-captured revenue",
+        cta: "See the spend breakdown",
+        cta_path: demo_dashboard_spend_path,
+        modal_frame_id: "demo_spend",
+        modal_frame_src: demo_dashboard_spend_path(preview: 1)
+      },
+      {
+        eyebrow: "LTV mode",
+        title: "Your worst channel might be your best.",
+        description: "Every report flips between first-month revenue and 12-month lifetime value in one click. The channel that looked worst on acquisition usually wins on lifetime revenue. On Dreamdata, LTV lives in enterprise plans; on mbuzz it's every tier.",
+        bullets: [
+          "Toggle any channel ranking between first-month and 12-month LTV",
+          "See channel rank changes explicitly (up 2, down 4, same)",
+          "Works across every attribution model"
+        ],
+        screenshot_url: "https://mbuzz.sfo3.digitaloceanspaces.com/brand-assets/directory-listings/screenshot-05-channel-detail.png",
+        screenshot_alt: "mbuzz LTV leaderboard — channel rankings flip between first-month and 12-month",
+        cta: "See the channel flip",
+        cta_path: demo_path,
+        modal_partial: "pages/home/ltv_leaderboard"
+      }
+    ] %>
 
-  <%# ── LTV Leaderboard bridge + component ── %>
-  <section class="pt-16 md:pt-20 px-6 bg-gray-900">
-    <div class="max-w-3xl mx-auto text-center pb-8">
-      <h2 class="text-3xl font-bold text-white mb-4">Here's what teams discover in their first week</h2>
-      <p class="text-lg text-gray-400">First-month revenue rankings rarely match lifetime value. Toggle to 12-month LTV and watch the channels that look worst become the ones driving the most revenue.</p>
-    </div>
-  </section>
-  <%= render "pages/home/ltv_leaderboard" %>
+  <%= render "landing_pages/lp_feature_grid",
+    heading: "Also in mbuzz.",
+    cells: [
+      {
+        title: "Server-side SDKs",
+        description: "Ruby, Node, Python, PHP, Shopify, sGTM. Open-source. Your data never touches client-side pixels that ad-blockers nuke."
+      },
+      {
+        title: "Own your data",
+        description: "Full export on every plan — CSV, API, MCP server for agent access. No vendor lock-in, no tier gate."
+      },
+      {
+        title: "Days, not weeks",
+        description: "SDK install is hours. First attribution reports in days. Compare to Dreamdata's 4–8 week CRM integration and backfill."
+      }
+    ] %>
 
-  <%# ── Comparison table with tradeoff framing ── %>
-  <section class="py-16 md:py-20 px-6 bg-white">
-    <div class="max-w-3xl mx-auto">
-      <h2 class="text-3xl font-bold text-gray-900 text-center mb-4">Honest comparison</h2>
-      <p class="text-lg text-gray-600 text-center mb-10 max-w-2xl mx-auto">Dreamdata's journey visualization is genuinely best-in-class. If that's your #1 need, it's worth the price. Here's the full picture.</p>
-      <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-        <table class="w-full">
-          <thead>
-            <tr class="bg-gray-900 text-white">
-              <th class="px-6 py-4 text-left text-sm font-semibold w-1/3"></th>
-              <th class="px-6 py-4 text-left text-sm font-semibold w-1/3">Dreamdata</th>
-              <th class="px-6 py-4 text-left text-sm font-semibold w-1/3">mbuzz</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-200">
-            <tr>
-              <td class="px-6 py-4 text-sm font-medium text-gray-900">Paid plans from</td>
-              <td class="px-6 py-4 text-sm text-gray-500">$750/mo</td>
-              <td class="px-6 py-4 text-sm text-gray-900 font-medium">$29/mo</td>
-            </tr>
-            <tr>
-              <td class="px-6 py-4 text-sm font-medium text-gray-900">Setup time</td>
-              <td class="px-6 py-4 text-sm text-gray-500">4–8 weeks</td>
-              <td class="px-6 py-4 text-sm text-gray-900 font-medium">Days</td>
-            </tr>
-            <tr>
-              <td class="px-6 py-4 text-sm font-medium text-gray-900">Custom models</td>
-              <td class="px-6 py-4 text-sm text-gray-500">Top tier only</td>
-              <td class="px-6 py-4 text-sm text-gray-900 font-medium">All tiers (Attribution DSL)</td>
-            </tr>
-            <tr>
-              <td class="px-6 py-4 text-sm font-medium text-gray-900">Tracking method</td>
-              <td class="px-6 py-4 text-sm text-gray-500">Client-side</td>
-              <td class="px-6 py-4 text-sm text-gray-900 font-medium">Server-side SDKs</td>
-            </tr>
-            <tr>
-              <td class="px-6 py-4 text-sm font-medium text-gray-900">Data ownership</td>
-              <td class="px-6 py-4 text-sm text-gray-500">Their infrastructure</td>
-              <td class="px-6 py-4 text-sm text-gray-900 font-medium">Your data, full export</td>
-            </tr>
-            <tr>
-              <td class="px-6 py-4 text-sm font-medium text-gray-900">Journey visualization</td>
-              <td class="px-6 py-4 text-sm text-gray-900 font-medium">Excellent</td>
-              <td class="px-6 py-4 text-sm text-gray-500">Basic</td>
-            </tr>
-            <tr>
-              <td class="px-6 py-4 text-sm font-medium text-gray-900">LinkedIn integration</td>
-              <td class="px-6 py-4 text-sm text-gray-900 font-medium">Deep (audience activation)</td>
-              <td class="px-6 py-4 text-sm text-gray-500">Not yet</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="mt-4 text-sm text-gray-500 text-center">Dreamdata wins on journey visualization and LinkedIn integration. mbuzz wins on price, speed, model flexibility, and data ownership.</p>
-    </div>
-  </section>
+  <%= render "landing_pages/lp_pricing_card",
+    competitor_name: "Dreamdata",
+    competitor_price: "$750",
+    bg_variant: "white",
+    mbuzz_subtext: "Start free. Paid plans from $29/mo — that's 26x cheaper than Dreamdata's entry point." %>
 
-  <%# ── Bottom CTA ── %>
-  <section class="py-20 px-6 bg-gray-900">
-    <div class="max-w-3xl mx-auto text-center">
-      <h2 class="text-3xl md:text-4xl font-bold text-white">
-        See real attribution data — no signup required
-      </h2>
-      <p class="mt-4 text-lg text-gray-400">
-        Explore the live demo with sample data. Or sign up free and connect your own channels in days.
-      </p>
-      <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
-        <%= link_to "Explore the live demo", demo_path, class: "px-8 py-3 text-base font-semibold text-gray-900 bg-white hover:bg-gray-100 rounded-md transition-all inline-block" %>
-        <%= link_to "Start for free", signup_path, class: "px-8 py-3 text-base font-semibold text-white border border-gray-600 hover:border-gray-400 rounded-md transition-all inline-block" %>
-      </div>
-    </div>
-  </section>
+  <%= render "landing_pages/lp_bottom_cta",
+    subhead: "Explore the live demo with sample data. Or sign up free and connect your own channels in days.",
+    secondary_cta_text: "Start for free" %>
 </div>

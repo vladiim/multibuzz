@@ -1,185 +1,145 @@
 <% content_for :title, @page.title %>
 
 <div class="min-h-[80vh]">
-  <%# ── Hero ── %>
-  <section class="py-16 md:py-24 px-6 bg-pattern-dots">
-    <div class="max-w-4xl mx-auto text-center">
-      <p class="text-sm font-medium text-blue-600 uppercase tracking-wide mb-4">mbuzz vs Triple Whale</p>
-      <h1 class="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight">
-        Your CFO wants channel ROI. Triple Whale only sees Shopify.
-      </h1>
-      <p class="mt-6 text-xl text-gray-600 max-w-3xl mx-auto">
-        When the board asks "which channels actually drive revenue?", you need an answer that covers every touchpoint — not just what happens inside one platform.
-      </p>
-      <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
-        <%= link_to "See your attribution in 5 minutes", signup_path, class: "px-8 py-3 text-base font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-all" %>
-        <%= link_to "Explore the live demo", demo_path, class: "px-8 py-3 text-base font-semibold text-gray-900 bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 rounded-md transition-all" %>
-      </div>
-      <p class="mt-4 text-sm text-gray-500">Free tier. No credit card.</p>
-    </div>
+  <%= render "landing_pages/lp_hero",
+    kicker: "mbuzz vs Triple Whale",
+    headline: "Free attribution that shows the math.",
+    subhead: "Triple Whale bundles 75 dashboards, Moby AI, a custom pixel, and Sonar data enrichment for $149/mo. mbuzz does four things — eight attribution models, a SQL-like DSL, spend intelligence, LTV mode — across server-side SDKs in six languages. No frills. $0 to start.",
+    primary_cta_text: "Start free" %>
 
-    <%# LP.1: Dashboard preview inside hero — visible above fold on desktop %>
-    <div class="mt-12 max-w-5xl mx-auto">
-      <%= render "pages/home/dashboard_preview" %>
-    </div>
-  </section>
+  <%= render "landing_pages/lp_stat_banner" %>
 
-  <%# LP.4: Bold stat banner — strongest proof point pre-revenue %>
-  <section class="py-6 px-6 bg-blue-600">
-    <div class="max-w-4xl mx-auto text-center">
-      <p class="text-lg md:text-xl font-semibold text-white">Server-side tracking captures <span class="text-2xl md:text-3xl font-bold">30–40% more data</span> than client-side pixels</p>
-      <p class="mt-1 text-sm text-blue-100">Ad blockers and browser privacy features can't block what they can't see.</p>
-    </div>
-  </section>
+  <%= render "landing_pages/lp_pain_points",
+    intro_text: "These are the problems that lead teams to search for a Triple Whale alternative.",
+    points: [
+      {
+        title: "\"How did they get that number?\"",
+        description: "Triple Whale runs one proprietary model nobody outside the company can audit. mbuzz runs eight models side-by-side on the same data — the spread is the honest answer."
+      },
+      {
+        title: "\"$1,500/mo for one blended ROAS?\"",
+        description: "Triple Whale costs $149–$1,500+/mo for a dashboard suite and an AI assistant. mbuzz starts at $0, runs eight models plus Attribution DSL from $29, and exports data on every tier."
+      },
+      {
+        title: "\"Where does the next $10K go?\"",
+        description: "Above $100K/mo you need diminishing-returns curves and reallocation by channel — not another blended ROAS dashboard. mbuzz's Spend Intelligence ships in every tier."
+      }
+    ] %>
 
-  <%# ── Pain points (buyer problems, not feature gaps) ── %>
-  <section class="py-16 md:py-20 px-6 bg-white">
-    <div class="max-w-4xl mx-auto">
-      <h2 class="text-3xl font-bold text-gray-900 text-center mb-4">Sound familiar?</h2>
-      <p class="text-lg text-gray-600 text-center mb-12 max-w-2xl mx-auto">
-        These are the problems that lead teams to search for a Triple Whale alternative.
-      </p>
-      <div class="space-y-8">
-        <div class="flex gap-5">
-          <div class="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mt-1">
-            <span class="text-red-600 font-bold text-sm">1</span>
-          </div>
-          <div>
-            <h3 class="text-lg font-semibold text-gray-900">"Facebook says 200 conversions. Google says 180. We had 150 total."</h3>
-            <p class="mt-1 text-gray-600">Every platform claims credit for the same customers. You need an independent referee that measures all channels equally — not another platform grading its own homework.</p>
-          </div>
-        </div>
-        <div class="flex gap-5">
-          <div class="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mt-1">
-            <span class="text-red-600 font-bold text-sm">2</span>
-          </div>
-          <div>
-            <h3 class="text-lg font-semibold text-gray-900">"We're spending $30K/mo on ads and can't tell our board what's working."</h3>
-            <p class="mt-1 text-gray-600">With client-side pixels, ad blockers eat 30–40% of your data. You're optimizing on partial information. Server-side tracking captures what pixels miss — before the browser gets involved.</p>
-          </div>
-        </div>
-        <div class="flex gap-5">
-          <div class="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mt-1">
-            <span class="text-red-600 font-bold text-sm">3</span>
-          </div>
-          <div>
-            <h3 class="text-lg font-semibold text-gray-900">"We sell on WooCommerce / BigCommerce / custom — Triple Whale doesn't work for us."</h3>
-            <p class="mt-1 text-gray-600">mbuzz works on any platform via server-side SDKs (Ruby, Node, Python, PHP). Your attribution doesn't depend on which cart you chose.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+  <%= render "landing_pages/lp_comparison_table",
+    competitor_name: "Triple Whale",
+    bg_variant: "gray",
+    intro_text: "Triple Whale is Shopify's command center. mbuzz is the attribution engine. Different products, different jobs. Here's the full picture.",
+    rows: [
+      { feature: "Attribution model", competitor: { text: "Proprietary, not externally auditable", wins: false }, mbuzz: { text: "8 built-in + Attribution DSL (inspectable)", wins: true } },
+      { feature: "Tracking method", competitor: { text: "First-party pixel + Sonar enrichment", wins: false }, mbuzz: { text: "Server-side SDKs (Ruby, Node, Python, PHP, Shopify, sGTM)", wins: true } },
+      { feature: "Starting price", competitor: { text: "$149/mo", wins: false }, mbuzz: { text: "$0", wins: true } },
+      { feature: "AI assistant", competitor: { text: "Moby (chat + agents)", wins: true }, mbuzz: { text: "MCP server — plug in your own", wins: false } },
+      { feature: "Pre-built dashboards", competitor: { text: "75+ ready-made", wins: true }, mbuzz: { text: "You build what you need", wins: false } },
+      { feature: "Creative analytics", competitor: { text: "Ad-creative performance built-in", wins: true }, mbuzz: { text: "Not included", wins: false } },
+      { feature: "Klaviyo, Recharge, Gorgias", competitor: { text: "Native integrations", wins: true }, mbuzz: { text: "Not supported", wins: false } },
+      { feature: "Subscription / cohort data", competitor: { text: "Advanced tier only ($219/mo)", wins: true }, mbuzz: { text: "LTV mode in every tier", wins: true } },
+      { feature: "Budget recommendations", competitor: { text: "Blended ROAS only", wins: false }, mbuzz: { text: "Response curves, payback, reallocation", wins: true } },
+      { feature: "Data export", competitor: { text: "Top tier only", wins: false }, mbuzz: { text: "All tiers — CSV, API, MCP", wins: true } },
+      { feature: "Ecommerce platforms", competitor: { text: "Shopify only", wins: false }, mbuzz: { text: "Anywhere you can install an SDK", wins: true } },
+      { feature: "Setup time", competitor: { text: "Minutes (Shopify app)", wins: true }, mbuzz: { text: "Same day (self-serve SDK)", wins: false } }
+    ],
+    verdict: "Want all the frills — Moby AI, 75 dashboards, Sonar enrichment, creative analytics, Klaviyo/Recharge/Gorgias, subscription data? Triple Whale is worth $149/mo. Want transparent attribution math, server-side data you own, and the basics on every tier? mbuzz." %>
 
-  <%# LP.2: Mid-page CTA after pain points %>
-  <section class="py-8 px-6 bg-gray-50 text-center">
-    <p class="text-lg text-gray-700 font-medium">Ready to see what your real attribution looks like?</p>
-    <div class="mt-4 flex flex-col sm:flex-row justify-center gap-3">
-      <%= link_to "Explore the live demo", demo_path, class: "px-6 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-all inline-block" %>
-      <%= link_to "Start free", signup_path, class: "px-6 py-2.5 text-sm font-semibold text-gray-700 hover:text-gray-900 transition-all inline-block" %>
-    </div>
-  </section>
+  <%= render "landing_pages/lp_mid_cta",
+    prompt_text: "Want to see it running before you switch?" %>
 
-  <%# ── Visual price comparison ── %>
-  <section class="py-16 md:py-20 px-6 bg-gray-50">
-    <div class="max-w-3xl mx-auto text-center">
-      <h2 class="text-3xl font-bold text-gray-900 mb-10">The price difference</h2>
-      <div class="flex flex-col sm:flex-row items-center justify-center gap-6">
-        <div class="bg-white rounded-xl border border-gray-200 p-8 w-full sm:w-64 text-center">
-          <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Triple Whale</p>
-          <p class="mt-3 text-5xl font-bold text-gray-900">$129</p>
-          <p class="mt-1 text-sm text-gray-500">/month</p>
-        </div>
-        <div class="text-3xl font-bold text-gray-400">vs</div>
-        <div class="bg-white rounded-xl border-2 border-blue-600 p-8 w-full sm:w-64 text-center shadow-lg">
-          <p class="text-sm font-medium text-blue-600 uppercase tracking-wide">mbuzz</p>
-          <p class="mt-3 text-5xl font-bold text-gray-900">$0</p>
-          <p class="mt-1 text-sm text-gray-500">/month to start</p>
-        </div>
-      </div>
-      <p class="mt-6 text-gray-600">Start free. Paid plans from $29/mo when you're ready to scale.</p>
-    </div>
-  </section>
+  <%= render "landing_pages/lp_feature_showcase",
+    heading: "Models. DSL. Spend. LTV.",
+    bg_variant: "white",
+    cells: [
+      {
+        eyebrow: "Eight models, one view",
+        title: "Same data. Eight models. The spread is the honest answer.",
+        description: "Triple Whale gives you one number. mbuzz shows you what every model says — and where they disagree. That gap is the truth range Triple Whale hides.",
+        bullets: [
+          "First-touch, last-touch, linear, time-decay, position-based, Markov, Shapley, data-driven",
+          "Same underlying data — swap the lens, not the dataset",
+          "Export every model's output on every tier"
+        ],
+        screenshot_url: "https://mbuzz.sfo3.digitaloceanspaces.com/brand-assets/directory-listings/screenshot-02-channels.png",
+        screenshot_alt: "mbuzz channel comparison across 8 attribution models",
+        cta: "See the models side-by-side",
+        cta_path: demo_path,
+        modal_frame_id: "demo_conversions",
+        modal_frame_src: demo_dashboard_conversions_path(models: [ "first_touch", "last_touch" ])
+      },
+      {
+        eyebrow: "Attribution DSL",
+        title: "Write your own attribution. Audit the rest.",
+        description: "SQL-like language. Encode your sales cycle directly into the math. Fork any built-in model, tweak the decay, add lookback windows. You own the logic — not a vendor's black box.",
+        bullets: [
+          "Plain-text rules, diff-friendly, version-controlled",
+          "Fork and modify any built-in model in one line",
+          "Run custom models alongside the built-ins — no tier gate"
+        ],
+        screenshot_url: "https://mbuzz.sfo3.digitaloceanspaces.com/brand-assets/directory-listings/screenshot-03-dsl.png",
+        screenshot_alt: "mbuzz Attribution DSL — custom model examples",
+        cta: "See example models",
+        cta_path: root_path(anchor: "aml-editor"),
+        modal_partial: "pages/home/aml_editor"
+      },
+      {
+        eyebrow: "Spend Intelligence",
+        title: "Where does the next $10K go?",
+        description: "Triple Whale tells you ROAS. mbuzz tells you what happens when you shift budget. Diminishing-returns curves, payback period by channel, reallocation suggestions — the questions that matter above $100K/mo in spend.",
+        bullets: [
+          "Response curves per channel — see saturation before you hit it",
+          "Payback period by channel, not just ROAS",
+          "Platform-reported vs real-captured revenue, reconciled"
+        ],
+        screenshot_url: "https://mbuzz.sfo3.digitaloceanspaces.com/brand-assets/directory-listings/screenshot-04-roas-delta.png",
+        screenshot_alt: "mbuzz ROAS delta — platform-reported vs real-captured revenue",
+        cta: "See the spend breakdown",
+        cta_path: demo_dashboard_spend_path,
+        modal_frame_id: "demo_spend",
+        modal_frame_src: demo_dashboard_spend_path(preview: 1)
+      },
+      {
+        eyebrow: "LTV mode",
+        title: "Your worst channel might be your best.",
+        description: "Every report flips between first-month revenue and 12-month lifetime value in one click. The channel that looked worst on acquisition usually wins on lifetime revenue. Triple Whale's cohort/LTV analysis is gated to the $219/mo Advanced tier. Ours ships in every plan.",
+        bullets: [
+          "Toggle any channel ranking between first-month and 12-month LTV",
+          "See channel rank changes explicitly (up 2, down 4, same)",
+          "Works across every attribution model"
+        ],
+        screenshot_url: "https://mbuzz.sfo3.digitaloceanspaces.com/brand-assets/directory-listings/screenshot-05-channel-detail.png",
+        screenshot_alt: "mbuzz LTV leaderboard — channel rankings flip between first-month and 12-month",
+        cta: "See the channel flip",
+        cta_path: demo_path,
+        modal_partial: "pages/home/ltv_leaderboard"
+      }
+    ] %>
 
-  <%# ── LTV Leaderboard bridge + component ── %>
-  <section class="pt-16 md:pt-20 px-6 bg-gray-900">
-    <div class="max-w-3xl mx-auto text-center pb-8">
-      <h2 class="text-3xl font-bold text-white mb-4">Here's what teams discover in their first week</h2>
-      <p class="text-lg text-gray-400">The channel that looks best in month one is rarely the one that drives the most lifetime revenue. Toggle to 12-month LTV and watch the rankings flip.</p>
-    </div>
-  </section>
-  <%= render "pages/home/ltv_leaderboard" %>
+  <%= render "landing_pages/lp_feature_grid",
+    heading: "Also in mbuzz.",
+    cells: [
+      {
+        title: "Server-side SDKs",
+        description: "Ruby, Node, Python, PHP, Shopify, sGTM. Open-source. Your data never touches client-side pixels that ad-blockers nuke."
+      },
+      {
+        title: "Google Ads spend sync",
+        description: "Platform-reported vs real-captured revenue on one screen. Reconciles the gap between Google's number and yours."
+      },
+      {
+        title: "Own your data",
+        description: "Full export on every plan — CSV, API, MCP server for agent access. No vendor lock-in, no tier gate."
+      }
+    ] %>
 
-  <%# ── Comparison table with tradeoff framing ── %>
-  <section class="py-16 md:py-20 px-6 bg-white">
-    <div class="max-w-3xl mx-auto">
-      <h2 class="text-3xl font-bold text-gray-900 text-center mb-4">Honest comparison</h2>
-      <p class="text-lg text-gray-600 text-center mb-10 max-w-2xl mx-auto">Triple Whale is excellent if you're Shopify-only and want zero-effort setup. If you need more, here's how they compare.</p>
-      <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-        <table class="w-full">
-          <thead>
-            <tr class="bg-gray-900 text-white">
-              <th class="px-6 py-4 text-left text-sm font-semibold w-1/3"></th>
-              <th class="px-6 py-4 text-left text-sm font-semibold w-1/3">Triple Whale</th>
-              <th class="px-6 py-4 text-left text-sm font-semibold w-1/3">mbuzz</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-200">
-            <tr>
-              <td class="px-6 py-4 text-sm font-medium text-gray-900">Platforms</td>
-              <td class="px-6 py-4 text-sm text-gray-500">Shopify only</td>
-              <td class="px-6 py-4 text-sm text-gray-900 font-medium">Any platform</td>
-            </tr>
-            <tr>
-              <td class="px-6 py-4 text-sm font-medium text-gray-900">Tracking method</td>
-              <td class="px-6 py-4 text-sm text-gray-500">Client-side pixels</td>
-              <td class="px-6 py-4 text-sm text-gray-900 font-medium">Server-side SDKs</td>
-            </tr>
-            <tr>
-              <td class="px-6 py-4 text-sm font-medium text-gray-900">Attribution models</td>
-              <td class="px-6 py-4 text-sm text-gray-500">3 basic</td>
-              <td class="px-6 py-4 text-sm text-gray-900 font-medium">8 + custom rules (DSL)</td>
-            </tr>
-            <tr>
-              <td class="px-6 py-4 text-sm font-medium text-gray-900">Data capture</td>
-              <td class="px-6 py-4 text-sm text-gray-500">~60% (ad blockers)</td>
-              <td class="px-6 py-4 text-sm text-gray-900 font-medium">~95% (server-side)</td>
-            </tr>
-            <tr>
-              <td class="px-6 py-4 text-sm font-medium text-gray-900">Starting price</td>
-              <td class="px-6 py-4 text-sm text-gray-500">$129/mo</td>
-              <td class="px-6 py-4 text-sm text-gray-900 font-medium">Free</td>
-            </tr>
-            <tr>
-              <td class="px-6 py-4 text-sm font-medium text-gray-900">Setup time</td>
-              <td class="px-6 py-4 text-sm text-gray-900 font-medium">Minutes (Shopify app)</td>
-              <td class="px-6 py-4 text-sm text-gray-500">Hours (SDK integration)</td>
-            </tr>
-            <tr>
-              <td class="px-6 py-4 text-sm font-medium text-gray-900">AI assistant</td>
-              <td class="px-6 py-4 text-sm text-gray-900 font-medium">Moby AI (natural language)</td>
-              <td class="px-6 py-4 text-sm text-gray-500">Not yet</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="mt-4 text-sm text-gray-500 text-center">Triple Whale wins on Shopify ease-of-use. mbuzz wins on accuracy, model depth, and platform flexibility.</p>
-    </div>
-  </section>
+  <%= render "landing_pages/lp_pricing_card",
+    competitor_name: "Triple Whale",
+    competitor_price: "$149",
+    bg_variant: "white",
+    mbuzz_subtext: "Start free. Paid plans from $29/mo when you're ready to scale." %>
 
-  <%# ── Bottom CTA ── %>
-  <section class="py-20 px-6 bg-gray-900">
-    <div class="max-w-3xl mx-auto text-center">
-      <h2 class="text-3xl md:text-4xl font-bold text-white">
-        See real attribution data — no signup required
-      </h2>
-      <p class="mt-4 text-lg text-gray-400">
-        Explore the live demo with sample data. Or sign up free and connect your own channels in 5 minutes.
-      </p>
-      <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
-        <%= link_to "Explore the live demo", demo_path, class: "px-8 py-3 text-base font-semibold text-gray-900 bg-white hover:bg-gray-100 rounded-md transition-all inline-block" %>
-        <%= link_to "Sign up free", signup_path, class: "px-8 py-3 text-base font-semibold text-white border border-gray-600 hover:border-gray-400 rounded-md transition-all inline-block" %>
-      </div>
-    </div>
-  </section>
+  <%= render "landing_pages/lp_bottom_cta",
+    subhead: "The demo runs on sample data. Sign up free to connect your own. No credit card, no sales call." %>
 </div>

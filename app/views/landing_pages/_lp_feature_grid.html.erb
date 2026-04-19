@@ -1,0 +1,29 @@
+<%#
+  LP feature grid — "Also in mbuzz" card surface for Tier 1/2 features
+  that don't fit the 1-vs-1 comparison table.
+
+  Locals:
+    heading — String. Default "Also in mbuzz."
+    cells   — Array of Hashes: { title: String, description: String }
+              Up to 6 cells — renders 3-col desktop, 2-col tablet, 1-col mobile.
+%>
+<% heading ||= "Also in mbuzz" %>
+
+<section class="py-20 md:py-24 px-6 bg-gray-50 bg-pattern-grid">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900"><%= heading %></h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <% cells.each_with_index do |cell, i| %>
+        <div class="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md hover:border-blue-200 transition-all">
+          <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center mb-4">
+            <span class="text-blue-600 font-bold text-sm"><%= format('%02d', i + 1) %></span>
+          </div>
+          <h3 class="text-lg font-bold text-gray-900 mb-2"><%= cell[:title] %></h3>
+          <p class="text-gray-600 text-sm leading-relaxed"><%= cell[:description] %></p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,35 @@
+<%#
+  LP hero section. Used by vs-* landing pages.
+
+  Locals:
+    kicker              — String. Small uppercase label (e.g. "mbuzz vs Triple Whale").
+    headline            — String. H1 copy.
+    subhead             — String. Lead paragraph.
+    primary_cta_text    — String. Blue button (routes to signup).
+    secondary_cta_text  — String. Default "Explore the live demo". Routes to demo.
+    disclaimer          — String. Small italic-free text below CTAs. Default "Free tier. No credit card."
+%>
+<% secondary_cta_text ||= "Explore the live demo" %>
+<% disclaimer ||= "Free tier. No credit card. Attribution report straight away." %>
+
+<section class="pt-16 md:pt-24 px-6 bg-pattern-grid">
+  <div class="max-w-4xl mx-auto text-center">
+    <p class="text-sm font-medium text-blue-600 uppercase tracking-wide mb-4"><%= kicker %></p>
+    <h1 class="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight">
+      <%= headline %>
+    </h1>
+    <p class="mt-6 text-xl text-gray-600 max-w-3xl mx-auto">
+      <%= subhead %>
+    </p>
+    <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
+      <%= link_to primary_cta_text, signup_path, class: "px-8 py-3 text-base font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-all" %>
+      <%= link_to secondary_cta_text, demo_path, class: "px-8 py-3 text-base font-semibold text-gray-900 bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 rounded-md transition-all" %>
+    </div>
+    <p class="mt-4 text-sm text-gray-500"><%= disclaimer %></p>
+  </div>
+
+  <%# LP.1: Dashboard preview inside hero — visible above fold on desktop %>
+  <div class="mt-12 max-w-5xl mx-auto">
+    <%= render "pages/home/dashboard_preview" %>
+  </div>
+</section>

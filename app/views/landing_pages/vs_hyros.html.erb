@@ -1,0 +1,146 @@
+<% content_for :title, @page.title %>
+
+<div class="min-h-[80vh]">
+  <%= render "landing_pages/lp_hero",
+    kicker: "mbuzz vs Hyros",
+    headline: "Attribution without the sales call.",
+    subhead: "Hyros is the sales-led attribution suite for high-ticket DTC — call tracking, email tracking, AI-powered insights, long sales cycles. Their pricing page is a demo booking form. mbuzz does four things — eight models, a SQL-like DSL, spend intelligence, LTV mode — with public pricing. $0 to start.",
+    primary_cta_text: "Start free" %>
+
+  <%= render "landing_pages/lp_stat_banner" %>
+
+  <%= render "landing_pages/lp_pain_points",
+    intro_text: "These are the problems that lead teams to search for a Hyros alternative.",
+    points: [
+      {
+        title: "\"Schedule a call to learn the price?\"",
+        description: "Hyros requires a sales demo before they'll tell you what it costs. If you want to know whether attribution fits your budget before entering a sales process, you're out of luck. mbuzz publishes every tier — $0, $29, $99, $299."
+      },
+      {
+        title: "\"Why did that channel get credit?\"",
+        description: "Hyros users repeatedly flag the same issue: the attribution output is opaque, hard to explain to stakeholders, and impossible to audit. mbuzz runs 8 models side-by-side plus an inspectable DSL — every credit assignment is traceable."
+      },
+      {
+        title: "\"$500+/mo for one vendor's model?\"",
+        description: "Hyros runs one proprietary AI-powered model. mbuzz runs eight models plus Attribution DSL starting at $29/mo. If the spread between models is wide, that's your honest truth range — not one black-box number."
+      }
+    ] %>
+
+  <%= render "landing_pages/lp_comparison_table",
+    competitor_name: "Hyros",
+    bg_variant: "gray",
+    intro_text: "Hyros is the high-ticket, sales-led attribution platform. mbuzz is the transparent, self-serve attribution engine. Different buyers. Here's the full picture.",
+    rows: [
+      { feature: "Attribution model", competitor: { text: "AI-driven, proprietary", wins: false }, mbuzz: { text: "8 built-in + Attribution DSL (inspectable)", wins: true } },
+      { feature: "Tracking method", competitor: { text: "First-party pixel", wins: false }, mbuzz: { text: "Server-side SDKs (Ruby, Node, Python, PHP, Shopify, sGTM)", wins: true } },
+      { feature: "Pricing transparency", competitor: { text: "Sales call required", wins: false }, mbuzz: { text: "Public pricing, $0 to start", wins: true } },
+      { feature: "Free tier", competitor: { text: "None", wins: false }, mbuzz: { text: "Yes (every core feature)", wins: true } },
+      { feature: "Self-serve signup", competitor: { text: "No — sales-led onboarding", wins: false }, mbuzz: { text: "Yes", wins: true } },
+      { feature: "Reporting transparency", competitor: { text: "Why-credit opacity (common complaint)", wins: false }, mbuzz: { text: "Every rule visible and editable", wins: true } },
+      { feature: "Custom models", competitor: { text: "Not available", wins: false }, mbuzz: { text: "Attribution DSL on every tier", wins: true } },
+      { feature: "Call tracking", competitor: { text: "Built-in", wins: true }, mbuzz: { text: "Coming soon", wins: false } },
+      { feature: "Email click / open tracking", competitor: { text: "Built-in", wins: true }, mbuzz: { text: "Via SDK events", wins: false } },
+      { feature: "High-ticket, long-cycle focus", competitor: { text: "Purpose-built", wins: true }, mbuzz: { text: "General-purpose", wins: false } },
+      { feature: "AI-powered insights", competitor: { text: "Native assistant", wins: true }, mbuzz: { text: "MCP server — plug in your own", wins: false } },
+      { feature: "Data export", competitor: { text: "Available", wins: false }, mbuzz: { text: "All tiers — CSV, API, MCP", wins: true } }
+    ],
+    verdict: "Hyros is purpose-built for high-ticket DTC with long sales cycles, call tracking, and sales-led onboarding. Worth the call if that's you. mbuzz is the transparent, self-serve alternative — public pricing, inspectable models, $0 to start. Different buyers." %>
+
+  <%= render "landing_pages/lp_mid_cta",
+    prompt_text: "Want to see it without booking a call?" %>
+
+  <%= render "landing_pages/lp_feature_showcase",
+    heading: "Models. DSL. Spend. LTV.",
+    bg_variant: "white",
+    cells: [
+      {
+        eyebrow: "Eight models, one view",
+        title: "Same data. Eight models. The spread is the answer.",
+        description: "Hyros gives you one AI-driven number you can't audit. mbuzz shows you what every model says — and where they disagree. The spread between first-touch and last-touch is the honest truth range.",
+        bullets: [
+          "First-touch, last-touch, linear, time-decay, position-based, Markov, Shapley, data-driven",
+          "Same underlying data — swap the lens, not the dataset",
+          "Export every model's output on every tier"
+        ],
+        screenshot_url: "https://mbuzz.sfo3.digitaloceanspaces.com/brand-assets/directory-listings/screenshot-02-channels.png",
+        screenshot_alt: "mbuzz channel comparison across 8 attribution models",
+        cta: "See the models side-by-side",
+        cta_path: demo_path,
+        modal_frame_id: "demo_conversions",
+        modal_frame_src: demo_dashboard_conversions_path(models: [ "first_touch", "last_touch" ])
+      },
+      {
+        eyebrow: "Attribution DSL",
+        title: "Write your own attribution. Audit the rest.",
+        description: "SQL-like language. Encode your sales cycle directly into the math — critical for high-ticket cycles that don't fit standard templates. Fork any built-in model in one line. Hyros won't show you how its model works; mbuzz gives you the code.",
+        bullets: [
+          "Plain-text rules, diff-friendly, version-controlled",
+          "Fork and modify any built-in model in one line",
+          "Run custom models alongside the built-ins — no tier gate"
+        ],
+        screenshot_url: "https://mbuzz.sfo3.digitaloceanspaces.com/brand-assets/directory-listings/screenshot-03-dsl.png",
+        screenshot_alt: "mbuzz Attribution DSL — custom model examples",
+        cta: "See example models",
+        cta_path: root_path(anchor: "aml-editor"),
+        modal_partial: "pages/home/aml_editor"
+      },
+      {
+        eyebrow: "Spend Intelligence",
+        title: "Where does the next $10K go?",
+        description: "Hyros reports on spend efficiency. mbuzz also tells you what happens when you shift budget. Diminishing-returns curves, payback period by channel, reallocation suggestions — the questions that matter when every dollar is scrutinized.",
+        bullets: [
+          "Response curves per channel — see saturation before you hit it",
+          "Payback period by channel, not just ROAS",
+          "Platform-reported vs real-captured revenue, reconciled"
+        ],
+        screenshot_url: "https://mbuzz.sfo3.digitaloceanspaces.com/brand-assets/directory-listings/screenshot-04-roas-delta.png",
+        screenshot_alt: "mbuzz ROAS delta — platform-reported vs real-captured revenue",
+        cta: "See the spend breakdown",
+        cta_path: demo_dashboard_spend_path,
+        modal_frame_id: "demo_spend",
+        modal_frame_src: demo_dashboard_spend_path(preview: 1)
+      },
+      {
+        eyebrow: "LTV mode",
+        title: "Your worst channel might be your best.",
+        description: "Every report flips between first-month revenue and 12-month lifetime value in one click. For high-ticket long-cycle brands, LTV is where channels actually earn their credit. Ships in every mbuzz plan.",
+        bullets: [
+          "Toggle any channel ranking between first-month and 12-month LTV",
+          "See channel rank changes explicitly (up 2, down 4, same)",
+          "Works across every attribution model"
+        ],
+        screenshot_url: "https://mbuzz.sfo3.digitaloceanspaces.com/brand-assets/directory-listings/screenshot-05-channel-detail.png",
+        screenshot_alt: "mbuzz LTV leaderboard — channel rankings flip between first-month and 12-month",
+        cta: "See the channel flip",
+        cta_path: demo_path,
+        modal_partial: "pages/home/ltv_leaderboard"
+      }
+    ] %>
+
+  <%= render "landing_pages/lp_feature_grid",
+    heading: "Also in mbuzz.",
+    cells: [
+      {
+        title: "Server-side SDKs",
+        description: "Ruby, Node, Python, PHP, Shopify, sGTM. Open-source. Your data never touches client-side pixels that ad-blockers nuke."
+      },
+      {
+        title: "Google Ads spend sync",
+        description: "Platform-reported vs real-captured revenue on one screen. Reconciles the gap between Google's number and yours."
+      },
+      {
+        title: "Own your data",
+        description: "Full export on every plan — CSV, API, MCP server for agent access. No vendor lock-in, no tier gate."
+      }
+    ] %>
+
+  <%= render "landing_pages/lp_pricing_card",
+    competitor_name: "Hyros",
+    competitor_price: "$?",
+    competitor_cadence: "sales call required",
+    bg_variant: "white",
+    mbuzz_subtext: "Start free. Paid plans from $29/mo. Published, self-serve, no call required." %>
+
+  <%= render "landing_pages/lp_bottom_cta",
+    subhead: "The demo runs on sample data. Sign up free to connect your own. No credit card, no sales call." %>
+</div>
