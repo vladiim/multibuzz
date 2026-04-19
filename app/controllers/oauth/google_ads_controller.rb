@@ -4,12 +4,12 @@ module Oauth
   class GoogleAdsController < ApplicationController
     skip_marketing_analytics
     before_action :require_login
+    before_action :require_paid_plan, only: :connect
+    before_action :require_connection_slot, only: :connect
     before_action :require_oauth_account, only: [ :callback, :select_account, :create_connection ]
     before_action :require_session_tokens, only: [ :select_account, :create_connection ]
 
     def connect
-      return redirect_with_limit_error unless current_account.can_connect_ad_platform?
-
       session[:oauth_state] = state
       session[:oauth_account_id] = current_account.id
       redirect_to oauth_url, allow_other_host: true
@@ -32,12 +32,9 @@ module Oauth
     end
 
     def create_connection
-      return redirect_to(account_integrations_path, alert: "This account is already connected.") if duplicate_connection?
-
-      build_connection.save!
-      enqueue_backfill
-      clear_oauth_session!
-      redirect_to account_integrations_path, notice: "Google Ads account connected."
+      outcome = AdPlatforms::Google::AcceptConnectionService.new(account: oauth_account, params: params, tokens: session_tokens).call
+      clear_oauth_session! if outcome[:clear_session]
+      redirect_to account_integrations_path, **outcome.except(:clear_session)
     end
 
     def reconnect
@@ -122,36 +119,6 @@ module Oauth
       ).call
     end
 
-    def duplicate_connection?
-      oauth_account.ad_platform_connections.exists?(
-        platform: :google_ads,
-        platform_account_id: params[:customer_id]
-      )
-    end
-
-    def build_connection
-      @build_connection ||= oauth_account.ad_platform_connections.build(
-        platform: :google_ads,
-        platform_account_id: params[:customer_id],
-        platform_account_name: params[:customer_name],
-        currency: params[:currency],
-        access_token: session_tokens["access_token"],
-        refresh_token: session_tokens["refresh_token"],
-        token_expires_at: Time.parse(session_tokens["expires_at"]),
-        status: :connected,
-        settings: connection_settings
-      )
-    end
-
-    def connection_settings
-      { "login_customer_id" => params[:login_customer_id].presence }.compact
-    end
-
-    def enqueue_backfill
-      backfill_range = AdPlatforms::Google::ConnectionSyncService::BACKFILL_DAYS.days.ago.to_date..Date.current
-      AdPlatforms::SpendSyncJob.perform_later(build_connection.id, date_range: backfill_range)
-    end
-
     # --- Disconnect ---
 
     def connection
@@ -172,6 +139,16 @@ module Oauth
     end
 
     # --- Guards ---
+
+    def require_paid_plan
+      redirect_with_limit_error unless current_account.can_connect_ad_platform?
+    end
+
+    def require_connection_slot
+      return if current_account.can_add_ad_platform_connection?
+
+      redirect_to account_integrations_path, alert: current_account.ad_platform_at_limit_alert
+    end
 
     def require_oauth_account
       return if session[:oauth_account_id].present? &&

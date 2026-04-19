@@ -45,6 +45,57 @@ class Oauth::GoogleAdsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/paid plan/i, flash[:alert])
   end
 
+  test "connect redirects with at-limit error when starter is full" do
+    sign_in
+    assign_plan(:starter)
+    # account :one fixture already has 2 connections; starter limit is 2
+
+    get oauth_google_ads_connect_path
+
+    assert_redirected_to account_integrations_path
+    assert_match(/2 of 2/i, flash[:alert])
+    assert_match(/upgrade/i, flash[:alert])
+  end
+
+  test "connect initiates oauth when starter has room" do
+    sign_in
+    assign_plan(:starter)
+    connection.mark_disconnected!
+    # 1 active connection remains; starter limit is 2
+
+    AdPlatforms::Google.stub(:credentials, test_credentials) do
+      get oauth_google_ads_connect_path
+    end
+
+    assert_response :redirect
+    assert_includes response.location, "accounts.google.com"
+  end
+
+  test "connect initiates oauth for pro plan regardless of connection count" do
+    sign_in
+    assign_plan(:pro)
+    # bulk-create many connections to simulate a busy Pro account
+    10.times do |i|
+      account.ad_platform_connections.create!(
+        platform: :google_ads,
+        platform_account_id: "pro-bulk-#{i}",
+        platform_account_name: "Pro Bulk #{i}",
+        currency: "USD",
+        access_token: "tok",
+        refresh_token: "ref",
+        token_expires_at: 1.hour.from_now,
+        status: :connected
+      )
+    end
+
+    AdPlatforms::Google.stub(:credentials, test_credentials) do
+      get oauth_google_ads_connect_path
+    end
+
+    assert_response :redirect
+    assert_includes response.location, "accounts.google.com"
+  end
+
   # --- callback ---
 
   test "callback exchanges code and stores tokens in session" do
@@ -170,6 +221,37 @@ class Oauth::GoogleAdsControllerTest < ActionDispatch::IntegrationTest
     }
 
     assert_redirected_to account_integrations_path
+  end
+
+  test "create_connection redirects when account hit limit mid-flow" do
+    sign_in
+    assign_plan(:growth)
+    set_session_tokens
+    # mid-flow: downgrade to starter, which already has the 2 fixture connections at its limit
+    assign_plan(:starter)
+
+    assert_no_difference "AdPlatformConnection.count" do
+      post oauth_google_ads_create_connection_path, params: {
+        customer_id: "race-1111111", customer_name: "Race", currency: "USD"
+      }
+    end
+
+    assert_redirected_to account_integrations_path
+    assert_match(/2 of 2/i, flash[:alert])
+  end
+
+  test "create_connection clears oauth session when blocked by at-limit" do
+    sign_in
+    assign_plan(:growth)
+    set_session_tokens
+    assign_plan(:starter)
+
+    post oauth_google_ads_create_connection_path, params: {
+      customer_id: "race-2222222", customer_name: "Race", currency: "USD"
+    }
+
+    assert_nil session[:oauth_account_id]
+    assert_nil session[:google_ads_tokens]
   end
 
   test "create_connection rejects duplicate platform account" do

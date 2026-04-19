@@ -226,6 +226,10 @@ module Account::Billing
     can_connect_ad_platform? && ad_platform_connections_remaining > 0
   end
 
+  def ad_platform_at_limit_alert
+    "You've connected #{ad_platform_connections_used} of #{ad_platform_connection_limit} integrations on your #{plan&.name} plan. Upgrade to connect more."
+  end
+
   # --- Attribution Model Limits ---
 
   def custom_model_limit
