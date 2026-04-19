@@ -73,3 +73,9 @@
     "Budget recommendations",
     "Automated daily spend sync"
   ] %>
+
+<%= render "shared/upgrade_modal",
+  modal_id: "at-limit-modal",
+  title: "Integration limit reached",
+  body: current_account.ad_platform_at_limit_alert,
+  cta_text: "View plans" %>

@@ -1,11 +1,12 @@
-<% if current_account.can_connect_ad_platform? %>
+<% if current_account.can_add_ad_platform_connection? %>
   <%= link_to "Connect Account", oauth_google_ads_connect_path,
     class: "inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700" %>
 <% else %>
+  <% modal_target = current_account.can_connect_ad_platform? ? "at-limit-modal" : "subscription-required-modal" %>
   <button type="button"
     data-controller="modal"
     data-action="click->modal#open"
-    data-modal-target-value="subscription-required-modal"
+    data-modal-target-value="<%= modal_target %>"
     class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
     Connect Account
   </button>

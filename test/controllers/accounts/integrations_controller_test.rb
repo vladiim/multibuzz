@@ -47,6 +47,34 @@ class Accounts::IntegrationsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/account.* connected/i, response.body)
   end
 
+  test "show displays usage badge for paid accounts with a limit" do
+    sign_in
+    account.update!(plan: plans(:starter))
+
+    get account_integrations_path
+
+    assert_match(/2 of 2 integrations used/i, response.body)
+  end
+
+  test "show displays Unlimited badge for pro accounts" do
+    sign_in
+    account.update!(plan: plans(:pro))
+
+    get account_integrations_path
+
+    assert_match(/Unlimited integrations/i, response.body)
+  end
+
+  test "show hides usage badge for unpaid accounts" do
+    sign_in
+    account.update!(plan: plans(:free))
+
+    get account_integrations_path
+
+    assert_no_match(/integrations used/i, response.body)
+    assert_no_match(/Unlimited integrations/i, response.body)
+  end
+
   # --- google_ads (platform page) ---
 
   test "google_ads renders platform page with breadcrumb" do
@@ -74,6 +102,26 @@ class Accounts::IntegrationsControllerTest < ActionDispatch::IntegrationTest
     get google_ads_account_integrations_path
 
     assert_select "a", text: /Connect Account/
+  end
+
+  test "google_ads opens at-limit modal when starter is full" do
+    sign_in
+    account.update!(plan: plans(:starter))
+    # fixture already has 2 connections; starter limit is 2
+
+    get google_ads_account_integrations_path
+
+    assert_select "button[data-modal-target-value='at-limit-modal']", text: /Connect Account/
+    assert_match(/2 of 2/i, response.body)
+  end
+
+  test "google_ads opens subscription-required modal for free accounts" do
+    sign_in
+    account.update!(plan: plans(:free))
+
+    get google_ads_account_integrations_path
+
+    assert_select "button[data-modal-target-value='subscription-required-modal']", text: /Connect Account/
   end
 
   # --- google_ads_account (account detail page) ---

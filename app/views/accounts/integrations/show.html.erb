@@ -10,9 +10,16 @@
           <%= render "layouts/account_nav_tabs" %>
 
           <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-            <div class="px-6 py-4 border-b border-gray-200">
-              <h1 class="text-xl font-semibold text-gray-900">Integrations</h1>
-              <p class="mt-1 text-sm text-gray-500">Connect ad platforms to unlock spend intelligence and ROAS reporting.</p>
+            <div class="px-6 py-4 border-b border-gray-200 flex items-start justify-between gap-4">
+              <div>
+                <h1 class="text-xl font-semibold text-gray-900">Integrations</h1>
+                <p class="mt-1 text-sm text-gray-500">Connect ad platforms to unlock spend intelligence and ROAS reporting.</p>
+              </div>
+              <% if current_account.can_connect_ad_platform? %>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 whitespace-nowrap">
+                  <%= current_account.ad_platform_connections_unlimited? ? "Unlimited integrations" : "#{current_account.ad_platform_connections_used} of #{current_account.ad_platform_connection_limit} integrations used" %>
+                </span>
+              <% end %>
             </div>
 
             <div class="divide-y divide-gray-200">
