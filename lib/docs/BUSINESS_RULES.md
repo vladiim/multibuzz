@@ -448,6 +448,8 @@ mbuzz automatically detects and filters bot traffic to ensure clean data.
 | BL2 | Usage checks happen at ingestion time | Before processing a session, event, or conversion, the system checks if the account is within its plan limits |
 | BL3 | Over-limit requests receive a billing blocked response | The API returns a 202 status with `billing_blocked: true` rather than a hard error, so SDK integrations don't crash |
 | BL4 | Usage counters are cache-backed | Real-time counting uses the cache for performance, with periodic database reconciliation |
+| BL5 | Ad platform integrations are paid-plan only | Free accounts cannot connect Google Ads, Meta, or LinkedIn. Starter includes 2 integrations, Growth 5, Pro/Enterprise unlimited. Disconnected connections free their slot. |
+| BL6 | Cap is enforced at the OAuth boundary | The connect gate rejects unpaid and at-cap accounts before leaving for the provider. A second check at callback time prevents a mid-flow downgrade from sneaking a connection past the cap. |
 
 ---
 

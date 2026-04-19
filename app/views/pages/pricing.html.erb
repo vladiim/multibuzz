@@ -18,10 +18,10 @@
         highPrice: "299",
         offerCount: 4,
         offers: [
-          { "@type": "Offer", name: "Free", price: "0", priceCurrency: "USD", description: "30,000 events/month. Full access to all 8 attribution models. No custom DSL models." },
-          { "@type": "Offer", name: "Starter", price: "29", priceCurrency: "USD", description: "1,000,000 events/month. 3 custom DSL attribution models. Overage: $5 per 250,000 events." },
-          { "@type": "Offer", name: "Growth", price: "99", priceCurrency: "USD", description: "5,000,000 events/month. 5 custom DSL attribution models. Overage: $15 per 1,000,000 events." },
-          { "@type": "Offer", name: "Pro", price: "299", priceCurrency: "USD", description: "25,000,000 events/month. 10 custom DSL attribution models. Overage: $50 per 5,000,000 events." }
+          { "@type": "Offer", name: "Free", price: "0", priceCurrency: "USD", description: "30,000 events/month. Full access to all 8 attribution models. No custom DSL models. No ad platform integrations." },
+          { "@type": "Offer", name: "Starter", price: "29", priceCurrency: "USD", description: "1,000,000 events/month. 3 custom DSL attribution models. 2 ad platform integrations. Overage: $5 per 250,000 events." },
+          { "@type": "Offer", name: "Growth", price: "99", priceCurrency: "USD", description: "5,000,000 events/month. 5 custom DSL attribution models. 5 ad platform integrations. Overage: $15 per 1,000,000 events." },
+          { "@type": "Offer", name: "Pro", price: "299", priceCurrency: "USD", description: "25,000,000 events/month. 10 custom DSL attribution models. Unlimited ad platform integrations. Overage: $50 per 5,000,000 events." }
         ]
       }
     }.to_json.html_safe %>
@@ -38,7 +38,8 @@
       </h1>
       <p class="mt-6 text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
         Every plan includes all eight attribution models, the Attribution DSL for writing your own,
-        and open-source SDKs for Ruby, Node, Python, and PHP. You pay for the events you track.
+        and open-source SDKs for Ruby, Node, Python, and PHP. Paid plans connect Google Ads
+        (with Meta and LinkedIn coming) to attribute spend and compute ROAS. You pay for the events you track.
       </p>
       <p class="mt-4 text-base text-gray-500">
         No contracts. No sales calls. Cancel any time.
@@ -72,6 +73,16 @@
           <p class="mt-2">
             The Free tier hard-caps at 30,000 events. No overage — events beyond the cap are dropped
             until the next billing cycle or you upgrade.
+          </p>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">Which ad platforms are supported?</h3>
+          <p>
+            Google Ads is live today. Meta and LinkedIn are next &mdash; same OAuth flow, same
+            spend-to-ROAS pipeline. Ad platform integrations are a paid-plan feature: Starter includes
+            2 integrations, Growth includes 5, Pro is unlimited. Free accounts can still track events
+            and use every attribution model &mdash; they just don't pull paid-media spend.
           </p>
         </div>
 

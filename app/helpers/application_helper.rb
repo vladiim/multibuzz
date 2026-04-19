@@ -19,4 +19,10 @@ module ApplicationHelper
   def free_event_limit_full
     number_with_delimiter(Billing::FREE_EVENT_LIMIT)
   end
+
+  # Ad platform integration count for a plan slug ("Unlimited" when nil)
+  def ad_integrations_display(plan_slug)
+    limit = Billing::AD_PLATFORM_CONNECTION_LIMITS.fetch(plan_slug)
+    limit.nil? ? "Unlimited" : limit.to_s
+  end
 end

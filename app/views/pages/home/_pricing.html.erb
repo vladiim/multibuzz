@@ -14,6 +14,7 @@
             <tr class="bg-gray-900 text-white">
               <th class="px-6 py-4 text-left text-sm font-semibold">Tier</th>
               <th class="px-6 py-4 text-left text-sm font-semibold">Monthly Records</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold">Ad Integrations</th>
               <th class="px-6 py-4 text-left text-sm font-semibold">Price/Month (USD)</th>
               <th class="px-6 py-4 text-left text-sm font-semibold">Effective $/1K Records</th>
             </tr>
@@ -24,6 +25,7 @@
                 <div class="font-semibold text-gray-900">Free</div>
               </td>
               <td class="px-6 py-4 text-gray-600">&le;<%= free_event_limit_display %></td>
+              <td class="px-6 py-4 text-gray-500">&mdash;</td>
               <td class="px-6 py-4">
                 <div class="text-xl font-bold text-gray-900">$0</div>
               </td>
@@ -34,6 +36,7 @@
                 <div class="font-semibold text-gray-900">Starter</div>
               </td>
               <td class="px-6 py-4 text-gray-600">&le;1M</td>
+              <td class="px-6 py-4 text-gray-600"><%= ad_integrations_display(Billing::PLAN_STARTER) %></td>
               <td class="px-6 py-4">
                 <div class="text-xl font-bold text-gray-900">$29</div>
               </td>
@@ -44,6 +47,7 @@
                 <div class="font-semibold text-gray-900">Growth</div>
               </td>
               <td class="px-6 py-4 text-gray-600">&le;5M</td>
+              <td class="px-6 py-4 text-gray-600"><%= ad_integrations_display(Billing::PLAN_GROWTH) %></td>
               <td class="px-6 py-4">
                 <div class="text-xl font-bold text-gray-900">$99</div>
               </td>
@@ -54,6 +58,7 @@
                 <div class="font-semibold text-gray-900">Pro</div>
               </td>
               <td class="px-6 py-4 text-gray-600">&le;25M</td>
+              <td class="px-6 py-4 text-gray-600"><%= ad_integrations_display(Billing::PLAN_PRO) %></td>
               <td class="px-6 py-4">
                 <div class="text-xl font-bold text-gray-900">$299</div>
               </td>
