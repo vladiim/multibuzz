@@ -2,8 +2,8 @@
 
 **Date:** 2026-04-22
 **Priority:** P1
-**Status:** Draft
-**Branch:** `feature/customer-lifecycle-tracking`
+**Status:** Ready
+**Branch:** `feature/session-bot-detection`
 
 ---
 
@@ -104,20 +104,22 @@ User action (e.g. completes onboarding step)
 | `first_production_event` | event | `Event::Broadcasts` | **Already tracked.** No change. |
 | `usage_milestone` | event | `Account::Billing#increment_usage!` | `milestone` (25/50/80/100), `plan`, `usage_count`, `limit` |
 
-Usage milestones fire once per billing period per threshold. Track via cache key: `account:{id}:milestone:{period}:{pct}`.
+Usage milestones fire once per billing period per threshold. Track via cache key: `account:{id}:milestone:{period}:{pct}` where `period` is `Account#current_billing_period` (already exists at `app/models/concerns/account/billing.rb:87`, returns `"YYYY-MM"`). Cache TTL: 45 days (covers a full billing period plus buffer; Solid Cache honours `expires_in`).
 
 ### Billing & Payments
 
 | Event | Type | Trigger Point | Key Properties |
 |-------|------|---------------|----------------|
-| `payment` | conversion | `Billing::Handlers::InvoicePaid` | **Already tracked.** No change. |
+| `payment` | conversion | `Billing::Handlers::InvoicePaid` | **Already tracked.** Now also increments denormalized `accounts.lifetime_value_cents`. |
 | `billing_upgraded` | event | `Billing::Handlers::CheckoutCompleted` | `plan`, `from_plan`, `days_since_signup` |
 | `billing_trial_started` | event | `Account::Billing#start_trial!` | `plan`, `trial_ends_at` |
 | `billing_trial_expired` | event | `Billing::ExpireFreeUntilService` (or trial expiry job) | `plan`, `days_on_trial` |
 | `billing_payment_failed` | event | `Billing::Handlers::InvoicePaymentFailed` | `plan`, `grace_period_ends_at` |
 | `billing_payment_recovered` | event | `Billing::Handlers::InvoicePaid` (when clearing past_due) | `plan`, `days_past_due` |
-| `billing_cancelled` | event | `Billing::Handlers::SubscriptionDeleted` | `plan`, `days_as_customer`, `total_revenue` |
+| `billing_cancelled` | event | `Billing::Handlers::SubscriptionDeleted` | `plan`, `days_as_customer`, `lifetime_value` |
 | `billing_reactivated` | event | `Account::Billing#restore_from_past_due!` or reactivation | `plan`, `days_inactive` |
+
+**LTV denormalization.** `accounts.lifetime_value_cents` (bigint, default 0) is incremented in `Billing::Handlers::InvoicePaid` by `event_object[:amount_paid]` before `track_payment` fires. This keeps the customer metrics report cheap (no JSONB scan) and gives `billing_cancelled` a reliable `lifetime_value` property. Source of truth stays in Stripe; we denormalize for our own reporting.
 
 ### Feature Adoption
 
@@ -262,9 +264,33 @@ end
 ### Phase 4: Feature Adoption
 
 - [ ] **4.1** Add `feature_ad_platform_connected` to `AdPlatforms::Google::AcceptConnectionService`
-- [ ] **4.2** Add `feature_custom_model_created` to attribution model creation
+- [ ] **4.2** Add `feature_custom_model_created` to attribution model creation (skip if no service exists yet — note in spec)
 - [ ] **4.3** Add `feature_csv_exported` to `Dashboard::CsvExportService`
 - [ ] **4.4** Write tests for feature adoption events
+
+### Phase 5: Internal Signup Notification Email
+
+When a new account signs up, send an internal notification to the recipient configured in `Rails.application.credentials.dig(:internal_notifications, :signup_recipient)`. Recipient is **never** hardcoded (per CLAUDE.md secret-handling rules).
+
+- [ ] **5.1** Add `:internal_notifications` namespace to Rails credentials with `signup_recipient` (set on each environment, not committed)
+- [ ] **5.2** Create `app/mailers/internal_notifications_mailer.rb` with `new_signup(account_id)` action
+- [ ] **5.3** Create `app/views/internal_notifications_mailer/new_signup.html.erb` and `.text.erb`
+- [ ] **5.4** Create `app/services/internal_notifications/signup_stats_service.rb` (returns `{ total_accounts:, signups_today:, signups_this_week:, signups_this_month:, trial_to_paid_rate_30d: }` — query object, not ApplicationService)
+- [ ] **5.5** Create `app/jobs/internal_notifications/new_signup_job.rb` — thin one-line `deliver_now` wrapper
+- [ ] **5.6** Trigger from `SignupController#create` after the existing `Mbuzz.conversion("signup", ...)` line via `perform_later`
+- [ ] **5.7** Skip in test env (or use test mailer queue); skip if recipient not configured (return nil)
+- [ ] **5.8** Tests: mailer test (renders, addresses correct recipient), service test (counts accurate), controller test (job enqueued on signup)
+
+**Email contents:**
+
+| Section | Fields |
+|---------|--------|
+| Header | `New mbuzz signup: {account.name}` |
+| Account | name, prefix_id, slug, plan name, owner name (no raw email body — owner name only), persona if set, selected SDK if set |
+| Acquisition | UTM source/medium/campaign/content/term, referrer, country (from owner's most recent visitor session if available) |
+| Funnel context | total accounts (all-time), signups today, signups this week, signups this month, 30-day signup→paid conversion rate |
+
+**Why a service for stats?** Keeps the mailer thin (per CLAUDE.md). Stats query is reusable later (e.g. weekly digest email, admin dashboard tile).
 
 ---
 
@@ -316,6 +342,8 @@ end
 - [ ] Usage milestones fire at 25/50/80/100% (deduplicated per period)
 - [ ] Billing transitions (upgrade, cancel, payment fail/recover) emit events
 - [ ] Feature adoption events fire for ad platforms, custom models, CSV exports
+- [ ] `accounts.lifetime_value_cents` denormalized counter ticks on every paid invoice
+- [ ] Internal signup notification email delivered to the configured recipient on every new account
 - [ ] All tests pass (unit + full suite)
 - [ ] No existing behavior changed -- tracking is additive only
 - [ ] Spec updated with final state
