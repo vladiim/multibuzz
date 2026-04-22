@@ -47,3 +47,6 @@
 /coverage
 
 /config/credentials/test.key
+
+# Claude Code transient files
+.claude/scheduled_tasks.lock
