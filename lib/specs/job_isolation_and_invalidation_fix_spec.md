@@ -320,12 +320,12 @@ Order matters.
 - [x] **4.1** Provision `mbuzz-jobs` droplet in SFO2, `mbuzz-sfo-vpc`, 2 vCPU/4 GB. Public `159.89.136.202`, private `10.120.0.5`. (DONE 2026-04-22)
 - [x] **4.2** Resize web droplet (`mbuzz`) 2 GB → 4 GB, 1 vCPU → 2 vCPU. (DONE 2026-04-22)
 - [x] **4.3** `kamal proxy reboot` — proxy v0.9.0 → v0.9.2. (DONE 2026-04-22)
-- [ ] **4.4** Edit `config/deploy.yml`: `SOLID_QUEUE_IN_PUMA: false`; add `jobs` role on `159.89.136.202` running `bin/jobs`
-- [ ] **4.5** Verify `config/puma.rb:39` still env-guards the plugin (no code change expected)
-- [ ] **4.6** Confirm `bin/jobs` exists in the image (Rails 8 generator includes it; no Dockerfile change)
-- [ ] **4.7** `kamal server bootstrap` for new droplet (installs Docker, opens ports)
-- [ ] **4.8** `kamal deploy` — recreates web container (new env), starts jobs container on new droplet
-- [ ] **4.9** Verify both containers running; jobs container's Solid Queue supervisor respects existing pauses (no jobs run yet)
+- [x] **4.4** Edit `config/deploy.yml`: `SOLID_QUEUE_IN_PUMA: false`; add `jobs` role on `159.89.136.202` running `bin/jobs` (DONE 2026-04-22, commit `2a8afb0`)
+- [x] **4.5** Fix `config/puma.rb:39` — `if ENV["SOLID_QUEUE_IN_PUMA"]` was truthy for the string `"false"`. Compare to literal `"true"`. (DONE 2026-04-22, commit `44e4fa0` — found at deploy verification: web container kept running a Solid Queue supervisor competing with the jobs droplet.)
+- [x] **4.6** Confirmed `bin/jobs` exists in the Rails 8-generated image; no Dockerfile change.
+- [x] **4.7** `kamal server bootstrap --hosts 159.89.136.202` (installed Docker via `get.docker.com`).
+- [x] **4.8** `kamal deploy` — both containers up on `2a8afb0` then `44e4fa0`.
+- [x] **4.9** Verified `SolidQueue::Process.all` shows only `159.89.136.202` host — web no longer runs Solid Queue. Pauses still hold (`["default", "low", "solid_queue_recurring"]`); 0 claimed.
 
 ### Phase 5 — Operational recovery (sequential, on production)
 
