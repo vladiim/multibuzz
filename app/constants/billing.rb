@@ -170,6 +170,8 @@ module Billing
 
   # --- Cache Keys ---
   USAGE_CACHE_KEY_PREFIX = "account:%{id}:usage:%{period}"
+  USAGE_MILESTONE_CACHE_KEY_PREFIX = "account:%{id}:milestone:%{period}:%{milestone}"
+  USAGE_MILESTONE_CACHE_TTL = 45.days
 
   # --- Display ---
   FREE_PRICE_LABEL = "Free"

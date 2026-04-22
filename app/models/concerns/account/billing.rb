@@ -76,12 +76,32 @@ module Account::Billing
     Rails.cache.read(usage_cache_key).to_i
   end
 
+  USAGE_MILESTONES = [ 25, 50, 80, 100 ].freeze
+
   def increment_usage!(count = 1)
     Rails.cache.increment(usage_cache_key, count)
+    newly_crossed_milestones.each(&method(:fire_usage_milestone))
   end
 
   def usage_cache_key
     format(::Billing::USAGE_CACHE_KEY_PREFIX, id: id, period: current_billing_period)
+  end
+
+  def usage_milestone_cache_key(milestone)
+    format(::Billing::USAGE_MILESTONE_CACHE_KEY_PREFIX, id: id, period: current_billing_period, milestone: milestone)
+  end
+
+  def usage_milestone_fired?(milestone)
+    Rails.cache.read(usage_milestone_cache_key(milestone)).present?
+  end
+
+  def newly_crossed_milestones
+    USAGE_MILESTONES.select { |m| usage_percentage >= m && !usage_milestone_fired?(m) }
+  end
+
+  def fire_usage_milestone(milestone)
+    Rails.cache.write(usage_milestone_cache_key(milestone), true, expires_in: ::Billing::USAGE_MILESTONE_CACHE_TTL)
+    Lifecycle::Tracker.track("usage_milestone", self, milestone:, usage_count: current_period_usage, limit: free_event_limit)
   end
 
   def current_billing_period

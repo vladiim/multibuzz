@@ -170,6 +170,45 @@ class Account::BillingTest < ActiveSupport::TestCase
     assert_equal 105, account.current_period_usage
   end
 
+  # --- Usage Milestones ---
+
+  test "USAGE_MILESTONES exposes the four lifecycle thresholds" do
+    assert_equal [ 25, 50, 80, 100 ], Account::Billing::USAGE_MILESTONES
+  end
+
+  test "increment_usage! marks the milestone cache key once a threshold is crossed" do
+    account.update!(plan: free_plan)
+    Rails.cache.write(account.usage_cache_key, (Billing::FREE_EVENT_LIMIT * 0.5).to_i)
+
+    account.increment_usage!(0)
+
+    assert Rails.cache.read(account.usage_milestone_cache_key(50)), "expected 50% milestone to be marked fired"
+    assert Rails.cache.read(account.usage_milestone_cache_key(25)), "expected 25% milestone to also be marked since crossed"
+    assert_nil Rails.cache.read(account.usage_milestone_cache_key(80))
+    assert_nil Rails.cache.read(account.usage_milestone_cache_key(100))
+  end
+
+  test "increment_usage! does not re-mark a milestone that has already fired in this period" do
+    account.update!(plan: free_plan)
+    Rails.cache.write(account.usage_milestone_cache_key(50), true)
+    Rails.cache.write(account.usage_cache_key, (Billing::FREE_EVENT_LIMIT * 0.5).to_i)
+    timestamp_before = Rails.cache.read(account.usage_milestone_cache_key(50))
+
+    account.increment_usage!(0)
+
+    assert_equal timestamp_before, Rails.cache.read(account.usage_milestone_cache_key(50))
+  end
+
+  test "milestone cache key partitions by current billing period so a new month re-arms" do
+    account.update!(plan: free_plan, current_period_start: Time.current)
+    key_now = account.usage_milestone_cache_key(50)
+
+    account.update!(current_period_start: 2.months.ago)
+    key_prev = account.usage_milestone_cache_key(50)
+
+    refute_equal key_now, key_prev
+  end
+
   test "usage_percentage calculates correctly" do
     account.update!(plan: free_plan)
     limit = Billing::FREE_EVENT_LIMIT
