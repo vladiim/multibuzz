@@ -13,11 +13,14 @@ module Conversions
     def run
       return error_result([ "Conversion has no identity" ]) unless identity
 
-      with_conversion_lock do
-        delete_existing_credits
-        calculate_new_credits
+      AttributionCredit.without_dashboard_cache_invalidation do
+        with_conversion_lock do
+          delete_existing_credits
+          calculate_new_credits
+        end
       end
 
+      Dashboard::CacheInvalidator.new(conversion.account).call
       success_result(credits_by_model: credits_by_model)
     end
 

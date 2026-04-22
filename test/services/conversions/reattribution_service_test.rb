@@ -63,7 +63,70 @@ module Conversions
         "Second reattribution should replace, not duplicate credits"
     end
 
+    test "invalidates dashboard cache exactly once per call (one batched invalidation, not per credit)" do
+      Conversions::AttributionCalculationService.new(conversion).call
+
+      assert_predicate conversion.attribution_credits.reload.count, :positive?
+
+      Dashboard::CacheInvalidator.delete_matched_supported? # warm the probe so it does not count
+      counting_cache.reset_counters!
+
+      service.call
+
+      assert_equal Dashboard::CacheInvalidator::SECTIONS.size, counting_cache.delete_matched_count,
+        "Expected exactly one delete_matched per section (one batched CacheInvalidator#call), got #{counting_cache.delete_matched_count}"
+    end
+
+    test "AttributionCredit after_commit invalidation still fires for writes outside the service" do
+      Dashboard::CacheInvalidator.delete_matched_supported? # warm the probe so it does not count
+      counting_cache.reset_counters!
+
+      AttributionCredit.create!(
+        account: conversion.account,
+        conversion: conversion,
+        attribution_model: attribution_models(:first_touch),
+        session_id: SecureRandom.hex(16),
+        channel: "organic_search",
+        credit: 1.0,
+        revenue_credit: 100.00
+      )
+
+      assert_equal Dashboard::CacheInvalidator::SECTIONS.size, counting_cache.delete_matched_count,
+        "Direct AttributionCredit.create! outside the service should trigger one CacheInvalidator (got #{counting_cache.delete_matched_count})"
+    end
+
     private
+
+    setup do
+      @original_cache = Rails.cache
+      Rails.cache = counting_cache
+      Dashboard::CacheInvalidator.reset_delete_matched_support!
+    end
+
+    teardown do
+      Rails.cache = @original_cache if @original_cache
+      Dashboard::CacheInvalidator.reset_delete_matched_support!
+    end
+
+    def counting_cache = @counting_cache ||= CountingCacheStore.new
+
+    class CountingCacheStore < ActiveSupport::Cache::MemoryStore
+      attr_reader :delete_matched_count
+
+      def initialize(*)
+        super
+        @delete_matched_count = 0
+      end
+
+      def reset_counters!
+        @delete_matched_count = 0
+      end
+
+      def delete_matched(*)
+        @delete_matched_count += 1
+        super
+      end
+    end
 
     def service
       @service ||= Conversions::ReattributionService.new(conversion)
