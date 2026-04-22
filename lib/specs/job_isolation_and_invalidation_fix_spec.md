@@ -142,7 +142,7 @@ end
 
 ### Phase 3: Coalesce `ReattributionJob` Fan-Out
 
-Both call sites enqueue one job per conversion. Replace with one `BatchReattributionJob` per identity.
+Both call sites enqueue one job per conversion. Replace with one `BatchReattributionJob` per call site invocation, taking the list of `conversion_ids` so the caller keeps control of which conversions to include (preserves the IdentificationService lookback filter).
 
 ```ruby
 # app/jobs/conversions/batch_reattribution_job.rb (new)
@@ -150,9 +150,8 @@ module Conversions
   class BatchReattributionJob < ApplicationJob
     queue_as :default
 
-    def perform(identity_id)
-      identity = Identity.find(identity_id)
-      identity.conversions.find_each do |conversion|
+    def perform(conversion_ids)
+      Conversion.where(id: conversion_ids).find_each do |conversion|
         ReattributionService.new(conversion).call
       end
     end
@@ -163,20 +162,24 @@ end
 Update both call sites:
 
 ```ruby
-# app/services/identities/identification_service.rb:66
-Conversions::BatchReattributionJob.perform_later(identity.id)
-# (instead of: conversions.each { ReattributionJob.perform_later(_1.id) })
+# app/services/identities/identification_service.rb
+def queue_reattribution_if_needed
+  ids = conversions_needing_reattribution.map(&:id)
+  Conversions::BatchReattributionJob.perform_later(ids) if ids.any?
+end
 
-# app/services/billing/unlock_events_service.rb:61
-# Group by identity, enqueue one job per identity:
-conversions.group_by(&:visitor_identity_id).each_key do |identity_id|
-  Conversions::BatchReattributionJob.perform_later(identity_id) if identity_id
+# app/services/billing/unlock_events_service.rb
+def enqueue_reattribution_jobs
+  ids = conversions_in_locked_period.pluck(:id)
+  Conversions::BatchReattributionJob.perform_later(ids) if ids.any?
 end
 ```
 
 `Conversions::ReattributionJob` (the per-conversion job) stays — kept for explicit single-conversion reattribution and for the queued backlog. We do not remove it in this spec.
 
-`find_each` keeps memory bounded. Per-conversion failure is contained (one bad conversion doesn't kill the batch — `ApplicationService` rescues internally).
+`find_each` keeps memory bounded. Per-conversion failure is contained (one bad conversion doesn't kill the batch — `ApplicationService` rescues internally and returns an error result).
+
+**Contract decision: `conversion_ids` (not `identity_id`)** — the original spec proposed `identity_id`. Switched to `conversion_ids` because IdentificationService applies a lookback-window filter that would be lost if the job recomputed the conversion list from `identity.conversions.find_each`. Solid Queue serialises args as JSON; an array of integer IDs is ~10 bytes each, so even hundreds of IDs is well under any reasonable limit.
 
 ### Phase 4: Move Solid Queue Out of Puma — Separate Droplet
 

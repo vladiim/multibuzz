@@ -62,9 +62,8 @@ module Identities
     end
 
     def queue_reattribution_if_needed
-      conversions_needing_reattribution.each do |conversion|
-        Conversions::ReattributionJob.perform_later(conversion.id)
-      end
+      ids = conversions_needing_reattribution.map(&:id)
+      Conversions::BatchReattributionJob.perform_later(ids) if ids.any?
     end
 
     def conversions_needing_reattribution

@@ -57,9 +57,8 @@ module Billing
     end
 
     def enqueue_reattribution_jobs
-      conversions_in_locked_period.find_each do |conversion|
-        Conversions::ReattributionJob.perform_later(conversion.id)
-      end
+      ids = conversions_in_locked_period.pluck(:id)
+      Conversions::BatchReattributionJob.perform_later(ids) if ids.any?
     end
 
     # --- Queries ---

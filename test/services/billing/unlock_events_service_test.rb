@@ -33,12 +33,13 @@ class Billing::UnlockEventsServiceTest < ActiveSupport::TestCase
     assert_predicate other_event.reload, :locked?
   end
 
-  test "enqueues reattribution jobs for conversions during locked period" do
+  test "enqueues a single BatchReattributionJob covering all conversions in the locked period" do
     create_locked_event(occurred_at: 5.days.ago)
     create_locked_event(occurred_at: 1.day.ago)
-    conversion = create_conversion(converted_at: 3.days.ago)
+    conversion_a = create_conversion(converted_at: 4.days.ago)
+    conversion_b = create_conversion(converted_at: 2.days.ago)
 
-    assert_enqueued_with(job: Conversions::ReattributionJob, args: [ conversion.id ]) do
+    assert_enqueued_with(job: Conversions::BatchReattributionJob, args: [ [ conversion_a.id, conversion_b.id ] ]) do
       service.call
     end
   end
@@ -47,7 +48,7 @@ class Billing::UnlockEventsServiceTest < ActiveSupport::TestCase
     create_locked_event(occurred_at: 3.days.ago)
     create_conversion(converted_at: 10.days.ago)
 
-    assert_no_enqueued_jobs(only: Conversions::ReattributionJob) do
+    assert_no_enqueued_jobs(only: Conversions::BatchReattributionJob) do
       service.call
     end
   end

@@ -4,6 +4,8 @@ require "test_helper"
 
 module Identities
   class IdentificationServiceTest < ActiveSupport::TestCase
+    include ActiveJob::TestHelper
+
     setup do
       Rails.cache.clear
     end
@@ -222,6 +224,36 @@ module Identities
 
       assert result[:success]
       assert result[:visitor_linked]
+    end
+
+    # Reattribution enqueue tests
+
+    test "enqueues exactly one BatchReattributionJob per identification covering all eligible conversions" do
+      test_identity = create_test_identity(external_id: "batch_user_1")
+      existing_visitor = create_visitor(visitor_id: "vis_existing_batch", identity: test_identity)
+      create_session_for_visitor(existing_visitor, started_at: 25.days.ago)
+
+      conv_a = create_conversion(visitor: existing_visitor, converted_at: 10.days.ago)
+      conv_b = create_conversion(visitor: existing_visitor, converted_at: 5.days.ago)
+
+      create_visitor(visitor_id: "vis_new_batch")
+      create_session_for_visitor(account.visitors.find_by(visitor_id: "vis_new_batch"), started_at: 15.days.ago)
+
+      assert_enqueued_jobs 1, only: Conversions::BatchReattributionJob do
+        service(user_id: test_identity.external_id, visitor_id: "vis_new_batch").call
+      end
+
+      enqueued = ActiveJob::Base.queue_adapter.enqueued_jobs.find { |j| j["job_class"] == "Conversions::BatchReattributionJob" }
+
+      assert_equal [ conv_a.id, conv_b.id ].sort, enqueued["arguments"].first.sort
+    end
+
+    test "enqueues no reattribution job when there are no eligible conversions" do
+      create_visitor(visitor_id: "vis_first_link")
+
+      assert_no_enqueued_jobs only: [ Conversions::BatchReattributionJob, Conversions::ReattributionJob ] do
+        service(user_id: "first_link_user", visitor_id: "vis_first_link").call
+      end
     end
 
     private
