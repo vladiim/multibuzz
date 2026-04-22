@@ -2,6 +2,7 @@
   <div class="flex items-center justify-between mb-8">
     <h1 class="text-2xl font-bold text-gray-900">Billing Admin</h1>
     <nav class="flex gap-4 text-sm">
+      <%= link_to "Customer Metrics", admin_customer_metrics_path, class: "text-indigo-600 hover:text-indigo-800" %>
       <%= link_to "Data Integrity", admin_data_integrity_index_path, class: "text-indigo-600 hover:text-indigo-800" %>
       <%= link_to "Submissions", admin_submissions_path, class: "text-indigo-600 hover:text-indigo-800" %>
     </nav>

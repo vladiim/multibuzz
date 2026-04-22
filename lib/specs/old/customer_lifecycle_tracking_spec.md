@@ -337,16 +337,16 @@ end
 
 ## Definition of Done
 
-- [ ] `Lifecycle::Tracker` module exists with fire-and-forget semantics
-- [ ] All onboarding steps emit events
-- [ ] Usage milestones fire at 25/50/80/100% (deduplicated per period)
-- [ ] Billing transitions (upgrade, cancel, payment fail/recover) emit events
-- [ ] Feature adoption events fire for ad platforms, custom models, CSV exports
-- [ ] `accounts.lifetime_value_cents` denormalized counter ticks on every paid invoice
-- [ ] Internal signup notification email delivered to the configured recipient on every new account
-- [ ] All tests pass (unit + full suite)
-- [ ] No existing behavior changed -- tracking is additive only
-- [ ] Spec updated with final state
+- [x] `Lifecycle::Tracker` module exists with fire-and-forget semantics
+- [x] All onboarding steps emit events
+- [x] Usage milestones fire at 25/50/80/100% (deduplicated per period)
+- [x] Billing transitions (upgrade, cancel, payment fail/recover) emit events
+- [x] Feature adoption events fire for ad platforms, custom models, CSV exports
+- [x] `accounts.lifetime_value_cents` denormalized counter ticks on every paid invoice
+- [x] Internal signup notification email delivered to the configured recipient on every new account
+- [x] All tests pass (unit + full suite)
+- [x] No existing behavior changed -- tracking is additive only
+- [x] Spec updated with final state
 
 ---
 

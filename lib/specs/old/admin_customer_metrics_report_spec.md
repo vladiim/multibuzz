@@ -216,12 +216,12 @@ GET /admin/customer_metrics
 
 ## Definition of Done
 
-- [ ] All migrations applied (dev + production-ready)
-- [ ] All implementation phases complete
-- [ ] All tests pass (`bin/rails test`)
-- [ ] Manual QA on dev passes
-- [ ] Admin nav links to the report
-- [ ] Spec updated with any deviations and moved to `lib/specs/old/`
+- [x] All migrations applied (dev + production-ready)
+- [x] All implementation phases complete
+- [x] All tests pass (`bin/rails test`)
+- [ ] Manual QA on dev passes — **owner: Vlad** (UI rendered, test assertions cover render/auth/CSV; eyeball pass left to operator)
+- [x] Admin nav links to the report (Customer Metrics link added to `app/views/admin/billing/show.html.erb`)
+- [x] Spec updated with any deviations and moved to `lib/specs/old/`
 
 ---
 
