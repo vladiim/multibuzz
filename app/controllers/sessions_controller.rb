@@ -29,9 +29,14 @@ class SessionsController < ApplicationController
 
   def login_success
     session[:user_id] = user.id
+    record_login_activity
     track_login
     claim_score_assessment
     redirect_to post_login_path, notice: "Logged in successfully"
+  end
+
+  def record_login_activity
+    user.update!(sign_in_count: user.sign_in_count + 1, last_sign_in_at: Time.current)
   end
 
   def track_login
