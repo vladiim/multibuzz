@@ -1,0 +1,65 @@
+<div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">Customer Metrics</h1>
+    <%= link_to "Export CSV", admin_customer_metrics_path(format: :csv), class: "inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700" %>
+  </div>
+
+  <% if rows.empty? %>
+    <p class="text-sm text-gray-500">No accounts to display.</p>
+  <% else %>
+    <div class="overflow-x-auto bg-white shadow rounded-lg">
+      <table class="min-w-full divide-y divide-gray-200 text-xs">
+        <thead class="bg-gray-50">
+          <tr class="text-left text-gray-500 uppercase tracking-wider">
+            <th class="px-3 py-2">Account</th>
+            <th class="px-3 py-2">Plan</th>
+            <th class="px-3 py-2">Status</th>
+            <th class="px-3 py-2">Sign up</th>
+            <th class="px-3 py-2 text-right">LTV</th>
+            <th class="px-3 py-2 text-right">MRR</th>
+            <th class="px-3 py-2">Test?</th>
+            <th class="px-3 py-2 text-right">Prod records</th>
+            <th class="px-3 py-2 text-right">Avg/mo</th>
+            <th class="px-3 py-2 text-right">Users</th>
+            <th class="px-3 py-2 text-right">Logins</th>
+            <th class="px-3 py-2 text-right">Logins/mo</th>
+            <th class="px-3 py-2 text-right">Sub mo</th>
+            <th class="px-3 py-2">Churn</th>
+            <th class="px-3 py-2 text-right">D→activate</th>
+            <th class="px-3 py-2 text-right">D→pay</th>
+            <th class="px-3 py-2 text-right">Onboard %</th>
+            <th class="px-3 py-2">Last login</th>
+            <th class="px-3 py-2">Last event</th>
+            <th class="px-3 py-2 text-right">Integrations</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          <% rows.each do |row| %>
+            <tr class="hover:bg-gray-50">
+              <td class="px-3 py-2"><%= link_to row.name, admin_account_path(row.id), class: "text-indigo-600 hover:text-indigo-900" %></td>
+              <td class="px-3 py-2"><%= row.plan_name %></td>
+              <td class="px-3 py-2"><%= row.billing_status %></td>
+              <td class="px-3 py-2"><%= row.signed_up_at&.to_date %></td>
+              <td class="px-3 py-2 text-right"><%= number_to_currency(row.lifetime_value_cents.to_f / 100) %></td>
+              <td class="px-3 py-2 text-right"><%= number_to_currency(row.mrr_cents.to_f / 100) %></td>
+              <td class="px-3 py-2"><%= row.has_test_records ? "✓" : "" %></td>
+              <td class="px-3 py-2 text-right"><%= row.total_prod_records %></td>
+              <td class="px-3 py-2 text-right"><%= row.avg_monthly_records %></td>
+              <td class="px-3 py-2 text-right"><%= row.user_count %></td>
+              <td class="px-3 py-2 text-right"><%= row.user_login_count %></td>
+              <td class="px-3 py-2 text-right"><%= row.avg_monthly_logins %></td>
+              <td class="px-3 py-2 text-right"><%= row.active_subscription_months || "—" %></td>
+              <td class="px-3 py-2"><%= row.churn_date&.to_date || "—" %></td>
+              <td class="px-3 py-2 text-right"><%= row.days_to_activation || "—" %></td>
+              <td class="px-3 py-2 text-right"><%= row.days_to_first_payment || "—" %></td>
+              <td class="px-3 py-2 text-right"><%= row.onboarding_percentage %>%</td>
+              <td class="px-3 py-2"><%= row.last_login_at&.strftime("%Y-%m-%d") || "—" %></td>
+              <td class="px-3 py-2"><%= row.last_event_at&.strftime("%Y-%m-%d") || "—" %></td>
+              <td class="px-3 py-2 text-right"><%= row.connected_integrations %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</div>

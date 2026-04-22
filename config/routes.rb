@@ -149,6 +149,7 @@ Rails.application.routes.draw do
   namespace :admin do
     get "billing", to: "billing#show", as: :billing
     resources :accounts, only: [ :show, :update ]
+    resources :customer_metrics, only: [ :index ]
     resources :submissions, only: [ :index, :show ]
     resources :data_integrity, only: [ :index, :show ]
     mount SolidErrors::Engine, at: "/errors"
