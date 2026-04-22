@@ -24,6 +24,7 @@ class SignupController < ApplicationController
   def handle_success
     log_in_user
     track_signup
+    notify_team_of_signup
     redirect_to signup_welcome_path
   end
 
@@ -39,6 +40,10 @@ class SignupController < ApplicationController
     account = signup_result[:account]
     Mbuzz.identify(user.prefix_id, traits: { email: user.email, account_name: account.name })
     Mbuzz.conversion("signup", user_id: user.prefix_id, is_acquisition: true, account_name: account.name)
+  end
+
+  def notify_team_of_signup
+    InternalNotifications::NewSignupJob.perform_later(signup_result[:account].id)
   end
 
   def signup_result

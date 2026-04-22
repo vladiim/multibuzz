@@ -1,0 +1,19 @@
+New mbuzz signup
+
+Account
+  Name: <%= @account.name %>
+  ID: <%= @account.prefix_id %>
+  Slug: <%= @account.slug %>
+  Plan: <%= @account.plan&.name || "Free" %>
+  Persona: <%= @account.onboarding_persona || "—" %>
+  Selected SDK: <%= @account.selected_sdk || "—" %>
+<% if @owner %>
+  Owner: <%= @owner.email %>
+<% end %>
+
+Funnel context
+  Total accounts: <%= @stats[:total_accounts] %>
+  Signups today: <%= @stats[:signups_today] %>
+  Signups this week: <%= @stats[:signups_this_week] %>
+  Signups this month: <%= @stats[:signups_this_month] %>
+  30-day signup → paid conversion: <%= @stats[:trial_to_paid_rate_30d] %>%

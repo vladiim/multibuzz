@@ -1,0 +1,23 @@
+<h2>New mbuzz signup</h2>
+
+<h3>Account</h3>
+<ul>
+  <li><strong>Name:</strong> <%= @account.name %></li>
+  <li><strong>ID:</strong> <%= @account.prefix_id %></li>
+  <li><strong>Slug:</strong> <%= @account.slug %></li>
+  <li><strong>Plan:</strong> <%= @account.plan&.name || "Free" %></li>
+  <li><strong>Persona:</strong> <%= @account.onboarding_persona || "—" %></li>
+  <li><strong>Selected SDK:</strong> <%= @account.selected_sdk || "—" %></li>
+  <% if @owner %>
+    <li><strong>Owner:</strong> <%= @owner.email %></li>
+  <% end %>
+</ul>
+
+<h3>Funnel context</h3>
+<ul>
+  <li><strong>Total accounts:</strong> <%= @stats[:total_accounts] %></li>
+  <li><strong>Signups today:</strong> <%= @stats[:signups_today] %></li>
+  <li><strong>Signups this week:</strong> <%= @stats[:signups_this_week] %></li>
+  <li><strong>Signups this month:</strong> <%= @stats[:signups_this_month] %></li>
+  <li><strong>30-day signup → paid conversion:</strong> <%= @stats[:trial_to_paid_rate_30d] %>%</li>
+</ul>

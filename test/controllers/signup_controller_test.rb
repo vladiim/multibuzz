@@ -3,6 +3,7 @@
 require "test_helper"
 
 class SignupControllerTest < ActionDispatch::IntegrationTest
+  include ActiveJob::TestHelper
   test "new renders signup form" do
     get signup_path
 
@@ -132,5 +133,23 @@ class SignupControllerTest < ActionDispatch::IntegrationTest
     get signup_welcome_path
 
     assert_redirected_to signup_path
+  end
+
+  test "create enqueues the internal new-signup notification" do
+    assert_enqueued_with(job: InternalNotifications::NewSignupJob) do
+      post signup_path, params: {
+        user: { email: "newuser@example.com", password: "password123" },
+        account: { name: "New Company" }
+      }
+    end
+  end
+
+  test "create does not enqueue the notification when signup fails" do
+    assert_no_enqueued_jobs(only: InternalNotifications::NewSignupJob) do
+      post signup_path, params: {
+        user: { email: "invalid", password: "password123" },
+        account: { name: "New Company" }
+      }
+    end
   end
 end
