@@ -2,7 +2,7 @@
 
 **Date:** 2026-04-22
 **Priority:** P0
-**Status:** Ready
+**Status:** Phases 1–5 deployed; alerting (Phase 6) pending
 **Branch:** `feature/session-bot-detection` (or new branch — see Phase 0)
 
 ---
@@ -290,33 +290,33 @@ Order matters.
 
 ## Implementation Tasks
 
-### Phase 1 — Class-level cache-backend probe (TDD)
+### Phase 1 — Class-level cache-backend probe (TDD) — DONE 2026-04-22 commit `26968fe`
 
-- [ ] **1.1** RED: Test `Dashboard::CacheInvalidator#call` returns nil and writes nothing when backend lacks `delete_matched` (use a stub backend that raises `NotImplementedError`)
-- [ ] **1.2** RED: Test `Dashboard::CacheInvalidator#call` calls `Rails.cache.delete_matched` once per section when supported
-- [ ] **1.3** RED: Test `DELETE_MATCHED_SUPPORTED` is computed once at class load (no per-call probe)
-- [ ] **1.4** GREEN: Replace instance-memoised `supports_delete_matched?` with class-level `DELETE_MATCHED_SUPPORTED` constant
-- [ ] **1.5** GREEN: Drop the per-call logger line; if you want to know the backend support, log it once at boot in an initializer (optional)
-- [ ] **1.6** Full suite green
+- [x] **1.1** RED: Test `Dashboard::CacheInvalidator#call` does not raise when backend lacks `delete_matched`
+- [x] **1.2** RED: Test `#call` invokes `Rails.cache.delete_matched` once per section when supported
+- [x] **1.3** RED: Test the support check is memoised at class level (one probe across many `#call`s)
+- [x] **1.4** GREEN: Class-level `delete_matched_supported?` with explicit `reset_delete_matched_support!` test seam
+- [x] **1.5** GREEN: Dropped the per-call logger
+- [x] **1.6** Full suite green (3357 runs)
 
-### Phase 2 — Batched invalidation in `ReattributionService` (TDD)
+### Phase 2 — Batched invalidation in `ReattributionService` (TDD) — DONE 2026-04-22 commit `7deaa9d`
 
-- [ ] **2.1** RED: Test `Conversions::ReattributionService#call` invokes `Dashboard::CacheInvalidator` exactly once per call (not per credit)
-- [ ] **2.2** RED: Test `AttributionCredit#invalidate_dashboard_cache` is NOT fired for writes inside the service block
-- [ ] **2.3** RED: Test other call sites of `AttributionCredit.create!` outside the service still fire the callback
-- [ ] **2.4** GREEN: Wrap `delete_existing_credits` + `calculate_new_credits` in `AttributionCredit.skip_callback(:commit, :after, :invalidate_dashboard_cache) do ... end`
-- [ ] **2.5** GREEN: Add explicit `Dashboard::CacheInvalidator.new(conversion.account).call` after the lock block on success
-- [ ] **2.6** Full suite green
+- [x] **2.1** RED: Test `ReattributionService` invokes `delete_matched` exactly `SECTIONS.size` times per call (one batched invalidator)
+- [x] **2.2** RED: Test direct `AttributionCredit.create!` outside the service still triggers the callback (one invalidator per write)
+- [x] **2.3** GREEN: Add `AttributionCredit.without_dashboard_cache_invalidation` thread-local toggle gated by an `unless:` callback condition (real `skip_callback` doesn't take a block)
+- [x] **2.4** GREEN: Wrap the `with_conversion_lock` block in the toggle so the flag stays set through the after_commit firing
+- [x] **2.5** GREEN: Explicit `Dashboard::CacheInvalidator.new(conversion.account).call` after the lock block on success
+- [x] **2.6** Full suite green (3359 runs)
 
-### Phase 3 — Coalesce fan-out (TDD)
+### Phase 3 — Coalesce fan-out (TDD) — DONE 2026-04-22 commit `8568cdf`
 
-- [ ] **3.1** RED: Test `Conversions::BatchReattributionJob#perform(identity_id)` calls `ReattributionService` once per conversion for the identity
-- [ ] **3.2** RED: Test `Identities::IdentificationService` enqueues exactly one `BatchReattributionJob` per identity (not N `ReattributionJob`s)
-- [ ] **3.3** RED: Test `Billing::UnlockEventsService` enqueues one `BatchReattributionJob` per distinct identity in the unlocked conversions
-- [ ] **3.4** GREEN: Create `app/jobs/conversions/batch_reattribution_job.rb`
-- [ ] **3.5** GREEN: Update `Identities::IdentificationService` enqueue site
-- [ ] **3.6** GREEN: Update `Billing::UnlockEventsService` enqueue site
-- [ ] **3.7** Full suite green
+- [x] **3.1** RED: `Conversions::BatchReattributionJob#perform(conversion_ids)` calls `ReattributionService` once per existing id, ignores missing ids, no-ops on `[]`
+- [x] **3.2** RED: `Identities::IdentificationService` enqueues exactly one `BatchReattributionJob` per call with the filtered conversion ids; none when no eligible conversions
+- [x] **3.3** RED: `Billing::UnlockEventsService` enqueues one `BatchReattributionJob` covering all conversions in the locked period
+- [x] **3.4** GREEN: Created `app/jobs/conversions/batch_reattribution_job.rb`
+- [x] **3.5** GREEN: Updated `Identities::IdentificationService#queue_reattribution_if_needed`
+- [x] **3.6** GREEN: Updated `Billing::UnlockEventsService#enqueue_reattribution_jobs`
+- [x] **3.7** Full suite green (3364 runs)
 
 ### Phase 4 — Solid Queue out of Puma (separate droplet)
 
@@ -330,15 +330,15 @@ Order matters.
 - [x] **4.8** `kamal deploy` — both containers up on `2a8afb0` then `44e4fa0`.
 - [x] **4.9** Verified `SolidQueue::Process.all` shows only `159.89.136.202` host — web no longer runs Solid Queue. Pauses still hold (`["default", "low", "solid_queue_recurring"]`); 0 claimed.
 
-### Phase 5 — Operational recovery (sequential, on production)
+### Phase 5 — Operational recovery (sequential, on production) — DONE 2026-04-22
 
-- [ ] **5.1** `kamal proxy reboot` (verifies Phase 4 deploy will succeed)
-- [ ] **5.2** Add 2 GB swap on `68.183.173.51`; persist via `/etc/fstab`
-- [ ] **5.3** `kamal deploy` (ships Phases 1–4)
-- [ ] **5.4** Verify: jobs container running (`docker ps | grep jobs`), web container responsive
-- [ ] **5.5** Triage queued backlog (see Key Decisions): delete redundant `Conversions::ReattributionJob`s; keep one fresh `BatchReattributionJob` per affected identity
-- [ ] **5.6** `SolidQueue::Pause.where(queue_name: %w[default low solid_queue_recurring]).destroy_all`
-- [ ] **5.7** Watch logs and `docker stats` for 10 min; verify no CLOSE_WAIT growth, no memory drift, jobs draining
+- [x] **5.1** `kamal proxy reboot` — proxy v0.9.0 → v0.9.2 (apps-config volume preserved registrations across reboot, no manual re-deploy needed)
+- [x] **5.2** 2 GB swap on `68.183.173.51` (web droplet) created and persisted to `/etc/fstab`. `swapon --show` confirms `/swapfile  file  2G  0B  -2`
+- [x] **5.3** `kamal deploy` — Phases 1–3 shipped (commits `26968fe`, `7deaa9d`, `8568cdf`). Web `1.71% CPU / 436 MiB`, jobs `98.6% CPU / 494 MiB` immediately post-unpause
+- [x] **5.4** Both containers verified: web on `68.183.173.51`, jobs on `159.89.136.202`, Solid Queue ONLY on jobs (after `puma.rb` env-truthy bug fix in commit `44e4fa0`)
+- [x] **5.5** Drain: 513 stale per-conversion `Conversions::ReattributionJob`s collected → 54 unique `conversion_id`s extracted → deleted the 513 jobs → enqueued one `Conversions::BatchReattributionJob` covering all 54
+- [x] **5.6** `SolidQueue::Pause.where(queue_name: %w[default low solid_queue_recurring]).destroy_all`
+- [x] **5.7** Post-unpause: site responding 200 in 250–420 ms (5/5), CLOSE_WAIT count = 0, web idle while jobs container drains backlog at full CPU. Continued monitoring scheduled.
 
 ---
 
