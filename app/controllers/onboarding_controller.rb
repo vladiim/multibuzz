@@ -12,6 +12,7 @@ class OnboardingController < ApplicationController
   def persona
     current_account.update!(onboarding_persona: params[:persona])
     current_account.complete_onboarding_step!(:persona_selected)
+    Lifecycle::Tracker.track("onboarding_persona_selected", current_account, persona: current_account.onboarding_persona)
 
     redirect_to current_account.marketer? ? dashboard_path : onboarding_setup_path
   end
@@ -25,6 +26,7 @@ class OnboardingController < ApplicationController
   def select_sdk
     current_account.update!(selected_sdk: params[:sdk])
     current_account.complete_onboarding_step!(:sdk_selected)
+    Lifecycle::Tracker.track("onboarding_sdk_selected", current_account, sdk_key: current_account.selected_sdk)
     redirect_to sdk_onboarding_path
   end
 
@@ -79,6 +81,7 @@ class OnboardingController < ApplicationController
 
   def skip
     current_account.update!(onboarding_skipped_at: Time.current)
+    Lifecycle::Tracker.track("onboarding_skipped", current_account, onboarding_percentage: current_account.onboarding_percentage, current_step: current_account.current_onboarding_step)
     redirect_to dashboard_path
   end
 

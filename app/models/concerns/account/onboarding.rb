@@ -78,9 +78,13 @@ module Account::Onboarding
 
   def set_activation_timestamp!
     update!(activated_at: Time.current)
+    Lifecycle::Tracker.track("onboarding_activated", self)
   end
 
   def set_completion_timestamp!
-    update!(onboarding_completed_at: Time.current) if onboarding_completed_at.nil?
+    return unless onboarding_completed_at.nil?
+
+    update!(onboarding_completed_at: Time.current)
+    Lifecycle::Tracker.track("onboarding_completed", self, onboarding_percentage: onboarding_percentage)
   end
 end
