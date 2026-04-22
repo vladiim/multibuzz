@@ -18,6 +18,10 @@ production:
     class: Infrastructure::QueueCleanupJob
     schedule: at 2am every day
 
+  queue_depth_alert:
+    class: Infrastructure::QueueDepthAlertJob
+    schedule: every 5 minutes
+
   data_integrity_surveillance:
     class: DataIntegrity::SurveillanceSchedulerJob
     schedule: every hour
