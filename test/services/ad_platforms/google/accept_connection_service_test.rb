@@ -128,6 +128,38 @@ class AdPlatforms::Google::AcceptConnectionServiceTest < ActiveSupport::TestCase
     end
   end
 
+  # --- lifecycle tracking ---
+
+  test "fires feature_ad_platform_connected with platform and connection counts" do
+    account.update!(plan: growth_plan)
+
+    service.call
+
+    assert(tracked_event, "expected feature_ad_platform_connected to be recorded")
+    assert_equal "google_ads", tracked_event[:properties][:platform]
+    assert_equal account.ad_platform_connection_limit, tracked_event[:properties][:connection_limit]
+  end
+
+  test "does not fire feature_ad_platform_connected on at-limit failure" do
+    account.update!(plan: starter_plan)
+
+    service.call
+
+    assert_nil tracked_event
+  end
+
+  test "does not fire feature_ad_platform_connected on duplicate failure" do
+    account.update!(plan: growth_plan)
+
+    AdPlatforms::Google::AcceptConnectionService.new(
+      account: account,
+      params: params.merge(customer_id: existing_connection.platform_account_id),
+      tokens: tokens
+    ).call
+
+    assert_nil tracked_event
+  end
+
   # --- isolation ---
 
   test "scopes duplicate check to the given account" do
@@ -159,6 +191,7 @@ class AdPlatforms::Google::AcceptConnectionServiceTest < ActiveSupport::TestCase
   def starter_plan = @starter_plan ||= plans(:starter)
   def growth_plan = @growth_plan ||= plans(:growth)
   def existing_connection = @existing_connection ||= ad_platform_connections(:google_ads)
+  def tracked_event = Lifecycle::Tracker.recorded_events.find { |e| e[:name] == "feature_ad_platform_connected" }
   def other_account_connection = @other_account_connection ||= ad_platform_connections(:other_account_google)
 
   def params

@@ -14,8 +14,19 @@ module AttributionModels
     def run
       return error_result([ limit_error ]) unless can_create?
       return error_result(validation_errors) unless valid_code?
+      return error_result(model.errors.full_messages) unless model.save
 
-      model.save ? success_result(model: model) : error_result(model.errors.full_messages)
+      track_creation
+      success_result(model: model)
+    end
+
+    def track_creation
+      Lifecycle::Tracker.track(
+        "feature_custom_model_created",
+        account,
+        model_count: account.attribution_models.where(model_type: :custom).count,
+        model_limit: account.custom_model_limit
+      )
     end
 
     def can_create?

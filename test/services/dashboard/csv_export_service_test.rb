@@ -26,6 +26,15 @@ module Dashboard
       assert_equal 0, csv.size
     end
 
+    test "fires feature_csv_exported lifecycle event after writing" do
+      export_and_parse
+
+      tracked = Lifecycle::Tracker.recorded_events.find { |e| e[:name] == "feature_csv_exported" }
+
+      assert(tracked, "expected feature_csv_exported to be recorded")
+      assert_equal "attribution", tracked[:properties][:export_type]
+    end
+
     # ==========================================
     # Data accuracy tests
     # ==========================================

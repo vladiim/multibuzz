@@ -14,6 +14,7 @@ module AdPlatforms
         return duplicate_outcome if duplicate?
 
         persist_and_enqueue
+        track_connection
         success_outcome
       end
 
@@ -24,6 +25,16 @@ module AdPlatforms
       def persist_and_enqueue
         connection.save!
         AdPlatforms::SpendSyncJob.perform_later(connection.id, date_range: backfill_range)
+      end
+
+      def track_connection
+        Lifecycle::Tracker.track(
+          "feature_ad_platform_connected",
+          account,
+          platform: connection.platform,
+          connections_used: account.ad_platform_connections.count,
+          connection_limit: account.ad_platform_connection_limit
+        )
       end
 
       def connection

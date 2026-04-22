@@ -2,6 +2,8 @@
 
 module Dashboard
   class CsvExportService
+    EXPORT_TYPE = "attribution"
+
     HEADERS = %w[
       date type name funnel attribution_model algorithm
       channel credit revenue revenue_credit currency
@@ -25,9 +27,14 @@ module Dashboard
         file.write(CSV.generate_line(HEADERS))
         stream_query { |row| file.write(CSV.generate_line(row)) }
       end
+      track_export
     end
 
     private
+
+    def track_export
+      Lifecycle::Tracker.track("feature_csv_exported", account, export_type: EXPORT_TYPE)
+    end
 
     attr_reader :account, :filter_params
 

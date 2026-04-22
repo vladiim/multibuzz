@@ -53,6 +53,7 @@ module ActiveSupport
     # Clear cache before each test to ensure isolation
     setup do
       Rails.cache.clear
+      Lifecycle::Tracker.reset_recorded_events!
       Prosopite.scan
     end
 

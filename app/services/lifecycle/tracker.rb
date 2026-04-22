@@ -5,13 +5,27 @@ module Lifecycle
     module_function
 
     def track(event_name, account, **properties)
-      return if skip_tracking?
-
       payload = build_payload(event_name, account, **properties)
       return unless payload
+      return record_for_test(payload) if skip_tracking?
 
       Mbuzz.event(payload[:name], **payload[:properties])
     rescue StandardError
+      nil
+    end
+
+    RECORDED_EVENTS_THREAD_KEY = :lifecycle_tracker_recorded_events
+
+    def recorded_events
+      Thread.current[RECORDED_EVENTS_THREAD_KEY] ||= []
+    end
+
+    def reset_recorded_events!
+      Thread.current[RECORDED_EVENTS_THREAD_KEY] = []
+    end
+
+    def record_for_test(payload)
+      recorded_events << payload
       nil
     end
 
