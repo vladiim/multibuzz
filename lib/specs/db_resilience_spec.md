@@ -250,9 +250,9 @@ queue_cleanup:
 
 ### Phase 4: Future resilience (as we grow)
 
-**4A. Separate SolidQueue from Puma**
+**4A. Separate SolidQueue from Puma — SUPERSEDED**
 
-Not the root cause of the current crashes, but good practice as traffic grows. When SolidQueue runs inside Puma, job and web threads share the same connection pool. Separating them means each gets its own pool and crash domain.
+Promoted to P0 and moved to `lib/specs/job_isolation_and_invalidation_fix_spec.md` after the 2026-04-22 outage (`lib/specs/incidents/2026-04-22-puma-jam-reattribution-cache-flood.md`). The April 13 judgement that this was "not urgent" was wrong — Solid-Queue-in-Puma was the amplifier that turned a slow job into a full site outage. Do not re-defer.
 
 **4B. Monitor connection count**
 
@@ -354,7 +354,7 @@ SolidQueue::Process.all.map { |p| [p.kind, p.pid] }
 | Statement timeout: 30s | Long enough for dashboard queries, short enough to prevent starvation | Dashboard p95 is ~2s. 30s gives 15x headroom. |
 | Pool size: 10 | Covers 3 web threads + 3 job threads + 4 headroom | Matches actual concurrency without over-provisioning. |
 | Not adding PgBouncer | Adds operational complexity, not needed at current scale | Revisit if we move to multiple web servers or need >100 connections. |
-| SolidQueue separation (Phase 3) | Defer to next deploy cycle | Not the root cause of crashes. Good practice as we grow, not urgent. |
+| SolidQueue separation (Phase 4A) | ~~Defer to next deploy cycle~~ Superseded by `job_isolation_and_invalidation_fix_spec.md` on 2026-04-22 | Original judgement ("not urgent") was wrong; was the root cause amplifier of the 2026-04-22 outage. |
 
 ---
 
