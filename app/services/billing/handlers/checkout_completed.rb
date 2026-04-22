@@ -8,6 +8,7 @@ module Billing
       def handle_event
         return plan_not_found_error unless plan.present?
 
+        track_upgraded
         activate_subscription
       end
 
@@ -22,6 +23,14 @@ module Billing
           plan: plan,
           subscription_started_at: Time.current
         )
+      end
+
+      def track_upgraded
+        Lifecycle::Tracker.track("billing_upgraded", account, plan: plan.slug, from_plan: from_plan_slug)
+      end
+
+      def from_plan_slug
+        account.plan&.slug || ::Billing::PLAN_FREE
       end
 
       def subscription_id

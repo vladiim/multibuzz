@@ -6,14 +6,18 @@ module Billing
       private
 
       def handle_event
-        clear_past_due_status
-        unlock_events_if_needed
+        recover_from_past_due if account.billing_past_due?
+        increment_lifetime_value
         track_payment
       end
 
-      def clear_past_due_status
-        return unless account.billing_past_due?
+      def recover_from_past_due
+        clear_past_due_status
+        unlock_events_if_needed
+        track_payment_recovered
+      end
 
+      def clear_past_due_status
         account.update!(
           billing_status: :active,
           payment_failed_at: nil,
@@ -31,6 +35,12 @@ module Billing
         account.events.where(locked: true).exists?
       end
 
+      def increment_lifetime_value
+        return if amount_in_cents.zero?
+
+        account.update!(lifetime_value_cents: account.lifetime_value_cents + amount_in_cents)
+      end
+
       def track_payment
         return unless owner
 
@@ -44,12 +54,20 @@ module Billing
         )
       end
 
+      def track_payment_recovered
+        Lifecycle::Tracker.track("billing_payment_recovered", account, plan: account.plan&.slug, invoice_id: event_object[:id])
+      end
+
       def owner
         @owner ||= account.account_memberships.owner.accepted.first&.user
       end
 
+      def amount_in_cents
+        event_object[:amount_paid].to_i
+      end
+
       def amount_in_dollars
-        (event_object[:amount_paid] || 0) / 100.0
+        amount_in_cents / ::Billing::CENTS_PER_DOLLAR.to_f
       end
     end
   end

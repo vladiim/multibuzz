@@ -23,7 +23,7 @@ Right now there is no single page that answers "how is each customer doing?" Adm
 | Admin routes | `config/routes.rb` `namespace :admin` | `accounts`, `billing`, `submissions`, `data_integrity` |
 | Account billing concern | `app/models/concerns/account/billing.rb` | Plan, billing_status, subscription dates, usage helpers |
 | Account onboarding concern | `app/models/concerns/account/onboarding.rb` | `activated_at`, `onboarding_completed_at`, `onboarding_progress` |
-| `accounts.cancelled_at` | `db/schema.rb` accounts table | Already exists — use directly for churn date |
+| `accounts.cancelled_at` | `db/schema.rb` accounts table | Already exists but means **account closure**, not subscription churn — separate column added below |
 | Events table | TimescaleDB hypertable `events` | `is_test` flag, `account_id`, `occurred_at` |
 | Plans table | `app/models/plan.rb` | `monthly_price_cents`, `monthly_price` helper |
 | Ad platform connections | `ad_platform_connections` | Per-account integration count |
@@ -35,6 +35,7 @@ Right now there is no single page that answers "how is each customer doing?" Adm
 | Admin customer metrics view | Doesn't exist | Build |
 | User login tracking | `users` table has only `email`, `password_digest`, `is_admin` | Add `last_sign_in_at` (datetime) + `sign_in_count` (integer) |
 | LTV per account | Locked in Stripe payloads inside `billing_events.payload` JSONB | Add `accounts.lifetime_value_cents` (bigint, default 0); see lifecycle spec Phase 3 |
+| Subscription churn date | Only derivable by scanning `billing_events` for `customer.subscription.deleted` | Add `accounts.subscription_cancelled_at` (datetime); set in `Billing::Handlers::SubscriptionDeleted` |
 
 ---
 
@@ -114,7 +115,7 @@ GET /admin/customer_metrics
 | 11 | User login count | `SUM(users.sign_in_count)` across memberships | Integer |
 | 12 | Avg monthly logins | `user_login_count / months_since_signup` (≥1) | Rounded |
 | 13 | Active subscription months | `(end - subscription_started_at)` in months where `end = cancelled_at || now` | Integer |
-| 14 | Churn date | `accounts.cancelled_at` | Date or "—" |
+| 14 | Churn date | `accounts.subscription_cancelled_at` | Date or "—" |
 | 15 | Days to activation | `activated_at - created_at` | Integer or "—" |
 | 16 | Days to first payment | First `BillingEvent.event_type = "invoice.payment_succeeded"` `created_at - accounts.created_at` | Integer or "—" |
 | 17 | Onboarding % | `accounts.onboarding_progress` mapped via `Account::Onboarding` | Percentage |

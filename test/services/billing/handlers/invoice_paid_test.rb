@@ -67,7 +67,27 @@ module Billing
         assert_includes result[:errors].first, "Account not found"
       end
 
+      test "increments lifetime_value_cents by amount_paid" do
+        account.update!(stripe_customer_id: "cus_test123", lifetime_value_cents: 4000)
+
+        handler(paid_event_with_amount(2900)).call
+
+        assert_equal 6900, account.reload.lifetime_value_cents
+      end
+
+      test "treats missing amount_paid as zero" do
+        account.update!(stripe_customer_id: "cus_test123", lifetime_value_cents: 1000)
+
+        handler(valid_event_data).call
+
+        assert_equal 1000, account.reload.lifetime_value_cents
+      end
+
       private
+
+      def paid_event_with_amount(cents)
+        valid_event_data.deep_merge(data: { object: { amount_paid: cents } })
+      end
 
       def handler(event_data)
         Billing::Handlers::InvoicePaid.new(event_data)

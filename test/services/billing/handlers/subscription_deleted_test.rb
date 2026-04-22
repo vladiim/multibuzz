@@ -42,6 +42,16 @@ module Billing
         assert_includes result[:errors].first, "Account not found"
       end
 
+      test "stamps subscription_cancelled_at for the customer metrics report" do
+        freeze_time do
+          account.update!(stripe_customer_id: "cus_test123", billing_status: :active)
+
+          handler(valid_event_data).call
+
+          assert_equal Time.current, account.reload.subscription_cancelled_at
+        end
+      end
+
       private
 
       def handler(event_data)

@@ -132,6 +132,7 @@ module Account::Billing
       current_period_start: Time.current,
       current_period_end: ends_at
     )
+    Lifecycle::Tracker.track("billing_trial_started", self, plan: plan.slug, trial_ends_at: ends_at.iso8601)
   end
 
   def activate_subscription!(stripe_subscription_id:, period_start:, period_end:)
