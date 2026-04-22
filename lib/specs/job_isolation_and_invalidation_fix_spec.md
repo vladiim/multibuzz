@@ -340,6 +340,47 @@ Order matters.
 - [x] **5.6** `SolidQueue::Pause.where(queue_name: %w[default low solid_queue_recurring]).destroy_all`
 - [x] **5.7** Post-unpause: site responding 200 in 250–420 ms (5/5), CLOSE_WAIT count = 0, web idle while jobs container drains backlog at full CPU. Continued monitoring scheduled.
 
+### Phase 6 — Alerting (so we know before users do)
+
+**Two layers, ship both:**
+
+**6A. In-code: `Infrastructure::QueueDepthAlert` — DONE 2026-04-22, commit `08843ea`**
+
+Runs every 5 minutes via `config/recurring.yml`. Reports to `Rails.error` (which Solid Errors emails) when:
+
+| Signal | Default threshold | Why |
+|--------|-------------------|-----|
+| Ready jobs | > 200 | Queue is backing up faster than draining |
+| Stuck claim | older than 30 min | Worker died holding a claim, or job is genuinely too slow |
+| Recent failures | > 10 in last hour | Something is systematically broken |
+
+Thresholds + the metrics collaborator are constructor args so the test exercises real threshold logic against a deterministic double — no stubbing the system under test, no need to stand up Solid Queue tables in the test DB.
+
+- [x] **6.1** `Infrastructure::QueueDepthMetrics` — pure-data collaborator that hits the Solid Queue tables
+- [x] **6.2** `Infrastructure::QueueDepthAlert` with injectable thresholds + metrics provider
+- [x] **6.3** `Infrastructure::QueueDepthAlertJob` thin wrapper
+- [x] **6.4** Schedule entry in `config/recurring.yml` (`every 5 minutes`)
+- [x] **6.5** Tests for ready / stuck / failures with deterministic doubles
+- [ ] **6.6** Deploy
+- [ ] **6.7** Operator: configure DigitalOcean Monitoring alerts (table below)
+- [ ] **6.8** Operator: set `config.solid_errors.email_to` to a real inbox in `config/environments/production.rb` so the in-code alerts actually email someone (currently `""`)
+
+**6B. DigitalOcean Monitoring alerts (operator action — configure in DO dashboard)**
+
+Add these alerts on both droplets via DO control panel → Monitoring → Alerts. Send to operator's email (and Slack webhook if available).
+
+| Resource | Metric | Trigger | Window | Notes |
+|----------|--------|---------|--------|-------|
+| `mbuzz` (web) | Memory | > 75% | 5 min | Early warning before OOM |
+| `mbuzz` (web) | CPU | > 85% | 5 min | Sustained CPU saturation |
+| `mbuzz` (web) | Disk | > 80% | 1 hour | Plenty of warning |
+| `mbuzz` (web) | Droplet status | down | immediate | Box unreachable |
+| `mbuzz-jobs` | Memory | > 85% | 5 min | Slightly higher tolerance — jobs spike |
+| `mbuzz-jobs` | CPU | > 95% | 30 min | Brief spikes are normal; sustained = backlog |
+| `mbuzz-jobs` | Disk | > 80% | 1 hour | |
+| `mbuzz-jobs` | Droplet status | down | immediate | |
+| HTTP check on `https://mbuzz.co/up` | non-2xx response | 2 consecutive failures | n/a | Catches "site responding but Rails dead" |
+
 ---
 
 ## Testing Strategy
