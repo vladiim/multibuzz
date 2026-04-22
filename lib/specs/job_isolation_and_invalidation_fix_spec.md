@@ -2,7 +2,7 @@
 
 **Date:** 2026-04-22
 **Priority:** P0
-**Status:** Phases 1–5 deployed; alerting (Phase 6) pending
+**Status:** Complete — all phases deployed 2026-04-22
 **Branch:** `feature/session-bot-detection` (or new branch — see Phase 0)
 
 ---
@@ -361,25 +361,34 @@ Thresholds + the metrics collaborator are constructor args so the test exercises
 - [x] **6.3** `Infrastructure::QueueDepthAlertJob` thin wrapper
 - [x] **6.4** Schedule entry in `config/recurring.yml` (`every 5 minutes`)
 - [x] **6.5** Tests for ready / stuck / failures with deterministic doubles
-- [ ] **6.6** Deploy
-- [ ] **6.7** Operator: configure DigitalOcean Monitoring alerts (table below)
-- [ ] **6.8** Operator: set `config.solid_errors.email_to` to a real inbox in `config/environments/production.rb` so the in-code alerts actually email someone (currently `""`)
+- [x] **6.6** Deployed in commit `31e4ef5`; jobs container's recurring schedule lists `queue_depth_alert: every 5 minutes`
+- [x] **6.7** DigitalOcean Monitoring alerts created via doctl (12 droplet + 4 uptime, all → vlad@mehakovic.com — see 6B below)
+- [x] **6.8** `config.solid_errors.email_to` updated and pushed live
 
-**6B. DigitalOcean Monitoring alerts (operator action — configure in DO dashboard)**
+**6B. DigitalOcean Monitoring alerts — DONE 2026-04-22 via doctl, all routed to `vlad@mehakovic.com`**
 
-Add these alerts on both droplets via DO control panel → Monitoring → Alerts. Send to operator's email (and Slack webhook if available).
+Created 12 droplet alerts + 1 uptime check + 4 uptime alerts. (DB upgrade to 4 GB was completed the same day, so `mbuzz-db` is now in the matrix too. `mbuzz-shopify` included because it's about to host the Shopify SDK in production.)
 
-| Resource | Metric | Trigger | Window | Notes |
-|----------|--------|---------|--------|-------|
+| Resource | Metric | Trigger | Window | Why |
+|----------|--------|---------|--------|-----|
 | `mbuzz` (web) | Memory | > 75% | 5 min | Early warning before OOM |
-| `mbuzz` (web) | CPU | > 85% | 5 min | Sustained CPU saturation |
+| `mbuzz` (web) | CPU | > 85% | 5 min | Sustained saturation = jam coming |
 | `mbuzz` (web) | Disk | > 80% | 1 hour | Plenty of warning |
-| `mbuzz` (web) | Droplet status | down | immediate | Box unreachable |
-| `mbuzz-jobs` | Memory | > 85% | 5 min | Slightly higher tolerance — jobs spike |
+| `mbuzz-jobs` | Memory | > 85% | 5 min | Higher tolerance — jobs spike on heavy workloads |
 | `mbuzz-jobs` | CPU | > 95% | 30 min | Brief spikes are normal; sustained = backlog |
 | `mbuzz-jobs` | Disk | > 80% | 1 hour | |
-| `mbuzz-jobs` | Droplet status | down | immediate | |
-| HTTP check on `https://mbuzz.co/up` | non-2xx response | 2 consecutive failures | n/a | Catches "site responding but Rails dead" |
+| `mbuzz-db` | Memory | > 75% | 5 min | DB cache + connections |
+| `mbuzz-db` | CPU | > 85% | 5 min | |
+| `mbuzz-db` | Disk | > 80% | 1 hour | DB tables grow — important on TimescaleDB |
+| `mbuzz-shopify` | Memory | > 75% | 5 min | 1 GB box, OOM risk real |
+| `mbuzz-shopify` | CPU | > 85% | 5 min | |
+| `mbuzz-shopify` | Disk | > 80% | 1 hour | |
+| Uptime check `https://mbuzz.co/up` | down (any region) | 3 min | regional | Catches "site responding but Rails dead" |
+| Uptime check `https://mbuzz.co/up` | down (all regions) | 5 min | global | Confirms outage isn't regional Cloudflare flap |
+| Uptime check `https://mbuzz.co/up` | latency | > 3000 ms / 5 min | n/a | Catches sustained slowness (not a hard outage) |
+| Uptime check `https://mbuzz.co/up` | SSL expiry | < 14 days | n/a | Cert renewal warning |
+
+Re-create or modify via `doctl monitoring alert create` / `doctl monitoring uptime alert create`. List existing with `doctl monitoring alert list` and `doctl monitoring uptime alert list <check-id>`.
 
 ---
 
