@@ -36,4 +36,39 @@ namespace :ad_platforms do
 
     puts "\nAPI usage today: #{AdPlatforms::Google::ApiUsageTracker.current_usage}/#{AdPlatforms::Google::ApiUsageTracker::DAILY_OPERATION_LIMIT}"
   end
+
+  namespace :meta do
+    desc "Verify Meta Ads API access by listing the connected ad accounts via /me/adaccounts"
+    task verify_credentials: :environment do
+      connection = AdPlatformConnection.active_connections.where(platform: :meta_ads).first
+
+      abort "No active Meta Ads connections found. Connect an account first." unless connection
+
+      puts "Testing Meta Ads API with connection: #{connection.platform_account_name} (#{connection.platform_account_id})"
+
+      if connection.token_expired?
+        puts "Token expired — refreshing..."
+        result = AdPlatforms::Meta::TokenRefresher.new(connection).call
+        abort "Token refresh failed: #{result[:errors]&.join(', ')}" unless result[:success]
+        puts "Token refreshed."
+      end
+
+      puts "Calling /me/adaccounts..."
+      client = AdPlatforms::Meta::ApiClient.new(access_token: connection.access_token)
+      body = client.get(
+        AdPlatforms::Meta::AD_ACCOUNTS_URI,
+        query: { fields: AdPlatforms::Meta::AD_ACCOUNT_FIELDS, limit: 25 }
+      )
+
+      if body["error"]
+        puts "FAILED: #{body.dig('error', 'message') || body.inspect}"
+        abort "Meta Ads API call failed. Check app_id/app_secret and the connection's access token."
+      end
+
+      accounts = AdPlatforms::Meta::ListAdAccountsParser.new(body: body).accounts
+      puts "Access VERIFIED. #{accounts.size} active ad account(s):"
+      accounts.first(10).each { |a| puts "  #{a[:id]} — #{a[:name]} (#{a[:currency]})" }
+      puts "  ... (#{accounts.size - 10} more)" if accounts.size > 10
+    end
+  end
 end
