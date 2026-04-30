@@ -31,7 +31,6 @@ module Oauth
       end
 
       @known_metadata_keys = AdPlatforms::KnownMetadata.keys_for(oauth_account)
-      @known_metadata_values = AdPlatforms::KnownMetadata.values_by_key_for(oauth_account)
     end
 
     def create_connection
