@@ -1,64 +1,121 @@
 <section class="py-24 px-6 bg-gray-50">
-  <div class="max-w-5xl mx-auto">
-    <h2 class="text-3xl font-bold text-gray-900 text-center mb-12 scroll-animate" data-controller="scroll-reveal">
-      How mbuzz compares
+  <div class="max-w-6xl mx-auto">
+    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 text-center mb-3 scroll-animate" data-controller="scroll-reveal">
+      How mbuzz stacks up
     </h2>
+    <p class="text-lg text-gray-600 text-center mb-12 max-w-2xl mx-auto scroll-animate" data-controller="scroll-reveal">
+      The shortlist most marketers in this segment evaluate. Tap any competitor for the full head-to-head.
+    </p>
 
     <div class="bg-white rounded-lg shadow-lg overflow-hidden scroll-animate" data-controller="scroll-reveal">
       <div class="overflow-x-auto">
-        <table class="w-full">
+        <table class="w-full min-w-[760px]">
           <thead>
             <tr class="bg-gray-900 text-white">
-              <th class="px-6 py-4 text-left text-sm font-semibold">Feature</th>
-              <th class="px-6 py-4 text-center text-sm font-semibold">mbuzz</th>
-              <th class="px-6 py-4 text-center text-sm font-semibold">GA4</th>
-              <th class="px-6 py-4 text-center text-sm font-semibold">Segment</th>
-              <th class="px-6 py-4 text-center text-sm font-semibold">Amplitude</th>
+              <th class="px-4 py-4 text-left text-sm font-semibold">&nbsp;</th>
+              <th class="px-4 py-4 text-center text-sm font-semibold bg-blue-600">mbuzz</th>
+              <th class="px-4 py-4 text-center text-sm font-semibold">
+                <%= link_to "GA4", article_path("mbuzz-vs-ga4-attribution"), class: "underline decoration-dotted underline-offset-4 hover:text-blue-300" %>
+              </th>
+              <th class="px-4 py-4 text-center text-sm font-semibold">
+                <%= link_to "Dreamdata", article_path("mbuzz-vs-dreamdata"), class: "underline decoration-dotted underline-offset-4 hover:text-blue-300" %>
+              </th>
+              <th class="px-4 py-4 text-center text-sm font-semibold">
+                <%= link_to "Rockerbox", article_path("rockerbox-alternatives"), class: "underline decoration-dotted underline-offset-4 hover:text-blue-300" %>
+              </th>
+              <th class="px-4 py-4 text-center text-sm font-semibold">
+                <%= link_to "Triple Whale", article_path("mbuzz-vs-triple-whale"), class: "underline decoration-dotted underline-offset-4 hover:text-blue-300" %>
+              </th>
+              <th class="px-4 py-4 text-center text-sm font-semibold">
+                <%= link_to "Northbeam", article_path("mbuzz-vs-northbeam"), class: "underline decoration-dotted underline-offset-4 hover:text-blue-300" %>
+              </th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200">
             <tr>
-              <td class="px-6 py-4 text-sm text-gray-900">Server-side tracking</td>
-              <td class="px-6 py-4 text-center text-green-600 font-semibold">&check;</td>
-              <td class="px-6 py-4 text-center text-red-400 font-semibold">&cross;</td>
-              <td class="px-6 py-4 text-center text-yellow-600 font-semibold">~</td>
-              <td class="px-6 py-4 text-center text-yellow-600 font-semibold">~</td>
+              <td class="px-4 py-4 text-sm font-medium text-gray-900">Starting price</td>
+              <td class="px-4 py-4 text-center text-sm font-semibold text-blue-600 bg-blue-50">$0 free, $29 paid</td>
+              <td class="px-4 py-4 text-center text-sm text-gray-700">Free</td>
+              <td class="px-4 py-4 text-center text-sm text-gray-700">$750/mo</td>
+              <td class="px-4 py-4 text-center text-sm text-gray-700">Custom</td>
+              <td class="px-4 py-4 text-center text-sm text-gray-700">$129/mo</td>
+              <td class="px-4 py-4 text-center text-sm text-gray-700">$999/mo</td>
             </tr>
             <tr class="bg-gray-50">
-              <td class="px-6 py-4 text-sm text-gray-900">Custom attribution models</td>
-              <td class="px-6 py-4 text-center text-green-600 font-semibold">&check; DSL</td>
-              <td class="px-6 py-4 text-center text-red-400 font-semibold">&cross;</td>
-              <td class="px-6 py-4 text-center text-red-400 font-semibold">&cross;</td>
-              <td class="px-6 py-4 text-center text-yellow-600">Limited</td>
+              <td class="px-4 py-4 text-sm font-medium text-gray-900">Attribution models</td>
+              <td class="px-4 py-4 text-center text-sm font-semibold text-blue-600 bg-blue-50">8</td>
+              <td class="px-4 py-4 text-center text-sm text-gray-700">1</td>
+              <td class="px-4 py-4 text-center text-sm text-gray-700">6</td>
+              <td class="px-4 py-4 text-center text-sm text-gray-700">5</td>
+              <td class="px-4 py-4 text-center text-sm text-gray-700">3</td>
+              <td class="px-4 py-4 text-center text-sm text-gray-700">4</td>
             </tr>
             <tr>
-              <td class="px-6 py-4 text-sm text-gray-900">Compare models side-by-side</td>
-              <td class="px-6 py-4 text-center text-green-600 font-semibold">&check;</td>
-              <td class="px-6 py-4 text-center text-red-400 font-semibold">&cross;</td>
-              <td class="px-6 py-4 text-center text-red-400 font-semibold">&cross;</td>
-              <td class="px-6 py-4 text-center text-green-600 font-semibold">&check;</td>
+              <td class="px-4 py-4 text-sm font-medium text-gray-900">Models side-by-side</td>
+              <td class="px-4 py-4 text-center text-green-600 font-semibold bg-blue-50">&check;</td>
+              <td class="px-4 py-4 text-center text-red-400 font-semibold">&cross;</td>
+              <td class="px-4 py-4 text-center text-green-600 font-semibold">&check;</td>
+              <td class="px-4 py-4 text-center text-yellow-600">~</td>
+              <td class="px-4 py-4 text-center text-red-400 font-semibold">&cross;</td>
+              <td class="px-4 py-4 text-center text-green-600 font-semibold">&check;</td>
             </tr>
             <tr class="bg-gray-50">
-              <td class="px-6 py-4 text-sm text-gray-900">Real-time event debugging</td>
-              <td class="px-6 py-4 text-center text-green-600 font-semibold">&check;</td>
-              <td class="px-6 py-4 text-center text-yellow-600">Limited</td>
-              <td class="px-6 py-4 text-center text-green-600 font-semibold">&check;</td>
-              <td class="px-6 py-4 text-center text-green-600 font-semibold">&check;</td>
+              <td class="px-4 py-4 text-sm font-medium text-gray-900">Works for ecom <em>and</em> B2B</td>
+              <td class="px-4 py-4 text-center text-green-600 font-semibold bg-blue-50">&check;</td>
+              <td class="px-4 py-4 text-center text-green-600 font-semibold">&check;</td>
+              <td class="px-4 py-4 text-center text-sm text-gray-700">B2B only</td>
+              <td class="px-4 py-4 text-center text-green-600 font-semibold">&check;</td>
+              <td class="px-4 py-4 text-center text-sm text-gray-700">Ecom only</td>
+              <td class="px-4 py-4 text-center text-green-600 font-semibold">&check;</td>
             </tr>
             <tr>
-              <td class="px-6 py-4 text-sm text-gray-900">Export raw data</td>
-              <td class="px-6 py-4 text-center text-green-600 font-semibold">&check; Anytime</td>
-              <td class="px-6 py-4 text-center text-yellow-600">Limited</td>
-              <td class="px-6 py-4 text-center text-green-600 font-semibold">&check;</td>
-              <td class="px-6 py-4 text-center text-yellow-600">Paid</td>
+              <td class="px-4 py-4 text-sm font-medium text-gray-900">Self-serve onboarding</td>
+              <td class="px-4 py-4 text-center text-green-600 font-semibold bg-blue-50">&check;</td>
+              <td class="px-4 py-4 text-center text-green-600 font-semibold">&check;</td>
+              <td class="px-4 py-4 text-center text-red-400 font-semibold">&cross;</td>
+              <td class="px-4 py-4 text-center text-red-400 font-semibold">&cross;</td>
+              <td class="px-4 py-4 text-center text-green-600 font-semibold">&check;</td>
+              <td class="px-4 py-4 text-center text-red-400 font-semibold">&cross;</td>
+            </tr>
+            <tr class="bg-gray-50">
+              <td class="px-4 py-4 text-sm font-medium text-gray-900">Independent of ad platforms</td>
+              <td class="px-4 py-4 text-center text-green-600 font-semibold bg-blue-50">&check;</td>
+              <td class="px-4 py-4 text-center text-red-400 font-semibold">&cross;</td>
+              <td class="px-4 py-4 text-center text-green-600 font-semibold">&check;</td>
+              <td class="px-4 py-4 text-center text-green-600 font-semibold">&check;</td>
+              <td class="px-4 py-4 text-center text-green-600 font-semibold">&check;</td>
+              <td class="px-4 py-4 text-center text-green-600 font-semibold">&check;</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-4 text-sm font-medium text-gray-900">Reconcile platform ROAS</td>
+              <td class="px-4 py-4 text-center text-green-600 font-semibold bg-blue-50">&check;</td>
+              <td class="px-4 py-4 text-center text-red-400 font-semibold">&cross;</td>
+              <td class="px-4 py-4 text-center text-yellow-600">~</td>
+              <td class="px-4 py-4 text-center text-green-600 font-semibold">&check;</td>
+              <td class="px-4 py-4 text-center text-yellow-600">~</td>
+              <td class="px-4 py-4 text-center text-green-600 font-semibold">&check;</td>
+            </tr>
+            <tr class="bg-gray-50">
+              <td class="px-4 py-4 text-sm font-medium text-gray-900">Time to first insight</td>
+              <td class="px-4 py-4 text-center text-sm font-semibold text-blue-600 bg-blue-50">Minutes</td>
+              <td class="px-4 py-4 text-center text-sm text-gray-700">Days</td>
+              <td class="px-4 py-4 text-center text-sm text-gray-700">Weeks</td>
+              <td class="px-4 py-4 text-center text-sm text-gray-700">Months</td>
+              <td class="px-4 py-4 text-center text-sm text-gray-700">Hours</td>
+              <td class="px-4 py-4 text-center text-sm text-gray-700">Weeks</td>
             </tr>
           </tbody>
         </table>
       </div>
+      <p class="px-4 py-3 text-xs text-gray-500 text-center bg-gray-50 border-t border-gray-200">
+        Pricing sourced from each vendor&rsquo;s public pricing page and our
+        <%= link_to "head-to-head reviews", academy_section_path("comparisons"), class: "underline decoration-dotted underline-offset-4 hover:text-blue-600" %>.
+        Last verified <%= Date.current.strftime("%B %Y") %>.
+      </p>
     </div>
 
     <div class="text-center mt-10 scroll-animate" data-controller="scroll-reveal">
-      <%= link_to "See mbuzz in Action", demo_path, class: "inline-block px-6 py-3 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-all" %>
+      <%= link_to "See the full breakdown &rarr;".html_safe, academy_section_path("comparisons"), class: "inline-block px-6 py-3 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-all" %>
     </div>
   </div>
 </section>

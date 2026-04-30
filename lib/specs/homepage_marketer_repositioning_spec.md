@@ -164,9 +164,9 @@ Replace the GA4/Segment/Amplitude axis with the actual marketer shortlist.
 ```
 HOW MBUZZ STACKS UP
 
-                       mbuzz   GA4    Dreamdata  Rockerbox  Triple Whale  Northbeam
-Starting price         $29     Free   $999       Custom     $129          Custom
-Attribution models     8       1      6          5          3             4
+                       mbuzz          GA4    Dreamdata  Rockerbox  Triple Whale  Northbeam
+Starting price         $0 free,$29    Free   $750/mo    Custom     $129/mo       $999/mo
+Attribution models     8              1      6          5          3             4
 Models shown side-by-  ✓       ✗      ✓          ~          ✗             ✓
 side
 Multi-channel (not     ✓       ✓      ✓ (B2B)    ✓          ✗ (ecom)      ✓
