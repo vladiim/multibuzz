@@ -18,7 +18,7 @@
                 </p>
                 <h1 class="text-xl font-semibold text-gray-900 mt-1">Google Ads</h1>
               </div>
-              <%= render "connect_button" %>
+              <%= render "connect_button", connect_path: oauth_google_ads_connect_path %>
             </div>
 
             <% if @connections.any? %>
