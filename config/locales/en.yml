@@ -34,7 +34,8 @@ en:
     home:
       nav:
         brand: "mbuzz"
-        features: "Features"
+        score: "Score Your Attribution"
+        compare: "Compare"
         pricing: "Pricing"
         docs: "Docs"
         login: "Login"
