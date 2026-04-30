@@ -34,7 +34,7 @@ namespace :ad_platforms do
       abort "Google Ads API call failed. Check developer token and credentials."
     end
 
-    puts "\nAPI usage today: #{AdPlatforms::Google::ApiUsageTracker.current_usage}/#{AdPlatforms::Google::ApiUsageTracker::DAILY_OPERATION_LIMIT}"
+    puts "\nAPI usage today: #{AdPlatforms::ApiUsageTracker.current_usage(:google_ads)}/#{AdPlatforms::ApiUsageTracker.daily_limit_for(:google_ads)}"
   end
 
   namespace :meta do
@@ -69,6 +69,8 @@ namespace :ad_platforms do
       puts "Access VERIFIED. #{accounts.size} active ad account(s):"
       accounts.first(10).each { |a| puts "  #{a[:id]} — #{a[:name]} (#{a[:currency]})" }
       puts "  ... (#{accounts.size - 10} more)" if accounts.size > 10
+
+      puts "\nAPI usage today: #{AdPlatforms::ApiUsageTracker.current_usage(:meta_ads)}/#{AdPlatforms::ApiUsageTracker.daily_limit_for(:meta_ads)}"
     end
   end
 end

@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 class AdPlatformMailer < ApplicationMailer
-  def api_usage_warning(operations_today:, limit:, percentage:)
+  def api_usage_warning(platform_name:, operations_today:, limit:, percentage:)
+    @platform_name = platform_name
     @operations_today = operations_today
     @limit = limit
     @percentage = percentage
@@ -9,7 +10,7 @@ class AdPlatformMailer < ApplicationMailer
 
     mail(
       to: FormSubmissionMailer::NOTIFICATION_EMAIL,
-      subject: "[mbuzz] Google Ads API usage at #{percentage}% (#{number_with_delimiter(operations_today)}/#{number_with_delimiter(limit)})"
+      subject: "[mbuzz] #{platform_name} API usage at #{percentage}% (#{number_with_delimiter(operations_today)}/#{number_with_delimiter(limit)})"
     )
   end
 

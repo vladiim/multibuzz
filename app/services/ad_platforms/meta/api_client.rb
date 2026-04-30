@@ -16,7 +16,7 @@ module AdPlatforms
       def get(uri, query: {})
         full_uri = build_uri(uri, query)
         response = Net::HTTP.get_response(full_uri)
-        ApiUsageTracker.increment! if defined?(ApiUsageTracker)
+        AdPlatforms::ApiUsageTracker.increment!(:meta_ads)
         parse(response)
       end
 

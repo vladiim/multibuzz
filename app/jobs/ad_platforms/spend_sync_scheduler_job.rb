@@ -4,34 +4,41 @@ module AdPlatforms
   class SpendSyncSchedulerJob < ApplicationJob
     queue_as :default
 
-    USAGE_WARNING_CACHE_KEY = "google_ads_api_usage_warning_sent"
+    USAGE_WARNING_CACHE_KEY_PREFIX = "ad_platforms_api_usage_warning_sent"
 
     def perform
       AdPlatformConnection.active_connections.find_each do |connection|
         SpendSyncJob.perform_later(connection.id)
       end
 
-      send_usage_warning if should_warn?
+      ApiUsageTracker.tracked_platforms.each do |platform|
+        send_usage_warning(platform) if should_warn?(platform)
+      end
     end
 
     private
 
-    def should_warn?
-      Google::ApiUsageTracker.approaching_limit? && !already_warned_today?
+    def should_warn?(platform)
+      ApiUsageTracker.approaching_limit?(platform) && !already_warned_today?(platform)
     end
 
-    def already_warned_today?
-      Rails.cache.exist?(USAGE_WARNING_CACHE_KEY)
+    def already_warned_today?(platform)
+      Rails.cache.exist?(warning_cache_key(platform))
     end
 
-    def send_usage_warning
+    def send_usage_warning(platform)
       AdPlatformMailer.api_usage_warning(
-        operations_today: Google::ApiUsageTracker.current_usage,
-        limit: Google::ApiUsageTracker::DAILY_OPERATION_LIMIT,
-        percentage: Google::ApiUsageTracker.usage_percentage
+        platform_name: ApiUsageTracker.display_name_for(platform),
+        operations_today: ApiUsageTracker.current_usage(platform),
+        limit: ApiUsageTracker.daily_limit_for(platform),
+        percentage: ApiUsageTracker.usage_percentage(platform)
       ).deliver_now
 
-      Rails.cache.write(USAGE_WARNING_CACHE_KEY, true, expires_in: remaining_seconds_today)
+      Rails.cache.write(warning_cache_key(platform), true, expires_in: remaining_seconds_today)
+    end
+
+    def warning_cache_key(platform)
+      "#{USAGE_WARNING_CACHE_KEY_PREFIX}/#{platform}"
     end
 
     def remaining_seconds_today

@@ -1,14 +1,10 @@
-<h1>Google Ads API Usage Alert</h1>
+<h1><%= @platform_name %> API Usage Alert</h1>
 
-<p>The Google Ads API has used <strong><%= number_with_delimiter(@operations_today) %></strong> of <strong><%= number_with_delimiter(@limit) %></strong> daily operations (<%= @percentage %>%).</p>
+<p>The <%= @platform_name %> API has used <strong><%= number_with_delimiter(@operations_today) %></strong> of <strong><%= number_with_delimiter(@limit) %></strong> daily operations (<%= @percentage %>%).</p>
 
 <p>Remaining today: <strong><%= number_with_delimiter(@remaining) %></strong> operations.</p>
 
-<p>
-  mbuzz has Basic Access to the Google Ads API, which allows 15,000 operations per day.
-  If usage regularly approaches this limit, apply for
-  <a href="https://developers.google.com/google-ads/api/docs/access-levels">Standard Access</a>.
-</p>
+<p>If usage regularly approaches this limit, consider applying for a higher access tier with the platform or revisit the daily limit configured in <code>AdPlatforms::ApiUsageTracker::LIMITS</code>.</p>
 
 <p>
   Thanks,<br>

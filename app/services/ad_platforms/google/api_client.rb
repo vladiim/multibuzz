@@ -32,7 +32,7 @@ module AdPlatforms
         Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
           request = build_request(klass, uri)
           yield request if block_given?
-          ApiUsageTracker.increment!
+          AdPlatforms::ApiUsageTracker.increment!(:google_ads)
           http.request(request)
         end
       end
