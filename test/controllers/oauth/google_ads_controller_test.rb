@@ -5,6 +5,25 @@ require "minitest/mock"
 
 class Oauth::GoogleAdsControllerTest < ActionDispatch::IntegrationTest
   include ActiveJob::TestHelper
+
+  setup do
+    account.enable_feature!(FeatureFlags::GOOGLE_ADS_INTEGRATION)
+    accounts(:two).enable_feature!(FeatureFlags::GOOGLE_ADS_INTEGRATION)
+  end
+
+  # --- feature flag gate ---
+
+  test "connect redirects with private-beta alert when feature flag is off" do
+    account.disable_feature!(FeatureFlags::GOOGLE_ADS_INTEGRATION)
+    sign_in
+    assign_plan(:growth)
+
+    get oauth_google_ads_connect_path
+
+    assert_redirected_to account_integrations_path
+    assert_match(/private beta/i, flash[:alert])
+  end
+
   # --- connect ---
 
   test "connect redirects to Google OAuth consent screen" do

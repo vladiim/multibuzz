@@ -4,6 +4,7 @@ module Oauth
   class GoogleAdsController < ApplicationController
     skip_marketing_analytics
     before_action :require_login
+    before_action :require_feature_flag, only: [ :connect, :callback, :select_account, :create_connection, :done, :reconnect ]
     before_action :require_paid_plan, only: :connect
     before_action :require_connection_slot, only: :connect
     before_action :require_oauth_account, only: [ :callback, :select_account, :create_connection, :done ]
@@ -157,6 +158,12 @@ module Oauth
     end
 
     # --- Guards ---
+
+    def require_feature_flag
+      return if current_account.feature_enabled?(FeatureFlags::GOOGLE_ADS_INTEGRATION)
+
+      redirect_to account_integrations_path, alert: "Google Ads is currently in private beta. Contact support to be added."
+    end
 
     def require_paid_plan
       redirect_with_limit_error unless current_account.can_connect_ad_platform?
