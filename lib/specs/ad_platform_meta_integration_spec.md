@@ -170,10 +170,11 @@ Each sub-phase is one or two commits. RED test → GREEN code → run all tests 
 - [ ] `TokenExchanger` takes a response body hash, returns `{ success:, access_token:, expires_at: }` or error. Tests pass real Meta JSON shapes.
 - [ ] **NB:** Meta returns short-lived. `TokenExchanger.call` returns the short-lived token; the controller calls `TokenExchanger` then `LongLivedExchanger` (or just chains via `.then`).
 
-### 2.3 — LongLivedExchanger (pure parser) + TokenRefresher (orchestrator)
+### 2.3 — TokenRefresher (orchestrator)
 
-- [ ] `LongLivedExchanger` takes a short-lived token's response body and returns long-lived tokens. Pure parser test.
-- [ ] `TokenRefresher` is the orchestrator that composes `TokenClient.call(grant_type: fb_exchange_token, fb_exchange_token: current)` then parses. Tests use real `TokenClient` + VCR cassette `meta/token_refresh/success.yml` (recorded once against Meta) + `meta/token_refresh/expired.yml`.
+**Note:** `LongLivedExchanger` was originally specced as a separate class. Realised mid-2.2 that Meta's short-lived and long-lived token responses have identical shape (`{access_token, token_type, expires_in}`), so `TokenExchanger` already handles both — no separate parser needed. The controller will call `TokenExchanger` twice with different `TokenClient` invocations (one for code-exchange, one for fb_exchange_token).
+
+- [ ] `TokenRefresher` orchestrator: takes a connection with an existing long-lived token, fires `TokenClient.new(params: { grant_type: "fb_exchange_token", client_id:, client_secret:, fb_exchange_token: current })`, parses with `TokenExchanger`, updates the connection in place. Tests use VCR cassette `meta/token_refresh/{success,expired}.yml`.
 
 ### 2.4 — ApiClient (HTTP shell with appsecret_proof)
 
