@@ -201,10 +201,11 @@ Reframed pillars (marketer-language, problem-first headers):
 
 | # | Header | Subhead | Maps to existing feature |
 |---|--------|---------|--------------------------|
-| 1 | **Where should your next $10k go?** | Spend Intelligence shows marginal ROAS, payback period, and the channel that's about to hit diminishing returns — before you scale into a wall. | Spend Intelligence |
-| 2 | **Reconcile platform ROAS in one view.** | Meta over-reports by 134%. Google double-counts assisted conversions. mbuzz shows you the platform number, the mbuzz number, and the gap — for every channel, every week. | Attribution + ROAS reconciliation |
-| 3 | **Eight models. One screen. Your call.** | First-touch, last-touch, linear, time-decay, position-based, U-shape, W-shape, data-driven. GA4 shows you one. We show all eight, side-by-side, so you can stop arguing about which one is "right". | 8-model comparison |
-| 4 | **Rank channels by LTV, not first conversion.** | A channel that brings 6-month customers beats one that brings one-and-dones. LTV mode re-ranks every channel by cohort lifetime value. | LTV mode |
+| 1 | **Where should your next $10k go?** | Spend Intelligence shows marginal ROAS, payback period, and the channel that's about to hit diminishing returns, before you scale into a wall. | Spend Intelligence |
+| 2 | **Eight models. One screen. Your call.** | First-touch, last-touch, linear, time-decay, position-based, U-shape, W-shape, data-driven. GA4 shows you one. We show all eight, side-by-side. Stop arguing about which one is "right". | 8-model comparison |
+| 3 | **Rank channels by LTV, not first conversion.** | A channel that brings 6-month customers beats one that brings one-and-dones. LTV mode re-ranks every channel by cohort lifetime value. | LTV mode |
+
+The "Reconcile platform ROAS" pillar (originally pillar 2) was dropped: it shared the spend-dashboard screenshot with pillar 1 and the framings overlapped. The 134% Meta over-report claim still lives in the hero subhead with a link to the source article, so the punch is preserved.
 
 Demote the **Attribution DSL** pillar to a smaller "For advanced teams" footer block under the pillars: *"Need to express custom attribution logic? mbuzz has a SQL-like Attribution DSL. Most teams never need it. [Read the DSL docs →]"* — preserves the developer story without leading with it.
 
