@@ -40,10 +40,12 @@ en:
         login: "Login"
         cta: "Get Started Free"
       hero:
-        title: "See what's actually driving revenue."
-        subtitle: "Independent attribution that captures 30-40% more of your customer journey."
-        cta_primary: "Get Started Free"
-        cta_secondary: "View Documentation"
+        eyebrow: "For marketers spending $10k–$1m/month"
+        title: "Attribution that matches your bank account."
+        subtitle: "Meta over-reports by 134%. Google double-counts. mbuzz reconciles platform numbers against your bank — so you stop guessing where the next dollar should go."
+        cta_primary: "Score your attribution (3 min)"
+        cta_secondary: "Try the demo"
+        no_signup: "No credit card. No signup to score."
       attribution_flow:
         title: "All your channels, one source of truth"
         channels:
