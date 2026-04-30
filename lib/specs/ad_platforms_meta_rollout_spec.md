@@ -78,10 +78,10 @@ All 13 service classes shipped under `app/services/ad_platforms/meta/`; OAuth co
 - ✅ `Google::RowParser` and `Meta::RowParser` both merge `connection.metadata` onto each row
 - ✅ `Google::AcceptConnectionService` and `Meta::AcceptConnectionService` both accept `metadata:` kwarg
 - ✅ Connect-time metadata picker in `oauth/{google_ads,meta_ads}/select_account` views
-- 🟡 `AdPlatforms::MetadataLinkCheck` + `_metadata_panel.html.erb` (display-only) — uncommitted, in flight
+- ✅ `AdPlatforms::MetadataLinkCheck` + `_metadata_panel.html.erb` (display panel)
+- ✅ `AdPlatforms::MetadataBackfillService` + thin `MetadataBackfillJob` wrapper
 - ❌ Edit-after-connect UI on the per-connection detail page
 - ❌ `Accounts::IntegrationsController#update_metadata` action + route
-- ❌ `MetadataBackfillJob` to re-stamp existing `ad_spend_records` when connection metadata changes
 
 ### 3.1 — Commit the in-flight link-check work
 
@@ -101,8 +101,8 @@ def perform(connection_id)
 end
 ```
 
-- [ ] **3.2.1** RED test: enqueue with a connection that has spend records, assert all records re-stamp with the new metadata; assert another account's records untouched.
-- [ ] **3.2.2** GREEN: implement the job. Account-scoped via the connection's `ad_platform_connection_id`. No HTTP, plain UPDATE.
+- [x] **3.2.1** RED test: enqueue with a connection that has spend records, assert all records re-stamp with the new metadata; assert another account's records untouched.
+- [x] **3.2.2** GREEN: `AdPlatforms::MetadataBackfillService` (full re-stamp, returns `records_updated` count) + thin `AdPlatforms::MetadataBackfillJob` wrapper. Account-scoped via the connection's `ad_spend_records` association.
 
 ### 3.3 — `update_metadata` controller action (platform-agnostic)
 
