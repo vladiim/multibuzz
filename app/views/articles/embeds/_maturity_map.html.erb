@@ -1,0 +1,115 @@
+<%# Measurement Maturity Map — 4-level framework matching the assessment tool. %>
+<%# Canonical levels from app/constants/score.rb: Ad Hoc → Operational → Analytical → Leader %>
+
+<figure class="my-12 not-prose">
+  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+
+    <%# Header %>
+    <div class="px-6 sm:px-8 pt-8 pb-6 border-b border-slate-200">
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">The Measurement Maturity Map</h2>
+      <p class="text-slate-500 text-sm sm:text-base mt-1">Where does your marketing measurement actually sit?</p>
+    </div>
+
+    <%# Levels (mobile: stacked; desktop: 4 columns growing wider) %>
+    <div class="grid grid-cols-1 lg:grid-cols-4">
+
+      <%# Level 1 — Ad Hoc %>
+      <div class="p-6 lg:p-7 border-b lg:border-b-0 lg:border-r border-slate-200 bg-slate-50">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-xs font-bold text-slate-500 tracking-wider">LEVEL 1</span>
+          <span class="text-xs font-semibold text-white bg-rose-600 px-2 py-0.5 rounded-full">MOST COMPANIES</span>
+        </div>
+        <h3 class="text-xl font-bold text-slate-900">Ad Hoc</h3>
+        <p class="text-sm text-slate-500 italic mb-3">"Meta says Meta is great"</p>
+        <p class="text-sm text-slate-700 leading-relaxed mb-4">
+          Each platform grades its own homework. Attributed conversions exceed actual conversions by 1.5–3x.
+        </p>
+        <ul class="text-xs text-slate-600 space-y-1 mb-4">
+          <li>· GA4 + platform dashboards</li>
+          <li>· Last-click attribution</li>
+          <li>· Client-side tracking (30–40% data loss)</li>
+          <li>· No cross-channel view</li>
+          <li>· "Last year + 10%" forecasting</li>
+        </ul>
+        <div class="text-xs text-slate-400 font-mono">Spend floor: $0</div>
+        <div class="text-xs text-slate-400 mt-1">Question answered: <em>What does the platform say happened?</em></div>
+      </div>
+
+      <%# Level 2 — Operational %>
+      <div class="p-6 lg:p-7 border-b lg:border-b-0 lg:border-r border-slate-200 bg-slate-50/50">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-xs font-bold text-slate-500 tracking-wider">LEVEL 2</span>
+        </div>
+        <h3 class="text-xl font-bold text-slate-900">Operational</h3>
+        <p class="text-sm text-slate-500 italic mb-3">"One version of the truth"</p>
+        <p class="text-sm text-slate-700 leading-relaxed mb-4">
+          A neutral attribution layer collects touchpoint data independently. Server-side tracking captures 30–40% more than client-side.
+        </p>
+        <ul class="text-xs text-slate-600 space-y-1 mb-4">
+          <li>· Independent multi-touch attribution</li>
+          <li>· Server-side data capture</li>
+          <li>· Multiple models compared side by side</li>
+          <li>· Cross-channel deduplication</li>
+          <li>· Marginal CPA tracked, not just average</li>
+        </ul>
+        <div class="text-xs text-slate-400 font-mono">Spend floor: ~$60K+/yr</div>
+        <div class="text-xs text-slate-400 mt-1">Question answered: <em>What does our own data say happened?</em></div>
+      </div>
+
+      <%# Level 3 — Analytical %>
+      <div class="p-6 lg:p-7 border-b lg:border-b-0 lg:border-r border-slate-200 bg-indigo-50/40">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-xs font-bold text-indigo-600 tracking-wider">LEVEL 3</span>
+        </div>
+        <h3 class="text-xl font-bold text-slate-900">Analytical</h3>
+        <p class="text-sm text-slate-500 italic mb-3">"Cross-validating"</p>
+        <p class="text-sm text-slate-700 leading-relaxed mb-4">
+          You triangulate. MTA says one thing, MMM says another &mdash; the gap tells you where to investigate. Geo-holdouts start.
+        </p>
+        <ul class="text-xs text-slate-600 space-y-1 mb-4">
+          <li>· MTA + MMM blended and compared</li>
+          <li>· Geo-holdout experiments</li>
+          <li>· Scenario-based budget modelling</li>
+          <li>· Offline channels included (TV, OOH)</li>
+          <li>· Privacy-resilient (MMM works without cookies)</li>
+        </ul>
+        <div class="text-xs text-slate-400 font-mono">Spend floor: ~$500K+/yr</div>
+        <div class="text-xs text-slate-400 mt-1">Question answered: <em>Do different methods agree?</em></div>
+      </div>
+
+      <%# Level 4 — Leader %>
+      <div class="p-6 lg:p-7 bg-slate-900 text-white">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-xs font-bold text-slate-300 tracking-wider">LEVEL 4</span>
+        </div>
+        <h3 class="text-xl font-bold">Leader</h3>
+        <p class="text-sm text-slate-400 italic mb-3">"Proving and predicting"</p>
+        <p class="text-sm text-slate-200 leading-relaxed mb-4">
+          Continuous incrementality testing. Attribution is calibrated by causal proof. Budget reallocates based on marginal returns.
+        </p>
+        <ul class="text-xs text-slate-300 space-y-1 mb-4">
+          <li>· Continuous incrementality testing</li>
+          <li>· Incrementality-calibrated MTA</li>
+          <li>· Causal forecasting</li>
+          <li>· Clean rooms for user-level data</li>
+          <li>· Closed-loop test → learn → reallocate</li>
+        </ul>
+        <div class="text-xs text-slate-500 font-mono">Spend floor: ~$2M+/yr</div>
+        <div class="text-xs text-slate-500 mt-1">Question answered: <em>Can we prove what works and predict what to do?</em></div>
+      </div>
+
+    </div>
+
+    <%# Footer principle %>
+    <div class="px-6 sm:px-8 py-5 bg-slate-50 border-t border-slate-200">
+      <p class="text-sm text-slate-700 leading-relaxed">
+        <strong class="text-slate-900">Each level adds a tool. None replaces the previous one.</strong>
+        You still do Level 1 reporting at Level 4 &mdash; you just don't trust it alone. When two methods disagree, that gap is the most useful signal you have.
+      </p>
+    </div>
+
+  </div>
+  <figcaption class="text-xs text-slate-500 mt-3 text-center">
+    Sources: Dropbox/IEEE Access (2026) · eBay/<em>Econometrica</em> (2015) · Gordon et al. (2019) · IAB State of Data (2026)
+  </figcaption>
+</figure>

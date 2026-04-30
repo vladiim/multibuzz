@@ -1,0 +1,176 @@
+---
+title: "Measurement Maturity Map: Most Teams Report Like Level 3 & Operate at Level 1"
+slug: "measurement-maturity-map"
+description: "Four-level maturity framework: Ad Hoc, Operational, Analytical, Leader. Most teams sit at Level 1 while reporting numbers as if they were at Level 3."
+published_at: 2026-04-30
+section: fundamentals
+section_order: 3
+status: published
+priority: P0
+category: "Attribution Fundamentals"
+tags:
+  - measurement maturity
+  - marketing measurement maturity model
+  - marketing measurement framework
+  - marketing analytics maturity
+  - multi-touch attribution
+  - media mix modelling
+  - incrementality testing
+  - triangulation
+related_articles:
+  - mta-mmm-incrementality-triangulation
+  - mta-vs-mmm
+  - what-is-multi-touch-attribution
+  - platform-reports-dont-match
+  - roas-inflation-platform-over-reporting
+  - server-side-vs-client-side-tracking
+seo:
+  title: "Measurement Maturity Map: 4 Levels From Ad Hoc to Leader"
+aeo:
+  target_query: "measurement maturity model marketing"
+  tldr: "Most teams sit at Level 1. Their reports look like Level 3. The 4-level ladder (Ad Hoc, Operational, Analytical, Leader) isn't about adding tools. It's about how many methods you let argue with each other. Level 3 starts the moment you run MTA and MMM in parallel and trust the one that disagrees with your favourite channel. <a href='/measurement-maturity-assessment' class='underline font-semibold'>Score yourself across 6 dimensions in 3 minutes →</a>"
+  key_takeaways:
+    - "Four levels: Ad Hoc (platform self-reporting), Operational (independent MTA), Analytical (MTA + MMM cross-validation), Leader (continuous incrementality testing)"
+    - "Each level adds a tool. None replaces what's below. You still do Level 1 reporting at Level 4, you just don't trust it alone"
+    - "Triangulation defines Level 3: when MTA and MMM disagree, the gap is the most useful signal you have"
+    - "Spend floors: Level 1 free, Level 2 ~$60K+/yr media, Level 3 ~$500K+/yr, Level 4 ~$2M+/yr"
+    - "Six scored dimensions: reporting, attribution, experimentation, forecasting, channels, infrastructure"
+    - "Most teams report numbers as if they were at Level 3 while operating at Level 1"
+  faq:
+    - q: "What is the measurement maturity model?"
+      a: "A four-level framework for assessing how rigorously a marketing team measures channel performance. Level 1 (Ad Hoc) relies on platforms' own conversion reports. Level 2 (Operational) adds an independent multi-touch attribution layer. Level 3 (Analytical) cross-validates MTA with media mix modelling. Level 4 (Leader) runs continuous causal incrementality testing. Each level is a tool, not a winner. Higher levels triangulate against lower ones rather than replacing them."
+    - q: "What level of measurement maturity do most marketers reach?"
+      a: "Most teams sit at Level 1 (Ad Hoc), checking conversions inside each ad platform's dashboard. A meaningful minority reach Level 2 (Operational) with independent multi-touch attribution. A small fraction operate at Level 3 (Analytical), running MTA and MMM together and treating their disagreements as diagnostic information. Level 4 (Leader) is largely the domain of enterprise teams running continuous incrementality testing, like Dropbox, eBay, and large DTC brands."
+    - q: "How much does each level cost to operate?"
+      a: "Level 1 is free (platform dashboards). Level 2 starts around $60K+/year in media spend to justify independent attribution tooling. Level 3 typically requires $500K+/year plus an analyst who can run MMM (now possible with Google's open-source Meridian or Meta's Robyn). Level 4 incrementality testing requires roughly $2M+/year media spend (geographic sample sizes need to support statistical significance) plus a dedicated platform like Haus or Measured at $130K-$170K/year."
+    - q: "Why is triangulation the central principle?"
+      a: "Each method has a known systematic bias. MTA based on click attribution can overstate channel performance by 2-10x compared to causal incrementality testing (Chivukula, Jin & Zhan, 2026, IEEE Access). Platform self-reports inflate by 1.5-3x. MMM is privacy-resilient but lossy on short-term granularity. No single method is reliable on its own. When two independent methods agree, confidence rises. When they disagree, the gap tells you exactly where to investigate. That triangulation discipline, not the tool list, is what defines a Level 3+ team."
+    - q: "How is this different from Avinash Kaushik's Modern Analytics Maturity Model?"
+      a: "Kaushik's MAMM (March 2026) describes broad analytics organisation maturity across 10 dimensions and 6 levels: strategy, data, people, tools, processes, and outcomes across the whole company. The Measurement Maturity Map zooms specifically into marketing measurement: how confident you can be that the channel-performance numbers driving budget decisions are directionally correct. The two are complementary. MAMM answers 'how mature is our analytics function?' This map answers 'can we trust the numbers driving budget decisions?'"
+    - q: "What dimensions does the assessment score?"
+      a: "Six dimensions across the maturity ladder: Reporting & Analytics (what happened), Attribution & Credit (who gets credit), Experimentation (is it actually working), Forecasting & Optimisation (what should we do next), Channel Coverage (digital, offline, brand), and Data Infrastructure (deterministic, probabilistic, privacy). A team can be Level 3 on attribution but Level 1 on experimentation. The score reveals where you're exposed."
+    - q: "Can a small team realistically reach Level 3 or higher?"
+      a: "Level 2 is achievable for most teams spending $60K+/year on media. Level 3 requires roughly $500K+/year plus an analyst who can run MMM (now possible without a data science team thanks to Meridian and Robyn). Level 4 incrementality testing requires geographic spend volume large enough for statistical significance, practical only above $2M/year. Smaller teams should accept that Level 4 is out of reach and extract maximum value from Level 2 instead, rather than fake Level 3 by buying tools they can't operationalise."
+schema:
+  type: Article
+  author: "holly-henderson"
+has_code_examples: false
+has_calculator: false
+has_download: false
+---
+
+<%= render_tldr(@article.tldr) %>
+
+That gap is the source of a lot of bad budget decisions.
+
+Australia's digital ad market hit $18.4 billion in 2025, up 11.5% year on year ([IAB Australia/PwC, 2026](https://iabaustralia.com.au/news/internet-advertising-spend-increases-11-5-to-reach-18-4-billion-in-2025/)). Globally, only 39% of buy-side users employ attribution, MMM, and incrementality testing together ([IAB State of Data 2026](https://www.iab.com/insights/2026-state-of-data-report/)). The majority rely on a single method, usually the numbers each ad platform reports about itself.
+
+A peer-reviewed [IEEE paper from Dropbox's data science team](https://doi.org/10.1109/ACCESS.2026.3670337) and Avinash Kaushik's [Modern Analytics Maturity Model (MAMM)](https://www.linkedin.com/posts/akaushik_most-analytics-teams-suffer-in-silence-share-7442951376919224320) both landed in March 2026 with the same conclusion: marketing measurement sits on a maturity ladder, and most companies are far lower than they think. Kaushik's MAMM frames analytics organisations across 6 levels and 10 dimensions. The map below zooms in: can you trust the numbers you're using to allocate budget?
+
+<%= render "articles/embeds/maturity_map" %>
+
+## Each level is a tool. None of them is a winner.
+
+The principle that runs through every level: climbing the ladder doesn't mean discarding what's below it. You still do Level 1 platform reporting at Level 4. You just don't trust any single number alone.
+
+What changes as you climb is how you reconcile disagreement.
+
+Every measurement method carries a known systematic bias. Platform self-reports overstate by 1.5-3x because each platform claims credit for the same conversion. Click-based attribution overstates by [2-10x compared to causal incrementality testing](https://doi.org/10.1109/ACCESS.2026.3670337). MMM is privacy-resilient but lossy on short-term granularity. No method is reliable on its own.
+
+A serious team runs two or more methods in parallel and treats the gap between them as a diagnostic signal. When MTA and MMM agree on a channel, confidence rises. When they disagree, you know which channel warrants a closer look. We unpack the mechanics in [MTA, MMM & Lift Studies: The Triangulation Approach](/articles/mta-mmm-incrementality-triangulation).
+
+What we see across mbuzz customers: every Level 3 team has a moment where MTA and MMM disagreed by 30%+ on one channel, and that disagreement was where the budget moved. The discipline isn't running both methods. It's resisting the urge to declare one of them "right" when they fight.
+
+Triangulation is what separates Level 3 from Level 2. It is the single capability with the highest return on budget-decision quality, and it is reachable by any team running ~$500K+/year in media.
+
+## Level 1: Ad Hoc
+
+> "Meta says Meta is great."
+
+You check conversion numbers inside each ad platform's dashboard. Google reports 500 conversions. Meta reports 400. TikTok reports 300. Added up: 1,200 attributed conversions. [Closer to 600 actual](/articles/platform-reports-dont-match).
+
+This isn't speculation. [Gordon et al. (2019)](https://doi.org/10.1287/mksc.2018.1135), in 15 large-scale Facebook field experiments covering 500 million user-experiment observations and 1.6 billion impressions, found that observational measurement methods produce systematically different results from true randomised experiments, even when controlling for thousands of behavioural variables. The gap between platform self-reports and incremental reality isn't accidental. It's [built into the methodology](/articles/roas-inflation-platform-over-reporting).
+
+Kaushik puts it bluntly: ["No one shows up and buys immediately."](https://www.kaushik.net/avinash/marketing-analytics-attribution-is-not-incrementality/) Last-click, first-click, or any single-platform attribution window is a simplification that flatters the platform running it.
+
+Most companies sit here. If the only attribution data your team reviews comes from inside the platforms you're buying media on, this is Level 1. Dashboard sophistication doesn't change that.
+
+## Level 2: Operational
+
+A neutral measurement layer sits between you and the platforms. It collects touchpoint data independently (clicks, sessions, form submissions) and applies attribution models without any platform marking its own homework. ([What is multi-touch attribution?](/articles/what-is-multi-touch-attribution))
+
+The stronger implementations use [server-side tracking, which captures 30-40% more data than client-side JavaScript](/articles/server-side-vs-client-side-tracking). With roughly 35% of Australians using ad blockers ([IAB Australia](https://iabaustralia.com.au/news/iab-australia-research-reveals-use-of-ad-blocking-technology-in-australia-is-stabilising/)), Safari's Intelligent Tracking Prevention limiting cookies to 7 days, and iOS App Tracking Transparency reducing mobile signal, client-side tracking has become unreliable in ways most marketers haven't fully accounted for.
+
+The limitation: multi-touch attribution still measures correlation, not causation. The Dropbox team's research showed click-based attribution can overstate channel performance by [2-10x compared to causal testing](https://doi.org/10.1109/ACCESS.2026.3670337). Better than Level 1, but still carries a systematic upward bias.
+
+Who's here: companies with a dedicated marketing ops or analytics function, typically spending $60K+/year on digital media. Independent MTA tools now start around $29-300/month, where five years ago this layer cost five figures and required a custom build.
+
+<div class="my-12 not-prose bg-indigo-50 border border-indigo-100 rounded-lg p-6">
+  <h3 class="text-lg font-bold text-slate-900">Find your level in 3 minutes</h3>
+  <p class="text-slate-600 text-sm mt-2 mb-4">
+    The free Measurement Maturity Assessment scores you across six dimensions: reporting, attribution, experimentation, forecasting, channels, infrastructure. 10 questions. No login.
+  </p>
+  <%= link_to "Take the Assessment", "/measurement-maturity-assessment", class: "inline-block bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-500" %>
+</div>
+
+## Level 3: Analytical
+
+You don't trust any single method. You triangulate.
+
+Touchpoint-level [MTA tells you which touchpoints preceded conversion](/articles/what-is-multi-touch-attribution). Macro-level [MMM tells you whether spending more on Channel X moved total outcomes](/articles/mta-vs-mmm). MMM uses aggregate spend and outcome data to estimate channel contribution without relying on individual user tracking, making it privacy-resilient in ways MTA is not.
+
+When MTA and MMM agree on a channel, your confidence rises. When they disagree, you know which channel warrants investigation. The disagreement itself is the data point.
+
+Google's Modern Measurement Playbook calls this the ["measurement tripod"](https://business.google.com/us/think/measurement/drive-business-goals-modern-measurement/): attribution for granular optimisation, MMM for strategic allocation, incrementality for causal validation. The tools exist. Google's open-source [Meridian](https://github.com/google/meridian) and Meta's open-source [Robyn](https://arxiv.org/abs/2403.14674) have made MMM accessible to teams without a dedicated data science function.
+
+This level adds a real experimentation program. Geo-holdouts begin. Scenario-based budget modelling ("what if we cut SEM 20%?") replaces gut-feel reallocation. Offline channels (TV, OOH, events) get folded into models alongside digital.
+
+Who's here: companies spending roughly $500K+/year on media with at least one analyst or data scientist. Requires both touchpoint data infrastructure (for MTA) and 2+ years of historical spend/outcome data (for MMM).
+
+## Level 4: Leader
+
+Continuous causal experiments rather than periodic ones. Attribution at this level is *calibrated by* incrementality results: MTA outputs adjusted to match what holdout tests prove is real. Budget reallocates based on marginal returns the team can defend in front of a CFO.
+
+Dropbox ran month-long channel blackouts across US geographic regions and used three independent statistical methods (Difference-in-Differences, [Bayesian Structural Time Series](https://doi.org/10.1214/14-AOAS788), and Augmented Synthetic Control) to measure causal impact. They reallocated approximately $25 million in annual ad spend, improved marketing efficiency by 81%, and lifted incrementality-adjusted LTV:CAC by 53% ([Chivukula, Jin & Zhan, 2026, *IEEE Access*](https://doi.org/10.1109/ACCESS.2026.3670337)).
+
+eBay reached the same conclusion a decade earlier. When they paused branded paid search, [99.5% of the traffic arrived through organic search instead](https://doi.org/10.3982/ECTA12423) ([Blake, Nosko & Tadelis, 2015, *Econometrica*](https://doi.org/10.3982/ECTA12423)). They were paying for clicks they already owned.
+
+Kaushik, who advises incrementality platform Measured, describes this level as moving from "smart" (MTA) to ["super smart."](https://www.measured.com/blog/avinash-kaushik-3-insights-on-data-puking-last-click-and-incrementality-centric-marketing/) His distinction: "Attribution might show 100 conversions for $500. Incrementality testing reveals only 10 of those were incremental." Same data, very different budget implications.
+
+Continuous measurement, always-on incrementality in privacy-safe clean rooms, is where Dropbox describes their next phase heading. The infrastructure is emerging: AWS Clean Rooms, Google Ads Data Hub, and the clean room market consolidation of 2024-25 (WPP acquired InfoSum, LiveRamp acquired Habu, Amazon made its clean room free for Sponsored Ads advertisers). Roughly [66% of organisations report using clean rooms](https://skai.io/blog/data-clean-rooms-in-retail-media/) in some capacity (Skai, 2025), but most use them for audience matching, not continuous measurement.
+
+The access barrier is steep. This requires a dedicated data science function, millions in annual ad spend (per-geo spending sufficient for statistical significance and enough geographic markets for valid treatment/control groups), and C-suite tolerance for turning off revenue-generating channels for a month or more. [Haus's 640 Meta experiments showed platform-reported and incremental metrics diverge significantly](https://www.haus.io/blog/the-meta-report-lessons-from-640-haus-incrementality-experiments) (Haus, 2025). The platform itself charges $132-170K annually before any internal cost.
+
+Practical floor: roughly $2M+ annual digital media spend.
+
+## When MTA and MMM disagree: the paid social pattern
+
+The most common Level 3 setup we see: MTA shows paid social driving 40% of attributed conversions. MMM shows paid social with a much smaller marginal contribution. The diagnosis isn't "one method is wrong." The diagnosis is: paid social is taking credit for conversions that would have happened anyway. Click attribution loves remarketing. MMM doesn't.
+
+The Level 1 number says paid social is your best channel. The triangulated reading says paid social is over-attributed because much of its measured volume is incremental-zero retargeting to people already in the funnel.
+
+The difference between Level 1 and Level 3 isn't better tools. It's whether you have a second method to argue with the first one.
+
+This is the pattern Holly came from. Running weekly client optimisation sessions at Forebrite, watching forecasts hit or miss, the moment that flipped the most budget was always the channel where two methods disagreed and we picked the lower number. Every time. The reflex to trust the higher number is the most expensive habit in marketing measurement.
+
+## Where to start
+
+Pick a channel you're confident about. Run its numbers through a second model. If first-touch and last-touch tell wildly different stories, that gap is diagnostic information you weren't using before.
+
+You don't need MMM or incrementality testing to start. You need a second method to argue with the first one. The full mechanics live in our [triangulation guide](/articles/mta-mmm-incrementality-triangulation).
+
+Kaushik describes two KPIs every CMO should be able to answer for the CFO: "marketing-driven incremental sales" and "cost per incremental sale." Most can't answer either with confidence. The maturity map tells you why, and what it would take.
+
+## Sources
+
+1. IAB Australia/PwC (2026). [Internet Advertising Revenue Report: Full Year 2025](https://iabaustralia.com.au/news/internet-advertising-spend-increases-11-5-to-reach-18-4-billion-in-2025/).
+2. IAB & BWG Global (2026). [State of Data 2026: The AI-Powered Measurement Transformation](https://www.iab.com/insights/2026-state-of-data-report/).
+3. Chivukula, S., Jin, Y. & Zhan, J. (2026). [From Attribution to Causality in Digital Advertising](https://doi.org/10.1109/ACCESS.2026.3670337). *IEEE Access*. DOI: 10.1109/ACCESS.2026.3670337
+4. Gordon, B. R., Zettelmeyer, F., Bhargava, N. & Chapsky, D. (2019). [A Comparison of Approaches to Advertising Measurement: Evidence from Big Field Experiments at Facebook](https://doi.org/10.1287/mksc.2018.1135). *Marketing Science*, 38(2), 193-225.
+5. Blake, T., Nosko, C. & Tadelis, S. (2015). [Consumer Heterogeneity and Paid Search Effectiveness: A Large-Scale Field Experiment](https://doi.org/10.3982/ECTA12423). *Econometrica*, 83(1), 155-174.
+6. Brodersen, K. H., Gallusser, F., Koehler, J., Remy, N. & Scott, S. L. (2015). [Inferring Causal Impact Using Bayesian Structural Time-Series Models](https://doi.org/10.1214/14-AOAS788). *Annals of Applied Statistics*, 9(1), 247-274.
+7. Runge, J., Skokan, I., Zhou, G. & Pauwels, K. (2024). [Packaging Up Media Mix Modeling: An Introduction to Robyn's Open-Source Approach](https://arxiv.org/abs/2403.14674). *arXiv:2403.14674*.
+8. Haus (2025). [The Meta Report: Lessons from 640 Haus Incrementality Experiments](https://www.haus.io/blog/the-meta-report-lessons-from-640-haus-incrementality-experiments).
+9. Kaushik, A. [Marketing Analytics: Attribution Is Not Incrementality](https://www.kaushik.net/avinash/marketing-analytics-attribution-is-not-incrementality/).
+10. Google. [Modern Measurement Playbook](https://business.google.com/us/think/measurement/drive-business-goals-modern-measurement/).
+11. Skai (2025). [The 2025 State of Data Clean Rooms in Retail Media](https://skai.io/blog/data-clean-rooms-in-retail-media/).
