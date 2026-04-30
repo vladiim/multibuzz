@@ -304,6 +304,14 @@ export default class extends Controller {
         </div>
       </div>
 
+      <div class="result-cta-block">
+        <button class="hero-cta" data-action="click->score-assessment#createAccount">
+          ${cta.button}
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+        </button>
+        <p class="result-cta-sub">${cta.sub}</p>
+      </div>
+
       <div class="result-articles">
         <h3>Relevant reading based on your results</h3>
         <div class="article-links">
