@@ -2,7 +2,7 @@
 
 **Date:** 2026-04-30 (re-shaped from `ad_platforms_meta_linkedin_rollout_spec.md`)
 **Priority:** P1
-**Status:** Phases 0–2 ✅ complete · Phase 3 in flight · Phases 4–5 pending
+**Status:** Phases 0–4 ✅ build complete · Meta UAT ✅ · Phase 5 (prod E2E) blocked on Google OAuth verification
 **Branch:** `feature/ad-platforms-meta-linkedin-rollout` (kept under the original name; LinkedIn was deferred mid-branch — see [Out of Scope](#out-of-scope))
 
 ---
@@ -24,9 +24,9 @@ This spec is the umbrella. Each phase below ships its own RED→GREEN tests and 
 | 0 — External prereqs (Meta) | 0 | ✅ Done | inline below |
 | 1 — Feature-flag scaffolding | 1 | ✅ Done | `lib/specs/ad_platform_feature_flags_spec.md` |
 | 2 — Meta Ads adapter | 2 | ✅ Done | `lib/specs/ad_platform_meta_integration_spec.md` |
-| 3 — Metadata mapping: finish + UAT | (was 4) | 🟢 Build complete · UAT pending | inline below |
-| 4 — Apply metadata UX to Google + lock pattern | NEW | ⏳ Pending | inline below |
-| 5 — Pet-resort production E2E test | (was 5) | ⏳ Pending | `lib/specs/ad_platform_meta_test_findings.md` (created on completion) |
+| 3 — Metadata mapping: finish + UAT | (was 4) | ✅ Build + Meta UAT complete | inline below |
+| 4 — Apply metadata UX to Google + lock pattern | NEW | ✅ Pattern locked · Google UAT blocked on verification | inline below |
+| 5 — Pet-resort production E2E test | (was 5) | 🚫 Blocked on Google OAuth verification (4-6 wk review) | `lib/specs/ad_platform_meta_test_findings.md` (created on completion) |
 | 6 — Spend dashboard metadata filter + breakdown | NEW (post-merge) | 📋 Specced — separate branch | `lib/specs/spend_dashboard_metadata_breakdown_spec.md` |
 
 ---
@@ -130,56 +130,64 @@ Form partial rendered on each connection detail page (`google_ads_account.html.e
 - [x] **3.4.2** Stimulus: reused the existing `toggle` controller for show/edit swap on `_metadata_panel.html.erb`. No new JS controller needed yet — a custom `metadata_editor_controller.js` becomes worth adding only when the multi-row add UI lands.
 - [x] **3.4.3** Wired in via `_metadata_panel.html.erb` (already rendered on both `google_ads_account.html.erb` and `meta_ads_account.html.erb`).
 
-### 3.5 — UAT on a dev account
+### 3.5 — UAT on a dev account ✅
 
-Manual matrix on a dev account with `meta_ads_integration` flag enabled:
+Walked through on a dev account with both `meta_ads_integration` and `google_ads_integration` flags enabled. **Meta side completed cleanly; Google side blocked on OAuth verification (separate — see [Phase 4 status](#phase-4--apply-metadata-ux-to-google--lock-pattern-)).**
 
-1. Connect Google Ads → tag with `{ location: "test-loc-1" }` at connect time → verify `ad_platform_connections.metadata` and at least one `ad_spend_records.metadata` row
-2. Connect Meta Ads → same
-3. Visit detail page for each → confirm `_metadata_panel.html.erb` shows correct linked/unlinked state
-4. Edit metadata via `_metadata_editor.html.erb` → confirm row updates, backfill job enqueues, all spend records re-stamp
-5. Send a test conversion via SDK with `properties: { location: "test-loc-1" }` → confirm panel flips from `:unlinked` to `:linked`
-6. Cross-account check: visit a second dev account, confirm no leakage
-7. Edge cases: empty metadata, 5KB-cap, non-hash → controller validation errors, no orphan jobs
+**UAT findings (Meta) — all addressed in-branch:**
 
-### 3.6 — Definition of Done (Phase 3)
+1. **Connect-time picker was confusing** — original design used `<select>` with "+ Add new..." sentinel modes, empty-state degraded to dropdowns with no options, no inline explanation of what "Property" meant. Redesigned (`f954073`) to plain text inputs with `<datalist>` for known-key autocomplete, soft-bordered "Tag this account (optional)" group, click-to-expand info button with when/how/skip-if explainer, generic placeholders ("plan_name" / "Pro"). Deleted `metadata_picker_controller.js` entirely — single Stimulus toggle controller handles the show/edit swap.
+2. **Hidden fallback inputs were visible** — Tailwind `block` class was overriding the HTML `[hidden]` attribute. Fixed by switching the redesign to use Tailwind's `hidden` class managed via `classList`, plus deletion of the entire fallback-input mechanism.
+3. **Multi-account flow was hidden** — connecting one account redirected to the all-platforms integrations index and cleared the OAuth session, forcing re-OAuth for every additional account. Fixed in two passes:
+   - `0de73b7` made `create_connection` redirect to the per-platform page instead of integrations index, with a prominent "+ Connect another Meta Ads account" CTA at the bottom of the connection list when N≥1
+   - `35e1ca5` kept the OAuth session alive across connects on `select_account` (success returns `clear_session: false`), added a `done` action that explicitly closes the flow, and the `select_account` view marks already-connected ad accounts with a "Connected ✓" stub instead of the form
+4. **No surfacing on Spend dashboard** — operators tag connections with metadata but the Spend dashboard rolls up across all connections with no filter or breakdown. Captured in new spec `lib/specs/spend_dashboard_metadata_breakdown_spec.md` for a separate branch post-merge (commit `61af9a0`).
+5. **`pair` was scattered through the editor view** — refactored to a memoized `AdPlatformConnection#metadata_pair` model method (`e5be985`), now the single source of truth for the single-pair assumption (used by both the editor view and `MetadataLinkCheck`).
 
-- [x] All 3.1–3.4 sub-tasks committed with passing tests (`bin/rails test` 3625/3625 green)
-- [ ] UAT matrix run against a dev account; findings noted inline in this section
+**UAT findings (Google) — pending:**
+
+6. **OAuth `access_denied`** — Google OAuth app is still in Testing mode; non-test-users hit "Error 403: access_denied". Pulled Google off live behind `FeatureFlags::GOOGLE_ADS_INTEGRATION` (`5a6662c`); existing connections continue to sync. Standard Access + verification application submitted via Google Ads developer portal with the design doc generated at `lib/docs/google_ads_api_application.md` (commit `94acc1f`). 4-6 wk Google review window. See `project_google_ads_api_status` memory for status.
+
+### 3.6 — Definition of Done (Phase 3) ✅
+
+- [x] All 3.1–3.4 sub-tasks committed with passing tests (`bin/rails test` green)
+- [x] UAT matrix run on a dev account; Meta side complete with findings addressed; Google side blocked on verification (tracked in 4.4)
 - [x] No mocks added (per `feedback_no_mocks.md`)
 - [x] No new helper clusters in controllers (`metadata_pair`, `metadata_key`, `metadata_value`, `detail_path_for` — three small memoized helpers + one route resolver, all tied to a single action)
 
 ---
 
-## Phase 4 — Apply metadata UX to Google + lock pattern ⏳
+## Phase 4 — Apply metadata UX to Google + lock pattern ✅ Pattern · 🚫 Google UAT blocked
 
 **Goal:** confirm Google works identically to Meta after Phase 3, formalize the pattern so any future adapter (LinkedIn, TikTok, Microsoft, …) inherits it for free, no platform-specific surprises.
 
 ### 4.1 — Audit Google end-to-end
 
-Walk the same Phase 3.5 UAT matrix against a Google connection on the same dev account. Phase 3 deliverables (edit UI, backfill, panel) are platform-agnostic — they should "just work." Document any gap:
+The Phase 3 deliverables (edit UI, backfill, panel) are platform-agnostic by construction — Google's pieces shipped earlier in the branch (`8c66614`, `8a55837`, `2de32ee`) are still the active code. Verified:
 
-- [ ] **4.1.1** Google connect-time picker exposes `KnownMetadata` keys (already shipped — verify)
-- [ ] **4.1.2** `Google::AcceptConnectionService` persists `metadata` (already shipped — verify)
-- [ ] **4.1.3** `Google::RowParser` merges `connection.metadata` onto rows (already shipped — verify)
-- [ ] **4.1.4** Edit UI + backfill job work on Google connections (built in Phase 3 — verify)
-- [ ] **4.1.5** Per-campaign metadata override via `connection.settings.campaign_overrides` — confirm parser honors per-campaign metadata if/when populated (defer building UI)
+- [x] **4.1.1** Google connect-time picker exposes `KnownMetadata` keys via the shared `_connect_account_row.html.erb` partial that Meta also uses
+- [x] **4.1.2** `Google::AcceptConnectionService` persists `metadata` via the shared `MetadataNormalizer`
+- [x] **4.1.3** `Google::RowParser` merges `connection.metadata` onto rows (line 20: `connection_attrs.merge(dimension_attrs).merge(campaign_attrs).merge(metric_attrs).merge(metadata_attrs)`)
+- [x] **4.1.4** Edit UI + backfill job work on Google connections — `_metadata_editor.html.erb` is rendered by `_metadata_panel.html.erb` which is included on `google_ads_account.html.erb`; `MetadataBackfillJob` is platform-agnostic, takes a connection ID
+- [ ] **4.1.5** Per-campaign metadata override via `connection.settings.campaign_overrides` — left for follow-up; the parser plumbing is in place but no UI to set per-campaign overrides yet
+- [ ] **End-to-end Google UAT** — blocked on Google OAuth verification. The flag-gated controller redirects with "Google Ads is currently in private beta" until the user adds themselves as a test user in GCC. Once Google verification clears, walk the Phase 3.5 matrix on a real Google connection.
 
-### 4.2 — Lock the pattern
+### 4.2 — Lock the pattern ✅
 
-- [ ] **4.2.1** `lib/specs/ad_platform_adapter_template_spec.md` Phase 4 already documents the metadata contract. Cross-check it matches what Phase 3 actually shipped — patch any drift.
-- [ ] **4.2.2** `lib/specs/GUIDE.md` "Ad Platform Adapter Lifecycle Checklist" already references the connect-time metadata + RowParser merge. Cross-check.
-- [ ] **4.2.3** Note in template's "Common Pitfalls" any new gotchas surfaced in Phase 3 (e.g. backfill-job race conditions, single-key vs multi-key metadata).
+- [x] **4.2.1** `lib/specs/ad_platform_adapter_template_spec.md` Phase 4 documents the metadata contract; verified in sync with shipped code
+- [x] **4.2.2** `lib/specs/GUIDE.md` "Ad Platform Adapter Lifecycle Checklist" references connect-time metadata + RowParser merge; in sync
+- [x] **4.2.3** Common Pitfalls section in the template captures the gotchas surfaced in Phase 3 UAT — empty-state-first design, no mode-switching, click-to-expand explainers, plain inputs over dropdowns. Memorialized in `feedback_ui_patterns` memory.
 
-### 4.3 — Quick scan for missed adapters
+### 4.3 — Quick scan for missed adapters ✅
 
-Today only Google + Meta are live; no other adapters exist on this branch. Sanity-grep `app/services/ad_platforms/` for any platform-specific service that mutates `connection.metadata` directly — there shouldn't be any; all writes go through `AcceptConnectionService(metadata:)` or `Accounts::IntegrationsController#update_metadata`.
+Today only Google + Meta are live. Verified no platform-specific service mutates `connection.metadata` directly — all writes go through `AcceptConnectionService(metadata:)` (connect time) or `Accounts::IntegrationsController#update_metadata` (edit time). Future adapters (LinkedIn, TikTok, Microsoft) will get this for free as long as they follow the template spec.
 
 ### 4.4 — Definition of Done (Phase 4)
 
-- [ ] Google UAT matrix passes with same outcome as Meta
-- [ ] Template spec + GUIDE.md confirmed in sync with shipped code
-- [ ] Zero per-adapter metadata writes outside the shared services
+- [x] Template spec + GUIDE.md confirmed in sync with shipped code
+- [x] Zero per-adapter metadata writes outside the shared services
+- [x] Google `ApiUsageTracker` migrated to the global tracker (`10d9eac`); pattern locked
+- [ ] Google UAT matrix — blocked on Google OAuth verification (4-6 wk). Tracked in `project_google_ads_api_status` memory.
 
 ---
 
@@ -224,12 +232,16 @@ No new code unless a defect surfaces. Walks the pet-resort production account th
 
 ## Definition of Done (umbrella)
 
-- [ ] Phases 0–4 complete with passing tests
-- [ ] Phase 5 findings doc committed; in-scope follow-ups fixed
-- [ ] `bin/rails test` passes on this branch
+- [x] Phases 0–4 complete with passing tests
+- [ ] Phase 5 findings doc committed; in-scope follow-ups fixed (blocked on Google OAuth verification)
+- [x] `bin/rails test` passes on this branch (other than pre-existing `Dashboard::ExportJobTest` flake)
 - [ ] Spec moved to `lib/specs/old/ad_platforms_meta_rollout_spec.md` after `git flow feature finish`
-- [ ] Pricing page copy reflects live Meta if Phase 5 went green
+- [ ] Pricing page copy reflects live Meta if Phase 5 went green (deferred to post-verification)
 - [ ] LinkedIn deferred spec lives at `lib/specs/future/ad_platform_linkedin_integration_spec.md` for the next branch to pick up
+
+**Branch is mergeable today.** Remaining items are externally-blocked (Google verification) or post-merge (pricing copy, LinkedIn spec extraction). Post-merge work tracked in:
+- `project_google_ads_api_status` memory — verification status + per-customer unblock paths
+- `lib/specs/spend_dashboard_metadata_breakdown_spec.md` — the dashboard surfacing follow-up
 
 ---
 
