@@ -1,0 +1,88 @@
+<%# B2B journey: buying group × touchpoint visibility. Illustrative for a typical mid-market B2B SaaS deal. %>
+
+<%
+  buyers = [
+    { role: "Champion (the user)",       trackable: 8, anonymous: 22, total: 30 },
+    { role: "Economic buyer (CFO)",      trackable: 1, anonymous: 6,  total: 7 },
+    { role: "Technical evaluator",       trackable: 4, anonymous: 14, total: 18 },
+    { role: "Security / IT review",      trackable: 0, anonymous: 5,  total: 5 },
+    { role: "Other end users",           trackable: 3, anonymous: 12, total: 15 },
+    { role: "Influencer outside org",    trackable: 0, anonymous: 8,  total: 8 }
+  ]
+  total_trackable = buyers.sum { |b| b[:trackable] }
+  total_anon      = buyers.sum { |b| b[:anonymous] }
+  total_touch     = total_trackable + total_anon
+  visible_pct     = (total_trackable.to_f / total_touch * 100).round
+%>
+
+<figure class="my-12 not-prose">
+  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+
+    <div class="px-6 sm:px-8 pt-8 pb-6 border-b border-slate-200">
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">A typical B2B buying group, by touchpoint visibility</h2>
+      <p class="text-slate-500 text-sm sm:text-base mt-1">6 people, 83 touchpoints across 6 months. Standard attribution sees about a fifth of them.</p>
+    </div>
+
+    <div class="px-4 sm:px-8 py-6 bg-gradient-to-b from-slate-50/60 to-white">
+
+      <div class="flex flex-wrap items-center gap-x-5 gap-y-1.5 mb-5 text-xs font-semibold tracking-wide text-slate-600">
+        <span class="inline-flex items-center gap-2">
+          <span class="inline-block w-3 h-3 rounded-sm bg-emerald-500"></span>
+          Trackable (logged-in, identified)
+        </span>
+        <span class="inline-flex items-center gap-2">
+          <span class="inline-block w-3 h-3 rounded-sm bg-slate-300"></span>
+          Anonymous research (invisible to attribution)
+        </span>
+      </div>
+
+      <div class="space-y-2.5">
+        <% buyers.each do |b| %>
+          <% trackable_pct = (b[:trackable].to_f / total_touch * 100).round(1) %>
+          <% anon_pct      = (b[:anonymous].to_f / total_touch * 100).round(1) %>
+          <div class="grid grid-cols-[8rem_1fr_3rem] sm:grid-cols-[12rem_1fr_3rem] items-center gap-x-3 sm:gap-x-4">
+            <div class="text-xs sm:text-sm text-slate-700 font-medium leading-tight"><%= b[:role] %></div>
+            <div class="h-6 sm:h-7 bg-slate-50 rounded-sm overflow-hidden flex">
+              <% if b[:trackable] > 0 %>
+                <div class="h-full bg-emerald-500 flex items-center justify-center text-[10px] sm:text-xs font-mono font-semibold text-white" style="width: <%= (b[:trackable].to_f / b[:total] * 100).round %>%;">
+                  <%= b[:trackable] %>
+                </div>
+              <% end %>
+              <div class="h-full bg-slate-300 flex items-center justify-center text-[10px] sm:text-xs font-mono font-semibold text-slate-700" style="width: <%= (b[:anonymous].to_f / b[:total] * 100).round %>%;">
+                <%= b[:anonymous] %>
+              </div>
+            </div>
+            <div class="text-xs sm:text-sm font-mono text-slate-500 text-right"><%= b[:total] %> tp</div>
+          </div>
+        <% end %>
+      </div>
+
+      <%# Summary %>
+      <div class="mt-6 grid grid-cols-3 gap-3 sm:gap-4">
+        <div class="bg-white border border-slate-200 rounded-md p-3 text-center">
+          <div class="text-xl sm:text-2xl font-bold text-slate-900"><%= total_touch %></div>
+          <div class="text-[10px] sm:text-xs text-slate-500 tracking-wide uppercase">Total touchpoints</div>
+        </div>
+        <div class="bg-emerald-50 border border-emerald-200 rounded-md p-3 text-center">
+          <div class="text-xl sm:text-2xl font-bold text-emerald-700"><%= visible_pct %>%</div>
+          <div class="text-[10px] sm:text-xs text-emerald-700 tracking-wide uppercase">Visible to attribution</div>
+        </div>
+        <div class="bg-slate-100 border border-slate-300 rounded-md p-3 text-center">
+          <div class="text-xl sm:text-2xl font-bold text-slate-700"><%= 100 - visible_pct %>%</div>
+          <div class="text-[10px] sm:text-xs text-slate-500 tracking-wide uppercase">In the dark</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="px-6 sm:px-8 py-5 bg-slate-50 border-t border-slate-200">
+      <p class="text-sm text-slate-700 leading-relaxed">
+        <strong class="text-slate-900">B2B attribution measures the wrong fraction of the deal.</strong>
+        The Champion fills out one form. The CFO and security review never identify themselves &mdash; they just read your site, your G2 profile, your competitor pages. By the time the demo is requested, 80% of the buying decision has happened off your dashboard.
+      </p>
+    </div>
+
+  </div>
+  <figcaption class="text-xs text-slate-500 mt-3 text-center">
+    Illustrative buying group &middot; Group sizes consistent with Gartner B2B buying research (avg 6.8 stakeholders per deal)
+  </figcaption>
+</figure>
