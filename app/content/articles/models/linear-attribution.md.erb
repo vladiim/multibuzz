@@ -56,18 +56,17 @@ Linear attribution answers: **"How should I credit all the marketing touchpoints
 
 Its answer: give everyone equal credit.
 
-```
-Customer Journey:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  Facebook Ad  →  Blog Post  →  Email  →  Paid Search  →  Purchase
-     (Day 1)       (Day 5)      (Day 12)    (Day 14)
-       │             │            │            │
-       ▼             ▼            ▼            ▼
-   ┌───────┐    ┌───────┐    ┌───────┐    ┌───────┐
-   │  25%  │    │  25%  │    │  25%  │    │  25%  │
-   └───────┘    └───────┘    └───────┘    └───────┘
-```
+<%= render "articles/embeds/journey_steps",
+  title: "CUSTOMER JOURNEY UNDER LINEAR",
+  steps: [
+    { day: "Day 1",  label: "Facebook Ad", role: :credited, percent: "25%" },
+    { day: "Day 5",  label: "Blog Post",   role: :credited, percent: "25%" },
+    { day: "Day 12", label: "Email",       role: :credited, percent: "25%" },
+    { day: "Day 14", label: "Paid Search", role: :credited, percent: "25%" },
+    { day: "Day 14", label: "Purchase",    role: :conversion }
+  ],
+  caption: "Equal credit across every touchpoint. Four touches gets 25% each. Ten touches gets 10% each."
+%>
 
 Four touchpoints, 25% each. Ten touchpoints, 10% each. The math is straightforward, and that's the point.
 
@@ -91,25 +90,12 @@ Linear's "bias" is assuming equal importance—which may or may not match realit
 
 If you're moving from last-touch or first-touch to multi-touch, start with linear:
 
-```
-Before (Last-Touch):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Channel      | Credit
-─────────────|────────
-Email        | 45%
-Paid Search  | 30%
-Paid Social  | 5%
-Organic      | 20%
-
-After (Linear):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Channel      | Credit  | Change
-─────────────|─────────|────────
-Email        | 22%     | -23pp
-Paid Search  | 25%     | -5pp
-Paid Social  | 28%     | +23pp
-Organic      | 25%     | +5pp
-```
+| Channel | Last-touch | Linear | Change |
+|---|---|---|---|
+| Email | 45% | 22% | **−23pp** |
+| Paid Search | 30% | 25% | **−5pp** |
+| Paid Social | 5% | 28% | **+23pp** |
+| Organic | 20% | 25% | **+5pp** |
 
 The shift reveals what last-touch was hiding: Paid Social introduces far more customers than it closes. Linear exposes the full journey.
 
@@ -155,15 +141,14 @@ Linear becomes your neutral reference point.
 
 If most conversions happen in one session with one touchpoint, linear adds complexity without value:
 
-```
-Single-Session Journey:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  Google Ad  →  Purchase (same session)
-      │
-      ▼
-  100% = 100%  ← Linear and last-touch are identical
-```
+<%= render "articles/embeds/journey_steps",
+  title: "SINGLE-SESSION JOURNEY",
+  steps: [
+    { day: "Same session", label: "Google Ad", role: :primary, percent: "100%" },
+    { day: "Same session", label: "Purchase",  role: :conversion }
+  ],
+  caption: "Linear and last-touch are identical when there's only one touchpoint."
+%>
 
 For impulse purchases or simple conversions, the overhead of multi-touch isn't worth it.
 
@@ -324,14 +309,10 @@ Linear is not the correct answer—it's a neutral starting point. All attributio
 
 If you include every page view, email open, and ad impression, you dilute credit across noise:
 
-```
-Journey with 50 touchpoints:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Each touchpoint = 2% credit
-Important demo = 2%
-Random banner view = 2%  ← Same credit, very different impact
-```
+<div class="not-prose my-6 bg-amber-50 border-l-4 border-amber-400 px-5 py-4 rounded-r-md">
+  <p class="text-xs font-bold text-amber-700 tracking-[0.15em] mb-2">JOURNEY WITH 50 TOUCHPOINTS</p>
+  <p class="text-sm text-slate-700 leading-snug">Each touchpoint gets 2% credit. The 30-minute demo gets 2%. A random banner impression also gets 2%. Same credit, wildly different impact &mdash; this is when linear stops being useful.</p>
+</div>
 
 **Fix:** Define what counts as a touchpoint. Usually: clicks, meaningful engagements, not passive impressions.
 

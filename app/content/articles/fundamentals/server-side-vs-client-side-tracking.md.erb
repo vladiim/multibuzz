@@ -180,11 +180,13 @@ Even without ad blockers, Safari's Intelligent Tracking Prevention (ITP) creates
 
 Consider a typical B2B journey:
 
-```
-Day 1:  User clicks Google Ad, visits site (cookie set)
-Day 14: User returns via LinkedIn post
-Day 28: User converts via email campaign
-```
+<div class="not-prose my-6 bg-white border border-slate-200 rounded-lg overflow-hidden">
+  <ol class="divide-y divide-slate-100">
+    <li class="flex items-baseline gap-4 px-5 py-3"><span class="text-xs font-mono font-semibold text-slate-500 w-14 shrink-0">Day 1</span><span class="text-sm text-slate-700">User clicks Google Ad, visits site &mdash; cookie set.</span></li>
+    <li class="flex items-baseline gap-4 px-5 py-3"><span class="text-xs font-mono font-semibold text-slate-500 w-14 shrink-0">Day 14</span><span class="text-sm text-slate-700">User returns via LinkedIn post.</span></li>
+    <li class="flex items-baseline gap-4 px-5 py-3 bg-indigo-50/40"><span class="text-xs font-mono font-semibold text-indigo-700 w-14 shrink-0">Day 28</span><span class="text-sm text-slate-900">User converts via email campaign.</span></li>
+  </ol>
+</div>
 
 With client-side cookies limited to 7 days:
 - Day 14 visit: Cookie expired, user looks "new"

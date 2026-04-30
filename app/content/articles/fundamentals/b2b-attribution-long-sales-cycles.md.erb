@@ -57,38 +57,36 @@ Standard attribution models were built for B2C: one person, one device, one sess
 
 ### The B2C Model Attribution Assumes
 
-```
-B2C Journey (Simple):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-One Person, One Purchase:
-
-  [Ad] → [Site Visit] → [Cart] → [Purchase]
-    │
-    └── Attribution credits the touchpoints this ONE person saw
-```
+<%= render "articles/embeds/journey_steps",
+  title: "B2C JOURNEY (THE SIMPLE CASE)",
+  steps: [
+    { day: "Touch 1", label: "Ad",        role: :credited },
+    { day: "Touch 2", label: "Site Visit", role: :credited },
+    { day: "Touch 3", label: "Cart",      role: :credited },
+    { day: "Touch 4", label: "Purchase",  role: :conversion }
+  ],
+  caption: "One person, one purchase. Attribution credits the touchpoints this single person saw &mdash; and that's roughly the whole story."
+%>
 
 ### What B2B Actually Looks Like
 
-```
-B2B Journey (Complex):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-6-10 People, One Deal:
-
-Person A (VP): [LinkedIn Ad] → [Whitepaper] → (tells team to look into it)
-Person B (Dir): [Google Search] → [Blog] → [Webinar]
-Person C (Mgr): [Colleague mention] → [G2 Reviews] → [Demo Request]
-Person D (User): [Product Hunt] → [Free Trial]
-Person E (IT): [Security page visit]
-Person F (Legal): [Pricing page] → [Terms review]
-                                            │
-                                            ▼
-                                    [Deal Closed: $50,000]
-
-Standard attribution: "Demo Request gets 100% credit"
-Reality: 6 people, 15+ touchpoints, one deal
-```
+<div class="not-prose my-8 bg-white border border-slate-200 rounded-lg overflow-hidden">
+  <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+    <p class="text-xs font-bold text-slate-500 tracking-[0.15em]">B2B JOURNEY &middot; ONE $50K DEAL, SIX PEOPLE, 15+ TOUCHES</p>
+  </div>
+  <ol class="divide-y divide-slate-100">
+    <li class="flex gap-4 px-5 py-3"><span class="text-xs font-mono font-semibold text-slate-500 w-24 shrink-0">Person A &mdash; VP</span><span class="text-sm text-slate-700">LinkedIn Ad &rarr; Whitepaper &rarr; tells the team to look into it</span></li>
+    <li class="flex gap-4 px-5 py-3"><span class="text-xs font-mono font-semibold text-slate-500 w-24 shrink-0">Person B &mdash; Dir</span><span class="text-sm text-slate-700">Google Search &rarr; Blog &rarr; Webinar</span></li>
+    <li class="flex gap-4 px-5 py-3 bg-emerald-50/40"><span class="text-xs font-mono font-semibold text-emerald-700 w-24 shrink-0">Person C &mdash; Mgr</span><span class="text-sm text-slate-900">Colleague mention &rarr; G2 reviews &rarr; <strong>Demo request</strong> (this is the form attribution sees)</span></li>
+    <li class="flex gap-4 px-5 py-3"><span class="text-xs font-mono font-semibold text-slate-500 w-24 shrink-0">Person D &mdash; User</span><span class="text-sm text-slate-700">Product Hunt &rarr; Free trial</span></li>
+    <li class="flex gap-4 px-5 py-3"><span class="text-xs font-mono font-semibold text-slate-500 w-24 shrink-0">Person E &mdash; IT</span><span class="text-sm text-slate-700">Security page visit</span></li>
+    <li class="flex gap-4 px-5 py-3"><span class="text-xs font-mono font-semibold text-slate-500 w-24 shrink-0">Person F &mdash; Legal</span><span class="text-sm text-slate-700">Pricing page &rarr; Terms review</span></li>
+    <li class="flex gap-4 px-5 py-3 bg-indigo-50/40"><span class="text-xs font-mono font-semibold text-indigo-700 w-24 shrink-0">Outcome</span><span class="text-sm text-slate-900 font-semibold">Deal closed &mdash; $50,000</span></li>
+  </ol>
+  <div class="px-5 py-3 bg-amber-50 border-t border-amber-200">
+    <p class="text-xs text-amber-900"><strong>Standard attribution:</strong> Demo Request gets 100% credit. <strong>Reality:</strong> 6 people, 15+ touchpoints, one deal &mdash; and the demo request was just the moment one of them filled out a form.</p>
+  </div>
+</div>
 
 Standard attribution credits the form fill. It misses the VP who started the conversation, the manager who brought it to the team, and the 4 other stakeholders marketing influenced.
 
@@ -127,27 +125,44 @@ If your average sales cycle is 120 days and your lookback window is 30 days, you
 
 In B2B, marketing creates leads that sales closes. Attribution typically ends at "demo request"—missing the full picture:
 
-```
-The B2B Funnel (With Revenue Attribution):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Marketing-Owned:
-[Visitor] → [Lead/MQL] → [SQL]
-     ↓           ↓          ↓
-   Traffic    Lead Gen   Qualification
-
-                           │ ← Handoff to Sales
-                           ▼
-Sales-Owned:
-[Opportunity] → [Proposal] → [Closed Won]
-       ↓             ↓             ↓
-    Pipeline      Negotiation   Revenue
-
-Question: Does marketing get credit for the revenue?
-├── If yes: How much?
-├── If no: How do you justify marketing spend?
-└── Answer: It depends on your attribution model
-```
+<div class="not-prose my-8 bg-white border border-slate-200 rounded-lg overflow-hidden">
+  <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+    <p class="text-xs font-bold text-slate-500 tracking-[0.15em]">THE B2B FUNNEL &middot; MARKETING / SALES HANDOFF</p>
+  </div>
+  <div class="px-5 py-6">
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <div class="text-[11px] font-bold text-emerald-700 tracking-[0.15em] mb-2">MARKETING-OWNED</div>
+        <div class="grid grid-cols-3 gap-1.5 text-center">
+          <div class="bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-2 rounded-md text-xs font-semibold">Visitor</div>
+          <div class="bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-2 rounded-md text-xs font-semibold">Lead / MQL</div>
+          <div class="bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-2 rounded-md text-xs font-semibold">SQL</div>
+        </div>
+        <div class="grid grid-cols-3 gap-1.5 text-center mt-1">
+          <div class="text-[10px] text-slate-500">Traffic</div>
+          <div class="text-[10px] text-slate-500">Lead gen</div>
+          <div class="text-[10px] text-slate-500">Qualification</div>
+        </div>
+      </div>
+      <div>
+        <div class="text-[11px] font-bold text-indigo-700 tracking-[0.15em] mb-2">SALES-OWNED</div>
+        <div class="grid grid-cols-3 gap-1.5 text-center">
+          <div class="bg-indigo-100 text-indigo-800 border border-indigo-300 px-2 py-2 rounded-md text-xs font-semibold">Opportunity</div>
+          <div class="bg-indigo-100 text-indigo-800 border border-indigo-300 px-2 py-2 rounded-md text-xs font-semibold">Proposal</div>
+          <div class="bg-indigo-500 text-white px-2 py-2 rounded-md text-xs font-bold">Closed Won</div>
+        </div>
+        <div class="grid grid-cols-3 gap-1.5 text-center mt-1">
+          <div class="text-[10px] text-slate-500">Pipeline</div>
+          <div class="text-[10px] text-slate-500">Negotiation</div>
+          <div class="text-[10px] text-indigo-700 font-semibold">Revenue</div>
+        </div>
+      </div>
+    </div>
+    <p class="text-xs text-slate-600 italic mt-5 pt-4 border-t border-slate-200">
+      <strong class="text-slate-900 not-italic">The handoff is where attribution usually breaks.</strong> Marketing's attribution stops at MQL or SQL. Sales's CRM doesn't carry the upstream channel. Without a join, marketing can't claim revenue and sales can't see what worked.
+    </p>
+  </div>
+</div>
 
 ### Challenge 4: Buyer ≠ User
 
@@ -194,35 +209,44 @@ end
 
 ### How Account-Based Attribution Works
 
-```
-Account-Based Attribution Example
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<div class="not-prose my-8 bg-white border border-slate-200 rounded-lg overflow-hidden">
+  <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+    <p class="text-xs font-bold text-slate-500 tracking-[0.15em]">ACCOUNT-BASED ATTRIBUTION &middot; ACME CORP &middot; $100K DEAL</p>
+  </div>
+  <div class="px-5 py-5">
+    <p class="text-xs font-bold text-slate-500 tracking-wider mb-2">5 STAKEHOLDERS &middot; 12 TOUCHPOINTS</p>
+    <ul class="text-sm text-slate-700 space-y-1 mb-5">
+      <li><strong class="text-slate-900">VP (Sarah)</strong> &mdash; LinkedIn Ad &rarr; Whitepaper download</li>
+      <li><strong class="text-slate-900">Director (Mike)</strong> &mdash; Webinar &rarr; 3 blog posts</li>
+      <li><strong class="text-slate-900">Manager (Lisa)</strong> &mdash; Demo request &rarr; Trial signup</li>
+      <li><strong class="text-slate-900">User (Tom)</strong> &mdash; Documentation &rarr; Support chat</li>
+      <li><strong class="text-slate-900">IT (James)</strong> &mdash; Security page &rarr; Integration docs</li>
+    </ul>
 
-Account: Acme Corp
-Deal Value: $100,000
-
-Stakeholder Touchpoints:
-├── VP (Sarah):    LinkedIn Ad → Whitepaper download
-├── Director (Mike): Webinar → 3 blog posts
-├── Manager (Lisa): Demo request → Trial signup
-├── User (Tom):    Documentation → Support chat
-└── IT (James):    Security page → Integration docs
-
-Total: 5 people, 12 touchpoints
-
-Account-Based Linear Attribution:
-├── LinkedIn Ads:   $8,333 (1/12 of credit)
-├── Content (WP):   $8,333
-├── Webinar:        $8,333
-├── Blog:           $25,000 (3 posts × $8,333)
-├── Demo/Trial:     $16,667 (2 touches)
-├── Docs/Support:   $25,000 (3 touches)
-└── Security/Integ: $8,333
-
-Standard Individual Attribution Would Show:
-├── Demo Request:   $100,000 (Lisa only)
-├── Everything else: $0
-```
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div class="bg-emerald-50 border-l-4 border-emerald-500 rounded-md p-4">
+        <div class="text-[11px] font-bold text-emerald-700 tracking-[0.15em] mb-2">ACCOUNT-BASED LINEAR</div>
+        <ul class="text-sm text-slate-700 space-y-1 font-mono">
+          <li>LinkedIn Ads &mdash; $8,333</li>
+          <li>Content (WP) &mdash; $8,333</li>
+          <li>Webinar &mdash; $8,333</li>
+          <li>Blog (3 posts) &mdash; $25,000</li>
+          <li>Demo/Trial &mdash; $16,667</li>
+          <li>Docs/Support &mdash; $25,000</li>
+          <li>Security/Integ &mdash; $8,333</li>
+        </ul>
+      </div>
+      <div class="bg-amber-50 border-l-4 border-amber-500 rounded-md p-4">
+        <div class="text-[11px] font-bold text-amber-700 tracking-[0.15em] mb-2">STANDARD ATTRIBUTION</div>
+        <ul class="text-sm text-slate-700 space-y-1 font-mono">
+          <li>Demo Request &mdash; <strong class="text-amber-700">$100,000</strong></li>
+          <li>Everything else &mdash; <strong class="text-amber-700">$0</strong></li>
+        </ul>
+        <p class="text-xs text-amber-700 italic mt-3">Lisa's form fill gets the entire deal. The VP, Director, User, and IT contributions disappear.</p>
+      </div>
+    </div>
+  </div>
+</div>
 
 Account-based attribution sees that LinkedIn reached the VP who started the buying process. Standard attribution sees only Lisa's demo request.
 
@@ -339,38 +363,47 @@ Apply different windows to different funnel stages:
 
 ### The Attribution Chain
 
-```
-B2B Attribution Chain:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Marketing Touchpoints
-        │
-        ▼
-┌───────────────────┐
-│   Lead (MQL)      │ ← Marketing-created
-│   Value: $0       │
-└───────────────────┘
-        │ Qualification (SDR)
-        ▼
-┌───────────────────┐
-│   SQL             │ ← Marketing + Sales
-│   Value: $0       │
-└───────────────────┘
-        │ Discovery (AE)
-        ▼
-┌───────────────────┐
-│   Opportunity     │ ← Has pipeline value
-│   Value: $50,000  │
-└───────────────────┘
-        │ Sales cycle
-        ▼
-┌───────────────────┐
-│   Closed Won      │ ← Has revenue value
-│   Value: $50,000  │
-└───────────────────┘
-
-Attribution question: How do we credit the $50K back to marketing?
-```
+<div class="not-prose my-8 bg-white border border-slate-200 rounded-lg overflow-hidden">
+  <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+    <p class="text-xs font-bold text-slate-500 tracking-[0.15em]">B2B ATTRIBUTION CHAIN &middot; MARKETING TOUCH &rarr; CLOSED WON</p>
+  </div>
+  <div class="px-5 py-5 space-y-2">
+    <div class="flex items-center gap-3">
+      <div class="shrink-0 w-7 h-7 rounded-full bg-emerald-200 text-emerald-900 font-bold text-xs flex items-center justify-center">1</div>
+      <div class="flex-1 bg-emerald-50 border border-emerald-200 rounded-md px-4 py-2.5">
+        <div class="flex items-baseline justify-between"><span class="text-sm font-semibold text-slate-900">Lead (MQL)</span><span class="text-xs text-slate-500 font-mono">$0</span></div>
+        <div class="text-xs text-slate-500 italic">Marketing-created</div>
+      </div>
+    </div>
+    <div class="text-center text-slate-400 text-sm">&darr; <span class="text-xs italic">qualification (SDR)</span></div>
+    <div class="flex items-center gap-3">
+      <div class="shrink-0 w-7 h-7 rounded-full bg-emerald-200 text-emerald-900 font-bold text-xs flex items-center justify-center">2</div>
+      <div class="flex-1 bg-emerald-50 border border-emerald-200 rounded-md px-4 py-2.5">
+        <div class="flex items-baseline justify-between"><span class="text-sm font-semibold text-slate-900">SQL</span><span class="text-xs text-slate-500 font-mono">$0</span></div>
+        <div class="text-xs text-slate-500 italic">Marketing + Sales</div>
+      </div>
+    </div>
+    <div class="text-center text-slate-400 text-sm">&darr; <span class="text-xs italic">discovery (AE)</span></div>
+    <div class="flex items-center gap-3">
+      <div class="shrink-0 w-7 h-7 rounded-full bg-indigo-200 text-indigo-900 font-bold text-xs flex items-center justify-center">3</div>
+      <div class="flex-1 bg-indigo-50 border border-indigo-200 rounded-md px-4 py-2.5">
+        <div class="flex items-baseline justify-between"><span class="text-sm font-semibold text-slate-900">Opportunity</span><span class="text-xs text-indigo-700 font-mono font-semibold">$50,000</span></div>
+        <div class="text-xs text-slate-500 italic">Pipeline value</div>
+      </div>
+    </div>
+    <div class="text-center text-slate-400 text-sm">&darr; <span class="text-xs italic">sales cycle</span></div>
+    <div class="flex items-center gap-3">
+      <div class="shrink-0 w-7 h-7 rounded-full bg-indigo-500 text-white font-bold text-xs flex items-center justify-center">4</div>
+      <div class="flex-1 bg-indigo-500 text-white rounded-md px-4 py-2.5">
+        <div class="flex items-baseline justify-between"><span class="text-sm font-bold">Closed Won</span><span class="text-xs font-mono font-bold">$50,000</span></div>
+        <div class="text-xs text-indigo-100 italic">Revenue</div>
+      </div>
+    </div>
+  </div>
+  <div class="px-5 py-3 bg-slate-50 border-t border-slate-200">
+    <p class="text-xs text-slate-700"><strong>The attribution question:</strong> how do we credit the $50K back to marketing? The next section walks through three options &mdash; first-touch revenue, multi-touch revenue, and the W-shaped variant most B2B teams settle on.</p>
+  </div>
+</div>
 
 ### Revenue Attribution Models for B2B
 
@@ -478,17 +511,14 @@ Create separate pipelines for each metric:
 
 Map marketing touchpoints to opportunity stages:
 
-```
-Touchpoints Before Stage → Credit to That Stage
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+| Stage transition | Touchpoints credited | Bucketed under |
+|---|---|---|
+| MQL created | All before the MQL | "MQL" |
+| SQL created | Between MQL and SQL | "SQL" |
+| Opportunity created | Between SQL and Opp | "Pipeline" |
+| Closed Won | All touchpoints | "Revenue" |
 
-MQL Created:      Touchpoints before MQL → Credit to "MQL"
-SQL Created:      Touchpoints between MQL-SQL → Credit to "SQL"
-Opp Created:      Touchpoints between SQL-Opp → Credit to "Pipeline"
-Closed Won:       All touchpoints → Credit to "Revenue"
-
-This shows which channels work at which funnel stage.
-```
+This stage-based bucketing shows which channels work at which point in the funnel — and lets you compute marketing-influenced revenue at each stage gate, not just at close.
 
 <div class="bg-slate-50 border-l-4 border-slate-400 p-5 my-8 rounded-r-md not-prose">
   <p class="text-xs font-bold text-slate-500 tracking-[0.15em] mb-3">CRM-CONNECTED ATTRIBUTION, IN PRACTICE</p>

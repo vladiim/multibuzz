@@ -56,18 +56,36 @@ Last-touch attribution answers: **"What was the final marketing interaction befo
 
 It gives 100% credit to whatever the user last engaged with before converting—completely ignoring everything that came before.
 
-```
-Customer Journey:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  Facebook Ad    →    Blog Post    →    Email    →    Purchase
-     (Day 1)          (Day 5)         (Day 12)        (Day 14)
-                                          │
-                                          ▼
-                                     ┌────────┐
-                                     │  100%  │  ← Last-touch credits Email
-                                     └────────┘
-```
+<div class="not-prose my-8 bg-white border border-slate-200 rounded-lg overflow-hidden">
+  <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+    <p class="text-xs font-bold text-slate-500 tracking-[0.15em]">CUSTOMER JOURNEY UNDER LAST-TOUCH</p>
+  </div>
+  <div class="px-5 py-6">
+    <div class="grid grid-cols-4 gap-2 sm:gap-3 text-center mb-4">
+      <div>
+        <div class="text-[10px] sm:text-xs text-slate-500 font-mono mb-2">Day 1</div>
+        <div class="bg-slate-100 text-slate-500 px-2 py-3 rounded-md text-xs sm:text-sm">Facebook Ad</div>
+        <div class="text-[10px] text-slate-400 mt-1.5">0%</div>
+      </div>
+      <div>
+        <div class="text-[10px] sm:text-xs text-slate-500 font-mono mb-2">Day 5</div>
+        <div class="bg-slate-100 text-slate-500 px-2 py-3 rounded-md text-xs sm:text-sm">Blog Post</div>
+        <div class="text-[10px] text-slate-400 mt-1.5">0%</div>
+      </div>
+      <div>
+        <div class="text-[10px] sm:text-xs text-slate-500 font-mono mb-2">Day 12</div>
+        <div class="bg-emerald-500 text-white px-2 py-3 rounded-md text-xs sm:text-sm font-bold">Email</div>
+        <div class="text-[10px] text-emerald-700 mt-1.5 font-bold">100%</div>
+      </div>
+      <div>
+        <div class="text-[10px] sm:text-xs text-slate-500 font-mono mb-2">Day 14</div>
+        <div class="bg-indigo-500 text-white px-2 py-3 rounded-md text-xs sm:text-sm font-bold">Purchase</div>
+        <div class="text-[10px] text-indigo-700 mt-1.5">conversion</div>
+      </div>
+    </div>
+    <p class="text-xs text-slate-500 italic leading-snug">The email that immediately preceded the conversion gets the entire credit. The Facebook ad and blog content get zero.</p>
+  </div>
+</div>
 
 The email that triggered the final conversion gets full credit. The Facebook ad that introduced them? Zero. The blog content that educated them? Zero.
 
@@ -104,35 +122,48 @@ Last-touch systematically over-credits channels that appear at the end of journe
 
 Here's what happens when teams optimize budgets using only last-touch:
 
-```
-The Attribution Death Spiral
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Step 1: Review last-touch data
-        → Paid Social shows 0.8x ROAS
-        → Email shows 5.2x ROAS
-        → Decision: "Cut underperforming Social, invest in Email"
-
-Step 2: Cut Paid Social by 50%
-        → Fewer new users entering funnel
-        → Email list growth slows
-        → (Effect delayed 30-60 days)
-
-Step 3: Email performance drops
-        → Smaller audience to email
-        → Same users, more frequency = fatigue
-        → "Email ROAS declining—let's optimize creative"
-
-Step 4: Double down on "high performers"
-        → More branded search, more retargeting
-        → Diminishing returns (audience exhausted)
-        → CAC rises, revenue plateaus
-
-Step 5: Realize you starved the funnel
-        → Pipeline dried up months ago
-        → Recovery takes 6-12 months
-        → "Why isn't marketing working?"
-```
+<div class="not-prose my-8 bg-white border border-slate-200 rounded-lg overflow-hidden">
+  <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+    <p class="text-xs font-bold text-amber-700 tracking-[0.15em]">THE ATTRIBUTION DEATH SPIRAL</p>
+  </div>
+  <ol class="divide-y divide-slate-100">
+    <li class="flex gap-4 px-5 py-4">
+      <div class="shrink-0 w-7 h-7 rounded-full bg-slate-200 text-slate-700 font-bold text-sm flex items-center justify-center">1</div>
+      <div class="flex-1">
+        <div class="text-sm font-semibold text-slate-900">Review last-touch data</div>
+        <div class="text-sm text-slate-600 leading-snug mt-0.5">Paid Social shows 0.8&times; ROAS. Email shows 5.2&times; ROAS. Decision: &quot;cut underperforming Social, invest in Email.&quot;</div>
+      </div>
+    </li>
+    <li class="flex gap-4 px-5 py-4">
+      <div class="shrink-0 w-7 h-7 rounded-full bg-slate-200 text-slate-700 font-bold text-sm flex items-center justify-center">2</div>
+      <div class="flex-1">
+        <div class="text-sm font-semibold text-slate-900">Cut Paid Social by 50%</div>
+        <div class="text-sm text-slate-600 leading-snug mt-0.5">Fewer new users entering the funnel. Email list growth slows. The effect is delayed 30&ndash;60 days, so it doesn't show yet.</div>
+      </div>
+    </li>
+    <li class="flex gap-4 px-5 py-4">
+      <div class="shrink-0 w-7 h-7 rounded-full bg-slate-200 text-slate-700 font-bold text-sm flex items-center justify-center">3</div>
+      <div class="flex-1">
+        <div class="text-sm font-semibold text-slate-900">Email performance drops</div>
+        <div class="text-sm text-slate-600 leading-snug mt-0.5">Smaller audience, more frequency to the same users, fatigue. The team reads it as a creative problem and starts &quot;optimizing&quot; copy.</div>
+      </div>
+    </li>
+    <li class="flex gap-4 px-5 py-4">
+      <div class="shrink-0 w-7 h-7 rounded-full bg-slate-200 text-slate-700 font-bold text-sm flex items-center justify-center">4</div>
+      <div class="flex-1">
+        <div class="text-sm font-semibold text-slate-900">Double down on &quot;high performers&quot;</div>
+        <div class="text-sm text-slate-600 leading-snug mt-0.5">More branded search, more retargeting. Diminishing returns hit fast (the audience is already exhausted). CAC rises, revenue plateaus.</div>
+      </div>
+    </li>
+    <li class="flex gap-4 px-5 py-4">
+      <div class="shrink-0 w-7 h-7 rounded-full bg-amber-200 text-amber-900 font-bold text-sm flex items-center justify-center">5</div>
+      <div class="flex-1">
+        <div class="text-sm font-semibold text-amber-900">Realise you starved the funnel</div>
+        <div class="text-sm text-slate-600 leading-snug mt-0.5">Pipeline dried up months ago. Recovery takes 6&ndash;12 months. The team asks &quot;why isn't marketing working?&quot;</div>
+      </div>
+    </li>
+  </ol>
+</div>
 
 This isn't hypothetical—it's one of the most common patterns in digital marketing. Teams optimize toward last-touch, kill their awareness channels, and wonder why growth stalled.
 
@@ -187,15 +218,19 @@ For these narrow questions, last-touch is appropriate. You're optimizing the clo
 
 If most conversions happen in a single session, last-touch ≈ only-touch:
 
-```
-Single-Session Conversion:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  Google Ad → Landing Page → Purchase (same session)
-      │
-      ▼
-  First-touch = Last-touch = Only touch
-```
+<div class="not-prose my-8 bg-white border border-slate-200 rounded-lg overflow-hidden">
+  <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+    <p class="text-xs font-bold text-slate-500 tracking-[0.15em]">SINGLE-SESSION CONVERSION</p>
+  </div>
+  <div class="px-5 py-6">
+    <div class="grid grid-cols-3 gap-2 sm:gap-3 text-center mb-4">
+      <div class="bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-3 rounded-md text-xs sm:text-sm font-semibold">Google Ad</div>
+      <div class="bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-3 rounded-md text-xs sm:text-sm font-semibold">Landing Page</div>
+      <div class="bg-indigo-500 text-white px-2 py-3 rounded-md text-xs sm:text-sm font-bold">Purchase</div>
+    </div>
+    <p class="text-xs text-slate-500 italic leading-snug text-center">First-touch = last-touch = only touch. Same session, no multi-touch model needed.</p>
+  </div>
+</div>
 
 For impulse purchases, low-consideration products, or simple transactions, multi-touch may be overkill.
 

@@ -54,25 +54,31 @@ has_download: false
 
 The dark funnel is everything that influences a purchase but doesn't leave a trackable digital trail.
 
-```
-The Dark Funnel
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-What Attribution Sees:            What Actually Happened:
-┌─────────────────────────┐       ┌─────────────────────────┐
-│ Google Ad → Site Visit  │       │ Friend recommendation   │
-│ Blog Post → Email Sub   │       │ Podcast mention         │
-│ Retargeting → Purchase  │       │ Slack community post    │
-│                         │       │ Google search (research)│
-│ "Retargeting drove      │       │ Blog post               │
-│  this conversion!"      │       │ Text from colleague     │
-└─────────────────────────┘       │ Retargeting ad          │
-                                  │ Purchase                │
-                                  │                         │
-                                  │ "5 touches happened     │
-                                  │  before I saw any ads"  │
-                                  └─────────────────────────┘
-```
+<div class="not-prose my-8 grid grid-cols-1 md:grid-cols-2 gap-3">
+  <div class="bg-slate-100 border-l-4 border-slate-400 rounded-md p-5">
+    <div class="text-[11px] font-bold tracking-[0.15em] text-slate-500 mb-3">WHAT ATTRIBUTION SEES</div>
+    <ul class="text-sm text-slate-700 space-y-1.5 mb-4">
+      <li>Google Ad &rarr; Site Visit</li>
+      <li>Blog Post &rarr; Email Sub</li>
+      <li>Retargeting &rarr; Purchase</li>
+    </ul>
+    <p class="text-xs text-slate-500 italic">Conclusion: <strong class="not-italic text-slate-700">"retargeting drove this conversion."</strong></p>
+  </div>
+  <div class="bg-amber-50 border-l-4 border-amber-500 rounded-md p-5">
+    <div class="text-[11px] font-bold tracking-[0.15em] text-amber-700 mb-3">WHAT ACTUALLY HAPPENED</div>
+    <ul class="text-sm text-slate-700 space-y-1.5 mb-4">
+      <li>Friend recommendation</li>
+      <li>Podcast mention</li>
+      <li>Slack community thread</li>
+      <li>Google search (research)</li>
+      <li>Blog post</li>
+      <li>Text from a colleague</li>
+      <li>Retargeting ad</li>
+      <li>Purchase</li>
+    </ul>
+    <p class="text-xs text-amber-800 italic">Conclusion: <strong class="not-italic">"5 touches happened before I ever saw an ad."</strong></p>
+  </div>
+</div>
 
 The customer's journey included a friend's recommendation, a podcast, a Slack discussion, and a text message. Attribution only saw the last few clicks.
 
@@ -108,22 +114,17 @@ When someone in a Slack community says "we use X for this," that recommendation 
 
 Podcast advertising is growing 20%+ annually, but attribution is nearly impossible:
 
-```
-Podcast Influence Journey:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Week 1: Listener hears ad during commute
-        [No click—they're driving]
-
-Week 2: Remembers the product during relevant problem
-        [No attribution connection]
-
-Week 3: Googles product name, visits site
-        [Attribution: "Branded Search" or "Direct"]
-
-Week 4: Converts
-        [Podcast gets 0% credit, Branded Search gets 100%]
-```
+<div class="not-prose my-8 bg-white border border-slate-200 rounded-lg overflow-hidden">
+  <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+    <p class="text-xs font-bold text-slate-500 tracking-[0.15em]">A PODCAST INFLUENCE JOURNEY</p>
+  </div>
+  <ol class="divide-y divide-slate-100">
+    <li class="flex gap-4 px-5 py-3"><span class="text-xs font-mono font-semibold text-slate-500 w-14 shrink-0">Week 1</span><div class="text-sm text-slate-700"><strong class="text-slate-900">Listener hears the ad during the commute.</strong> No click &mdash; they're driving.</div></li>
+    <li class="flex gap-4 px-5 py-3"><span class="text-xs font-mono font-semibold text-slate-500 w-14 shrink-0">Week 2</span><div class="text-sm text-slate-700"><strong class="text-slate-900">Remembers the product when the relevant problem comes up.</strong> No attribution event.</div></li>
+    <li class="flex gap-4 px-5 py-3"><span class="text-xs font-mono font-semibold text-slate-500 w-14 shrink-0">Week 3</span><div class="text-sm text-slate-700"><strong class="text-slate-900">Googles the product name, visits the site.</strong> Attribution logs "branded search" or "direct."</div></li>
+    <li class="flex gap-4 px-5 py-3 bg-amber-50/40"><span class="text-xs font-mono font-semibold text-amber-700 w-14 shrink-0">Week 4</span><div class="text-sm text-amber-900"><strong>Converts.</strong> Podcast gets 0% credit. Branded search gets 100%.</div></li>
+  </ol>
+</div>
 
 The podcast created the demand. Branded search captured it. Attribution credits the capturer.
 
@@ -186,21 +187,19 @@ Look at your "Direct" traffic. It's not all people who memorized your URL. It's 
 
 ### It Creates the "Attribution Paradox"
 
-```
-The Attribution Paradox:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Channels that are easy to track → Get full credit
-├── Paid search, display, retargeting
-└── Easy to measure ≠ most effective
-
-Channels that are hard to track → Get little credit
-├── Word of mouth, podcasts, communities
-└── Hard to measure ≠ not working
-
-Result: You optimize toward trackable channels,
-potentially underinvesting in the most effective ones.
-```
+<div class="not-prose my-8 grid grid-cols-1 md:grid-cols-2 gap-3">
+  <div class="bg-emerald-50 border-l-4 border-emerald-500 rounded-md p-5">
+    <div class="text-[11px] font-bold tracking-[0.15em] text-emerald-700 mb-2">EASY TO TRACK &rarr; FULL CREDIT</div>
+    <div class="text-sm text-slate-700 mb-2">Paid search, display, retargeting.</div>
+    <div class="text-xs italic text-slate-500">Easy to measure &ne; most effective.</div>
+  </div>
+  <div class="bg-amber-50 border-l-4 border-amber-500 rounded-md p-5">
+    <div class="text-[11px] font-bold tracking-[0.15em] text-amber-700 mb-2">HARD TO TRACK &rarr; LITTLE CREDIT</div>
+    <div class="text-sm text-slate-700 mb-2">Word of mouth, podcasts, communities.</div>
+    <div class="text-xs italic text-amber-700">Hard to measure &ne; not working.</div>
+  </div>
+</div>
+<p class="text-sm text-slate-600 italic mt-2 mb-4">The result: you optimise toward trackable channels and potentially underinvest in the most effective ones.</p>
 
 <%= render_warning_box do %>
   <strong>The danger:</strong> When you optimize based only on what attribution can see, you systematically undervalue the channels that create demand in favor of channels that capture it. You starve your funnel's top while feeding its bottom.
@@ -214,26 +213,26 @@ The most direct method: ask customers how they heard about you.
 
 **Best practices:**
 
-```
-Survey Question Options:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Question: "How did you first hear about [Product]?"
-
-Options:
-□ Friend or colleague recommendation
-□ Podcast (which one? _________)
-□ Social media (which platform? _________)
-□ Online community or forum
-□ Search engine (Google, Bing, etc.)
-□ Online advertisement
-□ Conference or event
-□ Blog or article
-□ Other: ___________
-
-Timing: Post-purchase or during onboarding
-Response rate: Typically 20-40%
-```
+<div class="not-prose my-8 bg-white border border-slate-200 rounded-lg overflow-hidden">
+  <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+    <p class="text-xs font-bold text-slate-500 tracking-[0.15em]">POST-PURCHASE SURVEY &middot; "HOW DID YOU FIRST HEAR ABOUT US?"</p>
+  </div>
+  <div class="px-5 py-5 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm text-slate-700">
+    <div>&#9633; Friend or colleague recommendation</div>
+    <div>&#9633; Podcast <span class="text-slate-400 italic">(which one?)</span></div>
+    <div>&#9633; Social media <span class="text-slate-400 italic">(which platform?)</span></div>
+    <div>&#9633; Online community or forum</div>
+    <div>&#9633; Search engine (Google, Bing)</div>
+    <div>&#9633; Online advertisement</div>
+    <div>&#9633; Conference or event</div>
+    <div>&#9633; Blog or article</div>
+    <div>&#9633; Other &mdash; free text</div>
+  </div>
+  <div class="px-5 py-3 bg-slate-50 border-t border-slate-200 flex justify-between text-xs text-slate-500">
+    <span><strong class="text-slate-700">When:</strong> post-purchase or during onboarding</span>
+    <span><strong class="text-slate-700">Response rate:</strong> 20&ndash;40% typical</span>
+  </div>
+</div>
 
 **Why surveys beat attribution:**
 
@@ -250,27 +249,29 @@ Surveys consistently show higher dark funnel influence than attribution suggests
 
 When dark funnel channels work, branded search volume increases:
 
-```
-Branded Search as Dark Funnel Proxy:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Podcast Campaign Starts
-        ↓
-┌───────────────────────────────────────────────────────────┐
-│                                                           │
-│  Branded Search Volume     📈                             │
-│                        ▄▄▄▄                               │
-│                    ▄▄▄▄                                   │
-│                ▄▄▄▄                                       │
-│  ──────────────────────────────────────────────────       │
-│  Week 1   Week 2   Week 3   Week 4   Week 5              │
-│                                                           │
-└───────────────────────────────────────────────────────────┘
-
-If branded search rises during podcast campaigns,
-the podcast is creating demand—even though
-attribution credits "Branded Search."
-```
+<div class="not-prose my-8 bg-white border border-slate-200 rounded-lg overflow-hidden">
+  <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+    <p class="text-xs font-bold text-slate-500 tracking-[0.15em]">BRANDED SEARCH AS DARK-FUNNEL PROXY</p>
+    <p class="text-xs text-slate-500 italic mt-1">Podcast campaign launches in week 1</p>
+  </div>
+  <div class="px-5 py-5">
+    <div class="grid grid-cols-5 gap-2 items-end h-32">
+      <div class="bg-slate-300 rounded-t-sm" style="height: 25%;"></div>
+      <div class="bg-indigo-400 rounded-t-sm" style="height: 45%;"></div>
+      <div class="bg-indigo-500 rounded-t-sm" style="height: 65%;"></div>
+      <div class="bg-indigo-600 rounded-t-sm" style="height: 85%;"></div>
+      <div class="bg-indigo-700 rounded-t-sm" style="height: 100%;"></div>
+    </div>
+    <div class="grid grid-cols-5 gap-2 mt-1 text-center text-[10px] font-mono text-slate-500">
+      <div>Week 1</div>
+      <div>Week 2</div>
+      <div>Week 3</div>
+      <div>Week 4</div>
+      <div>Week 5</div>
+    </div>
+    <p class="text-xs text-slate-600 italic mt-4 leading-snug">If branded search volume rises during a podcast campaign, the <strong class="not-italic text-slate-900">podcast</strong> is creating demand &mdash; even though attribution credits the &quot;branded search&quot; click.</p>
+  </div>
+</div>
 
 Track branded search volume as a percentage of total traffic. Increases correlate with dark funnel activity.
 
@@ -294,27 +295,39 @@ Give each untrackable channel its own identifier:
 
 Use aggregate data to estimate channel contribution statistically:
 
-```
-MMM Approach:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Inputs:
-├── Weekly spend by channel (including podcasts, events)
-├── Weekly revenue
-├── External factors (seasonality, economy)
-└── 2-3 years of history
-
-Model Output:
-├── Estimated revenue contribution per channel
-├── Includes channels attribution can't see
-└── Statistical confidence intervals
-
-Example:
-├── Podcast spend: $50K/month
-├── MMM-estimated revenue contribution: $180K/month
-├── Attribution-measured: $0 (no clicks!)
-├── True ROAS: 3.6x (would have been "unmeasurable")
-```
+<div class="not-prose my-8 bg-white border border-slate-200 rounded-lg overflow-hidden">
+  <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+    <p class="text-xs font-bold text-slate-500 tracking-[0.15em]">MMM APPROACH</p>
+  </div>
+  <div class="px-5 py-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <div class="text-[11px] font-bold text-slate-500 tracking-[0.15em] mb-2">INPUTS</div>
+      <ul class="text-sm text-slate-700 space-y-1 list-disc pl-5">
+        <li>Weekly spend by channel (including podcasts, events)</li>
+        <li>Weekly revenue</li>
+        <li>External factors (seasonality, economy)</li>
+        <li>2&ndash;3 years of history</li>
+      </ul>
+    </div>
+    <div>
+      <div class="text-[11px] font-bold text-slate-500 tracking-[0.15em] mb-2">OUTPUT</div>
+      <ul class="text-sm text-slate-700 space-y-1 list-disc pl-5">
+        <li>Estimated revenue contribution per channel</li>
+        <li>Includes channels attribution can't see</li>
+        <li>Statistical confidence intervals</li>
+      </ul>
+    </div>
+  </div>
+  <div class="px-5 py-4 bg-emerald-50 border-t border-emerald-200">
+    <div class="text-[11px] font-bold text-emerald-700 tracking-[0.15em] mb-2">EXAMPLE</div>
+    <ul class="text-sm text-slate-700 space-y-1 font-mono">
+      <li>Podcast spend: <strong>$50K/month</strong></li>
+      <li>MMM-estimated contribution: <strong>$180K/month</strong></li>
+      <li>Attribution-measured: <strong>$0</strong> (no clicks)</li>
+      <li class="pt-1 border-t border-emerald-200 mt-2 text-emerald-700"><strong>True ROAS: 3.6&times;</strong> &mdash; would have been "unmeasurable" without MMM</li>
+    </ul>
+  </div>
+</div>
 
 MMM sees the forest while attribution counts trees. For dark funnel measurement, MMM is essential.
 
@@ -322,26 +335,36 @@ MMM sees the forest while attribution counts trees. For dark funnel measurement,
 
 Test whether dark funnel channels actually drive incremental results:
 
-```
-Podcast Incrementality Test:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Design: Geo-holdout test
-
-Test Markets:   Chicago, Dallas, Seattle (podcast ads run)
-Control Markets: Boston, Phoenix, Denver (no podcast ads)
-
-After 8 weeks:
-├── Test market revenue:    $2.4M
-├── Control market revenue: $2.1M
-├── Lift:                   14.3%
-├── Podcast spend:          $80K
-├── Incremental revenue:    $300K
-├── True iROAS:             3.75x
-
-Attribution said: "Podcast ROAS = 0"
-Reality: Podcast ROAS = 3.75x
-```
+<div class="not-prose my-8 bg-white border border-slate-200 rounded-lg overflow-hidden">
+  <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+    <p class="text-xs font-bold text-slate-500 tracking-[0.15em]">PODCAST INCREMENTALITY TEST &middot; GEO HOLDOUT</p>
+  </div>
+  <div class="px-5 py-5 space-y-3">
+    <div class="grid grid-cols-2 gap-3">
+      <div class="bg-emerald-50 border border-emerald-200 rounded-md p-3">
+        <div class="text-[10px] font-bold text-emerald-700 tracking-[0.15em] mb-1">TEST MARKETS</div>
+        <div class="text-sm text-slate-700">Chicago, Dallas, Seattle</div>
+        <div class="text-xs text-emerald-700 italic">podcast ads running</div>
+        <div class="text-sm font-mono font-semibold text-emerald-700 mt-2">$2.4M revenue</div>
+      </div>
+      <div class="bg-slate-50 border border-slate-200 rounded-md p-3">
+        <div class="text-[10px] font-bold text-slate-500 tracking-[0.15em] mb-1">CONTROL MARKETS</div>
+        <div class="text-sm text-slate-700">Boston, Phoenix, Denver</div>
+        <div class="text-xs text-slate-500 italic">no podcast ads</div>
+        <div class="text-sm font-mono font-semibold text-slate-700 mt-2">$2.1M revenue</div>
+      </div>
+    </div>
+    <div class="bg-emerald-50 border-l-4 border-emerald-500 rounded-r-md p-3">
+      <ul class="text-sm text-slate-700 space-y-1 font-mono">
+        <li>Lift: <strong>14.3%</strong></li>
+        <li>Podcast spend: <strong>$80K</strong></li>
+        <li>Incremental revenue: <strong>$300K</strong></li>
+        <li class="pt-1 border-t border-emerald-200 mt-2 text-emerald-700"><strong>True iROAS: 3.75&times;</strong></li>
+      </ul>
+    </div>
+    <p class="text-xs text-slate-600 italic">Attribution said podcast ROAS = 0. The experiment said 3.75&times;. The dark-funnel channel was the most efficient channel in the mix &mdash; you'd never know without the test.</p>
+  </div>
+</div>
 
 <div class="bg-slate-50 border-l-4 border-slate-400 p-5 my-8 rounded-r-md not-prose">
   <p class="text-xs font-bold text-slate-500 tracking-[0.15em] mb-3">A WORKED EXAMPLE</p>

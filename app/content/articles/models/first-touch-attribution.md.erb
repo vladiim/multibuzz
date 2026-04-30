@@ -56,18 +56,36 @@ First-touch attribution answers one question: **"What channel introduced this cu
 
 It gives 100% of the conversion credit to the very first marketing interaction, ignoring everything that happened afterward.
 
-```
-Customer Journey:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  Facebook Ad    →    Blog Post    →    Email    →    Purchase
-     (Day 1)          (Day 5)         (Day 12)        (Day 14)
-       │
-       ▼
-   ┌────────┐
-   │  100%  │  ← First-touch credits Facebook
-   └────────┘
-```
+<div class="not-prose my-8 bg-white border border-slate-200 rounded-lg overflow-hidden">
+  <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+    <p class="text-xs font-bold text-slate-500 tracking-[0.15em]">CUSTOMER JOURNEY UNDER FIRST-TOUCH</p>
+  </div>
+  <div class="px-5 py-6">
+    <div class="grid grid-cols-4 gap-2 sm:gap-3 text-center mb-4">
+      <div>
+        <div class="text-[10px] sm:text-xs text-slate-500 font-mono mb-2">Day 1</div>
+        <div class="bg-emerald-500 text-white px-2 py-3 rounded-md text-xs sm:text-sm font-bold">Facebook Ad</div>
+        <div class="text-[10px] text-emerald-700 mt-1.5 font-bold">100%</div>
+      </div>
+      <div>
+        <div class="text-[10px] sm:text-xs text-slate-500 font-mono mb-2">Day 5</div>
+        <div class="bg-slate-100 text-slate-500 px-2 py-3 rounded-md text-xs sm:text-sm">Blog Post</div>
+        <div class="text-[10px] text-slate-400 mt-1.5">0%</div>
+      </div>
+      <div>
+        <div class="text-[10px] sm:text-xs text-slate-500 font-mono mb-2">Day 12</div>
+        <div class="bg-slate-100 text-slate-500 px-2 py-3 rounded-md text-xs sm:text-sm">Email</div>
+        <div class="text-[10px] text-slate-400 mt-1.5">0%</div>
+      </div>
+      <div>
+        <div class="text-[10px] sm:text-xs text-slate-500 font-mono mb-2">Day 14</div>
+        <div class="bg-indigo-500 text-white px-2 py-3 rounded-md text-xs sm:text-sm font-bold">Purchase</div>
+        <div class="text-[10px] text-indigo-700 mt-1.5">conversion</div>
+      </div>
+    </div>
+    <p class="text-xs text-slate-500 italic leading-snug">First-touch credits the Facebook ad with the entire conversion. The blog and email get nothing.</p>
+  </div>
+</div>
 
 The Facebook ad that started the journey gets full credit. The blog content, email nurturing, and everything else? Zero credit.
 
@@ -98,16 +116,37 @@ If your goal is understanding which channels fill the top of your funnel, first-
 
 In B2B with 90+ day sales cycles, marketing often hands off to sales after initial engagement. First-touch helps marketing prove its contribution:
 
-```
-Marketing-Sourced Journey:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
- LinkedIn Ad → Webinar → Sales Demo → Proposal → Close
-   (Day 1)     (Day 14)    (Day 45)    (Day 75)   (Day 90)
-      │
-      ▼
-  Marketing gets credit for sourcing this deal
-```
+<div class="not-prose my-8 bg-white border border-slate-200 rounded-lg overflow-hidden">
+  <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+    <p class="text-xs font-bold text-slate-500 tracking-[0.15em]">MARKETING-SOURCED B2B JOURNEY</p>
+  </div>
+  <div class="px-5 py-6">
+    <div class="grid grid-cols-5 gap-1 sm:gap-2 text-center mb-4">
+      <div>
+        <div class="text-[10px] sm:text-xs text-slate-500 font-mono mb-2">Day 1</div>
+        <div class="bg-emerald-500 text-white px-1.5 py-3 rounded-md text-[11px] sm:text-sm font-bold">LinkedIn Ad</div>
+        <div class="text-[10px] text-emerald-700 mt-1.5 font-bold">100%</div>
+      </div>
+      <div>
+        <div class="text-[10px] sm:text-xs text-slate-500 font-mono mb-2">Day 14</div>
+        <div class="bg-slate-100 text-slate-500 px-1.5 py-3 rounded-md text-[11px] sm:text-sm">Webinar</div>
+      </div>
+      <div>
+        <div class="text-[10px] sm:text-xs text-slate-500 font-mono mb-2">Day 45</div>
+        <div class="bg-slate-100 text-slate-500 px-1.5 py-3 rounded-md text-[11px] sm:text-sm">Sales Demo</div>
+      </div>
+      <div>
+        <div class="text-[10px] sm:text-xs text-slate-500 font-mono mb-2">Day 75</div>
+        <div class="bg-slate-100 text-slate-500 px-1.5 py-3 rounded-md text-[11px] sm:text-sm">Proposal</div>
+      </div>
+      <div>
+        <div class="text-[10px] sm:text-xs text-slate-500 font-mono mb-2">Day 90</div>
+        <div class="bg-indigo-500 text-white px-1.5 py-3 rounded-md text-[11px] sm:text-sm font-bold">Close</div>
+      </div>
+    </div>
+    <p class="text-xs text-slate-500 italic leading-snug">Marketing gets credit for sourcing the deal — even though sales closed it 90 days later.</p>
+  </div>
+</div>
 
 Without first-touch, this deal might be credited to the last marketing touch (webinar) or worse, not credited to marketing at all since sales closed it.
 

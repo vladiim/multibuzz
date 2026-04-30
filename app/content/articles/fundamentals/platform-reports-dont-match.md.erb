@@ -198,25 +198,32 @@ Use a neutral tool that sees all touchpoints and applies consistent logic:
 
 Measure true causal impact through experiments:
 
-```
-Incrementality Test Design:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Test: "Does Meta actually drive incremental revenue?"
-
-Control:    50% of geos → No Meta ads
-Treatment:  50% of geos → Normal Meta spend
-
-After 4 weeks:
-├── Treatment revenue: $500,000
-├── Control revenue:   $420,000
-├── Incremental lift:  $80,000 (19%)
-├── Meta spend:        $50,000
-├── True iROAS:        1.6x
-
-Compare to:
-├── Meta-reported ROAS: 3.1x  ← Overcredited by 94%!
-```
+<div class="not-prose my-8 bg-white border border-slate-200 rounded-lg overflow-hidden">
+  <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+    <p class="text-xs font-bold text-slate-500 tracking-[0.15em]">INCREMENTALITY TEST DESIGN</p>
+  </div>
+  <div class="px-5 py-5 space-y-3">
+    <p class="text-sm text-slate-700"><strong class="text-slate-900">Question:</strong> does Meta actually drive incremental revenue?</p>
+    <p class="text-sm text-slate-700"><strong class="text-slate-900">Setup:</strong> 50% of geos paused (control), 50% running normal Meta spend (treatment). 4 weeks.</p>
+    <div class="grid grid-cols-2 gap-3 mt-4">
+      <div class="bg-slate-50 border border-slate-200 rounded-md p-3">
+        <div class="text-[10px] font-bold tracking-[0.15em] text-slate-500 mb-1">RESULT</div>
+        <ul class="text-sm text-slate-700 space-y-1">
+          <li>Treatment revenue: <strong>$500,000</strong></li>
+          <li>Control revenue: <strong>$420,000</strong></li>
+          <li>Incremental lift: <strong>$80,000 (19%)</strong></li>
+          <li>Meta spend: <strong>$50,000</strong></li>
+          <li class="pt-1 border-t border-slate-200 mt-2 text-emerald-700"><strong>True iROAS: 1.6&times;</strong></li>
+        </ul>
+      </div>
+      <div class="bg-amber-50 border border-amber-200 rounded-md p-3">
+        <div class="text-[10px] font-bold tracking-[0.15em] text-amber-700 mb-1">META-REPORTED</div>
+        <div class="text-3xl font-bold text-amber-700 mb-2">3.1&times;</div>
+        <div class="text-xs text-amber-700">Over-credited by <strong>94%</strong> &mdash; the platform claims nearly twice the lift the experiment shows.</div>
+      </div>
+    </div>
+  </div>
+</div>
 
 Incrementality tests reveal what each platform actually causes, not just what it touches.
 
@@ -288,20 +295,16 @@ Don't try to make platforms agree. Use each data source for what it's good at.
 
 Quarterly, validate your reconciliation with incrementality tests:
 
-```
-Validation Test (Quarterly):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Pick one channel. Run geo-holdout test.
-
-Results:
-├── Platform-reported contribution: 25%
-├── MTA-calculated contribution:    18%
-├── Incrementality-measured:        15%
-
-Conclusion: MTA is closer to truth than platform data.
-Adjust discount factors accordingly.
-```
+<div class="not-prose my-6 bg-slate-50 border-l-4 border-slate-400 px-5 py-4 rounded-r-md">
+  <p class="text-xs font-bold text-slate-500 tracking-[0.15em] mb-2">QUARTERLY VALIDATION TEST</p>
+  <p class="text-sm text-slate-700 mb-2">Pick one channel. Run a geo-holdout. Compare the three numbers:</p>
+  <ul class="text-sm text-slate-700 space-y-1 list-none pl-0">
+    <li>Platform-reported contribution: <strong>25%</strong></li>
+    <li>MTA-calculated contribution: <strong>18%</strong></li>
+    <li>Incrementality-measured: <strong class="text-emerald-700">15%</strong> &larr; ground truth</li>
+  </ul>
+  <p class="text-sm text-slate-700 mt-2">MTA is closer to truth than the platform data. Adjust discount factors accordingly and re-run quarterly.</p>
+</div>
 
 ## What NOT to Do
 

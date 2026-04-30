@@ -56,20 +56,17 @@ Time-decay attribution answers: **"How much did each touchpoint contribute, cons
 
 It's a compromise between linear (equal credit) and last-touch (all credit to final touch):
 
-```
-Customer Journey with 7-Day Half-Life:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  Facebook Ad  →  Blog Post  →  Email  →  Paid Search  →  Purchase
-    (Day 1)        (Day 8)      (Day 13)    (Day 14)       (Day 14)
-       │             │            │            │
-       ▼             ▼            ▼            ▼
-   ┌───────┐    ┌───────┐    ┌───────┐    ┌───────┐
-   │   6%  │    │  12%  │    │  32%  │    │  50%  │
-   └───────┘    └───────┘    └───────┘    └───────┘
-       ↑             ↑            ↑            ↑
-   13 days ago   6 days ago   1 day ago    Same day
-```
+<%= render "articles/embeds/journey_steps",
+  title: "CUSTOMER JOURNEY UNDER TIME-DECAY (7-DAY HALF-LIFE)",
+  steps: [
+    { day: "Day 1",  label: "Facebook Ad", role: :inactive, percent: "6%",  sublabel: "13 days ago" },
+    { day: "Day 8",  label: "Blog Post",   role: :credited, percent: "12%", sublabel: "6 days ago" },
+    { day: "Day 13", label: "Email",       role: :credited, percent: "32%", sublabel: "1 day ago" },
+    { day: "Day 14", label: "Paid Search", role: :primary,  percent: "50%", sublabel: "same day" },
+    { day: "Day 14", label: "Purchase",    role: :conversion }
+  ],
+  caption: "Recent touches dominate. The Facebook ad from 13 days ago still gets <em>some</em> credit (unlike last-touch) &mdash; but only 6%."
+%>
 
 The touchpoint on the same day gets the most credit. The touchpoint from 13 days ago gets the least—but it still gets *some* credit, unlike last-touch.
 
@@ -93,18 +90,18 @@ Credit decays quickly. A touchpoint from 28 days ago gets only 6% of the weight 
 
 E-commerce purchases often follow a pattern: browse, consider, return, buy. The recent touches—the retargeting ad, the email reminder, the price drop notification—often tip the decision.
 
-```
-Typical E-Commerce Journey:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Day 1:  Discovery (paid social)     → Low intent
-Day 3:  Research (organic search)   → Building interest
-Day 5:  Product page (direct)       → Considering
-Day 7:  Cart abandon (email)        → Re-engagement
-Day 8:  Purchase (retargeting)      → Conversion
-
-Time-decay reflects this reality: recent touches drove the purchase.
-```
+<div class="not-prose my-8 bg-white border border-slate-200 rounded-lg overflow-hidden">
+  <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+    <p class="text-xs font-bold text-slate-500 tracking-[0.15em]">TYPICAL E-COMMERCE JOURNEY</p>
+  </div>
+  <ol class="divide-y divide-slate-100">
+    <li class="flex items-baseline gap-4 px-5 py-3"><span class="text-xs font-mono font-semibold text-slate-500 w-12 shrink-0">Day 1</span><span class="text-sm text-slate-700"><strong>Discovery</strong> &mdash; paid social impression. Low intent.</span></li>
+    <li class="flex items-baseline gap-4 px-5 py-3"><span class="text-xs font-mono font-semibold text-slate-500 w-12 shrink-0">Day 3</span><span class="text-sm text-slate-700"><strong>Research</strong> &mdash; organic search visit. Building interest.</span></li>
+    <li class="flex items-baseline gap-4 px-5 py-3"><span class="text-xs font-mono font-semibold text-slate-500 w-12 shrink-0">Day 5</span><span class="text-sm text-slate-700"><strong>Product page</strong> &mdash; direct visit. Considering.</span></li>
+    <li class="flex items-baseline gap-4 px-5 py-3"><span class="text-xs font-mono font-semibold text-slate-500 w-12 shrink-0">Day 7</span><span class="text-sm text-slate-700"><strong>Cart abandon email</strong> &mdash; re-engagement.</span></li>
+    <li class="flex items-baseline gap-4 px-5 py-3 bg-indigo-50/40"><span class="text-xs font-mono font-semibold text-indigo-700 w-12 shrink-0">Day 8</span><span class="text-sm text-slate-900"><strong>Purchase</strong> via retargeting click.</span></li>
+  </ol>
+</div>
 
 ### 2. Short-to-Medium Sales Cycles
 
@@ -151,16 +148,17 @@ Time-decay sits between the extremes, providing a reasonable middle ground.
 
 With 90+ day sales cycles, time-decay aggressively underweights the touchpoints that started the journey:
 
-```
-B2B Journey with 7-Day Half-Life:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-LinkedIn Ad    →  Webinar  →  Sales Demo  →  Proposal  →  Close
-  (Day 1)        (Day 30)      (Day 60)      (Day 80)    (Day 90)
-     │              │             │             │
-     ▼              ▼             ▼             ▼
-   0.01%          0.8%          10%           40%       ← Decay destroyed early credit
-```
+<%= render "articles/embeds/journey_steps",
+  title: "B2B JOURNEY UNDER TIME-DECAY (7-DAY HALF-LIFE)",
+  steps: [
+    { day: "Day 1",  label: "LinkedIn Ad", role: :inactive, percent: "0.01%" },
+    { day: "Day 30", label: "Webinar",     role: :inactive, percent: "0.8%" },
+    { day: "Day 60", label: "Sales Demo",  role: :credited, percent: "10%" },
+    { day: "Day 80", label: "Proposal",    role: :primary,  percent: "40%" },
+    { day: "Day 90", label: "Close",       role: :conversion }
+  ],
+  caption: "Decay destroys early credit on long cycles. The LinkedIn ad that sourced the deal gets effectively zero. Use a longer half-life for B2B &mdash; or switch to position-based."
+%>
 
 The LinkedIn ad that sourced the deal gets nearly zero credit—which doesn't reflect its importance.
 
@@ -309,26 +307,29 @@ end
 
 ### Visualizing the Decay Curve
 
-```
-Credit Weight by Days Before Conversion (7-Day Half-Life):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-100% │████
-     │████████
- 75% │████████████
-     │████████████████
- 50% │████████████████████
-     │████████████████████████
- 25% │████████████████████████████
-     │████████████████████████████████
-  0% └────────────────────────────────────────
-     0    7    14    21    28    35    42
-              Days Before Conversion
-
-At 7 days: 50% weight
-At 14 days: 25% weight
-At 21 days: 12.5% weight
-```
+<div class="not-prose my-8 bg-white border border-slate-200 rounded-lg overflow-hidden">
+  <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+    <p class="text-xs font-bold text-slate-500 tracking-[0.15em]">CREDIT WEIGHT BY DAYS BEFORE CONVERSION (7-DAY HALF-LIFE)</p>
+  </div>
+  <div class="px-5 py-5">
+    <% [
+      { days: "Same day (0)",    weight: 100 },
+      { days: "7 days before",   weight: 50 },
+      { days: "14 days before",  weight: 25 },
+      { days: "21 days before",  weight: 12.5 },
+      { days: "28 days before",  weight: 6.25 },
+      { days: "35 days before",  weight: 3.1 }
+    ].each do |row| %>
+      <div class="grid grid-cols-[7rem_1fr_3rem] sm:grid-cols-[9rem_1fr_3.5rem] items-center gap-x-3 sm:gap-x-4 py-1.5">
+        <div class="text-xs sm:text-sm font-mono text-slate-600 text-right"><%= row[:days] %></div>
+        <div class="h-5 sm:h-6 bg-slate-100 rounded-sm overflow-hidden">
+          <div class="h-full bg-indigo-500 rounded-sm" style="width: <%= row[:weight] %>%;"></div>
+        </div>
+        <div class="text-xs sm:text-sm font-mono font-semibold text-indigo-700 text-right"><%= row[:weight] %>%</div>
+      </div>
+    <% end %>
+  </div>
+</div>
 
 ### Impact on Channel Credit
 

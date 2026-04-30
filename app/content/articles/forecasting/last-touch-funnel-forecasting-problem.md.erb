@@ -58,23 +58,20 @@ Here's why: **Last-touch only credits the final touchpoint before conversion, ig
 
 Consider a typical B2B journey:
 
-```
-Customer Journey (45 days):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Day 1:   LinkedIn Ad          → First awareness
-Day 5:   Blog post (organic)  → Learning about problem
-Day 12:  Webinar signup       → Deeper engagement
-Day 20:  Email nurture (x3)   → Building consideration
-Day 35:  Retargeting ad       → Re-engagement
-Day 42:  Demo request         → Sales handoff
-Day 45:  Branded search       → Returns to buy
-                    │
-                    ▼
-         Last-Touch Credits: 100% to Branded Search
-
-LinkedIn, blog, webinar, email, retargeting = 0% credit
-```
+<div class="not-prose my-8 bg-white border border-slate-200 rounded-lg overflow-hidden">
+  <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+    <p class="text-xs font-bold text-slate-500 tracking-[0.15em]">A 45-DAY B2B JOURNEY UNDER LAST-TOUCH</p>
+  </div>
+  <ol class="divide-y divide-slate-100">
+    <li class="flex items-baseline gap-4 px-5 py-2.5"><span class="text-xs font-mono font-semibold text-slate-500 w-14 shrink-0">Day 1</span><span class="text-sm text-slate-700"><strong>LinkedIn Ad</strong> &mdash; first awareness <span class="text-xs text-slate-400 font-mono ml-2">0% credit</span></span></li>
+    <li class="flex items-baseline gap-4 px-5 py-2.5"><span class="text-xs font-mono font-semibold text-slate-500 w-14 shrink-0">Day 5</span><span class="text-sm text-slate-700"><strong>Blog post</strong> &mdash; learning about the problem <span class="text-xs text-slate-400 font-mono ml-2">0%</span></span></li>
+    <li class="flex items-baseline gap-4 px-5 py-2.5"><span class="text-xs font-mono font-semibold text-slate-500 w-14 shrink-0">Day 12</span><span class="text-sm text-slate-700"><strong>Webinar signup</strong> &mdash; deeper engagement <span class="text-xs text-slate-400 font-mono ml-2">0%</span></span></li>
+    <li class="flex items-baseline gap-4 px-5 py-2.5"><span class="text-xs font-mono font-semibold text-slate-500 w-14 shrink-0">Day 20</span><span class="text-sm text-slate-700"><strong>Email nurture (3x)</strong> &mdash; building consideration <span class="text-xs text-slate-400 font-mono ml-2">0%</span></span></li>
+    <li class="flex items-baseline gap-4 px-5 py-2.5"><span class="text-xs font-mono font-semibold text-slate-500 w-14 shrink-0">Day 35</span><span class="text-sm text-slate-700"><strong>Retargeting ad</strong> &mdash; re-engagement <span class="text-xs text-slate-400 font-mono ml-2">0%</span></span></li>
+    <li class="flex items-baseline gap-4 px-5 py-2.5"><span class="text-xs font-mono font-semibold text-slate-500 w-14 shrink-0">Day 42</span><span class="text-sm text-slate-700"><strong>Demo request</strong> &mdash; sales handoff <span class="text-xs text-slate-400 font-mono ml-2">0%</span></span></li>
+    <li class="flex items-baseline gap-4 px-5 py-3 bg-emerald-50/60"><span class="text-xs font-mono font-semibold text-emerald-700 w-14 shrink-0">Day 45</span><span class="text-sm text-emerald-900 font-semibold">Branded search &mdash; returns to buy <span class="text-xs font-bold ml-2">100% credit</span></span></li>
+  </ol>
+</div>
 
 If you forecast based on this data, you'll conclude:
 - "Branded search drives all our revenue—invest more!"
@@ -118,30 +115,19 @@ When you build forecasts on last-touch data, you systematically:
 
 This isn't theoretical. It's one of the most common failure modes in digital marketing:
 
-```
-The Attribution Death Spiral
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Month 1: "Last-touch says Paid Social ROAS is 0.6x. Cut it by 50%."
-         → Fewer new prospects enter funnel
-
-Month 2: "Email list growth slowed. Increase email frequency."
-         → Same audience, more emails = fatigue
-
-Month 3: "Email ROAS dropping. Double down on retargeting."
-         → Smaller retargeting pool, higher CPMs
-
-Month 4: "Retargeting exhausted. Increase branded search."
-         → Diminishing returns, CAC rising
-
-Month 5: "Revenue plateaued despite increased spend."
-         → Funnel is empty, closers have nothing to close
-
-Month 6: "Why isn't marketing working?"
-         → Because you starved the funnel based on last-touch data
-
-Recovery: 6-12 months to rebuild awareness pipeline
-```
+<div class="not-prose my-8 bg-white border border-slate-200 rounded-lg overflow-hidden">
+  <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+    <p class="text-xs font-bold text-amber-700 tracking-[0.15em]">THE ATTRIBUTION DEATH SPIRAL &middot; 6 MONTHS</p>
+  </div>
+  <ol class="divide-y divide-slate-100">
+    <li class="flex gap-4 px-5 py-3"><div class="shrink-0 w-7 h-7 rounded-full bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center">M1</div><div class="flex-1"><div class="text-sm font-semibold text-slate-900">&quot;Last-touch says Paid Social ROAS is 0.6&times;. Cut it by 50%.&quot;</div><div class="text-sm text-slate-600 leading-snug mt-0.5">Fewer new prospects enter the funnel.</div></div></li>
+    <li class="flex gap-4 px-5 py-3"><div class="shrink-0 w-7 h-7 rounded-full bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center">M2</div><div class="flex-1"><div class="text-sm font-semibold text-slate-900">&quot;Email list growth slowed. Increase email frequency.&quot;</div><div class="text-sm text-slate-600 leading-snug mt-0.5">Same audience, more emails &rarr; fatigue.</div></div></li>
+    <li class="flex gap-4 px-5 py-3"><div class="shrink-0 w-7 h-7 rounded-full bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center">M3</div><div class="flex-1"><div class="text-sm font-semibold text-slate-900">&quot;Email ROAS dropping. Double down on retargeting.&quot;</div><div class="text-sm text-slate-600 leading-snug mt-0.5">Smaller retargeting pool, higher CPMs.</div></div></li>
+    <li class="flex gap-4 px-5 py-3"><div class="shrink-0 w-7 h-7 rounded-full bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center">M4</div><div class="flex-1"><div class="text-sm font-semibold text-slate-900">&quot;Retargeting exhausted. Increase branded search.&quot;</div><div class="text-sm text-slate-600 leading-snug mt-0.5">Diminishing returns, CAC rising.</div></div></li>
+    <li class="flex gap-4 px-5 py-3"><div class="shrink-0 w-7 h-7 rounded-full bg-amber-200 text-amber-900 font-bold text-xs flex items-center justify-center">M5</div><div class="flex-1"><div class="text-sm font-semibold text-amber-900">&quot;Revenue plateaued despite increased spend.&quot;</div><div class="text-sm text-slate-600 leading-snug mt-0.5">Funnel is empty &mdash; closers have nothing to close.</div></div></li>
+    <li class="flex gap-4 px-5 py-3"><div class="shrink-0 w-7 h-7 rounded-full bg-amber-300 text-amber-900 font-bold text-xs flex items-center justify-center">M6</div><div class="flex-1"><div class="text-sm font-semibold text-amber-900">&quot;Why isn't marketing working?&quot;</div><div class="text-sm text-slate-600 leading-snug mt-0.5">Because the funnel was starved months ago. Recovery takes 6&ndash;12 months to rebuild the awareness pipeline.</div></div></li>
+  </ol>
+</div>
 
 The team followed the data—but the data was systematically misleading.
 
@@ -210,28 +196,34 @@ The world changed. The attribution defaults didn't.
 
 The fix isn't choosing "the best" attribution model. It's using **different models for different funnel stages**:
 
-```
-Tiered Attribution Framework
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-TOP OF FUNNEL (Awareness)
-├── Question: "What brings new prospects?"
-├── Model: FIRST-TOUCH
-├── Metrics: New visitor volume, discovery channels
-└── Why: Credits the channel that started the relationship
-
-MIDDLE OF FUNNEL (Consideration)
-├── Question: "What keeps them engaged?"
-├── Model: LINEAR or PARTICIPATION
-├── Metrics: Engagement depth, content consumption
-└── Why: Credits all touchpoints equally, shows overlap
-
-BOTTOM OF FUNNEL (Conversion)
-├── Question: "What closes the deal?"
-├── Model: LAST-TOUCH
-├── Metrics: Conversion events, revenue
-└── Why: Credits the closing channel (here it's appropriate!)
-```
+<div class="not-prose my-8 bg-white border border-slate-200 rounded-lg overflow-hidden">
+  <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+    <p class="text-xs font-bold text-slate-500 tracking-[0.15em]">TIERED ATTRIBUTION FRAMEWORK</p>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-3 p-5">
+    <div class="border-l-4 border-emerald-500 bg-emerald-50 rounded-md p-4">
+      <div class="text-[11px] font-bold text-emerald-700 tracking-[0.15em] mb-1">TOP OF FUNNEL</div>
+      <div class="text-base font-bold text-slate-900 mb-1">Awareness</div>
+      <p class="text-xs text-slate-600 italic mb-2">"What brings new prospects?"</p>
+      <div class="text-xs"><strong class="text-slate-900">Model:</strong> First-touch</div>
+      <div class="text-xs mt-1"><strong class="text-slate-900">Metrics:</strong> New visitors, discovery channels</div>
+    </div>
+    <div class="border-l-4 border-indigo-500 bg-indigo-50 rounded-md p-4">
+      <div class="text-[11px] font-bold text-indigo-700 tracking-[0.15em] mb-1">MIDDLE OF FUNNEL</div>
+      <div class="text-base font-bold text-slate-900 mb-1">Consideration</div>
+      <p class="text-xs text-slate-600 italic mb-2">"What keeps them engaged?"</p>
+      <div class="text-xs"><strong class="text-slate-900">Model:</strong> Linear or participation</div>
+      <div class="text-xs mt-1"><strong class="text-slate-900">Metrics:</strong> Engagement depth, content consumption</div>
+    </div>
+    <div class="border-l-4 border-slate-500 bg-slate-50 rounded-md p-4">
+      <div class="text-[11px] font-bold text-slate-700 tracking-[0.15em] mb-1">BOTTOM OF FUNNEL</div>
+      <div class="text-base font-bold text-slate-900 mb-1">Conversion</div>
+      <p class="text-xs text-slate-600 italic mb-2">"What closes the deal?"</p>
+      <div class="text-xs"><strong class="text-slate-900">Model:</strong> Last-touch (here it's appropriate)</div>
+      <div class="text-xs mt-1"><strong class="text-slate-900">Metrics:</strong> Conversion events, revenue</div>
+    </div>
+  </div>
+</div>
 
 **Key insight:** Last-touch isn't wrong—it's wrong *for the wrong question*. For understanding closers specifically, last-touch is fine. For forecasting full-funnel revenue, it's misleading.
 
@@ -295,50 +287,32 @@ end
 
 ### Before: Last-Touch Forecast
 
-```
-Channel Forecast (Last-Touch Only)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+| Channel | Last-touch credit | Forecasted revenue | Budget decision |
+|---|---|---|---|
+| Branded Search | 35% | $350K | Increase |
+| Email | 30% | $300K | Increase |
+| Retargeting | 15% | $150K | Maintain |
+| Paid Social | 8% | $80K | **Cut 50%** |
+| Content / SEO | 7% | $70K | **Cut 30%** |
+| Display | 5% | $50K | **Cut 70%** |
+| **Total** | **100%** | **$1M** |  |
 
-                    Last-Touch    Forecasted     Budget
-Channel             Credit        Revenue        Decision
-────────────────────────────────────────────────────────────
-Branded Search      35%           $350K          Increase
-Email               30%           $300K          Increase
-Retargeting         15%           $150K          Maintain
-Paid Social         8%            $80K           Cut 50%
-Content/SEO         7%            $70K           Cut 30%
-Display             5%            $50K           Cut 70%
-────────────────────────────────────────────────────────────
-Total               100%          $1M
-
-Result: Cut awareness → funnel dries up → revenue drops
-```
+Result: cut awareness → funnel dries up → revenue drops.
 
 ### After: Tiered Attribution Forecast
 
-```
-Channel Forecast (Tiered Attribution)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+| Channel | ToFU | MoFU | BoFU | Full-funnel |
+|---|---|---|---|---|
+| Paid Social | 42% | 18% | 8% | **23%** |
+| Content / SEO | 28% | 25% | 7% | **20%** |
+| Email | 2% | 22% | 30% | **18%** |
+| Branded Search | 5% | 12% | 35% | **17%** |
+| Retargeting | 8% | 15% | 15% | **13%** |
+| Display | 15% | 8% | 5% | **9%** |
 
-                    ToFU      MoFU       BoFU       Full-Funnel
-Channel             Credit    Credit     Credit     Contribution
-────────────────────────────────────────────────────────────────
-Paid Social         42%       18%        8%         23%
-Content/SEO         28%       25%        7%         20%
-Display             15%       8%         5%         9%
-Branded Search      5%        12%        35%        17%
-Email               2%        22%        30%        18%
-Retargeting         8%        15%        15%        13%
-────────────────────────────────────────────────────────────────
+**Budget decisions reverse:** Paid Social was &quot;cut 50%&quot; → now maintain/increase. Content/SEO was &quot;cut 30%&quot; → now increase. Email was &quot;increase&quot; → now maintain (it's mostly closing existing demand). Branded search was &quot;increase&quot; → now maintain (captures existing demand, doesn't create it).
 
-Budget Decision (Full-Funnel):
-├── Paid Social: Was "cut 50%" → Now "maintain/increase" (23% contribution)
-├── Content/SEO: Was "cut 30%" → Now "increase" (20% contribution)
-├── Email: Was "increase" → Now "maintain" (18% contribution, mostly closing)
-└── Branded Search: Was "increase" → Now "maintain" (captures, doesn't create)
-
-Result: Balanced investment → healthy funnel → sustainable growth
-```
+Result: balanced investment → healthy funnel → sustainable growth.
 
 The same data, analyzed correctly, produces the opposite budget decisions.
 
@@ -362,24 +336,17 @@ If cutting a "low performer" causes disproportionate revenue drop, last-touch wa
 
 Track what happens when channels are paused:
 
-```
-Paid Social Pause (30 days):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Week 1: New visitor volume -40%
-        Last-touch ROAS unchanged (closers still working)
-
-Week 2: Email list adds -35%
-        Retargeting pool -25%
-
-Week 3: Email ROAS declining
-        Branded search volume -20%
-
-Week 4: Total revenue -18%
-        Last-touch had said Paid Social = 8% contribution
-
-Conclusion: True contribution was 18%+ (more than 2x last-touch credit)
-```
+<div class="not-prose my-8 bg-white border border-slate-200 rounded-lg overflow-hidden">
+  <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+    <p class="text-xs font-bold text-slate-500 tracking-[0.15em]">PAID SOCIAL PAUSE &middot; 30 DAYS</p>
+  </div>
+  <ol class="divide-y divide-slate-100">
+    <li class="flex gap-4 px-5 py-3"><span class="text-xs font-mono font-semibold text-slate-500 w-14 shrink-0">Week 1</span><div class="text-sm text-slate-700"><strong class="text-slate-900">New visitor volume −40%.</strong> Last-touch ROAS unchanged &mdash; the closers are still working.</div></li>
+    <li class="flex gap-4 px-5 py-3"><span class="text-xs font-mono font-semibold text-slate-500 w-14 shrink-0">Week 2</span><div class="text-sm text-slate-700"><strong class="text-slate-900">Email list growth −35%, retargeting pool −25%.</strong> The downstream pools are starting to shrink.</div></li>
+    <li class="flex gap-4 px-5 py-3"><span class="text-xs font-mono font-semibold text-slate-500 w-14 shrink-0">Week 3</span><div class="text-sm text-slate-700"><strong class="text-slate-900">Email ROAS declining, branded search volume −20%.</strong> Closing channels start to feel the missing demand.</div></li>
+    <li class="flex gap-4 px-5 py-3 bg-amber-50/40"><span class="text-xs font-mono font-semibold text-amber-700 w-14 shrink-0">Week 4</span><div class="text-sm text-amber-900"><strong>Total revenue −18%.</strong> Last-touch had said Paid Social was 8% of revenue. True contribution: 18%+, more than 2&times; what last-touch credited.</div></li>
+  </ol>
+</div>
 
 ### 3. First-Touch Comparison
 

@@ -56,19 +56,17 @@ Position-based attribution answers: **"How do I credit both the channel that int
 
 It's a compromise between first-touch (introducers) and last-touch (closers):
 
-```
-Customer Journey with Position-Based (40-20-40):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  LinkedIn Ad  →  Whitepaper  →  Webinar  →  Demo Request  →  Close
-    (Day 1)        (Day 10)      (Day 25)     (Day 40)       (Day 45)
-       │              │             │            │
-       ▼              ▼             ▼            ▼
-   ┌───────┐     ┌───────┐    ┌───────┐    ┌───────┐
-   │  40%  │     │  10%  │    │  10%  │    │  40%  │
-   └───────┘     └───────┘    └───────┘    └───────┘
-   First touch   ←─── 20% split ───→      Last touch
-```
+<%= render "articles/embeds/journey_steps",
+  title: "JOURNEY UNDER POSITION-BASED (40/20/40)",
+  steps: [
+    { day: "Day 1",  label: "LinkedIn Ad",   role: :primary,  percent: "40%", sublabel: "first touch" },
+    { day: "Day 10", label: "Whitepaper",    role: :credited, percent: "10%" },
+    { day: "Day 25", label: "Webinar",       role: :credited, percent: "10%" },
+    { day: "Day 40", label: "Demo Request",  role: :primary,  percent: "40%", sublabel: "last touch" },
+    { day: "Day 45", label: "Close",         role: :conversion }
+  ],
+  caption: "First and last each get 40%. The 20% middle is split evenly across the nurture touches in between."
+%>
 
 The LinkedIn ad that sourced the opportunity gets 40%. The demo request that triggered conversion gets 40%. The nurturing content in between splits the remaining 20%.
 
@@ -90,18 +88,35 @@ Position-based acknowledges that beginning and end are often strategically disti
 
 B2B funnels often have clear "sourcing" (first touch) and "closing" (last touch) moments that different teams own:
 
-```
-Typical B2B Journey:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Demand Gen owns:  Marketing Ops owns:  Sales owns:
-      │                  │                 │
-      ▼                  ▼                 ▼
-  LinkedIn Ad  →  Nurture Flow  →  Demo  →  Close
-     40%           10% each         40%
-
-Marketing gets credit for sourcing (first) AND conversion (last).
-```
+<div class="not-prose my-8 bg-white border border-slate-200 rounded-lg overflow-hidden">
+  <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+    <p class="text-xs font-bold text-slate-500 tracking-[0.15em]">B2B HANDOFF, CREDIT BY OWNER</p>
+  </div>
+  <div class="px-5 py-6">
+    <div class="grid grid-cols-4 gap-2 sm:gap-3 text-center mb-3">
+      <div>
+        <div class="text-[10px] sm:text-xs font-semibold text-slate-500 mb-1">Demand Gen</div>
+        <div class="bg-emerald-500 text-white px-2 py-3 rounded-md text-[11px] sm:text-sm font-bold">LinkedIn Ad</div>
+        <div class="text-[10px] text-emerald-700 mt-1.5 font-bold">40%</div>
+      </div>
+      <div>
+        <div class="text-[10px] sm:text-xs font-semibold text-slate-500 mb-1">Marketing Ops</div>
+        <div class="bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-3 rounded-md text-[11px] sm:text-sm">Nurture Flow</div>
+        <div class="text-[10px] text-emerald-700 mt-1.5 font-semibold">20%</div>
+      </div>
+      <div>
+        <div class="text-[10px] sm:text-xs font-semibold text-slate-500 mb-1">Sales</div>
+        <div class="bg-emerald-500 text-white px-2 py-3 rounded-md text-[11px] sm:text-sm font-bold">Demo</div>
+        <div class="text-[10px] text-emerald-700 mt-1.5 font-bold">40%</div>
+      </div>
+      <div>
+        <div class="text-[10px] sm:text-xs font-semibold text-slate-500 mb-1">&nbsp;</div>
+        <div class="bg-indigo-500 text-white px-2 py-3 rounded-md text-[11px] sm:text-sm font-bold">Close</div>
+      </div>
+    </div>
+    <p class="text-xs text-slate-500 italic leading-snug text-center">Marketing gets credit for both sourcing the deal (first touch) and triggering conversion (last touch).</p>
+  </div>
+</div>
 
 This satisfies both demand gen teams (who want sourcing credit) and performance teams (who want conversion credit).
 
@@ -141,13 +156,11 @@ If you believe two moments matter most—discovering the brand and deciding to b
 
 If your middle-funnel content—whitepapers, webinars, case studies—genuinely drives purchase decisions, position-based under-credits them:
 
-```
-Content-Heavy Journey:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Ad → Whitepaper → Webinar → Case Study → Demo → Blog → Purchase
-     └────────────── These get only 20% total ──────────────┘
-```
+<div class="not-prose my-6 bg-amber-50 border-l-4 border-amber-400 px-5 py-4 rounded-r-md">
+  <p class="text-xs font-bold text-amber-700 tracking-[0.15em] mb-2">CONTENT-HEAVY JOURNEY</p>
+  <p class="text-sm text-slate-700 leading-snug mb-2">Ad &rarr; Whitepaper &rarr; Webinar &rarr; Case Study &rarr; Demo &rarr; Blog &rarr; Purchase</p>
+  <p class="text-sm text-slate-700 leading-snug">Position-based gives the ad and the demo 80% combined. The four content pieces that built conviction split the remaining 20% &mdash; about 5% each. If your content actually drives conversion, that's a misallocation.</p>
+</div>
 
 If each content piece builds conviction, they deserve more than a 20% split.
 
@@ -157,15 +170,14 @@ If each content piece builds conviction, they deserve more than a 20% split.
 
 If first touch = last touch (same session purchase), position-based adds no value:
 
-```
-Single-Session:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  Google Ad  →  Purchase (same session)
-     │
-     ▼
-  First = Last = 40% + 40% = 80%? No—just use last-touch.
-```
+<%= render "articles/embeds/journey_steps",
+  title: "SINGLE-SESSION CONVERSION",
+  steps: [
+    { day: "Same session", label: "Google Ad", role: :primary, percent: "100%" },
+    { day: "Same session", label: "Purchase",  role: :conversion }
+  ],
+  caption: "First touch = last touch. The position-based math collapses to 100% &mdash; just use last-touch."
+%>
 
 For e-commerce impulse buys, simpler models work fine.
 
@@ -192,16 +204,17 @@ Best for: Standard B2B, clear intro/close distinction.
 
 Adds a third key position—typically "lead creation" (form fill, signup, MQL):
 
-```
-W-Shaped Attribution:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  Ad  →  Content  →  Form Fill  →  Nurture  →  Close
-  │                      │                       │
-  ▼                      ▼                       ▼
- 30%                    30%                     30%
-          └──── 10% split among others ────┘
-```
+<%= render "articles/embeds/journey_steps",
+  title: "W-SHAPED ATTRIBUTION (30/30/30/10)",
+  steps: [
+    { day: "Touch 1",  label: "Ad",        role: :primary,  percent: "30%", sublabel: "first" },
+    { day: "Touch 2",  label: "Content",   role: :inactive, percent: "5%" },
+    { day: "Touch 3",  label: "Form Fill", role: :primary,  percent: "30%", sublabel: "lead" },
+    { day: "Touch 4",  label: "Nurture",   role: :inactive, percent: "5%" },
+    { day: "Touch 5",  label: "Close",     role: :primary,  percent: "30%", sublabel: "last" }
+  ],
+  caption: "W-shaped adds a third weighted position &mdash; the lead-creation moment. Other touches share the remaining 10%."
+%>
 
 Best for: B2B with distinct lead capture moment, marketing → sales handoff.
 
