@@ -232,10 +232,10 @@ Each sub-phase is one or two commits. RED test → GREEN code → run all tests 
 - [x] Controller-level smoke tests: flag on → Meta card link present; flag off → Coming Soon card; index/detail redirect when flag off; index/detail render when flag on.
 - [ ] _Optional follow-up:_ extract `_meta_ads_section.html.erb` if/when we want a single-page integration view that lists every connection inline (current pattern is dedicated `/account/integrations/meta_ads` page, matching Google).
 
-### 2.12 — Verify rake task
+### 2.12 — Verify rake task ✅
 
-- [ ] `lib/tasks/ad_platforms.rake` add `meta:verify_credentials` — make a live `me/adaccounts` call using the same pattern as `verify_basic_access` for Google.
-- [ ] Smoke test only; no automated test.
+- [x] `lib/tasks/ad_platforms.rake` adds `ad_platforms:meta:verify_credentials` — refreshes token if expired, hits `/me/adaccounts`, lists active accounts via `ListAdAccountsParser`. Mirrors Google's `verify_basic_access`.
+- [x] Smoke test only; no automated test (per spec).
 
 ---
 
