@@ -792,8 +792,12 @@
     align-items: center;
     justify-content: center;
     padding: 24px;
+    overflow-y: auto;
   }
   .assessment-overlay.active { display: flex; }
+  /* When results are showing, the content is taller than the viewport — flow from
+     the top so the scrollbar lives on the viewport edge instead of mid-screen. */
+  .assessment-overlay:has(.results-container.active) { justify-content: flex-start; }
 
   .assessment-progress {
     position: absolute;
@@ -949,8 +953,6 @@
     max-width: 720px;
     width: 100%;
     text-align: center;
-    max-height: 100vh;
-    overflow-y: auto;
     padding: 40px 24px 80px;
     animation: question-enter 0.5s cubic-bezier(0.22, 1, 0.36, 1);
   }
