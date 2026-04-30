@@ -19,7 +19,7 @@
       applicationCategory: "BusinessApplication",
       operatingSystem: "Web",
       url: App::BASE_URL,
-      description: "Server-side multi-touch attribution you own. Track customer journeys, measure marketing ROI, and understand what drives conversions—without black-box models or data lock-in.",
+      description: "Server-side multi-touch attribution you own. Track customer journeys, measure marketing ROI, and understand what drives conversions, without black-box models or data lock-in.",
       offers: [
         { "@type": "Offer", name: "Free", price: "0", priceCurrency: "USD" },
         { "@type": "Offer", name: "Starter", price: "29", priceCurrency: "USD" },
@@ -40,8 +40,8 @@
 <div class="min-h-screen bg-white">
   <%= render "pages/home/navigation" %>
   <%= render "pages/home/hero" %>
-  <%= render "pages/home/problem_validation" %>
   <%= render "pages/home/dashboard_preview" %>
+  <%= render "pages/home/problem_validation" %>
 
   <% link_class = "underline decoration-dotted underline-offset-4 hover:text-blue-600" %>
   <%= render "landing_pages/lp_feature_showcase",
@@ -54,15 +54,15 @@
         description: safe_join([
           "Spend Intelligence shows marginal ROAS, payback period, and the channel that's about to hit ",
           link_to("diminishing returns", article_path("diminishing-returns-ad-spend"), class: link_class),
-          " — before you scale into a wall."
+          ", before you scale into a wall."
         ]),
         bullets: [
-          "Response curves per channel — see saturation before you hit it",
+          "Response curves per channel. See saturation before you hit it.",
           safe_join(["Payback period and ", link_to("budget reallocation", article_path("budget-reallocation-attribution"), class: link_class), " by channel, not just ROAS"]),
           "Platform-reported vs real-captured revenue, reconciled"
         ],
         screenshot_url: "https://mbuzz.sfo3.digitaloceanspaces.com/brand-assets/directory-listings/screenshot-04-roas-delta.png",
-        screenshot_alt: "mbuzz ROAS delta — platform-reported vs real-captured revenue",
+        screenshot_alt: "mbuzz ROAS delta: platform-reported vs real-captured revenue",
         cta: "See the spend breakdown",
         cta_path: demo_dashboard_spend_path,
         modal_frame_id: "demo_spend",
@@ -75,7 +75,7 @@
           link_to("Meta over-reports by 134%", article_path("roas-inflation-platform-over-reporting"), class: link_class),
           ". ",
           link_to("Google double-counts", article_path("why-google-ads-ga4-different-conversions"), class: link_class),
-          " assisted conversions. mbuzz shows you the platform number, the mbuzz number, and the gap — for every channel, every week."
+          " assisted conversions. mbuzz shows you the platform number, the mbuzz number, and the gap, for every channel, every week."
         ]),
         bullets: [
           "Platform-reported vs mbuzz-captured revenue, side-by-side",
@@ -83,7 +83,7 @@
           "Reconciles to your CRM or bank, not the platform's claim"
         ],
         screenshot_url: "https://mbuzz.sfo3.digitaloceanspaces.com/brand-assets/directory-listings/screenshot-04-roas-delta.png",
-        screenshot_alt: "mbuzz ROAS reconciliation — platform-claimed vs mbuzz-captured by channel",
+        screenshot_alt: "mbuzz ROAS reconciliation: platform-claimed vs mbuzz-captured by channel",
         cta: "See the ROAS gap",
         cta_path: demo_dashboard_spend_path,
         modal_frame_id: "demo_spend_reconcile",
@@ -97,10 +97,10 @@
           link_to("GA4 shows you one", article_path("ga4-attribution-models-removed"), class: link_class),
           ". We show all eight ",
           link_to("side-by-side", article_path("multi-touch-attribution-tools-compared"), class: link_class),
-          " — so you can stop arguing about which one is 'right'."
+          ". Stop arguing about which one is 'right'."
         ]),
         bullets: [
-          "Same data — swap the lens, not the dataset",
+          "Same data. Swap the lens, not the dataset.",
           "The spread between models is the honest truth range",
           "Export every model's output on every tier"
         ],
@@ -114,25 +114,25 @@
       {
         eyebrow: "LTV Mode",
         title: "Rank channels by LTV, not first conversion.",
-        description: "A channel that brings 6-month customers beats one that brings one-and-dones. LTV mode re-ranks every channel by cohort lifetime value — so the channel that looks worst on day-1 acquisition often wins on lifetime revenue.",
+        description: "A channel that brings 6-month customers beats one that brings one-and-dones. LTV mode re-ranks every channel by cohort lifetime value. The channel that looks worst on day-1 acquisition often wins on lifetime revenue.",
         bullets: [
           "Toggle any channel ranking between first-month and 12-month LTV",
           "See channel rank changes explicitly (up 2, down 4, same)",
           "Works across every attribution model"
         ],
         screenshot_url: "https://mbuzz.sfo3.digitaloceanspaces.com/brand-assets/directory-listings/screenshot-05-channel-detail.png",
-        screenshot_alt: "mbuzz LTV leaderboard — channel rankings flip between first-month and 12-month",
+        screenshot_alt: "mbuzz LTV leaderboard: channel rankings flip between first-month and 12-month",
         cta: "See the channel flip",
         cta_path: demo_path,
         modal_partial: "pages/home/ltv_leaderboard"
       }
     ] %>
 
-  <%# DSL footnote — preserves the developer/advanced-team story without leading with it %>
+  <%# DSL footnote: preserves the developer/advanced-team story without leading with it %>
   <section class="px-6 pb-16 -mt-8 bg-white">
     <div class="max-w-3xl mx-auto bg-gray-50 border border-gray-200 rounded-lg px-6 py-5 text-center text-sm text-gray-600">
       Need to express custom attribution logic? mbuzz also ships a SQL-like
-      <strong class="text-gray-900">Attribution DSL</strong> — fork any built-in model,
+      <strong class="text-gray-900">Attribution DSL</strong>. Fork any built-in model,
       add lookback windows, encode your sales cycle. Most teams never need it.
       <%= link_to "Read the DSL docs &rarr;".html_safe, docs_path("getting-started"), class: "font-medium text-blue-600 hover:text-blue-700 ml-1 whitespace-nowrap" %>
     </div>

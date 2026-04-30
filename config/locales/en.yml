@@ -43,7 +43,7 @@ en:
       hero:
         eyebrow: "For marketers spending $10k–$1m/month"
         title: "Attribution that matches your bank account."
-        subtitle: "Meta over-reports by 134%. Google double-counts. mbuzz reconciles platform numbers against your bank — so you stop guessing where the next dollar should go."
+        subtitle: "Meta over-reports by 134%. Google double-counts. mbuzz reconciles platform numbers against your bank, so you stop guessing where the next dollar should go."
         cta_primary: "Score your attribution (3 min)"
         cta_secondary: "Try the demo"
         no_signup: "No credit card. No signup to score."
@@ -66,10 +66,10 @@ en:
           description: "Framework-native SDKs for Rails, Django, Laravel, and Node.js. Drop in a gem, add your API key, and you're tracking. No complicated tag managers or JavaScript snippets to debug."
         dark_funnel:
           title: "8 Attribution Models"
-          description: "First-touch, last-touch, linear, time-decay, position-based, Markov chain, Shapley value, and data-driven — all running on the same data, side by side, so you can see the spread."
+          description: "First-touch, last-touch, linear, time-decay, position-based, Markov chain, Shapley value, and data-driven, all running on the same data, side by side, so you can see the spread."
         quick_setup:
           title: "Roll Your Own Custom Models"
-          description: "Write custom attribution rules in minutes with a simple modelling language. No need to wait for your analytics vendor to ship your feature request—just define the logic and run it."
+          description: "Write custom attribution rules in minutes with a simple modelling language. No need to wait for your analytics vendor to ship your feature request, just define the logic and run it."
         user_mapping:
           title: "Server-Side All The Way"
           description: "Track events on your backend, not in the browser. No client-side scripts means no ad blockers, no privacy extensions, and no missing data. Just accurate attribution."

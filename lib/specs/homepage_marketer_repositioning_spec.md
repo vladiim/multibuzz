@@ -134,9 +134,9 @@ CTA2:     Try the demo
 
 ---
 
-### 2. New Section: "Sound familiar?" — Problem Validation Block
+### 2. New Section: "Sound familiar?" Problem Validation Block
 
-Inserted **immediately under the hero** before any feature talk. Three columns, each a quoted thought from the ICP's actual day:
+Inserted **directly below the dashboard preview** (which sits under the hero). Three columns, each a quoted thought from the ICP's actual day:
 
 ```
 "My Meta dashboard says 4.1x ROAS. My Shopify says it's barely 2x. Which one
