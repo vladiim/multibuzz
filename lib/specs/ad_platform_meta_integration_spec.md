@@ -219,13 +219,17 @@ Each sub-phase is one or two commits. RED test → GREEN code → run all tests 
 - [ ] Pulls insights via ApiClient (with pagination), parses each row, upserts via `AdSpendRecord.upsert_all(unique_by: :idx_spend_unique)`. Increments usage meter.
 - [ ] Tests via VCR cassette `meta/insights/{daily_single_campaign,daily_multi_campaign,paginated,empty}.yml`. Real DB writes asserted via `AdSpendRecord.count`, channel mapping, currency stamping, conversion sums.
 
-### 2.11 — Integrations UI
+### 2.11 — Integrations UI ✅
 
-- [ ] `_meta_ads_card.html.erb` (live state — shown only when flag enabled).
-- [ ] `_meta_ads_section.html.erb` (list of connected Meta accounts).
-- [ ] `meta_ads.html.erb` + `meta_ads_account.html.erb` (per-connection detail).
-- [ ] Update `accounts/integrations/show.html.erb`: when `feature_enabled?(:meta_ads_integration)`, render the live Meta card; else keep the existing Coming Soon card.
-- [ ] No tests for views beyond a controller-level smoke test (`get accounts_integrations_path` includes "Meta Ads" when flag on, doesn't when off).
+- [x] `_meta_ads_card.html.erb` (live state — shown only when flag enabled).
+- [x] `meta_ads.html.erb` + `meta_ads_account.html.erb` (per-connection detail).
+- [x] `oauth/meta_ads/select_account.html.erb` (OAuth account picker).
+- [x] Update `accounts/integrations/show.html.erb`: when `feature_enabled?(:meta_ads_integration)`, render the live Meta card; else keep the existing Coming Soon card.
+- [x] Routes: `get meta_ads`, `get meta_ads/:id` on `accounts/integrations`.
+- [x] `Accounts::IntegrationsController#meta_ads` and `#meta_ads_account` actions, both gated on the flag.
+- [x] Refactored `_connect_button.html.erb` to take a `connect_path:` local so both Google and Meta sections can reuse it.
+- [x] Controller-level smoke tests: flag on → Meta card link present; flag off → Coming Soon card; index/detail redirect when flag off; index/detail render when flag on.
+- [ ] _Optional follow-up:_ extract `_meta_ads_section.html.erb` if/when we want a single-page integration view that lists every connection inline (current pattern is dedicated `/account/integrations/meta_ads` page, matching Google).
 
 ### 2.12 — Verify rake task
 
