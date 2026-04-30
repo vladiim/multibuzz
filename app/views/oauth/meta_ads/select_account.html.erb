@@ -2,33 +2,28 @@
   <%= render "layouts/nav" %>
 
   <div class="py-6 sm:py-10">
-    <div class="max-w-lg mx-auto px-4 sm:px-6">
+    <div class="max-w-2xl mx-auto px-4 sm:px-6">
       <div class="bg-white shadow sm:rounded-lg">
         <div class="px-6 py-4 border-b border-gray-200">
           <h1 class="text-xl font-semibold text-gray-900">Select Meta Ads Account</h1>
-          <p class="mt-1 text-sm text-gray-500">Choose the ad account you want to connect.</p>
+          <p class="mt-1 text-sm text-gray-500">Pick an ad account, optionally tag it with a property so spend rolls up against your conversions, then connect.</p>
         </div>
 
         <% if @ad_accounts.any? %>
           <div class="divide-y divide-gray-200">
             <% @ad_accounts.each do |ad_account| %>
-              <%= form_with url: oauth_meta_ads_create_connection_path, method: :post, class: "px-6 py-4 hover:bg-gray-50" do %>
-                <input type="hidden" name="ad_account_id" value="<%= ad_account[:id] %>">
-                <input type="hidden" name="ad_account_name" value="<%= ad_account[:name] %>">
-                <input type="hidden" name="currency" value="<%= ad_account[:currency] %>">
-                <input type="hidden" name="timezone_name" value="<%= ad_account[:timezone_name] %>">
-                <button type="submit" class="w-full text-left">
-                  <div class="flex items-center justify-between">
-                    <div>
-                      <p class="text-sm font-medium text-gray-900"><%= ad_account[:name] %></p>
-                      <p class="text-xs text-gray-500">ID: <%= ad_account[:id] %> &middot; <%= ad_account[:currency] %></p>
-                    </div>
-                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </button>
-              <% end %>
+              <%= render "oauth/shared/connect_account_row",
+                form_url: oauth_meta_ads_create_connection_path,
+                hidden_fields: {
+                  ad_account_id: ad_account[:id],
+                  ad_account_name: ad_account[:name],
+                  currency: ad_account[:currency],
+                  timezone_name: ad_account[:timezone_name]
+                },
+                title: ad_account[:name],
+                subtitle: "ID: #{ad_account[:id]} · #{ad_account[:currency]}",
+                known_keys: @known_metadata_keys,
+                known_values: @known_metadata_values %>
             <% end %>
           </div>
         <% else %>

@@ -29,10 +29,15 @@ module Oauth
         @customers = []
         @error = customer_list_result[:errors]&.first
       end
+
+      @known_metadata_keys = AdPlatforms::KnownMetadata.keys_for(oauth_account)
+      @known_metadata_values = AdPlatforms::KnownMetadata.values_by_key_for(oauth_account)
     end
 
     def create_connection
-      outcome = AdPlatforms::Google::AcceptConnectionService.new(account: oauth_account, params: params, tokens: session_tokens).call
+      outcome = AdPlatforms::Google::AcceptConnectionService.new(
+        account: oauth_account, params: params, tokens: session_tokens, metadata: extracted_metadata
+      ).call
       clear_oauth_session! if outcome[:clear_session]
       redirect_to account_integrations_path, **outcome.except(:clear_session)
     end
@@ -117,6 +122,12 @@ module Oauth
       @customer_list_result ||= AdPlatforms::Google::ListCustomers.new(
         access_token: access_token
       ).call
+    end
+
+    # --- Connect-time metadata ---
+
+    def extracted_metadata
+      AdPlatforms::ConnectMetadataExtractor.call(params)
     end
 
     # --- Disconnect ---

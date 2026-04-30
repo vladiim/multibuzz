@@ -1,0 +1,59 @@
+<%# locals: form_url, hidden_fields, title, subtitle, known_keys, known_values %>
+<div class="px-6 py-4">
+  <%= form_with url: form_url, method: :post do |f| %>
+    <% hidden_fields.each do |name, value| %>
+      <%= hidden_field_tag name, value %>
+    <% end %>
+
+    <div class="mb-3">
+      <p class="text-sm font-medium text-gray-900"><%= title %></p>
+      <p class="text-xs text-gray-500"><%= subtitle %></p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3"
+         data-controller="metadata-picker"
+         data-metadata-picker-known-values-value="<%= known_values.to_json %>">
+      <div>
+        <label class="block text-xs font-medium text-gray-700 mb-1">Property <span class="text-gray-400">(optional)</span></label>
+        <select name="metadata_key"
+                data-metadata-picker-target="keySelect"
+                data-action="change->metadata-picker#keyChanged"
+                class="block w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+          <option value="">— None —</option>
+          <% known_keys.each do |k| %>
+            <option value="<%= k %>"><%= k.titleize %></option>
+          <% end %>
+          <option value="__new__">+ Add new property...</option>
+        </select>
+        <input type="text"
+               name="metadata_key_new"
+               placeholder="e.g. region"
+               data-metadata-picker-target="keyNew"
+               disabled hidden
+               class="block w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 mt-2">
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-gray-700 mb-1">Value</label>
+        <select name="metadata_value"
+                data-metadata-picker-target="valueSelect"
+                data-action="change->metadata-picker#valueChanged"
+                class="block w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+          <option value="">— Choose value —</option>
+          <option value="__new__">+ Add new value...</option>
+        </select>
+        <input type="text"
+               name="metadata_value_new"
+               placeholder="e.g. Eumundi-Noosa"
+               data-metadata-picker-target="valueNew"
+               disabled hidden
+               class="block w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 mt-2">
+      </div>
+    </div>
+
+    <button type="submit"
+            class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+      Connect <%= title %>
+    </button>
+  <% end %>
+</div>

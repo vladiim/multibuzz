@@ -27,10 +27,14 @@ module Oauth
       result = AdPlatforms::Meta::ListAdAccounts.new(access_token: session_access_token).call
       @ad_accounts = result[:accounts] || []
       @error = result[:errors]&.first unless result[:success]
+      @known_metadata_keys = AdPlatforms::KnownMetadata.keys_for(oauth_account)
+      @known_metadata_values = AdPlatforms::KnownMetadata.values_by_key_for(oauth_account)
     end
 
     def create_connection
-      outcome = AdPlatforms::Meta::AcceptConnectionService.new(account: oauth_account, params: params, tokens: session_tokens).call
+      outcome = AdPlatforms::Meta::AcceptConnectionService.new(
+        account: oauth_account, params: params, tokens: session_tokens, metadata: extracted_metadata
+      ).call
       clear_oauth_session! if outcome[:clear_session]
       redirect_to account_integrations_path, **outcome.except(:clear_session)
     end
@@ -97,6 +101,10 @@ module Oauth
     def session_tokens
       tokens = session[:meta_ads_tokens]
       tokens && { access_token: tokens["access_token"], expires_at: Time.parse(tokens["expires_at"]) }
+    end
+
+    def extracted_metadata
+      AdPlatforms::ConnectMetadataExtractor.call(params)
     end
 
     def session_access_token
