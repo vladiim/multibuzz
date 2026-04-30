@@ -1,0 +1,48 @@
+<%# locals: connection %>
+<% link_result = AdPlatforms::MetadataLinkCheck.new(connection).call %>
+
+<div class="rounded-md border border-gray-200 p-4 space-y-3">
+  <div class="flex items-start justify-between">
+    <div>
+      <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wider">Metadata</h3>
+      <% if link_result[:state] == :no_metadata %>
+        <p class="text-sm text-gray-500 mt-1">No metadata tagged on this connection.</p>
+      <% else %>
+        <p class="text-sm font-medium text-gray-900 mt-1">
+          <%= link_result[:key].titleize %>: <span class="font-normal"><%= link_result[:value] %></span>
+        </p>
+      <% end %>
+    </div>
+  </div>
+
+  <% case link_result[:state] %>
+  <% when :linked %>
+    <div class="rounded-md bg-green-50 border border-green-200 p-3">
+      <p class="text-sm text-green-800">
+        ✓ Linked to <%= number_with_delimiter(link_result[:count]) %>
+        <%= "conversion".pluralize(link_result[:count]) %> in the last 90 days.
+      </p>
+    </div>
+  <% when :unlinked %>
+    <div class="rounded-md bg-amber-50 border border-amber-200 p-3 space-y-1">
+      <p class="text-sm text-amber-800">
+        ⚠️ No conversions match
+        <code class="bg-white px-1 rounded"><%= link_result[:key] %>: <%= link_result[:value] %></code>.
+        This connection's spend will sync but won't roll up against any conversions.
+      </p>
+      <% if link_result[:hint] %>
+        <p class="text-sm text-amber-800">
+          Did you mean
+          <code class="bg-white px-1 rounded"><%= link_result[:hint][:suggested_value] %></code>?
+          Found <%= number_with_delimiter(link_result[:hint][:count]) %>
+          <%= "conversion".pluralize(link_result[:hint][:count]) %> with that value.
+        </p>
+      <% else %>
+        <p class="text-xs text-amber-700">
+          Make sure your SDK sends conversions with
+          <code class="bg-white px-1 rounded">properties: { <%= link_result[:key] %>: '<%= link_result[:value] %>' }</code>.
+        </p>
+      <% end %>
+    </div>
+  <% end %>
+</div>

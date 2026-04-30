@@ -63,6 +63,8 @@
 
                 <%= render "verification_banner", connection: @connection %>
 
+                <%= render "metadata_panel", connection: @connection %>
+
                 <% date_range = @connection.spend_date_range %>
                 <dl class="grid grid-cols-3 gap-4 text-sm">
                   <div>
