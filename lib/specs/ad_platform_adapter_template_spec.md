@@ -25,7 +25,7 @@ We have two adapters live (Google, Meta). Both took longer than expected and dri
 The non-negotiables across every adapter:
 
 - **Global `AdPlatforms::ApiUsageTracker` wired up.** Billing visibility is not optional. The tracker is shared across all adapters; new adapters add their key to `LIMITS` and `DISPLAY_NAMES` and call `AdPlatforms::ApiUsageTracker.increment!(:platform_name)` from their `ApiClient`. Never create a per-platform tracker class.
-- **Per-connection `metadata` is plumbed end-to-end.** Connection metadata merges onto every `AdSpendRecord` row at sync time so multi-location dashboards work without joins.
+- **Per-connection `metadata` is plumbed end-to-end.** Connection metadata merges onto every `AdSpendRecord` row at sync time so multi-location dashboards work without joins. Dashboard surfacing of that metadata (filter + breakdown card) is owned by `lib/specs/spend_dashboard_metadata_breakdown_spec.md` — new adapters get the dashboard slicing automatically once the data lands, no per-adapter dashboard work.
 - **No mocks in tests.** Pure parsers test against fixture JSON. Orchestrators test through real HTTP via VCR cassettes. See `feedback_no_mocks.md`.
 - **Feature flag at the entry point.** Every new adapter gates on `current_account.feature_enabled?(FeatureFlags::{PLATFORM}_INTEGRATION)` until it's stable enough for general release.
 - **`skip_marketing_analytics` on the OAuth controller.** OAuth pages render tokens and identifiers; GA4 / Meta Pixel must not load.

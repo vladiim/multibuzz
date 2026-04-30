@@ -27,6 +27,7 @@ This spec is the umbrella. Each phase below ships its own RED→GREEN tests and 
 | 3 — Metadata mapping: finish + UAT | (was 4) | 🟢 Build complete · UAT pending | inline below |
 | 4 — Apply metadata UX to Google + lock pattern | NEW | ⏳ Pending | inline below |
 | 5 — Pet-resort production E2E test | (was 5) | ⏳ Pending | `lib/specs/ad_platform_meta_test_findings.md` (created on completion) |
+| 6 — Spend dashboard metadata filter + breakdown | NEW (post-merge) | 📋 Specced — separate branch | `lib/specs/spend_dashboard_metadata_breakdown_spec.md` |
 
 ---
 
@@ -236,7 +237,8 @@ No new code unless a defect surfaces. Walks the pet-resort production account th
 
 - **LinkedIn adapter.** Deferred to `lib/specs/future/ad_platform_linkedin_integration_spec.md`. To be picked up on a fresh branch following the standard template spec — same shape as Meta.
 - **TikTok / Microsoft / Pinterest / Snapchat / Reddit / X / Apple Search Ads.** Coming-soon cards only. Each future adapter follows `ad_platform_adapter_template_spec.md`.
-- **ROAS-by-location dashboard widget.** Separate spec once Phase 4 metadata is populated in prod.
+- **Spend dashboard metadata filter + breakdown card.** Specced in `lib/specs/spend_dashboard_metadata_breakdown_spec.md`. Closes the "ROAS by location/plan/whatever" loop opened by Phase 3 — the metadata is fully populated end-to-end at the data layer; the dashboard surface is the missing yard. Separate branch off `develop` after this one lands.
+- **Google Ads OAuth verification for general availability.** As of 2026-04-30 the OAuth app is still in Testing mode in Google Cloud Console — non-test-users hit `Error 403: access_denied`. Gated behind `FeatureFlags::GOOGLE_ADS_INTEGRATION` (default OFF in prod) until verification is submitted and approved. See `project_google_ads_api_status` memory for status + unblock paths.
 - **Stripe / pricing changes.** Phase 5 may flip copy from "coming" to "live"; does not change plan caps or prices.
 - **Backfilling Google Ads connections with metadata for accounts that already have Google connected.** Out of band; users edit via the Phase 3 UI when ready.
 - **Grandfathering accounts that hit the per-plan integration cap when Meta enables for them.** Already covered in `integration_plan_limits_spec.md:191`.
