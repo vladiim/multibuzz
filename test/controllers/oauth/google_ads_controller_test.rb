@@ -236,7 +236,7 @@ class Oauth::GoogleAdsControllerTest < ActionDispatch::IntegrationTest
       }
     end
 
-    assert_redirected_to account_integrations_path
+    assert_redirected_to google_ads_account_integrations_path
     assert_match(/2 of 2/i, flash[:alert])
   end
 
@@ -263,7 +263,7 @@ class Oauth::GoogleAdsControllerTest < ActionDispatch::IntegrationTest
       customer_id: connection.platform_account_id, customer_name: "Dupe", currency: "USD"
     }
 
-    assert_redirected_to account_integrations_path
+    assert_redirected_to google_ads_account_integrations_path
     assert_match(/already connected/i, flash[:alert])
     assert_no_difference "AdPlatformConnection.count" do
       post oauth_google_ads_create_connection_path, params: {

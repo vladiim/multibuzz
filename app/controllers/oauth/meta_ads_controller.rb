@@ -35,7 +35,7 @@ module Oauth
         account: oauth_account, params: params, tokens: session_tokens, metadata: extracted_metadata
       ).call
       clear_oauth_session! if outcome[:clear_session]
-      redirect_to account_integrations_path, **outcome.except(:clear_session)
+      redirect_to meta_ads_account_integrations_path, **outcome.except(:clear_session)
     end
 
     def reconnect

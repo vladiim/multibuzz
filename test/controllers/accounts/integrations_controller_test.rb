@@ -95,13 +95,13 @@ class Accounts::IntegrationsControllerTest < ActionDispatch::IntegrationTest
     assert_select "[data-connection-id='#{connection.prefix_id}']"
   end
 
-  test "google_ads shows connect button for paid accounts" do
+  test "google_ads shows add-another button for paid accounts with existing connections" do
     sign_in
     account.update!(plan: plans(:growth))
 
     get google_ads_account_integrations_path
 
-    assert_select "a", text: /Connect Account/
+    assert_select "a", text: /Add another account/
   end
 
   test "google_ads opens at-limit modal when starter is full" do
@@ -111,7 +111,7 @@ class Accounts::IntegrationsControllerTest < ActionDispatch::IntegrationTest
 
     get google_ads_account_integrations_path
 
-    assert_select "button[data-modal-target-value='at-limit-modal']", text: /Connect Account/
+    assert_select "button[data-modal-target-value='at-limit-modal']", text: /Add another account/
     assert_match(/2 of 2/i, response.body)
   end
 
@@ -121,7 +121,7 @@ class Accounts::IntegrationsControllerTest < ActionDispatch::IntegrationTest
 
     get google_ads_account_integrations_path
 
-    assert_select "button[data-modal-target-value='subscription-required-modal']", text: /Connect Account/
+    assert_select "button[data-modal-target-value='subscription-required-modal']", text: /Add another account/
   end
 
   # --- google_ads_account (account detail page) ---
