@@ -124,6 +124,24 @@ class AdPlatforms::Meta::AcceptConnectionServiceTest < ActiveSupport::TestCase
     end
   end
 
+  test "stamps normalized metadata onto the connection" do
+    account.update!(plan: growth_plan)
+
+    AdPlatforms::Meta::AcceptConnectionService.new(
+      account: account, params: params, tokens: tokens,
+      metadata: { "Location" => "Eumundi-Noosa" }
+    ).call
+
+    assert_equal({ "location" => "Eumundi-Noosa" }, created_connection.metadata)
+  end
+
+  test "leaves metadata empty when no metadata passed" do
+    account.update!(plan: growth_plan)
+    service.call
+
+    assert_equal({}, created_connection.metadata)
+  end
+
   private
 
   def service

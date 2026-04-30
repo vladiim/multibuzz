@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_28_040000) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_29_040001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -110,6 +110,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_28_040000) do
     t.jsonb "settings", default: {}
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "metadata", default: {}, null: false
     t.index ["account_id", "platform", "platform_account_id"], name: "idx_ad_connections_unique", unique: true
     t.index ["account_id"], name: "index_ad_platform_connections_on_account_id"
   end
@@ -134,6 +135,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_28_040000) do
     t.datetime "updated_at", null: false
     t.integer "spend_hour", default: 0, null: false
     t.string "device"
+    t.jsonb "metadata", default: {}, null: false
     t.index ["account_id", "ad_platform_connection_id", "spend_date", "spend_hour", "platform_campaign_id", "device", "network_type"], name: "idx_spend_unique", unique: true
     t.index ["account_id", "channel", "spend_date"], name: "idx_spend_date_range"
     t.index ["account_id", "spend_date", "channel"], name: "idx_spend_channel_date"

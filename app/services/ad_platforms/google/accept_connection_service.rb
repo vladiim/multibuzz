@@ -3,10 +3,11 @@
 module AdPlatforms
   module Google
     class AcceptConnectionService
-      def initialize(account:, params:, tokens:)
+      def initialize(account:, params:, tokens:, metadata: {})
         @account = account
         @params = params
         @tokens = tokens
+        @metadata = metadata
       end
 
       def call
@@ -20,7 +21,7 @@ module AdPlatforms
 
       private
 
-      attr_reader :account, :params, :tokens
+      attr_reader :account, :params, :tokens, :metadata
 
       def persist_and_enqueue
         connection.save!
@@ -51,7 +52,8 @@ module AdPlatforms
           refresh_token: tokens["refresh_token"],
           token_expires_at: Time.parse(tokens["expires_at"]),
           status: :connected,
-          settings: { "login_customer_id" => params[:login_customer_id].presence }.compact
+          settings: { "login_customer_id" => params[:login_customer_id].presence }.compact,
+          metadata: AdPlatforms::MetadataNormalizer.call(metadata)
         }
       end
 
