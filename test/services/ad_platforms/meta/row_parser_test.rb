@@ -111,6 +111,16 @@ class AdPlatforms::Meta::RowParserTest < ActiveSupport::TestCase
     assert_equal 10_000_000, parse(row)[:platform_conversions_micros]
   end
 
+  test "stamps connection metadata onto each row" do
+    connection.update!(metadata: { "location" => "Eumundi-Noosa" })
+
+    assert_equal({ "location" => "Eumundi-Noosa" }, parse(daily_row)[:metadata])
+  end
+
+  test "stamps empty metadata when connection has none" do
+    assert_equal({}, parse(daily_row)[:metadata])
+  end
+
   private
 
   def parse(row, channel_overrides: nil)

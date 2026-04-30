@@ -17,7 +17,7 @@ module AdPlatforms
       end
 
       def call
-        connection_attrs.merge(dimension_attrs).merge(campaign_attrs).merge(metric_attrs)
+        connection_attrs.merge(dimension_attrs).merge(campaign_attrs).merge(metric_attrs).merge(metadata_attrs)
       end
 
       private
@@ -26,6 +26,10 @@ module AdPlatforms
 
       def connection_attrs
         { account_id: connection.account_id, ad_platform_connection_id: connection.id }
+      end
+
+      def metadata_attrs
+        { metadata: connection.metadata.is_a?(Hash) ? connection.metadata : {} }
       end
 
       def dimension_attrs
