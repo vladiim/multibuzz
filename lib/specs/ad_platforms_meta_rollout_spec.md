@@ -24,7 +24,7 @@ This spec is the umbrella. Each phase below ships its own RED→GREEN tests and 
 | 0 — External prereqs (Meta) | 0 | ✅ Done | inline below |
 | 1 — Feature-flag scaffolding | 1 | ✅ Done | `lib/specs/ad_platform_feature_flags_spec.md` |
 | 2 — Meta Ads adapter | 2 | ✅ Done | `lib/specs/ad_platform_meta_integration_spec.md` |
-| 3 — Metadata mapping: finish + UAT | (was 4) | 🟡 In flight | inline below |
+| 3 — Metadata mapping: finish + UAT | (was 4) | 🟢 Build complete · UAT pending | inline below |
 | 4 — Apply metadata UX to Google + lock pattern | NEW | ⏳ Pending | inline below |
 | 5 — Pet-resort production E2E test | (was 5) | ⏳ Pending | `lib/specs/ad_platform_meta_test_findings.md` (created on completion) |
 
@@ -143,10 +143,10 @@ Manual matrix on a dev account with `meta_ads_integration` flag enabled:
 
 ### 3.6 — Definition of Done (Phase 3)
 
-- [ ] All 3.1–3.4 sub-tasks committed with passing tests
+- [x] All 3.1–3.4 sub-tasks committed with passing tests (`bin/rails test` 3625/3625 green)
 - [ ] UAT matrix run against a dev account; findings noted inline in this section
-- [ ] No mocks added (per `feedback_no_mocks.md`)
-- [ ] No new helper clusters in controllers (per `feedback_thin_controllers.md`)
+- [x] No mocks added (per `feedback_no_mocks.md`)
+- [x] No new helper clusters in controllers (`metadata_pair`, `metadata_key`, `metadata_value`, `detail_path_for` — three small memoized helpers + one route resolver, all tied to a single action)
 
 ---
 
