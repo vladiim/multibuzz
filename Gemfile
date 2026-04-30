@@ -149,4 +149,8 @@ group :test do
 
   # Memory allocation profiling [https://github.com/SamSaffron/memory_profiler]
   gem "memory_profiler"
+
+  # Record real HTTP responses once, replay deterministically [https://github.com/vcr/vcr]
+  gem "vcr"
+  gem "webmock"
 end

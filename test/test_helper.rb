@@ -25,6 +25,34 @@ end
 require_relative "../config/environment"
 require "rails/test_help"
 require "prosopite"
+require "vcr"
+require "webmock/minitest"
+
+VCR.configure do |config|
+  config.cassette_library_dir = "test/vcr_cassettes"
+  config.hook_into :webmock
+  config.default_cassette_options = {
+    record: ENV.fetch("VCR_RECORD_MODE", "none").to_sym,
+    match_requests_on: [ :method, :uri ]
+  }
+  config.allow_http_connections_when_no_cassette = false
+
+  # Filter Meta credentials and tokens out of recorded cassettes before commit.
+  config.filter_sensitive_data("<META_APP_ID>") do
+    Rails.application.credentials.dig(:meta_ads, :app_id).to_s
+  end
+  config.filter_sensitive_data("<META_APP_SECRET>") do
+    Rails.application.credentials.dig(:meta_ads, :app_secret).to_s
+  end
+  config.filter_sensitive_data("<META_ACCESS_TOKEN>") { ENV["META_ACCESS_TOKEN"].to_s }
+  config.filter_sensitive_data("<META_ACCESS_TOKEN>") do |interaction|
+    auth = interaction.request.headers["Authorization"]&.first
+    auth&.sub(/\ABearer\s+/, "")
+  end
+end
+
+# Allow localhost connections (Capybara, etc.) but block all other unrecorded HTTP.
+WebMock.disable_net_connect!(allow_localhost: true)
 
 module SignInHelper
   def sign_in_as(user)
