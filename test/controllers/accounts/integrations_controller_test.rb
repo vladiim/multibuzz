@@ -274,6 +274,69 @@ class Accounts::IntegrationsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to login_path
   end
 
+  # --- meta_ads (feature-flagged) ---
+
+  test "show renders Meta Ads as Coming Soon when feature flag off" do
+    sign_in
+
+    get account_integrations_path
+
+    assert_select "a[href='#{meta_ads_account_integrations_path}']", count: 0
+    assert_match(/Meta Ads/, response.body)
+    assert_match(/Coming soon/, response.body)
+  end
+
+  test "show renders live Meta Ads card when feature flag on" do
+    account.enable_feature!(FeatureFlags::META_ADS_INTEGRATION)
+    sign_in
+
+    get account_integrations_path
+
+    assert_select "[data-platform='meta-ads']"
+    assert_select "a[href='#{meta_ads_account_integrations_path}']"
+  end
+
+  test "meta_ads redirects when feature flag is off" do
+    sign_in
+
+    get meta_ads_account_integrations_path
+
+    assert_redirected_to account_integrations_path
+    assert_match(/not enabled/i, flash[:alert])
+  end
+
+  test "meta_ads renders index when feature flag is on" do
+    account.enable_feature!(FeatureFlags::META_ADS_INTEGRATION)
+    meta = build_meta_connection
+    sign_in
+
+    get meta_ads_account_integrations_path
+
+    assert_response :success
+    assert_select "h1", text: /Meta Ads/
+    assert_match(meta.platform_account_name, response.body)
+  end
+
+  test "meta_ads_account renders detail when feature flag is on" do
+    account.enable_feature!(FeatureFlags::META_ADS_INTEGRATION)
+    meta = build_meta_connection
+    sign_in
+
+    get meta_ads_detail_account_integrations_path(meta)
+
+    assert_response :success
+    assert_match(meta.platform_account_name, response.body)
+  end
+
+  test "meta_ads_account redirects when feature flag is off" do
+    meta = build_meta_connection
+    sign_in
+
+    get meta_ads_detail_account_integrations_path(meta)
+
+    assert_redirected_to account_integrations_path
+  end
+
   # --- multi-tenancy ---
 
   test "google_ads does not show other account connections" do
@@ -299,4 +362,17 @@ class Accounts::IntegrationsControllerTest < ActionDispatch::IntegrationTest
   def account = @account ||= accounts(:one)
   def connection = @connection ||= ad_platform_connections(:google_ads)
   def other_connection = @other_connection ||= ad_platform_connections(:other_account_google)
+
+  def build_meta_connection
+    account.ad_platform_connections.create!(
+      platform: :meta_ads,
+      platform_account_id: "act_1111111111",
+      platform_account_name: "Acme Meta Ads",
+      currency: "USD",
+      access_token: "meta_test_token",
+      refresh_token: "meta_test_token",
+      token_expires_at: 60.days.from_now,
+      status: :connected
+    )
+  end
 end

@@ -31,7 +31,12 @@
                 <%= render "google_ads_card" %>
               <% end %>
 
+              <% if current_account.feature_enabled?(FeatureFlags::META_ADS_INTEGRATION) %>
+                <%= render "meta_ads_card" %>
+              <% end %>
+
               <% IntegrationRequestSubmission::COMING_SOON_PLATFORMS.each do |platform| %>
+                <% next if platform == "Meta Ads" && current_account.feature_enabled?(FeatureFlags::META_ADS_INTEGRATION) %>
                 <%= render "coming_soon_card",
                   platform: platform,
                   notified: @notified_platforms.include?(platform) %>

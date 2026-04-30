@@ -1,0 +1,81 @@
+<div class="min-h-screen bg-gray-100">
+  <%= render "layouts/nav" %>
+
+  <div class="py-6 sm:py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row gap-4 md:gap-8">
+        <%= render "layouts/account_nav" %>
+
+        <div class="flex-1 space-y-4 md:space-y-6">
+          <%= render "layouts/account_nav_tabs" %>
+
+          <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+              <div>
+                <p class="text-sm text-gray-500">
+                  <%= link_to "Integrations", account_integrations_path, class: "hover:text-indigo-600" %> >
+                  <span class="font-medium text-gray-900">Meta Ads</span>
+                </p>
+                <h1 class="text-xl font-semibold text-gray-900 mt-1">Meta Ads</h1>
+              </div>
+              <%= render "connect_button", connect_path: oauth_meta_ads_connect_path %>
+            </div>
+
+            <% if @connections.any? %>
+              <div class="divide-y divide-gray-200">
+                <% @connections.each do |conn| %>
+                  <% account_name = conn.platform_account_name.presence || "Meta Ads Account" %>
+                  <%= link_to meta_ads_detail_account_integrations_path(conn),
+                    class: "block px-6 py-4 hover:bg-gray-50", data: { connection_id: conn.prefix_id } do %>
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <div class="flex items-center gap-2">
+                          <p class="text-sm font-medium text-gray-900"><%= account_name %></p>
+                          <%= render "connection_status", connection: conn %>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-0.5">
+                          <%= conn.platform_account_id %> · <%= conn.currency %>
+                          <% if conn.connected? && conn.last_synced_at %>
+                            · Synced <%= time_ago_in_words(conn.last_synced_at) %> ago
+                          <% elsif conn.syncing? %>
+                            · Syncing...
+                          <% elsif conn.needs_reauth? %>
+                            · Re-authentication required
+                          <% end %>
+                        </p>
+                      </div>
+                      <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  <% end %>
+                <% end %>
+              </div>
+            <% else %>
+              <div class="px-6 py-12 text-center">
+                <p class="text-sm text-gray-500">No Meta Ads accounts connected yet.</p>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%= render "shared/upgrade_modal",
+  modal_id: "subscription-required-modal",
+  title: "Subscription Required",
+  body: "Ad platform integrations are available on paid plans. Connect Meta Ads to unlock:",
+  features: [
+    "Attributed ROAS across Facebook & Instagram",
+    "Customer acquisition cost (CAC)",
+    "Budget recommendations",
+    "Automated daily spend sync"
+  ] %>
+
+<%= render "shared/upgrade_modal",
+  modal_id: "at-limit-modal",
+  title: "Integration limit reached",
+  body: current_account.ad_platform_at_limit_alert,
+  cta_text: "View plans" %>

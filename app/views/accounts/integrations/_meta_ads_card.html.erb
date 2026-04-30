@@ -1,0 +1,32 @@
+<% meta_connections = @connections.select { |c| c.meta_ads? && !c.disconnected? } %>
+
+<%= link_to meta_ads_account_integrations_path, class: "block px-6 py-5 hover:bg-gray-50", data: { platform: "meta-ads" } do %>
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <div class="flex-shrink-0 w-10 h-10 bg-white border border-gray-200 rounded-lg flex items-center justify-center">
+        <svg class="w-6 h-6" viewBox="0 0 36 36" fill="none">
+          <path d="M20.181 35.87C29.32 34.39 36 26.45 36 17.04 36 7.62 28.31 0 18.83 0 8.96 0 1.04 7.62 1.04 17.04c0 8.7 6.4 15.92 14.78 17.18v-12.16h-4.45v-5.02h4.45v-3.86c0-4.39 2.62-6.82 6.63-6.82 1.92 0 3.93.34 3.93.34v4.31h-2.21c-2.18 0-2.86 1.35-2.86 2.74v3.29h4.87l-.78 5.02h-4.09v12.81z" fill="#1877F2" />
+        </svg>
+      </div>
+
+      <div>
+        <p class="text-sm font-medium text-gray-900">Meta Ads</p>
+        <% if meta_connections.any? %>
+          <p class="text-xs text-gray-500"><%= pluralize(meta_connections.size, "account") %> connected</p>
+        <% else %>
+          <p class="text-xs text-gray-500">Connect to track Facebook & Instagram ad spend</p>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <% if meta_connections.any? %>
+        <% worst_status = meta_connections.min_by { |c| c.connected? ? 0 : c.needs_reauth? ? 1 : 2 } %>
+        <%= render "connection_status", connection: worst_status %>
+      <% end %>
+      <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+    </div>
+  </div>
+<% end %>

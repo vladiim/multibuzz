@@ -201,6 +201,8 @@ Rails.application.routes.draw do
         post "request", action: :request_integration, as: :request_integration
         get "google_ads", action: :google_ads
         get "google_ads/:id", action: :google_ads_account, as: :google_ads_detail
+        get "meta_ads", action: :meta_ads
+        get "meta_ads/:id", action: :meta_ads_account, as: :meta_ads_detail
       end
       resources :attribution_models, except: [ :show ] do
         collection do

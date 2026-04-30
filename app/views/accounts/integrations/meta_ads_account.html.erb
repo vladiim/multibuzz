@@ -1,0 +1,127 @@
+<% account_name = @connection.platform_account_name.presence || "Meta Ads Account" %>
+
+<div class="min-h-screen bg-gray-100">
+  <%= render "layouts/nav" %>
+
+  <div class="py-6 sm:py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row gap-4 md:gap-8">
+        <%= render "layouts/account_nav" %>
+
+        <div class="flex-1 space-y-4 md:space-y-6">
+          <%= render "layouts/account_nav_tabs" %>
+
+          <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="px-6 py-4 border-b border-gray-200">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-gray-500">
+                    <%= link_to "Integrations", account_integrations_path, class: "hover:text-indigo-600" %> >
+                    <%= link_to "Meta Ads", meta_ads_account_integrations_path, class: "hover:text-indigo-600" %> >
+                    <span class="font-medium text-gray-900"><%= account_name %></span>
+                  </p>
+                  <div class="flex items-center gap-3 mt-1">
+                    <h1 class="text-xl font-semibold text-gray-900"><%= account_name %></h1>
+                    <%= render "connection_status", connection: @connection %>
+                  </div>
+                  <p class="text-sm text-gray-500 mt-0.5"><%= @connection.platform_account_id %> · <%= @connection.currency %></p>
+                </div>
+
+                <div class="flex items-center gap-3" data-controller="toggle">
+                  <% if @connection.connected? || @connection.error? %>
+                    <%= button_to "Sync Now", refresh_account_integrations_path(@connection),
+                      method: :post,
+                      data: { action: "click->toggle#toggle" },
+                      class: "inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50",
+                      form: { data: { turbo: false } } %>
+                    <span data-toggle-target="content" class="hidden inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-blue-600">
+                      <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Syncing...
+                    </span>
+                  <% end %>
+                  <% if @connection.needs_reauth? %>
+                    <%= link_to "Re-authenticate", oauth_meta_ads_reconnect_path(@connection),
+                      class: "inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700" %>
+                  <% end %>
+                  <%= link_to "Disconnect", oauth_meta_ads_disconnect_path(@connection),
+                    data: { turbo_method: :delete, turbo_confirm: "Disconnect this account? Historical data will be kept." },
+                    class: "text-sm text-red-600 hover:text-red-800" %>
+                </div>
+              </div>
+            </div>
+
+            <%= turbo_stream_from "connection_#{@connection.prefix_id}" %>
+              <div class="px-6 py-5 space-y-6">
+                <% if @connection.error? && @connection.last_sync_error.present? %>
+                  <div class="rounded-md bg-red-50 border border-red-200 p-4">
+                    <p class="text-sm text-red-700"><%= @connection.last_sync_error %></p>
+                  </div>
+                <% end %>
+
+                <% date_range = @connection.spend_date_range %>
+                <dl class="grid grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <dt class="text-gray-500">Data coverage</dt>
+                    <dd class="font-medium text-gray-900">
+                      <% if date_range&.first %>
+                        <%= date_range.first.strftime("%b %-d") %> – <%= date_range.last.strftime("%b %-d, %Y") %>
+                      <% else %>
+                        No data yet
+                      <% end %>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt class="text-gray-500">Total records</dt>
+                    <dd class="font-medium text-gray-900"><%= number_with_delimiter(@connection.spend_records_count) %></dd>
+                  </div>
+                  <div>
+                    <dt class="text-gray-500">Last synced</dt>
+                    <dd class="font-medium text-gray-900">
+                      <%= @connection.last_synced_at ? time_ago_in_words(@connection.last_synced_at) + " ago" : "Never" %>
+                    </dd>
+                  </div>
+                </dl>
+
+                <% sync_runs = @connection.recent_sync_runs %>
+                <div>
+                  <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Sync History</h3>
+                  <div id="sync-history" class="divide-y divide-gray-100">
+                    <div id="sync-run-pending" class="hidden flex items-center justify-between py-2 text-sm" data-toggle-target="content">
+                      <span class="text-gray-500">Just now</span>
+                      <span class="flex items-center gap-1.5 text-blue-600">
+                        <svg class="h-3.5 w-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Syncing...
+                      </span>
+                    </div>
+                      <% sync_runs.each do |run| %>
+                        <div class="flex items-center justify-between py-2 text-sm">
+                          <span class="text-gray-500"><%= run.created_at.strftime("%b %-d, %-I:%M %p") %></span>
+                          <% if run.completed? %>
+                            <span class="text-green-600">
+                              <%= number_with_delimiter(run.records_synced) %> records
+                              <% if run.completed_at && run.started_at %>
+                                <span class="text-gray-400 ml-1"><%= (run.completed_at - run.started_at).round %>s</span>
+                              <% end %>
+                            </span>
+                          <% elsif run.failed? %>
+                            <span class="text-red-600"><%= run.error_message&.truncate(60) || "Failed" %></span>
+                          <% elsif run.running? %>
+                            <span class="text-blue-600">Running...</span>
+                          <% end %>
+                        </div>
+                      <% end %>
+                    </div>
+                  </div>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -20,6 +20,18 @@ module Accounts
       @connection = connection
     end
 
+    def meta_ads
+      return redirect_to(account_integrations_path, alert: "Meta Ads integration is not enabled for your account yet.") unless current_account.feature_enabled?(FeatureFlags::META_ADS_INTEGRATION)
+
+      @connections = current_account.ad_platform_connections.where(platform: :meta_ads).where.not(status: :disconnected).order(created_at: :desc)
+    end
+
+    def meta_ads_account
+      return redirect_to(account_integrations_path, alert: "Meta Ads integration is not enabled for your account yet.") unless current_account.feature_enabled?(FeatureFlags::META_ADS_INTEGRATION)
+
+      @connection = connection
+    end
+
     def refresh
       return dismiss_verification if params[:dismiss_verification]
 
