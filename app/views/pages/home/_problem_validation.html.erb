@@ -1,0 +1,66 @@
+<section class="py-20 px-6 bg-gray-50">
+  <div class="max-w-6xl mx-auto">
+    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 text-center mb-3 scroll-animate" data-controller="scroll-reveal">
+      Sound familiar?
+    </h2>
+    <p class="text-lg text-gray-600 text-center mb-12 max-w-2xl mx-auto scroll-animate" data-controller="scroll-reveal">
+      Three thoughts every performance marketer has had this month.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+      <figure class="bg-white p-6 md:p-8 rounded-xl border border-gray-200 scroll-animate" data-controller="scroll-reveal">
+        <blockquote class="text-lg text-gray-900 leading-relaxed">
+          &ldquo;My Meta dashboard says 4.1x ROAS. My Shopify says it&rsquo;s barely 2x.
+          <%= link_to "Which one is real?",
+                article_path("platform-reports-dont-match"),
+                class: "underline decoration-dotted underline-offset-4 hover:text-blue-600" %>&rdquo;
+        </blockquote>
+        <figcaption class="mt-4 text-sm text-gray-500 italic">
+          &mdash; Every performance marketer, monthly
+        </figcaption>
+      </figure>
+
+      <figure class="bg-white p-6 md:p-8 rounded-xl border border-gray-200 scroll-animate" data-controller="scroll-reveal">
+        <blockquote class="text-lg text-gray-900 leading-relaxed">
+          &ldquo;GA4 attribution
+          <%= link_to "dropped from 7 models to 1",
+                article_path("ga4-attribution-models-removed"),
+                class: "underline decoration-dotted underline-offset-4 hover:text-blue-600" %>.
+          Now I can&rsquo;t compare anything.&rdquo;
+        </blockquote>
+        <figcaption class="mt-4 text-sm text-gray-500 italic">
+          &mdash; Anyone migrating from UA, ongoing
+        </figcaption>
+      </figure>
+
+      <figure class="bg-white p-6 md:p-8 rounded-xl border border-gray-200 scroll-animate" data-controller="scroll-reveal">
+        <blockquote class="text-lg text-gray-900 leading-relaxed">
+          &ldquo;Dreamdata wants
+          <%= link_to "$750/mo",
+                article_path("dreamdata-pricing"),
+                class: "underline decoration-dotted underline-offset-4 hover:text-blue-600" %>.
+          Rockerbox wants a
+          <%= link_to "6-month sales cycle",
+                article_path("rockerbox-alternatives"),
+                class: "underline decoration-dotted underline-offset-4 hover:text-blue-600" %>.
+          Triple Whale is
+          <%= link_to "e-com only",
+                article_path("mbuzz-vs-triple-whale"),
+                class: "underline decoration-dotted underline-offset-4 hover:text-blue-600" %>.
+          There&rsquo;s nothing in between.&rdquo;
+        </blockquote>
+        <figcaption class="mt-4 text-sm text-gray-500 italic">
+          &mdash; Mid-market marketers, the gap
+        </figcaption>
+      </figure>
+    </div>
+
+    <div class="text-center mt-12 scroll-animate" data-controller="scroll-reveal">
+      <p class="text-gray-700 mb-4 max-w-xl mx-auto">
+        If any of those sound like your week, the 3-minute score will tell you exactly where you sit.
+      </p>
+      <%= link_to "Score your attribution &rarr;".html_safe, score_path,
+            class: "inline-block px-6 py-3 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-all" %>
+    </div>
+  </div>
+</section>
