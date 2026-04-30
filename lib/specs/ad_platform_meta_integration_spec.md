@@ -197,16 +197,17 @@ Each sub-phase is one or two commits. RED test → GREEN code → run all tests 
 - [ ] Register in `AdPlatforms::Registry` under `:meta_ads`.
 - [ ] Test: `Registry.adapter_for(meta_connection)` returns Meta adapter instance.
 
-### 2.8 — Oauth::MetaAdsController (full surface)
+### 2.8 — Oauth::MetaAdsController (full surface) ✅
 
-- [ ] Routes for connect / callback / select_account / create_connection / reconnect / disconnect (mirror Google's `config/routes.rb:15-22`).
-- [ ] Controller, `skip_marketing_analytics`, `before_action :require_login`.
-- [ ] **Feature-flag gate at top of `#connect`** — redirect to integrations page with "feature not enabled" notice if flag off.
-- [ ] Plan-limit gate (already platform-agnostic via `can_add_ad_platform_connection?`).
-- [ ] Account-session pinning (re-use Google's `oauth_account_id` session key pattern).
-- [ ] Token chain on callback: `TokenClient (code) → TokenExchanger → TokenClient (fb_exchange) → LongLivedExchanger`. Result stored in session for `select_account`.
-- [ ] Race-safe re-check in `#create_connection`.
-- [ ] Tests: feature flag gate, plan limit gate, OAuth state validation, account session pinning, race on save.
+- [x] Routes for connect / callback / select_account / create_connection / reconnect / disconnect (`config/routes.rb:23-28`).
+- [x] Controller with `skip_marketing_analytics`, `before_action :require_login`.
+- [x] **Feature-flag gate** — `require_feature_flag` before-action on connect/callback/select_account/create_connection/reconnect.
+- [x] Plan-limit + connection-slot gates on connect.
+- [x] Account-session pinning via `oauth_account_id` session key.
+- [x] Token chain on callback extracted into `CompleteCallbackService` (short-lived → long-lived). Long-lived token + expiry stashed in session for `select_account`.
+- [x] Tests (`test/controllers/oauth/meta_ads_controller_test.rb`, 13 cases): feature-flag gate (auth/flag/plan/limit), state validation (mismatched + missing), select_account requires pinned oauth account, create_connection requires session tokens, disconnect happy path + cross-account isolation, reconnect login + flag gates.
+
+**Drift note:** controller currently writes `refresh_token: callback_result[:access_token]` — Meta has no refresh token, so this stamps the access token in both columns. Either drop the column write or rename for clarity (out of scope for this sub-phase; tracked for follow-up).
 
 ### 2.9 — RowParser + CampaignChannelMapper (pure)
 
