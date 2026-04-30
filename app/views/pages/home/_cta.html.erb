@@ -4,10 +4,11 @@
       What would you do differently if you knew what was actually working?
     </h2>
     <p class="mt-4 text-xl text-gray-400">
-      Set up in under 5 minutes. No credit card required.
+      The 3-minute score tells you exactly where you sit. No signup. No email.
     </p>
-    <div class="mt-10">
-      <%= link_to "Get Started Free", signup_path, class: "px-8 py-3 text-base font-semibold text-gray-900 bg-white hover:bg-gray-100 rounded-md transition-all inline-block" %>
+    <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
+      <%= link_to "Score your attribution", score_path, class: "px-8 py-3 text-base font-semibold text-gray-900 bg-white hover:bg-gray-100 rounded-md transition-all inline-block" %>
+      <%= link_to "Start a free account", signup_path, class: "px-8 py-3 text-base font-semibold text-white border border-gray-600 hover:border-gray-400 hover:bg-gray-800 rounded-md transition-all inline-block" %>
     </div>
   </div>
 </section>

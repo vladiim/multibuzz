@@ -6,7 +6,7 @@
       name: App::PUBLISHER_NAME,
       url: App::BASE_URL,
       logo: "#{App::BASE_URL}/logo.svg",
-      description: "Server-side multi-touch attribution platform for technical marketers",
+      description: "Multi-touch attribution for marketers spending $10k–$1m/month on paid acquisition. 8 models side-by-side, server-side capture, no vendor lock-in.",
       email: App::EMAIL,
       foundingDate: "2025"
     }.to_json.html_safe %>
@@ -19,7 +19,7 @@
       applicationCategory: "BusinessApplication",
       operatingSystem: "Web",
       url: App::BASE_URL,
-      description: "Server-side multi-touch attribution you own. Track customer journeys, measure marketing ROI, and understand what drives conversions, without black-box models or data lock-in.",
+      description: "Multi-touch attribution for marketers spending $10k–$1m/month on paid acquisition. Reconcile platform ROAS, compare 8 attribution models side-by-side, own your data.",
       offers: [
         { "@type": "Offer", name: "Free", price: "0", priceCurrency: "USD" },
         { "@type": "Offer", name: "Starter", price: "29", priceCurrency: "USD" },
@@ -45,7 +45,7 @@
 
   <% link_class = "underline decoration-dotted underline-offset-4 hover:text-blue-600" %>
   <%= render "landing_pages/lp_feature_showcase",
-    heading: "What you actually need from attribution.",
+    heading: "Three things attribution should actually do.",
     bg_variant: "white",
     cells: [
       {
@@ -112,7 +112,7 @@
     <div class="max-w-3xl mx-auto bg-gray-50 border border-gray-200 rounded-lg px-6 py-5 text-center text-sm text-gray-600">
       Need to express custom attribution logic? mbuzz also ships a SQL-like
       <strong class="text-gray-900">Attribution DSL</strong>. Fork any built-in model,
-      add lookback windows, encode your sales cycle. Most teams never need it.
+      add lookback windows, encode your sales cycle.
       <%= link_to "Read the DSL docs &rarr;".html_safe, docs_path("getting-started"), class: "font-medium text-blue-600 hover:text-blue-700 ml-1 whitespace-nowrap" %>
     </div>
   </section>

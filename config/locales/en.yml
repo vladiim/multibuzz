@@ -59,26 +59,26 @@ en:
         hub: "mbuzz"
         output: "Unified Attribution"
       features:
-        title: "Under the hood"
-        subtitle: "Built for technical marketers who value control without complexity."
+        title: "The features list. Without the fluff."
+        subtitle: "What you actually get when you sign up."
         privacy_tracking:
-          title: "10-Minute Setup"
-          description: "Framework-native SDKs for Rails, Django, Laravel, and Node.js. Drop in a gem, add your API key, and you're tracking. No complicated tag managers or JavaScript snippets to debug."
+          title: "10-minute setup"
+          description: "Native SDKs for Ruby, Node, Python, and PHP. GTM, Shopify, and REST too. Server-side capture starts immediately, no JavaScript snippets to debug."
         dark_funnel:
-          title: "8 Attribution Models"
-          description: "First-touch, last-touch, linear, time-decay, position-based, Markov chain, Shapley value, and data-driven, all running on the same data, side by side, so you can see the spread."
+          title: "Eight attribution models"
+          description: "First-touch, last-touch, linear, time-decay, position-based, Markov, Shapley, data-driven. All running on the same data, side by side, so you can see the spread."
         quick_setup:
-          title: "Roll Your Own Custom Models"
-          description: "Write custom attribution rules in minutes with a simple modelling language. No need to wait for your analytics vendor to ship your feature request, just define the logic and run it."
+          title: "Build your own attribution"
+          description: "Fork any built-in model, tweak the decay, add lookback windows. Or write custom rules in a SQL-like Attribution DSL. Your sales cycle, encoded in math."
         user_mapping:
-          title: "Server-Side All The Way"
-          description: "Track events on your backend, not in the browser. No client-side scripts means no ad blockers, no privacy extensions, and no missing data. Just accurate attribution."
+          title: "Server-side, ad-blocker proof"
+          description: "Track events on your backend, not in the browser. No client-side scripts means no ad blockers, no privacy extensions, no missing data. The 30-40% of touchpoints client-side tracking misses are now in your data."
         custom_models:
-          title: "Event Debugging"
-          description: "See every event in real-time with full context: UTM params, referrers, channels, and user journeys. Export to CSV or a database of your choice."
+          title: "Real-time event inspector"
+          description: "See every conversion the moment it lands. Full context: UTM params, referrers, channels, customer journey. Export to CSV or your warehouse anytime."
         etl_exports:
-          title: "Attribution Dashboards"
-          description: "Attribution model dashboards let you compare any attribution model side-by-side. Funnel analysis shows you exactly where users drop off in their journey by channel and compare customer revenue across channels."
+          title: "Side-by-side model dashboards"
+          description: "Switch any dashboard between attribution models in one click. Funnel analysis shows where users drop off by channel. Compare lifetime revenue across channels."
       cta:
         title: "What would you do differently if you knew what was actually working?"
         subtitle: "Set up in under 5 minutes. No credit card required."

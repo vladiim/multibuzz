@@ -15,6 +15,8 @@
           <%= t('pages.home.footer.product') %>
         </h4>
         <ul class="space-y-2">
+          <li><%= link_to "Score Your Attribution", score_path, class: "text-sm text-gray-600 hover:text-gray-900" %></li>
+          <li><%= link_to "Compare", academy_section_path("comparisons"), class: "text-sm text-gray-600 hover:text-gray-900" %></li>
           <li><a href="#features" class="text-sm text-gray-600 hover:text-gray-900"><%= t('pages.home.footer.product_features') %></a></li>
           <li><%= link_to t('pages.home.footer.product_docs'), docs_path('getting-started'), class: "text-sm text-gray-600 hover:text-gray-900" %></li>
           <li><%= link_to "Articles", academy_path, class: "text-sm text-gray-600 hover:text-gray-900" %></li>
