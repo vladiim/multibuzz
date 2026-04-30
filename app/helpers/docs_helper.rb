@@ -199,15 +199,20 @@ module DocsHelper
     }
   end
 
-  # Custom renderer with Rouge syntax highlighting
+  # Custom renderer with Rouge syntax highlighting.
+  #
+  # Untagged ``` blocks (no language specified) are NOT real code — they're usually
+  # ASCII diagrams, journey examples, or pseudo-text. Render them as a plain "example"
+  # panel (light bg, no syntax highlighting, no language label) so they don't masquerade
+  # as code. Tagged blocks (```ruby, ```sql, etc.) get the full dark Rouge treatment.
   class SyntaxHighlightRenderer < Redcarpet::Render::HTML
     def block_code(code, language)
-      language ||= "ruby"
+      if language.nil? || language.strip.empty?
+        return render_example_panel(code)
+      end
 
-      # Use Rouge for syntax highlighting
       lexer = Rouge::Lexer.find_fancy(language, code) || Rouge::Lexers::PlainText.new
       formatter = Rouge::Formatters::HTML.new
-
       highlighted_code = formatter.format(lexer.lex(code))
 
       <<~HTML
@@ -218,6 +223,19 @@ module DocsHelper
           <div class="code-content bg-slate-900 rounded-b-lg overflow-x-auto">
             <pre class="p-4 m-0"><code class="language-#{language} text-sm leading-relaxed"><div class="highlight">#{highlighted_code}</div></code></pre>
           </div>
+        </div>
+      HTML
+    end
+
+    private
+
+    # Plain monospace example block — light background, no fake "ruby" label, no syntax colouring.
+    # Used for ASCII diagrams, journey examples, hand-drawn flows, anything that isn't real code.
+    def render_example_panel(code)
+      escaped = ERB::Util.html_escape(code.to_s.chomp)
+      <<~HTML
+        <div class="not-prose my-6 bg-slate-50 border border-slate-200 rounded-lg overflow-x-auto">
+          <pre class="px-5 py-4 m-0 text-sm leading-relaxed text-slate-700 font-mono whitespace-pre">#{escaped}</pre>
         </div>
       HTML
     end

@@ -252,24 +252,28 @@ When dark funnel channels work, branded search volume increases:
 <div class="not-prose my-8 bg-white border border-slate-200 rounded-lg overflow-hidden">
   <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
     <p class="text-xs font-bold text-slate-500 tracking-[0.15em]">BRANDED SEARCH AS DARK-FUNNEL PROXY</p>
-    <p class="text-xs text-slate-500 italic mt-1">Podcast campaign launches in week 1</p>
+    <p class="text-xs text-slate-500 italic mt-1">Podcast campaign launches in week 1 &middot; weekly branded-search volume index</p>
   </div>
-  <div class="px-5 py-5">
-    <div class="grid grid-cols-5 gap-2 items-end h-32">
-      <div class="bg-slate-300 rounded-t-sm" style="height: 25%;"></div>
-      <div class="bg-indigo-400 rounded-t-sm" style="height: 45%;"></div>
-      <div class="bg-indigo-500 rounded-t-sm" style="height: 65%;"></div>
-      <div class="bg-indigo-600 rounded-t-sm" style="height: 85%;"></div>
-      <div class="bg-indigo-700 rounded-t-sm" style="height: 100%;"></div>
-    </div>
-    <div class="grid grid-cols-5 gap-2 mt-1 text-center text-[10px] font-mono text-slate-500">
-      <div>Week 1</div>
-      <div>Week 2</div>
-      <div>Week 3</div>
-      <div>Week 4</div>
-      <div>Week 5</div>
-    </div>
-    <p class="text-xs text-slate-600 italic mt-4 leading-snug">If branded search volume rises during a podcast campaign, the <strong class="not-italic text-slate-900">podcast</strong> is creating demand &mdash; even though attribution credits the &quot;branded search&quot; click.</p>
+  <div class="px-5 py-5 space-y-2">
+    <% [
+      { week: "Week 1", value: 100, fill: 25, note: "podcast launches" },
+      { week: "Week 2", value: 145, fill: 40, note: nil },
+      { week: "Week 3", value: 180, fill: 55, note: nil },
+      { week: "Week 4", value: 220, fill: 73, note: nil },
+      { week: "Week 5", value: 270, fill: 90, note: "+170% vs baseline" }
+    ].each do |row| %>
+      <div class="grid grid-cols-[4.5rem_1fr_5rem] sm:grid-cols-[5rem_1fr_8rem] items-center gap-x-3">
+        <div class="text-xs sm:text-sm font-mono text-slate-600 text-right"><%= row[:week] %></div>
+        <div class="h-5 sm:h-6 bg-slate-100 rounded-sm overflow-hidden">
+          <div class="h-full bg-indigo-500 rounded-sm" style="width: <%= row[:fill] %>%;"></div>
+        </div>
+        <div class="text-xs sm:text-sm font-mono font-semibold text-indigo-700 flex items-center gap-2">
+          <span><%= row[:value] %></span>
+          <% if row[:note] %><span class="text-[10px] text-slate-500 italic font-normal"><%= row[:note] %></span><% end %>
+        </div>
+      </div>
+    <% end %>
+    <p class="text-xs text-slate-600 italic mt-4 pt-3 border-t border-slate-100 leading-snug">If branded-search volume rises during a podcast campaign, the <strong class="not-italic text-slate-900">podcast</strong> is creating demand &mdash; even though attribution credits the &quot;branded search&quot; click.</p>
   </div>
 </div>
 
