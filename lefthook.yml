@@ -5,7 +5,7 @@ pre-commit:
       glob: "*.rb"
       run: bundle exec rubocop --force-exclusion {staged_files}
     erblint:
-      glob: "*.erb"
+      glob: "*.html.erb"
       exclude: "app/content/articles/{models,forecasting,fundamentals,implementation,advanced}/**"
       run: bundle exec erb_lint {staged_files}
 
