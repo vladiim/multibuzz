@@ -2,10 +2,10 @@
 title: "When Should I Use First-Touch Attribution?"
 slug: "first-touch-attribution"
 description: "First-touch attribution credits the first marketing interaction for a conversion. Learn when first-touch is the right model, its limitations, and how to combine it with other models for complete measurement."
-published_at:
+published_at: 2026-05-01
 section: models
 section_order: 1
-status: draft
+status: published
 priority: P0
 category: "Attribution Models"
 tags:
@@ -125,10 +125,7 @@ First-touch reveals which channels are "introducers" vs "closers." When combined
 
 This tells you: Paid Social introduces nearly half your customers but gets almost no last-touch credit. If you only looked at last-touch, you'd underinvest in the channel filling your funnel.
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: First-Touch vs Last-Touch Comparison</p>
-  <p class="text-yellow-700 text-sm">Add mbuzz customer data showing first-touch vs last-touch credit by channel. Example table showing the "introducer vs closer" pattern across real data. This becomes a key reference visual.</p>
-</div>
+<%= render "articles/embeds/first_vs_last_touch_comparison" %>
 
 ## When First-Touch Is the Wrong Choice
 
@@ -209,10 +206,6 @@ Options:
 2. **Exclude Direct** — Find the first *trackable* marketing touch
 3. **Override Direct** — If a marketing touch exists within 24 hours, use that instead
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: First-Touch Implementation Screenshot</p>
-  <p class="text-yellow-700 text-sm">Add mbuzz screenshot showing first-touch attribution report: channels ranked by first-touch credit, with comparison to other models. Show the "Direct" handling options in the UI.</p>
-</div>
 
 ## Combining First-Touch with Other Models
 
@@ -252,10 +245,6 @@ This lets marketing claim sourcing credit while still understanding the full jou
 
 Having multiple models isn't a bug—it's a feature. Different questions need different answers.
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Multi-Model Dashboard</p>
-  <p class="text-yellow-700 text-sm">Add mbuzz screenshot showing side-by-side first-touch, last-touch, and linear attribution for the same conversion data. Highlight how channel rankings change between models.</p>
-</div>
 
 ## Common First-Touch Mistakes
 
@@ -302,9 +291,9 @@ To use first-touch attribution now, you need:
 2. **Build your own** in your data warehouse
 3. **BigQuery export** from GA4 + custom SQL
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: GA4 Migration Guide</p>
-  <p class="text-yellow-700 text-sm">Link to article on "Why Did GA4 Remove Attribution Models?" and show how to replicate first-touch with mbuzz or BigQuery SQL. <strong>Outreach:</strong> GA4 migration content gets high search volume—optimize for frustrated GA4 users.</p>
+<div class="bg-amber-50 border-l-4 border-amber-400 p-5 my-8 rounded-r-md not-prose">
+  <p class="text-xs font-bold text-amber-700 tracking-[0.15em] mb-2">GA4 USERS</p>
+  <p class="text-sm text-slate-700 leading-relaxed mb-2">GA4 removed first-touch attribution in 2023, leaving only last-click and data-driven. If you used to rely on first-touch reporting in Universal Analytics, see <a href="/articles/ga4-attribution-models-removed" class="underline decoration-slate-300 hover:decoration-slate-500"><strong>why GA4 removed attribution models</strong></a> and <a href="/articles/ga4-removed-attribution-what-to-do" class="underline decoration-slate-300 hover:decoration-slate-500"><strong>what to do about it</strong></a> &mdash; including how to rebuild first-touch with BigQuery SQL on the GA4 raw event export.</p>
 </div>
 
 ## Summary
@@ -333,11 +322,6 @@ First-touch attribution answers "who introduced this customer?"—a critical que
 **On B2B Attribution:**
 - [Bizible's B2B Attribution Guide](https://business.adobe.com/products/marketo/bizible.html) — Adobe's take on B2B measurement
 - [Dreamdata's Attribution Resources](https://dreamdata.io/resources) — B2B-focused attribution content
-
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Expert Quote on First-Touch</p>
-  <p class="text-yellow-700 text-sm">Add quote from a B2B marketing leader on the value of first-touch for pipeline sourcing. <strong>Outreach targets:</strong> Demand gen leaders at B2B SaaS companies, marketing ops professionals on LinkedIn.</p>
-</div>
 
 <%= render_key_takeaways(@article.key_takeaways) %>
 
