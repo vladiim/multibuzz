@@ -232,6 +232,36 @@ class AdPlatformConnectionTest < ActiveSupport::TestCase
     assert_not_includes account_one_connections, other
   end
 
+  # --- Metadata ---
+
+  test "metadata defaults to empty hash" do
+    new_conn = accounts(:one).ad_platform_connections.build(
+      platform: :meta_ads, platform_account_id: "act_x", currency: "USD"
+    )
+
+    assert_equal({}, new_conn.metadata)
+  end
+
+  test "metadata accepts string keys and values" do
+    connection.update!(metadata: { "location" => "Sydney", "brand" => "Premium" })
+
+    assert_equal "Sydney", connection.reload.metadata["location"]
+  end
+
+  test "metadata is invalid when not a hash" do
+    connection.metadata = "not a hash"
+
+    assert_not connection.valid?
+    assert_includes connection.errors[:metadata], "must be a hash"
+  end
+
+  test "metadata is invalid when over 5KB" do
+    connection.metadata = { "blob" => "x" * 6_000 }
+
+    assert_not connection.valid?
+    assert_includes connection.errors[:metadata], "must be less than 5KB"
+  end
+
   private
 
   def connection = @connection ||= ad_platform_connections(:google_ads)
