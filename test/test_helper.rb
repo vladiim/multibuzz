@@ -27,6 +27,7 @@ require "rails/test_help"
 require "prosopite"
 require "vcr"
 require "webmock/minitest"
+require "vcr_filters"
 
 VCR.configure do |config|
   config.cassette_library_dir = "test/vcr_cassettes"
@@ -37,17 +38,39 @@ VCR.configure do |config|
   }
   config.allow_http_connections_when_no_cassette = false
 
-  # Filter Meta credentials and tokens out of recorded cassettes before commit.
-  config.filter_sensitive_data("<META_APP_ID>") do
-    Rails.application.credentials.dig(:meta_ads, :app_id).to_s
+  # --- Sensitive-data filters ---
+  #
+  # Cassettes are committed to git, so anything Meta-specific that could leak a
+  # token, signed proof, or customer identifier must be replaced with a placeholder
+  # before the cassette hits disk. The before_record hook is the load-bearing one;
+  # filter_sensitive_data is the belt over those braces.
+
+  filter_credential = lambda do |key|
+    config.filter_sensitive_data("<META_#{key.to_s.upcase}>") do
+      value = Rails.application.credentials.dig(:meta_ads, key).to_s
+      value.empty? ? nil : value
+    end
   end
-  config.filter_sensitive_data("<META_APP_SECRET>") do
-    Rails.application.credentials.dig(:meta_ads, :app_secret).to_s
+  filter_credential.call(:app_id)
+  filter_credential.call(:app_secret)
+
+  config.filter_sensitive_data("<META_RECORDING_TOKEN>") do
+    ENV["META_ACCESS_TOKEN"].to_s.then { |t| t.empty? ? nil : t }
   end
-  config.filter_sensitive_data("<META_ACCESS_TOKEN>") { ENV["META_ACCESS_TOKEN"].to_s }
-  config.filter_sensitive_data("<META_ACCESS_TOKEN>") do |interaction|
+
+  # Strip Authorization headers entirely.
+  config.filter_sensitive_data("<META_BEARER_TOKEN>") do |interaction|
     auth = interaction.request.headers["Authorization"]&.first
-    auth&.sub(/\ABearer\s+/, "")
+    auth&.sub(/\ABearer\s+/, "").then { |t| t.nil? || t.empty? ? nil : t }
+  end
+
+  # Regex scrub of every URI + request/response body for known leaky patterns.
+  # Pattern list lives in VcrFilters so it's independently unit-tested.
+  config.before_record do |interaction|
+    interaction.request.uri   = VcrFilters.scrub(interaction.request.uri)
+    interaction.request.body  = VcrFilters.scrub(interaction.request.body)
+    interaction.response.body = VcrFilters.scrub(interaction.response.body)
+    interaction.response.headers.transform_values! { |values| values.map { |v| VcrFilters.scrub(v) } }
   end
 end
 
