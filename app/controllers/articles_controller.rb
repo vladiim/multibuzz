@@ -10,6 +10,14 @@ class ArticlesController < ApplicationController
 
   def index
     @sections = Articles::Repository.by_section
+    respond_to do |format|
+      format.html
+      format.rss do
+        @articles = Articles::Repository.published.sort_by { |a| a.published_at || Date.new(1970, 1, 1) }.reverse.first(50)
+        expires_in 1.hour, public: true
+        render layout: false
+      end
+    end
   end
 
   def show

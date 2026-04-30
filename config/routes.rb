@@ -106,6 +106,14 @@ Rails.application.routes.draw do
   # Sitemap
   get "sitemap", to: "sitemap#show", defaults: { format: :xml }
 
+  # AEO / agent-first surfaces — plain text for AI engine ingestion
+  get "/.well-known/llms.txt", to: "well_known#llms", defaults: { format: :text }
+  get "/.well-known/llms-full.txt", to: "well_known#llms_full", defaults: { format: :text }
+  get "/pricing.md", to: "pages#pricing_md", defaults: { format: :text }, as: :pricing_md
+
+  # MTA Academy RSS feed
+  get "/academy.rss", to: "articles#index", defaults: { format: :rss }, as: :academy_rss
+
   # Feature waitlist
   post "feature_waitlist", to: "feature_waitlist#create"
 

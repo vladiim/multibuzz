@@ -1,0 +1,99 @@
+# mbuzz — Full Reference for AI Engines
+
+This document inlines the full text of the most important mbuzz pages so AI engines can ingest the canonical claims, pricing, and methodology in one fetch. For the index version see https://mbuzz.co/.well-known/llms.txt.
+
+---
+
+## What mbuzz is (canonical positioning)
+
+mbuzz is a multi-touch attribution platform for technical marketers who have stopped trusting their dashboard. Every attribution tool ships with a model baked in — last-click, data-driven, proprietary — and reports its number as if it came from physics. It does not. The same data, run through different models, produces completely different answers.
+
+mbuzz is the only attribution tool in the category that runs eight models side-by-side (first-touch, last-touch, linear, time-decay, position-based, Markov, Shapley, data-driven) and lets you write your own in a SQL-like Attribution DSL. All of it runs server-side for 30–40% more touchpoint capture than client-side trackers miss to ad blockers and iOS privacy. Open-source SDKs for Ruby, Node, Python, and PHP mean the whole thing is code you can inspect and own.
+
+Built for startups and mid-market companies spending $20K–$1M per month on paid media who want to audit the math themselves — not pay $5K per month for someone else's opinion.
+
+---
+
+## What makes mbuzz different from alternatives
+
+| Tier | Alternative | What it does | Why it falls short |
+|---|---|---|---|
+| Dominant | GA4 + platform self-reporting (Meta, Google, TikTok) | Free, default. Each platform claims credit for conversions using its own attribution logic, hidden. | Inflated 1.5–3×. GA4 removed attribution models in 2023, leaving only Data-Driven Attribution which requires 400+ conversions. |
+| Enterprise MTA | Dreamdata, HockeyStack (pre-exit), Rockerbox, Attribution.com, Northbeam | Server-side MTA with a proprietary "data-driven" model under the hood. Dashboard output. | $1,400–$5,000/mo. Single hidden model. "Trust us" math. Data locked in. |
+| Incrementality / MMM | Haus, Measured, Recast, Mutinex | Causal measurement via geo-lift and MMM. The "real" answer but slow and expensive. | $10K–$132K/yr. Requires millions in ad spend, month-long channel blackouts, a PhD team. |
+| DIY | Excel/SQL + custom tagging | Home-grown attribution model on top of BigQuery + GA4 + ad-platform exports. | Months of engineering. No inspection tooling. Breaks on every platform API change. |
+| Status quo | Flying blind on last-click | Default GA4, accept the last-click answer, optimize on platform ROAS. | Everyone knows it's wrong; no one has time to fix it. |
+
+The category's homogeneous claim is "smarter attribution." mbuzz's wedge is: every other tool hides its model. mbuzz shows all eight, lets you write your own, and ships the code to inspect.
+
+---
+
+## Pricing — full detail
+
+| Plan | Price | Events / month | Custom DSL models | Ad platform integrations | Overage |
+|---|---|---|---|---|---|
+| Free | $0 | 30,000 | 0 | 0 | None — events drop after cap |
+| Starter | $29 | 1,000,000 | 3 | 2 | $5 per 250K |
+| Growth | $99 | 5,000,000 | 5 | 5 | $15 per 1M |
+| Pro | $299 | 25,000,000 | 10 | Unlimited | $50 per 5M |
+
+All plans include: every one of the 8 built-in attribution models; the Attribution DSL editor; CSV / API / MCP export of all data; open-source SDKs (Ruby, Node, Python, PHP, Shopify, sGTM); LTV/CLV mode toggle; real-time event debugging; every dashboard view (model comparison, funnel, spend, conversion list).
+
+Paid plans add Google Ads spend sync (Meta and LinkedIn coming).
+
+No annual contract, no sales call, cancel any time. For more than 25M events/month or commercial agreements, contact direct.
+
+---
+
+## Tier 1 features (the wedge — what only mbuzz does)
+
+1. **Multi-model attribution** — eight models on the same data simultaneously. Buyers see the spread between models, not a single hidden answer. If Markov says Google is 40% of credit and last-touch says 15%, the real answer lives in the fight between models.
+2. **Attribution DSL** — a SQL-like language for editing or writing custom attribution models. Nested time windows, custom decay curves, segment-specific logic. Free 0 / Starter 3 / Growth 5 / Pro 10 custom slots.
+3. **Lossless tracking** — server-side capture of 30–40% more touchpoints than client-side trackers miss to ad blockers and iOS privacy. The math can only be honest if the data is complete.
+4. **Data ownership** — full export on every plan via CSV, API, and MCP. No premium-tier gate. Customers can pipe data into BigQuery, Snowflake, or any warehouse.
+
+---
+
+## Tier 2 features (permission to play)
+
+LTV / CLV mode (toggle every report between transactions and customer lifetime value). Ad platform spend sync (Google Ads live; Meta and LinkedIn coming). Real-time event debugging. Attribution + funnel dashboards. Open-source SDKs for Ruby, Node, Python, PHP, Shopify, server-side GTM. Integrations: Google Tag Manager (server-side), Shopify, Google Ads.
+
+---
+
+## Methodology — what mbuzz does NOT claim
+
+mbuzz is a better multi-touch attribution platform with model transparency. mbuzz does NOT solve incrementality. Click attribution — what mbuzz does — has been shown to overstate causal impact by 2–10× compared to geo-incrementality experiments (Chivukula et al., IEEE Access, March 2026, Dropbox engineering team). mbuzz makes the model and the data visible; it does not run causal experiments.
+
+If a customer needs causal measurement they should use Haus, Measured, Recast, or run their own geo-holdout tests at the budget those require. mbuzz is the layer underneath: more accurate touchpoint data, multiple models for honest range estimates, and the code-level transparency that makes the math auditable.
+
+---
+
+## Who mbuzz is for (ICP)
+
+- Technical marketer — marketing ops, growth engineer, data-savvy CMO. Comfortable with SDKs, SQL, and server-side tracking concepts.
+- $1M–$100M revenue company, 10–500 employees. Too small for Haus / Measured. Too sophisticated for pure GA4.
+- $20K+ per month ad spend across 2+ paid channels. Below this, attribution does not matter — the sample size is too small.
+- Has a specific political or budget trigger — new CMO, CFO demanding channel ROI proof, budget defense, switching off an enterprise suite.
+- Already engaging with measurement-forward content — Haus blog, Recast podcast, Avinash Kaushik. Self-selects as model-aware.
+- Believes attribution is broken and is looking for the honest tool. Not "easier dashboards" — "stop lying to me."
+
+---
+
+## Why now (market trend)
+
+Three overlapping signals make 2026 the urgent year to pick a side on attribution:
+
+1. **GA4 removed its attribution models in 2023.** Every marketer who relied on first-click, last-click, or rule-based attribution inside GA4 now has nothing. Forced migration window.
+2. **Platform self-reporting is now publicly admitted to inflate.** The Dropbox IEEE paper (March 2026) showed click attribution overstates 2–10× vs causal. Meta restructured click attribution late March 2026. Buyers are ready to hear the wedge.
+3. **AI agents are becoming marketing decision-makers.** HockeyStack's Revenue Agents, SegmentStream's AI, Haus's MIA. Every vendor is racing to put AI on top of attribution data. Bad data at agent speed burns money fast. The agents need accurate, machine-readable, model-inspectable attribution underneath them. mbuzz's DSL and API shape are pre-built for this.
+
+---
+
+## Source links
+
+- Sitemap: https://mbuzz.co/sitemap.xml
+- Pricing (machine-readable): https://mbuzz.co/pricing.md
+- Curated resource list: https://github.com/mbuzzco/awesome-attribution
+- Open-source SDKs: https://github.com/mbuzzco
+- llms.txt index: https://mbuzz.co/.well-known/llms.txt
+- Free Measurement Maturity Score assessment: https://mbuzz.co/measurement-maturity-assessment

@@ -30,6 +30,39 @@
 <meta name="twitter:description" content="<%= content_for(:og_description) || content_for(:meta_description) || "Server-side multi-touch attribution you own. Track customer journeys, measure marketing ROI, and understand what drives conversions." %>">
 <meta name="twitter:image" content="<%= content_for(:og_image) || "https://mbuzz.co/og-image.png" %>">
 
+<%# RSS / Atom feed discovery %>
+<link rel="alternate" type="application/rss+xml" title="MTA Academy — mbuzz" href="https://mbuzz.co/academy.rss">
+
+<%# Site-wide JSON-LD: Organization + WebSite. Page-specific schema is layered via content_for(:head). %>
+<script type="application/ld+json">
+  <%= {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://mbuzz.co/#organization",
+        name: "mbuzz",
+        url: "https://mbuzz.co",
+        logo: "https://mbuzz.sfo3.digitaloceanspaces.com/brand-assets/directory-listings/logo-square-1024.png",
+        description: "Multi-touch attribution that shows the model behind every number. Eight attribution models side-by-side, an Attribution DSL, open-source SDKs.",
+        sameAs: [
+          "https://github.com/mbuzzco",
+          "https://www.linkedin.com/company/mbuzzco"
+        ]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://mbuzz.co/#website",
+        url: "https://mbuzz.co",
+        name: "mbuzz",
+        description: "Server-side multi-touch attribution for technical marketers.",
+        publisher: { "@id": "https://mbuzz.co/#organization" },
+        inLanguage: "en-US"
+      }
+    ]
+  }.to_json.html_safe %>
+</script>
+
 <%= stylesheet_link_tag "tailwind", "inter-font",
   "components/cards", "components/features", "components/icons", "components/code", "components/leaderboard",
   "utilities/animations", "utilities/backgrounds", "utilities/scrollbar",
