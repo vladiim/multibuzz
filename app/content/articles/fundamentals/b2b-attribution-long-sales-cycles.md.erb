@@ -2,10 +2,10 @@
 title: "Attribution for B2B: Long Sales Cycles and Multiple Decision-Makers"
 slug: "b2b-attribution-long-sales-cycles"
 description: "B2B attribution breaks when sales cycles stretch 60-180 days and 6-10 stakeholders influence the deal. Learn how to adapt attribution for enterprise sales: account-based models, marketing-sourced vs influenced, and connecting marketing to pipeline."
-published_at:
+published_at: 2026-05-01
 section: fundamentals
 section_order: 7
-status: draft
+status: published
 priority: P0
 category: "Attribution Fundamentals"
 tags:
@@ -161,10 +161,7 @@ The person who buys isn't always the person who uses:
 
 If you track user-level attribution, you miss the buyers. If you track buyers, you miss the users who validated.
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: B2B Journey Heatmap</p>
-  <p class="text-yellow-700 text-sm">Add mbuzz visualization showing typical B2B account journey: number of people involved, touchpoints per person, timeline, and which touchpoints standard attribution sees vs misses. This quantifies the B2B attribution gap.</p>
-</div>
+<%= render "articles/embeds/b2b_journey_heatmap" %>
 
 ## The Solution: Account-Based Attribution
 
@@ -289,10 +286,7 @@ GROUP BY o.opportunity_id, o.closed_amount;
 
 Both metrics are valid. Use "Sourced" for demand gen ROI; use "Influenced" for total marketing impact.
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Sourced vs Influenced Dashboard</p>
-  <p class="text-yellow-700 text-sm">Add mbuzz screenshot showing side-by-side Sourced and Influenced pipeline by channel. Include the typical ratio (e.g., "Influenced is typically 3-4x Sourced").</p>
-</div>
+<%= render "articles/embeds/sourced_vs_influenced_pipeline" %>
 
 ## Extending Lookback Windows for B2B
 
@@ -496,9 +490,17 @@ Closed Won:       All touchpoints → Credit to "Revenue"
 This shows which channels work at which funnel stage.
 ```
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Salesforce Integration Example</p>
-  <p class="text-yellow-700 text-sm">Add mbuzz screenshot or diagram showing how touchpoint data connects to Salesforce opportunities, with account-level attribution visible in CRM. This is the #1 ask from B2B teams.</p>
+<div class="bg-slate-50 border-l-4 border-slate-400 p-5 my-8 rounded-r-md not-prose">
+  <p class="text-xs font-bold text-slate-500 tracking-[0.15em] mb-3">CRM-CONNECTED ATTRIBUTION, IN PRACTICE</p>
+  <p class="text-sm text-slate-700 leading-relaxed mb-3">The integration shape that works for most B2B teams: an attribution layer that captures every touchpoint server-side, resolves identity at form submit (matching email to existing contact records), and then writes a custom Touchpoint object back to Salesforce or HubSpot, related to both Contact and Opportunity.</p>
+  <p class="text-sm text-slate-700 leading-relaxed mb-3">In the CRM, each Opportunity then exposes:</p>
+  <ul class="text-sm text-slate-700 leading-relaxed space-y-1 list-disc pl-5 mb-3">
+    <li><strong class="text-slate-900">First-touch source</strong> &mdash; the channel that introduced the first identified contact on the account</li>
+    <li><strong class="text-slate-900">Sourced channel</strong> &mdash; the channel of the touchpoint immediately preceding lead creation</li>
+    <li><strong class="text-slate-900">Influenced channels</strong> &mdash; every channel that touched any contact on the account during the active sales cycle</li>
+    <li><strong class="text-slate-900">Cost per opportunity</strong> &mdash; computed by joining channel spend to influenced opportunities</li>
+  </ul>
+  <p class="text-sm text-slate-700 leading-relaxed">The gain: marketing reports stop arguing with sales reports. Both look at the same Opportunity record. Marketing-sourced revenue, marketing-influenced revenue, and unsourced revenue all reconcile to the same closed-won total.</p>
 </div>
 
 ## Common B2B Attribution Mistakes
@@ -550,11 +552,6 @@ B2B attribution requires different approaches than B2C:
 **On Configuration:**
 - [How to Change Your Attribution Lookback Window](/articles/attribution-lookback-window) — Window setup
 - [How to Choose the Right Attribution Model](/articles/how-to-choose-attribution-model) — Model selection
-
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: B2B Marketing Leader Quote</p>
-  <p class="text-yellow-700 text-sm">Add quote from B2B marketing leader on account-based attribution challenges. <strong>Outreach targets:</strong> Demand gen leaders at B2B SaaS companies, marketing ops professionals, CMOs who've implemented ABM.</p>
-</div>
 
 <%= render_key_takeaways(@article.key_takeaways) %>
 
