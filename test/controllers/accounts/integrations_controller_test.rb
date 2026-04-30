@@ -347,6 +347,76 @@ class Accounts::IntegrationsControllerTest < ActionDispatch::IntegrationTest
     assert_select "[data-connection-id='#{other_connection.prefix_id}']", count: 0
   end
 
+  # --- update_metadata ---
+
+  test "update_metadata persists normalized metadata onto the connection" do
+    sign_in
+
+    patch update_metadata_account_integrations_path(connection),
+      params: { metadata: { "Location" => "  Eumundi-Noosa  " } }
+
+    assert_equal({ "location" => "Eumundi-Noosa" }, connection.reload.metadata)
+  end
+
+  test "update_metadata enqueues MetadataBackfillJob" do
+    sign_in
+
+    assert_enqueued_with(job: AdPlatforms::MetadataBackfillJob, args: [ connection.id ]) do
+      patch update_metadata_account_integrations_path(connection),
+        params: { metadata: { location: "Sydney" } }
+    end
+  end
+
+  test "update_metadata on a google_ads connection redirects to its google detail page" do
+    sign_in
+
+    patch update_metadata_account_integrations_path(connection),
+      params: { metadata: { location: "Sydney" } }
+
+    assert_redirected_to google_ads_detail_account_integrations_path(connection)
+    assert_match(/metadata updated/i, flash[:notice])
+  end
+
+  test "update_metadata on a meta_ads connection redirects to its meta detail page" do
+    account.enable_feature!(FeatureFlags::META_ADS_INTEGRATION)
+    meta = build_meta_connection
+    sign_in
+
+    patch update_metadata_account_integrations_path(meta),
+      params: { metadata: { location: "Melbourne" } }
+
+    assert_redirected_to meta_ads_detail_account_integrations_path(meta)
+  end
+
+  test "update_metadata clears metadata when given an empty hash" do
+    connection.update!(metadata: { "location" => "Old" })
+    sign_in
+
+    patch update_metadata_account_integrations_path(connection), params: { metadata: {} }
+
+    assert_equal({}, connection.reload.metadata)
+  end
+
+  test "update_metadata cannot touch another account's connection" do
+    sign_in
+
+    patch update_metadata_account_integrations_path(other_connection),
+      params: { metadata: { location: "Sydney" } }
+
+    assert_response :not_found
+    assert_equal({}, other_connection.reload.metadata)
+  end
+
+  test "update_metadata does not enqueue the job when validation fails" do
+    sign_in
+    oversized = "x" * 6_000
+
+    assert_no_enqueued_jobs only: AdPlatforms::MetadataBackfillJob do
+      patch update_metadata_account_integrations_path(connection),
+        params: { metadata: { location: oversized } }
+    end
+  end
+
   private
 
   def sign_in

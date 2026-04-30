@@ -81,7 +81,7 @@ All 13 service classes shipped under `app/services/ad_platforms/meta/`; OAuth co
 - ✅ `AdPlatforms::MetadataLinkCheck` + `_metadata_panel.html.erb` (display panel)
 - ✅ `AdPlatforms::MetadataBackfillService` + thin `MetadataBackfillJob` wrapper
 - ❌ Edit-after-connect UI on the per-connection detail page
-- ❌ `Accounts::IntegrationsController#update_metadata` action + route
+- ✅ `Accounts::IntegrationsController#update_metadata` action + route
 
 ### 3.1 — Commit the in-flight link-check work
 
@@ -117,9 +117,9 @@ def update_metadata
 end
 ```
 
-- [ ] **3.3.1** RED test: PATCH with valid metadata → connection updates, backfill enqueued, redirect 302. Cross-account isolation. Validation errors render flash.
-- [ ] **3.3.2** GREEN: action + route (`patch :metadata, on: :member` or analog).
-- [ ] **3.3.3** Detail-path resolution helper — small concern or method on `AdPlatformConnection` returning the right named route per platform.
+- [x] **3.3.1** RED test: PATCH with valid metadata → connection updates, backfill enqueued, redirect 302. Cross-account isolation (`find_by_prefix_id!` returns 404). Validation errors render flash.
+- [x] **3.3.2** GREEN: `Accounts::IntegrationsController#update_metadata` + route `patch "metadata/:id"` named `update_metadata_account_integrations_path`.
+- [x] **3.3.3** Detail-path resolution kept inline in the controller as `detail_path_for(connection)` — three-line case statement; doesn't merit a model concern.
 
 ### 3.4 — `_metadata_editor.html.erb` (Stimulus)
 

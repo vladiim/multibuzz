@@ -39,6 +39,14 @@ module Accounts
       redirect_back fallback_location: account_integrations_path
     end
 
+    def update_metadata
+      connection.update!(metadata: AdPlatforms::MetadataNormalizer.call(params[:metadata]&.to_unsafe_h))
+      AdPlatforms::MetadataBackfillJob.perform_later(connection.id)
+      redirect_to detail_path_for(connection), notice: "Metadata updated. Backfill in progress."
+    rescue ActiveRecord::RecordInvalid => e
+      redirect_to detail_path_for(connection), alert: e.message
+    end
+
     def notify
       result = create_service.call
       redirect_to account_integrations_path, notice: result_notice(result)
@@ -58,6 +66,13 @@ module Accounts
 
     def connection
       @connection ||= current_account.ad_platform_connections.find_by_prefix_id!(params[:id])
+    end
+
+    def detail_path_for(connection)
+      case connection.platform.to_sym
+      when :google_ads then google_ads_detail_account_integrations_path(connection)
+      when :meta_ads then meta_ads_detail_account_integrations_path(connection)
+      end
     end
 
     def create_service

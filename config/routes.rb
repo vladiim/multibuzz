@@ -203,6 +203,7 @@ Rails.application.routes.draw do
         get "google_ads/:id", action: :google_ads_account, as: :google_ads_detail
         get "meta_ads", action: :meta_ads
         get "meta_ads/:id", action: :meta_ads_account, as: :meta_ads_detail
+        patch "metadata/:id", action: :update_metadata, as: :update_metadata
       end
       resources :attribution_models, except: [ :show ] do
         collection do
