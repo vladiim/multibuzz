@@ -7,6 +7,7 @@ class Account < ApplicationRecord
   include Account::Billing
   include Account::Callbacks
   include Account::Onboarding
+  include Account::FeatureFlags
 
   has_prefix_id :acct
 
