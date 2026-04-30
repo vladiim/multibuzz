@@ -80,7 +80,7 @@ All 13 service classes shipped under `app/services/ad_platforms/meta/`; OAuth co
 - ✅ Connect-time metadata picker in `oauth/{google_ads,meta_ads}/select_account` views
 - ✅ `AdPlatforms::MetadataLinkCheck` + `_metadata_panel.html.erb` (display panel)
 - ✅ `AdPlatforms::MetadataBackfillService` + thin `MetadataBackfillJob` wrapper
-- ❌ Edit-after-connect UI on the per-connection detail page
+- ✅ Edit-after-connect UI on the per-connection detail page
 - ✅ `Accounts::IntegrationsController#update_metadata` action + route
 
 ### 3.1 — Commit the in-flight link-check work
@@ -125,9 +125,9 @@ end
 
 Form partial rendered on each connection detail page (`google_ads_account.html.erb`, `meta_ads_account.html.erb`). Shows current key/value, allows edit, posts to `update_metadata`.
 
-- [ ] **3.4.1** Partial with form posting to the new route
-- [ ] **3.4.2** Stimulus controller `metadata_editor_controller.js` — single key/value for now (matches `MetadataLinkCheck` single-pair assumption); add-row UI is a follow-up
-- [ ] **3.4.3** Wire into both `google_ads_account.html.erb` and `meta_ads_account.html.erb`
+- [x] **3.4.1** `_metadata_editor.html.erb` partial: form posts `metadata_key` + `metadata_value` flat params to `update_metadata_account_integrations_path`. Pre-fills from `connection.metadata_pair` (new model method, sole source of truth for the single-pair assumption).
+- [x] **3.4.2** Stimulus: reused the existing `toggle` controller for show/edit swap on `_metadata_panel.html.erb`. No new JS controller needed yet — a custom `metadata_editor_controller.js` becomes worth adding only when the multi-row add UI lands.
+- [x] **3.4.3** Wired in via `_metadata_panel.html.erb` (already rendered on both `google_ads_account.html.erb` and `meta_ads_account.html.erb`).
 
 ### 3.5 — UAT on a dev account
 

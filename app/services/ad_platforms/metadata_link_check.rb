@@ -18,9 +18,9 @@ module AdPlatforms
     end
 
     def call
-      return { state: :no_metadata } if metadata_pair.nil?
+      return { state: :no_metadata } if connection.metadata_pair.nil?
 
-      key, value = metadata_pair
+      key, value = connection.metadata_pair
       exact = exact_match_count(key, value)
 
       return { state: :linked, key: key, value: value, count: exact } if exact.positive?
@@ -31,12 +31,6 @@ module AdPlatforms
     private
 
     attr_reader :connection, :account
-
-    def metadata_pair
-      return nil unless connection.metadata.is_a?(Hash) && connection.metadata.size == 1
-
-      connection.metadata.first
-    end
 
     def exact_match_count(key, value)
       account.conversions

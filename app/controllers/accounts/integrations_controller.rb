@@ -40,7 +40,7 @@ module Accounts
     end
 
     def update_metadata
-      connection.update!(metadata: AdPlatforms::MetadataNormalizer.call(params[:metadata]&.to_unsafe_h))
+      connection.update!(metadata: AdPlatforms::MetadataNormalizer.call(metadata_pair))
       AdPlatforms::MetadataBackfillJob.perform_later(connection.id)
       redirect_to detail_path_for(connection), notice: "Metadata updated. Backfill in progress."
     rescue ActiveRecord::RecordInvalid => e
@@ -73,6 +73,18 @@ module Accounts
       when :google_ads then google_ads_detail_account_integrations_path(connection)
       when :meta_ads then meta_ads_detail_account_integrations_path(connection)
       end
+    end
+
+    def metadata_pair
+      @metadata_pair ||= metadata_key.empty? ? {} : { metadata_key => metadata_value }
+    end
+
+    def metadata_key
+      @metadata_key ||= params[:metadata_key].to_s
+    end
+
+    def metadata_value
+      @metadata_value ||= params[:metadata_value].to_s
     end
 
     def create_service

@@ -1,0 +1,20 @@
+<%# locals: connection %>
+<%= form_with url: update_metadata_account_integrations_path(connection), method: :patch, class: "space-y-3" do |f| %>
+  <div>
+    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider">Key</label>
+    <input type="text" name="metadata_key" value="<%= connection.metadata_pair&.first %>" placeholder="e.g. location"
+           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
+    <p class="mt-1 text-xs text-gray-500">
+      Leave blank to clear metadata. Use the same key your conversions are tagged with (typically <code class="bg-gray-100 px-1 rounded">location</code>).
+    </p>
+  </div>
+  <div>
+    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider">Value</label>
+    <input type="text" name="metadata_value" value="<%= connection.metadata_pair&.last %>" placeholder="e.g. Eumundi-Noosa"
+           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
+  </div>
+  <div class="flex items-center gap-3">
+    <%= f.submit "Save", class: "inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 cursor-pointer" %>
+    <button type="button" data-action="click->toggle#toggle" class="text-sm text-gray-600 hover:text-gray-800">Cancel</button>
+  </div>
+<% end %>

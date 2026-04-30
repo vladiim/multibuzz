@@ -262,6 +262,26 @@ class AdPlatformConnectionTest < ActiveSupport::TestCase
     assert_includes connection.errors[:metadata], "must be less than 5KB"
   end
 
+  # --- metadata_pair ---
+
+  test "metadata_pair returns nil when metadata is empty" do
+    connection.update!(metadata: {})
+
+    assert_nil connection.metadata_pair
+  end
+
+  test "metadata_pair returns the [key, value] when metadata has one entry" do
+    connection.update!(metadata: { "location" => "Sydney" })
+
+    assert_equal [ "location", "Sydney" ], connection.metadata_pair
+  end
+
+  test "metadata_pair returns nil when metadata has multiple entries" do
+    connection.update!(metadata: { "location" => "Sydney", "brand" => "Premium" })
+
+    assert_nil connection.metadata_pair
+  end
+
   private
 
   def connection = @connection ||= ad_platform_connections(:google_ads)

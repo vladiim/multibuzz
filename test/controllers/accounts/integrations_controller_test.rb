@@ -353,7 +353,7 @@ class Accounts::IntegrationsControllerTest < ActionDispatch::IntegrationTest
     sign_in
 
     patch update_metadata_account_integrations_path(connection),
-      params: { metadata: { "Location" => "  Eumundi-Noosa  " } }
+      params: { metadata_key: "Location", metadata_value: "  Eumundi-Noosa  " }
 
     assert_equal({ "location" => "Eumundi-Noosa" }, connection.reload.metadata)
   end
@@ -363,7 +363,7 @@ class Accounts::IntegrationsControllerTest < ActionDispatch::IntegrationTest
 
     assert_enqueued_with(job: AdPlatforms::MetadataBackfillJob, args: [ connection.id ]) do
       patch update_metadata_account_integrations_path(connection),
-        params: { metadata: { location: "Sydney" } }
+        params: { metadata_key: "location", metadata_value: "Sydney" }
     end
   end
 
@@ -371,7 +371,7 @@ class Accounts::IntegrationsControllerTest < ActionDispatch::IntegrationTest
     sign_in
 
     patch update_metadata_account_integrations_path(connection),
-      params: { metadata: { location: "Sydney" } }
+      params: { metadata_key: "location", metadata_value: "Sydney" }
 
     assert_redirected_to google_ads_detail_account_integrations_path(connection)
     assert_match(/metadata updated/i, flash[:notice])
@@ -383,16 +383,17 @@ class Accounts::IntegrationsControllerTest < ActionDispatch::IntegrationTest
     sign_in
 
     patch update_metadata_account_integrations_path(meta),
-      params: { metadata: { location: "Melbourne" } }
+      params: { metadata_key: "location", metadata_value: "Melbourne" }
 
     assert_redirected_to meta_ads_detail_account_integrations_path(meta)
   end
 
-  test "update_metadata clears metadata when given an empty hash" do
+  test "update_metadata clears metadata when given a blank key" do
     connection.update!(metadata: { "location" => "Old" })
     sign_in
 
-    patch update_metadata_account_integrations_path(connection), params: { metadata: {} }
+    patch update_metadata_account_integrations_path(connection),
+      params: { metadata_key: "", metadata_value: "" }
 
     assert_equal({}, connection.reload.metadata)
   end
@@ -401,7 +402,7 @@ class Accounts::IntegrationsControllerTest < ActionDispatch::IntegrationTest
     sign_in
 
     patch update_metadata_account_integrations_path(other_connection),
-      params: { metadata: { location: "Sydney" } }
+      params: { metadata_key: "location", metadata_value: "Sydney" }
 
     assert_response :not_found
     assert_equal({}, other_connection.reload.metadata)
@@ -413,7 +414,7 @@ class Accounts::IntegrationsControllerTest < ActionDispatch::IntegrationTest
 
     assert_no_enqueued_jobs only: AdPlatforms::MetadataBackfillJob do
       patch update_metadata_account_integrations_path(connection),
-        params: { metadata: { location: oversized } }
+        params: { metadata_key: "location", metadata_value: oversized }
     end
   end
 
