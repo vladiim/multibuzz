@@ -19,6 +19,13 @@ Rails.application.routes.draw do
     post "google_ads/create_connection", to: "google_ads#create_connection"
     get "google_ads/reconnect/:id", to: "google_ads#reconnect", as: :google_ads_reconnect
     delete "google_ads/:id", to: "google_ads#disconnect", as: :google_ads_disconnect
+
+    get "meta_ads/connect", to: "meta_ads#connect", as: :meta_ads_connect
+    get "meta_ads/callback", to: "meta_ads#callback", as: :meta_ads_callback
+    get "meta_ads/select_account", to: "meta_ads#select_account", as: :meta_ads_select_account
+    post "meta_ads/create_connection", to: "meta_ads#create_connection", as: :meta_ads_create_connection
+    get "meta_ads/reconnect/:id", to: "meta_ads#reconnect", as: :meta_ads_reconnect
+    delete "meta_ads/:id", to: "meta_ads#disconnect", as: :meta_ads_disconnect
   end
 
   # Webhooks (before API routes for clarity)
