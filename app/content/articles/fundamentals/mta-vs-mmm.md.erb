@@ -2,10 +2,10 @@
 title: "What's the Difference Between MTA and MMM?"
 slug: "mta-vs-mmm"
 description: "Multi-touch attribution (MTA) and media mix modeling (MMM) are complementary measurement approaches. Learn when to use each, how they differ, and how to combine them for complete marketing measurement."
-published_at:
+published_at: 2026-05-01
 section: fundamentals
 section_order: 2
-status: draft
+status: published
 priority: P0
 category: "Attribution Fundamentals"
 tags:
@@ -120,19 +120,13 @@ MMM's aggregate approach lets it measure effects that are invisible to user-leve
 - **Saturation curves**: Diminishing returns as spend increases
 - **Carryover effects**: Impact that persists beyond the measurement window
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: MTA vs MMM Results Comparison</p>
-  <p class="text-yellow-700 text-sm">Add a real example showing how MTA and MMM give different channel rankings for the same business. Example: "For a DTC brand, MTA showed Paid Social at 1.2x ROAS while MMM showed 2.8x—the difference was podcast ads driving branded search that MTA credited to the wrong channel."</p>
-</div>
+<%= render "articles/embeds/mta_vs_mmm_results_comparison" %>
 
 ## Pearl's Ladder: Understanding What Each Approach Can Prove
 
 To understand the real difference between MTA and MMM, it helps to use Judea Pearl's "Ladder of Causation"—a framework from causal inference theory, described in his book *[The Book of Why](https://www.basicbooks.com/titles/judea-pearl/the-book-of-why/9780465097616/)* (2018) co-authored with Dana Mackenzie.
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Pearl's Ladder Diagram</p>
-  <p class="text-yellow-700 text-sm">Create an original diagram visualizing the three rungs of Pearl's Ladder applied to marketing measurement. Show MTA at Rung 1, MMM straddling Rungs 1-2, and Incrementality at Rung 2. This visual framework becomes citable and shareable. <strong>Outreach:</strong> Share with Judea Pearl on Twitter/X when published.</p>
-</div>
+<%= render "articles/embeds/pearls_ladder" %>
 
 ### Rung 1: Association (Seeing)
 *"What happened? What correlates with what?"*
@@ -211,10 +205,7 @@ MMM is the right tool when you need:
 - In regions with strict privacy laws (GDPR, CCPA)
 - For audiences that heavily use ad blockers
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Decision Framework</p>
-  <p class="text-yellow-700 text-sm">Add an original mbuzz decision tree or flowchart: "Should I use MTA, MMM, or both?" based on business characteristics (spend level, channel mix, data maturity, privacy constraints). This becomes a citable, unique framework.</p>
-</div>
+<%= render "articles/embeds/mta_mmm_decision_tree" %>
 
 ## The Case for Using Both
 
@@ -241,10 +232,7 @@ The most mature marketing organizations use a three-layer approach:
 
 When MTA and MMM agree, you have high confidence. When they disagree, you have a research question—and incrementality testing can provide the answer.
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Measurement Stack Diagram</p>
-  <p class="text-yellow-700 text-sm">Add a visual showing the three-layer measurement stack with MTA, MMM, and incrementality tests. Show how they interact: MTA feeds into MMM calibration, incrementality tests validate both, etc. This is a signature framework for mbuzz.</p>
-</div>
+<%= render "articles/embeds/measurement_stack" %>
 
 ## Common Misconceptions
 
@@ -260,10 +248,7 @@ The evidence: major tech companies have open-sourced their MMM tools:
 
 These aren't side projects—they represent significant investment in aggregate measurement as the future of marketing analytics.
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Open-Source MMM Comparison</p>
-  <p class="text-yellow-700 text-sm">Create a comparison table of Robyn vs Meridian vs Orbit vs PyMC-Marketing (features, requirements, best for). This becomes a valuable reference. <strong>Outreach:</strong> Share with maintainers of each project when published—they often reshare content that features their tools.</p>
-</div>
+<%= render "articles/embeds/open_source_mmm_comparison" %>
 
 ### "MTA is always more accurate because it tracks real users"
 
@@ -293,9 +278,11 @@ When MTA and MMM disagree, run an incrementality test. Geo-holdouts or randomize
 
 As [Kevin Hillstrom](https://blog.minethatdata.com/) (MineThatData) has argued for years, holdout testing is the only way to know what would have happened *without* your marketing. And as [Cassie Kozyrkov](https://twitter.com/quaesita) (Google's former Chief Decision Scientist) emphasizes, correlation-based methods like MTA and MMM should always be validated with experimental evidence when possible.
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Integration Example</p>
-  <p class="text-yellow-700 text-sm">Add a real example of how an mbuzz customer integrated MTA and MMM. Example: "Company X found MTA undervalued podcasts by 60% compared to MMM. After a geo-holdout test confirmed MMM's estimate, they recalibrated MTA weights and reallocated $200K to podcasts, increasing overall ROAS by 15%."</p>
+<div class="bg-slate-50 border-l-4 border-slate-400 p-5 my-8 rounded-r-md not-prose">
+  <p class="text-xs font-bold text-slate-500 tracking-[0.15em] mb-3">A WORKED EXAMPLE</p>
+  <p class="text-sm text-slate-700 leading-relaxed mb-3">A DTC brand spending $1.5M/yr runs MTA daily and MMM quarterly. MTA reports paid social at 1.2x ROAS. MMM reports it at 2.8x. The team suspects MMM is right &mdash; view-through impressions and brand lift are invisible to last-click &mdash; but doesn't want to act on a model alone.</p>
+  <p class="text-sm text-slate-700 leading-relaxed mb-3">They run a 4-week geo-holdout: paid social paused in 6 metro areas matched against 6 control metros. Difference-in-differences shows the holdout regions lost ~14% of total revenue. The lift is consistent with MMM's 2.8x estimate, not MTA's 1.2x.</p>
+  <p class="text-sm text-slate-700 leading-relaxed">Two changes follow. First, MTA's social attribution gets reweighted upward in the daily dashboard so campaign decisions stop under-investing. Second, the next quarterly budget shifts $180K from search to social, where marginal return is now demonstrably higher. The MMM model is then recalibrated against the geo-holdout result so the next quarterly run starts from a stronger prior.</p>
 </div>
 
 ## Data Requirements Comparison
@@ -320,11 +307,6 @@ MTA and MMM are complementary measurement approaches, not competitors:
 
 For small marketing operations, MTA alone may suffice. As you scale—especially into offline channels or privacy-constrained environments—add MMM. The best measurement stacks use all three approaches, each answering the questions it's best suited for.
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Expert Quote</p>
-  <p class="text-yellow-700 text-sm">Add a quote from an mbuzz team member or customer on the MTA vs MMM decision. Example: "We used to see MTA and MMM as competing philosophies. Now we see them as different lenses on the same reality—and the view through both is clearer than either alone." — [Name], [Title]</p>
-</div>
-
 ## Further Reading
 
 For those wanting to go deeper on these topics:
@@ -341,10 +323,12 @@ For those wanting to go deeper on these topics:
 - [Kevin Hillstrom's MineThatData Blog](https://blog.minethatdata.com/) — Years of practical incrementality insights
 - [Cassie Kozyrkov on Decision Science](https://kozyrkov.medium.com/) — Rigorous thinking about experiments and causation
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: mbuzz Resources</p>
-  <p class="text-yellow-700 text-sm">Add links to related mbuzz content: incrementality testing guide, MMM integration docs, attribution model comparison tool, etc. <strong>Outreach:</strong> When sharing this article with cited authors, include a personalized note about why their work is featured.</p>
-</div>
+**Continue on mbuzz:**
+- [The Measurement Maturity Map](/articles/measurement-maturity-map) — where MTA and MMM sit on the four-level maturity ladder, and what to adopt at each spend tier
+- [What is Multi-Touch Attribution?](/articles/what-is-multi-touch-attribution) — how MTA actually works, model by model
+- [MTA, MMM, and Incrementality: Triangulating the Truth](/articles/mta-mmm-incrementality-triangulation) — how to combine all three when they disagree
+- [Server-Side vs Client-Side Tracking](/articles/server-side-vs-client-side-tracking) — how to recover the 30–40% of MTA data lost to cookies and ad blockers
+- [The Measurement Maturity Score](/measurement-maturity-assessment) — free 10-question assessment that tells you which methods you should be running
 
 <%= render_key_takeaways(@article.key_takeaways) %>
 

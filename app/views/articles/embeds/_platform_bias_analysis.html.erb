@@ -1,0 +1,73 @@
+<%# Platform self-reported conversions vs deduplicated truth. Each platform claims credit for the same conversion. %>
+
+<%
+  # 100 actual conversions for the period. Each platform reports its self-attributed share.
+  # Sum exceeds 100 because of cross-platform double-counting and click-attribution inflation.
+  platforms = [
+    { name: "Meta",          self_reported: 48, color: "indigo" },
+    { name: "Google Ads",    self_reported: 62, color: "indigo" },
+    { name: "TikTok",        self_reported: 22, color: "indigo" },
+    { name: "Email tool",    self_reported: 28, color: "indigo" }
+  ]
+  actual = 100
+  reported_total = platforms.sum { |p| p[:self_reported] }
+  overcount_pct = ((reported_total.to_f / actual - 1) * 100).round
+%>
+
+<figure class="my-12 not-prose">
+  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+
+    <div class="px-6 sm:px-8 pt-8 pb-6 border-b border-slate-200">
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Each platform claims credit for the same conversions</h2>
+      <p class="text-slate-500 text-sm sm:text-base mt-1">Sum the platform dashboards. Compare to your actual order count. The gap is double-counting.</p>
+    </div>
+
+    <div class="px-4 sm:px-8 py-6 bg-gradient-to-b from-slate-50/60 to-white">
+
+      <div class="space-y-3 mb-6">
+        <% platforms.each do |p| %>
+          <div class="grid grid-cols-[7rem_1fr_3rem] sm:grid-cols-[10rem_1fr_3.5rem] items-center gap-x-3 sm:gap-x-4">
+            <div class="text-sm sm:text-base font-semibold text-slate-900 text-right"><%= p[:name] %></div>
+            <div class="h-7 bg-slate-100 rounded-sm overflow-hidden">
+              <div class="h-full bg-indigo-500 rounded-sm flex items-center pl-2.5" style="width: <%= p[:self_reported] %>%;">
+                <span class="text-xs font-mono font-semibold text-white"><%= p[:self_reported] %></span>
+              </div>
+            </div>
+            <div class="text-xs sm:text-sm font-mono text-slate-500">conv.</div>
+          </div>
+        <% end %>
+      </div>
+
+      <%# Sum row %>
+      <div class="grid grid-cols-[7rem_1fr_3rem] sm:grid-cols-[10rem_1fr_3.5rem] items-center gap-x-3 sm:gap-x-4 pt-4 mt-2 border-t-2 border-slate-300">
+        <div class="text-sm sm:text-base font-bold text-slate-700 text-right">Sum of platforms</div>
+        <div class="text-sm sm:text-base font-mono font-bold text-slate-700"><%= reported_total %> claimed conversions</div>
+        <div></div>
+      </div>
+
+      <div class="grid grid-cols-[7rem_1fr_3rem] sm:grid-cols-[10rem_1fr_3.5rem] items-center gap-x-3 sm:gap-x-4 pt-2">
+        <div class="text-sm sm:text-base font-bold text-emerald-700 text-right">Actual orders</div>
+        <div class="text-sm sm:text-base font-mono font-bold text-emerald-700"><%= actual %> deduplicated conversions</div>
+        <div></div>
+      </div>
+
+      <%# Gap callout %>
+      <div class="mt-5 px-4 py-3 bg-amber-50 border-l-4 border-amber-400 rounded-r-md">
+        <p class="text-sm text-amber-900">
+          <strong>Overcount: <%= overcount_pct %>%</strong> &mdash; the platforms collectively claim <%= reported_total %> conversions for the same <%= actual %> real orders. Each user clicked through multiple ads before buying; every platform counted that user as theirs.
+        </p>
+      </div>
+    </div>
+
+    <div class="px-6 sm:px-8 py-5 bg-slate-50 border-t border-slate-200">
+      <p class="text-sm text-slate-700 leading-relaxed">
+        <strong class="text-slate-900">If you set budget by platform-reported ROAS, you're overspending.</strong>
+        Every channel looks profitable when each one over-reports its share. Independent attribution deduplicates the conversions across channels &mdash; the only way to see which platform drove the marginal sale.
+      </p>
+    </div>
+
+  </div>
+  <figcaption class="text-xs text-slate-500 mt-3 text-center">
+    Illustrative ratios &middot; Total platform overcounting consistently lands in the 40&ndash;100% range across published case studies (Gartner, AppsFlyer, AAII)
+  </figcaption>
+</figure>

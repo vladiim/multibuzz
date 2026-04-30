@@ -1,0 +1,134 @@
+<%# Comparison of the four major open-source MMM libraries. %>
+<%# Sources: each project's official docs/repo, linked in the name field. %>
+
+<%
+  tools = [
+    {
+      name:        "Robyn",
+      url:         "https://facebookexperimental.github.io/Robyn/",
+      maintainer:  "Meta Marketing Science",
+      language:    "R",
+      approach:    "Ridge regression with multi-objective Pareto optimization",
+      adstock:     "Built-in (Geometric, Weibull)",
+      calibration: "Native &mdash; Conversion Lift and geo experiments",
+      best_for:    "Practitioners with R fluency who want fast, opinionated MMM with tight Meta-spend integration."
+    },
+    {
+      name:        "Meridian",
+      url:         "https://github.com/google/meridian",
+      maintainer:  "Google",
+      language:    "Python (TensorFlow Probability)",
+      approach:    "Bayesian hierarchical",
+      adstock:     "Built-in (Geometric, Hill saturation)",
+      calibration: "Native &mdash; experimental priors first-class",
+      best_for:    "Modern Bayesian MMM with strong calibration story. Successor to Google's LightweightMMM."
+    },
+    {
+      name:        "Orbit",
+      url:         "https://uber.github.io/orbit/",
+      maintainer:  "Uber AI",
+      language:    "Python (Stan or PyMC backend)",
+      approach:    "Bayesian time-series (DLT, KTR), extensible to MMM",
+      adstock:     "Custom &mdash; bring your own",
+      calibration: "Manual via priors",
+      best_for:    "Teams already using Orbit for forecasting who want to extend into MMM. Less opinionated than the other three."
+    },
+    {
+      name:        "PyMC-Marketing",
+      url:         "https://www.pymc-marketing.io/",
+      maintainer:  "PyMC Labs + community",
+      language:    "Python (PyMC)",
+      approach:    "Bayesian &mdash; full PyMC flexibility",
+      adstock:     "Built-in (Geometric, Weibull, Delayed)",
+      calibration: "Native via Bayesian priors",
+      best_for:    "Teams with probabilistic-programming background who want maximum customization."
+    }
+  ]
+
+  rows = [
+    { key: :maintainer,  label: "Maintainer" },
+    { key: :language,    label: "Language" },
+    { key: :approach,    label: "Approach" },
+    { key: :adstock,     label: "Adstock + saturation" },
+    { key: :calibration, label: "Experiment calibration" },
+    { key: :best_for,    label: "Best for" }
+  ]
+%>
+
+<figure class="my-12 not-prose">
+  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+
+    <%# Header %>
+    <div class="px-6 sm:px-8 pt-8 pb-6 border-b border-slate-200">
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Open-source MMM libraries, compared</h2>
+      <p class="text-slate-500 text-sm sm:text-base mt-1">Four mature options. None requires a vendor licence; all require a data scientist.</p>
+    </div>
+
+    <%# ─── DESKTOP — comparison table ─── %>
+    <div class="hidden sm:block">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-slate-200 bg-slate-50">
+            <th class="text-left text-xs font-semibold text-slate-500 tracking-[0.12em] px-6 py-3 w-44">&nbsp;</th>
+            <% tools.each do |tool| %>
+              <th class="text-left px-4 py-3 align-bottom">
+                <a href="<%= tool[:url] %>" target="_blank" rel="noopener" class="text-base font-bold text-slate-900 hover:text-indigo-600 underline decoration-slate-300 decoration-1 underline-offset-4">
+                  <%= tool[:name] %>
+                </a>
+              </th>
+            <% end %>
+          </tr>
+        </thead>
+        <tbody>
+          <% rows.each_with_index do |row, idx| %>
+            <tr class="border-b border-slate-100 last:border-b-0 <%= 'bg-slate-50/40' if idx.odd? %>">
+              <td class="text-xs font-semibold text-slate-500 tracking-[0.08em] px-6 py-3 align-top whitespace-nowrap">
+                <%= row[:label].upcase %>
+              </td>
+              <% tools.each do |tool| %>
+                <td class="text-slate-700 leading-relaxed px-4 py-3 align-top text-sm">
+                  <%= tool[row[:key]].html_safe %>
+                </td>
+              <% end %>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <%# ─── MOBILE — per-tool cards ─── %>
+    <div class="sm:hidden px-4 py-5 space-y-4">
+      <% tools.each do |tool| %>
+        <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
+          <a href="<%= tool[:url] %>" target="_blank" rel="noopener" class="block bg-slate-50 border-b border-slate-200 px-4 py-3">
+            <div class="text-base font-bold text-slate-900 underline decoration-slate-300 decoration-1 underline-offset-4">
+              <%= tool[:name] %>
+            </div>
+          </a>
+          <dl class="px-4 py-3 text-sm">
+            <% rows.each do |row| %>
+              <div class="py-2 border-b border-slate-100 last:border-b-0">
+                <dt class="text-[10px] font-semibold text-slate-500 tracking-[0.12em] mb-0.5">
+                  <%= row[:label].upcase %>
+                </dt>
+                <dd class="text-sm text-slate-700 leading-snug"><%= tool[row[:key]].html_safe %></dd>
+              </div>
+            <% end %>
+          </dl>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Footer takeaway %>
+    <div class="px-6 sm:px-8 py-5 bg-slate-50 border-t border-slate-200">
+      <p class="text-sm text-slate-700 leading-relaxed">
+        <strong class="text-slate-900">Free to run, expensive to operate.</strong>
+        All four libraries are open-source and well-maintained. The cost isn't the licence &mdash; it's the data engineering, the 2&ndash;3 years of clean weekly history, and the data scientist hours required to calibrate, validate, and re-run quarterly. Self-hosting MMM only makes sense above ~$500K/yr in marketing spend.
+      </p>
+    </div>
+
+  </div>
+  <figcaption class="text-xs text-slate-500 mt-3 text-center">
+    Sources: each project's official documentation &middot; Last reviewed by mbuzz: <%= Date.today.strftime("%B %Y") %>
+  </figcaption>
+</figure>

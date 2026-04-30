@@ -1,0 +1,104 @@
+<%# The three-layer measurement stack: MTA, MMM, Incrementality. %>
+<%# Each layer has a different cadence and role. The arrows between layers show how data and calibration flow. %>
+
+<figure class="my-12 not-prose">
+  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+
+    <%# Header %>
+    <div class="px-6 sm:px-8 pt-8 pb-6 border-b border-slate-200">
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">The Three-Layer Measurement Stack</h2>
+      <p class="text-slate-500 text-sm sm:text-base mt-1">Each method runs at a different cadence and answers a different question. Together they triangulate.</p>
+    </div>
+
+    <%# Stack body %>
+    <div class="px-4 sm:px-8 py-8 bg-gradient-to-b from-slate-50/60 to-white">
+
+      <%# Top layer — Incrementality %>
+      <div class="bg-slate-900 text-white border-l-4 border-amber-400 rounded-md px-4 sm:px-6 py-4 sm:py-5">
+        <div class="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 mb-1">
+          <div class="flex items-baseline gap-3">
+            <span class="text-[11px] sm:text-xs font-bold text-amber-300 tracking-[0.15em]">LAYER 3</span>
+            <h3 class="text-lg sm:text-xl font-bold">Incrementality</h3>
+          </div>
+          <div class="text-[11px] sm:text-xs font-mono text-slate-400 tracking-wide">CADENCE &middot; QUARTERLY+</div>
+        </div>
+        <p class="text-sm text-amber-200 italic mb-3">Causal proof. Ground truth.</p>
+        <ul class="space-y-1.5 text-sm text-slate-200">
+          <li class="flex gap-2"><span class="text-amber-400 shrink-0">&middot;</span><span>Geo holdouts and randomized tests</span></li>
+          <li class="flex gap-2"><span class="text-amber-400 shrink-0">&middot;</span><span>Resolves MTA/MMM disputes when methods disagree</span></li>
+          <li class="flex gap-2"><span class="text-amber-400 shrink-0">&middot;</span><span>Calibrates both layers below with experimental evidence</span></li>
+        </ul>
+      </div>
+
+      <%# Connector — Incrementality ↔ MMM %>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 py-2 text-[11px] sm:text-xs text-slate-500">
+        <svg class="rotate-90 sm:rotate-0 shrink-0" width="36" height="14" viewBox="0 0 36 14" fill="none" aria-hidden="true">
+          <path d="M 6 7 L 30 7" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="3 3" />
+          <path d="M 6 3 L 2 7 L 6 11" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+          <path d="M 30 3 L 34 7 L 30 11" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+        </svg>
+        <span class="italic"><strong class="not-italic font-semibold text-slate-700">calibrates</strong> MMM coefficients with causal evidence</span>
+      </div>
+
+      <%# Middle layer — MMM %>
+      <div class="bg-indigo-100 border-l-4 border-indigo-500 rounded-md px-4 sm:px-6 py-4 sm:py-5">
+        <div class="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 mb-1">
+          <div class="flex items-baseline gap-3">
+            <span class="text-[11px] sm:text-xs font-bold text-indigo-600 tracking-[0.15em]">LAYER 2</span>
+            <h3 class="text-lg sm:text-xl font-bold text-slate-900">MMM</h3>
+          </div>
+          <div class="text-[11px] sm:text-xs font-mono text-indigo-700 tracking-wide">CADENCE &middot; QUARTERLY</div>
+        </div>
+        <p class="text-sm text-indigo-700 italic mb-3">Strategic allocation. Privacy-resilient.</p>
+        <ul class="space-y-1.5 text-sm text-slate-700">
+          <li class="flex gap-2"><span class="text-indigo-500 shrink-0">&middot;</span><span>Budget split across channels</span></li>
+          <li class="flex gap-2"><span class="text-indigo-500 shrink-0">&middot;</span><span>Saturation curves and carryover effects</span></li>
+          <li class="flex gap-2"><span class="text-indigo-500 shrink-0">&middot;</span><span>Includes offline channels MTA can't see (TV, OOH, podcast)</span></li>
+        </ul>
+      </div>
+
+      <%# Connector — MMM ↔ MTA %>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 py-2 text-[11px] sm:text-xs text-slate-500">
+        <svg class="rotate-90 sm:rotate-0 shrink-0" width="36" height="14" viewBox="0 0 36 14" fill="none" aria-hidden="true">
+          <path d="M 6 7 L 30 7" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="3 3" />
+          <path d="M 6 3 L 2 7 L 6 11" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+          <path d="M 30 3 L 34 7 L 30 11" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+        </svg>
+        <span class="italic">
+          <strong class="not-italic font-semibold text-slate-700">MTA conversions</strong> feed MMM as inputs &middot;
+          <strong class="not-italic font-semibold text-slate-700">MMM</strong> reweights MTA channel attribution
+        </span>
+      </div>
+
+      <%# Bottom layer — MTA %>
+      <div class="bg-slate-100 border-l-4 border-slate-400 rounded-md px-4 sm:px-6 py-4 sm:py-5">
+        <div class="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 mb-1">
+          <div class="flex items-baseline gap-3">
+            <span class="text-[11px] sm:text-xs font-bold text-slate-500 tracking-[0.15em]">LAYER 1</span>
+            <h3 class="text-lg sm:text-xl font-bold text-slate-900">MTA</h3>
+          </div>
+          <div class="text-[11px] sm:text-xs font-mono text-slate-500 tracking-wide">CADENCE &middot; DAILY / WEEKLY</div>
+        </div>
+        <p class="text-sm text-slate-600 italic mb-3">Tactical optimization. Digital channels.</p>
+        <ul class="space-y-1.5 text-sm text-slate-700">
+          <li class="flex gap-2"><span class="text-slate-500 shrink-0">&middot;</span><span>Pause/scale campaigns and creatives</span></li>
+          <li class="flex gap-2"><span class="text-slate-500 shrink-0">&middot;</span><span>Customer journey analysis (paths, drop-offs)</span></li>
+          <li class="flex gap-2"><span class="text-slate-500 shrink-0">&middot;</span><span>Real-time ROAS and channel-level performance</span></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <%# Footer takeaway %>
+    <div class="px-6 sm:px-8 py-5 bg-slate-50 border-t border-slate-200">
+      <p class="text-sm text-slate-700 leading-relaxed">
+        <strong class="text-slate-900">When two layers agree, you have confidence. When they disagree, you have a research question.</strong>
+        Incrementality tests are how you answer it &mdash; and the answer flows back down to recalibrate the layers below.
+      </p>
+    </div>
+
+  </div>
+  <figcaption class="text-xs text-slate-500 mt-3 text-center">
+    Framework: mbuzz &middot; Cadences reflect typical practice at $500K&ndash;$5M annual marketing spend
+  </figcaption>
+</figure>

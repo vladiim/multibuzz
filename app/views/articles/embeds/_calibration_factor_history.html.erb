@@ -1,0 +1,68 @@
+<%# Timeline showing how Meta's MTA calibration factor moved across major attribution shocks. Illustrative numbers. %>
+
+<%
+  events = [
+    { date: "Pre-2021",  label: "Baseline",          factor: 0.70, note: "MTA captured most signal; CAPI not yet widespread.", color: "slate" },
+    { date: "Apr 2021",  label: "ATT rolls out",     factor: 0.50, note: "iOS 14.5 launches App Tracking Transparency. Meta loses cross-app signal.", color: "amber" },
+    { date: "Q3 2022",   label: "Modeled conv.",     factor: 0.55, note: "Meta starts modeling ATT-blocked conversions; signal partially recovers.", color: "amber" },
+    { date: "Q1 2024",   label: "CAPI mature",       factor: 0.62, note: "Server-side CAPI integration recovers more iOS conversions.", color: "indigo" },
+    { date: "Today",     label: "Current",           factor: 0.55, note: "Meta keeps optimizing; calibration drifts as platform behaviour changes.", color: "indigo" }
+  ]
+  factor_max = 1.0
+  color_class = {
+    "slate" => "border-slate-400 bg-slate-100",
+    "amber" => "border-amber-400 bg-amber-50",
+    "indigo" => "border-indigo-500 bg-indigo-50"
+  }
+%>
+
+<figure class="my-12 not-prose">
+  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+
+    <div class="px-6 sm:px-8 pt-8 pb-6 border-b border-slate-200">
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Meta's MTA calibration factor over time</h2>
+      <p class="text-slate-500 text-sm sm:text-base mt-1">Multiplier applied to Meta-reported attribution to match incrementality-tested truth. The factor moves &mdash; you have to keep testing.</p>
+    </div>
+
+    <div class="px-4 sm:px-8 py-6 bg-gradient-to-b from-slate-50/60 to-white">
+      <div class="space-y-3">
+        <% events.each_with_index do |e, i| %>
+          <div class="flex items-stretch gap-3 sm:gap-4">
+            <%# Date column %>
+            <div class="w-20 sm:w-24 shrink-0 text-right">
+              <div class="text-xs sm:text-sm font-mono font-semibold text-slate-700"><%= e[:date] %></div>
+              <div class="text-[10px] sm:text-xs text-slate-500"><%= e[:label] %></div>
+            </div>
+            <%# Connector + factor pill %>
+            <div class="relative flex flex-col items-center shrink-0">
+              <% if i > 0 %>
+                <div class="w-0.5 h-3 bg-slate-300"></div>
+              <% end %>
+              <div class="<%= color_class[e[:color]] %> border-2 rounded-full px-3 py-1 font-mono text-sm font-bold text-slate-900 shrink-0">
+                <%= e[:factor] %>x
+              </div>
+              <% if i < events.length - 1 %>
+                <div class="w-0.5 flex-1 bg-slate-300"></div>
+              <% end %>
+            </div>
+            <%# Note %>
+            <div class="flex-1 pt-1.5 text-xs sm:text-sm text-slate-600 leading-snug">
+              <%= e[:note] %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="px-6 sm:px-8 py-5 bg-slate-50 border-t border-slate-200">
+      <p class="text-sm text-slate-700 leading-relaxed">
+        <strong class="text-slate-900">A calibration factor is a snapshot, not a constant.</strong>
+        Every time the platform changes how it attributes (modeled conversions, signal-loss recovery, AI optimization), the factor moves. Re-running incrementality tests every 6&ndash;12 months is the only way to keep MTA honest.
+      </p>
+    </div>
+
+  </div>
+  <figcaption class="text-xs text-slate-500 mt-3 text-center">
+    Illustrative trajectory &middot; Real factors vary by vertical and account; the <em>shape</em> of the curve is consistent across published case studies
+  </figcaption>
+</figure>

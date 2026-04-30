@@ -2,10 +2,10 @@
 title: "Why Your Platform Reports Don't Match (And What to Trust)"
 slug: "platform-reports-dont-match"
 description: "Google says one thing, Meta says another, your email tool claims the rest. Learn why platform attribution data conflicts, how to reconcile the differences, and how to build a single source of truth."
-published_at:
+published_at: 2026-05-01
 section: fundamentals
 section_order: 5
-status: draft
+status: published
 priority: P0
 category: "Attribution Fundamentals"
 tags:
@@ -134,10 +134,7 @@ Platforms aren't neutral observers—they're selling you ads. Their attribution 
 
 This isn't conspiracy—it's incentives. Platforms that show better ROAS get more ad spend.
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Platform Bias Analysis</p>
-  <p class="text-yellow-700 text-sm">Add mbuzz analysis comparing platform-reported conversions vs mbuzz multi-touch attribution for same campaigns. Show typical overcounting rate (e.g., "Platforms collectively over-report by 40-80%"). This is powerful proof of the problem.</p>
-</div>
+<%= render "articles/embeds/platform_bias_analysis" %>
 
 ## The Real-World Impact
 
@@ -237,10 +234,7 @@ Use aggregate data and econometrics to estimate channel contribution:
 - Accounts for brand effects, seasonality, competition
 - Provides calibration factors for platform data
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Reconciliation Framework</p>
-  <p class="text-yellow-700 text-sm">Add mbuzz diagram showing: Platform Data (biased) → Third-Party Attribution (deduplicated) → Incrementality Validation (causal) → Confident Budget Decisions. This becomes a signature mbuzz framework.</p>
-</div>
+<%= render "articles/embeds/reconciliation_framework" %>
 
 ## Practical Reconciliation Workflow
 
@@ -332,9 +326,10 @@ Using platform data "because it's what we have" leads to systematic misallocatio
 
 They have different incentives, different windows, different visibility. Reconciliation isn't about making them match—it's about building your own truth.
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Case Study</p>
-  <p class="text-yellow-700 text-sm">Add mbuzz customer example: "Company X was allocating budget based on platform ROAS. After implementing mbuzz as their single source of truth, they discovered Display was 2x more effective than platform data suggested. Reallocating 20% of budget to Display increased overall ROAS by 15%."</p>
+<div class="bg-slate-50 border-l-4 border-slate-400 p-5 my-8 rounded-r-md not-prose">
+  <p class="text-xs font-bold text-slate-500 tracking-[0.15em] mb-3">A WORKED EXAMPLE</p>
+  <p class="text-sm text-slate-700 leading-relaxed mb-3">A DTC brand pulls reports from Meta, Google, TikTok, and Klaviyo. Each says it drove the strongest week. Summed, the four platforms claim 162 conversions for a week that produced 100 actual orders. Every platform optimization algorithm is bidding harder for the same buyers, and nobody can tell which platform is the marginal driver.</p>
+  <p class="text-sm text-slate-700 leading-relaxed">After deploying server-side multi-touch attribution that dedupes the orders across platforms, the picture changes: Klaviyo's email flow is mostly closing already-won customers, Display is doing more sourcing than any platform credited it for, and TikTok's reported ROAS is inflated by 50%+ from view-through claims that don't survive the dedupe. Six weeks of reallocation later, blended ROAS is up 18% on flat spend &mdash; the same dollars buying more incremental orders because they're going to the channels that earn them.</p>
 </div>
 
 ## Summary

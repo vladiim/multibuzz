@@ -2,10 +2,10 @@
 title: "What Attribution Can't Track (The Dark Funnel)"
 slug: "dark-funnel-untrackable-attribution"
 description: "30-50% of purchase influences happen in channels attribution can't see: word of mouth, private communities, podcasts, dark social. Learn what the dark funnel is, why it matters, and how to measure the unmeasurable."
-published_at:
+published_at: 2026-05-01
 section: fundamentals
 section_order: 6
-status: draft
+status: published
 priority: P0
 category: "Attribution Fundamentals"
 tags:
@@ -153,10 +153,7 @@ Anything in the physical world:
 
 These touches create brand awareness and consideration that later converts online—credited to whatever digital channel was last.
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Dark Funnel Breakdown</p>
-  <p class="text-yellow-700 text-sm">Add mbuzz or industry data showing estimated % of purchase influence by category: Word of Mouth (X%), Dark Social (Y%), Podcasts (Z%), Communities (W%), Offline (V%). Compare to what attribution typically credits. This quantifies the gap.</p>
-</div>
+<%= render "articles/embeds/dark_funnel_breakdown" %>
 
 ## Why the Dark Funnel Matters
 
@@ -346,9 +343,10 @@ Attribution said: "Podcast ROAS = 0"
 Reality: Podcast ROAS = 3.75x
 ```
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Survey vs Attribution Comparison</p>
-  <p class="text-yellow-700 text-sm">Add mbuzz customer data comparing survey-attributed sources to click-based attribution for same conversions. Show typical gap (e.g., "Surveys showed 3x more word-of-mouth influence than any channel attribution credited").</p>
+<div class="bg-slate-50 border-l-4 border-slate-400 p-5 my-8 rounded-r-md not-prose">
+  <p class="text-xs font-bold text-slate-500 tracking-[0.15em] mb-3">A WORKED EXAMPLE</p>
+  <p class="text-sm text-slate-700 leading-relaxed mb-3">A B2B SaaS team adds a single post-checkout survey question: <em>"How did you first hear about us?"</em> Attribution dashboards say their top driver is Branded Search (32% of conversions). The survey says the top driver is <em>"a colleague mentioned it"</em> &mdash; cited by 41% of respondents.</p>
+  <p class="text-sm text-slate-700 leading-relaxed">The two answers don't contradict each other. They describe different links in the same chain. A colleague mentioned it &rarr; the buyer Googled the brand &rarr; clicked the branded ad. Attribution credited the click. The survey credited the cause. Without the survey, the team would keep doubling brand-bidding budget and ignore the relationship-building motion that actually drove the pipeline.</p>
 </div>
 
 ## What To Do About It
@@ -438,11 +436,6 @@ The dark funnel—word of mouth, podcasts, private communities, dark social, off
 **On Attribution Limits:**
 - [Why Your Platform Reports Don't Match](/articles/platform-reports-dont-match) — Another attribution blind spot
 - [MTA vs MMM](/articles/mta-vs-mmm) — MMM measures what attribution can't
-
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Expert Quote on Dark Funnel</p>
-  <p class="text-yellow-700 text-sm">Add quote from Rand Fishkin (SparkToro) or similar on attribution limitations. Fishkin has written extensively about how "clicks are dying" and attribution can't measure true influence. <strong>Outreach target:</strong> Rand Fishkin, SparkToro.</p>
-</div>
 
 <%= render_key_takeaways(@article.key_takeaways) %>
 

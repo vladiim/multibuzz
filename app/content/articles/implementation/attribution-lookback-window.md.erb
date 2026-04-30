@@ -2,10 +2,10 @@
 title: "How to Change Your Attribution Lookback Window"
 slug: "attribution-lookback-window"
 description: "Learn how to configure attribution lookback windows for your business. Includes recommended windows by industry, A/B testing methodology, and common mistakes to avoid."
-published_at:
+published_at: 2026-05-01
 section: implementation
 section_order: 1
-status: draft
+status: published
 priority: P0
 category: "Implementation"
 tags:
@@ -132,10 +132,7 @@ Percentile │ Days │ Cumulative % │ Recommendation
 Recommendation: 30-day window captures 90%+ of conversions
 ```
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Time-to-Conversion Histogram</p>
-  <p class="text-yellow-700 text-sm">Add mbuzz visualization showing typical time-to-conversion distribution with vertical line at recommended window cutoff. Users can upload their data to see their own distribution.</p>
-</div>
+<%= render "articles/embeds/time_to_conversion_histogram" %>
 
 ### Step 2: Compare Credit Distribution at Different Windows
 
@@ -330,11 +327,6 @@ Recommendation: Extend to 45-day window
 ├── Better reflects true journey length
 └── Improves forecast accuracy
 ```
-
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: mbuzz Window Comparison Tool</p>
-  <p class="text-yellow-700 text-sm">Add screenshot showing mbuzz's window comparison feature: side-by-side credit distribution at different windows, with recommendation based on user's conversion timing data.</p>
-</div>
 
 ## Common Window Mistakes
 

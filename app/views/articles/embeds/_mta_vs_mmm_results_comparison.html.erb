@@ -1,0 +1,164 @@
+<%# Side-by-side ROAS comparison: same business, MTA vs MMM. Illustrative numbers — not a real customer. %>
+<%# Pattern (Search overstated, Social/Podcast understated) is consistent with Gordon et al. (2019) and Dropbox/IEEE (2026). %>
+
+<%
+  # ROAS scale: max bar = 5.0x.
+  channels = [
+    { name: "Podcast",     mta: nil, mmm: 4.8, note: "invisible to MTA &mdash; offline, no click trail" },
+    { name: "Paid Search", mta: 4.2, mmm: 2.0, note: "MTA overcredits last-click conversions driven by other channels" },
+    { name: "Email",       mta: 3.8, mmm: 3.1, note: nil },
+    { name: "Paid Social", mta: 1.2, mmm: 2.8, note: "MMM captures view-through and brand lift MTA can't see" },
+    { name: "Display",     mta: 2.4, mmm: 1.8, note: nil },
+  ]
+  scale = 5.0
+%>
+
+<figure class="my-12 not-prose">
+  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+
+    <%# Header %>
+    <div class="px-6 sm:px-8 pt-8 pb-6 border-b border-slate-200">
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Same business. Same quarter. Two stories.</h2>
+      <p class="text-slate-500 text-sm sm:text-base mt-1">Channel ROAS as reported by MTA versus MMM &mdash; the gap is the point.</p>
+    </div>
+
+    <%# Body %>
+    <div class="px-4 sm:px-8 py-6 bg-gradient-to-b from-slate-50/60 to-white">
+
+      <%# Legend (both layouts share this) %>
+      <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5 mb-5 text-xs font-semibold tracking-wide text-slate-600">
+        <span class="inline-flex items-center gap-2">
+          <span class="inline-block w-3 h-3 rounded-sm bg-slate-400"></span>
+          MTA <span class="font-normal text-slate-400">(last-click)</span>
+        </span>
+        <span class="inline-flex items-center gap-2">
+          <span class="inline-block w-3 h-3 rounded-sm bg-indigo-500"></span>
+          MMM <span class="font-normal text-slate-400">(econometric)</span>
+        </span>
+      </div>
+
+      <%# ─── MOBILE LAYOUT — stacked bars per channel ─── %>
+      <div class="sm:hidden space-y-5">
+        <% channels.each do |ch| %>
+          <% mta_pct = ch[:mta] ? (ch[:mta] / scale * 100).round : 0 %>
+          <% mmm_pct = (ch[:mmm] / scale * 100).round %>
+          <div>
+            <h3 class="text-base font-bold text-slate-900 mb-2"><%= ch[:name] %></h3>
+
+            <%# MTA bar row %>
+            <div class="flex items-center gap-3 mb-1.5">
+              <div class="w-10 text-[10px] font-bold tracking-wider text-slate-500 shrink-0">MTA</div>
+              <div class="flex-1 h-6 bg-slate-100 rounded-sm overflow-hidden relative">
+                <% if ch[:mta] %>
+                  <div class="h-full bg-slate-400 rounded-sm" style="width: <%= mta_pct %>%;"></div>
+                <% else %>
+                  <div class="h-full w-full bg-[repeating-linear-gradient(135deg,_#f1f5f9_0_6px,_#e2e8f0_6px_12px)]"></div>
+                  <div class="absolute inset-0 flex items-center px-2 text-[11px] font-medium text-slate-500 italic">not tracked</div>
+                <% end %>
+              </div>
+              <div class="w-10 text-right text-sm font-mono font-semibold text-slate-700 shrink-0">
+                <%= ch[:mta] ? "#{ch[:mta]}x" : "—" %>
+              </div>
+            </div>
+
+            <%# MMM bar row %>
+            <div class="flex items-center gap-3">
+              <div class="w-10 text-[10px] font-bold tracking-wider text-indigo-600 shrink-0">MMM</div>
+              <div class="flex-1 h-6 bg-indigo-50 rounded-sm overflow-hidden">
+                <div class="h-full bg-indigo-500 rounded-sm" style="width: <%= mmm_pct %>%;"></div>
+              </div>
+              <div class="w-10 text-right text-sm font-mono font-semibold text-indigo-700 shrink-0"><%= ch[:mmm] %>x</div>
+            </div>
+
+            <%# Annotation %>
+            <% if ch[:note] %>
+              <div class="mt-2 pl-12 text-xs text-slate-500 italic leading-snug">
+                <span class="text-amber-600 font-semibold not-italic mr-1">&#9888;</span>
+                <%= ch[:note].html_safe %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+
+        <%# Mobile scale %>
+        <div class="flex items-center justify-end gap-2 pt-1 text-[10px] text-slate-400 font-mono">
+          <span>0x</span>
+          <span class="inline-block w-16 h-px bg-slate-300"></span>
+          <span>5x ROAS</span>
+        </div>
+      </div>
+
+      <%# ─── DESKTOP LAYOUT — side-by-side bars ─── %>
+      <div class="hidden sm:block">
+
+        <%# Column headers %>
+        <div class="grid grid-cols-[8rem_1fr_1fr] gap-x-6 mb-3 pb-2 border-b border-slate-200 text-xs font-semibold tracking-[0.12em] text-slate-500">
+          <div>CHANNEL</div>
+          <div>MTA</div>
+          <div>MMM</div>
+        </div>
+
+        <% channels.each do |ch| %>
+          <% mta_pct = ch[:mta] ? (ch[:mta] / scale * 100).round : 0 %>
+          <% mmm_pct = (ch[:mmm] / scale * 100).round %>
+          <div class="grid grid-cols-[8rem_1fr_1fr] gap-x-6 items-center py-2.5 border-b border-slate-100 last:border-b-0">
+            <div class="text-base font-semibold text-slate-900"><%= ch[:name] %></div>
+
+            <%# MTA bar %>
+            <div class="flex items-center gap-2">
+              <div class="flex-1 h-6 bg-slate-100 rounded-sm overflow-hidden relative">
+                <% if ch[:mta] %>
+                  <div class="h-full bg-slate-400 rounded-sm" style="width: <%= mta_pct %>%;"></div>
+                <% else %>
+                  <div class="h-full w-full bg-[repeating-linear-gradient(135deg,_#f1f5f9_0_6px,_#e2e8f0_6px_12px)]"></div>
+                  <div class="absolute inset-0 flex items-center justify-center text-xs font-medium text-slate-500 italic">not tracked</div>
+                <% end %>
+              </div>
+              <div class="text-sm font-mono font-semibold text-slate-700 w-12 text-right">
+                <%= ch[:mta] ? "#{ch[:mta]}x" : "" %>
+              </div>
+            </div>
+
+            <%# MMM bar %>
+            <div class="flex items-center gap-2">
+              <div class="flex-1 h-6 bg-indigo-50 rounded-sm overflow-hidden">
+                <div class="h-full bg-indigo-500 rounded-sm" style="width: <%= mmm_pct %>%;"></div>
+              </div>
+              <div class="text-sm font-mono font-semibold text-indigo-700 w-12 text-right"><%= ch[:mmm] %>x</div>
+            </div>
+          </div>
+
+          <% if ch[:note] %>
+            <div class="grid grid-cols-[8rem_1fr] gap-x-6 pb-2.5">
+              <div></div>
+              <div class="text-xs text-slate-500 italic leading-snug">
+                <span class="text-amber-600 font-semibold not-italic mr-1">&#9888;</span>
+                <%= ch[:note].html_safe %>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+
+        <%# Desktop scale %>
+        <div class="flex items-center justify-end gap-2 mt-3 text-[10px] text-slate-400 font-mono">
+          <span>0x</span>
+          <span class="inline-block w-20 h-px bg-slate-300"></span>
+          <span>5x ROAS</span>
+        </div>
+      </div>
+
+    </div>
+
+    <%# Footer takeaway %>
+    <div class="px-6 sm:px-8 py-5 bg-slate-50 border-t border-slate-200">
+      <p class="text-sm text-slate-700 leading-relaxed">
+        <strong class="text-slate-900">If you only ran MTA, you'd cut Paid Social and double down on Paid Search.</strong>
+        MMM tells you the opposite: Paid Search was riding podcast-driven branded demand, and Paid Social's view-through impact was invisible to last-click. The gap between the two methods is where budget gets misallocated.
+      </p>
+    </div>
+
+  </div>
+  <figcaption class="text-xs text-slate-500 mt-3 text-center">
+    Illustrative numbers &middot; The pattern (search overcredited, social/podcast undercredited) is consistent with Dropbox/IEEE Access (2026) and Gordon et al., <em>Marketing Science</em> (2019)
+  </figcaption>
+</figure>

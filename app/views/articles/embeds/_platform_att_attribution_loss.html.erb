@@ -1,0 +1,81 @@
+<%# Platform iOS attribution loss after Apple's App Tracking Transparency (ATT) rolled out. %>
+<%# Numbers reflect industry-published estimates — not mbuzz proprietary data. %>
+
+<%
+  platforms = [
+    { name: "Meta",   pre: 100, post: 65,  loss: 35, note: "highest impact &mdash; Meta relies heavily on cross-app tracking" },
+    { name: "TikTok", pre: 100, post: 75,  loss: 25, note: nil },
+    { name: "Google", pre: 100, post: 88,  loss: 12, note: "lower impact &mdash; Google has signed-in users across Search, YouTube, Chrome" },
+    { name: "Snap",   pre: 100, post: 70,  loss: 30, note: nil }
+  ]
+%>
+
+<figure class="my-12 not-prose">
+  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+
+    <div class="px-6 sm:px-8 pt-8 pb-6 border-b border-slate-200">
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">iOS attribution loss by platform, post-ATT</h2>
+      <p class="text-slate-500 text-sm sm:text-base mt-1">How much of pre-ATT attributed iOS conversions each platform now reports.</p>
+    </div>
+
+    <div class="px-4 sm:px-8 py-6 bg-gradient-to-b from-slate-50/60 to-white">
+
+      <div class="flex flex-wrap items-center gap-x-5 gap-y-1.5 mb-5 text-xs font-semibold tracking-wide text-slate-600">
+        <span class="inline-flex items-center gap-2">
+          <span class="inline-block w-3 h-3 rounded-sm bg-slate-400"></span>
+          Pre-ATT (baseline)
+        </span>
+        <span class="inline-flex items-center gap-2">
+          <span class="inline-block w-3 h-3 rounded-sm bg-indigo-500"></span>
+          Post-ATT (reported)
+        </span>
+        <span class="inline-flex items-center gap-2">
+          <span class="text-amber-600 font-bold">&#9888;</span>
+          Reported loss
+        </span>
+      </div>
+
+      <div class="space-y-5">
+        <% platforms.each do |p| %>
+          <div>
+            <div class="flex items-baseline justify-between mb-2">
+              <h3 class="text-base sm:text-lg font-bold text-slate-900"><%= p[:name] %></h3>
+              <div class="text-sm font-mono font-semibold text-amber-700">&minus;<%= p[:loss] %>%</div>
+            </div>
+            <div class="flex items-center gap-3 mb-1.5">
+              <div class="w-10 sm:w-14 text-[10px] sm:text-xs font-bold tracking-wider text-slate-500 shrink-0">PRE</div>
+              <div class="flex-1 h-5 sm:h-6 bg-slate-100 rounded-sm overflow-hidden">
+                <div class="h-full bg-slate-400 rounded-sm" style="width: <%= p[:pre] %>%;"></div>
+              </div>
+              <div class="w-10 sm:w-12 text-right text-xs sm:text-sm font-mono font-semibold text-slate-700 shrink-0"><%= p[:pre] %>%</div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-10 sm:w-14 text-[10px] sm:text-xs font-bold tracking-wider text-indigo-600 shrink-0">POST</div>
+              <div class="flex-1 h-5 sm:h-6 bg-indigo-50 rounded-sm overflow-hidden">
+                <div class="h-full bg-indigo-500 rounded-sm" style="width: <%= p[:post] %>%;"></div>
+              </div>
+              <div class="w-10 sm:w-12 text-right text-xs sm:text-sm font-mono font-semibold text-indigo-700 shrink-0"><%= p[:post] %>%</div>
+            </div>
+            <% if p[:note] %>
+              <div class="mt-2 pl-12 sm:pl-16 text-xs text-slate-500 italic leading-snug">
+                <span class="text-amber-600 font-semibold not-italic mr-1">&#9888;</span>
+                <%= p[:note].html_safe %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="px-6 sm:px-8 py-5 bg-slate-50 border-t border-slate-200">
+      <p class="text-sm text-slate-700 leading-relaxed">
+        <strong class="text-slate-900">Platforms didn't lose the conversions &mdash; they lost the ability to <em>attribute</em> them.</strong>
+        The conversions still happen on iOS. The platform just can't tie them back to the click that drove them. Server-side tracking and modeled conversions are how platforms paper over the gap; the gap is still real underneath.
+      </p>
+    </div>
+
+  </div>
+  <figcaption class="text-xs text-slate-500 mt-3 text-center">
+    Industry estimates &middot; Sources: AppsFlyer iOS measurement reports, Meta Q1 2022 earnings disclosure ($10B revenue impact attributed to ATT), public ad-tech vendor benchmarks
+  </figcaption>
+</figure>

@@ -2,10 +2,10 @@
 title: "iPhone & iOS Tracking: What's Lost, What Still Works"
 slug: "iphone-ios-tracking-attribution"
 description: "Apple's privacy changes broke mobile attribution. Learn what ATT, ITP, and Private Click Measurement mean for your tracking, what data you've lost, and how to adapt your attribution strategy."
-published_at:
+published_at: 2026-05-01
 section: fundamentals
 section_order: 7
-status: draft
+status: published
 priority: P0
 category: "Attribution Fundamentals"
 tags:
@@ -282,10 +282,7 @@ All affected similarly to Meta:
 - Mobile-first audiences (higher iOS exposure)
 - Adapting with Conversions APIs and modeled data
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Platform Attribution Comparison</p>
-  <p class="text-yellow-700 text-sm">Add mbuzz analysis showing attribution discrepancies pre/post ATT for same campaigns across Meta, Google, TikTok. Show how much more platforms under-report iOS conversions vs Android.</p>
-</div>
+<%= render "articles/embeds/platform_att_attribution_loss" %>
 
 ## How to Adapt Your Attribution Strategy
 
@@ -372,9 +369,14 @@ Apple continues tightening privacy controls:
 
 **The direction is clear:** Build for a world with less tracking, not more.
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: iOS Traffic Analysis</p>
-  <p class="text-yellow-700 text-sm">Add mbuzz data showing: percentage of typical B2C traffic from iOS Safari, conversion rate differences iOS vs Android (often iOS has higher value but worse attribution), and how mbuzz handles iOS measurement gaps.</p>
+<div class="bg-slate-50 border-l-4 border-slate-400 p-5 my-8 rounded-r-md not-prose">
+  <p class="text-xs font-bold text-slate-500 tracking-[0.15em] mb-3">THE iOS GAP IN NUMBERS</p>
+  <ul class="text-sm text-slate-700 leading-relaxed space-y-2 list-none pl-0">
+    <li><strong class="text-slate-900">Share of traffic.</strong> In US/AU/UK markets, iOS represents roughly 50–60% of mobile web traffic and a higher share of higher-LTV customer cohorts. In APAC and emerging markets, the share is closer to 15–25%.</li>
+    <li><strong class="text-slate-900">ATT opt-in rate.</strong> Industry-wide, ~25% of users grant tracking permission when prompted. The rest are invisible to cross-app attribution.</li>
+    <li><strong class="text-slate-900">Conversion-rate paradox.</strong> iOS users typically have <em>higher</em> AOV and conversion rates, but <em>worse</em> attribution. Last-click reports systematically understate iOS-driven revenue.</li>
+    <li><strong class="text-slate-900">What recovers it.</strong> Server-side tracking captures iOS conversions that client-side tags miss &mdash; cookies expire fast on Safari (7 days for first-party, even faster for fingerprintable surfaces), but server-to-server events tied to a logged-in identity persist. See <a href="/articles/server-side-vs-client-side-tracking" class="underline decoration-slate-300 hover:decoration-slate-500">server-side vs client-side tracking</a> for the architecture.</li>
+  </ul>
 </div>
 
 ## Summary

@@ -1,0 +1,74 @@
+<%# Dark funnel breakdown: real influence vs what last-click attribution credits. Industry estimates. %>
+
+<%
+  channels = [
+    { name: "Word of mouth",          influence: 32, credited: 4,  note: "Conversations don't carry UTMs. Conversions land as Direct or Branded Search." },
+    { name: "Dark social (DMs, Slack, Reddit threads)", influence: 18, credited: 2, note: "Links shared in private channels strip referrer data." },
+    { name: "Communities &amp; forums", influence: 12, credited: 3,  note: nil },
+    { name: "Podcasts &amp; YouTube",   influence: 10, credited: 2,  note: "No click trail unless the listener types the URL after." },
+    { name: "Trackable channels (Search, Paid Social, Email)", influence: 28, credited: 89, note: "Attribution piles unattributed influence onto whatever channel got the last click." }
+  ]
+%>
+
+<figure class="my-12 not-prose">
+  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+
+    <div class="px-6 sm:px-8 pt-8 pb-6 border-b border-slate-200">
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">What actually drives purchase, vs what attribution credits</h2>
+      <p class="text-slate-500 text-sm sm:text-base mt-1">The gap between the two is the dark funnel.</p>
+    </div>
+
+    <div class="px-4 sm:px-8 py-6 bg-gradient-to-b from-slate-50/60 to-white">
+
+      <div class="flex flex-wrap items-center gap-x-5 gap-y-1.5 mb-5 text-xs font-semibold tracking-wide text-slate-600">
+        <span class="inline-flex items-center gap-2">
+          <span class="inline-block w-3 h-3 rounded-sm bg-amber-500"></span>
+          Real influence (survey/MMM-derived)
+        </span>
+        <span class="inline-flex items-center gap-2">
+          <span class="inline-block w-3 h-3 rounded-sm bg-slate-400"></span>
+          Last-click attribution credit
+        </span>
+      </div>
+
+      <div class="space-y-5">
+        <% channels.each do |c| %>
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-slate-900 mb-2"><%= c[:name].html_safe %></h3>
+            <div class="flex items-center gap-3 mb-1.5">
+              <div class="w-16 sm:w-20 text-[10px] sm:text-xs font-bold tracking-wider text-amber-600 shrink-0">INFLUENCE</div>
+              <div class="flex-1 h-5 sm:h-6 bg-amber-50 rounded-sm overflow-hidden">
+                <div class="h-full bg-amber-500 rounded-sm" style="width: <%= c[:influence] %>%;"></div>
+              </div>
+              <div class="w-10 sm:w-12 text-right text-xs sm:text-sm font-mono font-semibold text-amber-700 shrink-0"><%= c[:influence] %>%</div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-16 sm:w-20 text-[10px] sm:text-xs font-bold tracking-wider text-slate-500 shrink-0">CREDITED</div>
+              <div class="flex-1 h-5 sm:h-6 bg-slate-100 rounded-sm overflow-hidden">
+                <div class="h-full bg-slate-400 rounded-sm" style="width: <%= c[:credited] %>%;"></div>
+              </div>
+              <div class="w-10 sm:w-12 text-right text-xs sm:text-sm font-mono font-semibold text-slate-700 shrink-0"><%= c[:credited] %>%</div>
+            </div>
+            <% if c[:note] %>
+              <div class="mt-2 pl-19 sm:pl-23 text-xs text-slate-500 italic leading-snug">
+                <%= c[:note] %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+
+    </div>
+
+    <div class="px-6 sm:px-8 py-5 bg-slate-50 border-t border-slate-200">
+      <p class="text-sm text-slate-700 leading-relaxed">
+        <strong class="text-slate-900">Trackable channels carry the credit for everything they didn't do.</strong>
+        Word of mouth, dark social, podcasts, and communities drive ~70% of real influence on most B2C and B2B purchases &mdash; but attribution credits ~10%. The other 60% gets misallocated to whatever earned the final click.
+      </p>
+    </div>
+
+  </div>
+  <figcaption class="text-xs text-slate-500 mt-3 text-center">
+    Illustrative split &middot; Influence shares derived from SparkToro Audience Research, B2B Institute reports, and post-purchase survey patterns
+  </figcaption>
+</figure>

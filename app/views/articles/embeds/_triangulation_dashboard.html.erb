@@ -1,0 +1,85 @@
+<%# Per-channel triangulation: MTA vs MMM vs Incrementality vs Calibrated. Illustrative numbers. %>
+
+<%
+  channels = [
+    { name: "Paid Search", mta: 4.2, mmm: 2.0, inc: 1.9, calibrated: 2.0 },
+    { name: "Paid Social", mta: 1.2, mmm: 2.8, inc: 2.5, calibrated: 2.5 },
+    { name: "Email",       mta: 3.8, mmm: 3.1, inc: nil, calibrated: 3.1 },
+    { name: "Display",     mta: 2.4, mmm: 1.8, inc: 0.8, calibrated: 0.8 },
+    { name: "Podcast",     mta: nil, mmm: 4.8, inc: 5.2, calibrated: 5.0 }
+  ]
+%>
+
+<figure class="my-12 not-prose">
+  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+
+    <div class="px-6 sm:px-8 pt-8 pb-6 border-b border-slate-200">
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Triangulating ROAS across three methods</h2>
+      <p class="text-slate-500 text-sm sm:text-base mt-1">When MTA, MMM, and incrementality agree, you have signal. When they don't, you have a research question.</p>
+    </div>
+
+    <%# Desktop table %>
+    <div class="hidden sm:block">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-slate-200 bg-slate-50">
+            <th class="text-left text-xs font-semibold text-slate-500 tracking-[0.12em] px-6 py-3 w-36">CHANNEL</th>
+            <th class="text-right px-4 py-3"><span class="inline-block w-2.5 h-2.5 rounded-sm bg-slate-400 align-middle mr-1.5"></span><span class="text-xs font-semibold text-slate-500 tracking-[0.12em]">MTA</span></th>
+            <th class="text-right px-4 py-3"><span class="inline-block w-2.5 h-2.5 rounded-sm bg-indigo-500 align-middle mr-1.5"></span><span class="text-xs font-semibold text-slate-500 tracking-[0.12em]">MMM</span></th>
+            <th class="text-right px-4 py-3"><span class="inline-block w-2.5 h-2.5 rounded-sm bg-amber-500 align-middle mr-1.5"></span><span class="text-xs font-semibold text-slate-500 tracking-[0.12em]">INCREMENTALITY</span></th>
+            <th class="text-right px-4 py-3 bg-emerald-50 border-l border-emerald-200"><span class="text-xs font-bold text-emerald-700 tracking-[0.12em]">CALIBRATED &rarr;</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% channels.each do |c| %>
+            <tr class="border-b border-slate-100 last:border-b-0">
+              <td class="text-base font-semibold text-slate-900 px-6 py-3"><%= c[:name] %></td>
+              <td class="text-right px-4 py-3 font-mono text-slate-700"><%= c[:mta] ? "#{c[:mta]}x" : "—" %></td>
+              <td class="text-right px-4 py-3 font-mono text-indigo-700 font-semibold"><%= c[:mmm] ? "#{c[:mmm]}x" : "—" %></td>
+              <td class="text-right px-4 py-3 font-mono text-amber-700 font-semibold"><%= c[:inc] ? "#{c[:inc]}x" : "—" %></td>
+              <td class="text-right px-4 py-3 font-mono font-bold text-emerald-700 bg-emerald-50/60 border-l border-emerald-200"><%= c[:calibrated] %>x</td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <%# Mobile cards %>
+    <div class="sm:hidden px-4 py-5 space-y-4">
+      <% channels.each do |c| %>
+        <div class="border border-slate-200 rounded-lg p-4">
+          <h3 class="text-base font-bold text-slate-900 mb-2"><%= c[:name] %></h3>
+          <dl class="text-sm">
+            <div class="flex justify-between py-1.5 border-b border-slate-100">
+              <dt class="text-slate-600">MTA</dt>
+              <dd class="font-mono text-slate-700"><%= c[:mta] ? "#{c[:mta]}x" : "—" %></dd>
+            </div>
+            <div class="flex justify-between py-1.5 border-b border-slate-100">
+              <dt class="text-slate-600">MMM</dt>
+              <dd class="font-mono text-indigo-700 font-semibold"><%= c[:mmm] ? "#{c[:mmm]}x" : "—" %></dd>
+            </div>
+            <div class="flex justify-between py-1.5 border-b border-slate-100">
+              <dt class="text-slate-600">Incrementality</dt>
+              <dd class="font-mono text-amber-700 font-semibold"><%= c[:inc] ? "#{c[:inc]}x" : "—" %></dd>
+            </div>
+            <div class="flex justify-between py-1.5 bg-emerald-50/60 px-3 -mx-3 mt-1 rounded">
+              <dt class="text-emerald-700 font-bold">Calibrated &rarr;</dt>
+              <dd class="font-mono font-bold text-emerald-700"><%= c[:calibrated] %>x</dd>
+            </div>
+          </dl>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="px-6 sm:px-8 py-5 bg-slate-50 border-t border-slate-200">
+      <p class="text-sm text-slate-700 leading-relaxed">
+        <strong class="text-slate-900">When incrementality is available, it wins.</strong>
+        It's the only Rung-2 method &mdash; experimental evidence beats observational estimates. Where incrementality is unavailable (Email, in this example), MMM is the next-best estimate. The calibrated column is what gets used for budget decisions.
+      </p>
+    </div>
+
+  </div>
+  <figcaption class="text-xs text-slate-500 mt-3 text-center">
+    Illustrative ROAS &middot; Calibration logic: prefer Incrementality &gt; MMM &gt; MTA when methods disagree
+  </figcaption>
+</figure>

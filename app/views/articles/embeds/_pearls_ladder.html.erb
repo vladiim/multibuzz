@@ -1,0 +1,110 @@
+<%# Pearl's Ladder of Causation, applied to marketing measurement. %>
+<%# Source: Pearl & Mackenzie, The Book of Why (2018). Mapping of methods to rungs is mbuzz's framing. %>
+
+<figure class="my-12 not-prose">
+  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+
+    <%# Header %>
+    <div class="px-6 sm:px-8 pt-8 pb-6 border-b border-slate-200">
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Pearl's Ladder of Causation</h2>
+      <p class="text-slate-500 text-sm sm:text-base mt-1">How high up the ladder does each measurement method actually climb?</p>
+    </div>
+
+    <%# Diagram body %>
+    <div class="px-3 sm:px-6 pt-6 pb-4 sm:pb-0 bg-gradient-to-b from-slate-50/60 to-white">
+
+      <%# Unreachable ceiling band — dashed strip across full width %>
+      <div class="border-2 border-dashed border-slate-300 rounded-md py-2.5 px-3 mb-4 bg-[repeating-linear-gradient(135deg,_#f8fafc_0_8px,_#f1f5f9_8px_16px)]">
+        <p class="text-center text-xs font-semibold text-slate-500 tracking-wider">
+          UNREACHABLE &middot; <span class="font-normal italic text-slate-500 normal-case tracking-normal">no method fully reaches the ceiling</span>
+        </p>
+      </div>
+
+      <%# Three steps.
+          Mobile: flex-col-reverse so DOM order step1→step2→step3 reads visually as step3 (top) → step1 (bottom).
+          Desktop: grid with three columns sharing a baseline; step1 on left (shortest), step3 on right (tallest). %>
+      <div class="flex flex-col-reverse gap-2 sm:grid sm:grid-cols-3 sm:gap-2 sm:items-end">
+
+        <%# Step 1 — Rung 1 — Seeing %>
+        <div class="bg-slate-100 border-t-4 border-slate-400 rounded-md sm:rounded-b-none p-4 sm:p-5 h-auto sm:h-64">
+          <div class="text-[11px] sm:text-xs font-bold text-slate-500 tracking-[0.15em] mb-1">RUNG 1</div>
+          <h3 class="text-lg sm:text-xl font-bold text-slate-900 leading-tight">Seeing</h3>
+          <div class="text-sm font-semibold text-slate-600 mb-1">Association</div>
+          <p class="text-xs text-slate-500 italic leading-snug mb-3">"what correlates with what?"</p>
+          <div class="space-y-2 sm:space-y-1.5">
+            <div class="flex items-start gap-2 text-xs sm:text-[11px] text-slate-700 leading-snug">
+              <span class="inline-flex shrink-0 items-center justify-center w-4 h-4 sm:w-3.5 sm:h-3.5 rounded-full bg-emerald-500 text-white font-bold text-[9px] sm:text-[8px] mt-0.5">&#10003;</span>
+              <span><strong>MTA</strong> &mdash; every model</span>
+            </div>
+            <div class="flex items-start gap-2 text-xs sm:text-[11px] text-slate-700 leading-snug">
+              <span class="inline-flex shrink-0 w-4 h-4 sm:w-3.5 sm:h-3.5 rounded-full border-2 border-orange-500 mt-0.5" style="background: linear-gradient(90deg, #fff 50%, #ea580c 50%);"></span>
+              <span><strong>MMM</strong> &mdash; uncalibrated</span>
+            </div>
+          </div>
+        </div>
+
+        <%# Step 2 — Rung 2 — Doing %>
+        <div class="bg-indigo-100 border-t-4 border-indigo-500 rounded-md sm:rounded-b-none p-4 sm:p-5 h-auto sm:h-80">
+          <div class="text-[11px] sm:text-xs font-bold text-indigo-600 tracking-[0.15em] mb-1">RUNG 2</div>
+          <h3 class="text-lg sm:text-xl font-bold text-slate-900 leading-tight">Doing</h3>
+          <div class="text-sm font-semibold text-indigo-700 mb-1">Intervention</div>
+          <p class="text-xs text-slate-500 italic leading-snug mb-3">"what happens if we change spend?"</p>
+          <div class="space-y-2 sm:space-y-1.5">
+            <div class="flex items-start gap-2 text-xs sm:text-[11px] text-slate-700 leading-snug">
+              <span class="inline-flex shrink-0 items-center justify-center w-4 h-4 sm:w-3.5 sm:h-3.5 rounded-full bg-emerald-500 text-white font-bold text-[9px] sm:text-[8px] mt-0.5">&#10003;</span>
+              <span><strong>Incrementality tests</strong> &mdash; geo holdouts, RCTs</span>
+            </div>
+            <div class="flex items-start gap-2 text-xs sm:text-[11px] text-slate-700 leading-snug">
+              <span class="inline-flex shrink-0 w-4 h-4 sm:w-3.5 sm:h-3.5 rounded-full border-2 border-orange-500 mt-0.5" style="background: linear-gradient(90deg, #fff 50%, #ea580c 50%);"></span>
+              <span><strong>MMM</strong> &mdash; with calibration</span>
+            </div>
+          </div>
+        </div>
+
+        <%# Step 3 — Rung 3 — Imagining %>
+        <div class="bg-slate-900 text-white border-t-4 border-amber-400 rounded-md sm:rounded-b-none p-4 sm:p-5 h-auto sm:h-[26rem]">
+          <div class="text-[11px] sm:text-xs font-bold text-amber-300 tracking-[0.15em] mb-1">RUNG 3</div>
+          <h3 class="text-lg sm:text-xl font-bold leading-tight">Imagining</h3>
+          <div class="text-sm font-semibold text-amber-200 mb-1">Counterfactual</div>
+          <p class="text-xs text-slate-400 italic leading-snug mb-3">"what would have happened if we hadn't spent?"</p>
+          <div class="space-y-2 sm:space-y-1.5">
+            <div class="flex items-start gap-2 text-xs sm:text-[11px] text-slate-200 leading-snug">
+              <span class="inline-flex shrink-0 w-4 h-4 sm:w-3.5 sm:h-3.5 rounded-full border-2 border-orange-400 mt-0.5" style="background: linear-gradient(90deg, transparent 50%, #fb923c 50%);"></span>
+              <span><strong>MMM scenarios</strong> &mdash; model-dependent only</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <%# Ground line — desktop only (the staircase baseline). On mobile the rungs are stacked, no baseline metaphor. %>
+      <div class="hidden sm:block">
+        <div class="border-t-2 border-slate-300 mt-0"></div>
+        <p class="text-center text-[10px] text-slate-400 mt-1.5 mb-4 italic tracking-wide">ground &middot; no measurement</p>
+      </div>
+
+    </div>
+
+    <%# Legend + footer takeaway %>
+    <div class="px-6 sm:px-8 py-5 bg-slate-50 border-t border-slate-200">
+      <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-slate-600 mb-4">
+        <span class="inline-flex items-center gap-2">
+          <span class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-emerald-500 text-white font-bold text-[8px]">&#10003;</span>
+          reaches this rung
+        </span>
+        <span class="inline-flex items-center gap-2">
+          <span class="inline-block w-3.5 h-3.5 rounded-full border-2 border-orange-500" style="background: linear-gradient(90deg, #fff 50%, #ea580c 50%);"></span>
+          partial &mdash; depends on assumptions or calibration
+        </span>
+      </div>
+      <p class="text-sm text-slate-700 leading-relaxed">
+        <strong class="text-slate-900">Most marketers operate on Rung 1 and report it as Rung 3.</strong>
+        Last-click and data-driven attribution describe what was seen; they don't prove what would have happened otherwise. Climbing the ladder means adding experiments, not just better dashboards.
+      </p>
+    </div>
+
+  </div>
+  <figcaption class="text-xs text-slate-500 mt-3 text-center">
+    Framework: Pearl &amp; Mackenzie, <em>The Book of Why</em> (Basic Books, 2018) &middot; Method mapping: mbuzz
+  </figcaption>
+</figure>

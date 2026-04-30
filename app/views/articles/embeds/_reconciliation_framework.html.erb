@@ -1,0 +1,112 @@
+<%# 4-step reconciliation framework: Platform Data → Third-Party Attribution → Incrementality → Decisions. %>
+
+<%
+  steps = [
+    {
+      label: "STEP 1",
+      title: "Platform data",
+      subtitle: "Self-reported, biased",
+      desc: "Each platform's dashboard. Inflated by double-counting and click attribution. Useful only as a starting point.",
+      color: :slate
+    },
+    {
+      label: "STEP 2",
+      title: "Independent attribution",
+      subtitle: "Deduplicated, neutral",
+      desc: "Server-side MTA layer that captures touchpoints from every channel and dedupes across platforms. Removes the double-counting.",
+      color: :slate_strong
+    },
+    {
+      label: "STEP 3",
+      title: "Incrementality test",
+      subtitle: "Causal, ground-truth",
+      desc: "Geo holdouts or RCTs validate which channels actually move outcomes. Calibration factors derived from these tests get applied to step 2.",
+      color: :indigo
+    },
+    {
+      label: "STEP 4",
+      title: "Confident budget decisions",
+      subtitle: "Based on calibrated truth",
+      desc: "Reallocate spend toward channels with proven incremental return. Re-test every 6&ndash;12 months &mdash; calibration factors drift.",
+      color: :amber
+    }
+  ]
+
+  step_classes = {
+    slate:        "bg-slate-50  border-slate-300",
+    slate_strong: "bg-slate-100 border-slate-400",
+    indigo:       "bg-indigo-50 border-indigo-500",
+    amber:        "bg-slate-900 border-amber-400 text-white"
+  }
+
+  label_classes = {
+    slate:        "text-slate-500",
+    slate_strong: "text-slate-600",
+    indigo:       "text-indigo-700",
+    amber:        "text-amber-300"
+  }
+
+  subtitle_classes = {
+    slate:        "text-slate-500",
+    slate_strong: "text-slate-600",
+    indigo:       "text-indigo-700",
+    amber:        "text-amber-200"
+  }
+%>
+
+<figure class="my-12 not-prose">
+  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+
+    <div class="px-6 sm:px-8 pt-8 pb-6 border-b border-slate-200">
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">The reconciliation framework</h2>
+      <p class="text-slate-500 text-sm sm:text-base mt-1">Four steps from biased platform data to decisions you can defend.</p>
+    </div>
+
+    <div class="px-4 sm:px-8 py-8 bg-gradient-to-b from-slate-50/60 to-white">
+
+      <%# Desktop: horizontal flow %>
+      <div class="hidden md:grid md:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr] md:items-stretch md:gap-x-2">
+        <% steps.each_with_index do |step, i| %>
+          <div class="<%= step_classes[step[:color]] %> border-l-4 rounded-md p-4 flex flex-col">
+            <div class="text-[11px] font-bold tracking-[0.15em] mb-1 <%= label_classes[step[:color]] %>"><%= step[:label] %></div>
+            <h3 class="text-base font-bold leading-tight mb-1"><%= step[:title] %></h3>
+            <div class="text-xs italic mb-2 <%= subtitle_classes[step[:color]] %>"><%= step[:subtitle] %></div>
+            <p class="text-xs leading-snug opacity-90"><%= step[:desc].html_safe %></p>
+          </div>
+          <% if i < steps.length - 1 %>
+            <div class="flex items-center justify-center text-slate-400 text-2xl font-bold">&rarr;</div>
+          <% end %>
+        <% end %>
+      </div>
+
+      <%# Mobile: vertical stack with down arrows %>
+      <div class="md:hidden space-y-2">
+        <% steps.each_with_index do |step, i| %>
+          <div class="<%= step_classes[step[:color]] %> border-l-4 rounded-md p-4">
+            <div class="flex items-baseline gap-2 mb-1">
+              <span class="text-[11px] font-bold tracking-[0.15em] <%= label_classes[step[:color]] %>"><%= step[:label] %></span>
+              <h3 class="text-base font-bold leading-tight"><%= step[:title] %></h3>
+            </div>
+            <div class="text-xs italic mb-2 <%= subtitle_classes[step[:color]] %>"><%= step[:subtitle] %></div>
+            <p class="text-xs leading-snug opacity-90"><%= step[:desc].html_safe %></p>
+          </div>
+          <% if i < steps.length - 1 %>
+            <div class="flex justify-center text-slate-400 text-xl font-bold py-1">&darr;</div>
+          <% end %>
+        <% end %>
+      </div>
+
+    </div>
+
+    <div class="px-6 sm:px-8 py-5 bg-slate-50 border-t border-slate-200">
+      <p class="text-sm text-slate-700 leading-relaxed">
+        <strong class="text-slate-900">Skip a step and you import its bias into the next one.</strong>
+        Going straight from platform dashboards to budget decisions is what created the over-spend pattern in the first place. Each step is a calibration on the layer below.
+      </p>
+    </div>
+
+  </div>
+  <figcaption class="text-xs text-slate-500 mt-3 text-center">
+    Framework: mbuzz &middot; Inspired by Avinash Kaushik's measurement-maturity ladder
+  </figcaption>
+</figure>
