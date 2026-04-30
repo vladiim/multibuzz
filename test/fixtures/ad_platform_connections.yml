@@ -35,3 +35,15 @@ other_account_google:
   token_expires_at: <%= 1.hour.from_now %>
   status: 0
   settings: {}
+
+meta_ads:
+  account: one
+  platform: 1
+  platform_account_id: "act_TEST_001"
+  platform_account_name: "Test Meta Account"
+  currency: "AUD"
+  access_token: "meta_access_token"
+  refresh_token: "meta_access_token"
+  token_expires_at: <%= 60.days.from_now %>
+  status: 0
+  settings: { "timezone_name": "Australia/Sydney" }

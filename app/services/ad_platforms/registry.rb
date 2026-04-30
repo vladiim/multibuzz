@@ -3,7 +3,8 @@
 module AdPlatforms
   class Registry
     ADAPTERS = {
-      google_ads: AdPlatforms::Google::Adapter
+      google_ads: AdPlatforms::Google::Adapter,
+      meta_ads: AdPlatforms::Meta::Adapter
     }.freeze
 
     def self.adapter_for(connection)
