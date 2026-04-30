@@ -2,10 +2,10 @@
 title: "How to Choose the Right Attribution Model"
 slug: "how-to-choose-attribution-model"
 description: "A practical framework for selecting the right attribution model based on your sales cycle, data volume, and business goals. Includes decision tree, model comparison, and common mistakes to avoid."
-published_at:
+published_at: 2026-05-01
 section: models
 section_order: 9
-status: draft
+status: published
 priority: P0
 category: "Attribution Models"
 tags:
@@ -110,10 +110,7 @@ Data-driven models need volume to learn patterns. With limited data, they'll ove
 
 Different questions need different models. There's nothing wrong with using multiple models for different purposes.
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Model Selection Decision Tree</p>
-  <p class="text-yellow-700 text-sm">Create visual decision tree: Start with "What's your sales cycle?" → branches by length → "Monthly conversions?" → branches by volume → "Primary use case?" → final model recommendations. This becomes a signature mbuzz framework.</p>
-</div>
+<%= render "articles/embeds/model_selection_decision_tree" %>
 
 <%# TODO: Interactive Tool - "Which Attribution Model?" Quiz
     Implementation:
@@ -284,10 +281,7 @@ Credit:   40%      7%     6%      7%      40%
 
 **Bias:** None inherent, but computationally expensive and opaque.
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Model Comparison Table</p>
-  <p class="text-yellow-700 text-sm">Add comprehensive table comparing all models across: data requirements, complexity, transparency, best industry fit, and mbuzz support. Include visual "radar charts" for each model's strengths.</p>
-</div>
+<%= render "articles/embeds/attribution_models_comparison" %>
 
 ## The Model Selection Framework
 
@@ -329,10 +323,6 @@ Most mature teams use multiple models:
 
 Be explicit about which model you use for what. Document it. Stick to it.
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: mbuzz Model Configuration</p>
-  <p class="text-yellow-700 text-sm">Add screenshot showing mbuzz's model selection interface, with options to configure primary and secondary models, set parameters (lookback window, decay half-life), and compare results side-by-side.</p>
-</div>
 
 ## Common Model Selection Mistakes
 
@@ -400,9 +390,10 @@ The gold standard. Pause a channel (geo-holdout or randomized) and measure actua
 
 Use calibration factors to adjust your attribution model toward reality.
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Model Validation Case Study</p>
-  <p class="text-yellow-700 text-sm">Add mbuzz customer example: "Company X validated their linear attribution model with a Paid Social geo-holdout. Attributed revenue was $80K; incremental revenue was $120K. They applied a 1.5x calibration factor, resulting in more accurate budget allocation."</p>
+<div class="bg-slate-50 border-l-4 border-slate-400 p-5 my-8 rounded-r-md not-prose">
+  <p class="text-xs font-bold text-slate-500 tracking-[0.15em] mb-3">A WORKED EXAMPLE</p>
+  <p class="text-sm text-slate-700 leading-relaxed mb-3">A subscription brand picks Linear as its primary model, with Last-touch as secondary for daily decisions. After three months, the team validates the choice with a Paid Social geo-holdout: 4 metros paused for 6 weeks, matched against 4 control metros.</p>
+  <p class="text-sm text-slate-700 leading-relaxed">Linear-attributed Paid Social revenue for the period: $80K. Incremental revenue (treatment vs control): $120K. The model under-credits Paid Social by ~33%. The team applies a 1.5&times; calibration factor in the dashboard so daily budget decisions stop under-investing &mdash; and re-runs the test in 6 months to confirm the factor still holds.</p>
 </div>
 
 ## Summary: The Model Selection Checklist
@@ -442,11 +433,6 @@ Use calibration factors to adjust your attribution model toward reality.
 **Academic Resources:**
 - [Shapley, L.S. (1953)](https://www.rand.org/pubs/papers/P295.html) — Original Shapley value paper
 - [Abhishek et al. (2012)](https://faculty.som.yale.edu/ksudhir/papers/attribution.pdf) — Markov chain attribution in marketing
-
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Expert Quote on Model Selection</p>
-  <p class="text-yellow-700 text-sm">Add quote from attribution practitioner on the model selection journey. <strong>Outreach targets:</strong> Marketing analytics leaders, attribution vendors' DevRel, academics publishing on marketing attribution.</p>
-</div>
 
 <%= render_key_takeaways(@article.key_takeaways) %>
 

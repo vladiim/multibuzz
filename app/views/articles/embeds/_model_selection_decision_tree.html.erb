@@ -1,0 +1,105 @@
+<%# Decision tree: which attribution model fits your business? %>
+<%# Three branches off the same first question (sales cycle), each with a recommendation. %>
+
+<%
+  branches = [
+    {
+      condition: "Short cycle",
+      detail:    "&lt; 2 weeks",
+      examples:  "DTC, impulse e-commerce, transactional SaaS",
+      primary:   "Last-touch or Time-decay",
+      secondary: "Linear as a sanity check",
+      reason:    "Recent touches dominate. The first ad they saw 8 weeks ago isn't why they bought.",
+      color: "slate"
+    },
+    {
+      condition: "Medium cycle",
+      detail:    "2&ndash;8 weeks",
+      examples:  "Considered e-commerce, mid-market SaaS, subscription",
+      primary:   "Position-based (40/20/40) or Linear",
+      secondary: "Data-driven if conversions &gt; 15K/mo",
+      reason:    "Both introduction and decision matter. Middle nurture is real but less load-bearing.",
+      color: "indigo"
+    },
+    {
+      condition: "Long cycle",
+      detail:    "&gt; 8 weeks",
+      examples:  "B2B SaaS, enterprise, considered services",
+      primary:   "Linear + W-shaped (track Sourced + Influenced)",
+      secondary: "MMM for offline channels and brand spend",
+      reason:    "6+ stakeholders, 30+ touches per deal. Concentrating credit on any single touch hides the actual journey.",
+      color: "amber"
+    }
+  ]
+
+  card_classes = {
+    "slate"  => "border-slate-400 bg-slate-50",
+    "indigo" => "border-indigo-500 bg-indigo-50",
+    "amber"  => "border-amber-500 bg-amber-50"
+  }
+
+  badge_classes = {
+    "slate"  => "bg-slate-200 text-slate-700",
+    "indigo" => "bg-indigo-200 text-indigo-800",
+    "amber"  => "bg-amber-200 text-amber-900"
+  }
+%>
+
+<figure class="my-12 not-prose">
+  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+
+    <div class="px-6 sm:px-8 pt-8 pb-6 border-b border-slate-200">
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Which attribution model fits your business?</h2>
+      <p class="text-slate-500 text-sm sm:text-base mt-1">Start with one question: how long is your sales cycle?</p>
+    </div>
+
+    <div class="px-4 sm:px-8 py-8 bg-gradient-to-b from-slate-50/60 to-white">
+
+      <%# Root question %>
+      <div class="text-center mb-6">
+        <div class="inline-block bg-slate-900 text-white rounded-md px-5 py-3">
+          <div class="text-[11px] font-bold tracking-[0.15em] text-slate-400 mb-0.5">QUESTION</div>
+          <div class="text-base sm:text-lg font-bold">How long is your sales cycle?</div>
+        </div>
+      </div>
+
+      <%# Three branches %>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+        <% branches.each do |b| %>
+          <div class="<%= card_classes[b[:color]] %> border-l-4 rounded-md p-4 sm:p-5 flex flex-col">
+            <div class="text-[11px] font-bold tracking-[0.15em] text-slate-500 mb-1"><%= b[:condition].upcase %></div>
+            <div class="text-base sm:text-lg font-bold text-slate-900 mb-1"><%= b[:detail].html_safe %></div>
+            <div class="text-xs italic text-slate-500 mb-4"><%= b[:examples] %></div>
+
+            <div class="mb-3">
+              <div class="text-[10px] font-bold tracking-[0.15em] text-slate-500 mb-1">PRIMARY MODEL</div>
+              <span class="<%= badge_classes[b[:color]] %> text-xs font-bold tracking-wide px-2.5 py-1 rounded-md inline-block"><%= b[:primary] %></span>
+            </div>
+
+            <div class="mb-4">
+              <div class="text-[10px] font-bold tracking-[0.15em] text-slate-500 mb-1">SECONDARY</div>
+              <div class="text-xs sm:text-sm text-slate-700"><%= b[:secondary].html_safe %></div>
+            </div>
+
+            <div class="mt-auto pt-3 border-t border-slate-200/60">
+              <div class="text-[10px] font-bold tracking-[0.15em] text-slate-500 mb-1">WHY</div>
+              <p class="text-xs leading-snug text-slate-600"><%= b[:reason].html_safe %></p>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+    </div>
+
+    <div class="px-6 sm:px-8 py-5 bg-slate-50 border-t border-slate-200">
+      <p class="text-sm text-slate-700 leading-relaxed">
+        <strong class="text-slate-900">Always run a secondary model alongside.</strong>
+        Single-model attribution is a single point of failure. The disagreements between two models tell you where the model assumptions are wrong &mdash; that's the signal you actually need to make budget decisions.
+      </p>
+    </div>
+
+  </div>
+  <figcaption class="text-xs text-slate-500 mt-3 text-center">
+    Framework: mbuzz &middot; Sales-cycle ranges drawn from typical practice
+  </figcaption>
+</figure>

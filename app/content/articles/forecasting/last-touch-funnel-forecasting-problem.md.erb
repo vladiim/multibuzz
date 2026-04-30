@@ -2,10 +2,10 @@
 title: "Why Doesn't Last-Touch Work for Funnel Forecasting?"
 slug: "last-touch-funnel-forecasting-problem"
 description: "Last-touch attribution systematically breaks funnel forecasts by over-crediting bottom-funnel channels and ignoring the awareness and nurturing stages. Learn why this happens, how it distorts budget decisions, and what to use instead."
-published_at:
+published_at: 2026-05-01
 section: forecasting
 section_order: 1
-status: draft
+status: published
 priority: P0
 category: "Funnel Forecasting"
 tags:
@@ -99,10 +99,7 @@ Compare last-touch credit to true funnel contribution:
 
 The channels getting the most last-touch credit are **closers**—they appear at the end of journeys. The channels getting the least credit are **introducers and nurturers**—they fill the funnel but rarely close.
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: First-Touch vs Last-Touch Credit Comparison</p>
-  <p class="text-yellow-700 text-sm">Add mbuzz customer data showing the same channels under first-touch vs last-touch attribution. The dramatic difference (e.g., Paid Social: 42% first-touch vs 8% last-touch) proves the distortion.</p>
-</div>
+<%= render "articles/embeds/first_vs_last_touch_comparison" %>
 
 ### The Forecasting Error
 
@@ -293,10 +290,6 @@ class FunnelAttribution
 end
 ```
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: mbuzz Tiered Attribution Screenshot</p>
-  <p class="text-yellow-700 text-sm">Add screenshot showing mbuzz's funnel attribution view with three panels: ToFU (first-touch), MoFU (linear), BoFU (last-touch). Show how the same conversion credits different channels at each stage.</p>
-</div>
 
 ## How Tiered Attribution Fixes Forecasting
 
@@ -401,9 +394,11 @@ Run first-touch and last-touch in parallel. The gap reveals true channel roles:
 Channels with negative gaps are under-credited by last-touch.
 Channels with positive gaps are over-credited by last-touch.
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Holdout Test Case Study</p>
-  <p class="text-yellow-700 text-sm">Add mbuzz customer example: "Company X paused Paid Social based on 0.7x last-touch ROAS. After 30 days, total revenue dropped 22% despite maintaining email/retargeting spend. They resumed Paid Social with proper tiered attribution showing 25% full-funnel contribution."</p>
+<div class="bg-slate-50 border-l-4 border-slate-400 p-5 my-8 rounded-r-md not-prose">
+  <p class="text-xs font-bold text-slate-500 tracking-[0.15em] mb-3">A WORKED EXAMPLE: THE DEATH SPIRAL IN ACTION</p>
+  <p class="text-sm text-slate-700 leading-relaxed mb-3">A DTC brand sees Paid Social at 0.7&times; last-touch ROAS. The dashboard says cut it. The team pauses Paid Social entirely; they keep Email and Retargeting at full spend, expecting "efficient" channels to absorb the volume.</p>
+  <p class="text-sm text-slate-700 leading-relaxed mb-3">Thirty days later, total revenue is down 22%. Email and Retargeting ROAS both crater &mdash; not because they got worse, but because there are fewer people for them to retarget and email. The paid social pause starved the funnel of new customers; the &quot;closer&quot; channels had nothing left to close.</p>
+  <p class="text-sm text-slate-700 leading-relaxed">They turn Paid Social back on. With tiered attribution &mdash; first-touch for ToFU reporting, linear for mid-funnel, last-touch for tactical optimization &mdash; Paid Social shows up as 25% of total contribution across the funnel, not 0.7&times; ROAS on a closing channel it was never supposed to be.</p>
 </div>
 
 ## Common Objections
@@ -465,11 +460,6 @@ Last-touch isn't wrong everywhere—it's wrong for the wrong question. For under
 **On Last-Touch Limitations:**
 - [Last-Touch Attribution: When to Use It](/articles/last-touch-attribution) — When last-touch IS appropriate
 - [How to Choose the Right Attribution Model](/articles/how-to-choose-attribution-model) — Model selection framework
-
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Expert Quote on Attribution Death Spiral</p>
-  <p class="text-yellow-700 text-sm">Add quote from marketing measurement practitioner who has seen the death spiral in action. <strong>Outreach targets:</strong> Kevin Hillstrom (MineThatData—writes extensively about this), performance marketing leaders who've learned this lesson the hard way.</p>
-</div>
 
 <%= render_key_takeaways(@article.key_takeaways) %>
 

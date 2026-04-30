@@ -1,0 +1,96 @@
+<%# Three tracking architectures side-by-side: pure client, hybrid, full server-side. %>
+
+<%
+  approaches = [
+    {
+      label: "PURE CLIENT-SIDE",
+      title: "Browser → Platform",
+      flow:  ["Browser fires JS tag", "Tag posts to ad platform", "Platform processes &amp; reports"],
+      losses: ["Ad blockers strip the tag", "ITP/ETP shortens cookies", "Network failures lost"],
+      capture: 60,
+      tone: "fail"
+    },
+    {
+      label: "HYBRID",
+      title: "Browser + Server → Platform",
+      flow:  ["Browser fires JS tag (best effort)", "App also posts server-to-server", "Dedupe at platform via event ID"],
+      losses: ["Some duplicate handling needed", "Identity must match (event_id)", "Better, not perfect"],
+      capture: 85,
+      tone: "warn"
+    },
+    {
+      label: "FULL SERVER-SIDE",
+      title: "App → Server → Platform(s)",
+      flow:  ["App emits event server-side", "Tracking server enriches + dedupes", "Fan-out to ads/MTA/MMM"],
+      losses: ["No browser-only signals", "Requires identity resolution", "More engineering up front"],
+      capture: 95,
+      tone: "ok"
+    }
+  ]
+  tone_classes = {
+    "fail" => "border-amber-500 bg-amber-50",
+    "warn" => "border-indigo-500 bg-indigo-50",
+    "ok"   => "border-emerald-500 bg-emerald-50"
+  }
+  tone_capture_classes = {
+    "fail" => "text-amber-700",
+    "warn" => "text-indigo-700",
+    "ok"   => "text-emerald-700"
+  }
+%>
+
+<figure class="my-12 not-prose">
+  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+
+    <div class="px-6 sm:px-8 pt-8 pb-6 border-b border-slate-200">
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Three tracking architectures, three capture rates</h2>
+      <p class="text-slate-500 text-sm sm:text-base mt-1">Where the data flows determines what you actually see.</p>
+    </div>
+
+    <div class="px-4 sm:px-8 py-8 bg-gradient-to-b from-slate-50/60 to-white">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+        <% approaches.each do |a| %>
+          <div class="<%= tone_classes[a[:tone]] %> border-l-4 rounded-md p-4 sm:p-5 flex flex-col">
+            <div class="text-[11px] font-bold text-slate-500 tracking-[0.15em] mb-1"><%= a[:label] %></div>
+            <h3 class="text-base sm:text-lg font-bold text-slate-900 mb-3 leading-tight"><%= a[:title].html_safe %></h3>
+
+            <div class="mb-4">
+              <div class="text-[10px] font-bold tracking-[0.15em] text-slate-500 mb-1.5">DATA FLOW</div>
+              <ol class="space-y-1.5 text-xs text-slate-700">
+                <% a[:flow].each_with_index do |step, i| %>
+                  <li class="flex gap-2"><span class="font-mono text-slate-400 shrink-0"><%= i + 1 %>.</span><span><%= step.html_safe %></span></li>
+                <% end %>
+              </ol>
+            </div>
+
+            <div class="mb-4">
+              <div class="text-[10px] font-bold tracking-[0.15em] text-slate-500 mb-1.5">TRADE-OFFS</div>
+              <ul class="space-y-1 text-xs text-slate-600">
+                <% a[:losses].each do |loss| %>
+                  <li class="flex gap-2"><span class="text-slate-400 shrink-0">&middot;</span><span><%= loss %></span></li>
+                <% end %>
+              </ul>
+            </div>
+
+            <div class="mt-auto pt-3 border-t border-slate-200/60 text-center">
+              <div class="text-[10px] font-bold tracking-[0.15em] text-slate-500 mb-1">TYPICAL CAPTURE</div>
+              <div class="text-2xl sm:text-3xl font-bold <%= tone_capture_classes[a[:tone]] %>"><%= a[:capture] %>%</div>
+              <div class="text-[10px] text-slate-500 italic">of true conversions</div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="px-6 sm:px-8 py-5 bg-slate-50 border-t border-slate-200">
+      <p class="text-sm text-slate-700 leading-relaxed">
+        <strong class="text-slate-900">The 35-percentage-point gap between client-only and server-side is what gets misallocated.</strong>
+        Every conversion you don't capture gets credited to the wrong channel (or to nothing). Server-side closes the gap; hybrid is the practical mid-step while server-side is being built.
+      </p>
+    </div>
+
+  </div>
+  <figcaption class="text-xs text-slate-500 mt-3 text-center">
+    Capture rates are typical industry benchmarks &middot; Actual rates vary by traffic mix (Safari/iOS-heavy is worse for client-side)
+  </figcaption>
+</figure>

@@ -1,0 +1,70 @@
+<%# When is last-touch the right call vs the wrong call? Two-column visual decision guide. %>
+
+<%
+  use_cases = [
+    { kind: :ok, label: "Use last-touch when...",   color: "emerald", items: [
+      "Sales cycle is &lt; 3 days (impulse e-commerce, ticket sales, subscription upgrades)",
+      "Single-session conversions dominate (paid search → buy in same visit)",
+      "You only need a tactical optimization signal (which keyword to scale)",
+      "You're reconciling against a platform default (Meta and Google use 7d/30d last-click)"
+    ]},
+    { kind: :avoid, label: "Don't use last-touch when...", color: "amber", items: [
+      "Sales cycle is &gt; 2 weeks (anything considered, B2B, multi-stakeholder)",
+      "Brand and content drive significant traffic (you'll under-credit them)",
+      "You're making strategic budget decisions across channels (last-touch overspends on closers)",
+      "&gt;15% of conversions show as &quot;Direct&quot; (last-touch can't see what drove them)"
+    ]}
+  ]
+
+  card_classes = {
+    "emerald" => "border-emerald-500 bg-emerald-50",
+    "amber"   => "border-amber-500 bg-amber-50"
+  }
+  label_classes = {
+    "emerald" => "text-emerald-700",
+    "amber"   => "text-amber-700"
+  }
+%>
+
+<figure class="my-12 not-prose">
+  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+
+    <div class="px-6 sm:px-8 pt-8 pb-6 border-b border-slate-200">
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">When last-touch fits &mdash; and when it doesn't</h2>
+      <p class="text-slate-500 text-sm sm:text-base mt-1">Last-touch isn't broken. It's specialized. Use it where it's honest; switch when it's not.</p>
+    </div>
+
+    <div class="px-4 sm:px-8 py-8 bg-gradient-to-b from-slate-50/60 to-white">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <% use_cases.each do |c| %>
+          <div class="<%= card_classes[c[:color]] %> border-l-4 rounded-md p-5">
+            <h3 class="text-base sm:text-lg font-bold <%= label_classes[c[:color]] %> mb-3"><%= c[:label] %></h3>
+            <ul class="space-y-2.5">
+              <% c[:items].each do |item| %>
+                <li class="flex gap-2 text-sm text-slate-700 leading-snug">
+                  <% if c[:kind] == :ok %>
+                    <span class="text-emerald-500 font-bold shrink-0 mt-0.5">&#10003;</span>
+                  <% else %>
+                    <span class="text-amber-500 font-bold shrink-0 mt-0.5">&times;</span>
+                  <% end %>
+                  <span><%= item.html_safe %></span>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="px-6 sm:px-8 py-5 bg-slate-50 border-t border-slate-200">
+      <p class="text-sm text-slate-700 leading-relaxed">
+        <strong class="text-slate-900">Run last-touch alongside a multi-touch model, not instead of one.</strong>
+        Last-touch is fine for <em>tactical</em> decisions (which ad to pause). It's wrong for <em>strategic</em> decisions (which channel deserves more budget). Use both, and act on the disagreement.
+      </p>
+    </div>
+
+  </div>
+  <figcaption class="text-xs text-slate-500 mt-3 text-center">
+    Decision guide: mbuzz
+  </figcaption>
+</figure>

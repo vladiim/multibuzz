@@ -1,0 +1,149 @@
+<%# Comprehensive comparison of attribution models. %>
+
+<%
+  models = [
+    {
+      name:        "Last-touch",
+      complexity:  1,
+      data_need:   "Minimal &mdash; just the final touch",
+      transparency:"Highest &mdash; trivial to explain",
+      best_for:    "Direct-response, branded search, very short cycles",
+      blind_spot:  "Massively overcredits closers; introducers invisible",
+      slug:        "last-touch-attribution"
+    },
+    {
+      name:        "First-touch",
+      complexity:  1,
+      data_need:   "Minimal &mdash; just the first touch",
+      transparency:"Highest",
+      best_for:    "Demand-gen reporting, sourced-pipeline metrics",
+      blind_spot:  "Hides the closing motion entirely",
+      slug:        "first-touch-attribution"
+    },
+    {
+      name:        "Linear",
+      complexity:  2,
+      data_need:   "Full journey",
+      transparency:"High &mdash; equal weights, no parameters",
+      best_for:    "Neutral baseline, long cycles, content-heavy nurture",
+      blind_spot:  "Treats every touch as equal; rarely true",
+      slug:        "linear-attribution"
+    },
+    {
+      name:        "Time-decay",
+      complexity:  2,
+      data_need:   "Full journey + timestamps",
+      transparency:"Medium &mdash; needs half-life chosen",
+      best_for:    "Short-to-medium cycles, e-commerce, urgency products",
+      blind_spot:  "Aggressively underweights early touches",
+      slug:        "time-decay-attribution"
+    },
+    {
+      name:        "Position-based (U/W)",
+      complexity:  2,
+      data_need:   "Full journey",
+      transparency:"Medium &mdash; arbitrary 40/20/40 split",
+      best_for:    "B2B with distinct sourced/closed roles",
+      blind_spot:  "Undercredits middle-funnel content",
+      slug:        "position-based-attribution"
+    },
+    {
+      name:        "Data-driven (Markov, Shapley)",
+      complexity:  4,
+      data_need:   "15K+ conversions/mo, full journeys",
+      transparency:"Lowest &mdash; algorithmic black box",
+      best_for:    "High-volume e-commerce, SaaS at scale",
+      blind_spot:  "Still observational (Pearl Rung 1)",
+      slug:        "data-driven-attribution"
+    }
+  ]
+%>
+
+<figure class="my-12 not-prose">
+  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+
+    <div class="px-6 sm:px-8 pt-8 pb-6 border-b border-slate-200">
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Attribution models, side by side</h2>
+      <p class="text-slate-500 text-sm sm:text-base mt-1">Six models. Each has a sweet spot and a blind spot. Read them together.</p>
+    </div>
+
+    <%# Desktop: table %>
+    <div class="hidden lg:block overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-slate-200 bg-slate-50">
+            <th class="text-left text-xs font-semibold text-slate-500 tracking-[0.12em] px-5 py-3">MODEL</th>
+            <th class="text-left text-xs font-semibold text-slate-500 tracking-[0.12em] px-5 py-3 w-24">COMPLEXITY</th>
+            <th class="text-left text-xs font-semibold text-slate-500 tracking-[0.12em] px-5 py-3">DATA NEED</th>
+            <th class="text-left text-xs font-semibold text-slate-500 tracking-[0.12em] px-5 py-3">BEST FOR</th>
+            <th class="text-left text-xs font-semibold text-slate-500 tracking-[0.12em] px-5 py-3">BLIND SPOT</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% models.each_with_index do |m, idx| %>
+            <tr class="border-b border-slate-100 last:border-b-0 <%= 'bg-slate-50/40' if idx.odd? %>">
+              <td class="px-5 py-3 align-top">
+                <a href="/articles/<%= m[:slug] %>" class="text-base font-bold text-slate-900 hover:text-indigo-600 underline decoration-slate-300 decoration-1 underline-offset-4">
+                  <%= m[:name] %>
+                </a>
+              </td>
+              <td class="px-5 py-3 align-top">
+                <div class="flex gap-0.5">
+                  <% 4.times do |i| %>
+                    <span class="inline-block w-1.5 h-4 rounded-sm <%= i < m[:complexity] ? 'bg-indigo-500' : 'bg-slate-200' %>"></span>
+                  <% end %>
+                </div>
+              </td>
+              <td class="px-5 py-3 align-top text-slate-700"><%= m[:data_need].html_safe %></td>
+              <td class="px-5 py-3 align-top text-slate-700"><%= m[:best_for] %></td>
+              <td class="px-5 py-3 align-top text-amber-700"><%= m[:blind_spot] %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <%# Mobile + tablet: per-model cards %>
+    <div class="lg:hidden px-4 py-5 space-y-4">
+      <% models.each do |m| %>
+        <div class="border border-slate-200 rounded-lg overflow-hidden">
+          <div class="bg-slate-50 border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+            <a href="/articles/<%= m[:slug] %>" class="text-base font-bold text-slate-900 underline decoration-slate-300 decoration-1 underline-offset-4">
+              <%= m[:name] %>
+            </a>
+            <div class="flex gap-0.5">
+              <% 4.times do |i| %>
+                <span class="inline-block w-1.5 h-4 rounded-sm <%= i < m[:complexity] ? 'bg-indigo-500' : 'bg-slate-200' %>"></span>
+              <% end %>
+            </div>
+          </div>
+          <dl class="px-4 py-3 text-sm">
+            <div class="py-2 border-b border-slate-100">
+              <dt class="text-[10px] font-semibold text-slate-500 tracking-[0.12em] mb-0.5">DATA NEED</dt>
+              <dd class="text-sm text-slate-700"><%= m[:data_need].html_safe %></dd>
+            </div>
+            <div class="py-2 border-b border-slate-100">
+              <dt class="text-[10px] font-semibold text-slate-500 tracking-[0.12em] mb-0.5">BEST FOR</dt>
+              <dd class="text-sm text-slate-700"><%= m[:best_for] %></dd>
+            </div>
+            <div class="py-2">
+              <dt class="text-[10px] font-semibold text-amber-700 tracking-[0.12em] mb-0.5">BLIND SPOT</dt>
+              <dd class="text-sm text-amber-700"><%= m[:blind_spot] %></dd>
+            </div>
+          </dl>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="px-6 sm:px-8 py-5 bg-slate-50 border-t border-slate-200">
+      <p class="text-sm text-slate-700 leading-relaxed">
+        <strong class="text-slate-900">Complexity isn't the same as accuracy.</strong>
+        Data-driven attribution is the most complex and the least transparent &mdash; but it's still observational. It tells you what correlated, not what caused. Use the model that fits your data and your decisions; add an experiment when you need causal evidence.
+      </p>
+    </div>
+
+  </div>
+  <figcaption class="text-xs text-slate-500 mt-3 text-center">
+    Each model name links to its dedicated guide
+  </figcaption>
+</figure>
