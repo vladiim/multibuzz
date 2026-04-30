@@ -51,7 +51,6 @@ module AdPlatforms
           platform_account_name: params[:ad_account_name],
           currency: params[:currency],
           access_token: tokens[:access_token],
-          refresh_token: tokens[:access_token],
           token_expires_at: tokens[:expires_at],
           status: :connected,
           settings: { "timezone_name" => params[:timezone_name] }.compact

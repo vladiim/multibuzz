@@ -82,7 +82,6 @@ module Oauth
     def complete_reconnect
       reconnect_connection.update!(
         access_token: callback_result[:access_token],
-        refresh_token: callback_result[:access_token],
         token_expires_at: callback_result[:expires_at],
         status: :connected,
         last_sync_error: nil
