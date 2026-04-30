@@ -53,13 +53,13 @@ class AdPlatforms::Google::AcceptConnectionServiceTest < ActiveSupport::TestCase
     end
   end
 
-  test "returns success outcome with notice and clear_session" do
+  test "returns success outcome with notice and keeps session alive for multi-connect" do
     account.update!(plan: growth_plan)
 
     outcome = service.call
 
-    assert_equal "Google Ads account connected.", outcome[:notice]
-    assert outcome[:clear_session]
+    assert_match(/Google Ads account connected/, outcome[:notice])
+    assert_not outcome[:clear_session]
     assert_nil outcome[:alert]
   end
 

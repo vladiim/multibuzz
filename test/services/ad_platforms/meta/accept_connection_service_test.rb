@@ -59,12 +59,12 @@ class AdPlatforms::Meta::AcceptConnectionServiceTest < ActiveSupport::TestCase
     end
   end
 
-  test "returns success outcome with notice and clear_session" do
+  test "returns success outcome with notice and keeps session alive for multi-connect" do
     account.update!(plan: growth_plan)
     outcome = service.call
 
     assert_match(/Meta/i, outcome[:notice])
-    assert outcome[:clear_session]
+    assert_not outcome[:clear_session]
   end
 
   test "returns at-limit outcome when account has no remaining slots" do

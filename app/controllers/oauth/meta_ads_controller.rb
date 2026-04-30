@@ -4,10 +4,10 @@ module Oauth
   class MetaAdsController < ApplicationController
     skip_marketing_analytics
     before_action :require_login
-    before_action :require_feature_flag, only: [ :connect, :callback, :select_account, :create_connection, :reconnect ]
+    before_action :require_feature_flag, only: [ :connect, :callback, :select_account, :create_connection, :done, :reconnect ]
     before_action :require_paid_plan, only: :connect
     before_action :require_connection_slot, only: :connect
-    before_action :require_oauth_account, only: [ :callback, :select_account, :create_connection ]
+    before_action :require_oauth_account, only: [ :callback, :select_account, :create_connection, :done ]
     before_action :require_session_tokens, only: [ :select_account, :create_connection ]
 
     def connect
@@ -28,6 +28,8 @@ module Oauth
       @ad_accounts = result[:accounts] || []
       @error = result[:errors]&.first unless result[:success]
       @known_metadata_keys = AdPlatforms::KnownMetadata.keys_for(oauth_account)
+      @already_connected_ids = oauth_account.ad_platform_connections
+        .where(platform: :meta_ads).pluck(:platform_account_id).to_set
     end
 
     def create_connection
@@ -35,7 +37,13 @@ module Oauth
         account: oauth_account, params: params, tokens: session_tokens, metadata: extracted_metadata
       ).call
       clear_oauth_session! if outcome[:clear_session]
-      redirect_to meta_ads_account_integrations_path, **outcome.except(:clear_session)
+      redirect_to outcome[:clear_session] ? meta_ads_account_integrations_path : oauth_meta_ads_select_account_path,
+        **outcome.except(:clear_session)
+    end
+
+    def done
+      clear_oauth_session!
+      redirect_to meta_ads_account_integrations_path
     end
 
     def reconnect

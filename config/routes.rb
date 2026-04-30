@@ -17,6 +17,7 @@ Rails.application.routes.draw do
     get "google_ads/callback", to: "google_ads#callback"
     get "google_ads/select_account", to: "google_ads#select_account"
     post "google_ads/create_connection", to: "google_ads#create_connection"
+    post "google_ads/done", to: "google_ads#done", as: :google_ads_done
     get "google_ads/reconnect/:id", to: "google_ads#reconnect", as: :google_ads_reconnect
     delete "google_ads/:id", to: "google_ads#disconnect", as: :google_ads_disconnect
 
@@ -24,6 +25,7 @@ Rails.application.routes.draw do
     get "meta_ads/callback", to: "meta_ads#callback", as: :meta_ads_callback
     get "meta_ads/select_account", to: "meta_ads#select_account", as: :meta_ads_select_account
     post "meta_ads/create_connection", to: "meta_ads#create_connection", as: :meta_ads_create_connection
+    post "meta_ads/done", to: "meta_ads#done", as: :meta_ads_done
     get "meta_ads/reconnect/:id", to: "meta_ads#reconnect", as: :meta_ads_reconnect
     delete "meta_ads/:id", to: "meta_ads#disconnect", as: :meta_ads_disconnect
   end

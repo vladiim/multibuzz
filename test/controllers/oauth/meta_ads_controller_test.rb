@@ -107,6 +107,30 @@ class Oauth::MetaAdsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to account_integrations_path
   end
 
+  # --- done ---
+
+  test "done redirects to the Meta Ads page" do
+    enable_meta_flag
+    sign_in
+    assign_plan(:pro)
+    simulate_connect
+
+    post oauth_meta_ads_done_path
+
+    assert_redirected_to meta_ads_account_integrations_path
+  end
+
+  test "done clears all oauth session keys" do
+    enable_meta_flag
+    sign_in
+    assign_plan(:pro)
+    simulate_connect
+
+    post oauth_meta_ads_done_path
+
+    assert_equal({}, session.to_h.slice("oauth_account_id", "meta_ads_tokens", "oauth_state"))
+  end
+
   # --- disconnect ---
 
   test "disconnect marks the connection as disconnected" do

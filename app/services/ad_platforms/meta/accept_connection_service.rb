@@ -67,7 +67,7 @@ module AdPlatforms
       end
 
       def success_outcome
-        { notice: "Meta Ads account connected.", clear_session: true }
+        { notice: "Meta Ads account connected. Connect more from this list, or click Done when you're finished.", clear_session: false }
       end
 
       def at_limit_outcome

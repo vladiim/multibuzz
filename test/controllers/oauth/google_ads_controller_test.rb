@@ -165,7 +165,7 @@ class Oauth::GoogleAdsControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :success
-    assert_select "input[value='1234567890']"
+    assert_select "input[value='7777777777']"
   end
 
   test "select_account redirects without oauth session" do
@@ -263,7 +263,7 @@ class Oauth::GoogleAdsControllerTest < ActionDispatch::IntegrationTest
       customer_id: connection.platform_account_id, customer_name: "Dupe", currency: "USD"
     }
 
-    assert_redirected_to google_ads_account_integrations_path
+    assert_redirected_to oauth_google_ads_select_account_path
     assert_match(/already connected/i, flash[:alert])
     assert_no_difference "AdPlatformConnection.count" do
       post oauth_google_ads_create_connection_path, params: {
@@ -304,7 +304,7 @@ class Oauth::GoogleAdsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "9999999999", conn.platform_account_id
   end
 
-  test "create_connection clears oauth_account_id from session" do
+  test "create_connection keeps oauth session alive on success so user can connect more accounts" do
     sign_in
     assign_plan(:growth)
     set_session_tokens
@@ -313,7 +313,9 @@ class Oauth::GoogleAdsControllerTest < ActionDispatch::IntegrationTest
       customer_id: "5551234567", customer_name: "Cleanup Test", currency: "AUD"
     }
 
-    assert_nil session[:oauth_account_id]
+    assert_redirected_to oauth_google_ads_select_account_path
+    assert_equal account.id, session[:oauth_account_id]
+    assert_not_nil session[:google_ads_tokens]
   end
 
   test "create_connection enqueues backfill sync job" do
@@ -328,18 +330,24 @@ class Oauth::GoogleAdsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "create_connection clears all oauth session keys" do
+  test "done redirects to the Google Ads page" do
     sign_in
     assign_plan(:growth)
     set_session_tokens
 
-    post oauth_google_ads_create_connection_path, params: {
-      customer_id: "7778889999", customer_name: "Full Cleanup", currency: "USD"
-    }
+    post oauth_google_ads_done_path
 
-    assert_nil session[:oauth_account_id]
-    assert_nil session[:google_ads_tokens]
-    assert_nil session[:oauth_state]
+    assert_redirected_to google_ads_account_integrations_path
+  end
+
+  test "done clears all oauth session keys" do
+    sign_in
+    assign_plan(:growth)
+    set_session_tokens
+
+    post oauth_google_ads_done_path
+
+    assert_equal({}, session.to_h.slice("oauth_account_id", "google_ads_tokens", "oauth_state"))
   end
 
   # --- reconnect (re-auth) ---
@@ -510,7 +518,7 @@ class Oauth::GoogleAdsControllerTest < ActionDispatch::IntegrationTest
   def customer_list
     {
       success: true,
-      customers: [ { id: "1234567890", name: "Acme Ads", currency: "USD" } ]
+      customers: [ { id: "7777777777", name: "Acme Ads", currency: "USD" } ]
     }
   end
 
