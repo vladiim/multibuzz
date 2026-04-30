@@ -480,3 +480,83 @@ curl -s http://localhost:3000 | grep -c "sdk"
 # E2E tests pass (if test app exists)
 cd sdk_integration_tests && rake sdk:{key}
 ```
+
+---
+
+## Ad Platform Adapter Lifecycle Checklist
+
+**When adding a new ad-platform adapter (Google Ads, Meta, LinkedIn, TikTok, Microsoft, etc.), follow `lib/specs/ad_platform_adapter_template_spec.md`.** Copy that file, rename it `ad_platform_{platform}_integration_spec.md`, and walk all seven phases.
+
+This is a **separate** lifecycle from the SDK checklist above. SDKs are install-snippet integrations the customer drops into their site; ad-platform adapters are server-side OAuth + spend-pull adapters mbuzz operates on the customer's behalf. Different surfaces, different contracts.
+
+### On Create (New Ad Platform Adapter)
+
+| # | Touchpoint | File(s) | Action |
+|---|-----------|---------|--------|
+| 1 | **Spec** | `lib/specs/ad_platform_{platform}_integration_spec.md` | Copy from `ad_platform_adapter_template_spec.md`. Fill Current State + API Specifics. |
+| 2 | **Connection enum** | `app/models/ad_platform_connection.rb` | Verify `{platform}` already in the enum. Add it if not. |
+| 3 | **Feature flag** | `app/constants/feature_flags.rb` | Add `{PLATFORM}_INTEGRATION` constant; append to `ALL`. |
+| 4 | **Credentials** | Rails credentials (dev + prod) | `{platform}.app_id`, `{platform}.app_secret`. Never commit raw values. |
+| 5 | **Adapter tree** | `app/services/ad_platforms/{platform}/` | Service files per template (Phase 2). `ApiClient` must call the global `AdPlatforms::ApiUsageTracker.increment!(:platform)` — billing visibility is non-optional. |
+| 5b | **Global usage tracker** | `app/services/ad_platforms/api_usage_tracker.rb` | Add `{platform}` key + limit to `LIMITS` and a display name to `DISPLAY_NAMES`. Never create a per-platform tracker class — see `feedback_global_processor_pattern` memory. |
+| 6 | **Registry** | `app/services/ad_platforms/registry.rb` | Register `{platform}: AdPlatforms::{Platform}::Adapter`. |
+| 7 | **OAuth controller** | `app/controllers/oauth/{platform}_controller.rb` | Mirror Google's surface. **`skip_marketing_analytics` on day one.** Feature-flag gate at entry. |
+| 8 | **Routes** | `config/routes.rb` | OAuth routes (connect/callback/select_account/create_connection/reconnect/disconnect) + integrations index/detail routes. |
+| 9 | **Integrations views** | `app/views/accounts/integrations/` | `_{platform}_card.html.erb`, `{platform}.html.erb`, `{platform}_account.html.erb`. Live card gated on flag. |
+| 10 | **OAuth view** | `app/views/oauth/{platform}/select_account.html.erb` | Ad-account picker with `KnownMetadata`-driven metadata capture. |
+| 11 | **Connect-time metadata** | Reuses `AdPlatforms::ConnectMetadataExtractor` + `MetadataNormalizer` + `KnownMetadata` | Plumbed via `AcceptConnectionService(metadata:)` and merged in `RowParser`. |
+| 12 | **Verify rake** | `lib/tasks/ad_platforms.rake` | `ad_platforms:{platform}:verify_credentials` task for live smoke testing. |
+| 13 | **Tests** | `test/services/ad_platforms/{platform}/`, `test/controllers/oauth/{platform}_controller_test.rb` | Pure parsers tested directly; orchestrators tested via VCR cassettes; controller integration tests. **No mocks** per `feedback_no_mocks.md`. |
+| 14 | **VCR cassettes** | `test/vcr_cassettes/{platform}/` | Recorded against real (or sandbox) API, sensitive data filtered, committed. Per-orchestrator cassettes named per template. |
+| 15 | **Approval doc** | `lib/specs/platform_api_approvals_spec.md` | Update with current API tier + scope status. |
+
+### On Modify (Update Existing Adapter)
+
+| # | Touchpoint | Action |
+|---|-----------|--------|
+| 1 | **Adapter constants** | Bump API version in `{platform}.rb` if endpoints change. |
+| 2 | **VCR cassettes** | Re-record affected cassettes if request/response shape changes. |
+| 3 | **RowParser** | Update if platform's insights schema changes (new fields, renamed fields). |
+| 4 | **Tests** | Update fixture JSON to match new shapes. |
+| 5 | **Approval doc** | Note tier upgrades (Standard → Advanced) or scope additions. |
+
+### On Delete (Remove Adapter)
+
+Rare, but if a platform shuts off:
+
+| # | Touchpoint | Action |
+|---|-----------|--------|
+| 1 | **Feature flag** | Disable for all accounts via `bin/rails feature_flags:disable` loop. |
+| 2 | **Existing connections** | Mark as disconnected — keep historical `ad_spend_records` rows for reporting continuity. |
+| 3 | **Registry + adapter** | Leave the adapter class in place if any disconnected connections still reference it; remove only after a deprecation window. |
+| 4 | **UI** | Remove live card, restore Coming Soon card or remove entirely. |
+| 5 | **Spec** | Move to `lib/specs/old/` with a deprecation note. |
+
+### Quick Validation
+
+After any ad-platform adapter change:
+
+```bash
+# All tests pass
+bin/rails test test/services/ad_platforms test/controllers/oauth
+
+# Registry resolves the adapter
+bin/rails runner "pp AdPlatforms::Registry::ADAPTERS"
+
+# Verify task hits the live API (with credentials in dev)
+bin/rails ad_platforms:{platform}:verify_credentials
+
+# VCR cassettes contain no leaks
+bin/rails vcr:audit  # if available, otherwise grep cassettes for known token shapes
+```
+
+### Non-Negotiables
+
+These are pulled out of the template so they're impossible to miss:
+
+1. **Global `AdPlatforms::ApiUsageTracker` wired up.** Add the platform key to `LIMITS` + `DISPLAY_NAMES`; `ApiClient` calls `increment!(:platform)` on every request. No per-platform tracker classes — global only.
+2. **`skip_marketing_analytics` on the OAuth controller.** Tokens leaking through `page_location` to GA4 / Meta Pixel is a credential leak.
+3. **Feature flag at controller entry.** Every action that touches OAuth or per-platform views gates on the flag until the adapter graduates to general availability.
+4. **No mocks in tests.** Pure parsers + VCR cassettes for HTTP. See `feedback_no_mocks.md`.
+5. **Per-connection metadata is plumbed end-to-end.** Connect-time picker → `MetadataNormalizer` → `AcceptConnectionService` → `connection.metadata` → `RowParser` merge → `ad_spend_records.metadata`. Multi-location dashboards depend on this.
+
