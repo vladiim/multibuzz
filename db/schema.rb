@@ -10,10 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_23_041449) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_28_040000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
+
+  create_table "account_feature_flags", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "flag_name", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "flag_name"], name: "index_account_feature_flags_on_account_id_and_flag_name", unique: true
+    t.index ["account_id"], name: "index_account_feature_flags_on_account_id"
+    t.index ["flag_name"], name: "index_account_feature_flags_on_flag_name"
+  end
 
   create_table "account_memberships", force: :cascade do |t|
     t.bigint "user_id", null: false
@@ -593,6 +603,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_23_041449) do
     t.index ["visitor_id"], name: "index_visitors_on_visitor_id"
   end
 
+  add_foreign_key "account_feature_flags", "accounts"
   add_foreign_key "account_memberships", "accounts"
   add_foreign_key "account_memberships", "users"
   add_foreign_key "accounts", "plans"
