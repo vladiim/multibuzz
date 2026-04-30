@@ -117,7 +117,20 @@ class AdPlatforms::Meta::RowParserTest < ActiveSupport::TestCase
     AdPlatforms::Meta::RowParser.call(row, connection: connection, channel_overrides: channel_overrides)
   end
 
-  def connection = @connection ||= ad_platform_connections(:meta_ads)
+  def connection
+    @connection ||= AdPlatformConnection.create!(
+      account: accounts(:two),
+      platform: :meta_ads,
+      platform_account_id: "act_TEST_PARSER",
+      platform_account_name: "Parser Test",
+      currency: "AUD",
+      access_token: "tok",
+      refresh_token: "tok",
+      token_expires_at: 30.days.from_now,
+      status: :connected,
+      settings: {}
+    )
+  end
 
   def daily_row
     {

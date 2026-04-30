@@ -28,7 +28,7 @@ class AdPlatforms::BaseAdapterTest < ActiveSupport::TestCase
   end
 
   test "Registry.adapter_for raises for unsupported platform" do
-    connection.platform = :meta_ads
+    connection.platform = :tiktok_ads
 
     assert_raises(ArgumentError) do
       AdPlatforms::Registry.adapter_for(connection)

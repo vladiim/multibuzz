@@ -22,5 +22,19 @@ class AdPlatforms::Meta::AdapterTest < ActiveSupport::TestCase
   private
 
   def adapter = @adapter ||= AdPlatforms::Meta::Adapter.new(connection)
-  def connection = @connection ||= ad_platform_connections(:meta_ads)
+
+  def connection
+    @connection ||= AdPlatformConnection.create!(
+      account: accounts(:two),
+      platform: :meta_ads,
+      platform_account_id: "act_TEST_ADAPTER",
+      platform_account_name: "Adapter Test",
+      currency: "AUD",
+      access_token: "tok",
+      refresh_token: "tok",
+      token_expires_at: 30.days.from_now,
+      status: :connected,
+      settings: { "timezone_name" => "Australia/Sydney" }
+    )
+  end
 end
