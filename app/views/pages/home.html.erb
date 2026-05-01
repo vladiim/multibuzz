@@ -43,48 +43,22 @@
   <%= render "pages/home/problem_validation" %>
   <%= render "pages/home/dashboard_preview" %>
 
+  <% link_class = "underline decoration-dotted underline-offset-4 hover:text-blue-600" %>
   <%= render "landing_pages/lp_feature_showcase",
-    heading: "Models. DSL. Spend. LTV.",
+    heading: "What you actually need from attribution.",
     bg_variant: "white",
     cells: [
       {
-        eyebrow: "Eight models, one view",
-        title: "Same data. Eight models. The spread is the answer.",
-        description: "Most attribution tools give you one number. mbuzz shows you what every model says — and where they disagree. The spread between first-touch and last-touch is the honest truth range.",
-        bullets: [
-          "First-touch, last-touch, linear, time-decay, position-based, Markov, Shapley, data-driven",
-          "Same underlying data — swap the lens, not the dataset",
-          "Export every model's output on every tier"
-        ],
-        screenshot_url: "https://mbuzz.sfo3.digitaloceanspaces.com/brand-assets/directory-listings/screenshot-02-channels.png",
-        screenshot_alt: "mbuzz channel comparison across 8 attribution models",
-        cta: "See the models side-by-side",
-        cta_path: demo_path,
-        modal_frame_id: "demo_conversions",
-        modal_frame_src: demo_dashboard_conversions_path(models: [ "first_touch", "last_touch" ])
-      },
-      {
-        eyebrow: "Attribution DSL",
-        title: "Write your own attribution. Audit the rest.",
-        description: "SQL-like language. Encode your sales cycle directly into the math. Fork any built-in model, tweak the decay, add lookback windows. You own the logic — not a vendor's black box.",
-        bullets: [
-          "Plain-text rules, diff-friendly, version-controlled",
-          "Fork and modify any built-in model in one line",
-          "Run custom models alongside the built-ins — no tier gate"
-        ],
-        screenshot_url: "https://mbuzz.sfo3.digitaloceanspaces.com/brand-assets/directory-listings/screenshot-03-dsl.png",
-        screenshot_alt: "mbuzz Attribution DSL — custom model examples",
-        cta: "See example models",
-        cta_path: root_path(anchor: "aml-editor"),
-        modal_partial: "pages/home/aml_editor"
-      },
-      {
         eyebrow: "Spend Intelligence",
-        title: "Where does the next $10K go?",
-        description: "Most tools tell you ROAS. mbuzz tells you what happens when you shift budget. Diminishing-returns curves, payback period by channel, reallocation suggestions — the questions that matter above $100K/mo in spend.",
+        title: "Where should your next $10k go?",
+        description: safe_join([
+          "Spend Intelligence shows marginal ROAS, payback period, and the channel that's about to hit ",
+          link_to("diminishing returns", article_path("diminishing-returns-ad-spend"), class: link_class),
+          " — before you scale into a wall."
+        ]),
         bullets: [
           "Response curves per channel — see saturation before you hit it",
-          "Payback period by channel, not just ROAS",
+          safe_join(["Payback period and ", link_to("budget reallocation", article_path("budget-reallocation-attribution"), class: link_class), " by channel, not just ROAS"]),
           "Platform-reported vs real-captured revenue, reconciled"
         ],
         screenshot_url: "https://mbuzz.sfo3.digitaloceanspaces.com/brand-assets/directory-listings/screenshot-04-roas-delta.png",
@@ -95,9 +69,52 @@
         modal_frame_src: demo_dashboard_spend_path(preview: 1)
       },
       {
-        eyebrow: "LTV mode",
-        title: "Your worst channel might be your best.",
-        description: "Every report flips between first-month revenue and 12-month lifetime value in one click. The channel that looks worst on acquisition usually wins on lifetime revenue. Ships in every plan.",
+        eyebrow: "ROAS Reconciliation",
+        title: "Reconcile platform ROAS in one view.",
+        description: safe_join([
+          link_to("Meta over-reports by 134%", article_path("roas-inflation-platform-over-reporting"), class: link_class),
+          ". ",
+          link_to("Google double-counts", article_path("why-google-ads-ga4-different-conversions"), class: link_class),
+          " assisted conversions. mbuzz shows you the platform number, the mbuzz number, and the gap — for every channel, every week."
+        ]),
+        bullets: [
+          "Platform-reported vs mbuzz-captured revenue, side-by-side",
+          "Gap % per channel, per week",
+          "Reconciles to your CRM or bank, not the platform's claim"
+        ],
+        screenshot_url: "https://mbuzz.sfo3.digitaloceanspaces.com/brand-assets/directory-listings/screenshot-04-roas-delta.png",
+        screenshot_alt: "mbuzz ROAS reconciliation — platform-claimed vs mbuzz-captured by channel",
+        cta: "See the ROAS gap",
+        cta_path: demo_dashboard_spend_path,
+        modal_frame_id: "demo_spend_reconcile",
+        modal_frame_src: demo_dashboard_spend_path(preview: 1)
+      },
+      {
+        eyebrow: "Model Comparison",
+        title: "Eight models. One screen. Your call.",
+        description: safe_join([
+          "First-touch, last-touch, linear, time-decay, position-based, U-shape, W-shape, data-driven. ",
+          link_to("GA4 shows you one", article_path("ga4-attribution-models-removed"), class: link_class),
+          ". We show all eight ",
+          link_to("side-by-side", article_path("multi-touch-attribution-tools-compared"), class: link_class),
+          " — so you can stop arguing about which one is 'right'."
+        ]),
+        bullets: [
+          "Same data — swap the lens, not the dataset",
+          "The spread between models is the honest truth range",
+          "Export every model's output on every tier"
+        ],
+        screenshot_url: "https://mbuzz.sfo3.digitaloceanspaces.com/brand-assets/directory-listings/screenshot-02-channels.png",
+        screenshot_alt: "mbuzz channel comparison across 8 attribution models",
+        cta: "See the models side-by-side",
+        cta_path: demo_path,
+        modal_frame_id: "demo_conversions",
+        modal_frame_src: demo_dashboard_conversions_path(models: [ "first_touch", "last_touch" ])
+      },
+      {
+        eyebrow: "LTV Mode",
+        title: "Rank channels by LTV, not first conversion.",
+        description: "A channel that brings 6-month customers beats one that brings one-and-dones. LTV mode re-ranks every channel by cohort lifetime value — so the channel that looks worst on day-1 acquisition often wins on lifetime revenue.",
         bullets: [
           "Toggle any channel ranking between first-month and 12-month LTV",
           "See channel rank changes explicitly (up 2, down 4, same)",
@@ -110,6 +127,16 @@
         modal_partial: "pages/home/ltv_leaderboard"
       }
     ] %>
+
+  <%# DSL footnote — preserves the developer/advanced-team story without leading with it %>
+  <section class="px-6 pb-16 -mt-8 bg-white">
+    <div class="max-w-3xl mx-auto bg-gray-50 border border-gray-200 rounded-lg px-6 py-5 text-center text-sm text-gray-600">
+      Need to express custom attribution logic? mbuzz also ships a SQL-like
+      <strong class="text-gray-900">Attribution DSL</strong> — fork any built-in model,
+      add lookback windows, encode your sales cycle. Most teams never need it.
+      <%= link_to "Read the DSL docs &rarr;".html_safe, docs_path("getting-started"), class: "font-medium text-blue-600 hover:text-blue-700 ml-1 whitespace-nowrap" %>
+    </div>
+  </section>
 
   <%= render "pages/home/why_broken" %>
   <%= render "pages/home/comparison" %>
