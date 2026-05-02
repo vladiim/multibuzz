@@ -2,10 +2,10 @@
 title: "How to Use Different Attribution Models by Funnel Stage"
 slug: "funnel-stage-attribution"
 description: "Learn the tiered attribution approach: first-touch for awareness, linear/participation for consideration, last-touch for conversion. This framework produces more accurate funnel forecasts than any single attribution model."
-published_at:
+published_at: 2026-05-02
 section: forecasting
 section_order: 2
-status: draft
+status: published
 priority: P0
 category: "Funnel Forecasting"
 tags:
@@ -101,15 +101,18 @@ Different funnel stages answer different questions—and different questions nee
 
 First-touch attribution credits the channel that **introduced** a prospect to your business—their first recorded interaction.
 
-```
-ToFU Attribution:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Journey: LinkedIn → Blog → Webinar → Email → Demo → Purchase
-            │
-            ▼
-         100% credit to LinkedIn (first touch)
-```
+<%= render "articles/embeds/journey_steps",
+  title: "TOFU ATTRIBUTION (FIRST-TOUCH)",
+  steps: [
+    { day: "Touch 1", label: "LinkedIn", role: :primary,    percent: "100%", sublabel: "first touch" },
+    { day: "Touch 2", label: "Blog",     role: :inactive,   percent: "0%" },
+    { day: "Touch 3", label: "Webinar",  role: :inactive,   percent: "0%" },
+    { day: "Touch 4", label: "Email",    role: :inactive,   percent: "0%" },
+    { day: "Touch 5", label: "Demo",     role: :inactive,   percent: "0%" },
+    { day: "Touch 6", label: "Purchase", role: :conversion }
+  ],
+  caption: "First-touch credits the introducer (LinkedIn). Everything in between is invisible at the ToFU stage &mdash; that's the point."
+%>
 
 ### Which Channels Win at ToFU
 
@@ -169,10 +172,7 @@ class TofuAttribution
 end
 ```
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: ToFU Channel Distribution Chart</p>
-  <p class="text-yellow-700 text-sm">Add mbuzz pie chart showing typical first-touch channel distribution. Highlight how Paid Social/Organic dominate ToFU while Email/Branded Search are minimal.</p>
-</div>
+<%= render "articles/embeds/tofu_channel_distribution" %>
 
 ## Stage 2: Middle of Funnel (Linear or Participation)
 
@@ -180,36 +180,31 @@ end
 
 **Linear Attribution:** Divides 100% credit equally among all mid-funnel touchpoints.
 
-```
-Linear MoFU (4 touchpoints):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Journey: LinkedIn → Blog → Webinar → Email → Demo
-                      │       │        │
-                      ▼       ▼        ▼
-                    33.3%   33.3%    33.3%  (MoFU touches)
-
-Total: 100%
-```
+<%= render "articles/embeds/journey_steps",
+  title: "LINEAR MOFU CREDIT",
+  steps: [
+    { day: "Touch 1", label: "LinkedIn", role: :inactive,   sublabel: "ToFU" },
+    { day: "Touch 2", label: "Blog",     role: :credited,   percent: "33.3%" },
+    { day: "Touch 3", label: "Webinar",  role: :credited,   percent: "33.3%" },
+    { day: "Touch 4", label: "Email",    role: :credited,   percent: "33.3%" },
+    { day: "Touch 5", label: "Demo",     role: :inactive,   sublabel: "BoFU" }
+  ],
+  caption: "Linear divides 100% MoFU credit equally across all mid-funnel touchpoints. ToFU and BoFU are tracked separately by their own models."
+%>
 
 **Participation Attribution:** Gives 100% credit to each participating channel (total exceeds 100%).
 
-```
-Participation MoFU (4 touchpoints, 3 channels):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Journey: LinkedIn → Blog → Webinar → Email → Demo
-                      │       │        │
-                      ▼       ▼        ▼
-                    100%    100%     100%   (participation)
-
-By Channel:
-  Organic (Blog): 100%
-  Webinar: 100%
-  Email: 100%
-  ─────────────────
-  Total: 300%
-```
+<%= render "articles/embeds/journey_steps",
+  title: "PARTICIPATION MOFU CREDIT",
+  steps: [
+    { day: "Touch 1", label: "LinkedIn", role: :inactive,   sublabel: "ToFU" },
+    { day: "Touch 2", label: "Blog",     role: :primary,    percent: "100%" },
+    { day: "Touch 3", label: "Webinar",  role: :primary,    percent: "100%" },
+    { day: "Touch 4", label: "Email",    role: :primary,    percent: "100%" },
+    { day: "Touch 5", label: "Demo",     role: :inactive,   sublabel: "BoFU" }
+  ],
+  caption: "Participation gives 100% to <em>each</em> channel that touched the journey. Totals exceed 100% on purpose &mdash; the goal is to see which channels co-occur, not divide budget."
+%>
 
 ### When to Use Each
 
@@ -295,10 +290,7 @@ class MofuAttribution
 end
 ```
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Participation vs Linear Comparison</p>
-  <p class="text-yellow-700 text-sm">Add mbuzz comparison showing the same journey with Linear (sums to 100%) and Participation (sums to 180%). Visualize how participation reveals the overlap between email and content that linear hides.</p>
-</div>
+<%= render "articles/embeds/participation_vs_linear" %>
 
 ## Stage 3: Bottom of Funnel (Last-Touch)
 
@@ -306,15 +298,18 @@ end
 
 Last-touch attribution credits the final touchpoint before conversion—the channel that **closed** the deal.
 
-```
-BoFU Attribution:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Journey: LinkedIn → Blog → Webinar → Email → Demo → Purchase
-                                                        │
-                                                        ▼
-                              100% credit to Demo (last touch before conversion)
-```
+<%= render "articles/embeds/journey_steps",
+  title: "BOFU ATTRIBUTION (LAST-TOUCH)",
+  steps: [
+    { day: "Touch 1", label: "LinkedIn", role: :inactive, percent: "0%" },
+    { day: "Touch 2", label: "Blog",     role: :inactive, percent: "0%" },
+    { day: "Touch 3", label: "Webinar",  role: :inactive, percent: "0%" },
+    { day: "Touch 4", label: "Email",    role: :inactive, percent: "0%" },
+    { day: "Touch 5", label: "Demo",     role: :primary,  percent: "100%", sublabel: "last touch" },
+    { day: "Touch 6", label: "Purchase", role: :conversion }
+  ],
+  caption: "Last-touch credits the closing channel (Demo). Earlier touches are tracked separately by the ToFU and MoFU models."
+%>
 
 ### Which Channels Win at BoFU
 
@@ -453,38 +448,19 @@ end
 
 ### Example: Full-Funnel Channel Analysis
 
-```
-Full-Funnel Attribution Example
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**Journey:** Facebook Ad (Day 1) → Blog (Day 5) → Webinar (Day 12) → Email × 2 (Days 18–20) → Demo Request (Day 25). **Stage weights:** ToFU 30% / MoFU 30% / BoFU 40%.
 
-Journey: Facebook Ad → Blog → Webinar → Email (x2) → Demo Request
-         (Day 1)       (Day 5)  (Day 12)  (Day 18-20)  (Day 25)
+| Channel | ToFU | MoFU | BoFU | **Total** | Role |
+|---|---|---|---|---|---|
+| Paid Social | 30.0% | 0% | 0% | **30.0%** | introducer |
+| Organic / Content | 0% | 10.0% | 0% | **10.0%** | consideration driver |
+| Webinar | 0% | 10.0% | 0% | **10.0%** | consideration driver |
+| Email | 0% | 10.0% | 0% | **10.0%** | nurturer |
+| Demo | 0% | 0% | 40.0% | **40.0%** | closer |
+| **Total** | **30.0%** | **30.0%** | **40.0%** | **100%** | |
 
-Stage Weights: ToFU 30% | MoFU 30% | BoFU 40%
+Each channel's role becomes legible — Paid Social introduces, Demo closes, Content + Webinar together carry the 20% consideration job. A single-model report would have piled most of this on whichever channel was last-clicked.
 
-┌─────────────────┬──────────┬──────────┬──────────┬──────────┐
-│ Channel         │ ToFU     │ MoFU     │ BoFU     │ Total    │
-├─────────────────┼──────────┼──────────┼──────────┼──────────┤
-│ Paid Social     │ 30.0%    │ 0%       │ 0%       │ 30.0%    │
-│ Organic/Content │ 0%       │ 10.0%    │ 0%       │ 10.0%    │
-│ Webinar         │ 0%       │ 10.0%    │ 0%       │ 10.0%    │
-│ Email           │ 0%       │ 10.0%    │ 0%       │ 10.0%    │
-│ Demo            │ 0%       │ 0%       │ 40.0%    │ 40.0%    │
-├─────────────────┼──────────┼──────────┼──────────┼──────────┤
-│ Total           │ 30.0%    │ 30.0%    │ 40.0%    │ 100%     │
-└─────────────────┴──────────┴──────────┴──────────┴──────────┘
-
-Insights:
-• Paid Social gets 30% (all from ToFU) — introducer role
-• Demo gets 40% (all from BoFU) — closer role
-• Email gets 10% (all from MoFU) — nurturing role
-• Content + Webinar together = 20% — consideration drivers
-```
-
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: mbuzz Full-Funnel Dashboard</p>
-  <p class="text-yellow-700 text-sm">Add screenshot showing mbuzz's tiered attribution view with three columns (ToFU, MoFU, BoFU) and aggregated full-funnel credit. Include the stage weight configuration options.</p>
-</div>
 
 ## Configuring Stage Weights
 
@@ -573,10 +549,6 @@ Use concrete, trackable events as stage boundaries.
 
 Your funnel changes. New channels, new content, seasonal patterns. Review and adjust stage weights quarterly.
 
-<div class="bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 my-6 rounded-lg not-prose">
-  <p class="text-yellow-800 font-bold mb-2">📌 PLACEHOLDER: Stage Boundary Configuration</p>
-  <p class="text-yellow-700 text-sm">Add mbuzz screenshot showing how to configure stage transition events (e.g., "ToFU ends at: Email signup, Account creation"). Include examples for different business types.</p>
-</div>
 
 ## Summary
 

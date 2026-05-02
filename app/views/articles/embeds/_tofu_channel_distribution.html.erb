@@ -1,0 +1,64 @@
+<%# ToFU first-touch channel distribution. Illustrative shares from typical practitioner data. %>
+
+<%
+  channels = [
+    { name: "Paid Social",      share: 38, role: "introducer", color: "indigo" },
+    { name: "Organic Search",   share: 24, role: "introducer", color: "indigo" },
+    { name: "Display",          share: 14, role: "introducer", color: "indigo" },
+    { name: "Content Marketing",share: 12, role: "introducer", color: "indigo" },
+    { name: "Direct",           share: 8,  role: "mixed",      color: "amber" },
+    { name: "Email",            share: 2,  role: "closer",     color: "slate" },
+    { name: "Branded Search",   share: 2,  role: "closer",     color: "slate" }
+  ]
+  bar_classes = {
+    "indigo" => "bg-indigo-500",
+    "amber"  => "bg-amber-500",
+    "slate"  => "bg-slate-300"
+  }
+  badge_classes = {
+    "indigo" => "bg-indigo-100 text-indigo-700",
+    "amber"  => "bg-amber-100 text-amber-800",
+    "slate"  => "bg-slate-200 text-slate-600"
+  }
+%>
+
+<figure class="my-12 not-prose">
+  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+
+    <div class="px-6 sm:px-8 pt-8 pb-6 border-b border-slate-200">
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">First-touch share by channel</h2>
+      <p class="text-slate-500 text-sm sm:text-base mt-1">The introducers (Paid Social, Organic, Display, Content) dominate ToFU. The closers (Email, Branded Search) barely show up &mdash; because they're not introducing anyone.</p>
+    </div>
+
+    <div class="px-4 sm:px-8 py-6 bg-gradient-to-b from-slate-50/60 to-white">
+      <div class="space-y-2.5">
+        <% channels.each do |c| %>
+          <div class="grid grid-cols-[8rem_1fr_3.5rem] sm:grid-cols-[10rem_1fr_4rem] items-center gap-x-3 sm:gap-x-4">
+            <div class="text-xs sm:text-sm font-semibold text-slate-700 text-right"><%= c[:name] %></div>
+            <div class="h-6 sm:h-7 bg-slate-100 rounded-sm overflow-hidden">
+              <div class="<%= bar_classes[c[:color]] %> h-full rounded-sm" style="width: <%= (c[:share].to_f / 40 * 100).round %>%;"></div>
+            </div>
+            <div class="text-xs sm:text-sm font-mono font-semibold text-slate-700 text-right"><%= c[:share] %>%</div>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-x-5 gap-y-1.5 mt-5 pt-4 border-t border-slate-200 text-[11px] sm:text-xs">
+        <span class="inline-flex items-center gap-1.5"><span class="<%= badge_classes['indigo'] %> px-2 py-0.5 rounded-full font-semibold">INTRODUCERS</span>cold-audience reach</span>
+        <span class="inline-flex items-center gap-1.5"><span class="<%= badge_classes['amber'] %> px-2 py-0.5 rounded-full font-semibold">MIXED</span>WOM, brand recall</span>
+        <span class="inline-flex items-center gap-1.5"><span class="<%= badge_classes['slate'] %> px-2 py-0.5 rounded-full font-semibold">CLOSERS</span>require existing relationship</span>
+      </div>
+    </div>
+
+    <div class="px-6 sm:px-8 py-5 bg-slate-50 border-t border-slate-200">
+      <p class="text-sm text-slate-700 leading-relaxed">
+        <strong class="text-slate-900">If your last-click report says Email and Branded Search are your top channels, this is the report that explains why that's misleading.</strong>
+        Those channels capture demand. They don't create it. The introducers in this chart did.
+      </p>
+    </div>
+
+  </div>
+  <figcaption class="text-xs text-slate-500 mt-3 text-center">
+    Illustrative shares for B2C / DTC mix &middot; B2B mixes shift toward Content + LinkedIn-led ToFU
+  </figcaption>
+</figure>
