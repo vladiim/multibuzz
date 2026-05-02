@@ -5,7 +5,13 @@
     kicker: "mbuzz vs Dreamdata",
     headline: "Attribution answers this week. Not in 8 weeks.",
     subhead: "Dreamdata is the B2B journey platform — best-in-class journey visualization, deep CRM integration, LinkedIn audience activation. It starts at $750/mo and takes 4–8 weeks to deploy. mbuzz does four things — eight models, a SQL-like DSL, spend intelligence, LTV mode. Days to set up. $0 to start.",
-    primary_cta_text: "Start free" %>
+    primary_cta_text: "Get 30,000 events free" %>
+
+  <%= render "landing_pages/lp_pricing_card",
+    competitor_name: "Dreamdata",
+    competitor_price: "$750",
+    bg_variant: "white",
+    mbuzz_subtext: "Start free. Paid plans from $29/mo — that's 26x cheaper than Dreamdata's entry point." %>
 
   <%= render "landing_pages/lp_stat_banner" %>
 
@@ -134,13 +140,6 @@
       }
     ] %>
 
-  <%= render "landing_pages/lp_pricing_card",
-    competitor_name: "Dreamdata",
-    competitor_price: "$750",
-    bg_variant: "white",
-    mbuzz_subtext: "Start free. Paid plans from $29/mo — that's 26x cheaper than Dreamdata's entry point." %>
-
   <%= render "landing_pages/lp_bottom_cta",
-    subhead: "Explore the live demo with sample data. Or sign up free and connect your own channels in days.",
-    secondary_cta_text: "Start for free" %>
+    subhead: "Explore the live demo with sample data. Or sign up free and connect your own channels in days." %>
 </div>
