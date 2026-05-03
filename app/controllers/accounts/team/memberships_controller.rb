@@ -3,7 +3,6 @@
 module Accounts
   module Team
     class MembershipsController < Accounts::BaseController
-      skip_marketing_analytics
       before_action :require_admin
 
       ERROR_HANDLERS = {

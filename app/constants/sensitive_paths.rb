@@ -10,28 +10,26 @@
 # instrumented in GA4. URL scrubbing of those identifiers happens in the
 # GTM tag config, not here.
 module SensitivePaths
-  ADMIN_NAMESPACE      = %r{\A/admin(/|\z)}
-  API_KEYS_ROUTE       = %r{\A/accounts/[^/]+/api_keys}
-  BILLING_ROUTE        = %r{\A/accounts/[^/]+/billing}
-  INTEGRATIONS_ROUTE   = %r{\A/accounts/[^/]+/integrations}
-  TEAM_ROUTE           = %r{\A/accounts/[^/]+/team}
-  ONBOARDING_INSTALL   = %r{\A/onboarding/install}
-  IDENTITIES_ROUTE     = %r{\A/dashboard/identities}
-  CONVERSION_DETAIL    = %r{\A/dashboard/conversion_detail}
-  EXPORTS_ROUTE        = %r{\A/dashboard/exports}
-  EDIT_ACTION          = %r{/edit\z}
-  API_KEY_LITERAL      = /sk_(live|test)_/
-  VISITOR_PREFIX_ID    = /\bvis_[a-z0-9]{8,}/
-  IDENTITY_PREFIX_ID   = /\bidt_[a-z0-9]{8,}/
-  CREDENTIAL_PREFIX_ID = /\bcred_[a-z0-9]{8,}/
+  ADMIN_NAMESPACE          = %r{\A/admin(/|\z)}
+  API_KEYS_ROUTE           = %r{\A/accounts/[^/]+/api_keys}
+  BILLING_ROUTE            = %r{\A/accounts/[^/]+/billing}
+  INTEGRATIONS_ROUTE       = %r{\A/accounts/[^/]+/integrations}
+  ONBOARDING_API_KEY_PAGES = %r{\A/onboarding/(install|setup)(/|\z)}
+  IDENTITIES_ROUTE         = %r{\A/dashboard/identities}
+  CONVERSION_DETAIL        = %r{\A/dashboard/conversion_detail}
+  EXPORTS_ROUTE            = %r{\A/dashboard/exports}
+  EDIT_ACTION              = %r{/edit\z}
+  API_KEY_LITERAL          = /sk_(live|test)_/
+  VISITOR_PREFIX_ID        = /\bvis_[a-z0-9]{8,}/
+  IDENTITY_PREFIX_ID       = /\bidt_[a-z0-9]{8,}/
+  CREDENTIAL_PREFIX_ID     = /\bcred_[a-z0-9]{8,}/
 
   PATTERNS = [
     ADMIN_NAMESPACE,
     API_KEYS_ROUTE,
     BILLING_ROUTE,
     INTEGRATIONS_ROUTE,
-    TEAM_ROUTE,
-    ONBOARDING_INSTALL,
+    ONBOARDING_API_KEY_PAGES,
     IDENTITIES_ROUTE,
     CONVERSION_DETAIL,
     EXPORTS_ROUTE,

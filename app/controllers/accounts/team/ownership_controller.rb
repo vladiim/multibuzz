@@ -3,7 +3,6 @@
 module Accounts
   module Team
     class OwnershipController < Accounts::BaseController
-      skip_marketing_analytics
       before_action :require_owner
 
       def transfer

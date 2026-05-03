@@ -40,6 +40,30 @@ class MarketingAnalyticsEnabledTest < ActiveSupport::TestCase
     refute enabled_for(EnabledController, "/onboarding/install")
   end
 
+  test "marketing_analytics_enabled? returns false on onboarding setup path" do
+    refute enabled_for(EnabledController, "/onboarding/setup")
+  end
+
+  test "marketing_analytics_enabled? returns true on onboarding root path" do
+    assert enabled_for(EnabledController, "/onboarding")
+  end
+
+  test "marketing_analytics_enabled? returns true on onboarding verify path" do
+    assert enabled_for(EnabledController, "/onboarding/verify")
+  end
+
+  test "marketing_analytics_enabled? returns true on onboarding conversion path" do
+    assert enabled_for(EnabledController, "/onboarding/conversion")
+  end
+
+  test "marketing_analytics_enabled? returns true on onboarding attribution path" do
+    assert enabled_for(EnabledController, "/onboarding/attribution")
+  end
+
+  test "marketing_analytics_enabled? returns true on team paths" do
+    assert enabled_for(EnabledController, "/accounts/acct_abc/team")
+  end
+
   test "marketing_analytics_enabled? returns false on identity show path" do
     refute enabled_for(EnabledController, "/dashboard/identities/idt_abc12345")
   end

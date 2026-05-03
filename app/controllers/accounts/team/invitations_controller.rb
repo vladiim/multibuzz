@@ -3,7 +3,6 @@
 module Accounts
   module Team
     class InvitationsController < Accounts::BaseController
-      skip_marketing_analytics
       before_action :require_admin
 
       def create
