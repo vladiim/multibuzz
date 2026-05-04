@@ -23,12 +23,12 @@
             </div>
 
             <div class="divide-y divide-gray-200">
-              <% if Rails.env.production? %>
+              <% if current_account.feature_enabled?(FeatureFlags::GOOGLE_ADS_INTEGRATION) %>
+                <%= render "google_ads_card" %>
+              <% else %>
                 <%= render "coming_soon_card",
                   platform: "Google Ads",
                   notified: @notified_platforms.include?("Google Ads") %>
-              <% else %>
-                <%= render "google_ads_card" %>
               <% end %>
 
               <% if current_account.feature_enabled?(FeatureFlags::META_ADS_INTEGRATION) %>
