@@ -25,7 +25,7 @@ module Events
     def visitor_result
       @visitor_result ||= Visitors::LookupService.new(
         account,
-        event_data["visitor_id"],
+        event_visitor_id,
         is_test: is_test,
         device_fingerprint: device_fingerprint
       ).call
@@ -61,7 +61,7 @@ module Events
     end
 
     def event_visitor_id
-      event_data["visitor_id"] || event_data[:visitor_id]
+      @event_visitor_id ||= Visitor.normalize_id(event_data["visitor_id"] || event_data[:visitor_id])
     end
 
     def client_session_id

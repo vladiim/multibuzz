@@ -61,6 +61,7 @@ module Sessions
 
     def validation_error
       return error_result([ "visitor_id is required" ]) unless visitor_id.present?
+      return error_result([ "visitor_id format invalid" ]) unless visitor_id.match?(Visitor::Validations::ID_FORMAT)
       return error_result([ "session_id is required" ]) unless session_id.present?
       error_result([ "url is required" ]) unless url.present?
     end
@@ -101,7 +102,7 @@ module Sessions
     end
 
     def visitor_id
-      params[:visitor_id]
+      @visitor_id ||= Visitor.normalize_id(params[:visitor_id])
     end
 
     def session_id

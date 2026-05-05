@@ -148,6 +148,42 @@ class VisitorTest < ActiveSupport::TestCase
     assert_includes recent, visitor
   end
 
+  # --- normalize_id ---
+
+  test "normalize_id strips any number of leading and trailing double-quotes" do
+    canonical = "dc8e02e6eacea041129965931c82c60b6d8b0043eff135cf20d2f95f7779a794"
+    [ 0, 1, 2, 5, 10, 19, 100 ].each do |count|
+      wrapped = ('"' * count) + canonical + ('"' * count)
+
+      assert_equal canonical, Visitor.normalize_id(wrapped),
+        "expected #{count} symmetric leading/trailing quotes to strip to canonical"
+    end
+  end
+
+  test "normalize_id strips asymmetric leading and trailing double-quotes" do
+    canonical = "abc123"
+
+    assert_equal canonical, Visitor.normalize_id('"""' + canonical)
+    assert_equal canonical, Visitor.normalize_id(canonical + '""""""""')
+    assert_equal canonical, Visitor.normalize_id('"' + canonical + '""""')
+  end
+
+  test "normalize_id leaves unquoted ids untouched" do
+    assert_equal "abc123", Visitor.normalize_id("abc123")
+    assert_equal "vis_abc.123:xyz-9", Visitor.normalize_id("vis_abc.123:xyz-9")
+  end
+
+  test "normalize_id does not strip embedded quotes" do
+    assert_equal 'a"b', Visitor.normalize_id('a"b')
+    assert_equal 'a"b', Visitor.normalize_id('"""a"b"""')
+  end
+
+  test "normalize_id is safe for nil and blank values" do
+    assert_nil Visitor.normalize_id(nil)
+    assert_equal "", Visitor.normalize_id("")
+    assert_equal "", Visitor.normalize_id('""""')
+  end
+
   private
 
   def visitor

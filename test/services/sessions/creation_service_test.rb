@@ -1008,6 +1008,45 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
     assert_equal "direct", session.channel
   end
 
+  # --- visitor_id quote-wrapping defence ---
+
+  test "strips arbitrary leading and trailing double-quote wrappings from visitor_id" do
+    canonical = "dc8e02e6eacea041129965931c82c60b6d8b0043eff135cf20d2f95f7779a794"
+
+    [ [ 1, 1 ], [ 7, 7 ], [ 19, 19 ], [ 3, 14 ], [ 0, 5 ] ].each_with_index do |(leading, trailing), index|
+      wrapped = ('"' * leading) + canonical + ('"' * trailing)
+      run_params = {
+        visitor_id: wrapped,
+        session_id: "sess_quote_wrapped_#{index}",
+        url: "https://example.com/landing"
+      }
+
+      run_result = Sessions::CreationService.new(account, run_params).call
+
+      assert run_result[:success], "expected leading=#{leading} trailing=#{trailing} to succeed, got #{run_result[:errors]}"
+      assert_equal canonical, run_result[:visitor_id]
+    end
+
+    assert account.visitors.exists?(visitor_id: canonical)
+  end
+
+  test "returns 422 with boundary format error before reaching model validation when visitor_id has invalid characters" do
+    malformed_params = {
+      visitor_id: "foo bar+baz",
+      session_id: "sess_malformed_vid",
+      url: "https://example.com/landing"
+    }
+
+    malformed_result = Sessions::CreationService.new(account, malformed_params).call
+
+    assert_not malformed_result[:success]
+    # Boundary check returns "visitor_id format invalid" — proves we short-circuited before
+    # find_or_create_by! could raise RecordInvalid (which would be reported via Rails.error.report).
+    assert_includes malformed_result[:errors].join, "visitor_id format invalid"
+    assert_not_includes malformed_result[:errors].join, "Record invalid"
+    assert_not account.visitors.exists?(visitor_id: "foo bar+baz")
+  end
+
   private
 
   def result

@@ -422,6 +422,36 @@ class Events::ProcessingServiceTest < ActiveSupport::TestCase
     assert_not_equal first[:event].id, second[:event].id
   end
 
+  # --- visitor_id quote-wrapping defence ---
+
+  test "should resolve any-count quote-wrapped visitor_id to existing canonical visitor" do
+    canonical_id = "dc8e02e6eacea041129965931c82c60b6d8b0043eff135cf20d2f95f7779a794"
+    canonical_visitor = account.visitors.create!(visitor_id: canonical_id)
+    account.sessions.create!(
+      visitor: canonical_visitor,
+      session_id: "sess_quote_wrapped_event",
+      started_at: Time.current
+    )
+
+    [ [ 2, 2 ], [ 11, 11 ], [ 1, 17 ], [ 0, 4 ] ].each do |leading, trailing|
+      wrapped_id = ('"' * leading) + canonical_id + ('"' * trailing)
+      wrapped_event_data = {
+        "event_type" => "page_view",
+        "visitor_id" => wrapped_id,
+        "session_id" => "sess_quote_wrapped_event",
+        "timestamp" => "2025-11-07T10:30:45Z",
+        "properties" => { "url" => "https://example.com/page" }
+      }
+
+      assert_no_difference -> { Visitor.count } do
+        wrapped_result = Events::ProcessingService.new(account, wrapped_event_data).call
+
+        assert wrapped_result[:success], "expected leading=#{leading} trailing=#{trailing} to resolve, got #{wrapped_result[:errors]}"
+        assert_equal canonical_visitor, wrapped_result[:event].visitor
+      end
+    end
+  end
+
   test "nil request_id does not trigger dedup" do
     first_data = valid_event_data.merge("request_id" => nil)
     first = Events::ProcessingService.new(account, first_data).call
