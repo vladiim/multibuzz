@@ -260,7 +260,7 @@ GEM
       net-smtp
     marcel (1.1.0)
     matrix (0.4.3)
-    mbuzz (0.7.5)
+    mbuzz (0.8.2)
       rack (>= 2.0)
     mcp (0.10.0)
       json-schema (>= 4.1)
@@ -335,7 +335,7 @@ GEM
       nio4r (~> 2.0)
     raabro (1.4.0)
     racc (1.8.1)
-    rack (3.2.5)
+    rack (3.2.6)
     rack-cors (3.0.0)
       logger
       rack (>= 3.0.14)
@@ -566,7 +566,7 @@ DEPENDENCIES
   importmap-rails
   jbuilder
   kamal
-  mbuzz (~> 0.7.5)
+  mbuzz (~> 0.8.2)
   memory_profiler
   minitest (~> 5.0)
   ostruct
