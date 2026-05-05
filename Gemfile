@@ -9,7 +9,7 @@ gem "propshaft"
 # Use postgresql as the database for Active Record
 gem "pg", "~> 1.1"
 # TimescaleDB for time-series optimization [https://github.com/jonatas/timescaledb]
-gem "timescaledb", "~> 0.2.0"
+gem "timescaledb", "~> 0.3.3"
 # OpenStruct is required by timescaledb gem but not included in Ruby 3.x by default
 gem "ostruct"
 # Use the Puma web server [https://github.com/puma/puma]
