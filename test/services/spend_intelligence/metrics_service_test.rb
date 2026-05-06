@@ -120,6 +120,29 @@ module SpendIntelligence
         "compare must reflect first_touch only"
     end
 
+    test "totals carry platform_revenue, gap, and gap_pct" do
+      totals = service.call[:data][:totals]
+
+      assert_predicate totals[:platform_revenue], :positive?
+      assert_in_delta(totals[:attributed_revenue] - totals[:platform_revenue], totals[:gap], 0.01)
+      assert_kind_of Numeric, totals[:gap_pct]
+    end
+
+    test "by_channel rows carry platform_revenue, gap, and gap_pct" do
+      paid_search = service.call[:data][:by_channel].find { |r| r[:channel] == Channels::PAID_SEARCH }
+
+      assert_kind_of Numeric, paid_search[:platform_revenue]
+      assert_kind_of Numeric, paid_search[:gap]
+      assert_in_delta(paid_search[:attributed_revenue] - paid_search[:platform_revenue], paid_search[:gap], 0.01)
+    end
+
+    test "compare data does not include gap fields" do
+      data = MetricsService.new(account, filter_params.merge(models: [ attribution_model, first_touch_model ])).call[:data]
+
+      refute_includes data[:compare][:totals].keys, :gap
+      refute_includes data[:compare][:by_channel].first.keys, :gap
+    end
+
     private
 
     def service

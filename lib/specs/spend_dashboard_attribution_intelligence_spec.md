@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-06
 **Priority:** P0 (Spend dashboard is the second-most-visited dashboard surface; today it is structurally broken and competitively undifferentiated.)
-**Status:** In Progress — Phases 1 and 2 shipped (TZ fix, accounting mode, Meta job dispatch, Google TZ capture, model selector + comparison mode + delta columns + dashed compare line); Phases 3–6 pending
+**Status:** In Progress — Phases 1 and 2 shipped; Phase 3 in progress (3.1 query + service wiring shipped; 3.2–3.5 pending); Phases 4–6 pending
 **Branch:** `feature/spend-dashboard-attribution-intelligence`
 
 ---
@@ -307,9 +307,9 @@ period-delta math, sync freshness badges, and the Cash/Accrual + granularity pil
 
 ### Phase 3 — Platform vs attributed gap
 
-- [ ] **3.1** `PlatformVsAttributedQuery` returning per-channel `{ platform_revenue_micros, attributed_revenue_micros, gap_micros, gap_pct }`
-- [ ] **3.2** Add three columns to channel table: Platform Rev, Attributed Rev, Gap
-- [ ] **3.3** Add hero tile "Platform vs Attributed" with tone color when gap >= 15% absolute
+- [x] **3.1** `PlatformVsAttributedQuery` returns per-channel `{ platform_revenue, gap, gap_pct }` (dollars, not micros — view consumers don't deal in micros). `attributed_revenue` is intentionally omitted from this query's shape because `ChannelMetricsQuery` already returns it; `MetricsService#by_channel_with_gap` merges the two so each row carries `attributed_revenue` (from ChannelMetrics) + `platform_revenue / gap / gap_pct` (from PlatformVsAttributed). `MetricsService#primary_totals` rolls up `platform_revenue / gap / gap_pct` into hero totals. Compare data intentionally excludes gap fields (gap is primary-model-only per spec).
+- [ ] **3.2** Add three columns to channel table: Platform Rev (new), Attributed Rev (rename existing Revenue header), Gap %. Drop the awkward "vs Platform ROAS" subtitle.
+- [ ] **3.3** Hero strip: replace MER tile with new "Platform vs Attributed" tile (Option C — MER demoted to sub-line under Attributed Revenue tile). Tone amber when `|gap_pct| >= 15`. Responsive wrapping preserved (`grid-cols-2 sm:grid-cols-3 lg:grid-cols-5` with `col-span-2 sm:col-span-1` on the gap tile).
 - [ ] **3.4** Tests: query correctness; tile copy on tone thresholds; gap when platform revenue is zero
 - [ ] **3.5** Marketing-safe copy review on the gap framing (no accusatory language; "different methodologies")
 
@@ -351,6 +351,7 @@ period-delta math, sync freshness badges, and the Cash/Accrual + granularity pil
 | 1.4–1.5 | `916c385` | feat(spend): add cash/accrual accounting mode to spend timeseries |
 | 2.3–2.5 | `b57d45a` | feat(spend): per-model metrics with comparison shape in MetricsService |
 | 2.1, 2.2, 2.6, 2.7, 2.8 | `bd364d0` | feat(spend): model selector + comparison columns + dashed compare line |
+| 3.1 | _pending_ | feat(spend): platform-vs-attributed gap query + metrics-service wiring |
 
 ---
 

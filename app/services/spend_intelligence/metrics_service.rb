@@ -28,8 +28,8 @@ module SpendIntelligence
 
     def primary_data
       {
-        totals: totals_for(primary_metrics),
-        by_channel: primary_metrics.call,
+        totals: primary_totals,
+        by_channel: by_channel_with_gap(primary_metrics, primary_platform_metrics),
         time_series: primary_breakdowns.time_series,
         by_device: primary_breakdowns.by_device,
         by_hour: primary_breakdowns.by_hour,
@@ -42,13 +42,17 @@ module SpendIntelligence
       return nil unless compare_attribution_model
 
       {
-        totals: totals_for(compare_metrics),
+        totals: base_totals_for(compare_metrics),
         by_channel: compare_metrics.call,
         time_series: compare_breakdowns.time_series
       }
     end
 
-    def totals_for(metrics)
+    def primary_totals
+      base_totals_for(primary_metrics).merge(primary_platform_metrics.totals)
+    end
+
+    def base_totals_for(metrics)
       {
         blended_roas: metrics.blended_roas,
         total_spend_micros: metrics.total_spend_micros,
@@ -60,12 +64,18 @@ module SpendIntelligence
       }
     end
 
+    def by_channel_with_gap(channel_metrics, platform_metrics)
+      gap_by_channel = platform_metrics.by_channel
+      channel_metrics.call.map { |row| row.merge(gap_by_channel[row[:channel]] || {}) }
+    end
+
     # --- Per-model query objects ---
 
     def primary_metrics = @primary_metrics ||= channel_metrics_for(primary_credits_scope)
     def compare_metrics = @compare_metrics ||= channel_metrics_for(compare_credits_scope)
     def primary_breakdowns = @primary_breakdowns ||= breakdowns_for(primary_credits_scope)
     def compare_breakdowns = @compare_breakdowns ||= breakdowns_for(compare_credits_scope)
+    def primary_platform_metrics = @primary_platform_metrics ||= Queries::PlatformVsAttributedQuery.new(spend_scope: spend_scope, credits_scope: primary_credits_scope)
 
     def channel_metrics_for(credits_scope)
       Queries::ChannelMetricsQuery.new(spend_scope: spend_scope, credits_scope: credits_scope)
