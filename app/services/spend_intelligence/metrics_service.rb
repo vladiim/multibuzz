@@ -52,8 +52,15 @@ module SpendIntelligence
       @breakdowns ||= Queries::BreakdownsQuery.new(
         spend_scope: spend_scope,
         credits_scope: credits_scope,
-        timezone_offset: timezone_offset
+        timezone_offset: timezone_offset,
+        timezone: report_timezone
       )
+    end
+
+    def report_timezone
+      @report_timezone ||= account.ad_platform_connections.active_connections
+        .find { |c| c.settings&.dig("timezone_name").present? }
+        &.settings&.dig("timezone_name")
     end
 
     def payback_data

@@ -5,10 +5,11 @@ module SpendIntelligence
     class BreakdownsQuery
       MICRO_UNIT = AdSpendRecord::MICRO_UNIT
 
-      def initialize(spend_scope:, credits_scope:, timezone_offset: nil)
+      def initialize(spend_scope:, credits_scope:, timezone_offset: nil, timezone: nil)
         @spend_scope = spend_scope
         @credits_scope = credits_scope
         @timezone_offset = timezone_offset || 0
+        @timezone = timezone
       end
 
       def time_series
@@ -30,7 +31,7 @@ module SpendIntelligence
 
       private
 
-      attr_reader :spend_scope, :credits_scope, :timezone_offset
+      attr_reader :spend_scope, :credits_scope, :timezone_offset, :timezone
 
       # --- Time Series ---
 
@@ -53,7 +54,19 @@ module SpendIntelligence
 
       def daily_revenue
         @daily_revenue ||= credits_scope.joins(:conversion)
-          .group(Arel.sql("DATE(conversions.converted_at)")).sum(:revenue_credit)
+          .group(conversion_date_expr).sum(:revenue_credit)
+      end
+
+      def conversion_date_expr
+        return Arel.sql("DATE(conversions.converted_at)") if timezone.blank?
+
+        # converted_at is `timestamp without time zone` storing UTC values.
+        # First reinterpret as UTC (produces timestamptz), then shift to the
+        # report timezone, then extract the calendar date.
+        Arel.sql(ActiveRecord::Base.sanitize_sql_array([
+          "DATE((conversions.converted_at AT TIME ZONE 'UTC') AT TIME ZONE ?)",
+          timezone
+        ]))
       end
 
       # --- Device ---
