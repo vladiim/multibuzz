@@ -158,7 +158,60 @@ module SpendIntelligence
           "expected revenue on April 14 (touchpoint date in PT), got #{revenue_by_date.inspect}")
       end
 
+      test "time_series with granularity weekly groups by ISO week start" do
+        seed_three_dates_across_two_weeks
+
+        result = weekly_query.time_series
+        dates = result.map { |t| t[:date] }
+
+        assert_equal 2, dates.size
+        assert_includes dates, "2026-04-13"
+        assert_includes dates, "2026-04-20"
+      end
+
+      test "time_series with granularity monthly collapses dates within a month" do
+        seed_three_dates_across_two_weeks
+
+        result = monthly_query.time_series
+        dates = result.map { |t| t[:date] }
+
+        assert_equal 1, dates.size
+        assert_equal "2026-04-01", dates.first
+      end
+
       private
+
+      ALL_APRIL_DATES = [ Date.new(2026, 4, 13), Date.new(2026, 4, 15), Date.new(2026, 4, 20) ].freeze
+
+      def seed_three_dates_across_two_weeks
+        account.attribution_credits.delete_all
+        account.conversions.delete_all
+        account.ad_spend_records.delete_all
+
+        ALL_APRIL_DATES.each do |date|
+          AdSpendRecord.create!(
+            account: account,
+            ad_platform_connection: ad_platform_connections(:google_ads),
+            spend_date: date, spend_hour: 14, channel: Channels::PAID_SEARCH,
+            platform_campaign_id: "gran-#{date}", campaign_name: "Granularity",
+            campaign_type: "SEARCH", device: "DESKTOP", spend_micros: 10_000_000,
+            currency: "USD", impressions: 100, clicks: 10,
+            platform_conversions_micros: 0, platform_conversion_value_micros: 0,
+            is_test: false
+          )
+        end
+      end
+
+      def weekly_query  = build_query_for_april(:weekly)
+      def monthly_query = build_query_for_april(:monthly)
+
+      def build_query_for_april(granularity)
+        BreakdownsQuery.new(
+          spend_scope: account.ad_spend_records.where(spend_date: ALL_APRIL_DATES.first..ALL_APRIL_DATES.last),
+          credits_scope: account.attribution_credits.none,
+          granularity: granularity
+        )
+      end
 
       def query(timezone_offset: nil)
         BreakdownsQuery.new(

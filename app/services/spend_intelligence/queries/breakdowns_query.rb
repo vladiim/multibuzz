@@ -6,15 +6,19 @@ module SpendIntelligence
       MICRO_UNIT = AdSpendRecord::MICRO_UNIT
 
       ACCOUNTING_MODES = %i[cash accrual].freeze
+      GRANULARITIES = %i[daily weekly monthly].freeze
+      GRANULARITY_TRUNC_FIELD = { weekly: "week", monthly: "month" }.freeze
 
-      def initialize(spend_scope:, credits_scope:, timezone_offset: nil, timezone: nil, accounting_mode: :cash) # rubocop:disable Metrics/ParameterLists
+      def initialize(spend_scope:, credits_scope:, timezone_offset: nil, timezone: nil, accounting_mode: :cash, granularity: :daily) # rubocop:disable Metrics/ParameterLists
         raise ArgumentError, "unknown accounting_mode #{accounting_mode}" unless ACCOUNTING_MODES.include?(accounting_mode)
+        raise ArgumentError, "unknown granularity #{granularity}" unless GRANULARITIES.include?(granularity)
 
         @spend_scope = spend_scope
         @credits_scope = credits_scope
         @timezone_offset = timezone_offset || 0
         @timezone = timezone
         @accounting_mode = accounting_mode
+        @granularity = granularity
       end
 
       def time_series
@@ -36,7 +40,7 @@ module SpendIntelligence
 
       private
 
-      attr_reader :spend_scope, :credits_scope, :timezone_offset, :timezone, :accounting_mode
+      attr_reader :spend_scope, :credits_scope, :timezone_offset, :timezone, :accounting_mode, :granularity
 
       # --- Time Series ---
 
@@ -54,7 +58,12 @@ module SpendIntelligence
       end
 
       def daily_spend
-        @daily_spend ||= spend_scope.group(:spend_date).sum(:spend_micros)
+        @daily_spend ||= spend_scope.group(spend_date_group_expr).sum(:spend_micros)
+      end
+
+      def spend_date_group_expr
+        trunc_field = GRANULARITY_TRUNC_FIELD[granularity]
+        trunc_field ? Arel.sql("DATE_TRUNC('#{trunc_field}', spend_date)::date") : :spend_date
       end
 
       def all_dates
@@ -81,16 +90,18 @@ module SpendIntelligence
           .group(date_expr_for("sessions.started_at")).sum(:revenue_credit)
       end
 
+      # Stored timestamps are UTC values in `timestamp without time zone` columns.
+      # Reinterpret as UTC, then shift to the report timezone, then extract the
+      # truncated date for the chosen granularity (daily, weekly, monthly).
       def date_expr_for(column)
-        return Arel.sql("DATE(#{column})") if timezone.blank?
+        shifted = timezone.blank? ? column : "(#{column} AT TIME ZONE 'UTC') AT TIME ZONE ?"
+        truncated = truncate_expr(shifted)
+        timezone.blank? ? Arel.sql(truncated) : Arel.sql(ActiveRecord::Base.sanitize_sql_array([ truncated, timezone ]))
+      end
 
-        # Stored timestamps are UTC values in `timestamp without time zone`
-        # columns. Reinterpret as UTC, then shift to the report timezone, then
-        # extract the calendar date.
-        Arel.sql(ActiveRecord::Base.sanitize_sql_array([
-          "DATE((#{column} AT TIME ZONE 'UTC') AT TIME ZONE ?)",
-          timezone
-        ]))
+      def truncate_expr(shifted)
+        trunc_field = GRANULARITY_TRUNC_FIELD[granularity]
+        trunc_field ? "DATE_TRUNC('#{trunc_field}', #{shifted})::date" : "DATE(#{shifted})"
       end
 
       # --- Device ---

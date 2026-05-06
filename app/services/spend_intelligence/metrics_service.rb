@@ -5,6 +5,15 @@ module SpendIntelligence
     CACHE_TTL = 5.minutes
     MICRO_UNIT = AdSpendRecord::MICRO_UNIT
 
+    # Range-length thresholds that pick the default timeseries granularity.
+    # Sorted ascending; the first row whose `max_days` covers the selected range wins.
+    # Anything beyond the last row falls through to the FALLBACK.
+    RANGE_GRANULARITY_TABLE = [
+      { max_days: 30,  granularity: :daily  },
+      { max_days: 120, granularity: :weekly }
+    ].freeze
+    GRANULARITY_FALLBACK = :monthly
+
     def initialize(account, filter_params)
       @account = account
       @filter_params = filter_params
@@ -107,7 +116,8 @@ module SpendIntelligence
         credits_scope: credits_scope,
         timezone_offset: timezone_offset,
         timezone: report_timezone,
-        accounting_mode: timeseries_accounting_mode
+        accounting_mode: timeseries_accounting_mode,
+        granularity: timeseries_granularity
       )
     end
 
@@ -132,6 +142,20 @@ module SpendIntelligence
     def timeseries_accounting_mode
       mode = filter_params[:accounting_mode]&.to_sym
       Queries::BreakdownsQuery::ACCOUNTING_MODES.include?(mode) ? mode : :accrual
+    end
+
+    # URL override (?granularity=daily|weekly|monthly) wins; otherwise default by range length.
+    def timeseries_granularity
+      requested = filter_params[:granularity]&.to_sym
+      Queries::BreakdownsQuery::GRANULARITIES.include?(requested) ? requested : default_granularity_for_range
+    end
+
+    def default_granularity_for_range
+      RANGE_GRANULARITY_TABLE.find { |row| range_days <= row[:max_days] }&.dig(:granularity) || GRANULARITY_FALLBACK
+    end
+
+    def range_days
+      @range_days ||= (date_range_parser.end_date - date_range_parser.start_date).to_i
     end
 
     # --- Payback, NCAC, MER ---
@@ -221,7 +245,8 @@ module SpendIntelligence
         channels: channels.sort,
         models: attribution_models.map(&:id).sort,
         test_mode: test_mode,
-        accounting_mode: timeseries_accounting_mode
+        accounting_mode: timeseries_accounting_mode,
+        granularity: timeseries_granularity
       }
     end
   end

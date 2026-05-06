@@ -1,0 +1,18 @@
+<%# Required locals: label, param, current, options (array of [value, display_text]); optional: tooltip %>
+<%
+  tooltip ||= nil
+%>
+<div class="inline-flex items-center gap-2" <%= "title=\"#{tooltip}\"".html_safe if tooltip %>>
+  <span class="text-xs font-medium text-gray-500 uppercase tracking-wide"><%= label %></span>
+  <div class="inline-flex items-center bg-gray-100 rounded-full p-0.5">
+    <% options.each do |value, display_text| %>
+      <% active = current == value %>
+      <%= link_to display_text,
+            url_for(request.GET.merge(param => value.to_s).symbolize_keys),
+            class: [
+              "px-2.5 py-1 text-xs font-medium rounded-full",
+              (active ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900")
+            ] %>
+    <% end %>
+  </div>
+</div>

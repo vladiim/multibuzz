@@ -145,6 +145,23 @@ module Dashboard
       assert_select "dt", text: "MER", count: 0
     end
 
+    test "granularity URL param is honored by the metrics service via filter_params" do
+      get dashboard_spend_path, params: { granularity: "weekly" }
+
+      assert_response :success
+      assert_select ".bg-white.shadow-sm", text: "W"
+    end
+
+    test "trend chart renders granularity and accounting mode pills" do
+      get dashboard_spend_path
+
+      assert_select "span", text: /Granularity/i
+      assert_select "span", text: /Mode/i
+      [ "D", "W", "M", "Cash", "Accrual" ].each do |label|
+        assert_select "a", text: label
+      end
+    end
+
     test "channel table renders Confidence column when the account has multiple active models" do
       get dashboard_spend_path
 

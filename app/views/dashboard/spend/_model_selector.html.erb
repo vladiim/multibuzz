@@ -15,6 +15,7 @@
       <%= hidden_field_tag :end_date, @filter_params[:date_range][:end_date] %>
     <% end %>
     <%= hidden_field_tag :accounting_mode, @filter_params[:accounting_mode] if @filter_params[:accounting_mode].present? %>
+    <%= hidden_field_tag :granularity, @filter_params[:granularity] if @filter_params[:granularity].present? %>
     <% Array(@filter_params[:channels]).each do |ch| %>
       <%= hidden_field_tag "channels[]", ch %>
     <% end %>

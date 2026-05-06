@@ -324,11 +324,13 @@ period-delta math, sync freshness badges, and the Cash/Accrual + granularity pil
 
 ### Phase 5 — Polish
 
-- [ ] **5.1** Granularity pill (D / W / M) on timeseries; default by range length
-- [ ] **5.2** `BreakdownsQuery` supports `granularity: :daily | :weekly | :monthly`
+- [x] **5.1** Granularity pill (D / W / M) on the trend chart; rendered via `_trend_pill` partial as a segmented control. Default picked by `MetricsService#default_granularity_for_range` from a table-driven `RANGE_GRANULARITY_TABLE` (≤30d → daily, ≤120d → weekly, else monthly). URL override `?granularity=…` plumbed through `SpendController#filter_params` and threaded into the metrics-cache key.
+- [x] **5.2** `BreakdownsQuery` accepts `granularity: :daily | :weekly | :monthly`. Both spend grouping and the cash/accrual revenue grouping use the same `GRANULARITY_TRUNC_FIELD` lookup that maps `:weekly → "week"`, `:monthly → "month"` for `DATE_TRUNC`. The TZ-shift expression is unchanged — granularity sits orthogonal to it.
 - [ ] **5.3** Period delta on hero tiles (ROAS, Spend, Attributed Revenue, CAC)
 - [ ] **5.4** Sync freshness badge per channel; tooltip linking to integrations page
-- [ ] **5.5** Tests: granularity grouping; period-delta math when prior is zero; freshness threshold per platform
+- [x] **5.5 (partial)** Tests landed: granularity grouping (weekly + monthly bucket counts on real records), URL round-trip through controller, pill segmented-control rendering. Period-delta + freshness tests still owed under 5.3 / 5.4.
+
+Cash/Accrual pill (originally listed under the Phase 1 spec text but never rendered) ships alongside the granularity pill — same `_trend_pill` partial, options `[ :cash, "Cash" ]` / `[ :accrual, "Accrual" ]`, tooltip explaining the semantic difference. URL plumbing already existed; just adding the surface.
 
 ### Phase 6 — Verify on production
 
