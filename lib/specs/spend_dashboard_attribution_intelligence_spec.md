@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-06
 **Priority:** P0 (Spend dashboard is the second-most-visited dashboard surface; today it is structurally broken and competitively undifferentiated.)
-**Status:** In Progress — Phase 1 partially shipped (TZ fix + Meta job dispatch); accounting mode + Phases 2–6 pending
+**Status:** In Progress — Phase 1 shipped (TZ fix, accounting mode, Meta job dispatch, Google TZ capture); Phases 2–6 pending
 **Branch:** `feature/spend-dashboard-attribution-intelligence`
 
 ---
@@ -278,8 +278,8 @@ SpendController#show
 - [x] **1.1** Reproduce timeseries bug locally with a spend record + conversion in non-UTC timezone; capture the failing assertion in a test
 - [x] **1.2** Add timezone resolver in `MetricsService#report_timezone` reading `connection.settings['timezone_name']` (Meta captures it; Google capture is a follow-up TODO, falls back to nil/UTC)
 - [x] **1.3** Update `BreakdownsQuery#daily_revenue` to use `DATE((converted_at AT TIME ZONE 'UTC') AT TIME ZONE :tz)` matching the spend group by
-- [ ] **1.4** Add `accounting_mode` enum to `BreakdownsQuery` (`cash` default for hero, `accrual` default for chart)
-- [ ] **1.5** Implement accrual path joining through earliest credited touchpoint timestamp
+- [x] **1.4** Add `accounting_mode` enum to `BreakdownsQuery` (`cash` and `accrual`, default `:cash`); `MetricsService` defaults the timeseries to `:accrual` and threads the mode into the cache key
+- [x] **1.5** Accrual path joins `attribution_credits.session_id = sessions.id` and groups by `DATE((sessions.started_at AT TIME ZONE 'UTC') AT TIME ZONE :tz)`. `time_series` now iterates the union of spend and revenue date keys so accrual-only days surface.
 - [x] **1.6** Build `AdPlatforms::Meta::ConnectionSyncService` mirroring Google's (token refresh, run record, error lifecycle). Note: `ApiUsageTracker.increment!(:meta)` is wired in `Meta::ApiClient` already; no additional wiring needed at the orchestrator level.
 - [x] **1.7** Add `Registry.connection_sync_service_for(platform)`
 - [x] **1.8** Refactor `SpendSyncJob` to dispatch via registry

@@ -53,14 +53,19 @@ module SpendIntelligence
         spend_scope: spend_scope,
         credits_scope: credits_scope,
         timezone_offset: timezone_offset,
-        timezone: report_timezone
+        timezone: report_timezone,
+        accounting_mode: timeseries_accounting_mode
       )
     end
 
     def report_timezone
-      @report_timezone ||= account.ad_platform_connections.active_connections
-        .find { |c| c.settings&.dig("timezone_name").present? }
-        &.settings&.dig("timezone_name")
+      @report_timezone ||= account.ad_platform_connections.active_connections.filter_map { |c| c.settings&.dig("timezone_name").presence }.first
+    end
+
+    # Accrual default: single-day ROAS reflects spend-day attribution, not conversion-day.
+    def timeseries_accounting_mode
+      mode = filter_params[:accounting_mode]&.to_sym
+      Queries::BreakdownsQuery::ACCOUNTING_MODES.include?(mode) ? mode : :accrual
     end
 
     def payback_data
@@ -173,7 +178,8 @@ module SpendIntelligence
         date_range: filter_params[:date_range],
         channels: channels.sort,
         models: attribution_models.map(&:id).sort,
-        test_mode: test_mode
+        test_mode: test_mode,
+        accounting_mode: timeseries_accounting_mode
       }
     end
   end

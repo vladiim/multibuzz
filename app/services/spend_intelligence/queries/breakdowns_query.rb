@@ -5,15 +5,20 @@ module SpendIntelligence
     class BreakdownsQuery
       MICRO_UNIT = AdSpendRecord::MICRO_UNIT
 
-      def initialize(spend_scope:, credits_scope:, timezone_offset: nil, timezone: nil)
+      ACCOUNTING_MODES = %i[cash accrual].freeze
+
+      def initialize(spend_scope:, credits_scope:, timezone_offset: nil, timezone: nil, accounting_mode: :cash) # rubocop:disable Metrics/ParameterLists
+        raise ArgumentError, "unknown accounting_mode #{accounting_mode}" unless ACCOUNTING_MODES.include?(accounting_mode)
+
         @spend_scope = spend_scope
         @credits_scope = credits_scope
         @timezone_offset = timezone_offset || 0
         @timezone = timezone
+        @accounting_mode = accounting_mode
       end
 
       def time_series
-        daily_spend.keys.sort.map { |date| time_series_entry(date) }
+        all_dates.sort.map { |date| time_series_entry(date) }
       end
 
       def by_device
@@ -31,7 +36,7 @@ module SpendIntelligence
 
       private
 
-      attr_reader :spend_scope, :credits_scope, :timezone_offset, :timezone
+      attr_reader :spend_scope, :credits_scope, :timezone_offset, :timezone, :accounting_mode
 
       # --- Time Series ---
 
@@ -52,19 +57,38 @@ module SpendIntelligence
         @daily_spend ||= spend_scope.group(:spend_date).sum(:spend_micros)
       end
 
-      def daily_revenue
-        @daily_revenue ||= credits_scope.joins(:conversion)
-          .group(conversion_date_expr).sum(:revenue_credit)
+      def all_dates
+        daily_spend.keys | daily_revenue.keys
       end
 
-      def conversion_date_expr
-        return Arel.sql("DATE(conversions.converted_at)") if timezone.blank?
+      def daily_revenue
+        @daily_revenue ||= accounting_mode == :accrual ? accrual_daily_revenue : cash_daily_revenue
+      end
 
-        # converted_at is `timestamp without time zone` storing UTC values.
-        # First reinterpret as UTC (produces timestamptz), then shift to the
-        # report timezone, then extract the calendar date.
+      # Cash: revenue dated by the conversion timestamp.
+      # Hero KPIs use this; today's number is "what came in today."
+      def cash_daily_revenue
+        credits_scope.joins(:conversion)
+          .group(date_expr_for("conversions.converted_at")).sum(:revenue_credit)
+      end
+
+      # Accrual: revenue dated by the touchpoint session that earned credit.
+      # The timeseries uses this so single-day ROAS becomes "spend on day X
+      # attributed back to revenue from spend on day X."
+      def accrual_daily_revenue
+        credits_scope
+          .joins("INNER JOIN sessions ON sessions.id = attribution_credits.session_id")
+          .group(date_expr_for("sessions.started_at")).sum(:revenue_credit)
+      end
+
+      def date_expr_for(column)
+        return Arel.sql("DATE(#{column})") if timezone.blank?
+
+        # Stored timestamps are UTC values in `timestamp without time zone`
+        # columns. Reinterpret as UTC, then shift to the report timezone, then
+        # extract the calendar date.
         Arel.sql(ActiveRecord::Base.sanitize_sql_array([
-          "DATE((conversions.converted_at AT TIME ZONE 'UTC') AT TIME ZONE ?)",
+          "DATE((#{column} AT TIME ZONE 'UTC') AT TIME ZONE ?)",
           timezone
         ]))
       end

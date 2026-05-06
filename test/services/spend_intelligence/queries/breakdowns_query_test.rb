@@ -108,6 +108,56 @@ module SpendIntelligence
           "expected April 15 entry with aligned spend + revenue + roas, got #{april_15.inspect}"
       end
 
+      test "time_series in accrual mode dates revenue by touchpoint session, not conversion" do
+        account.attribution_credits.delete_all
+        account.conversions.delete_all
+        account.ad_spend_records.delete_all
+
+        # Touchpoint on April 14 22:00 UTC == April 14 15:00 PT
+        # Conversion on April 16 02:00 UTC == April 15 19:00 PT (one day later in PT)
+        touchpoint = account.sessions.create!(
+          visitor: visitors(:one),
+          session_id: "tp-accrual-1",
+          started_at: Time.utc(2026, 4, 14, 22, 0, 0)
+        )
+        conversion = account.conversions.create!(
+          visitor: visitors(:one),
+          conversion_type: "purchase",
+          revenue: 100.0,
+          converted_at: Time.utc(2026, 4, 16, 2, 0, 0)
+        )
+        account.attribution_credits.create!(
+          conversion: conversion,
+          session_id: touchpoint.id,
+          attribution_model: attribution_model,
+          channel: Channels::PAID_SEARCH,
+          credit: 1.0,
+          revenue_credit: 100.0,
+          is_test: false
+        )
+
+        accrual_query = BreakdownsQuery.new(
+          spend_scope: account.ad_spend_records.none,
+          credits_scope: Dashboard::Scopes::CreditsScope.new(
+            account: account,
+            models: [ attribution_model ],
+            date_range: Dashboard::DateRangeParser.new(
+              start_date: "2026-04-13",
+              end_date: "2026-04-16"
+            ),
+            test_mode: false
+          ).call,
+          timezone: "America/Los_Angeles",
+          accounting_mode: :accrual
+        )
+
+        ts = accrual_query.time_series
+        revenue_by_date = ts.to_h { |e| [ e[:date], e[:revenue].to_f ] }
+
+        assert_equal({ "2026-04-14" => 100.0 }, revenue_by_date.select { |_, v| v.positive? },
+          "expected revenue on April 14 (touchpoint date in PT), got #{revenue_by_date.inspect}")
+      end
+
       private
 
       def query(timezone_offset: nil)
