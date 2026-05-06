@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module SpendIntelligence
-  class MetricsService < ApplicationService
+  class MetricsService < ApplicationService # rubocop:disable Metrics/ClassLength
     CACHE_TTL = 5.minutes
     MICRO_UNIT = AdSpendRecord::MICRO_UNIT
 
@@ -23,39 +23,75 @@ module SpendIntelligence
     end
 
     def query_data
+      primary_data.merge(compare: compare_data)
+    end
+
+    def primary_data
       {
-        totals: totals,
-        by_channel: channel_metrics.call,
-        time_series: breakdowns.time_series,
-        by_device: breakdowns.by_device,
-        by_hour: breakdowns.by_hour,
+        totals: totals_for(primary_metrics),
+        by_channel: primary_metrics.call,
+        time_series: primary_breakdowns.time_series,
+        by_device: primary_breakdowns.by_device,
+        by_hour: primary_breakdowns.by_hour,
         payback: payback_data,
         recommendations: recommendations
       }
     end
 
-    def totals
+    def compare_data
+      return nil unless compare_attribution_model
+
       {
-        blended_roas: channel_metrics.blended_roas,
-        total_spend_micros: channel_metrics.total_spend_micros,
-        total_spend: spend_in_units(channel_metrics.total_spend_micros),
-        attributed_revenue: channel_metrics.total_revenue,
-        currency: primary_currency,
-        ncac: ncac,
-        mer: mer
+        totals: totals_for(compare_metrics),
+        by_channel: compare_metrics.call,
+        time_series: compare_breakdowns.time_series
       }
     end
 
-    # --- Delegated Queries ---
+    def totals_for(metrics)
+      {
+        blended_roas: metrics.blended_roas,
+        total_spend_micros: metrics.total_spend_micros,
+        total_spend: spend_in_units(metrics.total_spend_micros),
+        attributed_revenue: metrics.total_revenue,
+        currency: primary_currency,
+        ncac: ncac,
+        mer: mer_for(metrics)
+      }
+    end
 
-    def breakdowns
-      @breakdowns ||= Queries::BreakdownsQuery.new(
+    # --- Per-model query objects ---
+
+    def primary_metrics = @primary_metrics ||= channel_metrics_for(primary_credits_scope)
+    def compare_metrics = @compare_metrics ||= channel_metrics_for(compare_credits_scope)
+    def primary_breakdowns = @primary_breakdowns ||= breakdowns_for(primary_credits_scope)
+    def compare_breakdowns = @compare_breakdowns ||= breakdowns_for(compare_credits_scope)
+
+    def channel_metrics_for(credits_scope)
+      Queries::ChannelMetricsQuery.new(spend_scope: spend_scope, credits_scope: credits_scope)
+    end
+
+    def breakdowns_for(credits_scope)
+      Queries::BreakdownsQuery.new(
         spend_scope: spend_scope,
         credits_scope: credits_scope,
         timezone_offset: timezone_offset,
         timezone: report_timezone,
         accounting_mode: timeseries_accounting_mode
       )
+    end
+
+    def primary_credits_scope = credits_scope_for(primary_attribution_model)
+    def compare_credits_scope = credits_scope_for(compare_attribution_model)
+
+    def credits_scope_for(model)
+      Dashboard::Scopes::CreditsScope.new(
+        account: account,
+        models: [ model ].compact,
+        date_range: date_range_parser,
+        channels: channels,
+        test_mode: test_mode
+      ).call
     end
 
     def report_timezone
@@ -67,6 +103,8 @@ module SpendIntelligence
       mode = filter_params[:accounting_mode]&.to_sym
       Queries::BreakdownsQuery::ACCOUNTING_MODES.include?(mode) ? mode : :accrual
     end
+
+    # --- Payback, NCAC, MER ---
 
     def payback_data
       @payback_data ||= payback_query&.call || []
@@ -84,9 +122,9 @@ module SpendIntelligence
         .then { |rows| rows.empty? ? nil : (rows.sum { |r| r[:ncac] * r[:customers] } / rows.sum { |r| r[:customers] }).round(2) }
     end
 
-    def mer
-      @mer ||= total_business_revenue
-        &.then { |rev| rev / spend_in_units(channel_metrics.total_spend_micros) }
+    def mer_for(metrics)
+      total_business_revenue
+        &.then { |rev| rev / spend_in_units(metrics.total_spend_micros) }
         &.then { |ratio| ratio.round(2) }
     end
 
@@ -95,26 +133,20 @@ module SpendIntelligence
         .where(converted_at: date_range)
         .then { |scope| test_mode ? scope.test_data : scope.production }
         .sum(:revenue).to_f
-        .then { |rev| rev.positive? && channel_metrics.total_spend_micros.positive? ? rev : nil }
+        .then { |rev| rev.positive? && primary_metrics.total_spend_micros.positive? ? rev : nil }
     end
 
-    def primary_attribution_model
-      @primary_attribution_model ||= attribution_models.first
-    end
+    def primary_attribution_model = @primary_attribution_model ||= attribution_models.first
+    def compare_attribution_model = @compare_attribution_model ||= attribution_models[1]
 
     # --- Response Curves & Recommendations ---
 
     def response_curves
-      @response_curves ||= ResponseCurveService.new(
-        spend_scope: spend_scope,
-        credits_scope: credits_scope
-      ).call
+      @response_curves ||= ResponseCurveService.new(spend_scope: spend_scope, credits_scope: primary_credits_scope).call
     end
 
     def recommendations
-      @recommendations ||= channel_metrics.call
-        .select { |row| fittable_curve?(row[:channel]) }
-        .map(&method(:build_recommendation))
+      @recommendations ||= primary_metrics.call.select { |row| fittable_curve?(row[:channel]) }.map(&method(:build_recommendation))
     end
 
     def fittable_curve?(channel)
@@ -136,30 +168,10 @@ module SpendIntelligence
       end || 0
     end
 
-    def channel_metrics
-      @channel_metrics ||= Queries::ChannelMetricsQuery.new(
-        spend_scope: spend_scope,
-        credits_scope: credits_scope
-      )
-    end
+    # --- Scopes & params ---
 
     def spend_scope
-      @spend_scope ||= Scopes::SpendScope.new(
-        account: account,
-        date_range: date_range,
-        channels: channels,
-        test_mode: test_mode
-      ).call
-    end
-
-    def credits_scope
-      @credits_scope ||= Dashboard::Scopes::CreditsScope.new(
-        account: account,
-        models: attribution_models,
-        date_range: date_range_parser,
-        channels: channels,
-        test_mode: test_mode
-      ).call
+      @spend_scope ||= Scopes::SpendScope.new(account: account, date_range: date_range, channels: channels, test_mode: test_mode).call
     end
 
     def spend_in_units(micros) = (micros.to_d / MICRO_UNIT).round(2)

@@ -93,6 +93,33 @@ module SpendIntelligence
                        result[:data][:totals][:total_spend_micros]
     end
 
+    test "compare key is nil when only one model is selected" do
+      data = service.call[:data]
+
+      assert_nil data[:compare]
+    end
+
+    test "compare contains per-model totals when two models are selected" do
+      first_touch_credit = 42.0
+      create_credit_for(model: first_touch_model, channel: Channels::DIRECT, revenue_credit: first_touch_credit)
+
+      data = MetricsService.new(account, filter_params.merge(models: [ attribution_model, first_touch_model ])).call[:data]
+
+      assert_equal REVENUE, data[:totals][:attributed_revenue]
+      assert_equal first_touch_credit, data[:compare][:totals][:attributed_revenue]
+    end
+
+    test "compare totals reflect the second model only, not blended" do
+      create_credit_for(model: first_touch_model, channel: Channels::PAID_SEARCH, revenue_credit: 17.0)
+
+      data = MetricsService.new(account, filter_params.merge(models: [ attribution_model, first_touch_model ])).call[:data]
+
+      assert_in_delta REVENUE, data[:totals][:attributed_revenue], 0.001,
+        "primary must reflect last_touch only (not summed across models)"
+      assert_in_delta 17.0, data[:compare][:totals][:attributed_revenue], 0.001,
+        "compare must reflect first_touch only"
+    end
+
     private
 
     def service
@@ -104,6 +131,10 @@ module SpendIntelligence
     end
 
     def create_credit(channel:, revenue_credit:)
+      create_credit_for(model: attribution_model, channel: channel, revenue_credit: revenue_credit)
+    end
+
+    def create_credit_for(model:, channel:, revenue_credit:)
       conversion = account.conversions.create!(
         visitor: visitors(:one),
         conversion_type: "purchase",
@@ -113,7 +144,7 @@ module SpendIntelligence
       account.attribution_credits.create!(
         conversion: conversion,
         session_id: 1,
-        attribution_model: attribution_model,
+        attribution_model: model,
         channel: channel,
         credit: 1.0,
         revenue_credit: revenue_credit,
@@ -123,5 +154,6 @@ module SpendIntelligence
 
     def account = @account ||= accounts(:one)
     def attribution_model = @attribution_model ||= attribution_models(:last_touch)
+    def first_touch_model = @first_touch_model ||= attribution_models(:first_touch)
   end
 end
