@@ -45,6 +45,30 @@ class AdPlatforms::Google::AcceptConnectionServiceTest < ActiveSupport::TestCase
     assert_equal "mgr-001", conn.settings["login_customer_id"]
   end
 
+  test "persists time_zone from params into settings as timezone_name" do
+    account.update!(plan: growth_plan)
+
+    AdPlatforms::Google::AcceptConnectionService.new(
+      account: account,
+      params: params.merge(time_zone: "America/Los_Angeles"),
+      tokens: tokens
+    ).call
+
+    conn = account.ad_platform_connections.find_by(platform_account_id: "new-555")
+
+    assert_equal "America/Los_Angeles", conn.settings["timezone_name"]
+  end
+
+  test "omits timezone_name from settings when not provided" do
+    account.update!(plan: growth_plan)
+
+    service.call
+
+    conn = account.ad_platform_connections.find_by(platform_account_id: "new-555")
+
+    assert_nil conn.settings["timezone_name"]
+  end
+
   test "enqueues SpendSyncJob for backfill" do
     account.update!(plan: growth_plan)
 

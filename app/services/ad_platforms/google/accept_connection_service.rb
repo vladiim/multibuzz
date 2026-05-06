@@ -52,9 +52,16 @@ module AdPlatforms
           refresh_token: tokens["refresh_token"],
           token_expires_at: Time.parse(tokens["expires_at"]),
           status: :connected,
-          settings: { "login_customer_id" => params[:login_customer_id].presence }.compact,
+          settings: connection_settings,
           metadata: AdPlatforms::MetadataNormalizer.call(metadata)
         }
+      end
+
+      def connection_settings
+        {
+          "login_customer_id" => params[:login_customer_id].presence,
+          "timezone_name" => params[:time_zone].presence
+        }.compact
       end
 
       def duplicate?

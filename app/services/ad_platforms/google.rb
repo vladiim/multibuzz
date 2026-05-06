@@ -16,8 +16,8 @@ module AdPlatforms
     API_BASE_URL = "https://googleads.googleapis.com"
     LIST_CUSTOMERS_URI = URI("#{API_BASE_URL}/#{API_VERSION}/customers:listAccessibleCustomers").freeze
     SEARCH_PATH = "googleAds:search"
-    CUSTOMER_QUERY = "SELECT customer.id, customer.descriptive_name, customer.currency_code, customer.manager FROM customer LIMIT 1"
-    SUB_ACCOUNTS_QUERY = "SELECT customer_client.id, customer_client.descriptive_name, customer_client.currency_code, customer_client.manager, customer_client.level FROM customer_client WHERE customer_client.level <= 1"
+    CUSTOMER_QUERY = "SELECT customer.id, customer.descriptive_name, customer.currency_code, customer.time_zone, customer.manager FROM customer LIMIT 1"
+    SUB_ACCOUNTS_QUERY = "SELECT customer_client.id, customer_client.descriptive_name, customer_client.currency_code, customer_client.time_zone, customer_client.manager, customer_client.level FROM customer_client WHERE customer_client.level <= 1"
 
     # --- API response fields ---
     FIELD_RESOURCE_NAMES = "resourceNames"
@@ -27,6 +27,7 @@ module AdPlatforms
     FIELD_ID = "id"
     FIELD_DESCRIPTIVE_NAME = "descriptiveName"
     FIELD_CURRENCY_CODE = "currencyCode"
+    FIELD_TIME_ZONE = "timeZone"
     FIELD_MANAGER = "manager"
 
     # --- Campaign report fields ---
