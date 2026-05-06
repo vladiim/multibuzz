@@ -47,7 +47,7 @@ A rake task `db:seed:spend_demo` produces this state idempotently for any accoun
 > The line shape shifts visibly: the most recent five days drop because conversions have not yet materialised for that spend. Tooltip on the toggle reads "Cash: revenue dated by conversion. Accrual: revenue dated by the touchpoint that earned credit." They get it. They flip back to Accrual.
 
 > **0:40 — They open the model selector**
-> Pill at top of page: `Model: Time Decay`. They click it, see all eight models with sub-labels (Heuristic / Probabilistic). They pick Markov Chain. Hero ROAS recomputes from 3.2 to 2.7. Channel table re-sorts. Timeseries line redraws. URL now reads `?attribution_model=markov_chain` — they could share this view.
+> Pill at top of page: `Model: Time Decay`. They click it, see all eight models with sub-labels (Heuristic / Probabilistic). They pick Markov Chain. Hero ROAS recomputes from 3.2 to 2.7. Channel table re-sorts. Timeseries line redraws. URL now reads `?models[]=mdl_<markov>` — they could share this view.
 
 > **0:55 — They click "+ Compare"**
 > A second pill opens. They pick Last Touch. Channel table grows two columns: `Δ ROAS`, `Δ Revenue`, sorted by absolute Δ. Meta Social shows "+1.4 ROAS · +$31k" because Last Touch over-credits paid social. Timeseries gains a dashed muted line for Last Touch ROAS. Tooltip on any day shows both numbers and the gap.
@@ -141,16 +141,16 @@ Three pillars, sequenced. Bug fixes (B1+B2) first because they undermine trust i
 | Option | Approach | Why we picked / rejected |
 |---|---|---|
 | A | Cast `converted_at` to UTC date, leave `spend_date` as-is | Rejected. `spend_date` is the platform-local date, not UTC. A US-Pacific account would still mis-align. |
-| B | Cast `converted_at` to the account's reporting timezone derived from `AdPlatformConnection.metadata['timezone']` (or fallback to account `Time.zone`), then take `DATE()` of that | Picked. Matches platform reporting semantics. Single SQL: `DATE(conversions.converted_at AT TIME ZONE :tz)` with `:tz` resolved per-account at query time. |
+| B | Cast `converted_at` to the account's reporting timezone derived from `AdPlatformConnection.settings['timezone_name']`, then take `DATE()` of that | Picked. Matches platform reporting semantics. SQL shipped: `DATE((conversions.converted_at AT TIME ZONE 'UTC') AT TIME ZONE :tz)` (double-cast because `converted_at` is `timestamp without time zone` storing UTC values; first reinterpret as UTC, then shift to the account TZ). `:tz` is resolved per-account at query time from the first connection with `settings['timezone_name']` populated. |
 
 **Accounting mode toggle (Northbeam pattern).** Borrowed from the competitor audit. The "spend lags conversions" problem is real and the right fix is to expose the choice rather than pick one and hide it. Two modes:
 
 - **Cash (default for hero KPIs)** — group revenue by `conversion.converted_at` date. Today's number is "what came in today," includes lag from yesterday's spend.
-- **Accrual (default for timeseries)** — group revenue by the date of the *first touchpoint that received credit* in the conversion's journey. Single-day ROAS becomes "spend on day X attributed back to revenue from spend on day X."
+- **Accrual (default for timeseries)** — group revenue by the date of the touchpoint session that earned credit. Single-day ROAS becomes "spend on day X attributed back to revenue from spend on day X."
 
-Implementation: `AttributionCredit` already stores `revenue_credit` per touchpoint. Accrual mode joins through `Touchpoint.occurred_at` (or the equivalent journey-event timestamp) instead of `Conversion.converted_at`. Both queries get `AT TIME ZONE :tz` treatment.
+Implementation (shipped): accrual mode joins `attribution_credits.session_id = sessions.id` and groups by `DATE((sessions.started_at AT TIME ZONE 'UTC') AT TIME ZONE :tz)`. Cash mode groups by the equivalent expression on `conversions.converted_at`. The `BreakdownsQuery#time_series` now iterates the union of spend and revenue date keys so accrual-only days surface.
 
-A small toggle in the timeseries chart header (Cash | Accrual). Default Accrual on the chart, Cash on hero tiles. Persisted in the URL as a query param.
+URL param `?accounting_mode=cash|accrual` is honoured by `MetricsService` and threaded into the cache key. The pill UI in the timeseries header ships with Phase 5 polish.
 
 **Meta dispatch.** Build `AdPlatforms::Meta::ConnectionSyncService` mirroring Google's. Refactor `SpendSyncJob` to dispatch through `AdPlatforms::Registry`:
 
@@ -167,9 +167,9 @@ Extends `Registry` with `connection_sync_service_for(:platform)` returning the r
 
 ### Pillar 2 — Model-aware metrics
 
-**Single model selector.** A pill in the dashboard header, alongside the existing date-range picker. Default = account's `is_default` attribution model. Switching the pill re-renders every metric on the page (hero tiles, channel table, timeseries, payback). State persisted in URL (`?attribution_model=time_decay`) so it survives reload and is shareable.
+**Single model selector.** A pill in the dashboard header, alongside the existing date-range picker. Default = account's `is_default` attribution model (resolved by `BaseController#default_attribution_model`). Switching the pill re-renders every metric on the page (hero tiles, channel table, timeseries, payback). State persisted in URL as `?models[]=mdl_xxx` (consistent with the rest of the app's filter convention) so it survives reload and is shareable.
 
-`SpendIntelligence::MetricsService` already accepts the param; we delete the "first-only" code path and pass the selected model through every query. `ChannelMetricsQuery`, `BreakdownsQuery`, and `HourlyDeviceMetricsQuery` need to accept `attribution_model:` and join `attribution_credits.attribution_model_id = ?`. `PaybackPeriodQuery` already does this.
+`MetricsService` resolves a `primary_attribution_model` (first of selected) and runs every query against a single-model `credits_scope_for(model)`. The previous behaviour silently summed credits across all selected models; that bug is fixed. `ChannelMetricsQuery` and `BreakdownsQuery` are now invoked per-model via the scope. `PaybackPeriodQuery` already accepted a model and remains unchanged.
 
 **Comparison overlay.** A "+ Compare" button next to the model pill opens a second pill. Picking a comparison model:
 
@@ -209,24 +209,29 @@ This is the killer view. It directly weaponizes our model count. Triple Whale, P
 - **Period delta on hero tiles.** "ROAS: 3.2 (+0.4 vs prior 30d)". Comparison period = same length immediately preceding selected range. Mirrors GA4 / Northbeam; absence reads as toy.
 - **Sync freshness indicator.** Per-channel `ad_spend_records.updated_at` max, displayed as "Updated 2h ago" next to the channel name. If older than expected for that platform's sync cadence, render in muted color with a tooltip. Avoids the "is this real-time?" support ticket forever.
 
-### Data flow (proposed)
+### Data flow (after Phase 2; Phases 3+ extend)
 
 ```
-SpendController#show
-  → filter_params (date_range, channels, attribution_model, compare_to, accounting_mode, granularity)
+SpendController#show (inherits BaseController)
+  → filter_params (date_range, channels, models[], accounting_mode, ...)
   → SpendIntelligence::MetricsService
-      → ChannelMetricsQuery(model: primary)
-      → ChannelMetricsQuery(model: compare_to)              [if comparison]
-      → ChannelMetricsQuery × 8 models                       [for confidence band; cached]
-      → BreakdownsQuery(model:, accounting_mode:, granularity:, tz: account.tz)
-      → PaybackPeriodQuery(model:)
-      → PlatformVsAttributedQuery(model:)                    [new]
-      → Returns: { primary: {...}, compare: {...}, band_per_channel: {...}, ... }
+      → primary_metrics  = ChannelMetricsQuery(spend_scope, primary_credits_scope)
+      → compare_metrics  = ChannelMetricsQuery(spend_scope, compare_credits_scope)   [if 2nd model]
+      → primary_breakdowns = BreakdownsQuery(spend_scope, primary_credits_scope, tz, mode)
+      → compare_breakdowns = BreakdownsQuery(spend_scope, compare_credits_scope, ...)
+      → PaybackPeriodQuery(primary model)
+      → ResponseCurveService(spend_scope, primary_credits_scope) → recommendations
+      → Returns flat: { totals:, by_channel:, time_series:, by_device:, by_hour:,
+                        payback:, recommendations:, compare: nil_or_subset }
   → View renders:
-      - hero tiles (primary KPIs + period delta + platform-vs-attributed gap tile)
-      - channel table (model + compare cols + gap cols + confidence band column)
-      - timeseries (primary + compare lines, granularity toggle, Cash/Accrual toggle)
+      - model selector partial (primary pill + compare pill)
+      - hero tiles (primary KPIs)
+      - timeseries (primary line + dashed compare line when comparing)
+      - channel table (with Δ ROAS / Δ Revenue cols when comparing)
       - payback (primary model)
+
+Phases 3–5 will add: PlatformVsAttributedQuery, ConfidenceBandQuery, granularity grouping,
+period-delta math, sync freshness badges, and the Cash/Accrual + granularity pill UI.
 ```
 
 ### Key Files
@@ -241,8 +246,8 @@ SpendController#show
 | `app/jobs/ad_platforms/spend_sync_job.rb` | Sync dispatcher | Replace hardcoded Google with `Registry.connection_sync_service_for(connection.platform)` |
 | `app/services/ad_platforms/registry.rb` | Adapter registry | Add `connection_sync_service_for(platform)` method |
 | `app/services/ad_platforms/meta/connection_sync_service.rb` | New | Wraps token refresh + spend sync + run record + error lifecycle. Mirror Google's. |
-| `app/controllers/dashboard/spend_controller.rb` | Spend dashboard | Accept `attribution_model`, `compare_to`, `accounting_mode`, `granularity` params (and persist in URL) |
-| `app/controllers/dashboard/base_controller.rb` | Filter resolution | `selected_attribution_model` and `compare_attribution_model` helpers |
+| `app/controllers/dashboard/spend_controller.rb` | Spend dashboard | Inherits `BaseController#filter_params`; carries `models[]`, `accounting_mode`, `granularity` (Phase 5) through |
+| `app/controllers/dashboard/base_controller.rb` | Filter resolution | Existing `selected_attribution_models` (returns `.first(2)`) drives primary + compare. No new helpers needed in Phase 2. |
 | `app/views/dashboard/spend/_hero_metrics.html.erb` | Hero tiles | Period-delta sub-line; new "Platform vs Attributed gap" tile |
 | `app/views/dashboard/spend/_trend_chart.html.erb` | Timeseries | Granularity pill, accounting pill, comparison line data |
 | `app/views/dashboard/spend/_channel_table.html.erb` | Channel breakdown | Δ columns when comparing; gap columns; confidence band column |
@@ -276,14 +281,14 @@ SpendController#show
 ### Phase 1 — Trust fixes (P0; ship first, even alone if needed)
 
 - [x] **1.1** Reproduce timeseries bug locally with a spend record + conversion in non-UTC timezone; capture the failing assertion in a test
-- [x] **1.2** Add timezone resolver in `MetricsService#report_timezone` reading `connection.settings['timezone_name']` (Meta captures it; Google capture is a follow-up TODO, falls back to nil/UTC)
-- [x] **1.3** Update `BreakdownsQuery#daily_revenue` to use `DATE((converted_at AT TIME ZONE 'UTC') AT TIME ZONE :tz)` matching the spend group by
-- [x] **1.4** Add `accounting_mode` enum to `BreakdownsQuery` (`cash` and `accrual`, default `:cash`); `MetricsService` defaults the timeseries to `:accrual` and threads the mode into the cache key
+- [x] **1.2** Add timezone resolver in `MetricsService#report_timezone` reading `connection.settings['timezone_name']`. Meta captures it via `Meta::AcceptConnectionService`; Google now captures it too via `Google::CUSTOMER_QUERY` + `SUB_ACCOUNTS_QUERY` (`customer.time_zone` / `customer_client.time_zone`), threaded through `ListCustomers` → `select_account` view → `AcceptConnectionService` into `connection.settings['timezone_name']`. Falls back to UTC when neither is present.
+- [x] **1.3** Update `BreakdownsQuery#daily_revenue` to use `DATE((converted_at AT TIME ZONE 'UTC') AT TIME ZONE :tz)` (double-cast: `converted_at` is `timestamp without time zone` storing UTC values, so reinterpret as UTC first, then shift)
+- [x] **1.4** `BreakdownsQuery` accepts `accounting_mode:` (`:cash` or `:accrual`, default `:cash`); `MetricsService#timeseries_accounting_mode` overrides the default to `:accrual` for the chart and threads the mode into the cache key. URL toggle UI ships with Phase 5; param plumbing is live today.
 - [x] **1.5** Accrual path joins `attribution_credits.session_id = sessions.id` and groups by `DATE((sessions.started_at AT TIME ZONE 'UTC') AT TIME ZONE :tz)`. `time_series` now iterates the union of spend and revenue date keys so accrual-only days surface.
 - [x] **1.6** Build `AdPlatforms::Meta::ConnectionSyncService` mirroring Google's (token refresh, run record, error lifecycle). Note: `ApiUsageTracker.increment!(:meta)` is wired in `Meta::ApiClient` already; no additional wiring needed at the orchestrator level.
 - [x] **1.7** Add `Registry.connection_sync_service_for(platform)`
 - [x] **1.8** Refactor `SpendSyncJob` to dispatch via registry
-- [x] **1.9** Tests: timeseries date alignment across timezones; Meta + Google dispatch routing. Accounting-mode tests pending 1.4/1.5.
+- [x] **1.9** Tests: timeseries date alignment across timezones; cash mode (default); accrual mode (groups by touchpoint date); Meta + Google dispatch routing; Google TZ persistence in connection settings
 - [x] **1.10** Remove the `_channel_table.html.erb:78` "Use 7d+ windows for accuracy" footnote
 - [ ] **1.11** Verify on dev with a Google connection at non-UTC timezone
 
@@ -336,6 +341,19 @@ SpendController#show
 
 ---
 
+## Shipped commits (running log)
+
+| Phase | Commit | Subject |
+|---|---|---|
+| 1.1–1.3 | `fcb0247` | fix(spend): align timeseries spend and revenue dates across timezones |
+| 1.6–1.8 | `3294447` | feat(ad-platforms): dispatch spend sync via Registry, add Meta::ConnectionSyncService |
+| 1.2 (Google TZ) | `58e4330` | feat(ad-platforms): capture Google Ads customer time zone at connect |
+| 1.4–1.5 | `916c385` | feat(spend): add cash/accrual accounting mode to spend timeseries |
+| 2.3–2.5 | `b57d45a` | feat(spend): per-model metrics with comparison shape in MetricsService |
+| 2.1, 2.2, 2.6, 2.7, 2.8 | `bd364d0` | feat(spend): model selector + comparison columns + dashed compare line |
+
+---
+
 ## Testing Strategy
 
 ### Unit Tests
@@ -357,10 +375,10 @@ SpendController#show
 
 | Test | File | Verifies |
 |---|---|---|
-| `?attribution_model=` round-trips | `test/controllers/dashboard/spend_controller_test.rb` | URL state preserved; metric reflects selected model |
-| `?compare_to=` toggles comparison columns | same | Channel table renders Δ columns; timeseries has two series in JSON payload |
-| `?accounting_mode=accrual` | same | Timeseries data uses touchpoint-date grouping |
-| Cross-account isolation | same (existing) | Selecting another account's model id 422s |
+| `?models[]=mdl_xxx` round-trips | `test/controllers/dashboard/spend_controller_test.rb` | URL state preserved; metric reflects selected model |
+| `?models[]=a&models[]=b` toggles comparison columns | same | Channel table renders Δ columns; chart container carries `data-chart-compare-data-value` |
+| `?accounting_mode=accrual` | covered in `breakdowns_query_test.rb` | Timeseries data uses touchpoint-date grouping |
+| Cross-account isolation | (existing) | Cross-account model selection rejected at scope resolution |
 
 ### Manual QA
 
