@@ -345,15 +345,15 @@ period-delta math, sync freshness badges, and the Cash/Accrual + granularity pil
 
 | Phase | Commit | Subject |
 |---|---|---|
-| 1.1–1.3 | `fcb0247` | fix(spend): align timeseries spend and revenue dates across timezones |
-| 1.6–1.8 | `3294447` | feat(ad-platforms): dispatch spend sync via Registry, add Meta::ConnectionSyncService |
-| 1.2 (Google TZ) | `58e4330` | feat(ad-platforms): capture Google Ads customer time zone at connect |
-| 1.4–1.5 | `916c385` | feat(spend): add cash/accrual accounting mode to spend timeseries |
-| 2.3–2.5 | `b57d45a` | feat(spend): per-model metrics with comparison shape in MetricsService |
-| 2.1, 2.2, 2.6, 2.7, 2.8 | `bd364d0` | feat(spend): model selector + comparison columns + dashed compare line |
-| 3.1 | `192b9e5` | feat(spend): platform-vs-attributed gap query + metrics-service wiring |
-| 3.2–3.5 | `cc4ee14` | feat(spend): platform-vs-attributed columns and hero tile |
-| 4.1, 4.2, 4.5, 4.6 | _pending_ | feat(spend): confidence-band query + metrics-service wiring |
+| 1.1–1.3 | `f42eb98` | fix(spend): align timeseries spend and revenue dates across timezones |
+| 1.6–1.8 | `7493eca` | feat(ad-platforms): dispatch spend sync via Registry, add Meta::ConnectionSyncService |
+| 1.2 (Google TZ) | `1635f2f` | feat(ad-platforms): capture Google Ads customer time zone at connect |
+| 1.4–1.5 | `ed3d70f` | feat(spend): add cash/accrual accounting mode to spend timeseries |
+| 2.3–2.5 | `f9ec7a0` | feat(spend): per-model metrics with comparison shape in MetricsService |
+| 2.1, 2.2, 2.6, 2.7, 2.8 | `a2eb467` | feat(spend): model selector + comparison columns + dashed compare line |
+| 3.1 | `5df3a3b` | feat(spend): platform-vs-attributed gap query + metrics-service wiring |
+| 3.2–3.5 | `cb7b9b3` | feat(spend): platform-vs-attributed columns and hero tile |
+| 4.1, 4.2, 4.5, 4.6 | `8efae7d` | feat(spend): confidence-band query + metrics-service wiring |
 
 ---
 
