@@ -143,6 +143,24 @@ module SpendIntelligence
       refute_includes data[:compare][:by_channel].first.keys, :gap
     end
 
+    test "by_channel rows carry confidence band data when multiple models are active" do
+      create_credit_for(model: first_touch_model, channel: Channels::PAID_SEARCH, revenue_credit: 50.0)
+
+      paid_search = service.call[:data][:by_channel].find { |r| r[:channel] == Channels::PAID_SEARCH }
+
+      assert_kind_of Hash, paid_search[:confidence_band]
+      assert_kind_of Numeric, paid_search[:confidence_band][:min]
+      assert_kind_of Numeric, paid_search[:confidence_band][:max]
+    end
+
+    test "confidence band is nil when only one model is active" do
+      account.attribution_models.where.not(id: attribution_model.id).update_all(is_active: false)
+
+      paid_search = service.call[:data][:by_channel].find { |r| r[:channel] == Channels::PAID_SEARCH }
+
+      assert_nil paid_search[:confidence_band]
+    end
+
     private
 
     def service

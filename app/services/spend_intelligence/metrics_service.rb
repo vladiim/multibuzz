@@ -29,7 +29,7 @@ module SpendIntelligence
     def primary_data
       {
         totals: primary_totals,
-        by_channel: by_channel_with_gap(primary_metrics, primary_platform_metrics),
+        by_channel: enriched_primary_by_channel,
         time_series: primary_breakdowns.time_series,
         by_device: primary_breakdowns.by_device,
         by_hour: primary_breakdowns.by_hour,
@@ -64,10 +64,29 @@ module SpendIntelligence
       }
     end
 
-    def by_channel_with_gap(channel_metrics, platform_metrics)
-      gap_by_channel = platform_metrics.by_channel
-      channel_metrics.call.map { |row| row.merge(gap_by_channel[row[:channel]] || {}) }
+    def enriched_primary_by_channel = primary_metrics.call.map(&method(:enrich_channel_row))
+
+    def enrich_channel_row(row)
+      row.merge(primary_platform_metrics.by_channel[row[:channel]] || {}, confidence_band: confidence_band_data[row[:channel]])
     end
+
+    def confidence_band_data = @confidence_band_data ||= confidence_band_query&.by_channel || {}
+
+    def confidence_band_query
+      return nil unless active_attribution_models.size > 1
+
+      @confidence_band_query ||= Queries::ConfidenceBandQuery.new(
+        spend_scope: spend_scope,
+        credits_scope_by_model: credits_scope_by_active_model,
+        selected_model: primary_attribution_model
+      )
+    end
+
+    def credits_scope_by_active_model
+      @credits_scope_by_active_model ||= active_attribution_models.each_with_object({}) { |model, acc| acc[model] = credits_scope_for(model) }
+    end
+
+    def active_attribution_models = @active_attribution_models ||= account.attribution_models.active.to_a
 
     # --- Per-model query objects ---
 

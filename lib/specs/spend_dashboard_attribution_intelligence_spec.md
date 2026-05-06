@@ -315,12 +315,12 @@ period-delta math, sync freshness badges, and the Cash/Accrual + granularity pil
 
 ### Phase 4 — Confidence band
 
-- [ ] **4.1** `ConfidenceBandQuery` running ROAS per active model per channel, returning `{ min, max, selected }`
-- [ ] **4.2** Cache result in Solid Cache keyed by `[account_id, range_start, range_end, channel_set, metadata_filter, models_signature]`, 30 min TTL
+- [x] **4.1** `ConfidenceBandQuery` returns `{ channel => { min:, max:, selected:, by_model: } }` per channel with at least one model crediting it. The per-channel computation lives in a `ChannelConfidenceBand` value object so the query stays a pure transform pipeline (`spend_by_channel.map { |ch, sp| ChannelConfidenceBand.new(...) }.select(&:present?)`). `by_model` is keyed by the `AttributionModel` instance so the view can render `model.name.titleize` directly.
+- [x] **4.2** No separate Solid Cache layer. The whole `MetricsService` payload is already cached for 5 minutes in `Rails.cache.fetch(cache_key)`; adding a 30-min sub-cache around just the band would double-cache and complicate invalidation. Eight grouped sums on indexed columns are cheap enough for the 5-min cadence. (Spec deviation; flagged in commit message.)
 - [ ] **4.3** Channel table renders horizontal-bar column with band
 - [ ] **4.4** Click on band expands inline panel with per-model values; reuse Stimulus toggle controller
-- [ ] **4.5** Hide band when only one model has credits in range or only one model is active
-- [ ] **4.6** Tests: band math (min, max, selected); cache invalidation on model addition; degenerate-state hiding
+- [x] **4.5** `MetricsService#confidence_band_query` returns nil (and `by_channel` rows carry `confidence_band: nil`) when only one attribution model is active. Channels where no model produced any credit are filtered out by `ChannelConfidenceBand#present?`.
+- [x] **4.6** Tests: band math (min, max, selected, by_model); degenerate single-model case; channel-with-no-credits case; query absent when account has only one active model; query present + populated when ≥2 active models
 
 ### Phase 5 — Polish
 
@@ -352,7 +352,8 @@ period-delta math, sync freshness badges, and the Cash/Accrual + granularity pil
 | 2.3–2.5 | `b57d45a` | feat(spend): per-model metrics with comparison shape in MetricsService |
 | 2.1, 2.2, 2.6, 2.7, 2.8 | `bd364d0` | feat(spend): model selector + comparison columns + dashed compare line |
 | 3.1 | `192b9e5` | feat(spend): platform-vs-attributed gap query + metrics-service wiring |
-| 3.2–3.5 | _pending_ | feat(spend): platform-vs-attributed columns and hero tile |
+| 3.2–3.5 | `cc4ee14` | feat(spend): platform-vs-attributed columns and hero tile |
+| 4.1, 4.2, 4.5, 4.6 | _pending_ | feat(spend): confidence-band query + metrics-service wiring |
 
 ---
 
