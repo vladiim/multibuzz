@@ -79,6 +79,17 @@ module SpendIntelligence
         assert_equal REVENUE, query.total_revenue
       end
 
+      test "exposes per-channel last_synced_at as the max ad_spend_records.updated_at" do
+        most_recent = ad_spend_records(:paid_search_today)
+        ad_spend_records(:paid_search_yesterday).update!(updated_at: 12.hours.ago)
+        most_recent.update!(updated_at: 2.hours.ago)
+
+        row = channel_row(Channels::PAID_SEARCH)
+
+        assert_kind_of ActiveSupport::TimeWithZone, row[:last_synced_at]
+        assert_in_delta most_recent.reload.updated_at, row[:last_synced_at], 1.second
+      end
+
       private
 
       def query

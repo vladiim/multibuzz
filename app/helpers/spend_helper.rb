@@ -2,12 +2,25 @@
 
 module SpendHelper
   MICRO_UNIT = AdSpendRecord::MICRO_UNIT
+  SYNC_STALE_AFTER = 36.hours
 
   TIMEZONE_OPTIONS = ActiveSupport::TimeZone.all
     .select { |tz| (tz.utc_offset % 3600).zero? }
     .map { |tz| [ tz.to_s, tz.utc_offset / 3600 ] }
     .sort_by(&:last)
     .freeze
+
+  def sync_freshness_label(time)
+    return nil unless time
+
+    "Updated #{time_ago_in_words(time)} ago"
+  end
+
+  def sync_stale?(time)
+    return false unless time
+
+    time < SYNC_STALE_AFTER.ago
+  end
 
   def format_spend(micros)
     return "$0.00" if micros.nil? || micros.zero?

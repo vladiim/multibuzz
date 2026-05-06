@@ -49,7 +49,8 @@ module SpendIntelligence
           roas: roas(spend, revenue),
           platform_roas: roas(spend, platform_value),
           impressions: channel_impressions[channel] || 0,
-          clicks: channel_clicks[channel] || 0
+          clicks: channel_clicks[channel] || 0,
+          last_synced_at: channel_last_synced_at[channel]
         }
       end
 
@@ -85,6 +86,10 @@ module SpendIntelligence
         @channel_platform_value ||= spend_scope.group(:channel)
           .sum(:platform_conversion_value_micros)
           .transform_values { |v| spend_in_units(v) }
+      end
+
+      def channel_last_synced_at
+        @channel_last_synced_at ||= spend_scope.group(:channel).maximum(:updated_at)
       end
     end
   end

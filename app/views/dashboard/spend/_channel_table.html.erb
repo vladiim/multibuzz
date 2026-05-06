@@ -58,7 +58,16 @@
             <td class="py-3 pr-4">
               <div class="flex items-center gap-2">
                 <span class="w-2.5 h-2.5 rounded-full" style="background-color: <%= spend_channel_color(row[:channel]) %>"></span>
-                <span class="font-medium text-gray-900"><%= row[:channel].titleize %></span>
+                <div>
+                  <div class="font-medium <%= sync_stale?(row[:last_synced_at]) ? "text-gray-400" : "text-gray-900" %>">
+                    <%= row[:channel].titleize %>
+                  </div>
+                  <% if (label = sync_freshness_label(row[:last_synced_at])) %>
+                    <div class="text-xs <%= sync_stale?(row[:last_synced_at]) ? "text-amber-600" : "text-gray-400" %>" data-test-id="channel-freshness">
+                      <%= label %>
+                    </div>
+                  <% end %>
+                </div>
               </div>
             </td>
             <td class="py-3 pr-4 text-right text-gray-700"><%= format_spend(row[:spend_micros]) %></td>
