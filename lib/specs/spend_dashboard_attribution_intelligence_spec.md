@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-06
 **Priority:** P0 (Spend dashboard is the second-most-visited dashboard surface; today it is structurally broken and competitively undifferentiated.)
-**Status:** In Progress — Phases 1, 2, 3, and 4 shipped (TZ fix, accounting mode, Meta job dispatch, Google TZ capture, model selector + comparison, platform-vs-attributed gap, confidence band + click-to-expand); Phase 5 (polish) pending; Phase 6 dev-only (full suite + Bullet + docs) pending. UAT batched to the end.
+**Status:** Dev complete — Phases 1–5 shipped; Phase 6 dev items (6.2 suite, 6.3 N+1 guard, 6.5 docs) shipped. Manual UAT outstanding: 6.1 (multi-connection / non-UTC / non-USD account walkthrough) and 6.4 (Lighthouse). Spec moves to `old/` after UAT signoff.
 **Branch:** `feature/spend-dashboard-attribution-intelligence`
 
 ---
@@ -335,10 +335,10 @@ Cash/Accrual pill (originally listed under the Phase 1 spec text but never rende
 ### Phase 6 — Verify on production
 
 - [ ] **6.1** Manual QA on dev with `pet-resort` style account (multi-connection, non-USD currency, non-UTC timezone)
-- [ ] **6.2** No regressions in existing controller tests
-- [ ] **6.3** No N+1 in any query path (use Bullet locally during QA)
+- [x] **6.2** Full test suite green for all spend-dashboard surfaces (115+ runs across queries, services, controller). Pre-existing failures in `accounts/integrations_controller_test.rb` (3) and `sensitive_paths_test.rb` (2) are unrelated to this spec; same failures present at branch start.
+- [x] **6.3** Single-render dashboard query count measured at 47 queries on dev seed data (under the 50-query test guard). The project uses Prosopite, not Bullet — Prosopite is enabled in development and surfaces N+1 to `Rails.logger`. Per-channel queries (8 metrics × N channels in `ChannelMetricsQuery`) all use single grouped sums, not per-row lookups. The 8 ROAS-per-model queries in `ConfidenceBandQuery` are intentional (one grouped sum per model) and bounded by the account's active model count.
 - [ ] **6.4** Lighthouse / performance check: dashboard renders < 1.5s on dev seeded with realistic data
-- [ ] **6.5** Update `lib/docs/PRODUCT.md` (new "Attribution-aware spend" capability) and `lib/docs/BUSINESS_RULES.md` (Cash vs Accrual semantics, gap definition)
+- [x] **6.5** `lib/docs/PRODUCT.md` extended with "Attribution-aware Spend Dashboard" section covering model selector, Cash/Accrual, granularity, gap, confidence band, period delta, sync freshness. `lib/docs/BUSINESS_RULES.md` extended with section 12 ("Spend Dashboard Semantics") documenting all 10 non-obvious rules (SD1–SD10) — Cash vs Accrual semantics, TZ handling, granularity defaults, gap math, period-delta definition, and the freshness threshold.
 - [ ] **6.6** Move spec to `lib/specs/old/`
 
 ---

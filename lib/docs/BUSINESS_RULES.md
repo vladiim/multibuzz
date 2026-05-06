@@ -541,6 +541,27 @@ mbuzz automatically detects and filters bot traffic to ensure clean data.
 
 ---
 
+## 12. Spend Dashboard Semantics
+
+The spend dashboard reconciles ad spend against attributed revenue. Several of its surfaces have non-obvious definitions that need to be explicit so customers and support read the numbers the same way.
+
+### Rules
+
+| ID | Rule | Notes |
+|----|------|-------|
+| SD1 | Cash mode dates revenue by `conversions.converted_at` | The default for hero KPI tiles. Today's number is "what came in today" -- includes lag from yesterday's spend. |
+| SD2 | Accrual mode dates revenue by `sessions.started_at` for the touchpoint that earned credit | The default for the trend chart. Single-day ROAS becomes "spend on day X attributed back to revenue earned by spend on day X." Lets a buyer see day-over-day movement without the spend-conversion lag confound. |
+| SD3 | Both date expressions cast through the ad account's reporting timezone | Stored timestamps are UTC; the dashboard reinterprets them in the connection's `settings['timezone_name']` (Google + Meta both capture this at connect). UTC-fallback when no connection has reported a timezone. |
+| SD4 | Granularity defaults by selected range length | ≤30 days renders daily; ≤120 days weekly; longer monthly. Driven by `RANGE_GRANULARITY_TABLE` in `SpendIntelligence::MetricsService`. URL override `?granularity=` wins. |
+| SD5 | "Platform-reported revenue" is the platform's self-reported conversion value | Sourced from `ad_spend_records.platform_conversion_value_micros`. Includes whatever the platform credits (view-throughs, assisted clicks, broad attribution windows). |
+| SD6 | "Attributed revenue" is mbuzz's value for the selected attribution model | Sum of `attribution_credits.revenue_credit` for the selected model in range, joined to `conversions`. |
+| SD7 | "Gap" is `attributed_revenue - platform_reported_revenue` (and percent of platform) | Negative when the platform over-reports relative to mbuzz; positive when mbuzz credits more revenue than the platform. The spec frames the gap as "different methodologies", not "platform is wrong". `gap_pct` is nil when platform-reported revenue is zero (avoids "+infinity%"). |
+| SD8 | Confidence band shows ROAS spread across the account's active attribution models | Wide band = models disagree; narrow band = models agree. `selected` is the primary model's ROAS for that channel. Hidden when only one attribution model is active. |
+| SD9 | Period delta compares the selected range to the immediately preceding equal-length range | "vs prior 28d" sub-line. Each metric's percent delta is nil when the prior value was zero. |
+| SD10 | Channel sync freshness is the max `ad_spend_records.updated_at` for that channel | Older than 36 hours dims the channel name and tones the badge amber. Single threshold across platforms in v1. |
+
+---
+
 ## Related Documentation
 
 - [Product Overview](PRODUCT.md) -- High-level explanation of what mbuzz is and how it works

@@ -188,7 +188,21 @@ module Dashboard
       assert_select "[data-test-id='hero-attributed-revenue-mer']"
     end
 
+    test "spend dashboard does not regress into a query explosion" do
+      query_count = count_queries { get dashboard_spend_path }
+
+      assert_operator query_count, :<, 50, "dashboard render should stay well under 50 queries"
+    end
+
     private
+
+    def count_queries
+      count = 0
+      counter = ->(_n, _s, _f, _id, payload) { count += 1 unless payload[:name] == "SCHEMA" || payload[:name] == "TRANSACTION" }
+      ActiveSupport::Notifications.subscribed(counter, "sql.active_record") { yield }
+      count
+    end
+
 
     def account
       @account ||= accounts(:one)
