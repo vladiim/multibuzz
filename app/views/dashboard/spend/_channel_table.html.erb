@@ -1,4 +1,9 @@
-<%# Required locals: by_channel, totals %>
+<%# Required locals: by_channel, totals; optional: compare %>
+<%
+  compare ||= nil
+  comparing = compare.present?
+  compare_by_channel = comparing ? compare[:by_channel].index_by { |r| r[:channel] } : {}
+%>
 <h4 class="text-base font-medium text-gray-900 mb-4">Channel Performance Detail</h4>
 
 <% if by_channel.present? %>
@@ -20,6 +25,10 @@
               </div>
             </div>
           </th>
+          <% if comparing %>
+            <th class="pb-3 pr-4 text-right text-amber-700">Δ ROAS</th>
+            <th class="pb-3 pr-4 text-right text-amber-700">Δ Revenue</th>
+          <% end %>
           <th class="pb-3 pr-4 text-right">Impressions</th>
           <th class="pb-3 pr-4 text-right">Clicks</th>
           <th class="pb-3 pr-4 text-right">CTR</th>
@@ -43,6 +52,21 @@
                 <div class="text-xs text-gray-400">vs <%= row[:platform_roas] %>x</div>
               <% end %>
             </td>
+            <% if comparing %>
+              <% compare_row = compare_by_channel[row[:channel]] %>
+              <% delta_roas = (row[:roas] && compare_row&.[](:roas)) ? (row[:roas] - compare_row[:roas]).round(2) : nil %>
+              <% delta_revenue = compare_row ? (row[:attributed_revenue] - compare_row[:attributed_revenue]).round(2) : nil %>
+              <td class="py-3 pr-4 text-right">
+                <span class="font-semibold <%= delta_roas.to_f >= 0 ? "text-emerald-700" : "text-rose-700" %>">
+                  <%= delta_roas.nil? ? "—" : "#{'+' if delta_roas >= 0}#{delta_roas}x" %>
+                </span>
+              </td>
+              <td class="py-3 pr-4 text-right">
+                <span class="<%= delta_revenue.to_f >= 0 ? "text-emerald-700" : "text-rose-700" %>">
+                  <%= delta_revenue.nil? ? "—" : number_to_currency(delta_revenue, precision: 0, format: (delta_revenue >= 0 ? "+%u%n" : nil)) %>
+                </span>
+              </td>
+            <% end %>
             <td class="py-3 pr-4 text-right text-gray-600"><%= number_with_delimiter(row[:impressions]) %></td>
             <td class="py-3 pr-4 text-right text-gray-600"><%= number_with_delimiter(row[:clicks]) %></td>
             <td class="py-3 pr-4 text-right text-gray-600"><%= spend_ctr(row) %></td>
@@ -56,6 +80,16 @@
           <td class="py-3 pr-4 text-right text-gray-900"><%= format_spend(totals[:total_spend_micros]) %></td>
           <td class="py-3 pr-4 text-right text-gray-900"><%= number_to_currency(totals[:attributed_revenue], precision: 0) %></td>
           <td class="py-3 pr-4 text-right font-semibold text-gray-900"><%= totals[:blended_roas] ? "#{totals[:blended_roas]}x" : "—" %></td>
+          <% if comparing %>
+            <% delta_blended = (totals[:blended_roas] && compare[:totals][:blended_roas]) ? (totals[:blended_roas] - compare[:totals][:blended_roas]).round(2) : nil %>
+            <% delta_total_rev = (totals[:attributed_revenue] - compare[:totals][:attributed_revenue]).round(2) %>
+            <td class="py-3 pr-4 text-right font-semibold <%= delta_blended.to_f >= 0 ? "text-emerald-700" : "text-rose-700" %>">
+              <%= delta_blended.nil? ? "—" : "#{'+' if delta_blended >= 0}#{delta_blended}x" %>
+            </td>
+            <td class="py-3 pr-4 text-right <%= delta_total_rev >= 0 ? "text-emerald-700" : "text-rose-700" %>">
+              <%= number_to_currency(delta_total_rev, precision: 0, format: (delta_total_rev >= 0 ? "+%u%n" : nil)) %>
+            </td>
+          <% end %>
           <td class="py-3 pr-4 text-right text-gray-600"><%= number_with_delimiter(by_channel.sum { |r| r[:impressions] }) %></td>
           <td class="py-3 pr-4 text-right text-gray-600"><%= number_with_delimiter(by_channel.sum { |r| r[:clicks] }) %></td>
           <td class="py-3 pr-4 text-right text-gray-600">

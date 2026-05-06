@@ -25,7 +25,10 @@ export default class extends Controller {
     metric: { type: String, default: "credits" },
     drilldown: { type: Boolean, default: false },
     campaigns: String,
-    logScale: { type: Boolean, default: false }
+    logScale: { type: Boolean, default: false },
+    compareData: { type: String, default: "" },
+    compareName: { type: String, default: "" },
+    primaryName: { type: String, default: "" }
   }
 
   connect() {
@@ -120,23 +123,49 @@ export default class extends Controller {
       plotOptions: {
         column: { borderRadius: 2 }
       },
-      series: [{
-        name: "Spend",
-        type: "column",
-        color: "#E5E7EB",
-        data: data.map(d => d.spend),
-        yAxis: 0
-      }, {
-        name: "ROAS",
-        type: "line",
-        color: "#6366F1",
-        data: data.map(d => d.roas || 0),
-        yAxis: 1,
-        marker: { enabled: false },
-        lineWidth: 2
-      }],
+      series: this.spendTrendSeries(data, dates),
       credits: { enabled: false }
     })
+  }
+
+  spendTrendSeries(data, dates) {
+    const series = [{
+      name: "Spend",
+      type: "column",
+      color: "#E5E7EB",
+      data: data.map(d => d.spend),
+      yAxis: 0
+    }, {
+      name: this.primaryNameValue || "ROAS",
+      type: "line",
+      color: "#6366F1",
+      data: data.map(d => d.roas || 0),
+      yAxis: 1,
+      marker: { enabled: false },
+      lineWidth: 2
+    }]
+
+    if (this.compareDataValue) {
+      try {
+        const compareData = JSON.parse(this.compareDataValue)
+        const compareByDate = Object.fromEntries(compareData.map(d => [d.date, d.roas || 0]))
+        const aligned = data.map(d => compareByDate[d.date] ?? null)
+        series.push({
+          name: this.compareNameValue || "Compare",
+          type: "line",
+          color: "#F59E0B",
+          data: aligned,
+          yAxis: 1,
+          marker: { enabled: false },
+          lineWidth: 2,
+          dashStyle: "ShortDash"
+        })
+      } catch (e) {
+        console.warn("compare-data-value parse error", e)
+      }
+    }
+
+    return series
   }
 
   renderBarChart() {

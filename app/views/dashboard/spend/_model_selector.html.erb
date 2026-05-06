@@ -1,0 +1,67 @@
+<%
+  active_models = current_account.attribution_models.active.to_a
+  primary = @filter_params[:models]&.first
+  compare = @filter_params[:models]&.[](1)
+  date_range_param = @filter_params[:date_range].is_a?(Hash) ? "custom" : @filter_params[:date_range]
+%>
+<div data-spend-model-selector class="flex flex-wrap items-center gap-2 mb-4">
+  <%= form_with url: dashboard_spend_path, method: :get, class: "flex flex-wrap items-center gap-2", local: true, data: { turbo_frame: "_top" } do |f| %>
+    <%# Preserve other filters through the form %>
+    <% if date_range_param.is_a?(String) %>
+      <%= hidden_field_tag :date_range, date_range_param %>
+    <% elsif date_range_param == "custom" %>
+      <%= hidden_field_tag :date_range, "custom" %>
+      <%= hidden_field_tag :start_date, @filter_params[:date_range][:start_date] %>
+      <%= hidden_field_tag :end_date, @filter_params[:date_range][:end_date] %>
+    <% end %>
+    <%= hidden_field_tag :accounting_mode, @filter_params[:accounting_mode] if @filter_params[:accounting_mode].present? %>
+    <% Array(@filter_params[:channels]).each do |ch| %>
+      <%= hidden_field_tag "channels[]", ch %>
+    <% end %>
+
+    <%# Primary model pill %>
+    <details class="relative" data-role="primary-pill">
+      <summary class="cursor-pointer list-none px-3 py-1.5 text-sm rounded-full bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200 hover:bg-indigo-100 inline-flex items-center gap-1.5">
+        <span class="text-xs font-semibold uppercase tracking-wide text-indigo-500">Model</span>
+        <span data-role="primary-label"><%= primary&.name&.titleize || "Pick a model" %></span>
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+      </summary>
+      <div class="absolute z-20 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg py-1 max-h-72 overflow-auto">
+        <% active_models.each do |m| %>
+          <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+            <input type="radio" name="models[]" value="<%= m.prefix_id %>" <%= "checked" if primary == m %> onchange="this.form.requestSubmit()" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+            <span class="ml-2 text-gray-700"><%= m.name.titleize %></span>
+          </label>
+        <% end %>
+      </div>
+    </details>
+
+    <%# Compare pill: appears as "+ Compare" when no compare model, "vs Foo" with clear when set %>
+    <% if compare %>
+      <span class="px-3 py-1.5 text-sm rounded-full bg-amber-50 text-amber-800 ring-1 ring-amber-200 inline-flex items-center gap-1.5" data-role="compare-pill">
+        <span class="text-xs font-semibold uppercase tracking-wide text-amber-600">vs</span>
+        <span data-role="compare-label"><%= compare.name.titleize %></span>
+        <%= button_tag type: "submit", name: "models[]", value: primary&.prefix_id, class: "ml-1 text-amber-600 hover:text-amber-900", title: "Remove comparison" do %>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        <% end %>
+      </span>
+    <% else %>
+      <details class="relative <%= "opacity-50 pointer-events-none" if active_models.size < 2 %>" data-role="compare-add">
+        <summary class="cursor-pointer list-none px-3 py-1.5 text-sm rounded-full bg-white text-gray-600 ring-1 ring-gray-200 hover:bg-gray-50 inline-flex items-center gap-1.5" title="<%= 'Activate a second model on the AML page' if active_models.size < 2 %>">
+          <span>+ Compare</span>
+        </summary>
+        <div class="absolute z-20 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg py-1 max-h-72 overflow-auto">
+          <% if primary %>
+            <%= hidden_field_tag "models[]", primary.prefix_id %>
+          <% end %>
+          <% active_models.reject { |m| m == primary }.each do |m| %>
+            <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+              <input type="radio" name="models[]" value="<%= m.prefix_id %>" onchange="this.form.requestSubmit()" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+              <span class="ml-2 text-gray-700"><%= m.name.titleize %></span>
+            </label>
+          <% end %>
+        </div>
+      </details>
+    <% end %>
+  <% end %>
+</div>

@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-06
 **Priority:** P0 (Spend dashboard is the second-most-visited dashboard surface; today it is structurally broken and competitively undifferentiated.)
-**Status:** In Progress — Phase 1 shipped (TZ fix, accounting mode, Meta job dispatch, Google TZ capture); Phases 2–6 pending
+**Status:** In Progress — Phases 1 and 2 shipped (TZ fix, accounting mode, Meta job dispatch, Google TZ capture, model selector + comparison mode + delta columns + dashed compare line); Phases 3–6 pending
 **Branch:** `feature/spend-dashboard-attribution-intelligence`
 
 ---
@@ -289,15 +289,15 @@ SpendController#show
 
 ### Phase 2 — Model selector and comparison
 
-- [ ] **2.1** Extract `_model_selector.html.erb` partial with primary pill + Compare pill (Stimulus controller reused from existing filter pills if possible; new controller only if necessary)
-- [ ] **2.2** `SpendController` accepts `attribution_model` and `compare_to` params, persists in URL
-- [ ] **2.3** `MetricsService` returns shape `{ primary: {...}, compare: {...} | nil }` always
-- [ ] **2.4** `ChannelMetricsQuery` accepts `attribution_model:` (delete `models.first` shortcut)
-- [ ] **2.5** `BreakdownsQuery` accepts `attribution_model:`
-- [ ] **2.6** Channel table renders Δ columns when comparison present
-- [ ] **2.7** Timeseries chart renders comparison line (muted, dashed) when comparison present
-- [ ] **2.8** Disable Compare pill (with tooltip) if account has only one active model
-- [ ] **2.9** Tests: every metric honours the selected model; comparison mode emits one row of each in service result; URL state round-trips
+- [x] **2.1** `_model_selector.html.erb` ships a primary pill + Compare pill using native `<details>` popovers and form-submit-on-change. No new Stimulus controller needed.
+- [x] **2.2** `SpendController` reuses `BaseController#selected_attribution_models`; URL carries `?models[]=mdl_a&models[]=mdl_b` and round-trips through filter state
+- [x] **2.3** `MetricsService` returns the existing flat shape with a new top-level `:compare` key (`{ totals:, by_channel:, time_series: } | nil`). Chose this over a fully nested `{ primary:, compare: }` shape to avoid breaking every downstream view consumer for one feature.
+- [x] **2.4** `ChannelMetricsQuery` is now invoked per-model via `credits_scope_for(model)` instead of being passed an array of models. The blended-across-models bug is gone; primary and compare each query against a single-model scope.
+- [x] **2.5** `BreakdownsQuery` is invoked per-model the same way.
+- [x] **2.6** Channel table renders `Δ ROAS` and `Δ Revenue` columns plus deltas in the totals row when a compare model is set; columns are absent otherwise.
+- [x] **2.7** `chart_controller.js` accepts `compareDataValue` + `compareNameValue` and renders a dashed amber line at the compare model's ROAS, aligned by date. `_trend_chart` partial passes the data and updates the legend.
+- [x] **2.8** Compare pill renders as `opacity-50 pointer-events-none` with a "activate a second model on the AML page" tooltip when the account has fewer than two active models.
+- [x] **2.9** Tests: per-model totals (no cross-model blending); `:compare` is nil with one model and present with two; URL state round-trips through controller; Δ headers appear when comparing and absent when not; chart attributes carry compare data when comparing
 - [ ] **2.10** Manual QA on dev with at least three active models
 
 ### Phase 3 — Platform vs attributed gap

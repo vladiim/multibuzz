@@ -78,6 +78,58 @@ module Dashboard
       mock_service.verify
     end
 
+    test "renders the attribution model selector with the active model name" do
+      get dashboard_spend_path
+
+      assert_select "[data-spend-model-selector]", count: 1
+      assert_select "[data-spend-model-selector] [data-role='primary-label']",
+        text: /first touch|last touch/i
+    end
+
+    test "models[] param drives the primary attribution model resolution" do
+      get dashboard_spend_path, params: { models: [ attribution_models(:first_touch).prefix_id ] }
+
+      assert_response :success
+      filter = controller.instance_variable_get(:@filter_params)
+
+      assert_equal [ attribution_models(:first_touch) ], filter[:models]
+    end
+
+    test "two models selected enable comparison mode in the service result" do
+      get dashboard_spend_path, params: {
+        models: [ attribution_models(:last_touch).prefix_id, attribution_models(:first_touch).prefix_id ]
+      }
+
+      assert_response :success
+      data = controller.instance_variable_get(:@result)[:data]
+
+      assert_not_nil data[:compare], "expected :compare data when two models are selected"
+    end
+
+    test "channel table renders delta columns when comparing two models" do
+      get dashboard_spend_path, params: {
+        models: [ attribution_models(:last_touch).prefix_id, attribution_models(:first_touch).prefix_id ]
+      }
+
+      assert_select "th", text: /Δ\s*ROAS/i
+      assert_select "th", text: /Δ\s*Revenue/i
+    end
+
+    test "channel table omits delta columns when only one model is selected" do
+      get dashboard_spend_path, params: { models: [ attribution_models(:last_touch).prefix_id ] }
+
+      assert_select "th", text: /Δ\s*ROAS/i, count: 0
+    end
+
+    test "trend chart embeds compare time series JSON when comparing" do
+      get dashboard_spend_path, params: {
+        models: [ attribution_models(:last_touch).prefix_id, attribution_models(:first_touch).prefix_id ]
+      }
+
+      assert_select "#spend-trend-chart[data-chart-compare-data-value]"
+      assert_select "#spend-trend-chart[data-chart-compare-name-value]"
+    end
+
     private
 
     def account
