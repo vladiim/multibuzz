@@ -1,0 +1,82 @@
+# frozen_string_literal: true
+
+module AdPlatforms
+  module Meta
+    # Wraps Meta::SpendSyncService with the orchestration that Google has:
+    # ensure-fresh-token, AdSpendSyncRun lifecycle, connection status
+    # transitions, and Turbo broadcast of the result row.
+    #
+    # Mirrors AdPlatforms::Google::ConnectionSyncService deliberately so
+    # SpendSyncJob can dispatch to either via Registry without conditionals.
+    class ConnectionSyncService
+      INCREMENTAL_LOOKBACK_DAYS = 3
+      BACKFILL_DAYS = 90
+
+      def initialize(connection, date_range: nil)
+        @connection = connection
+        @date_range_override = date_range
+      end
+
+      def call
+        ensure_fresh_token
+        sync_result[:success] ? complete_sync : fail_sync
+      rescue TokenRefreshError => e
+        fail_reauth(e.message)
+      end
+
+      private
+
+      attr_reader :connection, :date_range_override
+
+      def ensure_fresh_token
+        return unless connection.token_expired?
+        raise TokenRefreshError, token_refresh[:errors]&.first unless token_refresh[:success]
+      end
+
+      def complete_sync
+        sync_run.update!(status: :completed, records_synced: sync_result[:records_synced], completed_at: Time.current)
+        connection.mark_connected!
+        broadcast_sync_result
+      end
+
+      def fail_sync(message = sync_result[:errors]&.first)
+        sync_run.update!(status: :failed, error_message: message, completed_at: Time.current)
+        connection.mark_error!(message)
+        broadcast_sync_result
+      end
+
+      def fail_reauth(message)
+        sync_run.update!(status: :failed, error_message: message, completed_at: Time.current)
+        connection.mark_needs_reauth!
+        broadcast_sync_result
+      end
+
+      def broadcast_sync_result
+        Turbo::StreamsChannel.broadcast_replace_to(
+          "connection_#{connection.prefix_id}",
+          target: "sync-run-pending",
+          partial: "accounts/integrations/sync_run_row",
+          locals: { run: sync_run }
+        )
+      end
+
+      def sync_result
+        @sync_result ||= SpendSyncService.new(connection, date_range: date_range).call
+      end
+
+      def sync_run
+        @sync_run ||= connection.ad_spend_sync_runs.create!(sync_date: Date.current, status: :running, started_at: Time.current)
+      end
+
+      def token_refresh
+        @token_refresh ||= TokenRefresher.new(connection).call
+      end
+
+      def date_range
+        date_range_override || (INCREMENTAL_LOOKBACK_DAYS.days.ago.to_date..Date.current)
+      end
+
+      TokenRefreshError = Class.new(StandardError)
+    end
+  end
+end

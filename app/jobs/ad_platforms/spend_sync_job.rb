@@ -5,10 +5,10 @@ module AdPlatforms
     queue_as :default
 
     def perform(connection_id, date_range: nil)
-      Google::ConnectionSyncService.new(
-        AdPlatformConnection.find(connection_id),
-        date_range: date_range
-      ).call
+      connection = AdPlatformConnection.find(connection_id)
+      Registry.connection_sync_service_for(connection.platform)
+        .new(connection, date_range: date_range)
+        .call
     end
   end
 end
