@@ -13,18 +13,20 @@
         <tr class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
           <th class="pb-3 pr-4">Channel</th>
           <th class="pb-3 pr-4 text-right">Spend</th>
-          <th class="pb-3 pr-4 text-right">Revenue</th>
+          <th class="pb-3 pr-4 text-right">Platform Rev</th>
+          <th class="pb-3 pr-4 text-right">Attributed Rev</th>
           <th class="pb-3 pr-4 text-right">
             <div class="group relative inline-flex items-center gap-1">
-              ROAS
+              Gap %
               <svg class="w-3 h-3 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <div class="hidden group-hover:block absolute z-10 w-56 p-2 text-xs font-normal normal-case text-gray-600 bg-white border border-gray-200 rounded shadow-lg right-0 top-5">
-                Attributed ROAS vs Platform ROAS (Google's self-reported number). Discrepancy is expected — platforms overcount via view-through attribution and overlapping credit.
+              <div class="hidden group-hover:block absolute z-10 w-64 p-2 text-xs font-normal normal-case text-gray-600 bg-white border border-gray-200 rounded shadow-lg right-0 top-5">
+                Difference between mbuzz-attributed revenue and the platform's self-reported number. Different methodologies, both useful — platforms include view-through and assisted credit mbuzz does not.
               </div>
             </div>
           </th>
+          <th class="pb-3 pr-4 text-right">ROAS</th>
           <% if comparing %>
             <th class="pb-3 pr-4 text-right text-amber-700">Δ ROAS</th>
             <th class="pb-3 pr-4 text-right text-amber-700">Δ Revenue</th>
@@ -45,12 +47,18 @@
               </div>
             </td>
             <td class="py-3 pr-4 text-right text-gray-700"><%= format_spend(row[:spend_micros]) %></td>
+            <td class="py-3 pr-4 text-right text-gray-600">
+              <%= row[:platform_revenue]&.positive? ? number_to_currency(row[:platform_revenue], precision: 0) : "—" %>
+            </td>
             <td class="py-3 pr-4 text-right text-gray-700"><%= number_to_currency(row[:attributed_revenue], precision: 0) %></td>
             <td class="py-3 pr-4 text-right">
+              <% gap_amber = row[:gap_pct] && row[:gap_pct].abs >= 15 %>
+              <span class="<%= gap_amber ? "text-amber-700 font-semibold" : "text-gray-600" %>">
+                <%= row[:gap_pct].nil? ? "—" : "#{'+' if row[:gap_pct] >= 0}#{row[:gap_pct]}%" %>
+              </span>
+            </td>
+            <td class="py-3 pr-4 text-right">
               <span class="font-semibold text-gray-900"><%= row[:roas] ? "#{row[:roas]}x" : "—" %></span>
-              <% if row[:platform_roas] %>
-                <div class="text-xs text-gray-400">vs <%= row[:platform_roas] %>x</div>
-              <% end %>
             </td>
             <% if comparing %>
               <% compare_row = compare_by_channel[row[:channel]] %>
@@ -78,7 +86,16 @@
         <tr class="border-t-2 border-gray-200 font-medium">
           <td class="py-3 pr-4 text-gray-900">Total</td>
           <td class="py-3 pr-4 text-right text-gray-900"><%= format_spend(totals[:total_spend_micros]) %></td>
+          <td class="py-3 pr-4 text-right text-gray-700">
+            <%= totals[:platform_revenue]&.positive? ? number_to_currency(totals[:platform_revenue], precision: 0) : "—" %>
+          </td>
           <td class="py-3 pr-4 text-right text-gray-900"><%= number_to_currency(totals[:attributed_revenue], precision: 0) %></td>
+          <td class="py-3 pr-4 text-right">
+            <% totals_gap_amber = totals[:gap_pct] && totals[:gap_pct].abs >= 15 %>
+            <span class="<%= totals_gap_amber ? "text-amber-700 font-semibold" : "text-gray-700" %>">
+              <%= totals[:gap_pct].nil? ? "—" : "#{'+' if totals[:gap_pct] >= 0}#{totals[:gap_pct]}%" %>
+            </span>
+          </td>
           <td class="py-3 pr-4 text-right font-semibold text-gray-900"><%= totals[:blended_roas] ? "#{totals[:blended_roas]}x" : "—" %></td>
           <% if comparing %>
             <% delta_blended = (totals[:blended_roas] && compare[:totals][:blended_roas]) ? (totals[:blended_roas] - compare[:totals][:blended_roas]).round(2) : nil %>

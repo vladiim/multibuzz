@@ -23,7 +23,7 @@
     <% end %>
   </div>
 
-  <!-- Attributed Revenue -->
+  <!-- Attributed Revenue (with MER sub-line) -->
   <div class="bg-white p-3 sm:p-5 rounded-lg shadow">
     <dt class="text-xs sm:text-sm font-medium text-gray-500">Attributed Revenue</dt>
     <dd class="mt-1">
@@ -31,6 +31,12 @@
         <%= totals[:attributed_revenue]&.positive? ? number_to_currency(totals[:attributed_revenue], precision: 0) : "—" %>
       </span>
     </dd>
+    <% if totals[:mer] %>
+      <div class="mt-1 text-xs text-gray-500" data-test-id="hero-attributed-revenue-mer">
+        <span class="font-medium text-gray-700">MER <%= totals[:mer] %>x</span>
+        <span class="text-gray-400">· marketing efficiency</span>
+      </div>
+    <% end %>
   </div>
 
   <!-- NCAC -->
@@ -44,14 +50,21 @@
     <div class="mt-1 text-xs text-gray-400">new customer acq. cost</div>
   </div>
 
-  <!-- MER -->
-  <div class="bg-white p-3 sm:p-5 rounded-lg shadow col-span-2 sm:col-span-1">
-    <dt class="text-xs sm:text-sm font-medium text-gray-500">MER</dt>
+  <!-- Platform vs Attributed -->
+  <% gap_amber = totals[:gap_pct] && totals[:gap_pct].abs >= 15 %>
+  <div class="<%= gap_amber ? "bg-amber-50 border border-amber-200" : "bg-white" %> p-3 sm:p-5 rounded-lg shadow col-span-2 sm:col-span-1" data-test-id="hero-platform-vs-attributed">
+    <dt class="text-xs sm:text-sm font-medium <%= gap_amber ? "text-amber-900" : "text-gray-500" %>">Platform vs Attributed</dt>
     <dd class="mt-1">
-      <span class="text-lg sm:text-2xl font-semibold text-gray-900">
-        <%= totals[:mer] ? "#{totals[:mer]}x" : "—" %>
+      <span class="text-lg sm:text-2xl font-semibold <%= gap_amber ? "text-amber-800" : "text-gray-900" %>">
+        <%= totals[:gap] ? number_to_currency(totals[:gap], precision: 0, format: (totals[:gap] >= 0 ? "+%u%n" : nil)) : "—" %>
       </span>
     </dd>
-    <div class="mt-1 text-xs text-gray-400">marketing efficiency ratio</div>
+    <% if totals[:gap_pct] %>
+      <div class="mt-1 text-xs <%= gap_amber ? "text-amber-700" : "text-gray-400" %>">
+        <%= "#{'+' if totals[:gap_pct] >= 0}#{totals[:gap_pct]}%" %> · different methodologies
+      </div>
+    <% else %>
+      <div class="mt-1 text-xs text-gray-400">no platform-reported revenue</div>
+    <% end %>
   </div>
 </div>

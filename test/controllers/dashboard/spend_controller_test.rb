@@ -130,6 +130,33 @@ module Dashboard
       assert_select "#spend-trend-chart[data-chart-compare-name-value]"
     end
 
+    test "channel table renders Platform Rev, Attributed Rev, and Gap columns" do
+      get dashboard_spend_path
+
+      assert_select "th", text: /Platform Rev/i
+      assert_select "th", text: /Attributed Rev/i
+      assert_select "th", text: /Gap %/i
+    end
+
+    test "hero strip includes Platform vs Attributed tile and not the MER tile" do
+      get dashboard_spend_path
+
+      assert_select "dt", text: /Platform vs Attributed/i
+      assert_select "dt", text: "MER", count: 0
+    end
+
+    test "Attributed Revenue hero tile carries an MER sub-line when MER is computable" do
+      account.conversions.create!(
+        visitor: visitors(:one), conversion_type: "purchase", revenue: 500.0,
+        converted_at: 1.day.ago, session_id: 1, event_id: 1, journey_session_ids: [ 1 ]
+      )
+
+      get dashboard_spend_path
+
+      assert_select "dt", text: "Attributed Revenue"
+      assert_select "[data-test-id='hero-attributed-revenue-mer']"
+    end
+
     private
 
     def account
