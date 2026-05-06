@@ -59,8 +59,43 @@ module SpendIntelligence
     end
 
     def primary_totals
-      base_totals_for(primary_metrics).merge(primary_platform_metrics.totals)
+      base_totals_for(primary_metrics)
+        .merge(primary_platform_metrics.totals)
+        .merge(prior_period: prior_period_deltas)
     end
+
+    # vs prior-period delta in percent for each headline number.
+    # nil per-metric when prior had no signal (avoids "+infinity%" surfaces).
+    def prior_period_deltas
+      {
+        range_days: date_range_parser.days_in_range,
+        total_spend_pct: pct_delta(primary_metrics.total_spend_micros, prior_metrics.total_spend_micros),
+        attributed_revenue_pct: pct_delta(primary_metrics.total_revenue, prior_metrics.total_revenue),
+        blended_roas_pct: pct_delta(primary_metrics.blended_roas, prior_metrics.blended_roas)
+      }
+    end
+
+    def pct_delta(current, prior)
+      return nil unless prior.to_f.positive?
+
+      ((current.to_f - prior.to_f) / prior.to_f * 100).round(1)
+    end
+
+    def prior_metrics
+      @prior_metrics ||= Queries::ChannelMetricsQuery.new(spend_scope: prior_spend_scope, credits_scope: prior_credits_scope)
+    end
+
+    def prior_spend_scope
+      @prior_spend_scope ||= Scopes::SpendScope.new(account: account, date_range: prior_date_range_parser.to_range, channels: channels, test_mode: test_mode).call
+    end
+
+    def prior_credits_scope
+      @prior_credits_scope ||= Dashboard::Scopes::CreditsScope.new(
+        account: account, models: [ primary_attribution_model ].compact, date_range: prior_date_range_parser, channels: channels, test_mode: test_mode
+      ).call
+    end
+
+    def prior_date_range_parser = @prior_date_range_parser ||= date_range_parser.prior_period
 
     def base_totals_for(metrics)
       {

@@ -153,6 +153,32 @@ module SpendIntelligence
       assert_kind_of Numeric, paid_search[:confidence_band][:max]
     end
 
+    test "totals carry a prior_period delta hash with range_days and percentage deltas" do
+      prior_revenue = 50.0
+      account.attribution_credits.create!(
+        conversion: account.conversions.create!(
+          visitor: visitors(:one), conversion_type: "purchase", revenue: prior_revenue, converted_at: 45.days.ago
+        ),
+        session_id: 1, attribution_model: attribution_model, channel: Channels::PAID_SEARCH,
+        credit: 1.0, revenue_credit: prior_revenue, is_test: false
+      )
+
+      prior_period = service.call[:data][:totals][:prior_period]
+
+      assert_kind_of Hash, prior_period
+      assert_equal 30, prior_period[:range_days]
+      assert_kind_of Numeric, prior_period[:attributed_revenue_pct]
+    end
+
+    test "prior_period deltas are nil when prior period had no spend or revenue" do
+      account.ad_spend_records.where("spend_date < ?", 30.days.ago).destroy_all
+
+      prior_period = service.call[:data][:totals][:prior_period]
+
+      assert_nil prior_period[:total_spend_pct]
+      assert_nil prior_period[:attributed_revenue_pct]
+    end
+
     test "confidence band is nil when only one model is active" do
       account.attribution_models.where.not(id: attribution_model.id).update_all(is_active: false)
 

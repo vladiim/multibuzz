@@ -1,4 +1,8 @@
 <%# Required locals: totals %>
+<%
+  prior = totals[:prior_period] || {}
+  prior_label = prior[:range_days] ? "vs prior #{prior[:range_days]}d" : nil
+%>
 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6">
   <!-- Blended ROAS -->
   <div class="bg-white p-3 sm:p-5 rounded-lg shadow">
@@ -8,6 +12,7 @@
         <%= totals[:blended_roas] ? "#{totals[:blended_roas]}x" : "—" %>
       </span>
     </dd>
+    <%= render "dashboard/spend/hero_period_delta", pct: prior[:blended_roas_pct], label: prior_label %>
   </div>
 
   <!-- Total Spend -->
@@ -18,6 +23,7 @@
         <%= totals[:total_spend] ? number_to_currency(totals[:total_spend], precision: 0) : "—" %>
       </span>
     </dd>
+    <%= render "dashboard/spend/hero_period_delta", pct: prior[:total_spend_pct], label: prior_label %>
     <% if totals[:currency] %>
       <div class="mt-1 text-xs text-gray-400"><%= totals[:currency] %></div>
     <% end %>
@@ -31,6 +37,7 @@
         <%= totals[:attributed_revenue]&.positive? ? number_to_currency(totals[:attributed_revenue], precision: 0) : "—" %>
       </span>
     </dd>
+    <%= render "dashboard/spend/hero_period_delta", pct: prior[:attributed_revenue_pct], label: prior_label %>
     <% if totals[:mer] %>
       <div class="mt-1 text-xs text-gray-500" data-test-id="hero-attributed-revenue-mer">
         <span class="font-medium text-gray-700">MER <%= totals[:mer] %>x</span>

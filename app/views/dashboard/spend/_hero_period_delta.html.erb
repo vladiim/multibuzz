@@ -1,0 +1,11 @@
+<%# Required locals: pct (Numeric or nil), label (String or nil) %>
+<% if pct && label %>
+  <div class="mt-1 text-xs">
+    <span class="font-medium <%= pct >= 0 ? "text-emerald-700" : "text-rose-700" %>">
+      <%= "#{'+' if pct >= 0}#{pct}%" %>
+    </span>
+    <span class="text-gray-400"><%= label %></span>
+  </div>
+<% elsif label %>
+  <div class="mt-1 text-xs text-gray-400">— <%= label %></div>
+<% end %>
