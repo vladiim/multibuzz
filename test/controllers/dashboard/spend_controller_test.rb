@@ -145,6 +145,20 @@ module Dashboard
       assert_select "dt", text: "MER", count: 0
     end
 
+    test "channel table renders Confidence column when the account has multiple active models" do
+      get dashboard_spend_path
+
+      assert_select "th", text: /Confidence/i
+    end
+
+    test "channel table hides Confidence column when only one model is active" do
+      attribution_models(:first_touch).update!(is_active: false)
+
+      get dashboard_spend_path
+
+      assert_select "th", text: /Confidence/i, count: 0
+    end
+
     test "Attributed Revenue hero tile carries an MER sub-line when MER is computable" do
       account.conversions.create!(
         visitor: visitors(:one), conversion_type: "purchase", revenue: 500.0,

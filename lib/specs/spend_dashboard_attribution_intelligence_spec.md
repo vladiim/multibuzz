@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-06
 **Priority:** P0 (Spend dashboard is the second-most-visited dashboard surface; today it is structurally broken and competitively undifferentiated.)
-**Status:** In Progress — Phases 1, 2, and 3 shipped (TZ fix, accounting mode, Meta job dispatch, Google TZ capture, model selector + comparison, platform-vs-attributed gap); Phases 4–6 pending. UAT batched to the end.
+**Status:** In Progress — Phases 1, 2, 3, and 4 shipped (TZ fix, accounting mode, Meta job dispatch, Google TZ capture, model selector + comparison, platform-vs-attributed gap, confidence band + click-to-expand); Phase 5 (polish) pending; Phase 6 dev-only (full suite + Bullet + docs) pending. UAT batched to the end.
 **Branch:** `feature/spend-dashboard-attribution-intelligence`
 
 ---
@@ -317,8 +317,8 @@ period-delta math, sync freshness badges, and the Cash/Accrual + granularity pil
 
 - [x] **4.1** `ConfidenceBandQuery` returns `{ channel => { min:, max:, selected:, by_model: } }` per channel with at least one model crediting it. The per-channel computation lives in a `ChannelConfidenceBand` value object so the query stays a pure transform pipeline (`spend_by_channel.map { |ch, sp| ChannelConfidenceBand.new(...) }.select(&:present?)`). `by_model` is keyed by the `AttributionModel` instance so the view can render `model.name.titleize` directly.
 - [x] **4.2** No separate Solid Cache layer. The whole `MetricsService` payload is already cached for 5 minutes in `Rails.cache.fetch(cache_key)`; adding a 30-min sub-cache around just the band would double-cache and complicate invalidation. Eight grouped sums on indexed columns are cheap enough for the 5-min cadence. (Spec deviation; flagged in commit message.)
-- [ ] **4.3** Channel table renders horizontal-bar column with band
-- [ ] **4.4** Click on band expands inline panel with per-model values; reuse Stimulus toggle controller
+- [x] **4.3** Channel table renders rightmost "Confidence" column when account has multiple active models. Cell shows a 14×8 horizontal bar (color-keyed by spread ratio: emerald < 1.3×, amber < 2×, rose ≥ 2×) with a tick mark at the selected model's position; min/max ROAS labels on either end. The table now uses one `<tbody>` per row pair so the click-to-expand panel can sit as a sibling row beneath the main row without breaking semantic table structure. The column header carries a tooltip explaining the band; the totals row shows "—" since spread is per-channel.
+- [x] **4.4** Each band cell is a `<button data-action="toggle#toggle">`; the expanded panel is a sibling `<tr data-toggle-target="content" class="hidden">` with `<td colspan="...">` inside the row's tbody. Panel renders all eight (or however many active) attribution models as a 2-column grid of name + horizontal bar + ROAS value, sorted descending by ROAS, with the selected model's bar in indigo and the rest in gray.
 - [x] **4.5** `MetricsService#confidence_band_query` returns nil (and `by_channel` rows carry `confidence_band: nil`) when only one attribution model is active. Channels where no model produced any credit are filtered out by `ChannelConfidenceBand#present?`.
 - [x] **4.6** Tests: band math (min, max, selected, by_model); degenerate single-model case; channel-with-no-credits case; query absent when account has only one active model; query present + populated when ≥2 active models
 

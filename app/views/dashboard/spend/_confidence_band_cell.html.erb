@@ -1,0 +1,23 @@
+<%# Required locals: band (hash with :min, :max, :selected) — may be nil %>
+<%
+  band ||= nil
+%>
+<% if band && band[:min] && band[:max] %>
+  <% spread_ratio = band[:min].positive? ? (band[:max] / band[:min]) : Float::INFINITY %>
+  <% bar_color = spread_ratio < 1.3 ? "bg-emerald-200" : spread_ratio < 2 ? "bg-amber-200" : "bg-rose-200" %>
+  <% range = band[:max] - band[:min] %>
+  <% selected_pct = (band[:selected] && range.positive?) ? ((band[:selected] - band[:min]) / range * 100).clamp(0, 100).round : 50 %>
+  <button type="button"
+          data-action="toggle#toggle"
+          class="inline-flex items-center gap-1.5 cursor-pointer hover:bg-gray-100 -mx-1 px-1 py-0.5 rounded">
+    <span class="text-xs text-gray-500 tabular-nums"><%= band[:min] %>x</span>
+    <div class="relative w-14 h-2 <%= bar_color %> rounded">
+      <% if band[:selected] %>
+        <div class="absolute top-[-2px] bottom-[-2px] w-0.5 bg-gray-900" style="left: <%= selected_pct %>%"></div>
+      <% end %>
+    </div>
+    <span class="text-xs text-gray-500 tabular-nums"><%= band[:max] %>x</span>
+  </button>
+<% else %>
+  <span class="text-gray-400">—</span>
+<% end %>

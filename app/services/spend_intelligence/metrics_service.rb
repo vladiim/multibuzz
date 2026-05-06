@@ -34,7 +34,8 @@ module SpendIntelligence
         by_device: primary_breakdowns.by_device,
         by_hour: primary_breakdowns.by_hour,
         payback: payback_data,
-        recommendations: recommendations
+        recommendations: recommendations,
+        confidence_band_active: confidence_band_query.present?
       }
     end
 

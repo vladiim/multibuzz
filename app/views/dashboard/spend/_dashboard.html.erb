@@ -50,7 +50,7 @@
     <!-- Overview Sub-Tab -->
     <div data-toggle-target="content" data-value="overview">
       <div class="py-4 sm:py-6">
-        <%= render "dashboard/spend/channel_table", by_channel: data[:by_channel], totals: totals, compare: data[:compare] %>
+        <%= render "dashboard/spend/channel_table", by_channel: data[:by_channel], totals: totals, compare: data[:compare], confidence_band_active: data[:confidence_band_active] %>
       </div>
     </div>
 
