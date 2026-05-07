@@ -26,6 +26,6 @@ module ScoreAssessmentHelper
   def latest_assessment_for(account)
     return nil unless account
 
-    account.score_assessments.order(created_at: :desc).first
+    account.score_assessments.max_by(&:created_at)
   end
 end
