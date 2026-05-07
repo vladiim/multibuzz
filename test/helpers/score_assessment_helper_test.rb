@@ -50,6 +50,28 @@ class ScoreAssessmentHelperTest < ActionView::TestCase
     assert_nil account_maturity_level(nil)
   end
 
+  # --- score_to_app_cta ---
+
+  test "score_to_app_cta points to dashboard when an account is current" do
+    stub_current_account(account_one)
+
+    cta = score_to_app_cta
+
+    assert_equal dashboard_path, cta[:href]
+    assert_equal ScoreAssessmentHelper::CTA_BUTTON_LABEL, cta[:label]
+    assert_equal ScoreAssessmentHelper::CTA_BODY_HAS_ACCOUNT, cta[:body]
+  end
+
+  test "score_to_app_cta points to signup when no account is current" do
+    stub_current_account(nil)
+
+    cta = score_to_app_cta
+
+    assert_equal signup_path, cta[:href]
+    assert_equal ScoreAssessmentHelper::CTA_BUTTON_LABEL, cta[:label]
+    assert_equal ScoreAssessmentHelper::CTA_BODY_NO_ACCOUNT, cta[:body]
+  end
+
   private
 
   def account_one = @account_one ||= accounts(:one)

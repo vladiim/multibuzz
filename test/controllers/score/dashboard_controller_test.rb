@@ -47,6 +47,16 @@ class Score::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href='#{score_path}']"
   end
 
+  test "renders the to-app CTA above the tabs when an assessment is present" do
+    create_assessment(account: accounts(:one), level: 2)
+    sign_in_as(users(:one))
+    get score_dashboard_path
+
+    assert_response :success
+    assert_select ".report-to-app-cta"
+    assert_select ".report-to-app-cta-btn[href='#{dashboard_path}']", text: /Go to mbuzz/
+  end
+
   private
 
   def create_assessment(account:, level:)

@@ -31,6 +31,48 @@
   margin: 0 auto;
 }
 
+/* To-app CTA — bridge into mbuzz product, sits above the tabs */
+.report-to-app-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin: 0 auto 40px;
+  max-width: 720px;
+  padding: 20px 24px;
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  background: var(--bg-card);
+}
+
+.report-to-app-cta-body {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text);
+  flex: 1 1 320px;
+}
+
+.report-to-app-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 22px;
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.report-to-app-cta-btn:hover {
+  background: var(--accent-hover);
+}
+
 /* Tabs */
 .report-tabs {
   display: flex;
