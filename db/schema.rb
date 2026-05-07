@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_29_040001) do
+ActiveRecord::Schema[8.0].define(version: 2026_05_08_135924) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -483,6 +483,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_29_040001) do
     t.string "claim_token"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "account_id"
+    t.index ["account_id"], name: "index_score_assessments_on_account_id"
     t.index ["claim_token"], name: "index_score_assessments_on_claim_token", unique: true, where: "(claim_token IS NOT NULL)"
     t.index ["created_at"], name: "index_score_assessments_on_created_at"
     t.index ["overall_level"], name: "index_score_assessments_on_overall_level"
@@ -632,6 +634,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_29_040001) do
   add_foreign_key "identities", "accounts"
   add_foreign_key "rerun_jobs", "accounts"
   add_foreign_key "rerun_jobs", "attribution_models"
+  add_foreign_key "score_assessments", "accounts"
   add_foreign_key "score_assessments", "users"
   add_foreign_key "score_team_memberships", "score_assessments"
   add_foreign_key "score_team_memberships", "score_teams"

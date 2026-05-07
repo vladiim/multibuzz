@@ -38,7 +38,7 @@ module Score
         user = User.create!(email: email, password: password)
         account = Account.create!(name: account_name, slug: unique_slug)
         create_owner_membership(user, account)
-        claim_assessment(user)
+        claim_assessment(user, account)
         success_result(user: user, account: account)
       end
     end
@@ -52,13 +52,13 @@ module Score
       )
     end
 
-    def claim_assessment(user)
+    def claim_assessment(user, account)
       return if claim_token.blank?
 
       assessment = ScoreAssessment.find_by(claim_token: claim_token)
       return unless assessment
 
-      assessment.update!(user: user, claim_token: nil)
+      assessment.update!(user: user, account: account, claim_token: nil)
     end
 
     def account_name

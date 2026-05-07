@@ -24,5 +24,6 @@ module Account::Relationships
     has_many :ad_platform_connections, dependent: :destroy
     has_many :data_integrity_checks, dependent: :destroy
     has_many :exports, dependent: :destroy
+    has_many :score_assessments, dependent: :nullify
   end
 end
