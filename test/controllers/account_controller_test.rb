@@ -116,6 +116,14 @@ class AccountControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "settings sidebar exposes a Maturity entry pointing to the score dashboard" do
+    sign_in
+
+    get account_path
+
+    assert_select "nav a[href='#{score_dashboard_path}']", text: /Maturity/
+  end
+
   private
 
   def sign_in
