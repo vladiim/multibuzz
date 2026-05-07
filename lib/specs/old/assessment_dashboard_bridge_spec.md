@@ -2,8 +2,8 @@
 
 **Date:** 2026-05-08
 **Priority:** P1
-**Status:** Draft
-**Branch:** `feature/assessment-dashboard-bridge`
+**Status:** Complete
+**Branch:** `develop` (shipped directly)
 
 ---
 
