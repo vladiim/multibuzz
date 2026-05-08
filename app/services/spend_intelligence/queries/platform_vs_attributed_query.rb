@@ -28,8 +28,15 @@ module SpendIntelligence
         @total_platform_revenue ||= platform_revenue_by_channel.values.sum.to_f
       end
 
+      # Restrict to channels the platform actually reports on. Including
+      # organic / direct / email here would compare blended attributed revenue
+      # against paid-only platform revenue, producing a meaningless "+thousands
+      # of percent over-credited" headline that's actually just non-paid
+      # conversions the platform never saw.
       def total_attributed_revenue
-        @total_attributed_revenue ||= attributed_revenue_by_channel.values.sum.to_f
+        @total_attributed_revenue ||= attributed_revenue_by_channel
+          .slice(*platform_revenue_by_channel.keys)
+          .values.sum.to_f
       end
 
       private
