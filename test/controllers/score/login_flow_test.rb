@@ -27,6 +27,7 @@ class Score::LoginFlowTest < ActionDispatch::IntegrationTest
     assessment.reload
 
     assert_equal users(:one).id, assessment.user_id
+    assert_equal accounts(:one).id, assessment.account_id
     assert_nil assessment.claim_token
   end
 

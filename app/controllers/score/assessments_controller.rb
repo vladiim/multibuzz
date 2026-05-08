@@ -17,8 +17,7 @@ module Score
       return head :unprocessable_entity if honeypot_filled?
       return head :unprocessable_entity if too_fast?
 
-      assessment = ScoreAssessment.new(assessment_params)
-      assessment.user = current_user if logged_in?
+      assessment = build_assessment
 
       if assessment.save
         render json: assessment_response(assessment), status: :created
@@ -33,11 +32,19 @@ module Score
       assessment = ScoreAssessment.find_by(claim_token: params[:claim_token])
       return render json: { error: "Assessment not found" }, status: :not_found unless assessment
 
-      assessment.update!(user: current_user, claim_token: nil)
+      assessment.update!(user: current_user, account: current_account, claim_token: nil)
       render json: assessment_response(assessment)
     end
 
     private
+
+    def build_assessment
+      ScoreAssessment.new(assessment_params).tap do |assessment|
+        next unless logged_in?
+        assessment.user = current_user
+        assessment.account = current_account
+      end
+    end
 
     # Honeypot: bots fill the hidden `website_url` field, humans leave it blank
     def honeypot_filled?
