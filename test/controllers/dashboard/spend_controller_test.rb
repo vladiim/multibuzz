@@ -25,6 +25,18 @@ module Dashboard
       assert_select "h3", text: "See where your money works hardest"
     end
 
+    test "empty-state CTA points at integrations hub and breaks out of the turbo frame" do
+      account.ad_platform_connections.update_all(status: :disconnected)
+
+      get dashboard_spend_path
+
+      # Generic 'Connect ad platform' label, not 'Connect Google Ads' — the
+      # destination is the integrations hub, which lets the user pick any platform.
+      assert_select "a[href=?][data-turbo-frame=?]", account_integrations_path, "_top" do
+        assert_select "*", text: /Connect ad platform/i
+      end
+    end
+
     test "renders hero metrics" do
       get dashboard_spend_path
 
