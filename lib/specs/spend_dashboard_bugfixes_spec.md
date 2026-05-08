@@ -1,7 +1,7 @@
 # Spend Dashboard Bug Fixes (post Phase 1–5 UAT)
 
 **Date:** 2026-05-08
-**Status:** Draft
+**Status:** Fix 1 + Fix 2 shipped; Fix 3 awaiting clarification
 **Branch:** `fix/spend-dashboard-bugs`
 **Parent:** `lib/specs/spend_dashboard_attribution_intelligence_spec.md` (Phase 6 UAT bugs)
 
@@ -76,12 +76,14 @@ Blocked on clarification. Not started.
 
 ### Fix 2
 
-- [ ] Reproduction documented (params + expected vs actual numbers)
-- [ ] Divergence point identified between `primary_totals`, channel-table sum, and `time_series` sum
-- [ ] Regression test: with two models active + channel filter, `totals.attributed_revenue == by_channel.sum(:attributed_revenue)` (within rounding)
-- [ ] Regression test: with two models active + channel filter, `totals.attributed_revenue == time_series.sum(:revenue)` (within rounding)
-- [ ] Hero gap card shows a believable number (negative or low-positive single-digit-percent) on the seed account
-- [ ] Existing 121 spend tests still pass
+- [x] Reproduction documented (params + expected vs actual numbers)
+- [x] Divergence point identified — two distinct bugs:
+   - **Timeseries flat at zero**: `BreakdownsQuery#accrual_daily_revenue` INNER JOINed `sessions` on `attribution_credits.session_id`. When a credit references a session that no longer exists (archived / retention-dropped / never persisted) the inner join silently drops the row, so the daily revenue sum reads zero while the hero and channel table correctly show the full attributed revenue.
+   - **Gap headline reads `+$3M / +6189% over-credited`**: `PlatformVsAttributedQuery#total_attributed_revenue` summed credits across **all** channels (paid + organic + direct + email), but `total_platform_revenue` only summed paid channels' `platform_conversion_value_micros`. The totals comparison was apples-to-oranges — what looked like wild over-crediting was just organic / direct conversions the platform never saw.
+- [x] Regression test: with two models + channel filter, `totals.attributed_revenue == by_channel.sum(:attributed_revenue)` (within rounding)
+- [x] Regression test: with two models + channel filter, `totals.attributed_revenue == time_series.sum(:revenue)` (within rounding)
+- [x] Regression test: gap totals restrict to platform-reporting channels (organic credits don't inflate the gap)
+- [x] Existing 121 spend tests still pass (now 137 incl. demo + new regressions)
 
 ### Fix 3
 
