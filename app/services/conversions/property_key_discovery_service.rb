@@ -4,10 +4,6 @@ module Conversions
   class PropertyKeyDiscoveryService < ApplicationService
     STALE_THRESHOLD = 90.days
 
-    # Reserved keys that should not be discovered as custom properties
-    # These are system-level properties, not user-defined dimensions
-    RESERVED_KEYS = %w[url referrer].freeze
-
     def initialize(account)
       @account = account
     end
@@ -41,7 +37,7 @@ module Conversions
         .conversions
         .where("properties IS NOT NULL AND properties != '{}'::jsonb")
         .pluck(Arel.sql("DISTINCT jsonb_object_keys(properties)"))
-        .reject { |key| RESERVED_KEYS.include?(key) }
+        .reject { |key| Conversion::Validations::RESERVED_PROPERTY_KEYS.include?(key) }
     end
 
     def key_occurrence_count(key)

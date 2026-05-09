@@ -2,6 +2,10 @@
 
 module Conversion::Validations
   extend ActiveSupport::Concern
+  include PropertyKeyLimit
+
+  MAX_JSONB_BYTES = 50.kilobytes
+  RESERVED_PROPERTY_KEYS = %w[url referrer].freeze
 
   included do
     validates :conversion_type, presence: true
@@ -11,6 +15,8 @@ module Conversion::Validations
       allow_nil: true
 
     validate :identity_required_for_acquisition
+    validate :properties_size_limit
+    validates_property_key_count :properties, reserved: RESERVED_PROPERTY_KEYS
   end
 
   private
@@ -19,5 +25,12 @@ module Conversion::Validations
     return unless is_acquisition? && identity_id.blank?
 
     errors.add(:identity, "is required when marking as acquisition")
+  end
+
+  def properties_size_limit
+    return unless properties.is_a?(Hash)
+    return if properties.to_json.bytesize <= MAX_JSONB_BYTES
+
+    errors.add(:properties, "exceeds maximum size of #{MAX_JSONB_BYTES} bytes")
   end
 end

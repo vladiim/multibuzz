@@ -19,6 +19,7 @@
 9. [Billing and Usage](#9-billing-and-usage)
 10. [Data Retention and Privacy](#10-data-retention-and-privacy)
 11. [API and Authentication](#11-api-and-authentication)
+12. [Property Key Limits](#12-property-key-limits)
 
 ---
 
@@ -538,6 +539,24 @@ mbuzz automatically detects and filters bot traffic to ensure clean data.
    --> Cross-device journeys unified
    --> Attribution recalculated if needed
 ```
+
+---
+
+## 12. Property Key Limits
+
+Custom properties on ingested records are bounded so a misbehaving SDK or a hostile client cannot bloat JSONB columns or pollute the dashboard's discovered-property surface.
+
+### Rules
+
+| # | Rule | Detail |
+|---|------|--------|
+| PK1 | Each ingested JSONB blob is capped at 50KB | Applies to `events.properties`, `conversions.properties`, `identities.traits`, `visitors.traits`, `sessions.initial_utm`. Records exceeding this are rejected with a 422. |
+| PK2 | Each ingested JSONB blob is capped at 25 custom keys per call | Applies to the same five fields. The cap matches GA4 (the strictest mainstream analytics platform). Mixpanel = 255, Segment / Amplitude = effectively unlimited per call. 25 gives B2B identify and ecommerce conversion payloads real headroom while bounding abuse. |
+| PK3 | Reserved system keys do not count toward the 25-key cap | For conversions, `url` and `referrer` are system-captured and excluded from the count. A conversion with `{url, referrer, k1..k25}` is valid. A conversion with `{url, k1..k26}` is rejected. |
+| PK4 | The cap is per-call, not per-account | An account may accumulate many distinct property keys over time across many records. The 25-key cap is on a single ingested record. |
+| PK5 | The dashboard filter UI surfaces the 20 most-populated property keys per account | Independent of the per-call cap. Long-tail keys remain queryable via the API and raw export but do not appear in the filter chips. Stale keys (last seen >90 days ago) are pruned. |
+| PK6 | Validation error messages echo the actual key count | `"properties cannot have more than 25 custom keys (got 47)"`. This lets SDK authors and customers debug instrumentation without grepping the source. |
+| PK7 | The 25-key value is a single shared constant | `PropertyKeyLimit::MAX_PROPERTY_KEYS`. All five surfaces read from the same source. To raise or lower the limit, change the constant in one place. |
 
 ---
 

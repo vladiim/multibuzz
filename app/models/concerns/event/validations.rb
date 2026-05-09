@@ -2,6 +2,7 @@
 
 module Event::Validations
   extend ActiveSupport::Concern
+  include PropertyKeyLimit
 
   MAX_JSONB_BYTES = 50.kilobytes
 
@@ -12,6 +13,7 @@ module Event::Validations
 
     validate :properties_must_be_hash
     validate :properties_size_limit
+    validates_property_key_count :properties
   end
 
   private

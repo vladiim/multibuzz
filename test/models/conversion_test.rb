@@ -152,6 +152,51 @@ class ConversionTest < ActiveSupport::TestCase
     assert_predicate conversion, :valid?
   end
 
+  # ==========================================
+  # Properties JSONB limits
+  # ==========================================
+
+  test "rejects properties exceeding 50KB" do
+    conversion.properties = { "data" => "x" * 51_200 }
+
+    assert_not conversion.valid?
+    assert_match(/exceeds maximum size/, conversion.errors[:properties].join)
+  end
+
+  test "accepts properties within 50KB" do
+    conversion.properties = { "plan" => "pro", "mrr" => 99 }
+
+    assert_predicate conversion, :valid?
+  end
+
+  test "rejects properties with more than 25 custom keys" do
+    conversion.properties = (1..26).each_with_object({}) { |i, h| h["k#{i}"] = i }
+
+    assert_not conversion.valid?
+    assert_match(/more than 25/, conversion.errors[:properties].join)
+  end
+
+  test "accepts properties with exactly 25 custom keys" do
+    conversion.properties = (1..25).each_with_object({}) { |i, h| h["k#{i}"] = i }
+
+    assert_predicate conversion, :valid?
+  end
+
+  test "reserved keys (url, referrer) are excluded from the 25-key cap" do
+    twenty_five = (1..25).each_with_object({}) { |i, h| h["k#{i}"] = i }
+    conversion.properties = twenty_five.merge("url" => "https://example.com", "referrer" => "https://google.com")
+
+    assert_predicate conversion, :valid?
+  end
+
+  test "reserved keys do not let custom keys exceed the cap" do
+    twenty_six_custom = (1..26).each_with_object({}) { |i, h| h["k#{i}"] = i }
+    conversion.properties = twenty_six_custom.merge("url" => "https://example.com")
+
+    assert_not conversion.valid?
+    assert_match(/got 26/, conversion.errors[:properties].join)
+  end
+
   private
 
   def identity
