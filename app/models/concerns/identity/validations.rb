@@ -2,7 +2,6 @@
 
 module Identity::Validations
   extend ActiveSupport::Concern
-  include PropertyKeyLimit
 
   MAX_JSONB_BYTES = 50.kilobytes
 
@@ -13,7 +12,6 @@ module Identity::Validations
     validates :last_identified_at, presence: true
 
     validate :traits_size_limit
-    validates_property_key_count :traits
   end
 
   private

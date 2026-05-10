@@ -449,6 +449,36 @@ class Events::ProcessingServiceTest < ActiveSupport::TestCase
     @device_fingerprint ||= Digest::SHA256.hexdigest("#{test_ip}|#{test_user_agent}")[0, 32]
   end
 
+  # ==========================================
+  # Property key truncation tests
+  # ==========================================
+
+  test "truncates event properties to MAX_PROPERTY_KEYS when over the cap" do
+    thirty = (1..30).each_with_object({}) { |i, h| h["k#{i}"] = i }
+    @event_data = valid_event_data.merge("properties" => thirty)
+
+    assert result[:success]
+    assert_equal 25, result[:event].properties.size
+  end
+
+  test "returns warning when event properties are truncated" do
+    @event_data = valid_event_data.merge(
+      "properties" => (1..30).each_with_object({}) { |i, h| h["k#{i}"] = i }
+    )
+
+    assert result[:success]
+    warning = Array(result[:warnings]).first
+
+    assert_match(/properties/, warning)
+    assert_match(/30/, warning)
+    assert_match(/25/, warning)
+  end
+
+  test "no warning when event properties are within the cap" do
+    assert result[:success]
+    assert_empty Array(result[:warnings])
+  end
+
   def valid_event_data
     {
       "event_type" => "page_view",

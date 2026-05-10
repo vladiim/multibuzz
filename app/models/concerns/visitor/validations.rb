@@ -2,7 +2,6 @@
 
 module Visitor::Validations
   extend ActiveSupport::Concern
-  include PropertyKeyLimit
 
   MAX_JSONB_BYTES = 50.kilobytes
 
@@ -17,7 +16,6 @@ module Visitor::Validations
       }
 
     validate :traits_size_limit
-    validates_property_key_count :traits
   end
 
   private

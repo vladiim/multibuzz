@@ -22,11 +22,14 @@ module Api
       end
 
       def render_success
-        render json: {
+        body = {
           success: true,
           identity_id: identification_result[:identity_id],
           visitor_linked: identification_result[:visitor_linked]
-        }, status: :ok
+        }
+        warnings = Array(identification_result[:warnings])
+        body[:warnings] = warnings if warnings.any?
+        render json: body, status: :ok
       end
     end
   end

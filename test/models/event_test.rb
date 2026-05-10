@@ -48,25 +48,10 @@ class EventTest < ActiveSupport::TestCase
     assert_predicate event, :valid?
   end
 
-  test "rejects properties with more than 25 keys" do
-    event.properties = (1..26).each_with_object({}) { |i, h| h["k#{i}"] = i }
-
-    assert_not event.valid?
-    assert_match(/more than 25/, event.errors[:properties].join)
-  end
-
-  test "accepts properties with exactly 25 keys" do
-    event.properties = (1..25).each_with_object({}) { |i, h| h["k#{i}"] = i }
-
-    assert_predicate event, :valid?
-  end
-
-  test "key-count error echoes the actual count" do
+  test "model does not reject properties with more than 25 keys (services truncate)" do
     event.properties = (1..30).each_with_object({}) { |i, h| h["k#{i}"] = i }
 
-    event.valid?
-
-    assert_match(/got 30/, event.errors[:properties].join)
+    assert_predicate event, :valid?
   end
 
   test "belongs to account" do

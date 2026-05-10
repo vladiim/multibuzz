@@ -22,7 +22,8 @@ module Identities
 
       success_result(
         identity_id: identity.prefix_id,
-        visitor_linked: visitor_was_linked
+        visitor_linked: visitor_was_linked,
+        warnings: warnings
       )
     end
 
@@ -37,10 +38,21 @@ module Identities
     end
 
     def persist_identity
-      new_traits = traits.respond_to?(:to_unsafe_h) ? traits.to_unsafe_h : traits.to_h
-      identity.traits = (identity.traits || {}).deep_merge(new_traits.deep_stringify_keys)
+      identity.traits = (identity.traits || {}).deep_merge(truncated_traits.deep_stringify_keys)
       identity.last_identified_at = Time.current
       identity.save!
+    end
+
+    def truncated_traits
+      @truncated_traits ||= PropertyKeyLimit.truncate(raw_traits)
+    end
+
+    def raw_traits
+      @raw_traits ||= traits.respond_to?(:to_unsafe_h) ? traits.to_unsafe_h : traits.to_h
+    end
+
+    def warnings
+      [ PropertyKeyLimit.warning_for(:traits, raw_traits) ].compact
     end
 
     def link_visitor_if_present

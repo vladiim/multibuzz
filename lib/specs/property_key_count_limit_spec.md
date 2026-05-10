@@ -1,7 +1,7 @@
-# Property Key Count Limit (and JSONB Cap Backfill)
+# Property Key Count Limit (Truncate-and-Warn)
 
 **Date:** 2026-05-10
-**Status:** Shipped
+**Status:** Shipped (revised behavior)
 **Branch:** `feat/property-key-count-limit`
 
 ## Problem
@@ -21,54 +21,69 @@ Two surfaces also lack the basic 50KB byte cap: `Conversion#properties` and `Vis
 
 ## Solution
 
-Add `MAX_PROPERTY_KEYS = 25` as a shared constant in a new `Concerns::PropertyKeyLimit` module (mirrors the existing `MAX_JSONB_BYTES = 50.kilobytes` pattern in `Identity::Validations`, `Event::Validations`, `Session::Validations`). Validates that the JSONB hash has at most 25 top-level keys.
+Two layers, two rules:
 
-Apply both validations (key count + 50KB byte cap) to all four surfaces:
+1. **Hard byte cap (50KB) — reject with 422**. Applied at the model layer to all five JSONB fields. Backfilled to Conversion and Visitor.
 
-1. `Event::Validations` — already has 50KB cap, add key-count cap.
-2. `Identity::Validations` — already has 50KB cap, add key-count cap.
-3. `Conversion::Validations` — add **both** caps (currently has neither).
-4. `Visitor::Validations` — add **both** caps for `traits` (currently has neither).
+2. **Soft key-count cap (25 custom keys) — truncate and warn**. Applied at the service layer. The server keeps the first 25 keys in insertion order, drops the rest, and surfaces a `warnings` array on the API response. The request still succeeds.
 
-Validation lives at the model layer (per CLAUDE.md "JSONB Columns: Max 50KB per JSONB field. Validate via `validate :field_size_limit`"). Services raising `ActiveRecord::RecordInvalid` are caught by `ApplicationService` and surfaced as 422 to the API client.
+Truncation lives in service code, not in the model, because we need to detect the overflow *before* it disappears in order to surface a warning to the SDK. A `before_validation` callback would mutate silently and the warning hook would be awkward.
 
-The dashboard `ConversionDimensionsService.limit(20)` stays. Per-call cap (25) is independent from per-account discovery cap (20); customers may have long-tail keys in DB that don't surface in the filter UI.
+`PropertyKeyLimit` is a plain module with three pure functions:
+
+- `PropertyKeyLimit::MAX_PROPERTY_KEYS = 25`
+- `PropertyKeyLimit.truncate(hash, reserved: [])` — returns truncated hash
+- `PropertyKeyLimit.overflow(hash, reserved: [])` — returns count of dropped keys
+- `PropertyKeyLimit.truncated?(hash, reserved: [])` — boolean predicate
+
+Each ingestion service calls `truncate` before persisting and uses `truncated?` to decide whether to add a warning.
+
+| Service | Surface | Reserved keys |
+|---|---|---|
+| `Identities::IdentificationService` | `traits` | none |
+| `Conversions::TrackingService` | `properties` | `url`, `referrer` |
+| `Events::ProcessingService` | `properties` | none (URL / referrer are stored as part of `properties` but not given reserved-key treatment for the cap; the SDK rarely sends both URL and 25+ custom keys together) |
+
+API response shape adds an optional `warnings` array. The field is omitted entirely when there's nothing to warn about.
 
 ## Key Decisions
 
 | Decision | Choice | Why |
 |---|---|---|
-| Per-call key limit | **25** | Matches GA4 (the strictest mainstream platform). 10 rejects normal B2B identify payloads (plan, mrr, role, signup_source, etc) and ecommerce conversion payloads (order_id, products, total, shipping, tax, coupon, segment, payment_method, currency). Mixpanel = 255, Segment = ~unlimited, Amplitude = 2,000/project. 25 is the safe defensible default. |
-| Validation layer | Model concern | Repo convention: 50KB cap already lives in model concerns. Service layer wraps in `ApplicationService` which converts `RecordInvalid` to 422. |
-| Shared constant | New `Concerns::PropertyKeyLimit` module | Three concerns currently inline-define `MAX_JSONB_BYTES`. Extract once for `MAX_PROPERTY_KEYS` so it doesn't drift across surfaces. |
-| Conversion 50KB cap | Backfill in same PR | Closing two known JSONB gaps in one change is cheaper than two PRs. |
-| Visitor 50KB cap | Backfill in same PR | Same. |
-| Key-count error message | `"cannot have more than 25 custom keys (got N)"` | Echoes count back so SDK authors can debug. "Custom" because reserved keys are excluded from the count. |
-| Reserved keys count? | **No, excluded** | System-captured keys (`url`, `referrer` for conversions) don't count toward the 25-key cap. The cap is on user-defined custom keys, which is what the cap is actually trying to bound. Documented as "25 custom keys" in error messages and BUSINESS_RULES. |
-| Where reserved keys live | Class constant on each model that has them | Conversion gets `RESERVED_PROPERTY_KEYS = %w[url referrer].freeze`; Event/Identity/Visitor define `RESERVED_PROPERTY_KEYS = [].freeze` (or omit and the concern defaults to `[]`). `Conversions::PropertyKeyDiscoveryService` reads from the model constant instead of redefining its own. |
-| Dashboard top-20 limit | Unchanged | Independent of ingestion cap. Customers can send 25 keys per call; UI surfaces the 20 most-populated. |
+| Behavior on overflow | **Truncate and warn** (not reject) | Failing in production for a 26-key payload would break SDK callers for what is fundamentally an instrumentation mistake. Truncation lets the data flow while the warning gives developers the signal to fix instrumentation. |
+| Truncation order | First 25 in insertion order | Predictable, language-agnostic. Hash key insertion order is preserved in Ruby and JSON parsers default to it. The SDK can choose which 25 keys to send first. |
+| Warning location | Top-level `warnings` array on the response | Standard convention. SDKs can log it once per response without parsing nested structures. Events batch endpoint puts warnings on each accepted event entry (since each event is independent). |
+| Per-call key limit | **25** | Matches GA4 (the strictest mainstream platform). 10 truncates normal B2B identify payloads (plan, mrr, role, signup_source, etc) and ecommerce conversion payloads (order_id, products, total, shipping, tax, coupon, segment, payment_method, currency). Mixpanel = 255, Segment = ~unlimited, Amplitude = 2,000/project. 25 is the safe defensible default. |
+| Truncation layer | Service layer | Need to detect overflow before truncation in order to warn. Model `before_validation` could truncate silently but couldn't surface a warning to the API caller. Pure functions keep the logic testable without ActiveRecord ceremony. |
+| 50KB byte cap | Stays at model layer | This is a hard reject — services don't need to do anything special. Backfilled to Conversion and Visitor concerns. |
+| Reserved keys | Excluded from the 25-key count | System-captured keys (`url`, `referrer` for conversions) don't count toward the cap. The cap is on user-defined custom keys, which is what the cap is actually trying to bound. |
+| Where reserved keys live | `Conversion::Validations::RESERVED_PROPERTY_KEYS` | `Conversions::PropertyKeyDiscoveryService` reads from this constant rather than redefining its own list. Single source of truth. |
+| Warning message | `"properties: kept first 25 of N keys, dropped the rest"` | Echoes the actual count back so SDK authors can debug without grepping the source. |
+| Direct AR calls | Not auto-truncated | `PropertyKeyLimit.truncate` is a pure function any caller can opt into. Internal jobs and Shopify webhook handlers should call it explicitly when ingesting user data. The 50KB hard cap still applies as a defensive lower bound. |
 
 ## Acceptance Criteria
 
-- [x] `Concerns::PropertyKeyLimit` module exists and is `extend`able. Defines `MAX_PROPERTY_KEYS = 25` and a `validate_property_key_count(field)` class macro.
-- [x] `Event#properties` rejected when > 25 top-level keys (RED → GREEN test in `event_test.rb`).
-- [x] `Identity#traits` rejected when > 25 top-level keys.
-- [x] `Conversion#properties` rejected when > 25 top-level keys AND when > 50KB.
-- [x] `Visitor#traits` rejected when > 25 top-level keys AND when > 50KB.
-- [x] API surfaces (POST /events, /conversions, /identify, /sessions) return 422 with the count-cap error message when the cap is exceeded — service-level test for each.
-- [x] Existing `MAX_JSONB_BYTES = 50.kilobytes` is moved into a single shared constant (or duplicated intentionally — pick during implementation; do not silently diverge).
-- [x] Error message echoes the actual key count: `"properties cannot have more than 25 keys (got 47)"`.
-- [x] Reserved keys (`url`, `referrer` on Conversion) are excluded from the 25-key count. A conversion with `{url, referrer, k1..k25}` is valid (27 total keys, 25 custom). A conversion with `{url, referrer, k1..k26}` is rejected (26 custom).
-- [x] `Conversions::PropertyKeyDiscoveryService` reads `Conversion::RESERVED_PROPERTY_KEYS` instead of defining its own list. Existing discovery test still passes.
-- [x] Documented in `lib/docs/BUSINESS_RULES.md` under a new section: "Property Key Limits".
-- [x] No regression in 27 score-related tests, full ingestion test suite green.
+- [x] `PropertyKeyLimit` module exists and exposes `MAX_PROPERTY_KEYS = 25`, `truncate(hash, reserved: [])`, `overflow(hash, reserved: [])`, `truncated?(hash, reserved: [])` as pure functions.
+- [x] `Identities::IdentificationService` truncates `traits` to 25 keys before persisting; surfaces a `warnings` array on the result when truncation fired.
+- [x] `Conversions::TrackingService` truncates `properties` to 25 custom keys before persisting; preserves `url` and `referrer` outside the cap; surfaces `warnings`.
+- [x] `Events::ProcessingService` truncates `properties` to 25 keys before persisting; surfaces `warnings` per event.
+- [x] `Events::IngestionService` plumbs warnings up so each accepted event in the batch response carries a `warnings` array when applicable.
+- [x] `Api::V1::IdentifyController` includes top-level `warnings` in the success response when present; omits the field entirely otherwise.
+- [x] `Conversions::ResponseBuilder` includes top-level `warnings` in the success response when present; omits otherwise.
+- [x] `Api::V1::EventsController` returns each accepted event with a `warnings` field when applicable.
+- [x] Conversions backfill the 50KB byte cap (`Conversion::Validations#properties_size_limit`).
+- [x] Visitor backfills the 50KB byte cap on `traits` (`Visitor::Validations#traits_size_limit`).
+- [x] `Conversions::PropertyKeyDiscoveryService` reads `Conversion::Validations::RESERVED_PROPERTY_KEYS` instead of defining its own list.
+- [x] `lib/docs/BUSINESS_RULES.md` § 12 updated to describe the truncate-and-warn rule (PK1–PK8).
+- [x] `lib/docs/sdk/api_contract.md` updated: properties section describes the cap, each endpoint documents the optional `warnings` field.
+- [x] Full test suite green (2716 tests across models, services, controllers).
 
 ## Out of Scope
 
 - Per-account total key cap (currently effectively bounded by `PropertyKeyDiscoveryService` 90-day prune; a hard cap is a separate spec).
-- Per-key value-length cap (the 50KB byte cap is the only value-size guard for now; GA4 caps individual values at 100 chars but our use case is freer).
+- Per-key value-length cap. The 50KB byte cap is the only value-size guard for now.
 - Property key naming validation (alphanumeric/underscore enforcement). Sanitization on read in `Dashboard::Scopes::Operators::Base` is sufficient for the dashboard filter path.
-- Backfill / cleanup of existing rows in production that exceed the cap. Validation is applied on `create` and `update`; existing rows stay readable until they are touched.
+- Backfill / cleanup of existing rows in production that exceed the cap. Truncation is applied on `create` and `update` via the service layer; existing rows stay readable.
 - Fix 3 from `spend_dashboard_bugfixes_spec.md` ("user properties cannot be tested because the app is blocked from this state"). Still awaiting clarification on the blocked-state surface.
 
 ## References

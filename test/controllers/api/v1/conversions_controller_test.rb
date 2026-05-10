@@ -178,6 +178,28 @@ module Api
         assert response.parsed_body["duplicate"]
       end
 
+      test "succeeds with warning when conversion properties exceed 25 keys" do
+        thirty = (1..30).each_with_object({}) { |i, h| h["k#{i}"] = "v#{i}" }
+        post api_v1_conversions_path,
+          params: { conversion: { visitor_id: visitor.visitor_id, conversion_type: "signup", properties: thirty } },
+          headers: auth_headers
+
+        assert_response :created
+        warnings = Array(response.parsed_body["warnings"])
+
+        assert_equal 1, warnings.size
+        assert_match(/properties/, warnings.first)
+      end
+
+      test "no warnings field on conversion response when properties are within the cap" do
+        post api_v1_conversions_path,
+          params: { conversion: { visitor_id: visitor.visitor_id, conversion_type: "signup", properties: { plan: "pro" } } },
+          headers: auth_headers
+
+        assert_response :created
+        assert_nil response.parsed_body["warnings"]
+      end
+
       private
 
       def event

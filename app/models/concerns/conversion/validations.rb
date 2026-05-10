@@ -2,7 +2,6 @@
 
 module Conversion::Validations
   extend ActiveSupport::Concern
-  include PropertyKeyLimit
 
   MAX_JSONB_BYTES = 50.kilobytes
   RESERVED_PROPERTY_KEYS = %w[url referrer].freeze
@@ -16,7 +15,6 @@ module Conversion::Validations
 
     validate :identity_required_for_acquisition
     validate :properties_size_limit
-    validates_property_key_count :properties, reserved: RESERVED_PROPERTY_KEYS
   end
 
   private

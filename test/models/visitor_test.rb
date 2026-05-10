@@ -125,15 +125,8 @@ class VisitorTest < ActiveSupport::TestCase
     assert_predicate visitor, :valid?
   end
 
-  test "rejects traits with more than 25 keys" do
-    visitor.traits = (1..26).each_with_object({}) { |i, h| h["t#{i}"] = i }
-
-    assert_not visitor.valid?
-    assert_match(/more than 25/, visitor.errors[:traits].join)
-  end
-
-  test "accepts traits with exactly 25 keys" do
-    visitor.traits = (1..25).each_with_object({}) { |i, h| h["t#{i}"] = i }
+  test "model does not reject traits with more than 25 keys (services truncate)" do
+    visitor.traits = (1..30).each_with_object({}) { |i, h| h["t#{i}"] = i }
 
     assert_predicate visitor, :valid?
   end

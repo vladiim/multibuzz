@@ -58,21 +58,23 @@ module Events
       processing_result = processing_result_for(event_data)
       return reject_event(event_data, index, processing_result[:errors]) unless processing_result[:success]
 
-      accept_event(processing_result[:event], event_data)
+      accept_event(processing_result[:event], event_data, warnings: Array(processing_result[:warnings]))
     end
 
     def processing_result_for(event_data)
       Events::ProcessingService.new(account, event_data, is_test: is_test).call
     end
 
-    def accept_event(event, event_data)
-      accepted << {
+    def accept_event(event, event_data, warnings: [])
+      payload = {
         id: event.prefix_id,
         event_type: event_data["event_type"],
         visitor_id: event_data["visitor_id"],
         session_id: event_data["session_id"],
         status: "accepted"
       }
+      payload[:warnings] = warnings if warnings.any?
+      accepted << payload
     end
 
     def accept_event_async(event_data)

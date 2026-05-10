@@ -109,6 +109,29 @@ class Api::V1::IdentifyControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
+  test "succeeds with warning when traits exceed 25 keys" do
+    thirty = (1..30).each_with_object({}) { |i, h| h["t#{i}"] = "v#{i}" }
+    post api_v1_identify_path,
+      params: { user_id: "trunc_user", traits: thirty },
+      headers: auth_headers, as: :json
+
+    assert_response :ok
+    body = JSON.parse(response.body)
+
+    assert_equal 1, Array(body["warnings"]).size
+    assert_match(/traits/, body["warnings"].first)
+    assert_match(/25/, body["warnings"].first)
+  end
+
+  test "no warnings field in response when traits are within the cap" do
+    post api_v1_identify_path, params: identify_params, headers: auth_headers, as: :json
+
+    assert_response :ok
+    body = JSON.parse(response.body)
+
+    assert_nil body["warnings"]
+  end
+
   private
 
   def auth_headers

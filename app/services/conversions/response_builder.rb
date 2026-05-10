@@ -5,19 +5,22 @@ module Conversions
     def initialize(tracking_result)
       @conversion = tracking_result[:conversion]
       @duplicate = tracking_result[:duplicate] || false
+      @warnings = Array(tracking_result[:warnings])
     end
 
     def call
-      {
+      body = {
         conversion: conversion_response,
         attribution: attribution_response,
         duplicate: duplicate
       }
+      body[:warnings] = warnings if warnings.any?
+      body
     end
 
     private
 
-    attr_reader :conversion, :duplicate
+    attr_reader :conversion, :duplicate, :warnings
 
     def conversion_response
       {
