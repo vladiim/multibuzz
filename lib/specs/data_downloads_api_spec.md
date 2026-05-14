@@ -1,6 +1,6 @@
 # Data Downloads API Specification
 
-**Date:** 2026-03-12
+**Date:** 2026-03-12 (revised 2026-05-13: added spend endpoint)
 **Priority:** P1
 **Status:** Draft
 **Branch:** `feature/data-downloads-api`
@@ -53,11 +53,12 @@ Browser → Dashboard::ExportsController → ExportJob (background)
 
 ### Endpoints
 
-Two new JSON API endpoints that mirror the existing CSV exports:
+Three new JSON API endpoints that mirror the dashboard CSV exports (the spend export ships separately in `spend_csv_export_spec.md`):
 
 ```
 GET /api/v1/data/conversions    → Attribution credit records
 GET /api/v1/data/funnel         → Raw session/event/conversion records
+GET /api/v1/data/spend          → Ad spend rows (one per ad_spend_records row)
 ```
 
 ### Why JSON (Not CSV)
@@ -188,6 +189,35 @@ API Client → GET /api/v1/data/conversions?start_date=...&page=1
 | `page` | integer | 1 | Page number |
 | `per_page` | integer | 100 | Results per page (max 1000) |
 
+**Spend endpoint (`/api/v1/data/spend`)** response rows mirror the columns of `Dashboard::SpendCsvExportService` (see `spend_csv_export_spec.md`):
+
+```json
+{
+  "data": [
+    {
+      "spend_date": "2026-05-01",
+      "channel": "paid_search",
+      "platform": "google_ads",
+      "campaign_name": "Brand — AU",
+      "campaign_type": "SEARCH",
+      "network_type": "GOOGLE_SEARCH",
+      "device": "MOBILE",
+      "spend_hour": 14,
+      "spend": 12.34,
+      "currency": "USD",
+      "impressions": 1023,
+      "clicks": 87,
+      "platform_conversions": 4,
+      "platform_conversion_value": 199.95,
+      "metadata": { "location": "Sydney" }
+    }
+  ],
+  "meta": { "total_count": 9821, "page": 1, "per_page": 100, "total_pages": 99 }
+}
+```
+
+Spend rendered in major units (divide micros by `AdSpendRecord::MICRO_UNIT`). `metadata` returned as a real JSON object, not a string — JSON API parity.
+
 Test mode is automatic: `sk_test_*` keys return test data, `sk_live_*` keys return live data. No `test_mode` param needed — the key environment determines it. This matches how ingestion endpoints work.
 
 ---
@@ -213,19 +243,22 @@ Test mode is automatic: `sk_test_*` keys return test data, `sk_live_*` keys retu
 
 | File | Purpose | Changes |
 |------|---------|---------|
-| `app/controllers/api/v1/data_controller.rb` | API endpoint | **Create** |
+| `app/controllers/api/v1/data_controller.rb` | API endpoint (3 actions) | **Create** |
 | `app/services/data/conversions_query_service.rb` | Paginated conversions query | **Create** |
 | `app/services/data/funnel_query_service.rb` | Paginated funnel query | **Create** |
-| `config/routes.rb` | Routing | Add `data/conversions` and `data/funnel` routes |
+| `app/services/data/spend_query_service.rb` | Paginated spend query | **Create** |
+| `config/routes.rb` | Routing | Add `data/conversions`, `data/funnel`, `data/spend` routes |
 | `test/controllers/api/v1/data_controller_test.rb` | Controller tests | **Create** |
 | `test/services/data/conversions_query_service_test.rb` | Query service tests | **Create** |
 | `test/services/data/funnel_query_service_test.rb` | Query service tests | **Create** |
+| `test/services/data/spend_query_service_test.rb` | Query service tests | **Create** |
 
 Existing files reused (no changes):
 - `app/services/scopes/filtered_credits_scope.rb`
 - `app/services/scopes/sessions_scope.rb`
 - `app/services/scopes/events_scope.rb`
 - `app/services/scopes/conversions_scope.rb`
+- `app/services/spend_intelligence/scopes/spend_scope.rb` (spend endpoint)
 - `app/controllers/api/v1/base_controller.rb` (inherited)
 - `app/services/api_keys/authentication_service.rb` (unchanged)
 
@@ -270,7 +303,15 @@ Existing files reused (no changes):
   - Pagination works across mixed record types
   - Multi-account isolation
 - [ ] **1.4** Create `app/services/data/funnel_query_service.rb`
-- [ ] **1.5** All query service tests green
+- [ ] **1.5** Create `test/services/data/spend_query_service_test.rb`
+  - Returns paginated hash array with one row per `ad_spend_records` row
+  - Includes `platform` joined from `ad_platform_connections`
+  - Spend rendered in major units (micros / 1_000_000)
+  - `metadata` returned as a JSON object (not a string)
+  - Respects date range, channels, test_mode (via key environment)
+  - Multi-account isolation
+- [ ] **1.6** Create `app/services/data/spend_query_service.rb` — reuses `SpendIntelligence::Scopes::SpendScope`
+- [ ] **1.7** All query service tests green
 
 ### Phase 2: Controller + Routes
 
@@ -282,6 +323,7 @@ Existing files reused (no changes):
       namespace :data do
         get "conversions", to: "data#conversions"
         get "funnel", to: "data#funnel"
+        get "spend", to: "data#spend"
       end
     end
   end
@@ -295,7 +337,7 @@ Existing files reused (no changes):
   - Date params validation (bad format, range too wide)
   - Pagination params respected
   - Cross-account isolation
-  - Both endpoints (conversions + funnel)
+  - All three endpoints (conversions + funnel + spend)
 - [ ] **2.3** Create `app/controllers/api/v1/data_controller.rb`
 - [ ] **2.4** All controller tests green
 
@@ -350,12 +392,13 @@ Existing files reused (no changes):
 
 - [ ] `GET /api/v1/data/conversions` returns paginated JSON attribution credit data
 - [ ] `GET /api/v1/data/funnel` returns paginated JSON funnel records
+- [ ] `GET /api/v1/data/spend` returns paginated JSON ad spend records
 - [ ] Authenticated via existing API keys (no new auth)
 - [ ] Test/live key environment determines data scope
 - [ ] All query parameters work (date range, channels, funnel, pagination)
 - [ ] Multi-account isolation verified
 - [ ] All tests pass (unit + integration)
-- [ ] "API Extract" waitlist removed from dashboard
+- [ ] "API Extract" waitlist removed from dashboard (handled by `dashboard_export_dropdown_spec.md`)
 - [ ] Spec updated and archived to `old/`
 
 ---
