@@ -2,6 +2,13 @@
 
 module Identities
   class IdentificationService < ApplicationService
+    HASHED_PII_RULES = {
+      CanonicalIdentityTraits::EMAIL =>      { column: :email_sha256,      hasher: :hash_email },
+      CanonicalIdentityTraits::PHONE =>      { column: :phone_e164_sha256, hasher: :hash_phone },
+      CanonicalIdentityTraits::FIRST_NAME => { column: :first_name_sha256, hasher: :hash_name },
+      CanonicalIdentityTraits::LAST_NAME =>  { column: :last_name_sha256,  hasher: :hash_name }
+    }.freeze
+
     def initialize(account, params, is_test: false)
       @account = account
       @user_id = params[:user_id]
@@ -37,10 +44,26 @@ module Identities
     end
 
     def persist_identity
-      new_traits = traits.respond_to?(:to_unsafe_h) ? traits.to_unsafe_h : traits.to_h
-      identity.traits = (identity.traits || {}).deep_merge(new_traits.deep_stringify_keys)
+      identity.traits = (identity.traits || {}).deep_merge(stringified_traits)
       identity.last_identified_at = Time.current
+      identity.assign_attributes(hashed_pii_assignments)
       identity.save!
+    end
+
+    def stringified_traits
+      @stringified_traits ||= raw_traits.deep_stringify_keys
+    end
+
+    def raw_traits
+      @raw_traits ||= traits.respond_to?(:to_unsafe_h) ? traits.to_unsafe_h : traits.to_h
+    end
+
+    def hashed_pii_assignments
+      applicable_pii_rules.to_h { |trait_key, rule| [ rule[:column], Normaliser.public_send(rule[:hasher], stringified_traits[trait_key]) ] }
+    end
+
+    def applicable_pii_rules
+      HASHED_PII_RULES.select { |trait_key, _| stringified_traits[trait_key].present? }
     end
 
     def link_visitor_if_present

@@ -90,6 +90,63 @@ module Identities
       assert_equal "pro", existing.reload.traits["plan"]
     end
 
+    # Hashed PII population
+
+    test "populates email_sha256 from canonical email trait" do
+      service(user_id: "pii_user", traits: { email: "  Jane@Example.COM  " }).call
+      identity = account.identities.unscope(where: :is_test).find_by(external_id: "pii_user")
+
+      assert_equal Identities::Normaliser.hash_email("jane@example.com"), identity.email_sha256
+    end
+
+    test "populates phone_e164_sha256 from canonical phone trait" do
+      service(user_id: "pii_phone_user", traits: { phone: "+1 (415) 555-1234" }).call
+      identity = account.identities.unscope(where: :is_test).find_by(external_id: "pii_phone_user")
+
+      assert_equal Identities::Normaliser.hash_phone("+14155551234"), identity.phone_e164_sha256
+    end
+
+    test "populates first_name_sha256 and last_name_sha256 with diacritics stripped" do
+      service(user_id: "pii_name_user", traits: { first_name: "  José  ", last_name: "Müller" }).call
+      identity = account.identities.unscope(where: :is_test).find_by(external_id: "pii_name_user")
+
+      assert_equal Identities::Normaliser.hash_name("jose"), identity.first_name_sha256
+      assert_equal Identities::Normaliser.hash_name("muller"), identity.last_name_sha256
+    end
+
+    test "leaves hashed columns nil when canonical fields absent" do
+      service(user_id: "no_pii_user", traits: { plan: "pro" }).call
+      identity = account.identities.unscope(where: :is_test).find_by(external_id: "no_pii_user")
+
+      assert_nil identity.email_sha256
+      assert_nil identity.phone_e164_sha256
+      assert_nil identity.first_name_sha256
+      assert_nil identity.last_name_sha256
+    end
+
+    test "preserves existing hashed columns when subsequent identify omits the field" do
+      existing = create_test_identity(external_id: "preserve_user")
+      service(user_id: "preserve_user", traits: { email: "first@example.com" }).call
+      service(user_id: "preserve_user", traits: { plan: "pro" }).call
+
+      assert_equal Identities::Normaliser.hash_email("first@example.com"), existing.reload.email_sha256
+    end
+
+    test "overwrites hashed columns when subsequent identify provides a new value" do
+      existing = create_test_identity(external_id: "overwrite_pii_user")
+      service(user_id: "overwrite_pii_user", traits: { email: "first@example.com" }).call
+      service(user_id: "overwrite_pii_user", traits: { email: "second@example.com" }).call
+
+      assert_equal Identities::Normaliser.hash_email("second@example.com"), existing.reload.email_sha256
+    end
+
+    test "raw email value still lands in traits JSONB for backwards compatibility" do
+      service(user_id: "compat_user", traits: { email: "user@example.com" }).call
+      identity = account.identities.unscope(where: :is_test).find_by(external_id: "compat_user")
+
+      assert_equal "user@example.com", identity.traits["email"]
+    end
+
     test "deep merges nested trait hashes" do
       existing = create_test_identity(
         external_id: "nested_user",
