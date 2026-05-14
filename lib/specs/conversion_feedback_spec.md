@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-10
 **Priority:** P1
-**Status:** Phase 4 (Meta CAPI) wired end-to-end with narrow retry semantics (2026-05-11 fix: dispatcher raises `RetryableDispatchError` on 401/429/5xx; job retries `attempts: 3` on that class only). Phase 2A (SDK fbp/fbc capture) deferred — EMQ target reachable on current SDK via `external_id` + hashed PII + server-derived `fbc`. Awaiting BSA Pixel token (Phase 0B) for Phase 4 production go-live. Phase 5 (Google EC) blocked on Tool Change Form. Phase 7 (admin) next on the build queue, then Phase 8 (BSA wire-up).
+**Status:** Phase 4 (Meta CAPI) wired end-to-end with narrow retry semantics (2026-05-11 fix: dispatcher raises `RetryableDispatchError` on 401/429/5xx; job retries `attempts: 3` on that class only). Phase 2A (SDK fbp/fbc capture) deferred — EMQ target reachable on current SDK via `external_id` + hashed PII + server-derived `fbc`. Phase 7 (admin) replanned 2026-05-11: ship-now scope is 7.1-7.4 (index, show, retry, admin-index registration per `admin_index_spec.md`); Slack digest dropped; match-quality + attribution-model diagnostics deferred until first BSA dispatches. Awaiting BSA Pixel token (Phase 0B) for Phase 4 production go-live. Phase 5 (Google EC) blocked on Tool Change Form.
 **Branch:** `feat/conversion-feedback`
 
 ---
@@ -452,13 +452,19 @@ Independent of Google. Can ship after Phases 0B + 1 + 2 + 3, no Phase 5 dependen
 
 ### Phase 7 — Admin surface + monitoring
 
-- [ ] **7.1** `app/controllers/admin/conversion_dispatches_controller.rb#index` — paginated list, scoped to `current_account`. Filter by status, destination, date range. Default order: most recent first. (Confirm CLAUDE.md `skip_marketing_analytics` declaration on this admin controller.)
-- [ ] **7.2** Show view: payload + response JSON pretty-printed. Retry button for failed dispatches (re-enqueues the job, increments retry count, but bypasses the "already delivered" guard).
-- [ ] **7.3** Stat tile on admin dashboard: "Conversion dispatches last 24h: X delivered, Y failed."
-- [ ] **7.4** Daily Slack digest of `failed_permanent` dispatches per account via existing `InternalNotifications`. One row per account, count per platform.
-- [ ] **7.5** `ApiUsageTracker` admin view already surfaces per-platform call counts. Verify `:meta_capi` and `:google_ec` appear after Phases 4 + 5.
-- [ ] **7.6** Match-quality diagnostic page: per-account, last 7d, count of dispatches with each match-key combination. Helps the customer identify which match keys are missing for low-EMQ events.
-- [ ] **7.7** Attribution-model diagnostic: per-destination, distribution of `platform_credit_share` over last 7d (e.g. histogram of conversions where Meta got 0%, 0-25%, 25-50%, 50-100% credit). Surfaces "is the model crediting this platform reasonably?" without requiring a console query. Also shows `skipped_no_credit` count so customers can see how many conversions the model is filtering out.
+**Ship-now scope** is 7.1–7.4: the minimum admin surface that lets operators see what fired, what skipped, what failed, and retry by hand. Diagnostics (7.5, 7.6) are deferred until BSA traffic is live — designing them from imagined data produces worse UI than designing them from observed dispatches.
+
+- [ ] **7.1** `Admin::ConversionDispatchesController < Admin::BaseController` (auth + `skip_marketing_analytics` inherited). `index` action with `include Pagination`, `per_page 50`. Cross-account list (admin is platform-wide; spec's earlier `current_account` wording was imprecise — see neighbouring `Admin::SubmissionsController`). Query-param filters: `status`, `account_id` (prefix_id), `conversion_destination_id`, `from`/`to` dates. Default order `created_at DESC`. Eager-load `conversion`, `conversion_destination`, `account` to avoid N+1. View: table cols `[created_at, account, conversion link, destination + platform badge, status (color-coded), fired_at, retries_count]` with filter form on top. Route: `resources :conversion_dispatches, only: [:index, :show]` inside `namespace :admin`.
+- [ ] **7.2** `show` action — `find_by_prefix_id!(params[:id])` on `cdisp_*`. View pretty-prints `payload`, `response`, and `error` as JSON. Surfaces `attribution_model`, `platform_credit_share`, all timestamps, retries_count.
+- [ ] **7.3** Manual retry endpoint — `POST /admin/conversion_dispatches/:id/retry`. Calls `OutboundConversionJob.perform_later(conversion.id, destination.id)` directly. Bypasses `DispatchService` (operator-initiated retries shouldn't be silently swallowed by a feature-flag check or an `event_type_mapping` gap). The dispatcher's existing `existing_delivered_dispatch` guard means clicking retry on a delivered row is a no-op (correct); clicking on a failed row re-attempts and updates the same row (correct). Redirect to `show` with flash.
+- [ ] **7.4** Register Conversion Dispatches in the admin index per `lib/specs/admin_index_spec.md`. One entry in `AdminTools::ALL`: category "Platform operations", path `/admin/conversion_dispatches`, description "Conversion-feedback dispatches to Meta CAPI + Google EC". This replaces the standalone dashboard tile from the prior spec draft — the admin index IS the dashboard.
+- [ ] **7.5** (DEFERRED) Match-quality diagnostic page: per-account, last 7d, count of dispatches with each match-key combination. Helps the customer identify which match keys are missing for low-EMQ events. Build after first 1k production dispatches so the histogram buckets reflect reality, not guesses.
+- [ ] **7.6** (DEFERRED) Attribution-model diagnostic: per-destination, distribution of `platform_credit_share` over last 7d (e.g. histogram of conversions where Meta got 0%, 0-25%, 25-50%, 50-100% credit). Surfaces "is the model crediting this platform reasonably?" without requiring a console query. Also shows `skipped_no_credit` count so customers can see how many conversions the model is filtering out. Same defer rationale as 7.5.
+- [ ] **7.7** Verify `:meta_capi` (and later `:google_ec`) appear in the existing `ApiUsageTracker` admin view after first dispatches. No code change — manual 5-minute check.
+
+**Out of Phase 7:**
+
+- ~~Slack digest of `failed_permanent` dispatches.~~ Dropped 2026-05-11. `failed_permanent` rows are already visible in the admin index with the platform's 4xx response captured in `error` + `response`. A Slack digest is duplicate signal until volume justifies it; revisit only if `failed_permanent` rate exceeds operator review capacity.
 
 ### Phase 8 — Wire BSA + ship
 
