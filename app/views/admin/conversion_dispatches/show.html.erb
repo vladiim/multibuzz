@@ -1,0 +1,56 @@
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 font-mono"><%= @dispatch.prefix_id %></h1>
+      <p class="text-sm text-gray-600 mt-1">
+        <%= @dispatch.conversion_destination.name %>
+        <span class="ml-1 inline-block px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded"><%= @dispatch.conversion_destination.platform %></span>
+        · <span class="font-mono"><%= @dispatch.account.prefix_id %></span>
+      </p>
+    </div>
+    <%= link_to "← Back to dispatches", admin_conversion_dispatches_path, class: "text-sm text-indigo-600 hover:text-indigo-800" %>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+    <div class="bg-white border border-gray-200 rounded-lg p-4">
+      <div class="text-xs uppercase tracking-wider text-gray-500 mb-1">Status</div>
+      <div data-testid="dispatch-status"><%= render "status_badge", status: @dispatch.status %></div>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-lg p-4">
+      <div class="text-xs uppercase tracking-wider text-gray-500 mb-1">Fired at</div>
+      <div class="text-sm text-gray-700"><%= @dispatch.fired_at&.to_fs(:long) || "—" %></div>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-lg p-4">
+      <div class="text-xs uppercase tracking-wider text-gray-500 mb-1">Retries</div>
+      <div class="text-sm text-gray-700"><%= @dispatch.retries_count %></div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+    <div class="bg-white border border-gray-200 rounded-lg p-4">
+      <div class="text-xs uppercase tracking-wider text-gray-500 mb-1">Attribution model</div>
+      <div class="text-sm text-gray-700"><%= @dispatch.attribution_model&.name || "—" %></div>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-lg p-4">
+      <div class="text-xs uppercase tracking-wider text-gray-500 mb-1">Platform credit share</div>
+      <div class="text-sm text-gray-700"><%= @dispatch.platform_credit_share ? "#{(@dispatch.platform_credit_share.to_f * 100).round(2)}%" : "—" %></div>
+    </div>
+  </div>
+
+  <% if @dispatch.error.present? %>
+    <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+      <div class="text-xs uppercase tracking-wider text-red-700 mb-1">Error</div>
+      <pre class="text-sm text-red-900 whitespace-pre-wrap font-mono"><%= @dispatch.error %></pre>
+    </div>
+  <% end %>
+
+  <section class="mb-8">
+    <h2 class="text-sm font-semibold text-gray-700 mb-2">Request payload</h2>
+    <pre class="bg-gray-900 text-gray-100 rounded-lg p-4 overflow-x-auto text-xs font-mono"><%= JSON.pretty_generate(@dispatch.payload || {}) %></pre>
+  </section>
+
+  <section>
+    <h2 class="text-sm font-semibold text-gray-700 mb-2">Platform response</h2>
+    <pre class="bg-gray-900 text-gray-100 rounded-lg p-4 overflow-x-auto text-xs font-mono"><%= JSON.pretty_generate(@dispatch.response || {}) %></pre>
+  </section>
+</div>

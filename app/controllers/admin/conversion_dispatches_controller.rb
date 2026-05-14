@@ -18,6 +18,10 @@ module Admin
       @filter_params = filter_params
     end
 
+    def show
+      @dispatch = ConversionDispatch.find_by_prefix_id!(params[:id])
+    end
+
     private
 
     def filtered_dispatches

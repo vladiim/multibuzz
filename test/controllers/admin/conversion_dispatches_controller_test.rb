@@ -76,6 +76,40 @@ class Admin::ConversionDispatchesControllerTest < ActionDispatch::IntegrationTes
     assert_select "[data-testid='dispatch-row']", count: 1
   end
 
+  # --- Show ---
+
+  test "show renders the dispatch by prefix_id" do
+    sign_in_as(admin_user)
+
+    get admin_conversion_dispatch_path(delivered_dispatch.prefix_id)
+
+    assert_response :success
+    assert_select "[data-testid='dispatch-status']", text: /delivered/i
+  end
+
+  test "show renders payload and response as pretty JSON" do
+    delivered_dispatch.update!(
+      payload: { "data" => [ { "event_name" => "Lead", "event_id" => "x" } ] },
+      response: { "events_received" => 1, "fbtrace_id" => "TRACE_X" }
+    )
+    sign_in_as(admin_user)
+
+    get admin_conversion_dispatch_path(delivered_dispatch.prefix_id)
+
+    assert_match(/&quot;event_name&quot;: &quot;Lead&quot;/, response.body)
+    assert_match(/&quot;fbtrace_id&quot;: &quot;TRACE_X&quot;/, response.body)
+  end
+
+  test "show 404s for unknown prefix_id" do
+    sign_in_as(admin_user)
+
+    get admin_conversion_dispatch_path("cdisp_nonexistent")
+
+    assert_response :not_found
+  end
+
+  # --- Index order ---
+
   test "default order is most recent first" do
     older = delivered_dispatch
     older.update!(created_at: 2.days.ago)
