@@ -14,6 +14,12 @@
 # Called by OutboundConversionJob (the thin queue wrapper). Pulled out
 # of the job so logic is testable without ActiveJob ceremony, and the
 # job stays a one-liner per CLAUDE.md "Jobs = Thin Wrappers".
+#
+# Attribution stamp (attribution_model_id + platform_credit_share) is
+# written to the dispatch row BEFORE the dispatcher is invoked so the
+# stamp survives a RetryableDispatchError raised by the dispatcher.
+# Both writes target the same row (find_or_initialize_by on the unique
+# (conversion, destination) index).
 module Conversions
   class OutboundDispatchService
     def initialize(conversion, destination)
@@ -24,7 +30,8 @@ module Conversions
     def call
       return record_skipped_no_credit if credit_below_threshold?
 
-      stamp_attribution(dispatch_via_registry)
+      stamp_attribution
+      dispatch_via_registry
     end
 
     private
@@ -48,9 +55,8 @@ module Conversions
       dispatch_row
     end
 
-    def stamp_attribution(dispatch)
-      dispatch.update!(attribution_attributes)
-      dispatch
+    def stamp_attribution
+      dispatch_row.update!(attribution_attributes)
     end
 
     def dispatch_row

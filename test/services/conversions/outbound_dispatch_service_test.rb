@@ -44,6 +44,23 @@ module Conversions
         ConversionDispatch.find_by!(conversion: conversion, conversion_destination: destination).status
     end
 
+    test "attribution stamped on the row even when the dispatcher raises a retryable error" do
+      stub_request(:post, %r{graph.facebook.com}).to_return(
+        status: 500, body: { error: { message: "Boom" } }.to_json
+      )
+
+      assert_raises(AdDestinations::Errors::RetryableDispatchError) do
+        OutboundDispatchService.new(conversion, destination).call
+      end
+
+      dispatch = ConversionDispatch.find_by!(conversion: conversion, conversion_destination: destination)
+
+      assert_equal(
+        [ ConversionDispatch::Statuses::FAILED_TRANSIENT, destination.attribution_model_id, 1.0 ],
+        [ dispatch.status, dispatch.attribution_model_id, dispatch.platform_credit_share.to_f ]
+      )
+    end
+
     test "platform_credit_share recorded even when status is delivered" do
       AttributionCredit.where(conversion: conversion).destroy_all
       create_credit_for(meta_session, credit: 0.5)

@@ -17,6 +17,27 @@ class OutboundConversionJobTest < ActiveJob::TestCase
     assert ConversionDispatch.exists?(conversion: conversion, conversion_destination: destination)
   end
 
+  test "retries on RetryableDispatchError raised by the dispatcher" do
+    stub_request(:post, %r{graph.facebook.com}).to_return(status: 503, body: "{}")
+
+    assert_enqueued_jobs(1, only: OutboundConversionJob) do
+      OutboundConversionJob.perform_now(conversion.id, destination.id)
+    end
+  end
+
+  test "does NOT retry on permanent 4xx (no exception raised)" do
+    stub_request(:post, %r{graph.facebook.com}).to_return(
+      status: 400, body: { error: { message: "Bad payload" } }.to_json
+    )
+
+    assert_no_enqueued_jobs(only: OutboundConversionJob) do
+      OutboundConversionJob.perform_now(conversion.id, destination.id)
+    end
+
+    assert_equal ConversionDispatch::Statuses::FAILED_PERMANENT,
+      ConversionDispatch.find_by!(conversion: conversion, conversion_destination: destination).status
+  end
+
   private
 
   def account = @account ||= accounts(:one)
