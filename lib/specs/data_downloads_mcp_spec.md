@@ -131,15 +131,15 @@ Claude Desktop / Cursor / ChatGPT
 
 | File | Purpose | Changes |
 |------|---------|---------|
-| `Gemfile` | Add the official `mcp` gem (`modelcontextprotocol/ruby-sdk`) | **Edit** |
-| `app/mcp/server.rb` | MCP server Rack app | **Create** |
-| `app/mcp/tools/get_conversions.rb` | Conversions tool — delegates to `DataDownloads::ConversionsQueryService` | **Create** |
-| `app/mcp/tools/get_funnel.rb` | Funnel tool — delegates to `DataDownloads::FunnelQueryService` | **Create** |
-| `app/mcp/tools/get_spend.rb` | Spend tool — delegates to `DataDownloads::SpendQueryService` | **Create** |
-| `app/mcp/resources/account_summary.rb` | Account summary resource | **Create** |
-| `app/mcp/authentication.rb` | Bearer-token middleware → reuses `ApiKeys::AuthenticationService` | **Create** |
-| `config/routes.rb` | Mount MCP server at `/mcp` | **Edit** |
-| `app/controllers/api/v1/base_controller.rb` | No change — MCP doesn't go through it (separate auth surface) | unchanged |
+| `Gemfile` | Official `mcp` gem (`modelcontextprotocol/ruby-sdk`) | ✅ Done |
+| `app/controllers/mcp/server_controller.rb` | `Mcp::ServerController` — auth + `handle_json` dispatch | ✅ Done |
+| `app/services/mcp/server_factory.rb` | `Mcp::ServerFactory.build` — per-request `MCP::Server` | ✅ Done (tools/resources arrays filled in Phase 2/3) |
+| `app/services/mcp/tools/get_conversions.rb` | Conversions tool — delegates to `DataDownloads::ConversionsQueryService` | **Create (Phase 2)** |
+| `app/services/mcp/tools/get_funnel.rb` | Funnel tool — delegates to `DataDownloads::FunnelQueryService` | **Create (Phase 2)** |
+| `app/services/mcp/tools/get_spend.rb` | Spend tool — delegates to `DataDownloads::SpendQueryService` | **Create (Phase 2)** |
+| `app/services/mcp/resources/account_summary.rb` | Account summary resource | **Create (Phase 3)** |
+| `config/routes.rb` | `post "/mcp"` → `mcp/server#handle` | ✅ Done |
+| `app/controllers/api/v1/base_controller.rb` | No change — MCP doesn't go through it (separate auth surface) | unchanged ✅ |
 | `app/services/data_downloads/{conversions,funnel,spend}_query_service.rb` | Reused from API spec (shipped 2026-05-12) | unchanged |
 | `app/views/docs/mcp.html.erb` | Customer-facing MCP setup docs | **Create** |
 | `app/views/accounts/api_keys/show.html.erb` | Add "Use this key with MCP" block with the URL + setup snippet | **Edit** |
@@ -182,14 +182,22 @@ Claude Desktop / Cursor / ChatGPT
 
 ## Implementation Tasks
 
-### Phase 1: Auth + transport foundation
+### Phase 1: Auth + transport foundation ✅ (2026-05-15)
 
-- [ ] **1.1** Add the official `mcp` gem to `Gemfile`; pin the exact version; `bundle install`; commit
-- [ ] **1.2** Spike against the official SDK (v0.16.x): stand up a minimal streamable-HTTP server in `stateless: true` mode, mount it Rack-style, confirm a custom auth layer can read the `Authorization` header before tool dispatch. Confirm the error model (`is_error: true` vs transport error) for Open Question #4.
-- [ ] **1.3** Create `app/mcp/authentication.rb` — Rack-level bearer-token check, calls `ApiKeys::AuthenticationService`, sets a thread-local or env-keyed account on the request
-- [ ] **1.4** Mount the MCP server at `/mcp` in `config/routes.rb` (host-constrained to `mcp.mbuzz.co` so it does not collide with the main app)
-- [ ] **1.5** Test: `curl` with valid key → 200 handshake; without key → 401; with revoked key → 401
-- [ ] **1.6** Confirm `Api::V1::BaseController` is untouched and the MCP auth path is independent
+Shipped in commits `54b2785` (gem) + `4be2085` (foundation). 7 controller tests green, full suite green (3932).
+
+**Structure landed differently from the original plan — three decisions made during the spike:**
+
+1. **Controller action, not `mount transport`.** The SDK's `StreamableHTTPTransport` carries an in-memory session store. For a stateless, read-only surface a plain controller action that calls `MCP::Server#handle_json` on the request body is genuinely stateless — a fresh server per request, no session store at all. `mount transport` was not used.
+2. **Code lives in `app/services/mcp/`, not `app/mcp/`.** Making `app/mcp` a Zeitwerk root would map `app/mcp/server.rb` → top-level `Server` and `app/mcp/tools/*` → top-level `Tools::*`, colliding with everything. `app/services/mcp/` autoloads cleanly as `Mcp::*` with zero config. Controllers stay at `app/controllers/mcp/` → `Mcp::ServerController` (already namespaced).
+3. **Auth is a controller `before_action`, not a Rack middleware.** No `app/mcp/authentication.rb`. The controller reuses `ApiKeys::AuthenticationService` directly in a `before_action`, independent of `Api::V1::BaseController`.
+
+- [x] **1.1** Official `mcp` gem added to `Gemfile`, pinned `0.16.0`, `bundle install`, committed
+- [x] **1.2** Spike: confirmed via real tests — `MCP::Server#handle_json` processes JSON-RPC, `server_context` flows to the tool layer, the `initialize` handshake and `tools/list` both work. (Error-model confirmation for Open Question #4 deferred to Phase 2 when the first tool exists.)
+- [x] **1.3** `Mcp::ServerController#authenticate_api_key` `before_action` — bearer-token check via `ApiKeys::AuthenticationService`, sets `@current_account` / `@current_api_key`
+- [x] **1.4** `post "/mcp"` route → `mcp/server#handle`. Not host-constrained — kamal-proxy routes `mcp.mbuzz.co`; the `/mcp` path collides with nothing on the main app.
+- [x] **1.5** `test/controllers/mcp/server_controller_test.rb`: valid key → handshake; no/invalid/revoked/suspended key → 401; notification → 202
+- [x] **1.6** `Api::V1::BaseController` untouched — `Mcp::ServerController < ActionController::API` with its own auth
 
 ### Phase 2: Tool surface
 
