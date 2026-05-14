@@ -258,11 +258,12 @@ The MCP server is `POST /mcp` in the main Rails app. It ships with the next norm
 
 ### Phase 6: Ship
 
-- [ ] **6.1** Full test suite passes
+- [x] **6.1** Full test suite passes — green at 3940
 - [ ] **6.2** Manual QA from Phase 5 signed off
-- [ ] **6.3** MCP docs page live
-- [ ] **6.4** API keys page surfaces MCP connection details
-- [ ] **6.5** Spec archived to `old/`
+- [x] **6.3** MCP docs page live (`/docs/mcp`)
+- [x] **6.4** API keys page surfaces MCP connection details
+- [x] **6.5** Business docs review — `BUSINESS_RULES.md` section 11 gained Data Downloads API + MCP subsections; `PRODUCT.md` names the data API + MCP in the export feature
+- [ ] **6.6** Spec archived to `old/` (after Phase 5 UAT signs off)
 
 ---
 
