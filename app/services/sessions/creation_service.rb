@@ -61,8 +61,13 @@ module Sessions
 
     def validation_error
       return error_result([ "visitor_id is required" ]) unless visitor_id.present?
+      return error_result([ "visitor_id #{Visitor::Validations::ID_FORMAT_MESSAGE}" ]) unless valid_visitor_id_format?
       return error_result([ "session_id is required" ]) unless session_id.present?
       error_result([ "url is required" ]) unless url.present?
+    end
+
+    def valid_visitor_id_format?
+      visitor_id.to_s.match?(Visitor::Validations::ID_FORMAT)
     end
 
     def with_session_lock
