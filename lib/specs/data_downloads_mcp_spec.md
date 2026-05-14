@@ -1,9 +1,9 @@
 # Data Downloads MCP Server Specification
 
-**Date:** 2026-05-13
+**Date:** 2026-05-13 (research decisions resolved 2026-05-15)
 **Priority:** P1
-**Status:** Draft — ready to start (dependency satisfied 2026-05-12)
-**Branch:** `feat/data-downloads-mcp` (will branch off `feat/conversion-feedback` once that ships, or off `main` post-merge)
+**Status:** Ready to start — library, transport, hosting, and naming decided (see [Key Decisions](#key-decisions))
+**Branch:** `feat/data-downloads-mcp` off `main` (`feat/conversion-feedback` deployed 2026-05-15)
 **Depends on:** `old/data_downloads_api_spec.md` — **shipped 2026-05-12**. The three JSON endpoints, query services, and namespace (`DataDownloads::*`) are live; this spec wraps them as MCP tools.
 
 ---
@@ -40,7 +40,7 @@ All three return `{ data: [...], meta: { total_count, page, per_page, total_page
 
 ## Proposed Solution
 
-A streamable-HTTP MCP server hosted at `mcp.mbuzz.co` (or `mbuzz.co/mcp`, TBD on hosting model), authenticated by the same API key the JSON API uses. The server exposes three MCP **tools**, each a thin shim over a JSON endpoint:
+A streamable-HTTP MCP server at `mcp.mbuzz.co`, hosted on the `mbuzz-shopify` droplet (see [Key Decisions](#key-decisions)), authenticated by the same API key the JSON API uses. The server exposes three MCP **tools**, each a thin shim over a JSON endpoint:
 
 - `mbuzz_get_conversions`
 - `mbuzz_get_funnel`
@@ -67,7 +67,11 @@ The API spec ships a programmatic surface for engineers. MCP ships an AI-native 
 | **stdio** | Customer runs the server locally (Node / Python) | Wrong fit — would mean we ship a customer-side binary and they configure env vars with their API key. Friction. |
 | **Streamable HTTP** | mbuzz hosts the server, customer adds the URL to their MCP client | Customer pastes API key, pastes URL, done. Centralised auth + rate limiting on our side. |
 
-Streamable HTTP is the post-2025 successor to SSE in the MCP spec. Bearer auth in the HTTP header, server-sent events for streaming responses if needed.
+Streamable HTTP is the post-2025-03-26 successor to SSE in the MCP spec. Bearer auth in the HTTP header, server-sent events for streaming responses if needed.
+
+### Run in stateless mode
+
+The official SDK's streamable HTTP transport stores session state in-memory, which would otherwise force single-process deployment or sticky-session routing. **Run with `stateless: true`.** Our tool surface is read-only with no session continuity — each tool call is an independent, separately-authenticated request. Stateless mode drops the in-memory session store entirely, which means the host droplet needs no sticky routing and the surface scales horizontally if it ever needs to.
 
 ### Auth Model
 
@@ -114,10 +118,11 @@ Returned as `application/json`. Lets the agent prime itself before answering:
 ```
 Claude Desktop / Cursor / ChatGPT
   → POST mcp.mbuzz.co/mcp (Authorization: Bearer sk_live_...)
-    → Mcp::Server (FastMcp-style Rack app)
+    → kamal-proxy on mbuzz-shopify droplet, host-routes mcp.mbuzz.co
+    → Mcp::Server (official mcp SDK streamable-HTTP Rack transport, stateless)
       → authenticate via ApiKeys::AuthenticationService
       → dispatch tool call
-        → Data::ConversionsQueryService / FunnelQueryService / SpendQueryService
+        → DataDownloads::ConversionsQueryService / FunnelQueryService / SpendQueryService
           → existing scopes
           → JSON result → MCP tool_result content
 ```
@@ -126,7 +131,7 @@ Claude Desktop / Cursor / ChatGPT
 
 | File | Purpose | Changes |
 |------|---------|---------|
-| `Gemfile` | Add `fast_mcp` (or equivalent Ruby MCP server gem) | **Edit** |
+| `Gemfile` | Add the official `mcp` gem (`modelcontextprotocol/ruby-sdk`) | **Edit** |
 | `app/mcp/server.rb` | MCP server Rack app | **Create** |
 | `app/mcp/tools/get_conversions.rb` | Conversions tool — delegates to `DataDownloads::ConversionsQueryService` | **Create** |
 | `app/mcp/tools/get_funnel.rb` | Funnel tool — delegates to `DataDownloads::FunnelQueryService` | **Create** |
@@ -139,15 +144,18 @@ Claude Desktop / Cursor / ChatGPT
 | `app/views/docs/mcp.html.erb` | Customer-facing MCP setup docs | **Create** |
 | `app/views/accounts/api_keys/show.html.erb` | Add "Use this key with MCP" block with the URL + setup snippet | **Edit** |
 
-### Choice of MCP Library
+### Choice of MCP Library — decided 2026-05-15
 
-| Option | Status | Notes |
+**Use the official `modelcontextprotocol/ruby-sdk` (gem name `mcp`).** Research on 2026-05-15:
+
+| Option | Verdict | Notes |
 |---|---|---|
-| `fast_mcp` (Ruby) | Active, maintained | Closest to "Rails-native MCP server" — Rack-mountable, supports streamable HTTP. Default choice. |
-| Roll our own | High cost | MCP protocol is non-trivial (handshake, capability negotiation, content types). No reason. |
-| Node sidecar | Possible | Would mean an extra service to operate. Avoid unless `fast_mcp` proves inadequate. |
+| **`mcp` — official Ruby SDK** | ✅ **Chosen** | v0.16.0 released 2026-05-14, actively maintained. True streamable HTTP transport (post-2025-03-26 standard). Rack-mountable: `mount transport => "/mcp"`. Custom header auth — we read `Authorization` ourselves and resolve the account. `stateless: true` mode available. |
+| `fast-mcp` | ❌ Rejected | v1.6.0, last release Sept 2025 (stale). Its "HTTP" is the legacy SSE transport, not streamable HTTP. **Dealbreaker: auth is a single static `auth_token` string** — cannot resolve a per-account API key through `ApiKeys::AuthenticationService`. |
+| Roll our own | ❌ | MCP protocol is non-trivial (handshake, capability negotiation, content types). No reason. |
+| Node sidecar | ❌ | Extra service to operate. Unnecessary now that the official Ruby SDK covers streamable HTTP. |
 
-Decision needed: confirm `fast_mcp` (or whichever Ruby MCP library has the best streamable-HTTP support at implementation time) handles streamable HTTP transport. If not, reconsider Node sidecar.
+**Caveat:** the official SDK is pre-1.0 — its API may shift before 1.0. Acceptable: it's the official, actively-shipped implementation and this spec is greenfield. Pin the exact version in `Gemfile.lock` and review release notes on each bump.
 
 ---
 
@@ -176,10 +184,10 @@ Decision needed: confirm `fast_mcp` (or whichever Ruby MCP library has the best 
 
 ### Phase 1: Auth + transport foundation
 
-- [ ] **1.1** Add MCP gem to `Gemfile`; `bundle install`; commit
-- [ ] **1.2** Spike: confirm gem supports streamable HTTP with custom auth middleware. If not, decide alternative before continuing.
+- [ ] **1.1** Add the official `mcp` gem to `Gemfile`; pin the exact version; `bundle install`; commit
+- [ ] **1.2** Spike against the official SDK (v0.16.x): stand up a minimal streamable-HTTP server in `stateless: true` mode, mount it Rack-style, confirm a custom auth layer can read the `Authorization` header before tool dispatch. Confirm the error model (`is_error: true` vs transport error) for Open Question #4.
 - [ ] **1.3** Create `app/mcp/authentication.rb` — Rack-level bearer-token check, calls `ApiKeys::AuthenticationService`, sets a thread-local or env-keyed account on the request
-- [ ] **1.4** Mount the MCP server at `/mcp` in `config/routes.rb`
+- [ ] **1.4** Mount the MCP server at `/mcp` in `config/routes.rb` (host-constrained to `mcp.mbuzz.co` so it does not collide with the main app)
 - [ ] **1.5** Test: `curl` with valid key → 200 handshake; without key → 401; with revoked key → 401
 - [ ] **1.6** Confirm `Api::V1::BaseController` is untouched and the MCP auth path is independent
 
@@ -216,6 +224,14 @@ The structure mirrors the API UAT in `data_downloads_surface_and_uat_spec.md`: a
 - [ ] **5.5** Cross-check: tool-call totals match the dashboard totals for the same window and filters (same reconciliation as API steps A5.1-A5.3)
 - [ ] **5.6** Connect ChatGPT and Cursor with the same key — verify each completes a representative tool call
 - [ ] **5.7** Tick `data_downloads_surface_and_uat_spec.md` M0 + M1 when this phase signs off
+
+### Phase 5b: Deploy — `mcp.mbuzz.co` on the `mbuzz-shopify` droplet
+
+- [ ] **5b.1** Add a `mcp` role to `config/deploy.yml` pointing at `mbuzz-shopify` (`138.68.228.181`). Same image, command serves the Rails app; kamal-proxy host-routes `mcp.mbuzz.co`.
+- [ ] **5b.2** Create the `mcp.mbuzz.co` DNS A record → `138.68.228.181`. Confirm kamal-proxy TLS (Let's Encrypt) issues for the new host.
+- [ ] **5b.3** Confirm the droplet reaches the DB privately at `10.120.0.3` (same VPC — verified 2026-05-15). Smoke a query service from a console on that droplet.
+- [ ] **5b.4** Co-tenancy check (Open Question #5): confirm the Shopify server and the mbuzz MCP container coexist within 1GB. If not, fall back to host-routing `mcp.mbuzz.co` to the main web droplet.
+- [ ] **5b.5** `kamal deploy` the `mcp` role; verify `mcp.mbuzz.co/mcp` answers a handshake.
 
 ### Phase 6: Ship
 
@@ -257,10 +273,11 @@ See Phase 5 above. The "real-world agent grounding" check is what catches design
 
 | Decision | Choice | Why |
 |----------|--------|-----|
-| Transport | Streamable HTTP | We host. Customer pastes URL + key, no local server. |
+| Transport | Streamable HTTP, `stateless: true` | We host. Customer pastes URL + key, no local server. Stateless drops the in-memory session store — no sticky routing on the droplet. |
 | Auth | Existing API keys | Zero new credential surface. Account scoping, env, revocation, logging — already built. |
-| Library | `fast_mcp` (Ruby) | Rails-native, Rack-mountable. Confirm streamable HTTP support in Phase 1.2. |
-| Hosting endpoint | `/mcp` mounted on the main app | Single deployment surface; same Kamal pipeline. Re-evaluate if traffic patterns warrant a separate service. |
+| Library | Official `mcp` SDK (`modelcontextprotocol/ruby-sdk`) | Decided 2026-05-15. True streamable HTTP, Rack-mountable, custom header auth so we resolve per-account keys. `fast-mcp` rejected — stale + static-token auth. |
+| Hosting | `mcp.mbuzz.co` subdomain on the `mbuzz-shopify` droplet | Decided 2026-05-15. `mbuzz-shopify` (`138.68.228.181`, private `10.120.0.4`) is sfo2 + same VPC as web/db/jobs, so it reaches the DB privately. Keeps MCP traffic off the main web droplet. Added as a Kamal `mcp` role. |
+| Tool naming | snake_case, `mbuzz_`-prefixed: `mbuzz_get_conversions` etc. | Decided 2026-05-15. snake_case is the 90%+ MCP convention; vendor prefix groups tools + avoids collisions; dots are discouraged. Dotted `mbuzz.spend.list` alternative rejected. |
 | Tool granularity | 3 broad tools, not many narrow ones | An agent picks better from "get spend" than from 12 hyper-specific tools. Mirrors API shape. |
 | Resource: account summary | Yes | Lets the agent prime itself in 1 read instead of N tool calls. |
 | Per-tool scopes | No (v1) | The API key represents account-level access. Sub-scopes (read-only conversions only, e.g.) is a separate auth feature. |
@@ -283,10 +300,11 @@ See Phase 5 above. The "real-world agent grounding" check is what catches design
 
 ## Open Questions
 
-1. **Hosting endpoint shape.** `/mcp` mounted on the main Rails app, or `mcp.mbuzz.co` subdomain? Subdomain is cleaner for client setup but adds Kamal + DNS work. Resolve before Phase 4.
-2. **Tool naming.** `mbuzz_get_spend` reads cleanly to humans but verbose to agents. Alternative: `mbuzz.spend.list` (dotted). Confirm with `fast_mcp` conventions before Phase 2.
+1. ~~**Hosting endpoint shape.**~~ **Resolved 2026-05-15:** `mcp.mbuzz.co` subdomain, hosted on the existing `mbuzz-shopify` droplet (sfo2, same VPC, reaches DB privately at `10.120.0.3`). Added as a Kamal `mcp` role. Watch memory headroom — the droplet is 1GB/1vCPU and already runs the Shopify server.
+2. ~~**Tool naming.**~~ **Resolved 2026-05-15:** snake_case, `mbuzz_`-prefixed (`mbuzz_get_conversions` / `mbuzz_get_funnel` / `mbuzz_get_spend`). Matches the dominant MCP convention; dotted form rejected (dots discouraged in tool names).
 3. **Tool description length.** MCP clients vary in how they truncate descriptions. Keep under ~300 chars per tool, test in real clients in Phase 5.
-4. **Error semantics.** MCP supports `is_error: true` on tool results vs. transport-level errors. Confirm we use the right one for "bad date range" vs "auth failure".
+4. **Error semantics.** MCP supports `is_error: true` on tool results vs. transport-level errors. Confirm we use the right one for "bad date range" vs "auth failure" — verify against the official SDK's error model in Phase 1.2.
+5. **Co-tenancy on `mbuzz-shopify`.** The droplet already runs the Shopify server. Confirm in Phase 1 whether that is a separate container we co-locate with the mbuzz MCP container, or whether the droplet has headroom for both. If 1GB is too tight, fall back to host-routing `mcp.mbuzz.co` to the main web droplet.
 
 ---
 
