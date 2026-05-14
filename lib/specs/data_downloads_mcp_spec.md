@@ -199,14 +199,22 @@ Shipped in commits `54b2785` (gem) + `4be2085` (foundation). 7 controller tests 
 - [x] **1.5** `test/controllers/mcp/server_controller_test.rb`: valid key → handshake; no/invalid/revoked/suspended key → 401; notification → 202
 - [x] **1.6** `Api::V1::BaseController` untouched — `Mcp::ServerController < ActionController::API` with its own auth
 
-### Phase 2: Tool surface
+### Phase 2: Tool surface ✅ (2026-05-15)
 
-- [ ] **2.1** Create `app/mcp/tools/get_conversions.rb` — delegates to `Data::ConversionsQueryService` (built in API spec)
-- [ ] **2.2** Test: tool call returns `data` + `meta`; rejects bad date format; respects pagination
-- [ ] **2.3** Create `app/mcp/tools/get_funnel.rb` + test
-- [ ] **2.4** Create `app/mcp/tools/get_spend.rb` + test — delegates to `DataDownloads::SpendQueryService` (already shipped)
-- [ ] **2.5** Each tool's `description` reviewed for "would the agent pick this correctly" — short, intent-focused
-- [ ] **2.6** Cross-account isolation test per tool
+Shipped in commit `67f1f73`. Code at `app/services/mcp/tools/`, tests at `test/services/mcp/tools_test.rb` (one file covers all three). Full suite green (3939).
+
+- [x] **2.1** `Mcp::Tools::GetConversions` → `DataDownloads::ConversionsQueryService`
+- [x] **2.2** Tests: each tool returns `{ data, meta }`; bad date → MCP error response (`isError: true`), not a raised exception
+- [x] **2.3** `Mcp::Tools::GetFunnel` → `DataDownloads::FunnelQueryService`
+- [x] **2.4** `Mcp::Tools::GetSpend` → `DataDownloads::SpendQueryService`
+- [x] **2.5** Descriptions written agent-first, intent-focused, under ~300 chars
+- [x] **2.6** Cross-account isolation: a fresh account sees zero rows; tools read `server_context[:account]`. Per-platform query services already carry their own isolation tests.
+
+**Notes:**
+- A shared `Mcp::Tools::Base` holds the param-building, `test_mode`-from-API-key, and response-formatting logic. Each tool subclass declares its own `tool_name` / `description` / `input_schema` and a one-line `call`.
+- Tool `call` takes `(server_context:, **args)` — args land in a hash rather than enumerated kwargs. Robust to unknown args and keeps the param count within rubocop limits.
+- `input_schema` must omit `required:` entirely when nothing is required — JSON Schema draft-04 rejects `required: []`.
+- `test_mode` is derived from the API key (`server_context[:api_key].test?`), never a tool argument — the key decides test vs live, same as the JSON API.
 
 ### Phase 3: Resource
 
