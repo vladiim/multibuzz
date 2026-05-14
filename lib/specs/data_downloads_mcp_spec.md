@@ -118,10 +118,11 @@ Returned as `application/json`. Lets the agent prime itself before answering:
 ```
 Claude Desktop / Cursor / ChatGPT
   → POST mcp.mbuzz.co/mcp (Authorization: Bearer sk_live_...)
-    → kamal-proxy on mbuzz-shopify droplet, host-routes mcp.mbuzz.co
-    → Mcp::Server (official mcp SDK streamable-HTTP Rack transport, stateless)
+    → kamal-proxy on the main web droplet, host-alias routes mcp.mbuzz.co
+    → Mcp::ServerController (main Rails app, POST /mcp route)
       → authenticate via ApiKeys::AuthenticationService
-      → dispatch tool call
+      → Mcp::ServerFactory builds a per-request MCP::Server (stateless)
+      → server.handle_json dispatches the tool call
         → DataDownloads::ConversionsQueryService / FunnelQueryService / SpendQueryService
           → existing scopes
           → JSON result → MCP tool_result content
@@ -241,13 +242,14 @@ The structure mirrors the API UAT in `data_downloads_surface_and_uat_spec.md`: a
 - [ ] **5.6** Connect ChatGPT and Cursor with the same key — verify each completes a representative tool call
 - [ ] **5.7** Tick `data_downloads_surface_and_uat_spec.md` M0 + M1 when this phase signs off
 
-### Phase 5b: Deploy — `mcp.mbuzz.co` on the `mbuzz-shopify` droplet
+### Phase 5b: Deploy — `mcp.mbuzz.co` host alias on the main web droplet
 
-- [ ] **5b.1** Add a `mcp` role to `config/deploy.yml` pointing at `mbuzz-shopify` (`138.68.228.181`). Same image, command serves the Rails app; kamal-proxy host-routes `mcp.mbuzz.co`.
-- [ ] **5b.2** Create the `mcp.mbuzz.co` DNS A record → `138.68.228.181`. Confirm kamal-proxy TLS (Let's Encrypt) issues for the new host.
-- [ ] **5b.3** Confirm the droplet reaches the DB privately at `10.120.0.3` (same VPC — verified 2026-05-15). Smoke a query service from a console on that droplet.
-- [ ] **5b.4** Co-tenancy check (Open Question #5): confirm the Shopify server and the mbuzz MCP container coexist within 1GB. If not, fall back to host-routing `mcp.mbuzz.co` to the main web droplet.
-- [ ] **5b.5** `kamal deploy` the `mcp` role; verify `mcp.mbuzz.co/mcp` answers a handshake.
+The MCP server is `POST /mcp` in the main Rails app, so it ships with the next normal deploy of the app. The only extra work is pointing the `mcp.` subdomain at the existing web droplet. No separate Kamal role, no separate droplet — the `mbuzz-shopify` plan was dropped when the Shopify channel was killed (2026-05-15).
+
+- [ ] **5b.1** Create the `mcp.mbuzz.co` DNS A record → the main web droplet (`68.183.173.51`).
+- [ ] **5b.2** Add `mcp.mbuzz.co` to the kamal-proxy host list for the web role in `config/deploy.yml` so the proxy answers (and issues a Let's Encrypt cert) for the new host.
+- [ ] **5b.3** `kamal deploy`; verify `https://mcp.mbuzz.co/mcp` answers an `initialize` handshake.
+- [ ] **5b.4** Verify `https://mbuzz.co/mcp` still answers too (same route) — the subdomain is cosmetic, the path is not host-constrained.
 
 ### Phase 6: Ship
 
@@ -292,7 +294,7 @@ See Phase 5 above. The "real-world agent grounding" check is what catches design
 | Transport | Streamable HTTP, `stateless: true` | We host. Customer pastes URL + key, no local server. Stateless drops the in-memory session store — no sticky routing on the droplet. |
 | Auth | Existing API keys | Zero new credential surface. Account scoping, env, revocation, logging — already built. |
 | Library | Official `mcp` SDK (`modelcontextprotocol/ruby-sdk`) | Decided 2026-05-15. True streamable HTTP, Rack-mountable, custom header auth so we resolve per-account keys. `fast-mcp` rejected — stale + static-token auth. |
-| Hosting | `mcp.mbuzz.co` subdomain on the `mbuzz-shopify` droplet | Decided 2026-05-15. `mbuzz-shopify` (`138.68.228.181`, private `10.120.0.4`) is sfo2 + same VPC as web/db/jobs, so it reaches the DB privately. Keeps MCP traffic off the main web droplet. Added as a Kamal `mcp` role. |
+| Hosting | `mcp.mbuzz.co` → the main web droplet | Revised 2026-05-15. The MCP server is just `POST /mcp` in the main Rails app, so it deploys and runs with the main app — no separate role, no separate droplet. The `mbuzz-shopify` droplet plan was dropped when the Shopify channel was killed. `mcp.mbuzz.co` is a DNS record + a kamal-proxy host alias pointing at the existing web droplet. |
 | Tool naming | snake_case, `mbuzz_`-prefixed: `mbuzz_get_conversions` etc. | Decided 2026-05-15. snake_case is the 90%+ MCP convention; vendor prefix groups tools + avoids collisions; dots are discouraged. Dotted `mbuzz.spend.list` alternative rejected. |
 | Tool granularity | 3 broad tools, not many narrow ones | An agent picks better from "get spend" than from 12 hyper-specific tools. Mirrors API shape. |
 | Resource: account summary | Yes | Lets the agent prime itself in 1 read instead of N tool calls. |
@@ -316,11 +318,11 @@ See Phase 5 above. The "real-world agent grounding" check is what catches design
 
 ## Open Questions
 
-1. ~~**Hosting endpoint shape.**~~ **Resolved 2026-05-15:** `mcp.mbuzz.co` subdomain, hosted on the existing `mbuzz-shopify` droplet (sfo2, same VPC, reaches DB privately at `10.120.0.3`). Added as a Kamal `mcp` role. Watch memory headroom — the droplet is 1GB/1vCPU and already runs the Shopify server.
+1. ~~**Hosting endpoint shape.**~~ **Resolved 2026-05-15:** `mcp.mbuzz.co` as a DNS + kamal-proxy host alias on the main web droplet. The MCP server is a route in the main Rails app, so it ships with the app — no separate role or droplet. The earlier `mbuzz-shopify` plan was dropped when the Shopify channel was killed.
 2. ~~**Tool naming.**~~ **Resolved 2026-05-15:** snake_case, `mbuzz_`-prefixed (`mbuzz_get_conversions` / `mbuzz_get_funnel` / `mbuzz_get_spend`). Matches the dominant MCP convention; dotted form rejected (dots discouraged in tool names).
 3. **Tool description length.** MCP clients vary in how they truncate descriptions. Keep under ~300 chars per tool, test in real clients in Phase 5.
-4. **Error semantics.** MCP supports `is_error: true` on tool results vs. transport-level errors. Confirm we use the right one for "bad date range" vs "auth failure" — verify against the official SDK's error model in Phase 1.2.
-5. **Co-tenancy on `mbuzz-shopify`.** The droplet already runs the Shopify server. Confirm in Phase 1 whether that is a separate container we co-locate with the mbuzz MCP container, or whether the droplet has headroom for both. If 1GB is too tight, fall back to host-routing `mcp.mbuzz.co` to the main web droplet.
+4. ~~**Error semantics.**~~ **Resolved 2026-05-15 (Phase 2):** bad input (e.g. malformed date) returns an `MCP::Tool::Response` with `error: true` (`isError: true` on the wire) — a recoverable tool error the agent sees. Auth failures are transport-level 401s from the controller `before_action`.
+5. ~~**Co-tenancy on `mbuzz-shopify`.**~~ **Moot — Shopify channel killed 2026-05-15, droplet decommissioned. MCP runs on the main web droplet as part of the main app.**
 
 ---
 
