@@ -136,6 +136,43 @@ class Api::V1::DataControllerTest < ActionDispatch::IntegrationTest
     assert_equal 1000, response.parsed_body["meta"]["per_page"]
   end
 
+  # ==========================================
+  # Date validation (400, not 500)
+  # ==========================================
+
+  test "conversions: 400 with invalid start_date" do
+    get "/api/v1/data/conversions",
+        headers: bearer(LIVE_KEY),
+        params: { start_date: "banana", end_date: "2026-05-14" }
+
+    assert_response :bad_request
+    assert_match(/date/i, response.parsed_body["error"])
+  end
+
+  test "conversions: 400 with invalid end_date" do
+    get "/api/v1/data/conversions",
+        headers: bearer(LIVE_KEY),
+        params: { start_date: "2026-05-01", end_date: "banana" }
+
+    assert_response :bad_request
+  end
+
+  test "funnel: 400 with invalid start_date" do
+    get "/api/v1/data/funnel",
+        headers: bearer(LIVE_KEY),
+        params: { start_date: "banana", end_date: "2026-05-14" }
+
+    assert_response :bad_request
+  end
+
+  test "spend: 400 with invalid start_date" do
+    get "/api/v1/data/spend",
+        headers: bearer(LIVE_KEY),
+        params: { start_date: "banana", end_date: "2026-05-14" }
+
+    assert_response :bad_request
+  end
+
   private
 
   def bearer(token)

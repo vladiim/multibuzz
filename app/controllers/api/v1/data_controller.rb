@@ -3,6 +3,8 @@
 module Api
   module V1
     class DataController < BaseController
+      rescue_from Date::Error, with: :render_bad_date_format
+
       def conversions
         render json: query_result(DataDownloads::ConversionsQueryService)
       end
@@ -16,6 +18,10 @@ module Api
       end
 
       private
+
+      def render_bad_date_format
+        render json: { error: "Invalid date format. Use YYYY-MM-DD." }, status: :bad_request
+      end
 
       def query_result(service_class)
         service_class.new(current_account, query_params).call
