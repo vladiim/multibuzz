@@ -19,10 +19,6 @@ class OnboardingHelperTest < ActionView::TestCase
     assert_equal "php", syntax_language_for(php_sdk)
   end
 
-  test "syntax_language_for returns javascript for shopify SDK" do
-    assert_equal "javascript", syntax_language_for(shopify_sdk)
-  end
-
   test "syntax_language_for returns bash for rest_api SDK" do
     assert_equal "bash", syntax_language_for(rest_api_sdk)
   end
@@ -61,10 +57,6 @@ class OnboardingHelperTest < ActionView::TestCase
 
   def php_sdk
     @php_sdk ||= SdkRegistry.find("php")
-  end
-
-  def shopify_sdk
-    @shopify_sdk ||= SdkRegistry.find("shopify")
   end
 
   def rest_api_sdk

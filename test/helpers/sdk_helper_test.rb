@@ -23,11 +23,8 @@ class SdkHelperTest < ActionView::TestCase
     assert sdks.all?(&:server_side?)
   end
 
-  test "platform_sdks returns platform SDKs" do
-    sdks = platform_sdks
-
-    assert_predicate sdks, :any?
-    assert sdks.all?(&:platform?)
+  test "platform_sdks returns empty when no platform SDKs exist" do
+    assert_empty platform_sdks
   end
 
   test "sdk_by_key returns SDK by key" do

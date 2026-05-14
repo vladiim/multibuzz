@@ -42,11 +42,8 @@ class SdkRegistryTest < ActiveSupport::TestCase
     assert sdks.all?(&:server_side?)
   end
 
-  test ".platform returns only platform SDKs" do
-    sdks = SdkRegistry.platform
-
-    assert_predicate sdks, :any?
-    assert sdks.all?(&:platform?)
+  test ".platform returns empty when no platform SDKs exist" do
+    assert_empty SdkRegistry.platform
   end
 
   test ".api returns only api SDKs" do
@@ -93,7 +90,7 @@ class SdkRegistryTest < ActiveSupport::TestCase
   end
 
   test "Sdk#platform? returns true for platform category" do
-    sdk = SdkRegistry.find(:shopify)
+    sdk = build_sdk(status: SdkStatuses::LIVE, category: SdkCategories::PLATFORM)
 
     assert_predicate sdk, :platform?
     assert_not sdk.server_side?
@@ -132,13 +129,6 @@ class SdkRegistryTest < ActiveSupport::TestCase
     assert_includes sdk.conversion_code, "curl"
   end
 
-  test "platform SDKs have nil code snippets" do
-    sdk = SdkRegistry.find(:shopify)
-
-    assert_nil sdk.init_code
-    assert_nil sdk.event_code
-  end
-
   # Tag manager tests
   test ".tag_manager returns only tag_manager SDKs" do
     sdks = SdkRegistry.tag_manager
@@ -175,7 +165,9 @@ class SdkRegistryTest < ActiveSupport::TestCase
 
   # custom_install? tests
   test "Sdk#custom_install? returns true for platform SDKs" do
-    assert_predicate SdkRegistry.find(:shopify), :custom_install?
+    sdk = build_sdk(status: SdkStatuses::LIVE, category: SdkCategories::PLATFORM)
+
+    assert_predicate sdk, :custom_install?
   end
 
   test "Sdk#custom_install? returns true for tag_manager SDKs" do
