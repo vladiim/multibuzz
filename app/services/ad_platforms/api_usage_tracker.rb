@@ -14,12 +14,16 @@ module AdPlatforms
   class ApiUsageTracker
     LIMITS = {
       google_ads: 15_000,
-      meta_ads: 200_000
+      meta_ads: 200_000,
+      meta_capi: 200_000,
+      google_ec: 15_000
     }.freeze
 
     DISPLAY_NAMES = {
       google_ads: "Google Ads",
-      meta_ads: "Meta Ads"
+      meta_ads: "Meta Ads",
+      meta_capi: "Meta CAPI",
+      google_ec: "Google Enhanced Conversions"
     }.freeze
 
     WARNING_THRESHOLD = 80
