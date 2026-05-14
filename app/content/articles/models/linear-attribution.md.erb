@@ -437,71 +437,30 @@ Apply calibration to adjust linear attribution toward truth.
     5. Template IDs: linear-30d, linear-7d, linear-90d, linear-filtered, etc.
 %>
 
-mbuzz uses **AML (Attribution Model Language)** to configure attribution models. AML is a simple, declarative syntax that lets you define exactly how credit should be distributed.
+mbuzz uses **AML (Attribution Modeling Language)** — a small Ruby DSL — to define how credit is distributed. Linear is the simplest model in the language.
 
-### Basic Linear Model
+### Basic linear
 
-```yaml
-# mbuzz AML - Linear Attribution
-model: linear
-name: "Equal Credit"
-description: "Distribute credit equally across all touchpoints"
-
-settings:
-  lookback_window: 30d
-  include_direct: true
-  dedupe_level: session    # session | event
-  min_touchpoints: 1
+```ruby
+within_window 30.days
+  apply 1.0 / touchpoints.length to touchpoints
+end
 ```
 
-This creates a standard linear model with 30-day lookback, including direct traffic, deduplicating at the session level.
+One unit of credit, split equally across every touchpoint in the 30-day lookback. Change `30.days` to lengthen or shorten the window.
 
-### Linear with Channel Filtering
+### Linear with channel filtering
 
-```yaml
-# Only credit marketing channels (exclude direct/organic brand)
-model: linear
-name: "Marketing Linear"
+To exclude direct and branded organic from the credit pool, filter touchpoints first:
 
-settings:
-  lookback_window: 30d
-
-filters:
-  exclude_channels:
-    - direct
-    - organic_brand
-  include_only:
-    - paid_social
-    - paid_search
-    - email
-    - display
-    - affiliate
+```ruby
+within_window 30.days
+  marketing = touchpoints.reject { |tp| %w[direct organic_brand].include?(tp.channel) }
+  apply 1.0 / marketing.length to marketing
+end
 ```
 
-### Running Multiple Linear Models
-
-```yaml
-# Compare different lookback windows
-models:
-  - model: linear
-    name: "Linear 7d"
-    settings:
-      lookback_window: 7d
-
-  - model: linear
-    name: "Linear 30d"
-    settings:
-      lookback_window: 30d
-
-  - model: linear
-    name: "Linear 90d"
-    settings:
-      lookback_window: 90d
-
-comparison:
-  enabled: true
-  primary: "Linear 30d"
-```
+The full AML reference — including segment weights, conditional logic, and time-decay primitives — is at [docs/attribution-models](/docs/attribution-models).
 
 ## Tuning Linear Parameters for Your Business
 
@@ -509,102 +468,29 @@ Linear attribution has few parameters, but the ones it has matter. Here's how to
 
 ### By Business Type
 
-| Business Type | Lookback Window | Include Direct? | Dedupe Level |
-|---------------|-----------------|-----------------|--------------|
-| **Impulse e-commerce** | 7 days | Yes | Session |
-| **Considered purchase** | 30 days | Yes | Session |
-| **B2B SaaS** | 60-90 days | No (often brand) | Session |
-| **Enterprise B2B** | 90-180 days | No | Event (capture all) |
-| **Subscription/DTC** | 30 days | Yes | Session |
+| Business Type | Lookback Window | Include Direct? |
+|---------------|-----------------|-----------------|
+| **Impulse e-commerce** | 7 days | Yes |
+| **Considered purchase** | 30 days | Yes |
+| **B2B SaaS** | 60-90 days | No (often brand) |
+| **Enterprise B2B** | 90-180 days | No |
+| **Subscription/DTC** | 30 days | Yes |
 
-### By Business Stage
-
-```yaml
-# Early-stage: Simple, learn your baseline
-model: linear
-name: "Startup Linear"
-settings:
-  lookback_window: 30d
-  include_direct: true
-  dedupe_level: session
-
----
-
-# Growth-stage: More nuance, exclude noise
-model: linear
-name: "Growth Linear"
-settings:
-  lookback_window: 30d
-  include_direct: false    # Brand strength distorts
-
-filters:
-  exclude_channels:
-    - organic_brand        # Exclude branded organic
-  min_conversion_value: 10 # Ignore micro-conversions
-
----
-
-# Scale-stage: Segment analysis
-models:
-  - model: linear
-    name: "New Customer Linear"
-    settings:
-      lookback_window: 60d
-    filters:
-      user_segment: new_customers
-
-  - model: linear
-    name: "Returning Linear"
-    settings:
-      lookback_window: 14d    # Shorter for returning
-    filters:
-      user_segment: returning_customers
-```
+In AML, the lookback is the `within_window` duration. To exclude direct, filter it out of `touchpoints` before the `apply` call (see channel-filtering example above).
 
 ### Seasonal Adjustments
 
-During major campaigns or seasonal peaks, journey patterns change:
-
-```yaml
-# Black Friday / Holiday Season
-model: linear
-name: "Holiday Linear"
-settings:
-  lookback_window: 14d      # Compressed buying cycles
-  include_direct: true
-
-date_range:
-  start: "2024-11-15"
-  end: "2024-12-31"
-
-# Compare to baseline
-comparison:
-  baseline_model: "Standard Linear"
-  baseline_period: "2024-10-01 to 2024-11-14"
-```
+Buying behavior compresses during sale periods. Shorten the AML window from `30.days` to `14.days` for BFCM and the holiday peak; stretch it to `45.days` post-holiday to credit gift card redemptions back to the original campaigns. Run the seasonal variant alongside the standard one and compare the credit split.
 
 ### Big Campaign / Launch Adjustments
 
-When launching a major campaign, isolate its attribution:
+For a launch attribution view, narrow the lookback and restrict touchpoints to the launch campaigns:
 
-```yaml
-# Product Launch Attribution
-model: linear
-name: "Launch Linear"
-
-settings:
-  lookback_window: 14d      # Fresh launch, short history
-
-filters:
-  # Only attribute conversions where launch campaign was touched
-  require_campaign:
-    - "product-launch-2024"
-    - "launch-retargeting"
-
-# Track daily to see ramp
-reporting:
-  granularity: daily
-  compare_to_forecast: true
+```ruby
+within_window 14.days
+  launch = touchpoints.select { |tp| tp.campaign.starts_with?("product-launch-2024") }
+  apply 1.0 / launch.length to launch
+end
 ```
 
 ### Parameter Tuning Cheatsheet
