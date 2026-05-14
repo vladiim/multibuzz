@@ -2,8 +2,19 @@
 
 **Date:** 2026-03-12 (revised 2026-05-13: added spend endpoint, implemented)
 **Priority:** P1
-**Status:** Complete
+**Status:** Shipped 2026-05-12 — `feat(api): data downloads API — conversions, funnel, spend` (`6d6a6a1`) + `feat(api): DataDownloads::SpendQueryService` (`12431c4`). Live on prod.
 **Branch:** `feat/conversion-feedback`
+
+## Shipped Deviations from Draft
+
+- **Service namespace is `DataDownloads::`, not `Data::`.** `Data` collides with Ruby 3.x core `Data.define` and is too generic. Final layout:
+  - `app/services/data_downloads/conversions_query_service.rb`
+  - `app/services/data_downloads/funnel_query_service.rb`
+  - `app/services/data_downloads/spend_query_service.rb`
+- **Routes are flat, not nested.** `config/routes.rb` uses `get "data/conversions"`, `"data/funnel"`, `"data/spend"` directly under `namespace :api { namespace :v1 }` rather than an additional `namespace :data`. Same URLs externally.
+- **Test/live data scope is wired via `current_api_key.test?`** in `Api::V1::DataController#query_params` (`test_mode: current_api_key.test?`). `sk_test_*` and `sk_live_*` get their own data automatically.
+- **Date validation lives in the query service**, not the controller. Bad `start_date` / `end_date` formats fall through to a default 30-day range rather than returning 400. The "date range > 365 days → 400" check from the draft was not implemented — left for follow-up if it becomes a problem.
+- **Dashboard "API Extract" waitlist removal** was handed off to `dashboard_export_dropdown_spec.md` (also shipped 2026-05-12, `6b1d60d`).
 
 ---
 
@@ -290,69 +301,38 @@ Existing files reused (no changes):
 
 ### Phase 1: Query Services
 
-- [ ] **1.1** Create `test/services/data/conversions_query_service_test.rb`
-  - Returns paginated hash array matching CSV column names
-  - Respects date range, channels, test_mode (via `is_test` flag)
-  - Pagination: page, per_page, total_count, total_pages
-  - Multi-account isolation
-  - Empty result returns empty array with zero counts
-- [ ] **1.2** Create `app/services/data/conversions_query_service.rb`
-- [ ] **1.3** Create `test/services/data/funnel_query_service_test.rb`
-  - Returns paginated hash array with visit/event/conversion rows
-  - Respects date range, channels, funnel filter, test_mode
-  - Pagination works across mixed record types
-  - Multi-account isolation
-- [ ] **1.4** Create `app/services/data/funnel_query_service.rb`
-- [ ] **1.5** Create `test/services/data/spend_query_service_test.rb`
-  - Returns paginated hash array with one row per `ad_spend_records` row
-  - Includes `platform` joined from `ad_platform_connections`
-  - Spend rendered in major units (micros / 1_000_000)
-  - `metadata` returned as a JSON object (not a string)
-  - Respects date range, channels, test_mode (via key environment)
-  - Multi-account isolation
-- [ ] **1.6** Create `app/services/data/spend_query_service.rb` — reuses `SpendIntelligence::Scopes::SpendScope`
-- [ ] **1.7** All query service tests green
+- [x] **1.1** `test/services/data_downloads/conversions_query_service_test.rb` (namespace shipped as `DataDownloads::`, not `Data::`)
+- [x] **1.2** `app/services/data_downloads/conversions_query_service.rb`
+- [x] **1.3** `test/services/data_downloads/funnel_query_service_test.rb`
+- [x] **1.4** `app/services/data_downloads/funnel_query_service.rb`
+- [x] **1.5** `test/services/data_downloads/spend_query_service_test.rb`
+- [x] **1.6** `app/services/data_downloads/spend_query_service.rb` — reuses `SpendIntelligence::Scopes::SpendScope`
+- [x] **1.7** Query service tests green
 
 ### Phase 2: Controller + Routes
 
-- [ ] **2.1** Add routes to `config/routes.rb`:
+- [x] **2.1** Routes added — flat under `namespace :v1` (see "Shipped Deviations"):
   ```ruby
-  namespace :api do
-    namespace :v1 do
-      # existing routes...
-      namespace :data do
-        get "conversions", to: "data#conversions"
-        get "funnel", to: "data#funnel"
-        get "spend", to: "data#spend"
-      end
-    end
-  end
+  get "data/conversions", to: "data#conversions"
+  get "data/funnel",      to: "data#funnel"
+  get "data/spend",       to: "data#spend"
   ```
-- [ ] **2.2** Create `test/controllers/api/v1/data_controller_test.rb`
-  - Auth: 401 without header, with invalid key, with revoked key
-  - Auth: 401 for suspended account
-  - Success: 200 with correct JSON structure
-  - Test key returns test data only
-  - Live key returns live data only
-  - Date params validation (bad format, range too wide)
-  - Pagination params respected
-  - Cross-account isolation
-  - All three endpoints (conversions + funnel + spend)
-- [ ] **2.3** Create `app/controllers/api/v1/data_controller.rb`
-- [ ] **2.4** All controller tests green
+- [x] **2.2** `test/controllers/api/v1/data_controller_test.rb`
+- [x] **2.3** `app/controllers/api/v1/data_controller.rb`
+- [x] **2.4** Controller tests green
 
 ### Phase 3: Dashboard UI Update
 
-- [ ] **3.1** Remove "API Extract" waitlist button from `app/views/dashboard/show.html.erb`
-- [ ] **3.2** Replace with link to API docs or brief "Use API key" note (if API docs page exists for data endpoints)
+- [x] **3.1** Waitlist row removed — handled by `dashboard_export_dropdown_spec.md` (shipped 2026-05-12, `6b1d60d`)
+- [ ] **3.2** Link to API docs from dashboard — **deferred**, no docs page for data endpoints yet (covered by `data_downloads_mcp_spec.md` customer-setup phase)
 
 ### Phase 4: Full Suite + Ship
 
-- [ ] **4.1** Full test suite passes (`bin/rails test`)
-- [ ] **4.2** Manual QA: curl both endpoints with test key, verify JSON response
-- [ ] **4.3** Manual QA: verify pagination, date filters, channel filters
-- [ ] **4.4** Manual QA: verify test vs live key data isolation
-- [ ] **4.5** Update spec, commit
+- [x] **4.1** Full test suite green pre-merge
+- [ ] **4.2** Manual QA against prod with `sk_test_*` and `sk_live_*` — pending (2026-05-14 verification session)
+- [ ] **4.3** Manual QA: pagination + date filters + channel filters — pending same session
+- [ ] **4.4** Manual QA: test vs live key data isolation — pending same session
+- [x] **4.5** Spec updated and archived to `old/`
 
 ---
 

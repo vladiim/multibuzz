@@ -203,13 +203,19 @@ Decision needed: confirm `fast_mcp` (or whichever Ruby MCP library has the best 
 - [ ] **4.1** Create `app/views/docs/mcp.html.erb` — "How to connect mbuzz to Claude / ChatGPT / Cursor" with the MCP server URL + bearer-key snippet for each client. `skip_marketing_analytics` if it renders the URL with example key (it won't — placeholder only)
 - [ ] **4.2** Edit `app/views/accounts/api_keys/show.html.erb` — add a collapsible "Use this key with MCP" block showing the server URL and a copy-paste-ready snippet that references "this key". **Must already be `skip_marketing_analytics`** (it shows the key).
 - [ ] **4.3** Link to MCP docs from the API docs index
+- [ ] **4.4** Flip the dashboard Export dropdown MCP row from greyed "soon" to a live link to `/docs/mcp` — this is the trigger that supersedes the placeholder in `data_downloads_surface_and_uat_spec.md`. Remove `data-disabled`, add `href`.
 
-### Phase 5: Manual verification
+### Phase 5: Manual verification (MCP UAT)
 
-- [ ] **5.1** Connect Claude Desktop with `sk_test_*` key against staging — verify all 3 tools callable, resource readable
+The structure mirrors the API UAT in `data_downloads_surface_and_uat_spec.md`: auth boundary → tool calls → resource reads → cross-checks against dashboard → edge cases. Walk step-by-step against prod once Phases 1-4 land.
+
+- [ ] **5.1** Connect Claude Desktop with `sk_test_*` key against prod — verify all 3 tools callable, resource readable
 - [ ] **5.2** Repeat with `sk_live_*` — verify env-scoping holds (test client cannot see live data and vice versa)
 - [ ] **5.3** Ask Claude in conversation: "What's our blended ROAS in the last 30 days?" → confirm it picks `mbuzz_get_spend` + `mbuzz_get_conversions` and produces a grounded answer
 - [ ] **5.4** Revoke the key mid-conversation → next tool call returns 401, agent surfaces the error
+- [ ] **5.5** Cross-check: tool-call totals match the dashboard totals for the same window and filters (same reconciliation as API steps A5.1-A5.3)
+- [ ] **5.6** Connect ChatGPT and Cursor with the same key — verify each completes a representative tool call
+- [ ] **5.7** Tick `data_downloads_surface_and_uat_spec.md` M0 + M1 when this phase signs off
 
 ### Phase 6: Ship
 
