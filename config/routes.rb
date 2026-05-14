@@ -46,6 +46,11 @@ Rails.application.routes.draw do
       get "validate", to: "validate#show"
       get "health", to: "health#show"
 
+      # Data Downloads: paginated JSON exports
+      get "data/conversions", to: "data#conversions"
+      get "data/funnel", to: "data#funnel"
+      get "data/spend", to: "data#spend"
+
       # Test endpoints (test/dev environments only)
       if Rails.env.test? || Rails.env.development?
         namespace :test do
