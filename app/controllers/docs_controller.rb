@@ -3,7 +3,7 @@
 class DocsController < ApplicationController
   layout "docs"
 
-  ALLOWED_PAGES = %w[getting-started authentication attribution-models platforms-shopify integrations-sgtm].freeze
+  ALLOWED_PAGES = %w[getting-started authentication attribution-models platforms-shopify integrations-sgtm data-downloads].freeze
 
   def show
     page_slug = params[:page]

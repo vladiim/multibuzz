@@ -336,7 +336,7 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
     dropdown_html = css_select("[data-export-button-target='container']").first&.to_html.to_s
 
     assert_no_match(/API Extract/i, dropdown_html)
-    assert_no_match(/Coming soon/i, dropdown_html)
+    assert_no_match(/waitlist/i, dropdown_html)
   end
 
   test "dashboard hidden export_type input defaults to conversions" do

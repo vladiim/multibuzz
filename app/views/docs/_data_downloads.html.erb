@@ -1,0 +1,176 @@
+<%= render_markdown <<~MD
+  # Data Downloads API
+
+  Three JSON endpoints for pulling your conversion, funnel, and ad spend data out of mbuzz.
+  Same data the dashboard renders, in a programmatic shape.
+
+  ---
+
+  ## Authentication
+
+  Every request must include a Bearer token in the `Authorization` header. See [Authentication](#{docs_path(page: 'authentication')}) for how to create and rotate keys.
+
+  ```
+  Authorization: Bearer sk_live_your_key_here
+  ```
+
+  The key's environment determines the data scope:
+
+  - `sk_test_*` → returns test-mode data
+  - `sk_live_*` → returns live data
+
+  An account cannot see another account's data, regardless of key.
+
+  ---
+
+  ## Common Parameters
+
+  All three endpoints share the same query parameters:
+
+  | Param | Default | Notes |
+  |---|---|---|
+  | `start_date` + `end_date` | last 30 days | `YYYY-MM-DD`. Both required if either is present. |
+  | `date_range` | `30d` | Alternative to start/end. Examples: `7d`, `30d`, `90d`. |
+  | `channels[]` | all channels | Repeat the param to filter to multiple. e.g. `channels[]=paid_search&channels[]=direct`. |
+  | `page` | `1` | 1-indexed. |
+  | `per_page` | `100` | Clamped to `[1, 1000]`. |
+  | `funnel` | none | Conversions + funnel only. Filters to a single funnel name. |
+
+  Bad date format returns `400 Bad Request` with `{"error":"Invalid date format. Use YYYY-MM-DD."}`.
+
+  ---
+
+  ## Response Shape
+
+  All three endpoints return the same envelope:
+
+  ```json
+  {
+    "data": [ /* rows */ ],
+    "meta": {
+      "total_count": 1234,
+      "page": 1,
+      "per_page": 100,
+      "total_pages": 13
+    }
+  }
+  ```
+
+  Iterate by incrementing `page` until `page > total_pages`.
+
+  ---
+
+  ## GET /api/v1/data/conversions
+
+  One row per attribution credit. A single conversion across N attribution models produces N rows (one per model).
+
+  ### Row fields
+
+  | Field | Type | Notes |
+  |---|---|---|
+  | `date` | string | `YYYY-MM-DD`, conversion date |
+  | `type` | string | always `"conversion"` |
+  | `name` | string | conversion type (e.g. `purchase`, `signup`) |
+  | `funnel` | string\\|null | funnel name if assigned |
+  | `attribution_model` | string | model name |
+  | `algorithm` | string | model algorithm label (e.g. `Linear`, `Last Touch`) |
+  | `channel` | string | crediting touchpoint's channel |
+  | `credit` | float | fractional credit `0.0`-`1.0` |
+  | `revenue` | float\\|null | total conversion revenue |
+  | `revenue_credit` | float\\|null | this row's share of revenue |
+  | `currency` | string | ISO 4217 |
+  | `utm_source` / `utm_medium` / `utm_campaign` | string\\|null | crediting touchpoint UTMs |
+  | `is_acquisition` | bool | first conversion for the user? |
+  | `properties` | object | event properties JSON |
+  | `journey_position` | string | `first_touch` / `assisted` / `last_touch` |
+  | `touchpoint_index` | int | 0-indexed position in journey |
+  | `journey_length` | int | total touchpoints in journey |
+  | `days_to_conversion` | int | days from this touchpoint to conversion |
+
+  ### Example
+
+  ```bash
+  curl -s -H "Authorization: Bearer $MBUZZ_API_KEY" \\
+    "https://mbuzz.co/api/v1/data/conversions?start_date=2026-04-01&end_date=2026-05-14&channels[]=paid_search&per_page=50"
+  ```
+
+  ---
+
+  ## GET /api/v1/data/funnel
+
+  One row per funnel event: visits, custom events, and conversions, ordered by time. Use this when you want raw event sequencing rather than attribution credits.
+
+  When `funnel=<name>` is set, visit rows are excluded (visits are not funnel-scoped).
+
+  ### Row fields
+
+  | Field | Type | Notes |
+  |---|---|---|
+  | `date` | string | `YYYY-MM-DD` |
+  | `type` | string | `visit`, `event`, or `conversion` |
+  | `name` | string\\|null | event/conversion name; null for visits |
+  | `funnel` | string\\|null | funnel name |
+  | `channel` | string | session channel |
+  | `utm_source` / `utm_medium` / `utm_campaign` | string\\|null | session initial UTMs |
+  | `revenue` | float\\|null | conversion rows only |
+  | `currency` | string\\|null | conversion rows only |
+  | `is_acquisition` | bool\\|null | conversion rows only |
+  | `properties` | object\\|null | event/conversion properties |
+  | `session_id` | int | internal session id (joinable across rows) |
+
+  ### Example
+
+  ```bash
+  curl -s -H "Authorization: Bearer $MBUZZ_API_KEY" \\
+    "https://mbuzz.co/api/v1/data/funnel?funnel=sales&per_page=20"
+  ```
+
+  ---
+
+  ## GET /api/v1/data/spend
+
+  One row per ad spend record from your connected ad platforms. Money fields are in major units (e.g. dollars, not cents/micros).
+
+  ### Row fields
+
+  | Field | Type | Notes |
+  |---|---|---|
+  | `spend_date` | string | `YYYY-MM-DD` |
+  | `channel` | string | mbuzz channel mapping |
+  | `platform` | string | `google_ads`, `meta_ads`, etc. |
+  | `campaign_name` | string | |
+  | `campaign_type` / `network_type` / `device` | string\\|null | platform breakdowns |
+  | `spend_hour` | int\\|null | hour 0-23 if hourly granularity available |
+  | `spend` | float | major units |
+  | `currency` | string | ISO 4217 |
+  | `impressions` | int | |
+  | `clicks` | int | |
+  | `platform_conversions` | float | platform's own conversion count |
+  | `platform_conversion_value` | float | platform's reported conversion value |
+  | `metadata` | object | operator-applied metadata tags |
+
+  Channel filter still applies; `funnel` is ignored for spend.
+
+  ### Example
+
+  ```bash
+  curl -s -H "Authorization: Bearer $MBUZZ_API_KEY" \\
+    "https://mbuzz.co/api/v1/data/spend?start_date=2026-04-01&end_date=2026-05-14"
+  ```
+
+  ---
+
+  ## Errors
+
+  | Status | When | Body |
+  |---|---|---|
+  | `401` | missing/invalid/revoked key, or suspended account | `{"error":"..."}` |
+  | `400` | malformed date | `{"error":"Invalid date format. Use YYYY-MM-DD."}` |
+
+  ---
+
+  ## MCP
+
+  Coming soon: an MCP server that exposes the same three endpoints as tools your AI assistant (Claude, ChatGPT, Cursor) can call directly. No code; you paste a URL and your API key into the client.
+MD
+%>

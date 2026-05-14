@@ -1,8 +1,9 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Binds the dashboard's "Download CSV" button to the active tab.
+// Binds the dashboard's "Download CSV" row to the active tab.
 //
-// - Hides the dropdown trigger when the active tab is not exportable (Events).
+// - Trigger stays visible on all tabs — API + MCP rows are tab-agnostic.
+// - On non-exportable tabs (Events) the CSV row hides; API + MCP remain.
 // - Rewrites the hidden export_type input to match the active tab so the
 //   submitted form posts the right export_type to /dashboard/export.
 //
@@ -12,7 +13,7 @@ import { Controller } from "@hotwired/stimulus"
 // Exportable tabs are passed in from the server (DashboardTabs::EXPORTABLE)
 // so this stays a single source of truth — see app/constants/dashboard_tabs.rb.
 export default class extends Controller {
-  static targets = ["container", "trigger", "input"]
+  static targets = ["container", "trigger", "csvRow", "input"]
   static values = {
     initialTab: String,
     exportableTabs: Array
@@ -30,8 +31,8 @@ export default class extends Controller {
   applyTab(tab) {
     const exportable = this.exportableTabsValue.includes(tab)
 
-    if (this.hasTriggerTarget) {
-      this.triggerTarget.classList.toggle("hidden", !exportable)
+    if (this.hasCsvRowTarget) {
+      this.csvRowTarget.classList.toggle("hidden", !exportable)
     }
 
     if (exportable && this.hasInputTarget) {

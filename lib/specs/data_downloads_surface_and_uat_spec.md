@@ -119,12 +119,12 @@ No backend code changes — the API itself shipped 2026-05-12.
 
 ## Acceptance Criteria
 
-- [ ] Dropdown shows three rows on all four tabs (CSV hidden on Events; trigger always visible)
-- [ ] API row navigates to `account_api_keys_path`
-- [ ] API keys page contains a visible inline link to `/docs/data-downloads`
-- [ ] `/docs/data-downloads` renders and includes: auth, three endpoints, query params, curl examples per endpoint
-- [ ] MCP row visible, greyed, no href, "soon" pill, no nav on click
-- [ ] All API UAT steps below sign off (live key + test key)
+- [x] Dropdown shows three rows on all four tabs (CSV hidden on Events; trigger always visible) — `app/views/dashboard/show.html.erb:91-115`, `app/javascript/controllers/export_button_controller.js`
+- [x] API row navigates to `account_api_keys_path`
+- [x] API keys page contains a visible inline link to `/docs/data-downloads` — `app/views/accounts/api_keys/index.html.erb:15`
+- [x] `/docs/data-downloads` renders and includes: auth, three endpoints, query params, curl examples per endpoint — `app/views/docs/_data_downloads.html.erb`
+- [x] MCP row visible, greyed, no href, "soon" pill, no nav on click
+- [x] All API UAT steps below sign off (live key + test key) — 26 PASS / 0 FAIL (`e10c063`)
 - [ ] MCP UAT walks when the MCP spec ships (deferred — see MCP spec)
 
 ---
