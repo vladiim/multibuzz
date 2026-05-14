@@ -16,6 +16,8 @@
 # Index on email_sha256 (account-scoped) supports the match-rate diagnostic
 # in the admin UI.
 class AddHashedPiiToIdentities < ActiveRecord::Migration[8.0]
+  disable_ddl_transaction!
+
   def up
     add_column :identities, :email_sha256, :string, limit: 64 unless column_exists?(:identities, :email_sha256)
     add_column :identities, :phone_e164_sha256, :string, limit: 64 unless column_exists?(:identities, :phone_e164_sha256)
@@ -35,6 +37,4 @@ class AddHashedPiiToIdentities < ActiveRecord::Migration[8.0]
     remove_column :identities, :phone_e164_sha256, if_exists: true
     remove_column :identities, :email_sha256, if_exists: true
   end
-
-  def self.disable_ddl_transaction? = true
 end
