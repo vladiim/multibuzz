@@ -66,21 +66,31 @@ module DataDownloads
       assert result[:data].all? { |r| r[:channel] == Channels::EMAIL }
     end
 
-    test "respects funnel filter on events" do
-      account.events.create!(
-        visitor: recent_visit.visitor,
-        session: recent_visit,
-        event_type: "specific_funnel_event_v2",
-        funnel: "checkout",
-        occurred_at: 1.hour.ago,
-        properties: { "url" => "/checkout" }
-      )
+    test "with funnel filter set, excludes visits entirely" do
+      [ recent_checkout_event, recent_checkout_conversion ]
 
       result = call_service(funnel: "checkout")
       types = result[:data].map { |r| r[:type] }.uniq
 
-      # Funnel filter only narrows events; visits + conversions pass through
-      assert_includes types, FunnelStages::EVENT
+      refute_includes types, FunnelStages::VISIT
+    end
+
+    test "with funnel filter set, narrows events to that funnel" do
+      [ recent_checkout_event ]
+
+      result = call_service(funnel: "checkout")
+      event_funnels = result[:data].select { |r| r[:type] == FunnelStages::EVENT }.map { |r| r[:funnel] }.uniq
+
+      assert_equal [ "checkout" ], event_funnels
+    end
+
+    test "with funnel filter set, narrows conversions to that funnel" do
+      [ recent_checkout_conversion, recent_other_funnel_conversion ]
+
+      result = call_service(funnel: "checkout")
+      conversion_funnels = result[:data].select { |r| r[:type] == FunnelStages::CONVERSION }.map { |r| r[:funnel] }.uniq
+
+      assert_equal [ "checkout" ], conversion_funnels
     end
 
     test "honours per_page" do
@@ -165,6 +175,47 @@ module DataDownloads
         revenue: 49.95,
         converted_at: 30.minutes.ago,
         properties: { "order_id" => "ORD-#{SecureRandom.hex(3)}" },
+        is_acquisition: false,
+        currency: "USD",
+        journey_session_ids: [ recent_visit.id ]
+      )
+    end
+
+    def recent_checkout_event
+      @recent_checkout_event ||= account.events.create!(
+        visitor: recent_visit.visitor,
+        session: recent_visit,
+        event_type: "specific_funnel_event_v2",
+        funnel: "checkout",
+        occurred_at: 1.hour.ago,
+        properties: { "url" => "/checkout" }
+      )
+    end
+
+    def recent_checkout_conversion
+      @recent_checkout_conversion ||= account.conversions.create!(
+        visitor: recent_visit.visitor,
+        session_id: recent_visit.id,
+        conversion_type: "checkout_purchase_v2",
+        revenue: 79.95,
+        funnel: "checkout",
+        converted_at: 25.minutes.ago,
+        properties: { "order_id" => "CHK-#{SecureRandom.hex(3)}" },
+        is_acquisition: false,
+        currency: "USD",
+        journey_session_ids: [ recent_visit.id ]
+      )
+    end
+
+    def recent_other_funnel_conversion
+      @recent_other_funnel_conversion ||= account.conversions.create!(
+        visitor: recent_visit.visitor,
+        session_id: recent_visit.id,
+        conversion_type: "other_funnel_purchase_v2",
+        revenue: 19.95,
+        funnel: "post_purchase",
+        converted_at: 20.minutes.ago,
+        properties: { "order_id" => "OTH-#{SecureRandom.hex(3)}" },
         is_acquisition: false,
         currency: "USD",
         journey_session_ids: [ recent_visit.id ]

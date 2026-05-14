@@ -39,6 +39,8 @@ module DataDownloads
     end
 
     def visit_rows
+      return [] if funnel.present?
+
       sessions_scope.call.map do |session|
         {
           _sort_key: session.started_at,
@@ -130,12 +132,17 @@ module DataDownloads
         account: account,
         date_range: date_range_parser,
         channels: channels,
-        test_mode: test_mode
+        test_mode: test_mode,
+        funnel: funnel
       )
     end
 
     def total_count
-      @total_count ||= sessions_scope.call.count + events_scope.call.count + conversions_scope.call.count
+      @total_count ||= visit_count + events_scope.call.count + conversions_scope.call.count
+    end
+
+    def visit_count
+      funnel.present? ? 0 : sessions_scope.call.count
     end
 
     def total_pages
