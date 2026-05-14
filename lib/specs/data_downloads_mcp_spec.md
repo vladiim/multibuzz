@@ -229,12 +229,14 @@ Shipped in commit `ecdf679`. `app/services/mcp/resources/account_summary.rb`, te
 - There is no account-level `currency` column. `currencies` is the distinct set seen across the account's conversions.
 - Added `environment` (`test` / `live`, from the API key) so the agent knows which data mode it is in.
 
-### Phase 4: Customer-facing setup
+### Phase 4: Customer-facing setup ✅ (2026-05-15)
 
-- [ ] **4.1** Create `app/views/docs/mcp.html.erb` — "How to connect mbuzz to Claude / ChatGPT / Cursor" with the MCP server URL + bearer-key snippet for each client. `skip_marketing_analytics` if it renders the URL with example key (it won't — placeholder only)
-- [ ] **4.2** Edit `app/views/accounts/api_keys/show.html.erb` — add a collapsible "Use this key with MCP" block showing the server URL and a copy-paste-ready snippet that references "this key". **Must already be `skip_marketing_analytics`** (it shows the key).
-- [ ] **4.3** Link to MCP docs from the API docs index
-- [ ] **4.4** Flip the dashboard Export dropdown MCP row from greyed "soon" to a live link to `/docs/mcp` — this is the trigger that supersedes the placeholder in `data_downloads_surface_and_uat_spec.md`. Remove `data-disabled`, add `href`.
+Shipped in commit `f118d71`.
+
+- [x] **4.1** `app/views/docs/_mcp.html.erb` — rendered by `docs#show` (`mcp` added to `DocsController::ALLOWED_PAGES`). Covers what the server exposes, the `mbuzz.co/mcp` URL, bearer-key auth, per-client connect snippets, example questions. Shows only placeholder keys, so no `skip_marketing_analytics` needed (consistent with the data-downloads docs page).
+- [x] **4.2** `app/views/accounts/api_keys/index.html.erb` — added an MCP callout with the server URL and a docs link. (The page is `index.html.erb`, not `show.html.erb` — there is no show. Controller already declares `skip_marketing_analytics`.) Kept it a static callout rather than a collapsible block — simpler, and a two-line callout does not need a toggle.
+- [x] **4.3** Docs nav gains an MCP link; the data-downloads page's MCP section now points at the live `/docs/mcp` page.
+- [x] **4.4** Dashboard Export dropdown MCP row flipped from the greyed "soon" stub to a live `link_to docs_path(page: "mcp")`. `export_dropdown_test` updated to assert the live link.
 
 ### Phase 5: Manual verification (MCP UAT)
 
