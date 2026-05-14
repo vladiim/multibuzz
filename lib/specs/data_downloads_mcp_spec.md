@@ -2,9 +2,9 @@
 
 **Date:** 2026-05-13
 **Priority:** P1
-**Status:** Draft
-**Branch:** `feature/data-downloads-mcp`
-**Depends on:** `data_downloads_api_spec.md` (the MCP server is a thin protocol shim over those endpoints)
+**Status:** Draft — ready to start (dependency satisfied 2026-05-12)
+**Branch:** `feat/data-downloads-mcp` (will branch off `feat/conversion-feedback` once that ships, or off `main` post-merge)
+**Depends on:** `old/data_downloads_api_spec.md` — **shipped 2026-05-12**. The three JSON endpoints, query services, and namespace (`DataDownloads::*`) are live; this spec wraps them as MCP tools.
 
 ---
 
@@ -20,15 +20,15 @@ This unlocks the workflow that today is the API spec's hidden hard part: turning
 
 No MCP surface exists. References to MCP in the repo are marketing copy on landing pages only (`vs_ga4.html.erb`, `vs_hyros.html.erb`, etc.). No gem dependency, no server code, no transport. Greenfield.
 
-The data the MCP server will expose is the data the API spec ships:
+The data the MCP server will expose is the data the API spec ships (shipped 2026-05-12):
 
-| Resource | API endpoint | Underlying scope |
-|----------|--------------|------------------|
-| Conversions | `GET /api/v1/data/conversions` | `Scopes::FilteredCreditsScope` |
-| Funnel | `GET /api/v1/data/funnel` | `SessionsScope` + `EventsScope` + `ConversionsScope` |
-| Spend | `GET /api/v1/data/spend` | `SpendIntelligence::Scopes::SpendScope` |
+| Resource | API endpoint | Query service | Underlying scope |
+|----------|--------------|---------------|------------------|
+| Conversions | `GET /api/v1/data/conversions` | `DataDownloads::ConversionsQueryService` | `Dashboard::Scopes::FilteredCreditsScope` |
+| Funnel | `GET /api/v1/data/funnel` | `DataDownloads::FunnelQueryService` | `SessionsScope` + `EventsScope` + `ConversionsScope` |
+| Spend | `GET /api/v1/data/spend` | `DataDownloads::SpendQueryService` | `SpendIntelligence::Scopes::SpendScope` |
 
-Auth uses existing API keys (`sk_test_*` / `sk_live_*`) with environment-determined data scope. Account isolation, revocation, audit logging — all inherited.
+All three return `{ data: [...], meta: { total_count, page, per_page, total_pages } }` shaped responses. Auth uses existing API keys (`sk_test_*` / `sk_live_*`) with environment-determined data scope. Account isolation, revocation, audit logging — all inherited from `ApiKeys::AuthenticationService` and `Api::V1::BaseController`.
 
 ### Data Flow (Current — none)
 
@@ -128,14 +128,14 @@ Claude Desktop / Cursor / ChatGPT
 |------|---------|---------|
 | `Gemfile` | Add `fast_mcp` (or equivalent Ruby MCP server gem) | **Edit** |
 | `app/mcp/server.rb` | MCP server Rack app | **Create** |
-| `app/mcp/tools/get_conversions.rb` | Conversions tool | **Create** |
-| `app/mcp/tools/get_funnel.rb` | Funnel tool | **Create** |
-| `app/mcp/tools/get_spend.rb` | Spend tool | **Create** |
+| `app/mcp/tools/get_conversions.rb` | Conversions tool — delegates to `DataDownloads::ConversionsQueryService` | **Create** |
+| `app/mcp/tools/get_funnel.rb` | Funnel tool — delegates to `DataDownloads::FunnelQueryService` | **Create** |
+| `app/mcp/tools/get_spend.rb` | Spend tool — delegates to `DataDownloads::SpendQueryService` | **Create** |
 | `app/mcp/resources/account_summary.rb` | Account summary resource | **Create** |
 | `app/mcp/authentication.rb` | Bearer-token middleware → reuses `ApiKeys::AuthenticationService` | **Create** |
 | `config/routes.rb` | Mount MCP server at `/mcp` | **Edit** |
 | `app/controllers/api/v1/base_controller.rb` | No change — MCP doesn't go through it (separate auth surface) | unchanged |
-| `app/services/data/{conversions,funnel,spend}_query_service.rb` | Reused from API spec | unchanged |
+| `app/services/data_downloads/{conversions,funnel,spend}_query_service.rb` | Reused from API spec (shipped 2026-05-12) | unchanged |
 | `app/views/docs/mcp.html.erb` | Customer-facing MCP setup docs | **Create** |
 | `app/views/accounts/api_keys/show.html.erb` | Add "Use this key with MCP" block with the URL + setup snippet | **Edit** |
 
@@ -188,7 +188,7 @@ Decision needed: confirm `fast_mcp` (or whichever Ruby MCP library has the best 
 - [ ] **2.1** Create `app/mcp/tools/get_conversions.rb` — delegates to `Data::ConversionsQueryService` (built in API spec)
 - [ ] **2.2** Test: tool call returns `data` + `meta`; rejects bad date format; respects pagination
 - [ ] **2.3** Create `app/mcp/tools/get_funnel.rb` + test
-- [ ] **2.4** Create `app/mcp/tools/get_spend.rb` + test — depends on `SpendQueryService` from API spec
+- [ ] **2.4** Create `app/mcp/tools/get_spend.rb` + test — delegates to `DataDownloads::SpendQueryService` (already shipped)
 - [ ] **2.5** Each tool's `description` reviewed for "would the agent pick this correctly" — short, intent-focused
 - [ ] **2.6** Cross-account isolation test per tool
 
@@ -286,4 +286,4 @@ See Phase 5 above. The "real-world agent grounding" check is what catches design
 
 ## Dependencies
 
-`data_downloads_api_spec.md` must ship first — MCP tools delegate to the query services that spec creates. Without `Data::SpendQueryService`, `mbuzz_get_spend` has nothing to call.
+`data_downloads_api_spec.md` — **satisfied 2026-05-12**. The three query services (`DataDownloads::ConversionsQueryService`, `DataDownloads::FunnelQueryService`, `DataDownloads::SpendQueryService`) and the matching controller endpoints are shipped. MCP tools delegate directly to those services; no further changes to the API surface are required to start this spec.
