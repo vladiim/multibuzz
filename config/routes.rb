@@ -67,6 +67,9 @@ Rails.application.routes.draw do
     end
   end
 
+  # MCP server — streamable HTTP, served at mcp.mbuzz.co/mcp
+  post "/mcp", to: "mcp/server#handle"
+
   # Public demo dashboard (full dashboard experience, no auth)
   get "demo", to: redirect("/demo/dashboard")
   namespace :demo do
