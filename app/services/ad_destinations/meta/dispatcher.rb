@@ -14,6 +14,11 @@
 # OutboundConversionJob calls this dispatcher AFTER applying the
 # attribution-model credit-share check (skipped_no_credit lives there,
 # not here).
+#
+# Raises AdDestinations::Errors::RetryableDispatchError after persisting
+# the row when status is token_failed or failed_transient. The job's
+# retry_on listens for that class and retries. Permanent 4xx and skipped
+# statuses return normally; the row is the only outcome.
 module AdDestinations
   module Meta
     class Dispatcher
@@ -22,6 +27,11 @@ module AdDestinations
         [ :auth_failure?, ConversionDispatch::Statuses::TOKEN_FAILED ],
         [ :transient_failure?, ConversionDispatch::Statuses::FAILED_TRANSIENT ],
         [ :permanent_failure?, ConversionDispatch::Statuses::FAILED_PERMANENT ]
+      ].freeze
+
+      RETRYABLE_STATUSES = [
+        ConversionDispatch::Statuses::TOKEN_FAILED,
+        ConversionDispatch::Statuses::FAILED_TRANSIENT
       ].freeze
 
       def initialize(conversion:, destination:)
@@ -72,7 +82,15 @@ module AdDestinations
       def record_api_result(api_result)
         dispatch_row.assign_attributes(api_result_attributes(api_result))
         dispatch_row.save!
+        raise_if_retryable(dispatch_row.status)
         dispatch_row
+      end
+
+      def raise_if_retryable(status)
+        return unless RETRYABLE_STATUSES.include?(status)
+
+        raise AdDestinations::Errors::RetryableDispatchError,
+          "Meta CAPI dispatch #{status} for dispatch #{dispatch_row.id}"
       end
 
       def api_result_attributes(api_result)

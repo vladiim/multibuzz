@@ -52,32 +52,44 @@ module AdDestinations
         refute_requested(:post, %r{graph.facebook.com})
       end
 
-      test "token_failed status on 401" do
+      test "raises RetryableDispatchError on 401 and persists token_failed" do
         stub_meta_response(status: 401, body: { error: { type: "OAuthException", message: "Invalid OAuth token" } })
 
-        dispatch = Dispatcher.new(conversion: conversion, destination: destination).dispatch!
+        assert_raises(AdDestinations::Errors::RetryableDispatchError) do
+          Dispatcher.new(conversion: conversion, destination: destination).dispatch!
+        end
+
+        dispatch = ConversionDispatch.find_by!(conversion: conversion, conversion_destination: destination)
 
         assert_equal ConversionDispatch::Statuses::TOKEN_FAILED, dispatch.status
         assert_match(/Invalid OAuth token/, dispatch.error)
       end
 
-      test "failed_transient on 429" do
+      test "raises RetryableDispatchError on 429 and persists failed_transient" do
         stub_meta_response(status: 429, body: { error: { message: "Rate limit hit" } })
 
-        dispatch = Dispatcher.new(conversion: conversion, destination: destination).dispatch!
+        assert_raises(AdDestinations::Errors::RetryableDispatchError) do
+          Dispatcher.new(conversion: conversion, destination: destination).dispatch!
+        end
+
+        dispatch = ConversionDispatch.find_by!(conversion: conversion, conversion_destination: destination)
 
         assert_equal ConversionDispatch::Statuses::FAILED_TRANSIENT, dispatch.status
       end
 
-      test "failed_transient on 5xx" do
+      test "raises RetryableDispatchError on 5xx and persists failed_transient" do
         stub_meta_response(status: 503, body: { error: { message: "Service unavailable" } })
 
-        dispatch = Dispatcher.new(conversion: conversion, destination: destination).dispatch!
+        assert_raises(AdDestinations::Errors::RetryableDispatchError) do
+          Dispatcher.new(conversion: conversion, destination: destination).dispatch!
+        end
+
+        dispatch = ConversionDispatch.find_by!(conversion: conversion, conversion_destination: destination)
 
         assert_equal ConversionDispatch::Statuses::FAILED_TRANSIENT, dispatch.status
       end
 
-      test "failed_permanent on 400 (bad payload)" do
+      test "failed_permanent on 400 does NOT raise (no retry)" do
         stub_meta_response(status: 400, body: { error: { message: "Invalid event_name" } })
 
         dispatch = Dispatcher.new(conversion: conversion, destination: destination).dispatch!
@@ -87,7 +99,10 @@ module AdDestinations
 
       test "retry on a previously-failed dispatch updates the same row" do
         stub_meta_response(status: 500, body: { error: { message: "Boom" } })
-        first = Dispatcher.new(conversion: conversion, destination: destination).dispatch!
+        assert_raises(AdDestinations::Errors::RetryableDispatchError) do
+          Dispatcher.new(conversion: conversion, destination: destination).dispatch!
+        end
+        first = ConversionDispatch.find_by!(conversion: conversion, conversion_destination: destination)
 
         stub_meta_response(status: 200, body: { events_received: 1 })
         second = Dispatcher.new(conversion: conversion, destination: destination).dispatch!
