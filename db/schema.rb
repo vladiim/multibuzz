@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_29_040001) do
+ActiveRecord::Schema[8.0].define(version: 2026_05_10_142858) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -410,6 +410,11 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_29_040001) do
     t.boolean "is_test", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "email_sha256", limit: 64
+    t.string "phone_e164_sha256", limit: 64
+    t.string "first_name_sha256", limit: 64
+    t.string "last_name_sha256", limit: 64
+    t.index ["account_id", "email_sha256"], name: "index_identities_on_account_email_sha256", where: "(email_sha256 IS NOT NULL)"
     t.index ["account_id", "external_id"], name: "index_identities_on_account_id_and_external_id", unique: true
     t.index ["account_id"], name: "index_identities_on_account_id"
     t.index ["external_id"], name: "index_identities_on_external_id"
@@ -483,6 +488,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_29_040001) do
     t.string "claim_token"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "account_id"
+    t.index ["account_id"], name: "index_score_assessments_on_account_id"
     t.index ["claim_token"], name: "index_score_assessments_on_claim_token", unique: true, where: "(claim_token IS NOT NULL)"
     t.index ["created_at"], name: "index_score_assessments_on_created_at"
     t.index ["overall_level"], name: "index_score_assessments_on_overall_level"
@@ -536,6 +543,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_29_040001) do
     t.text "user_agent"
     t.string "suspect_reason"
     t.string "request_id"
+    t.string "fbp"
+    t.string "fbc"
+    t.string "country", limit: 2
+    t.string "postal_code", limit: 16
+    t.string "gclid"
+    t.index ["account_id", "fbp"], name: "index_sessions_on_account_fbp", where: "(fbp IS NOT NULL)"
+    t.index ["account_id", "gclid"], name: "index_sessions_on_account_gclid", where: "(gclid IS NOT NULL)"
     t.index ["account_id", "landing_page_host"], name: "index_sessions_on_account_and_landing_page_host"
     t.index ["account_id", "request_id"], name: "index_sessions_on_account_request_id", where: "(request_id IS NOT NULL)"
     t.index ["account_id", "session_id", "started_at"], name: "index_sessions_on_account_id_and_session_id", unique: true
@@ -632,6 +646,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_29_040001) do
   add_foreign_key "identities", "accounts"
   add_foreign_key "rerun_jobs", "accounts"
   add_foreign_key "rerun_jobs", "attribution_models"
+  add_foreign_key "score_assessments", "accounts"
   add_foreign_key "score_assessments", "users"
   add_foreign_key "score_team_memberships", "score_assessments"
   add_foreign_key "score_team_memberships", "score_teams"
