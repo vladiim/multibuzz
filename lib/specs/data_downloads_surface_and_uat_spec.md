@@ -506,6 +506,20 @@ bash ~/Downloads/mbuzz_api_uat.sh totals
 - **A2.6** test vs live isolation — needs a `sk_test_*` key; not generated yet.
 - **A6.1** revoked-key 401 — interactive; revoke the key, re-run, restore.
 
+### Final UAT run (post-fix, 2026-05-14)
+
+After A6.3 + A3.2 fixes deployed and script flaws (A2.2, A2.4, A6.2) tightened:
+
+```
+26 PASS, 0 FAIL, 2 SKIP (A2.6 + A6.1, both interactive)
+```
+
+A3.2 strict contract verified live: `funnel=sales` returned 0 rows (this account has no "sales" funnel), and the strict assertions still pass — no visits returned, no non-null funnels other than "sales". The 0-row result is correct behaviour, not a regression.
+
+API surface signed off for customer use modulo:
+- A2.6 + A6.1 (need a second key state)
+- Rate limiting (out of scope; tied to billing tiers)
+
 ---
 
 ## UAT Procedure — MCP
