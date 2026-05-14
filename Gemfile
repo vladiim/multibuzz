@@ -83,6 +83,12 @@ gem "kamal", require: false
 # Add HTTP asset caching/compression and X-Sendfile acceleration to Puma [https://github.com/basecamp/thruster/]
 gem "thruster", require: false
 
+# Unsafe migration prevention [https://github.com/ankane/strong_migrations]
+# Top-level (not dev/test only) so production deploys run the check and
+# safety_assured { ... } resolves in prod migrations (required for hypertables
+# that cannot use algorithm: :concurrently).
+gem "strong_migrations"
+
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 # gem "image_processing", "~> 1.2"
 
@@ -114,9 +120,6 @@ group :development, :test do
   # N+1 query detection [https://github.com/charkost/prosopite]
   gem "prosopite"
   gem "pg_query"
-
-  # Unsafe migration prevention [https://github.com/ankane/strong_migrations]
-  gem "strong_migrations"
 end
 
 group :development do
