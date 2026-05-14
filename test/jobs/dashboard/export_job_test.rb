@@ -167,6 +167,28 @@ module Dashboard
     end
 
     # ==========================================
+    # Idempotency — defense against Solid Queue redelivery
+    # ==========================================
+
+    test "perform is a no-op for an already-:completed export (no status change)" do
+      @export.update!(status: :completed, completed_at: 5.minutes.ago, expires_at: 55.minutes.from_now)
+      original_updated_at = @export.reload.updated_at
+
+      perform_job
+
+      assert_equal original_updated_at, @export.reload.updated_at
+    end
+
+    test "perform does not broadcast for an already-:completed export" do
+      @export.update!(status: :completed, completed_at: 5.minutes.ago, expires_at: 55.minutes.from_now)
+      stream = "export_#{@export.prefix_id}"
+
+      assert_broadcasts(stream, 0) do
+        perform_job
+      end
+    end
+
+    # ==========================================
     # Filter params passthrough
     # ==========================================
 

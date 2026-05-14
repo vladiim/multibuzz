@@ -6,6 +6,8 @@ module Dashboard
 
     def perform(export_id)
       @export = Export.find(export_id)
+      return if @export.completed?
+
       @export.processing!
 
       generate_and_attach_csv

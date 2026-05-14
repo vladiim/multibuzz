@@ -150,6 +150,18 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", dashboard_export_download_path(id: export.prefix_id)
   end
 
+  test "show renders download button when blob is attached regardless of status" do
+    sign_in
+    export = create_completed_export
+    export.update!(status: :processing)
+
+    get dashboard_export_status_path(id: export.prefix_id)
+
+    assert_response :success
+    assert_select "h2", "Export ready"
+    assert_select "a[href=?]", dashboard_export_download_path(id: export.prefix_id)
+  end
+
   test "show renders error for failed export" do
     sign_in
     export = Export.create!(account: account, export_type: "conversions", status: :failed)
@@ -193,7 +205,7 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.location, export.filename
   end
 
-  test "download returns 410 when blob is missing" do
+  test "download redirects to status page when status is :completed but blob is missing" do
     sign_in
     export = Export.create!(
       account: account,
@@ -206,7 +218,7 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
 
     get dashboard_export_download_path(id: export.prefix_id)
 
-    assert_response :gone
+    assert_redirected_to dashboard_export_status_path(id: export.prefix_id)
   end
 
   test "download redirects pending export to status page" do
@@ -242,6 +254,28 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
     get dashboard_export_download_path(id: "exp_doesnotexist")
 
     assert_response :not_found
+  end
+
+  test "download serves the file when csv is attached regardless of status (flap defense)" do
+    sign_in
+    export = create_completed_export
+    export.update!(status: :processing)
+
+    get dashboard_export_download_path(id: export.prefix_id)
+
+    assert_response :redirect
+    assert_includes response.location, export.filename
+  end
+
+  test "download serves the file for a :failed status export if the blob is attached" do
+    sign_in
+    export = create_completed_export
+    export.update!(status: :failed)
+
+    get dashboard_export_download_path(id: export.prefix_id)
+
+    assert_response :redirect
+    assert_includes response.location, export.filename
   end
 
   test "download returns 410 for expired export" do
