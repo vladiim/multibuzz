@@ -104,24 +104,33 @@ class ExportTest < ActiveSupport::TestCase
   end
 
   # ==========================================
-  # File management
+  # Blob management
   # ==========================================
 
-  test "cleanup! deletes file and record" do
+  test "blob_key namespaces under account prefix id and export prefix id" do
     export = create_export
-    file_path = Rails.root.join("tmp/exports/test_cleanup_#{SecureRandom.hex(4)}.csv")
-    FileUtils.mkdir_p(File.dirname(file_path))
-    File.write(file_path, "test")
-    export.update!(file_path: file_path.to_s)
+
+    assert_equal "accounts/#{account.prefix_id}/exports/#{export.prefix_id}.csv", export.blob_key
+  end
+
+  test "cleanup! purges attached blob and destroys record" do
+    export = create_export
+    export.csv.attach(
+      io: StringIO.new("a,b\n1,2"),
+      filename: "test.csv",
+      content_type: "text/csv",
+      key: export.blob_key
+    )
+    blob = export.csv.blob
 
     export.cleanup!
 
-    assert_not File.exist?(file_path)
     assert_predicate export, :destroyed?
+    assert_nil ActiveStorage::Blob.find_by(id: blob.id)
   end
 
-  test "cleanup! handles missing file gracefully" do
-    export = create_export(file_path: "/tmp/nonexistent.csv")
+  test "cleanup! handles missing attachment gracefully" do
+    export = create_export
 
     assert_nothing_raised { export.cleanup! }
     assert_predicate export, :destroyed?

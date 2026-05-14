@@ -183,15 +183,30 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
   # Download (file delivery)
   # ==========================================
 
-  test "download sends completed export file" do
+  test "download redirects to signed storage url for completed export" do
     sign_in
     export = create_completed_export
 
     get dashboard_export_download_path(id: export.prefix_id)
 
-    assert_response :success
-    assert_equal "text/csv", response.content_type
-    assert_match "attachment", response.headers["Content-Disposition"]
+    assert_response :redirect
+    assert_includes response.location, export.filename
+  end
+
+  test "download returns 410 when blob is missing" do
+    sign_in
+    export = Export.create!(
+      account: account,
+      export_type: "conversions",
+      status: :completed,
+      filename: "mbuzz-conversions-#{Date.current}.csv",
+      completed_at: Time.current,
+      expires_at: 1.hour.from_now
+    )
+
+    get dashboard_export_download_path(id: export.prefix_id)
+
+    assert_response :gone
   end
 
   test "download returns 404 for pending export" do
@@ -316,12 +331,12 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
       expires_at: expires_at
     )
 
-    # Write a real file
-    dir = Rails.root.join("tmp/exports")
-    FileUtils.mkdir_p(dir)
-    file_path = dir.join("#{export.prefix_id}.csv")
-    File.write(file_path, CSV.generate { |csv| csv << %w[date type name] })
-    export.update!(file_path: file_path.to_s)
+    export.csv.attach(
+      io: StringIO.new(CSV.generate { |csv| csv << %w[date type name] }),
+      filename: export.filename,
+      content_type: "text/csv",
+      key: export.blob_key
+    )
 
     export
   end

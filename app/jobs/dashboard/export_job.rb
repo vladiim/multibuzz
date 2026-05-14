@@ -8,7 +8,7 @@ module Dashboard
       @export = Export.find(export_id)
       @export.processing!
 
-      generate_csv
+      generate_and_attach_csv
       complete_export
       broadcast_download_link
     rescue StandardError => e
@@ -20,14 +20,20 @@ module Dashboard
 
     attr_reader :export
 
-    def generate_csv
-      FileUtils.mkdir_p(export_dir)
-      export_service.write_to(file_path)
+    def generate_and_attach_csv
+      Tempfile.create([ export.prefix_id, ".csv" ]) do |tempfile|
+        tempfile.close
+        export_service.write_to(tempfile.path)
+        File.open(tempfile.path, "rb") { |io| attach_csv(io) }
+      end
+    end
+
+    def attach_csv(io)
+      export.csv.attach(io: io, filename: filename, content_type: "text/csv", key: export.blob_key)
     end
 
     def complete_export
       export.update!(
-        file_path: file_path.to_s,
         filename: filename,
         status: :completed,
         completed_at: Time.current,
@@ -77,14 +83,6 @@ module Dashboard
 
     def filename
       "mbuzz-#{export.export_type}-#{Date.current}.csv"
-    end
-
-    def file_path
-      @file_path ||= export_dir.join("#{export.prefix_id}.csv")
-    end
-
-    def export_dir
-      Rails.env.test? ? Rails.root.join("tmp/exports", Process.pid.to_s) : Rails.root.join("tmp/exports")
     end
   end
 end

@@ -24,14 +24,10 @@ module Dashboard
     def download
       export = current_account.exports.completed.find_by_prefix_id!(params[:id])
 
-      if export.expired?
-        head :gone
-      else
-        send_file export.file_path,
-          filename: export.filename,
-          type: "text/csv",
-          disposition: "attachment"
-      end
+      return head :gone if export.expired?
+      return head :gone unless export.csv.attached?
+
+      redirect_to export.download_url, allow_other_host: true
     rescue ActiveRecord::RecordNotFound
       head :not_found
     end

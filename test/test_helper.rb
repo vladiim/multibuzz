@@ -100,6 +100,7 @@ module ActiveSupport
 
     parallelize_teardown do |_worker|
       SimpleCov.result if ENV["COVERAGE"]
+      FileUtils.rm_rf(Rails.root.join("tmp/storage", Process.pid.to_s))
     end
 
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.

@@ -20,21 +20,28 @@ module Dashboard
     # Conversions export
     # ==========================================
 
-    test "generates CSV file for conversions export" do
+    test "attaches CSV blob for conversions export" do
       perform_job
 
       @export.reload
 
       assert_predicate @export, :completed?
-      assert_predicate @export.file_path, :present?
-      assert_path_exists @export.file_path
+      assert_predicate @export.csv, :attached?
+    end
+
+    test "stores blob under accounts/<account_prefix>/exports/<export_prefix>.csv" do
+      perform_job
+
+      @export.reload
+
+      assert_equal "accounts/#{account.prefix_id}/exports/#{@export.prefix_id}.csv", @export.csv.key
     end
 
     test "CSV contains valid headers for conversions export" do
       perform_job
 
       @export.reload
-      csv = CSV.parse(File.read(@export.file_path), headers: true)
+      csv = CSV.parse(@export.csv.download, headers: true)
 
       assert_equal Dashboard::CsvExportService::HEADERS, csv.headers
     end
@@ -79,7 +86,7 @@ module Dashboard
     # Funnel export
     # ==========================================
 
-    test "generates CSV file for funnel export" do
+    test "attaches CSV blob for funnel export" do
       @export.update!(export_type: "funnel")
 
       perform_job
@@ -87,7 +94,7 @@ module Dashboard
       @export.reload
 
       assert_predicate @export, :completed?
-      assert_path_exists @export.file_path
+      assert_predicate @export.csv, :attached?
     end
 
     test "funnel CSV contains valid headers" do
@@ -96,7 +103,7 @@ module Dashboard
       perform_job
 
       @export.reload
-      csv = CSV.parse(File.read(@export.file_path), headers: true)
+      csv = CSV.parse(@export.csv.download, headers: true)
 
       assert_equal Dashboard::FunnelCsvExportService::HEADERS, csv.headers
     end
@@ -115,7 +122,7 @@ module Dashboard
     # Spend export
     # ==========================================
 
-    test "generates CSV file for spend export" do
+    test "attaches CSV blob for spend export" do
       @export.update!(export_type: "spend")
 
       perform_job
@@ -123,7 +130,7 @@ module Dashboard
       @export.reload
 
       assert_predicate @export, :completed?
-      assert_path_exists @export.file_path
+      assert_predicate @export.csv, :attached?
     end
 
     test "spend CSV contains valid headers" do
@@ -132,7 +139,7 @@ module Dashboard
       perform_job
 
       @export.reload
-      csv = CSV.parse(File.read(@export.file_path), headers: true)
+      csv = CSV.parse(@export.csv.download, headers: true)
 
       assert_equal Dashboard::SpendCsvExportService::HEADERS, csv.headers
     end
@@ -208,10 +215,9 @@ module Dashboard
       other_export.reload
 
       assert_predicate other_export, :completed?
-      csv = CSV.parse(File.read(other_export.file_path), headers: true)
+      csv = CSV.parse(other_export.csv.download, headers: true)
       # Should not contain account :one's data
       csv.each do |row|
-        # Account two's data only
         assert_not_equal account.id, row["account_id"]
       end
     end
