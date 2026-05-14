@@ -267,8 +267,41 @@ module Sessions
         suspect: classification[:suspect],
         suspect_reason: classification[:suspect_reason],
         user_agent: user_agent,
-        landing_page_host: normalized_page_host
+        landing_page_host: normalized_page_host,
+        fbp: fbp,
+        fbc: fbc,
+        country: country,
+        postal_code: postal_code,
+        gclid: gclid
       }.compact
+    end
+
+    def fbp
+      params[:fbp]
+    end
+
+    def fbc
+      @fbc ||= params[:fbc] || derived_fbc_from_fbclid
+    end
+
+    def derived_fbc_from_fbclid
+      Identities::FbcCookie.new(fbclid: fbclid, captured_at: started_at).to_s
+    end
+
+    def fbclid
+      click_ids[ClickIdentifiers::FBCLID.to_sym] || click_ids[ClickIdentifiers::FBCLID]
+    end
+
+    def country
+      params[:country]&.to_s&.downcase&.presence
+    end
+
+    def postal_code
+      params[:postal_code]
+    end
+
+    def gclid
+      click_ids[ClickIdentifiers::GCLID.to_sym] || click_ids[ClickIdentifiers::GCLID]
     end
 
     def known_bot?

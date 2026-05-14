@@ -35,7 +35,11 @@ module Api
           :referrer,
           :started_at,
           :device_fingerprint,
-          :user_agent
+          :user_agent,
+          :fbp,
+          :fbc,
+          :country,
+          :postal_code
         ).merge(request_id: idempotency_key)
       end
 
