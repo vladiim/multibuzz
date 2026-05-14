@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-10
 **Priority:** P1
-**Status:** Phase 4 (Meta CAPI) wired end-to-end on a branch; awaiting BSA Pixel token + Tool Change Form approval before going live. Phase 5 (Google EC) blocked on Tool Change Form. Phase 7 (admin) and 8 (BSA wire-up) not started.
+**Status:** Phase 4 (Meta CAPI) wired end-to-end with narrow retry semantics (2026-05-11 fix: dispatcher raises `RetryableDispatchError` on 401/429/5xx; job retries `attempts: 3` on that class only). Phase 2A (SDK fbp/fbc capture) deferred — EMQ target reachable on current SDK via `external_id` + hashed PII + server-derived `fbc`. Awaiting BSA Pixel token (Phase 0B) for Phase 4 production go-live. Phase 5 (Google EC) blocked on Tool Change Form. Phase 7 (admin) next on the build queue, then Phase 8 (BSA wire-up).
 **Branch:** `feat/conversion-feedback`
 
 ---
@@ -264,9 +264,9 @@ For BSA-first scope: tokens are seeded via a rake task or admin form. No custome
 | Match-key insufficient (Meta) | Conversion has neither `external_id`, `em`, `ph`, `fbc`, nor `fbp` | `status=skipped_no_identity`. Surface in admin. Don't waste a platform call. Meta would accept it but EMQ would be ~1.0. |
 | Match-key insufficient (Google EC for Leads) | Conversion has neither hashed email/phone nor `gclid`/`gbraid`/`wbraid` | `status=skipped_no_identity`. |
 | Platform got no credit under chosen model | Destination's `attribution_model_id` credits this platform with 0% (or below `minimum_credit_threshold`) | `status=skipped_no_credit`, `platform_credit_share=0.0`. Surface in admin. The conversion happened but mbuzz's model says this platform didn't drive it; we don't feed back something the model doesn't credit. |
-| Token expired | Platform returns auth-failure (401 / `OAUTH_TOKEN_INVALID`) | Refresh token via existing refresher (Google) or queue admin alert (Meta — manual rotation today). Retry once. If second failure, `status=token_failed`, alert admin via existing `InternalNotifications`. |
-| Rate limited | Platform returns 429 | Retry with exponential backoff (Solid Queue native). Track 429s in `ApiUsageTracker`. |
-| Transient 5xx | Platform returns 5xx or network timeout | Retry per Solid Queue policy (3 retries, exponential backoff, max 1h). Final failure → `status=failed_transient`. |
+| Token expired | Platform returns auth-failure (401 / `OAUTH_TOKEN_INVALID`) | Row persisted with `status=token_failed`; dispatcher raises `RetryableDispatchError`; job retries up to `attempts: 3`. v1 Meta: no auto-refresh (per-Pixel tokens rotate manually); v2 / Google: existing token refresher. After final retry, alert admin via `InternalNotifications`. |
+| Rate limited | Platform returns 429 | Row persisted with `status=failed_transient`; dispatcher raises `RetryableDispatchError`; job retries with `:polynomially_longer` backoff up to `attempts: 3`. `ApiUsageTracker` increments per attempt. |
+| Transient 5xx | Platform returns 5xx or network timeout | Same as 429 — row in `failed_transient`, dispatcher raises, job retries up to 3 attempts. Final failure leaves row in `failed_transient` for admin follow-up. |
 | Permanent 4xx | Platform returns 400 with schema error | `status=failed_permanent`. Capture full request + response in `dispatch.error` and `dispatch.response`. Surface in admin. No retry. |
 | Account suspended | mbuzz account suspended mid-dispatch | `status=skipped_account_suspended`. No dispatch sent. |
 | Destination misconfigured | First call returns 4xx (wrong Pixel ID, wrong conversion action resource name) | `status=failed_permanent`. Surface. Manual fix required. |
@@ -346,13 +346,19 @@ No code. Confirms the path is clear before cutting a line.
 
 The dispatcher payload is only as good as the inputs. mbuzz captures `fbclid` and stores `traits` JSONB but lacks normalised hashed PII and `fbp` / `fbc` cookies. Close that gap first.
 
-#### 2A — SDK enhancement (browser SDK)
+#### 2A — SDK enhancement (DEFERRED, not required for Phase 8 go-live)
 
-- [ ] **2A.1** Browser SDK reads `_fbp` cookie on every event. Format check: `fb.{subdomainIdx}.{ts_ms}.{rand}`. Pass through as `fbp` field on the session create + event payloads.
-- [ ] **2A.2** Browser SDK reads `_fbc` cookie. If absent and the URL has `fbclid`, **derive** `_fbc = "fb.1.{Date.now()}.{fbclid}"` and **set the `_fbc` cookie** with this value (90-day expiry). Pass `fbc` through on session + event payloads. **Never fabricate `fbc` when no `fbclid` exists.**
-- [ ] **2A.3** Server-side SDKs (Ruby, Node, Python, PHP) accept `fbp` and `fbc` as optional fields on the session and event interfaces. Pass-through if the host app supplies them.
-- [ ] **2A.4** Update `lib/docs/sdk/api_contract.md` § Sessions and § Events to document the new fields. Update SDK READMEs.
-- [ ] **2A.5** SDK version bump: `v0.8.0`. Update `config/sdk_registry.yml`. Run integration tests in `sdk_integration_tests/`.
+**Status:** All five items deferred. Decision recorded 2026-05-11.
+
+`_fbc` is already derived server-side from `fbclid` in `Sessions::CreationService#derived_fbc_from_fbclid` (via `Identities::FbcCookie`), so 2A.2's browser-side derivation is redundant. `_fbp` is the only key that requires browser-side capture, and EMQ projections with `external_id` + hashed email/phone + server-derived `fbc` land at 6.5–7.5 for BSA-shaped accounts (above the ≥ 6.5 target). The cost of skipping `_fbp` is roughly 0.3–0.6 EMQ points.
+
+Revisit if the Phase 7.6 match-quality diagnostic shows EMQ plateauing below 6.5 in production. The lever then is more likely "increase `identify(email:, external_id:)` coverage on the customer's site" than "ship `_fbp` capture".
+
+- [ ] ~~**2A.1** Browser SDK reads `_fbp` cookie on every event.~~ Deferred.
+- [ ] ~~**2A.2** Browser SDK reads `_fbc` cookie and derives from `fbclid` if absent.~~ Redundant — done server-side in `Sessions::CreationService`.
+- [ ] ~~**2A.3** Server-side SDKs accept `fbp` and `fbc` as optional fields.~~ Deferred.
+- [ ] ~~**2A.4** Update `api_contract.md` for new SDK fields.~~ Deferred with 2A.1/2A.3.
+- [ ] ~~**2A.5** SDK version bump.~~ Deferred.
 
 #### 2B — Server: persist match keys
 
@@ -441,8 +447,8 @@ Independent of Google. Can ship after Phases 0B + 1 + 2 + 3, no Phase 5 dependen
   5. POST. Increment `ApiUsageTracker`. Update dispatch row.
   6. Idempotent on retry. Status transitions: `pending` → `delivered` | `failed_*` | `skipped_*`.
 - [x] **6.3** Hook `Conversions::DispatchService.call` into the conversion creation lifecycle. **Open question 2 below decides where**: an `after_commit` on `Conversion` keeps it implicit; a direct call from `Conversions::TrackingService#run` keeps it explicit (preferred per CLAUDE.md "no callbacks for cross-aggregate side effects" pattern in `feedback_global_processor_pattern.md`). Verify before wiring.
-- [x] **6.4** Solid Queue retry config: 3 retries with exponential backoff, max 1h delay. Confirm via `Solid Queue.config` or job-level `retry_on` declaration.
-- [x] **6.5** Tests: dispatch service finds correct destinations, enqueues jobs, skips disabled, skips already-delivered, skips when account suspended. Job retries on transient failure, fails permanent on 4xx, records full request/response on failure.
+- [x] **6.4** Retry semantics. Dispatcher persists the row first, then raises `AdDestinations::Errors::RetryableDispatchError` for `token_failed` / `failed_transient` (auth + 429 + 5xx). `OutboundConversionJob` declares `retry_on AdDestinations::Errors::RetryableDispatchError, wait: :polynomially_longer, attempts: 3` so only the explicit retryable class triggers retries — `RecordInvalid` / `NoMethodError` / etc. surface as proper failures. Permanent 4xx and skipped statuses return normally (the row IS the outcome). `OutboundDispatchService` stamps `attribution_model_id` + `platform_credit_share` on the row BEFORE invoking the dispatcher so the stamp survives a raise.
+- [x] **6.5** Tests: dispatch service finds correct destinations, enqueues jobs, skips disabled, skips already-delivered, skips by event_type_mapping, skips when flag off. Dispatcher raises on 401/429/5xx and persists the row in token_failed/failed_transient. Dispatcher does NOT raise on 400 (failed_permanent stays terminal). Job re-enqueues on 503, does NOT re-enqueue on 400. Attribution stamp survives a raised dispatcher.
 
 ### Phase 7 — Admin surface + monitoring
 
