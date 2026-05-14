@@ -45,11 +45,23 @@ class Mcp::ServerControllerTest < ActionDispatch::IntegrationTest
     assert_predicate result["capabilities"], :present?
   end
 
-  test "tools/list returns an empty list in Phase 1" do
+  test "tools/list advertises the three data tools" do
     post "/mcp", params: tools_list_request, headers: bearer(TEST_KEY), as: :json
 
     assert_response :success
-    assert_equal [], response.parsed_body["result"]["tools"]
+    names = response.parsed_body["result"]["tools"].map { |tool| tool["name"] }
+
+    assert_equal %w[mbuzz_get_conversions mbuzz_get_funnel mbuzz_get_spend], names.sort
+  end
+
+  test "tools/call dispatches a tool and returns its structured content" do
+    post "/mcp", params: spend_call_request, headers: bearer(TEST_KEY), as: :json
+
+    assert_response :success
+    result = response.parsed_body["result"]
+
+    assert_not result["isError"]
+    assert_kind_of Array, result.dig("structuredContent", "data")
   end
 
   test "a notification yields an empty 202 response" do
@@ -76,6 +88,10 @@ class Mcp::ServerControllerTest < ActionDispatch::IntegrationTest
 
   def tools_list_request
     { jsonrpc: "2.0", id: 2, method: "tools/list", params: {} }
+  end
+
+  def spend_call_request
+    { jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "mbuzz_get_spend", arguments: {} } }
   end
 
   def initialized_notification

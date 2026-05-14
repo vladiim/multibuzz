@@ -14,7 +14,7 @@ module Mcp
         name: SERVER_NAME,
         title: SERVER_TITLE,
         version: SERVER_VERSION,
-        tools: [],
+        tools: [ Tools::GetConversions, Tools::GetFunnel, Tools::GetSpend ],
         resources: [],
         server_context: { account: account, api_key: api_key }
       )
