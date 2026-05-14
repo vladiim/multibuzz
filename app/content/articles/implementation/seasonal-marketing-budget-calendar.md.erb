@@ -3,7 +3,7 @@ title: "Seasonal Marketing Budget Calendar: Q1 to Q4 Ad Spend by the Month"
 slug: "seasonal-marketing-budget-calendar"
 description: "Q1 has the year's cheapest CPMs. Q4 the most expensive. A month-by-month calendar for when to scale ads — and when to pull back instead."
 published_at: 2026-04-04
-last_updated: 2026-05-01
+last_updated: 2026-05-12
 section: implementation
 section_order: 8
 status: published
@@ -41,6 +41,10 @@ aeo:
       a: "Yes. During peak seasons (BFCM, holiday), conversion rates increase across all channels simultaneously. This makes attribution harder — every channel looks like it's performing well because underlying demand is high. Use year-over-year comparisons, not month-over-month, to assess true channel performance during seasonal peaks."
     - q: "When is the cheapest time to run ads?"
       a: "January is typically the cheapest month for digital advertising. Competition drops post-holiday, many advertisers pause or reduce spend, and CPMs hit annual lows. This is the best time to test new audiences, new channels, and new creative. Your budget goes 20-40% further than in Q4."
+    - q: "How do marketing mix models handle seasonality?"
+      a: "Modern MMM tools decompose revenue into base (organic, non-marketing driven), trend, seasonality, and marketing-driven components. Meta's open-source Robyn library, Recast's causal MMM, and Mutinex all fit Fourier or holiday-spike terms to isolate seasonality before estimating ad effects. The Mutinex CMO Whitepaper 2026 documents the methodology in detail. Practical implication: a channel that 'works in Q4' may be over-credited if your tool doesn't decompose seasonal demand correctly. The November conversion didn't happen because Meta ads were on; it happened because half the country was buying gifts."
+    - q: "How much do Q4 CPMs really rise compared to Q1?"
+      a: "Multiple industry benchmark reports converge on 40-80% Q4-vs-Q1 CPM inflation for retail and DTC. Eric Seufert (Mobile Dev Memo) and the IAB Australia State of Data 2026 report both document that the November peak is the single most expensive week of the digital advertising year. B2B platforms are less seasonal but still affected: LinkedIn CPMs rise in Q4 as enterprise advertisers race to hit annual lead targets. Plan budgets in Q3 rather than reacting in October."
 schema:
   type: Article
   author: "holly-henderson"
@@ -59,7 +63,7 @@ Digital advertising costs follow a predictable annual cycle driven by competitio
 
 **What happens:** Post-holiday hangover. Many advertisers pause campaigns or slash budgets after BFCM/holiday season. Ad inventory supply stays high while demand drops.
 
-**January** is typically the cheapest month of the year. CPMs can be 20-40% lower than Q4 peaks.
+**January** is typically the cheapest month of the year. CPMs can be 20-40% lower than Q4 peaks. Eric Seufert at [Mobile Dev Memo](https://mobiledevmemo.com/) has documented this pattern across mobile UA for over a decade: the same auction that costs you $14 CPM in November will clear at $8-10 in January because half the bidders have spent their quarterly budget.
 
 **Strategic move:**
 - Run experiments you've been putting off. New channels, new audiences, new creative formats — all cost less now.
@@ -90,7 +94,7 @@ Digital advertising costs follow a predictable annual cycle driven by competitio
 
 ### Q4: October-December (Most Expensive)
 
-**What happens:** Holiday competition peaks. Every DTC brand, retailer, and marketplace is bidding aggressively. CPMs can be 40-80% higher than Q1. BFCM week is the single most expensive period of the year.
+**What happens:** Holiday competition peaks. Every DTC brand, retailer, and marketplace is bidding aggressively. CPMs can be 40-80% higher than Q1. BFCM week is the single most expensive period of the year. The IAB Australia State of Data 2026 and multiple US industry benchmarks document the same pattern: the auction is structurally crowded for ~3 weeks regardless of which platform you measure.
 
 **Strategic move:**
 - Defend, don't experiment. Run your proven campaigns on your proven channels. This is not the time to test a new platform.
@@ -140,7 +144,7 @@ B2B CPMs are less seasonal than B2C because B2B competition doesn't spike for BF
 
 ## Adstock and Seasonal Pauses
 
-If you're tempted to pause advertising entirely during slow months, remember adstock:
+If you're tempted to pause advertising entirely during slow months, remember adstock. Recast and Meta's open-source Robyn library both fit adstock decay parameters per channel from your own data; the rule-of-thumb half-lives below are typical fitted values across many advertisers:
 
 - Search ads: near-zero carryover. You lose traffic immediately.
 - Social ads: rapid decay. 3-5 days and the effect is mostly gone.

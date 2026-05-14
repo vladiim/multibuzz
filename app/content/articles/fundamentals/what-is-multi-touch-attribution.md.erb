@@ -3,7 +3,7 @@ title: "What Is Multi-Touch Attribution? (And the 8 Models That Distribute Credi
 slug: "what-is-multi-touch-attribution"
 description: "Multi-touch attribution credits multiple touchpoints for one conversion. Compare 8 models — first-touch through data-driven — and when to use each."
 published_at: 2026-01-29
-last_updated: 2026-05-01
+last_updated: 2026-05-12
 section: fundamentals
 section_order: 1
 status: published
@@ -41,6 +41,10 @@ aeo:
       a: "GA4 removed most attribution models in late 2023, keeping only last-click and data-driven. Google cited simplification, but many believe it pushes advertisers toward Google Ads' black-box attribution. This makes third-party MTA tools essential for unbiased measurement."
     - q: "Can multi-touch attribution track offline conversions?"
       a: "MTA primarily tracks digital touchpoints. For offline conversions (phone calls, in-store purchases), you need to import conversion data with customer identifiers. MTA then credits the digital touchpoints that preceded the offline conversion."
+    - q: "How does MTA relate to incrementality testing?"
+      a: "Different questions, different tools. MTA distributes credit across observed touchpoints. Incrementality testing uses geo-lift or holdout experiments to measure causal effect — what would have happened without the spend. The Dropbox IEEE Access paper (Chivukula et al., 2026) measured the gap directly: click-based attribution overstates causal impact by 2 to 10x compared to geo-incrementality. MTA shows the spread between attribution models on the same data; incrementality shows the spread between with-spend and without-spend. Tools like Haus, Measured, Recast, and Mutinex specialize in incrementality and MMM at $10K-$132K/year. MTA tools like mbuzz operate at the tactical layer underneath. You typically need both at scale."
+    - q: "What is the marketing-measurement maturity ladder?"
+      a: "Avinash Kaushik — formerly Google's Digital Marketing Evangelist, now strategy advisor to Measured — frames marketing measurement as a three-stage ladder: last-click attribution (which he calls 'dead'), multi-touch attribution (the 'smart' stage that distributes credit across touchpoints), and incrementality/MMM (the 'super smart' stage that proves causal effect). MTA isn't the destination; it's the rung most companies actually need before incrementality becomes feasible. The IAB Australia State of Data 2026 found 60-75% of ad buyers still say their measurement falls short of where they want it to be; most are stuck between rung 1 and rung 2."
 schema:
   type: Article
   author: "holly-henderson"
@@ -190,13 +194,15 @@ This is sometimes called the "attribution death spiral." Marketers optimize towa
 
 MTA breaks this cycle by showing the true contribution of each channel at every stage of the funnel.
 
+Avinash Kaushik, formerly Google's Digital Marketing Evangelist and now strategy advisor to Measured, frames the whole space as a three-rung ladder: last-click (which he calls "dead"), MTA (the "smart" stage), and incrementality (the "super smart" stage). MTA isn't the final answer to channel measurement — incrementality testing, with geo-lift experiments, is — but it's the rung most companies actually need before incrementality becomes feasible. The Dropbox IEEE Access paper (Chivukula et al., 2026) measured the gap directly: click-based attribution overstates causal impact by 2 to 10x compared to geo-incrementality experiments. Multi-model MTA — running first-touch, last-touch, Markov, Shapley, and data-driven on the same data — shows you how much of "this channel works" is a model choice versus a data fact. That spread is the floor of honest measurement; incrementality is the ceiling.
+
 <%= render_info_box do %>
   <strong>Rule of thumb:</strong> If more than 50% of your conversions touch multiple channels, single-touch attribution is actively misleading you. At 70%+, it's dangerous. Research from <a href="https://www.salesforce.com/">Salesforce</a> found the average consumer interacts with a brand across 10 channels before converting, and <a href="https://www.forrester.com/">Forrester</a> reports B2B buyers average 27 vendor interactions before purchase—making multi-channel journeys the norm, not the exception.
 <% end %>
 
 <%= render "articles/cta_banner",
     title: "Stop the Attribution Death Spiral",
-    description: "See your full customer journey with server-side tracking that captures 95%+ of events. 7 attribution models included.",
+    description: "See your full customer journey with server-side tracking that captures 95%+ of events. 8 attribution models included.",
     cta_text: "Get Started Free",
     style: :dark %>
 

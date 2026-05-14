@@ -6,7 +6,7 @@ published_at: 2026-01-20
 section: comparisons
 section_order: 4
 status: published
-last_updated: 2026-05-01
+last_updated: 2026-05-12
 priority: P1
 category: "Tool Comparisons"
 tags:
@@ -44,6 +44,10 @@ aeo:
       a: "mbuzz includes custom attribution models for B2B contexts. Most B2B attribution tools (HockeyStack, Dreamdata, Bizible) focus on MTA without experimental validation."
     - q: "Is HockeyStack or Dreamdata better?"
       a: "HockeyStack is faster to deploy and all-in-one (includes analytics). Dreamdata has transparent pricing, a free tier, and stronger journey visualization. HockeyStack suits teams wanting consolidation; Dreamdata suits teams wanting focused attribution."
+    - q: "Why did HockeyStack pivot away from attribution?"
+      a: "HockeyStack publicly exited attribution in Q1 2026, repositioning around AI revenue agents and GTM intelligence. The pivot was discussed on the GTMnow podcast and visible in their ad portfolio: their March 2026 LinkedIn ad spend (200+ new ads) showed zero attribution messaging, replaced by 'AI revenue agents' framing. For existing HockeyStack customers, attribution remains in the product, but the 300+ attribution articles their team published are no longer being maintained or expanded. The strategic reading: the founder concluded that attribution alone wasn't a defensible category at their pricing tier; they're betting on AI agents instead."
+    - q: "Does mbuzz solve incrementality the way Haus or Measured do?"
+      a: "No, and we won't claim otherwise. Incrementality testing uses geo-lift experiments to measure causal effect: what would have happened without the spend. Haus, Measured, Recast, and Mutinex are the tools for that, and they cost $10K-$132K/year because the methodology requires PhDs, millions in spend, and month-long channel blackouts. The Dropbox IEEE Access paper (Chivukula et al., 2026) showed click attribution overstates causal impact by 2-10x — that's the gap incrementality fills. mbuzz is multi-touch attribution: it shows the spread between eight models on the same data, so you stop pretending one model is truth. MTA and incrementality answer different questions; you typically need both at scale, and mbuzz is the honest, affordable layer for the MTA half."
 schema:
   type: Article
   author: "holly-henderson"
@@ -75,9 +79,9 @@ HockeyStack costs $2,200+/month and bundles everything together. You're here bec
 
 ### The Uncomfortable Truth
 
-HockeyStack is fast to deploy and genuinely good at what it does. The problem? It's a bundle. You pay for web analytics, surveys, and attribution whether you need all three or not. And at $2,200+/month, that bundle adds up fast.
+HockeyStack publicly exited the attribution category in Q1 2026 (discussed on the GTMnow podcast, visible in their March 2026 LinkedIn ads repositioning to "AI revenue agents"). The product still works, but the team's focus has shifted; the 300+ attribution articles they shipped between 2022 and 2025 are no longer being maintained. For existing customers that's a slow-decay signal; for prospective buyers it's a question of whether you want to anchor your measurement stack to a vendor that has chosen a different category.
 
-The bigger issue for serious B2B teams: you can't validate the attribution. HockeyStack says "LinkedIn drove this deal"—but you can't run a different model to check. You're trusting one black-box view of a 6-month sales cycle.
+The deeper issue for serious B2B teams: you can't validate the attribution. HockeyStack reports "LinkedIn drove this deal," but you can't run a different model to check the answer. You're trusting one hidden model's view of a 6-month sales cycle. The Dropbox IEEE Access paper (Chivukula et al., 2026) showed click-based attribution overstates causal impact by 2-10x compared to geo-incrementality experiments — meaning the "LinkedIn drove this deal" claim is statistically suspect by default. Multi-model visibility doesn't solve incrementality, but it does show you the spread, which is the floor of honest measurement.
 
 *If you want all-in-one simplicity and have the budget, HockeyStack delivers. This guide is for teams who want flexibility or lower cost.*
 
@@ -112,7 +116,7 @@ If any of these resonate, here are your best options.
 
 **Why consider mbuzz:** HockeyStack gives you one attribution view. mbuzz lets you compare 8 models side-by-side and build custom logic for B2B. *Disclosure: mbuzz is our product.*
 
-Server-side tracking captures events on your backend — no ad blockers, no missing touches across long B2B buyer journeys. 7 attribution models for long sales cycles: compare First Touch, Last Touch, Markov Chain, Shapley Value, and more side-by-side. Custom attribution rules via DSL let you weight touchpoints by stage, channel, or engagement depth. LTV attribution tracks renewals and expansion back to acquisition source.
+Server-side tracking captures events on your backend — no ad blockers, no missing touches across long B2B buyer journeys. Eight attribution models for long sales cycles: First Touch, Last Touch, Linear, Time Decay, Position-Based, Markov Chain, Shapley Value, and Data-Driven — all running on the same data simultaneously. Custom attribution rules via DSL let you weight touchpoints by stage, channel, or engagement depth. LTV attribution tracks renewals and expansion back to acquisition source.
 
 **10-minute setup** with native SDKs for [Rails](https://rubygems.org/gems/mbuzz), [Django](https://pypi.org/project/mbuzz), [Laravel](https://packagist.org/packages/mbuzz/mbuzz-php), and [Node.js](https://www.npmjs.com/package/mbuzz). Pricing: Free tier, then $29-299/mo (vs HockeyStack's $2,200+).
 
@@ -120,8 +124,9 @@ Server-side tracking captures events on your backend — no ad blockers, no miss
 
 | Factor | HockeyStack | mbuzz |
 |--------|-------------|-------|
-| Attribution method | MTA | 8 models + custom rules |
-| Validation | Trust the model | Experimental proof |
+| Attribution method | MTA, one hidden model | MTA, 8 models side-by-side + custom DSL |
+| Model inspection | "Trust us" | Read, fork, and edit the model in a SQL-like DSL |
+| Open-source SDKs | ✗ No | ✓ Ruby, Node, Python, PHP, Shopify, sGTM |
 | Web analytics | ✓ Included | Integration |
 | Built-in surveys | ✓ Yes | Integration |
 | LinkedIn impressions | ✓ Yes | ✓ Yes |

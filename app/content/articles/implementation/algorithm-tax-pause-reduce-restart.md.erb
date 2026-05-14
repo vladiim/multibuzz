@@ -3,7 +3,7 @@ title: "The Algorithm Tax: What Pausing or Restarting Ads Actually Costs You"
 slug: "algorithm-tax-pause-reduce-restart"
 description: "Pausing Meta for 7+ days forces a full learning restart. Google needs 7-14 days to recalibrate. Budget changes over 20% trigger resets. Here's what each costs you."
 published_at: 2026-04-04
-last_updated: 2026-05-01
+last_updated: 2026-05-12
 section: implementation
 section_order: 4
 status: published
@@ -45,6 +45,10 @@ aeo:
       a: "Not recommended. Short pauses (1-2 days) cause minimal algorithmic disruption, but they break the continuous data signal platforms use for optimisation. If your product doesn't sell on weekends, use dayparting or ad scheduling instead — this adjusts delivery without pausing."
     - q: "What is adstock and why does it matter?"
       a: "Adstock is the lingering effect of advertising after you stop spending. If you pause ads and sales don't drop immediately, that's adstock — not proof ads weren't working. Search ads have near-zero adstock (effect stops immediately). Social has rapid decay (days). Brand/TV has 2-5 week half-life. Understanding adstock prevents you from wrongly concluding that a paused channel wasn't contributing."
+    - q: "How do marketing mix models measure adstock?"
+      a: "MMM tools fit a geometric or Weibull decay curve to historical spend-vs-revenue data. Meta's open-source library Robyn and Recast's causal MMM both estimate adstock half-life per channel from the data itself rather than assuming a fixed value. Typical fitted half-lives: paid search 0-3 days, paid social 3-7 days, display 7-14 days, TV/brand 14-35 days. The fitted value is what you should use for your business, not the rule-of-thumb above. Mutinex's CMO Whitepaper 2026 documents the methodology in detail."
+    - q: "Why does Performance Max take 4-6 weeks to stabilize when Smart Bidding takes 7-14 days?"
+      a: "Performance Max draws signal from more inventory types (Search, Display, YouTube, Discover, Gmail, Maps), each with its own learning curve. Google's internal documentation describes a 'compounding signal' period where each surface needs its own ~50 conversions before the cross-surface optimization stabilizes. Eric Seufert at Mobile Dev Memo has documented this pattern in mobile UA: aggregated-signal algorithms take longer to calibrate than single-surface ones because variance accumulates across surfaces. Practical implication: don't judge PMax until week 6, and don't make changes during weeks 1-4 even if metrics look bad."
 schema:
   type: Article
   author: "holly-henderson"
@@ -60,6 +64,8 @@ has_download: false
 Every significant budget change comes with a tax you don't see on your invoice. Platforms call it the "learning phase." Practitioners call it wasted spend.
 
 When you change budget by more than 20%, both Google and Meta throw out their accumulated optimisation data and start exploring again. CPCs spike. CPA jumps 25-40%. Conversions become erratic. This lasts 7-14 days — sometimes longer.
+
+Meta's own documentation states that ad sets need approximately 50 optimisation events within 7 days to exit the learning phase. Google Ads Smart Bidding documentation cites a similar threshold (~50 conversions) before Target CPA or Target ROAS stabilizes. Eric Seufert at [Mobile Dev Memo](https://mobiledevmemo.com/) has documented the dynamic for years in mobile UA: every bid-strategy change is effectively a new auction with no prior data, and CPM volatility persists until the optimizer accumulates enough signal to converge.
 
 If you make another change during this period, the clock resets. You pay the tax again.
 
@@ -185,7 +191,7 @@ If you pause a channel and sales hold steady for a week, the natural conclusion 
 
 The true impact shows up 2-4 weeks after pausing, by which time you've already reallocated the budget and can't easily run a controlled comparison.
 
-This is why incrementality testing uses geo holdout experiments with 30-day minimum durations — long enough for adstock to fully decay and reveal the true incremental impact.
+This is why incrementality testing uses geo holdout experiments with 30-day minimum durations — long enough for adstock to fully decay and reveal the true incremental impact. The Dropbox IEEE Access paper (Chivukula et al., 2026) used month-long geo-blackouts on the US market precisely because anything shorter still has adstock in the carryover window. Recast and Mutinex fit per-channel adstock curves directly from spend-vs-revenue data; Meta's open-source [Robyn](https://facebookexperimental.github.io/Robyn/) library does the same. The half-life that comes out of the model is the one to use, not the rule-of-thumb table above.
 
 ### What Adstock Means for Budget Decisions
 
