@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-15
 **Priority:** P1
-**Status:** Phases 1-3 code complete ✅ · Phase 0 (incognito verify) + Phase 2 prod run + Phase 4 archive pending
+**Status:** Phase 0 ✅ · Phases 1-3 code complete ✅ · Phase 2 prod deploy + run pending · Phase 4 archive pending
 **Branch:** `feat/conversion-feedback` (bundled into in-flight branch per user request)
 
 ---
@@ -88,13 +88,15 @@ After this, Phase 5 of the Meta rollout (`ad_platforms_meta_rollout_spec.md`) is
 
 ## Implementation Tasks
 
-### Phase 0 — Confirm OAuth verification is actually live (no code)
+### Phase 0 — Confirm OAuth verification is actually live (no code) ✅
 
-- [ ] **0.1** Open an incognito window. Use a Google account that is **not** on the GCC Test users list. Hit `https://mbuzz.co/oauth/google_ads/connect` (after temporarily enabling the flag on a dev/staging account for this test).
-- [ ] **0.2** Walk the consent screen. Confirm there is no "Google hasn't verified this app" yellow interstitial.
-- [ ] **0.3** Check `hello@mbuzz.co` (inbox + spam) for `oauth-verification@google.com` confirmation email. Save to 1Password if present.
-- [ ] **0.4** If no warning + flow completes: ✅ proceed to Phase 1. Update `project_google_ads_api_status` memory to reflect verified.
-- [ ] **0.5** If warning still appears: abort rollout. Investigate whether app is published-but-unverified vs verified. The "In production" status alone does not guarantee verification cleared for sensitive scopes.
+Confirmed 2026-05-15: user walked OAuth with a Google account not on the GCC Test users list; no unverified-app warning appeared, flow completed. Verification is fully cleared.
+
+- [x] **0.1** Open an incognito window. Use a Google account that is **not** on the GCC Test users list. Hit `https://mbuzz.co/oauth/google_ads/connect` (after temporarily enabling the flag on a dev/staging account for this test).
+- [x] **0.2** Walk the consent screen. Confirm there is no "Google hasn't verified this app" yellow interstitial.
+- [ ] **0.3** Check `hello@mbuzz.co` (inbox + spam) for `oauth-verification@google.com` confirmation email. Save to 1Password if present. (User noted no email arrived; flow works regardless.)
+- [x] **0.4** No warning + flow completes: ✅ proceed to Phase 2 prod run.
+- [x] **0.5** N/A (warning did not appear).
 
 ### Phase 1 — Flip the integrations page gate (RED → GREEN) ✅
 
