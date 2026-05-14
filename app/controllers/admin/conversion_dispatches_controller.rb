@@ -22,6 +22,18 @@ module Admin
       @dispatch = ConversionDispatch.find_by_prefix_id!(params[:id])
     end
 
+    # Operator-initiated retry. Bypasses Conversions::DispatchService
+    # (which would re-check the feature flag and event_type_mapping)
+    # because an operator clicking "retry" knows what they're doing
+    # and shouldn't be silently swallowed. The dispatcher's
+    # existing_delivered_dispatch guard still no-ops for already-
+    # delivered rows.
+    def retry
+      dispatch = ConversionDispatch.find_by_prefix_id!(params[:id])
+      OutboundConversionJob.perform_later(dispatch.conversion_id, dispatch.conversion_destination_id)
+      redirect_to admin_conversion_dispatch_path(dispatch.prefix_id), notice: "Retry enqueued."
+    end
+
     private
 
     def filtered_dispatches

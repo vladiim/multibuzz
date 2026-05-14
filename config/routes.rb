@@ -170,7 +170,9 @@ Rails.application.routes.draw do
     resources :customer_metrics, only: [ :index ]
     resources :submissions, only: [ :index, :show ]
     resources :data_integrity, only: [ :index, :show ]
-    resources :conversion_dispatches, only: [ :index, :show ]
+    resources :conversion_dispatches, only: [ :index, :show ] do
+      post :retry, on: :member
+    end
     get "feature_flags", to: "feature_flags#index", as: :feature_flags
     post "feature_flags", to: "feature_flags#create"
     delete "feature_flags", to: "feature_flags#destroy"

@@ -3,6 +3,8 @@
 require "test_helper"
 
 class Admin::ConversionDispatchesControllerTest < ActionDispatch::IntegrationTest
+  include ActiveJob::TestHelper
+
   # --- Auth ---
 
   test "non-admin users are redirected with access denied" do
@@ -106,6 +108,29 @@ class Admin::ConversionDispatchesControllerTest < ActionDispatch::IntegrationTes
     get admin_conversion_dispatch_path("cdisp_nonexistent")
 
     assert_response :not_found
+  end
+
+  # --- Retry ---
+
+  test "retry enqueues OutboundConversionJob and redirects with flash" do
+    sign_in_as(admin_user)
+
+    assert_enqueued_with(job: OutboundConversionJob, args: [ failed_dispatch.conversion_id, failed_dispatch.conversion_destination_id ]) do
+      post retry_admin_conversion_dispatch_path(failed_dispatch.prefix_id)
+    end
+
+    assert_redirected_to admin_conversion_dispatch_path(failed_dispatch.prefix_id)
+    assert_equal "Retry enqueued.", flash[:notice]
+  end
+
+  test "retry requires admin" do
+    sign_in_as(regular_user)
+
+    assert_no_enqueued_jobs(only: OutboundConversionJob) do
+      post retry_admin_conversion_dispatch_path(failed_dispatch.prefix_id)
+    end
+
+    assert_redirected_to root_path
   end
 
   # --- Index order ---
