@@ -250,11 +250,11 @@ The structure mirrors the API UAT in `data_downloads_surface_and_uat_spec.md`: a
 - [ ] **5.6** Connect ChatGPT and Cursor with the same key — verify each completes a representative tool call
 - [ ] **5.7** Tick `data_downloads_surface_and_uat_spec.md` M0 + M1 when this phase signs off
 
-### Phase 5b: Deploy
+### Phase 5b: Deploy ✅ (2026-05-15)
 
-The MCP server is `POST /mcp` in the main Rails app. It ships with the next normal `kamal deploy` of the app. No subdomain, no DNS record, no kamal-proxy change, no separate role or droplet.
+The MCP server is `POST /mcp` in the main Rails app — it shipped with the normal `kamal deploy`. No subdomain, no DNS record, no kamal-proxy change, no separate role or droplet.
 
-- [ ] **5b.1** `kamal deploy` the main app; verify `https://mbuzz.co/mcp` answers an `initialize` handshake.
+- [x] **5b.1** `kamal deploy` ran clean (web + jobs containers healthy). `POST https://mbuzz.co/mcp` with no auth returns `401 {"error":"Missing Authorization header"}` — route, controller, and auth path all confirmed live. A full authenticated handshake is covered by Phase 5 UAT.
 
 ### Phase 6: Ship
 
