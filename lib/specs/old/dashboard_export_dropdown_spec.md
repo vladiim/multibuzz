@@ -1,9 +1,9 @@
 # Dashboard Export Dropdown — Single Tab-Aware Line
 
 **Date:** 2026-05-13
-**Status:** Draft
-**Branch:** `feature/export-dropdown-collapse`
-**Depends on:** `spend_csv_export_spec.md` (Spend export must exist before the dropdown can target it)
+**Status:** Complete
+**Branch:** `feat/conversion-feedback`
+**Depends on:** `spend_csv_export_spec.md` (Spend export must exist before the dropdown can target it) — shipped 2026-05-12
 
 ---
 
@@ -69,15 +69,21 @@ It's a placeholder for the feature delivered by `data_downloads_api_spec.md`. Wh
 
 ## Acceptance Criteria
 
-- [ ] Export dropdown shows exactly one row: "Download CSV"
-- [ ] Submitting on Conversions tab POSTs with `export_type=conversions`
-- [ ] Submitting on Funnel tab POSTs with `export_type=funnel`
-- [ ] Submitting on Spend tab POSTs with `export_type=spend`
-- [ ] On the Events tab, the entire Export dropdown button is hidden
-- [ ] No "API Extract" / "Coming soon" row anywhere in the dropdown
-- [ ] Tab switching updates the hidden field without a page reload
-- [ ] All existing query params (date range, filters, channels, test mode) still pass through via `hidden_params_for(request.query_parameters)`
-- [ ] System test (`test/system/dashboard_export_test.rb`) walks: switch tab → click Download → verify correct `export_type` reached the controller
+- [x] Export dropdown shows exactly one row: "Download CSV"
+- [x] Submitting on Conversions tab POSTs with `export_type=conversions`
+- [x] Submitting on Funnel tab POSTs with `export_type=funnel`
+- [x] Submitting on Spend tab POSTs with `export_type=spend`
+- [x] On the Events tab, the entire Export dropdown button is hidden (Stimulus toggles a `hidden` class on the trigger)
+- [x] No "API Extract" / "Coming soon" row anywhere in the dropdown
+- [x] Tab switching updates the hidden field without a page reload (Stimulus action chain `toggle#select export-button#tabSelected`)
+- [x] All existing query params (date range, filters, channels, test mode) still pass through via `hidden_params_for(request.query_parameters.except("export_type"))` — `except` added so the hidden input is the only source for `export_type`
+- [ ] System test (`test/system/dashboard_export_test.rb`) walks: switch tab → click Download → verify correct `export_type` reached the controller — **deferred**; no system tests exist in this codebase yet, scope would have to include setting up Selenium fixtures. Server-rendered HTML assertions in `Dashboard::ExportsControllerTest` cover the static state per tab; the JS click → input rewrite is the only thing not tested.
+
+## Deviations from draft
+
+- The view's pre-existing `active_tab` magic string array (`%w[conversions funnel spend events]`) was replaced with `DashboardTabs::ALL` — one less duplicate of the tab string list.
+- Tab `data-value` attributes now reference `DashboardTabs::CONVERSIONS` / `FUNNEL` / `SPEND` / `EVENTS` directly in the ERB, eliminating magic strings in the markup.
+- The form's `hidden_params_for(request.query_parameters)` was changed to `.except("export_type")` so the Stimulus-managed hidden input is the single source of truth for that param — otherwise a stale `export_type` from the URL would round-trip back into the submitted form.
 
 ## Out of Scope
 

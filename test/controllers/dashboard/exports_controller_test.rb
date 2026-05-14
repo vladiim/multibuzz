@@ -222,15 +222,80 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # ==========================================
-  # Dashboard UI
+  # Dashboard UI: single tab-aware Download CSV
   # ==========================================
 
-  test "dashboard has export dropdown" do
+  test "dashboard has export dropdown trigger" do
     sign_in
     get dashboard_path
 
     assert_response :success
     assert_select "button", text: /Export/
+  end
+
+  test "dashboard renders a single Download CSV submit row" do
+    sign_in
+    get dashboard_path
+
+    assert_response :success
+    download_buttons = css_select("[data-export-button-target='container'] button[type='submit']")
+
+    assert_equal 1, download_buttons.size, "expected exactly one CSV submit button in the dropdown"
+    assert_match(/Download CSV/i, download_buttons.first.text)
+  end
+
+  test "dashboard no longer renders separate Conversions CSV / Funnel CSV rows" do
+    sign_in
+    get dashboard_path
+
+    assert_response :success
+    assert_select "button", text: "Conversions CSV", count: 0
+    assert_select "button", text: "Funnel CSV", count: 0
+  end
+
+  test "dashboard no longer renders API Extract waitlist row in export dropdown" do
+    sign_in
+    get dashboard_path
+
+    assert_response :success
+    dropdown_html = css_select("[data-export-button-target='container']").first&.to_html.to_s
+
+    assert_no_match(/API Extract/i, dropdown_html)
+    assert_no_match(/Coming soon/i, dropdown_html)
+  end
+
+  test "dashboard hidden export_type input defaults to conversions" do
+    sign_in
+    get dashboard_path
+
+    assert_response :success
+    assert_select "[data-controller~='export-button'] input[name='export_type'][value='conversions']"
+  end
+
+  test "dashboard hidden export_type input reflects ?tab= param" do
+    sign_in
+    get dashboard_path(tab: DashboardTabs::SPEND)
+
+    assert_response :success
+    assert_select "[data-controller~='export-button'] input[name='export_type'][value='spend']"
+  end
+
+  test "dashboard hidden export_type input falls back to conversions when tab is events" do
+    sign_in
+    get dashboard_path(tab: DashboardTabs::EVENTS)
+
+    assert_response :success
+    # Events tab is not exportable; the input still posts a valid value but the
+    # button is hidden client-side via Stimulus.
+    assert_select "[data-controller~='export-button'] input[name='export_type'][value='conversions']"
+  end
+
+  test "dashboard exposes initial tab via export-button data attribute" do
+    sign_in
+    get dashboard_path(tab: DashboardTabs::FUNNEL)
+
+    assert_response :success
+    assert_select "[data-controller~='export-button'][data-export-button-initial-tab-value='funnel']"
   end
 
   private
