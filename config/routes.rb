@@ -164,6 +164,7 @@ Rails.application.routes.draw do
 
   # Admin routes
   namespace :admin do
+    root to: "dashboard#index"
     get "billing", to: "billing#show", as: :billing
     resources :accounts, only: [ :show, :update ]
     resources :customer_metrics, only: [ :index ]
