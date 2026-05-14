@@ -40,7 +40,7 @@ All three return `{ data: [...], meta: { total_count, page, per_page, total_page
 
 ## Proposed Solution
 
-A streamable-HTTP MCP server at `mcp.mbuzz.co`, hosted on the `mbuzz-shopify` droplet (see [Key Decisions](#key-decisions)), authenticated by the same API key the JSON API uses. The server exposes three MCP **tools**, each a thin shim over a JSON endpoint:
+A streamable-HTTP MCP server at `mbuzz.co/mcp` — a route in the main Rails app, authenticated by the same API key the JSON API uses. The server exposes three MCP **tools**, each a thin shim over a JSON endpoint:
 
 - `mbuzz_get_conversions`
 - `mbuzz_get_funnel`
@@ -117,8 +117,7 @@ Returned as `application/json`. Lets the agent prime itself before answering:
 
 ```
 Claude Desktop / Cursor / ChatGPT
-  → POST mcp.mbuzz.co/mcp (Authorization: Bearer sk_live_...)
-    → kamal-proxy on the main web droplet, host-alias routes mcp.mbuzz.co
+  → POST mbuzz.co/mcp (Authorization: Bearer sk_live_...)
     → Mcp::ServerController (main Rails app, POST /mcp route)
       → authenticate via ApiKeys::AuthenticationService
       → Mcp::ServerFactory builds a per-request MCP::Server (stateless)
@@ -196,7 +195,7 @@ Shipped in commits `54b2785` (gem) + `4be2085` (foundation). 7 controller tests 
 - [x] **1.1** Official `mcp` gem added to `Gemfile`, pinned `0.16.0`, `bundle install`, committed
 - [x] **1.2** Spike: confirmed via real tests — `MCP::Server#handle_json` processes JSON-RPC, `server_context` flows to the tool layer, the `initialize` handshake and `tools/list` both work. (Error-model confirmation for Open Question #4 deferred to Phase 2 when the first tool exists.)
 - [x] **1.3** `Mcp::ServerController#authenticate_api_key` `before_action` — bearer-token check via `ApiKeys::AuthenticationService`, sets `@current_account` / `@current_api_key`
-- [x] **1.4** `post "/mcp"` route → `mcp/server#handle`. Not host-constrained — kamal-proxy routes `mcp.mbuzz.co`; the `/mcp` path collides with nothing on the main app.
+- [x] **1.4** `post "/mcp"` route → `mcp/server#handle` on the main app. The `/mcp` path collides with nothing.
 - [x] **1.5** `test/controllers/mcp/server_controller_test.rb`: valid key → handshake; no/invalid/revoked/suspended key → 401; notification → 202
 - [x] **1.6** `Api::V1::BaseController` untouched — `Mcp::ServerController < ActionController::API` with its own auth
 
@@ -242,14 +241,11 @@ The structure mirrors the API UAT in `data_downloads_surface_and_uat_spec.md`: a
 - [ ] **5.6** Connect ChatGPT and Cursor with the same key — verify each completes a representative tool call
 - [ ] **5.7** Tick `data_downloads_surface_and_uat_spec.md` M0 + M1 when this phase signs off
 
-### Phase 5b: Deploy — `mcp.mbuzz.co` host alias on the main web droplet
+### Phase 5b: Deploy
 
-The MCP server is `POST /mcp` in the main Rails app, so it ships with the next normal deploy of the app. The only extra work is pointing the `mcp.` subdomain at the existing web droplet. No separate Kamal role, no separate droplet — the `mbuzz-shopify` plan was dropped when the Shopify channel was killed (2026-05-15).
+The MCP server is `POST /mcp` in the main Rails app. It ships with the next normal `kamal deploy` of the app. No subdomain, no DNS record, no kamal-proxy change, no separate role or droplet.
 
-- [ ] **5b.1** Create the `mcp.mbuzz.co` DNS A record → the main web droplet (`68.183.173.51`).
-- [ ] **5b.2** Add `mcp.mbuzz.co` to the kamal-proxy host list for the web role in `config/deploy.yml` so the proxy answers (and issues a Let's Encrypt cert) for the new host.
-- [ ] **5b.3** `kamal deploy`; verify `https://mcp.mbuzz.co/mcp` answers an `initialize` handshake.
-- [ ] **5b.4** Verify `https://mbuzz.co/mcp` still answers too (same route) — the subdomain is cosmetic, the path is not host-constrained.
+- [ ] **5b.1** `kamal deploy` the main app; verify `https://mbuzz.co/mcp` answers an `initialize` handshake.
 
 ### Phase 6: Ship
 
@@ -294,7 +290,7 @@ See Phase 5 above. The "real-world agent grounding" check is what catches design
 | Transport | Streamable HTTP, `stateless: true` | We host. Customer pastes URL + key, no local server. Stateless drops the in-memory session store — no sticky routing on the droplet. |
 | Auth | Existing API keys | Zero new credential surface. Account scoping, env, revocation, logging — already built. |
 | Library | Official `mcp` SDK (`modelcontextprotocol/ruby-sdk`) | Decided 2026-05-15. True streamable HTTP, Rack-mountable, custom header auth so we resolve per-account keys. `fast-mcp` rejected — stale + static-token auth. |
-| Hosting | `mcp.mbuzz.co` → the main web droplet | Revised 2026-05-15. The MCP server is just `POST /mcp` in the main Rails app, so it deploys and runs with the main app — no separate role, no separate droplet. The `mbuzz-shopify` droplet plan was dropped when the Shopify channel was killed. `mcp.mbuzz.co` is a DNS record + a kamal-proxy host alias pointing at the existing web droplet. |
+| Hosting | `mbuzz.co/mcp` — a route in the main app | Revised 2026-05-15. The MCP server is `POST /mcp` in the main Rails app; it deploys and runs with the main app. No subdomain, no separate role, no separate droplet. |
 | Tool naming | snake_case, `mbuzz_`-prefixed: `mbuzz_get_conversions` etc. | Decided 2026-05-15. snake_case is the 90%+ MCP convention; vendor prefix groups tools + avoids collisions; dots are discouraged. Dotted `mbuzz.spend.list` alternative rejected. |
 | Tool granularity | 3 broad tools, not many narrow ones | An agent picks better from "get spend" than from 12 hyper-specific tools. Mirrors API shape. |
 | Resource: account summary | Yes | Lets the agent prime itself in 1 read instead of N tool calls. |
@@ -318,7 +314,7 @@ See Phase 5 above. The "real-world agent grounding" check is what catches design
 
 ## Open Questions
 
-1. ~~**Hosting endpoint shape.**~~ **Resolved 2026-05-15:** `mcp.mbuzz.co` as a DNS + kamal-proxy host alias on the main web droplet. The MCP server is a route in the main Rails app, so it ships with the app — no separate role or droplet. The earlier `mbuzz-shopify` plan was dropped when the Shopify channel was killed.
+1. ~~**Hosting endpoint shape.**~~ **Resolved 2026-05-15:** `mbuzz.co/mcp` — a plain route in the main Rails app. No subdomain, no DNS, no proxy change. Ships with the main app deploy. (The subdomain and the `mbuzz-shopify` droplet were both considered and dropped.)
 2. ~~**Tool naming.**~~ **Resolved 2026-05-15:** snake_case, `mbuzz_`-prefixed (`mbuzz_get_conversions` / `mbuzz_get_funnel` / `mbuzz_get_spend`). Matches the dominant MCP convention; dotted form rejected (dots discouraged in tool names).
 3. **Tool description length.** MCP clients vary in how they truncate descriptions. Keep under ~300 chars per tool, test in real clients in Phase 5.
 4. ~~**Error semantics.**~~ **Resolved 2026-05-15 (Phase 2):** bad input (e.g. malformed date) returns an `MCP::Tool::Response` with `error: true` (`isError: true` on the wire) — a recoverable tool error the agent sees. Auth failures are transport-level 401s from the controller `before_action`.
