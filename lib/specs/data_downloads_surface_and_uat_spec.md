@@ -153,24 +153,49 @@ Smallest UX-improving fix with TDD: a failed / in-flight export should redirect 
 - [x] **C0.4** RED → GREEN: `download_url carries attachment disposition and filename` (`test/models/export_test.rb`) — decodes the `:test` Disk service's signed payload so the assertion holds across services
 - [x] **C0.5** GREEN: `Dashboard::ExportsController#download` now `find_by_prefix_id!` outside the `:completed` scope and branches on status — non-completed redirects to the status page where `_failed.html.erb` / `_processing_status.html.erb` already render the right state
 - [x] **C0.6** Full suite green (`3886 runs, 9296 assertions, 0 failures, 0 errors, 0 skips`)
-- [ ] **C0.7** Commit RED → GREEN with `fix(export): redirect non-completed downloads to status page so failed exports surface the failure`
+- [x] **C0.7** Commit RED → GREEN — `fix(export): redirect non-completed downloads to status page so failed exports surface the failure` (`975a960`)
 
-Deferred (out of scope for this fix, recorded so we don't forget):
+### Second TDD round — status field is unreliable, pivot to `csv.attached?` as the truth signal
+
+Discovered during C1.1 UAT (2026-05-13 prod console): `exp_50nkDj2oRp21nU1GQvzgA9Je` has `status="processing"` but `csv.attached?=true`, `completed_at` and `expires_at` set, and `filename` populated. The timestamps prove `complete_export` set status to `:completed` at 23:51:24.398, then ~180ms later something updated only `status` (back to `processing`). The only code path that calls `processing!` is `Dashboard::ExportJob#perform`'s first line — so the job ran twice. Consistent with the 2026-04-22 Solid Queue redelivery incident (`lib/specs/job_isolation_and_invalidation_fix_spec.md`).
+
+Consequence: `status` flaps. The customer's Show view renders "Preparing your export" forever because the conditional gates on `@export.completed?`, and the first turbo broadcast has already fired so there is nothing to push to make the page change. Bytes are sitting in Spaces, unreachable.
+
+Pivot: `csv.attached?` is the reliable signal. Use that as the gate; treat `status` as advisory display state, not source of truth. Also harden the job so a redelivery is a no-op.
+
+- [x] **C0.8** RED → GREEN: `download serves the file when csv is attached regardless of status (flap defense)` + same for `:failed` status with blob attached
+- [x] **C0.9** RED → GREEN: `show renders download button when blob is attached regardless of status`
+- [x] **C0.10** RED → GREEN: `perform is a no-op for an already-:completed export` + `perform does not broadcast for an already-:completed export`
+- [x] **C0.11** GREEN: `Dashboard::ExportsController#download` gates on `csv.attached?` (no longer on `completed?`); `dashboard/exports/show.html.erb` branches on `csv.attached? && !expired?` first; `Dashboard::ExportJob#perform` returns early when `@export.completed?`. The prior "410 when blob is missing" test rewritten to assert the new contract (redirect to status page rather than 410).
+- [x] **C0.12** Full suite green (`3892 runs, 9309 assertions, 0 failures, 0 errors, 0 skips`); commit pending
+
+Deferred (recorded so we don't forget):
 
 - Deploy-time smoke task that creates → downloads → verifies bytes against prod Spaces. Belongs in `lib/tasks/`, runs post-deploy via Kamal hook.
 - A "Try again" button on `_failed.html.erb` that creates a new export with the same `filter_params` — separate spec since it needs a `retries` count to avoid infinite loops.
 - Persist `failure_reason` on the Export so `_failed.html.erb` can show *why* it failed. Requires a migration; separate spec.
+- Root-cause fix for Solid Queue redelivery on the `:default` queue — covered by `lib/specs/job_isolation_and_invalidation_fix_spec.md` (not on this branch). The idempotency guard here is defense in depth, not the cure.
 
 ### Diagnose
 
-- [ ] **C1.1** Read the failing export's state on prod
+- [x] **C1.1** Read the failing export's state on prod (2026-05-14 morning)
   ```ruby
   e = Export.find("exp_50nkDj2oRp21nU1GQvzgA9Je")
   [e&.status, e&.csv&.attached?, e&.completed_at, e&.expires_at, e&.account&.prefix_id, e&.filename]
   ```
-  Capture the row inline below.
 
-  **Result:** _(fill in: e.g. `["failed", false, nil, nil, "acct_...", nil]`)_
+  **Result:**
+  ```
+  ["processing",
+   true,
+   2026-05-13 23:51:24.398575 UTC,
+   2026-05-14 00:51:24.398588 UTC,
+   "acct_j4y1qlbVAMlkQHbwp0BWLYGz",
+   "mbuzz-conversions-2026-05-13.csv"]
+  updated_at: 2026-05-13 23:51:24.580041 UTC
+  ```
+
+  **Read:** the blob is in Spaces (`csv.attached?` true) and `complete_export` did run (`completed_at` + `expires_at` + `filename` all set). Status flipped from `:completed` → `:processing` ~180ms after completion, which only `Dashboard::ExportJob#perform`'s first line does (`@export.processing!`). The job ran twice. Cross-host upload itself worked. The pivot to `csv.attached?` as the source of truth (second TDD round above) addresses the resulting UI lockup. Root-cause for the redelivery sits with `job_isolation_and_invalidation_fix_spec.md`.
 
 - [ ] **C1.2** If status is `:failed`, find the matching `ExportJob` exception
   - Tail SolidErrors / log around 2026-05-13 23:51-52 UTC for `Dashboard::ExportJob` failure
