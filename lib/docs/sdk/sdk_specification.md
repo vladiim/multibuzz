@@ -376,7 +376,7 @@ function should_create_session(request):
        AND request.header("X-Requested-With") != "XMLHttpRequest"
 ```
 
-### Client-Side SDKs (JavaScript, Shopify)
+### Client-Side SDKs (JavaScript)
 
 Client-side SDKs are **exempt** from navigation detection. Browser JavaScript cannot read `Sec-Fetch-*` headers (they are forbidden headers), and client-side SDKs don't intercept HTTP requests via middleware — they explicitly call `fetch()` for tracking.
 

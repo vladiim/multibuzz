@@ -120,7 +120,7 @@ class OnboardingController < ApplicationController
   end
 
   def current_sdk
-    @current_sdk ||= SdkRegistry.find(current_account.selected_sdk)
+    @current_sdk ||= SdkRegistry.find(current_account.selected_sdk) || SdkRegistry.all.first
   end
 
   def test_api_key

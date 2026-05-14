@@ -281,28 +281,6 @@ sgtm:
   middleware_code: null
   verification_command: null
 
-shopify:
-  key: shopify
-  name: Shopify
-  display_name: Shopify
-  icon: shopify
-  package_name: null
-  package_manager: Shopify App Store
-  package_url: null
-  github_url: null
-  docs_url: /docs/platforms-shopify
-  status: live
-  released_at: '2025-12-19'
-  category: platform
-  sort_order: 6
-  install_command: null
-  init_code: null
-  event_code: null
-  conversion_code: null
-  identify_code: null
-  middleware_code: null
-  verification_command: null
-
 rest_api:
   key: rest_api
   name: REST API

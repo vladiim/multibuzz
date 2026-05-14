@@ -277,7 +277,7 @@ If a service worker serves the response from cache, the request never reaches th
 
 ### Client-Side SDKs
 
-Browser JavaScript cannot read `Sec-Fetch-*` headers (they are forbidden headers). Client-side SDKs (JavaScript, Shopify theme extensions) are exempt from navigation detection. They don't intercept HTTP requests via middleware — they explicitly call `fetch()` for tracking.
+Browser JavaScript cannot read `Sec-Fetch-*` headers (they are forbidden headers). Client-side SDKs (JavaScript) are exempt from navigation detection. They don't intercept HTTP requests via middleware — they explicitly call `fetch()` for tracking.
 
 ---
 

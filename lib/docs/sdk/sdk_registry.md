@@ -151,8 +151,10 @@ gem 'mbuzz'
 
 ### Shopify App
 
+> **PARKED 2026-05-15** — the Shopify App Store channel was killed. The app is not published and is no longer a supported integration. Code kept as a banked asset. See mbuzz-org memory/long_term/key_decisions.md.
+
 **Repository**: `/Users/vlad/code/m/mbuzz-shopify`
-**Status**: ✅ Production Ready (v0.7.0)
+**Status**: Parked (was v0.7.0)
 
 **Features**:
 - ✅ Shopify theme extension

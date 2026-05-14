@@ -2,6 +2,10 @@
 
 require "test_helper"
 
+# DISABLED 2026-05-15 — Shopify channel killed; the webhooks_shopify route is
+# commented out in config/routes.rb, so this integration test cannot run.
+# Re-enable by uncommenting the route, then removing the =begin/=end below.
+=begin
 class WebhooksShopifyControllerTest < ActionDispatch::IntegrationTest
   setup do
     @webhook_secret = "shpss_test_webhook_secret"
@@ -213,3 +217,4 @@ class WebhooksShopifyControllerTest < ActionDispatch::IntegrationTest
     )
   end
 end
+=end

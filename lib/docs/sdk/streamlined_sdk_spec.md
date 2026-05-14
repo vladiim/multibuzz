@@ -230,7 +230,7 @@ When identify triggers re-attribution, include in response:
 | SDK Type | Init Style | Example |
 |----------|------------|---------|
 | **Code-heavy** | Explicit | Ruby, Python, PHP, Node.js |
-| **Platform** | Implicit | Shopify, Magento, WooCommerce |
+| **Platform** | Implicit | Magento, WooCommerce |
 
 **Explicit Init** (Ruby example):
 ```ruby
@@ -244,11 +244,11 @@ Mbuzz.init(
 Mbuzz.event('add_to_cart', product_id: 'SKU-123')
 ```
 
-**Implicit Init** (Shopify example):
+**Implicit Init** (platform-SDK example):
 ```
 1. Merchant installs mbuzz app
 2. App auto-configures with store's API key
-3. Standard Shopify events auto-tracked
+3. Standard store events auto-tracked
 4. Merchant does nothing else
 ```
 
@@ -450,7 +450,6 @@ end
 Create per-platform guides:
 - `app/views/docs/platforms/_ruby.html.erb`
 - `app/views/docs/platforms/_python.html.erb`
-- `app/views/docs/platforms/_shopify.html.erb`
 - `app/views/docs/platforms/_magento.html.erb`
 
 #### Conceptual Guide (`app/views/docs/_concepts.html.erb`)

@@ -99,7 +99,7 @@ The `Sec-Fetch-*` check was added to solve **Turbo Frame inflation** (5x duplica
 
 Bots don't send `Sec-Fetch-*` headers. They're not Turbo/HTMX/XHR. They pass.
 
-**The SDK should stay thin.** Bot detection is complex, evolving, and cross-cutting. Every SDK (Ruby, Node, Python, PHP, Shopify) would need the same logic. One server-side solution covers all SDKs.
+**The SDK should stay thin.** Bot detection is complex, evolving, and cross-cutting. Every SDK (Ruby, Node, Python, PHP) would need the same logic. One server-side solution covers all SDKs.
 
 ---
 

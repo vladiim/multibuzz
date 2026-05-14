@@ -33,7 +33,9 @@ Rails.application.routes.draw do
   # Webhooks (before API routes for clarity)
   namespace :webhooks do
     post "stripe", to: "stripe#create"
-    post "shopify", to: "shopify#create"
+    # Shopify webhook route disabled 2026-05-15 — channel killed.
+    # See mbuzz-org memory/long_term/key_decisions.md. Uncomment to reinstate.
+    # post "shopify", to: "shopify#create"
   end
 
   # API routes
