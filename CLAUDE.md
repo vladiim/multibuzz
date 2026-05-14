@@ -293,6 +293,18 @@ Use `prefixed_ids` gem for external-facing IDs:
 
 Exceptions: API keys (`sk_{env}_{random32}`), internal job IDs, DB foreign keys.
 
+**Lookup with `find`, not `find_by_prefix_id`.** The gem patches `find` (and `find_by_id`) to accept either a raw integer id or a prefixed id string. Use it everywhere — controllers, console, services, tests. `find_by_prefix_id` exists but is redundant noise.
+
+```ruby
+# YES
+account.exports.find("exp_50nkDj2oRp21nU1GQvzgA9Je")
+account.exports.completed.find(params[:id])      # params[:id] is "exp_..."
+Export.find("exp_50nkDj2oRp21nU1GQvzgA9Je")      # console one-liner
+
+# NO — verbose, no upside
+account.exports.find_by_prefix_id!("exp_...")
+```
+
 Compare via `prefix_id`, not `id`:
 ```ruby
 @filter_params[:model]&.prefix_id == model.prefix_id
