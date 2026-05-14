@@ -35,7 +35,12 @@ module Conversions
       conversion # resolve before side-effects so duplicate? is set
       update_session_activity
       increment_usage! unless duplicate?
+      enqueue_outbound_dispatches unless duplicate?
       success_result(conversion: conversion, duplicate: duplicate?)
+    end
+
+    def enqueue_outbound_dispatches
+      Conversions::DispatchService.new(conversion).call
     end
 
     def update_session_activity

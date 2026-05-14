@@ -702,6 +702,50 @@ module Conversions
       end
     end
 
+    # ── Conversion feedback wiring ──
+
+    test "enqueues OutboundConversionJob when account has CONVERSION_FEEDBACK enabled and a matching destination exists" do
+      account.enable_feature!(FeatureFlags::CONVERSION_FEEDBACK)
+      destination = ConversionDestination.create!(
+        account: account, attribution_model: attribution_models(:last_touch),
+        platform: "meta_capi", name: "Test Wiring",
+        meta_pixel_id: "P", meta_access_token: "T", enabled: true,
+        event_type_mapping: { "signup" => { "meta_event" => "Lead" } }
+      )
+
+      assert_enqueued_with(job: OutboundConversionJob, args: ->(args) { args.last == destination.id }) do
+        build_service(visitor_id: visitor.visitor_id, conversion_type: "signup").call
+      end
+    end
+
+    test "does not enqueue OutboundConversionJob when CONVERSION_FEEDBACK feature flag is disabled" do
+      ConversionDestination.create!(
+        account: account, attribution_model: attribution_models(:last_touch),
+        platform: "meta_capi", name: "Disabled Wiring",
+        meta_pixel_id: "P", meta_access_token: "T", enabled: true,
+        event_type_mapping: { "signup" => { "meta_event" => "Lead" } }
+      )
+
+      assert_no_enqueued_jobs(only: OutboundConversionJob) do
+        build_service(visitor_id: visitor.visitor_id, conversion_type: "signup").call
+      end
+    end
+
+    test "does not re-enqueue dispatches when an idempotent conversion is recognised as duplicate" do
+      account.enable_feature!(FeatureFlags::CONVERSION_FEEDBACK)
+      ConversionDestination.create!(
+        account: account, attribution_model: attribution_models(:last_touch),
+        platform: "meta_capi", name: "Idempotent Wiring",
+        meta_pixel_id: "P", meta_access_token: "T", enabled: true,
+        event_type_mapping: { "signup" => { "meta_event" => "Lead" } }
+      )
+      build_service(visitor_id: visitor.visitor_id, conversion_type: "signup", idempotency_key: "dup_key").call
+
+      assert_no_enqueued_jobs(only: OutboundConversionJob) do
+        build_service(visitor_id: visitor.visitor_id, conversion_type: "signup", idempotency_key: "dup_key").call
+      end
+    end
+
     private
 
     def usage_counter
