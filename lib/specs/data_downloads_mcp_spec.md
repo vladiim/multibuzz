@@ -216,11 +216,18 @@ Shipped in commit `67f1f73`. Code at `app/services/mcp/tools/`, tests at `test/s
 - `input_schema` must omit `required:` entirely when nothing is required — JSON Schema draft-04 rejects `required: []`.
 - `test_mode` is derived from the API key (`server_context[:api_key].test?`), never a tool argument — the key decides test vs live, same as the JSON API.
 
-### Phase 3: Resource
+### Phase 3: Resource ✅ (2026-05-15)
 
-- [ ] **3.1** Create `app/mcp/resources/account_summary.rb` — JSON snapshot of account name, currency, active SDKs (from `SdkRegistry` × account integrations), active ad platforms (from `AdPlatformConnection.active`), default attribution model, available funnels
-- [ ] **3.2** Test: resource read returns expected shape; reflects current state of account
-- [ ] **3.3** Test: resource respects account isolation
+Shipped in commit `ecdf679`. `app/services/mcp/resources/account_summary.rb`, tests at `test/services/mcp/account_summary_test.rb`.
+
+- [x] **3.1** `Mcp::Resources::AccountSummary` — snapshot of account name, earliest event date, connected ad platforms, default attribution model, available funnels, currencies. `ServerFactory` registers the resource and wires a `resources_read_handler`.
+- [x] **3.2** Tests: `to_h` returns the full shape, reflects account state; integration tests cover `resources/list` and `resources/read`
+- [x] **3.3** Account isolation: the read handler scopes to `server_context[:account]`; a fresh account yields empty collections
+
+**Adjusted from the draft shape to the real schema:**
+- The account has a single `selected_sdk` string column, not a plural `active_sdks` list. The snapshot reports `selected_sdk`.
+- There is no account-level `currency` column. `currencies` is the distinct set seen across the account's conversions.
+- Added `environment` (`test` / `live`, from the API key) so the agent knows which data mode it is in.
 
 ### Phase 4: Customer-facing setup
 
