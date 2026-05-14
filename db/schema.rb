@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_05_10_142858) do
+ActiveRecord::Schema[8.0].define(version: 2026_05_10_152644) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -277,6 +277,52 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_10_142858) do
     t.index ["account_id"], name: "index_consent_logs_on_account_id"
     t.index ["created_at"], name: "index_consent_logs_on_created_at"
     t.index ["visitor_id"], name: "index_consent_logs_on_visitor_id"
+  end
+
+  create_table "conversion_destinations", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "platform", null: false
+    t.string "name", null: false
+    t.boolean "enabled", default: false, null: false
+    t.bigint "attribution_model_id", null: false
+    t.string "revenue_mode", default: "full", null: false
+    t.decimal "minimum_credit_threshold", precision: 5, scale: 4, default: "0.0", null: false
+    t.string "meta_pixel_id"
+    t.text "meta_access_token"
+    t.string "google_customer_id"
+    t.string "google_login_customer_id"
+    t.string "google_conversion_action_resource_name"
+    t.bigint "ad_platform_connection_id"
+    t.jsonb "event_type_mapping", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "enabled"], name: "index_conversion_destinations_on_account_id_and_enabled"
+    t.index ["account_id", "platform"], name: "index_conversion_destinations_on_account_id_and_platform"
+    t.index ["account_id"], name: "index_conversion_destinations_on_account_id"
+    t.index ["ad_platform_connection_id"], name: "index_conversion_destinations_on_ad_platform_connection_id"
+    t.index ["attribution_model_id"], name: "index_conversion_destinations_on_attribution_model_id"
+  end
+
+  create_table "conversion_dispatches", force: :cascade do |t|
+    t.bigint "conversion_id", null: false
+    t.bigint "conversion_destination_id", null: false
+    t.bigint "account_id", null: false
+    t.string "status", default: "pending", null: false
+    t.jsonb "payload", default: {}, null: false
+    t.jsonb "response", default: {}
+    t.text "error"
+    t.integer "retries_count", default: 0, null: false
+    t.datetime "fired_at"
+    t.bigint "attribution_model_id"
+    t.decimal "platform_credit_share", precision: 5, scale: 4
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "status", "created_at"], name: "idx_conversion_dispatches_admin_lookup"
+    t.index ["account_id"], name: "index_conversion_dispatches_on_account_id"
+    t.index ["attribution_model_id"], name: "index_conversion_dispatches_on_attribution_model_id"
+    t.index ["conversion_destination_id"], name: "index_conversion_dispatches_on_conversion_destination_id"
+    t.index ["conversion_id", "conversion_destination_id"], name: "idx_conversion_dispatches_unique_per_destination", unique: true
+    t.index ["conversion_id"], name: "index_conversion_dispatches_on_conversion_id"
   end
 
   create_table "conversion_property_keys", force: :cascade do |t|
@@ -635,6 +681,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_10_142858) do
   add_foreign_key "attribution_models", "accounts"
   add_foreign_key "billing_events", "accounts"
   add_foreign_key "consent_logs", "accounts"
+  add_foreign_key "conversion_destinations", "accounts"
+  add_foreign_key "conversion_destinations", "ad_platform_connections"
+  add_foreign_key "conversion_destinations", "attribution_models"
+  add_foreign_key "conversion_dispatches", "accounts"
+  add_foreign_key "conversion_dispatches", "attribution_models"
+  add_foreign_key "conversion_dispatches", "conversion_destinations"
+  add_foreign_key "conversion_dispatches", "conversions"
   add_foreign_key "conversion_property_keys", "accounts"
   add_foreign_key "conversions", "accounts"
   add_foreign_key "conversions", "identities"
