@@ -1,0 +1,31 @@
+# frozen_string_literal: true
+
+# Operator view of outbound conversion-feedback dispatches (Meta CAPI,
+# later Google EC). Cross-account; filtering lives in
+# ConversionDispatches::AdminFilterQuery. Inherits
+# skip_marketing_analytics + require_admin from Admin::BaseController.
+#
+# Sensitive: dispatch rows include hashed user identifiers in `payload`
+# and platform trace IDs in `response`. Admin-only is the gate.
+module Admin
+  class ConversionDispatchesController < BaseController
+    include Pagination
+
+    per_page 50
+
+    def index
+      @dispatches = paginate(filtered_dispatches)
+      @filter_params = filter_params
+    end
+
+    private
+
+    def filtered_dispatches
+      ConversionDispatches::AdminFilterQuery.new(filter_params).call
+    end
+
+    def filter_params
+      @filter_params ||= params.permit(:status, :account_id, :conversion_destination_id, :from, :to)
+    end
+  end
+end

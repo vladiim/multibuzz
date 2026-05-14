@@ -85,7 +85,7 @@ class Admin::ConversionDispatchesControllerTest < ActionDispatch::IntegrationTes
 
     get admin_conversion_dispatches_path
 
-    rows = response.body.scan(/data-prefix-id="(cdisp_[a-z0-9]+)"/).flatten
+    rows = response.body.scan(/data-prefix-id="(cdisp_[A-Za-z0-9]+)"/).flatten
 
     assert_equal [ newer.prefix_id, older.prefix_id ], rows
   end
