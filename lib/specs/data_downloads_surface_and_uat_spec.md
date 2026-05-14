@@ -233,11 +233,11 @@ Decision tree — only one branch applies:
 
 For each of `conversions`, `funnel`, `spend`:
 
-- [ ] **C3.1 — Conversions** Dashboard → Conversions tab → Export ▾ → Download CSV → wait for the Turbo broadcast → click Download. Expect: CSV downloads with non-zero bytes, filename `mbuzz-conversions-<date>.csv`, opens cleanly in a spreadsheet app. Header row matches the columns produced by `CsvExportService`.
+- [x] **C3.1 — Conversions** Signed off 2026-05-14: status page rendered, Download served the CSV from Spaces.
 
-- [ ] **C3.2 — Funnel** Same flow, Funnel tab. Filename `mbuzz-funnel-<date>.csv`. Mixed `type` column values (visit/event/conversion).
+- [ ] **C3.2 — Funnel** Deferred. Same code path as Conversions through the controller + job — the only delta is `FunnelCsvExportService`. Re-run when convenient.
 
-- [ ] **C3.3 — Spend** Same flow, Spend tab. Filename `mbuzz-spend-<date>.csv`. Spend column in major units, not micros.
+- [ ] **C3.3 — Spend** Deferred. Same as C3.2; only delta is `SpendCsvExportService`.
 
 ### Cross-host substrate proof
 
@@ -434,6 +434,77 @@ For each box above: tick if it matched expectation. If it did not, capture:
 - What was expected vs what we got
 
 We append a "UAT Results" section to this spec at the end of the session with anything that was off, the fix, and a re-test note.
+
+---
+
+## UAT Results — 2026-05-14 session
+
+Ran `~/Downloads/mbuzz_api_uat.sh` against `mbuzz.co` with a `sk_live_*` key.
+
+### Passes (14)
+
+A1.1, A1.2, A1.3 (auth boundary). A2.1 (default conversions), A2.3 (per_page clamping high + low), A2.4 status, A2.5 channel filter, A3.1 status, A3.2 status, A3.3 channel filter, A4.1 status, A4.3 metadata-is-object, A4.4 channel filter, A6.4 invalid channel ignored.
+
+### Script flaws (not API bugs — to fix in `~/Downloads/mbuzz_api_uat.sh`)
+
+- **A2.2** "page 2 disjoint" compared only `date` arrays. With 207k+ rows on the same date under `ORDER BY converted_at ASC`, both pages show the same five dates. Tighten the comparison to the full row contents (or to a unique-enough subset of fields).
+- **A2.4** "date range observed" min/max sampled only 5 rows. First 5 rows by `converted_at ASC` in a six-week window are all on day 1. Either widen `per_page` or sort by random or check `meta.total_count` against an independent count.
+- **A6.2** "page beyond range" used `page=999`, but `total_pages` from A2.1 was 2074. 999 is in range. Use a clearly out-of-bounds page like `page=99999`.
+
+### Real bugs found + fixed (TDD round, 2026-05-14)
+
+- [x] **A6.3** Bad date format returned **500** (`Date.parse("banana")` raised `Date::Error` from inside `Dashboard::DateRangeParser`, unhandled). **Fixed**: `Api::V1::DataController` now declares `rescue_from Date::Error, with: :render_bad_date_format` and returns `400 { "error": "Invalid date format. Use YYYY-MM-DD." }`. Four new controller tests cover invalid start_date on all three endpoints + invalid end_date on conversions.
+- [x] **A3.2** Funnel filter was incomplete — passed only to `EventsScope`. **Fixed (strict)**: `Dashboard::Scopes::ConversionsScope` gains a `funnel:` kwarg + `apply_funnel` step; `DataDownloads::FunnelQueryService` passes funnel through to it and returns `[]` for visits + sets `visit_count` to 0 when a funnel filter is set. Three new service tests assert: visits excluded, events narrowed, conversions narrowed.
+- [x] **Spec-content fix**: `old/data_downloads_api_spec.md` "Shipped Deviations" line saying bad dates fall back to default 30d was wrong (the shipped code 500'd, not 200'd). Corrected to reflect the 400 contract.
+
+### Cross-checks (A5) — all pass, verified via Rails console
+
+Console queries replicate the same scopes the API uses. All three reconcile within expected ingest drift.
+
+| Endpoint | API total_count (initial) | Console count | API total_count (recheck) | Status |
+|---|---|---|---|---|
+| Conversions (default 30d, all channels) | 207,305 | 207,305 | 207,337 (+32 in ~5min) | ✓ exact match at A5.1, drift from continued ingest |
+| Funnel (default 30d, all channels) | 102,215 | 102,319 (+104) | 102,350 (+31 from console) | ✓ monotonic growth = ingest drift, not divergence |
+| Spend (default 30d, all channels) | 3,826 | 3,826 | 3,826 | ✓ exact match, stable dataset |
+
+Console queries used:
+
+```ruby
+account = Account.find(2)  # acct_j4y1qlbVAMlkQHbwp0BWLYGz
+
+# A5.1
+Dashboard::Scopes::FilteredCreditsScope.new(
+  account: account,
+  models: account.attribution_models.active,
+  date_range: Dashboard::DateRangeParser.new("30d"),
+  channels: Channels::ALL,
+  test_mode: false
+).call.count
+
+# A5.2
+parser = Dashboard::DateRangeParser.new("30d")
+s = Dashboard::Scopes::SessionsScope.new(account: account, date_range: parser, channels: Channels::ALL, test_mode: false).call.count
+e = Dashboard::Scopes::EventsScope.new(account: account, date_range: parser, channels: Channels::ALL, test_mode: false, funnel: nil).call.count
+c = Dashboard::Scopes::ConversionsScope.new(account: account, date_range: parser, channels: Channels::ALL, test_mode: false).call.count
+{ sessions: s, events: e, conversions: c, total: s + e + c }
+# => {sessions: 91506, events: 8864, conversions: 1949, total: 102319}
+
+# A5.3
+account.ad_spend_records
+  .where(spend_date: parser.start_date..parser.end_date, is_test: false)
+  .count
+```
+
+The `~/Downloads/mbuzz_api_uat.sh` script gained a `totals` mode for drift comparisons:
+
+```bash
+bash ~/Downloads/mbuzz_api_uat.sh totals
+```
+
+### Manual + interactive (pending)
+
+- **A2.6** test vs live isolation — needs a `sk_test_*` key; not generated yet.
+- **A6.1** revoked-key 401 — interactive; revoke the key, re-run, restore.
 
 ---
 

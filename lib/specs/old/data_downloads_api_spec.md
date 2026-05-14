@@ -13,7 +13,7 @@
   - `app/services/data_downloads/spend_query_service.rb`
 - **Routes are flat, not nested.** `config/routes.rb` uses `get "data/conversions"`, `"data/funnel"`, `"data/spend"` directly under `namespace :api { namespace :v1 }` rather than an additional `namespace :data`. Same URLs externally.
 - **Test/live data scope is wired via `current_api_key.test?`** in `Api::V1::DataController#query_params` (`test_mode: current_api_key.test?`). `sk_test_*` and `sk_live_*` get their own data automatically.
-- **Date validation lives in the query service**, not the controller. Bad `start_date` / `end_date` formats fall through to a default 30-day range rather than returning 400. The "date range > 365 days → 400" check from the draft was not implemented — left for follow-up if it becomes a problem.
+- **Date validation: invalid format returns 400, not a fallback** (corrected 2026-05-14 after UAT step A6.3 found the original "shipped deviation" claim was wrong — the parser actually 500'd on `Date.parse("banana")`). `Api::V1::DataController` now declares `rescue_from Date::Error, with: :render_bad_date_format` and returns `{ "error": "Invalid date format. Use YYYY-MM-DD." }` with status 400. The "date range > 365 days → 400" check from the original draft is still not implemented — left for follow-up if it becomes a problem.
 - **Dashboard "API Extract" waitlist removal** was handed off to `dashboard_export_dropdown_spec.md` (also shipped 2026-05-12, `6b1d60d`).
 
 ---
