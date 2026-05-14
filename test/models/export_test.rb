@@ -27,11 +27,17 @@ class ExportTest < ActiveSupport::TestCase
     assert_includes export.errors[:export_type], "can't be blank"
   end
 
-  test "export_type must be conversions or funnel" do
+  test "export_type must be one of conversions, funnel, spend" do
     export = build_export(export_type: "invalid")
 
     assert_not export.valid?
     assert_includes export.errors[:export_type], "is not included in the list"
+  end
+
+  test "spend export_type is valid" do
+    export = build_export(export_type: "spend")
+
+    assert_predicate export, :valid?
   end
 
   # ==========================================

@@ -39,7 +39,7 @@ module Dashboard
     private
 
     def export_type
-      params[:export_type].presence_in(Export::EXPORT_TYPES) || "conversions"
+      params[:export_type].presence_in(Export::EXPORT_TYPES) || DashboardTabs::CONVERSIONS
     end
 
     def serialized_filter_params

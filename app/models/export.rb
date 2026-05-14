@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Export < ApplicationRecord
-  EXPORT_TYPES = %w[conversions funnel].freeze
+  EXPORT_TYPES = DashboardTabs::EXPORTABLE
   EXPIRY_DURATION = 1.hour
 
   belongs_to :account

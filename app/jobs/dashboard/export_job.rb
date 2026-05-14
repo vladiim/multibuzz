@@ -46,7 +46,8 @@ module Dashboard
 
     def export_service
       case export.export_type
-      when "funnel" then FunnelCsvExportService.new(account, service_params)
+      when DashboardTabs::FUNNEL then FunnelCsvExportService.new(account, service_params)
+      when DashboardTabs::SPEND then SpendCsvExportService.new(account, service_params)
       else CsvExportService.new(account, export_params)
       end
     end
@@ -75,8 +76,7 @@ module Dashboard
     end
 
     def filename
-      type = export.export_type == "funnel" ? "funnel" : "conversions"
-      "mbuzz-#{type}-#{Date.current}.csv"
+      "mbuzz-#{export.export_type}-#{Date.current}.csv"
     end
 
     def file_path
@@ -84,7 +84,7 @@ module Dashboard
     end
 
     def export_dir
-      Rails.root.join("tmp/exports")
+      Rails.env.test? ? Rails.root.join("tmp/exports", Process.pid.to_s) : Rails.root.join("tmp/exports")
     end
   end
 end

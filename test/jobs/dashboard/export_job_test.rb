@@ -112,6 +112,42 @@ module Dashboard
     end
 
     # ==========================================
+    # Spend export
+    # ==========================================
+
+    test "generates CSV file for spend export" do
+      @export.update!(export_type: "spend")
+
+      perform_job
+
+      @export.reload
+
+      assert_predicate @export, :completed?
+      assert_path_exists @export.file_path
+    end
+
+    test "spend CSV contains valid headers" do
+      @export.update!(export_type: "spend")
+
+      perform_job
+
+      @export.reload
+      csv = CSV.parse(File.read(@export.file_path), headers: true)
+
+      assert_equal Dashboard::SpendCsvExportService::HEADERS, csv.headers
+    end
+
+    test "spend filename uses spend prefix" do
+      @export.update!(export_type: "spend")
+
+      perform_job
+
+      @export.reload
+
+      assert_equal "mbuzz-spend-#{Date.current}.csv", @export.filename
+    end
+
+    # ==========================================
     # Turbo Stream broadcast
     # ==========================================
 

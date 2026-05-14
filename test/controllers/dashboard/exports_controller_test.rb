@@ -106,6 +106,15 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "funnel", export.export_type
   end
 
+  test "create with spend export type" do
+    sign_in
+    post dashboard_export_path, params: { export_type: "spend" }
+
+    export = Export.last
+
+    assert_equal "spend", export.export_type
+  end
+
   # ==========================================
   # Show (export status page)
   # ==========================================
