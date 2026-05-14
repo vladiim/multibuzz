@@ -112,6 +112,7 @@ class Article
   def date_modified
     modified = dig_value(schema, :date_modified)
     return modified.to_date if modified.present?
+    return last_updated if last_updated.present?
     return File.mtime(file_path).to_date if file_path && File.exist?(file_path)
 
     published_at

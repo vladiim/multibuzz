@@ -5,7 +5,7 @@
 <%= csp_meta_tag %>
 
 <%# SEO Meta Tags %>
-<meta name="description" content="<%= content_for(:meta_description) || "Multi-touch attribution that reconciles platform ROAS against your bank. 8 models side-by-side, no vendor lock-in. For marketers spending $10k–$1m/month on paid acquisition." %>">
+<meta name="description" content="<%= content_for(:meta_description) || "Multi-touch attribution that reconciles platform ROAS against your bank. 8 models side-by-side, no vendor lock-in. For marketers spending $20k–$1m/month on paid acquisition." %>">
 <meta name="robots" content="<%= content_for(:robots_meta).presence || "index, follow" %>">
 <link rel="canonical" href="<%= content_for(:canonical_url) || request.original_url.split("?").first %>">
 
@@ -20,14 +20,14 @@
 <meta property="og:type" content="<%= content_for(:og_type) || "website" %>">
 <meta property="og:site_name" content="mbuzz">
 <meta property="og:title" content="<%= content_for(:og_title) || content_for(:title) || "mbuzz - Server-Side Multi-Touch Attribution" %>">
-<meta property="og:description" content="<%= content_for(:og_description) || content_for(:meta_description) || "Multi-touch attribution that reconciles platform ROAS against your bank. 8 models side-by-side, no vendor lock-in. For marketers spending $10k–$1m/month on paid acquisition." %>">
+<meta property="og:description" content="<%= content_for(:og_description) || content_for(:meta_description) || "Multi-touch attribution that reconciles platform ROAS against your bank. 8 models side-by-side, no vendor lock-in. For marketers spending $20k–$1m/month on paid acquisition." %>">
 <meta property="og:image" content="<%= content_for(:og_image) || "https://mbuzz.co/og-image.png" %>">
 <meta property="og:url" content="<%= content_for(:canonical_url) || request.original_url.split("?").first %>">
 
 <%# Twitter Card Tags %>
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="<%= content_for(:og_title) || content_for(:title) || "mbuzz - Server-Side Multi-Touch Attribution" %>">
-<meta name="twitter:description" content="<%= content_for(:og_description) || content_for(:meta_description) || "Multi-touch attribution that reconciles platform ROAS against your bank. 8 models side-by-side, no vendor lock-in. For marketers spending $10k–$1m/month on paid acquisition." %>">
+<meta name="twitter:description" content="<%= content_for(:og_description) || content_for(:meta_description) || "Multi-touch attribution that reconciles platform ROAS against your bank. 8 models side-by-side, no vendor lock-in. For marketers spending $20k–$1m/month on paid acquisition." %>">
 <meta name="twitter:image" content="<%= content_for(:og_image) || "https://mbuzz.co/og-image.png" %>">
 
 <%# RSS / Atom feed discovery %>
