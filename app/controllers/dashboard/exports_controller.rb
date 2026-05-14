@@ -22,8 +22,9 @@ module Dashboard
     end
 
     def download
-      export = current_account.exports.completed.find_by_prefix_id!(params[:id])
+      export = current_account.exports.find_by_prefix_id!(params[:id])
 
+      return redirect_to dashboard_export_status_path(id: export.prefix_id) unless export.completed?
       return head :gone if export.expired?
       return head :gone unless export.csv.attached?
 

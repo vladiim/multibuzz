@@ -209,11 +209,37 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
     assert_response :gone
   end
 
-  test "download returns 404 for pending export" do
+  test "download redirects pending export to status page" do
     sign_in
     export = Export.create!(account: account, export_type: "conversions")
 
     get dashboard_export_download_path(id: export.prefix_id)
+
+    assert_redirected_to dashboard_export_status_path(id: export.prefix_id)
+  end
+
+  test "download redirects processing export to status page" do
+    sign_in
+    export = Export.create!(account: account, export_type: "conversions", status: :processing)
+
+    get dashboard_export_download_path(id: export.prefix_id)
+
+    assert_redirected_to dashboard_export_status_path(id: export.prefix_id)
+  end
+
+  test "download redirects failed export to status page so customer sees the failure" do
+    sign_in
+    export = Export.create!(account: account, export_type: "conversions", status: :failed)
+
+    get dashboard_export_download_path(id: export.prefix_id)
+
+    assert_redirected_to dashboard_export_status_path(id: export.prefix_id)
+  end
+
+  test "download returns 404 for unknown export id" do
+    sign_in
+
+    get dashboard_export_download_path(id: "exp_doesnotexist")
 
     assert_response :not_found
   end

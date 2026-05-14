@@ -137,6 +137,30 @@ class ExportTest < ActiveSupport::TestCase
   end
 
   # ==========================================
+  # Download URL
+  # ==========================================
+
+  test "download_url is a present URL containing the filename" do
+    ActiveStorage::Current.url_options = { host: "test.host" }
+    export = attached_export(filename: "mbuzz-conversions-2026-05-14.csv")
+
+    url = export.download_url
+
+    assert_predicate url, :present?
+    assert_includes url, export.filename
+  end
+
+  test "download_url payload carries attachment disposition and text/csv content type" do
+    ActiveStorage::Current.url_options = { host: "test.host" }
+    export = attached_export(filename: "mbuzz-conversions-2026-05-14.csv")
+    payload = disk_service_payload(export.download_url)
+
+    assert_equal "attachment; filename=\"#{export.filename}\"; filename*=UTF-8''#{export.filename}", payload.fetch("disposition")
+    assert_equal "text/csv", payload.fetch("content_type")
+  end
+
+
+  # ==========================================
   # Multi-account isolation
   # ==========================================
 
@@ -149,6 +173,26 @@ class ExportTest < ActiveSupport::TestCase
   end
 
   private
+
+  # The :test ActiveStorage service (Disk) embeds disposition + content_type
+  # in a base64-signed payload in the path rather than as query params. Decode
+  # the payload to assert against the signed contract.
+  def disk_service_payload(url)
+    token = URI.parse(url).path.split("/")[4]
+    payload_b64 = token.split("--").first
+    JSON.parse(Base64.urlsafe_decode64(payload_b64)).dig("_rails", "data")
+  end
+
+  def attached_export(filename:)
+    create_export(filename: filename).tap do |export|
+      export.csv.attach(
+        io: StringIO.new("a,b\n1,2"),
+        filename: filename,
+        content_type: "text/csv",
+        key: export.blob_key
+      )
+    end
+  end
 
   def account = @account ||= accounts(:one)
 
