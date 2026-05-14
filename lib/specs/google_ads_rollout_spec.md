@@ -2,8 +2,8 @@
 
 **Date:** 2026-05-15
 **Priority:** P1
-**Status:** Ready
-**Branch:** `feature/google-ads-ga-rollout`
+**Status:** Phases 1-3 code complete ✅ · Phase 0 (incognito verify) + Phase 2 prod run + Phase 4 archive pending
+**Branch:** `feat/conversion-feedback` (bundled into in-flight branch per user request)
 
 ---
 
@@ -96,13 +96,15 @@ After this, Phase 5 of the Meta rollout (`ad_platforms_meta_rollout_spec.md`) is
 - [ ] **0.4** If no warning + flow completes: ✅ proceed to Phase 1. Update `project_google_ads_api_status` memory to reflect verified.
 - [ ] **0.5** If warning still appears: abort rollout. Investigate whether app is published-but-unverified vs verified. The "In production" status alone does not guarantee verification cleared for sensitive scopes.
 
-### Phase 1 — Flip the integrations page gate (RED → GREEN)
+### Phase 1 — Flip the integrations page gate (RED → GREEN) ✅
 
-- [ ] **1.1** RED: write a controller/system test for `Accounts::IntegrationsController#show` asserting:
+Status: shipped 2026-05-15 in commit `2d131a9`. All 3925 tests pass. Manual smoke (1.4) still on user. Flag is OFF by default in prod so the view will show Coming Soon until Phase 2 enables.
+
+- [x] **1.1** RED: write a controller/system test for `Accounts::IntegrationsController#show` asserting:
   - Account with flag ON sees the `_google_ads_card` partial, regardless of `Rails.env`
   - Account with flag OFF sees `_coming_soon_card` for Google Ads
   - Existing Meta behavior unaffected
-- [ ] **1.2** GREEN: edit `app/views/accounts/integrations/show.html.erb:26` to replace
+- [x] **1.2** GREEN: edit `app/views/accounts/integrations/show.html.erb:26` to replace
   ```erb
   <% if Rails.env.production? %>
     <%= render "coming_soon_card", platform: "Google Ads", notified: @notified_platforms.include?("Google Ads") %>
@@ -119,24 +121,26 @@ After this, Phase 5 of the Meta rollout (`ad_platforms_meta_rollout_spec.md`) is
   <% end %>
   ```
   Mirrors the Meta pattern at line 34.
-- [ ] **1.3** Run `bin/rails test test/controllers/accounts/integrations_controller_test.rb test/system/integrations_test.rb`. All green.
-- [ ] **1.4** Manual smoke on dev: toggle flag for a test account; reload `/account/integrations`; confirm card swaps; click Connect; OAuth flow runs; smoke a dry-run callback.
-- [ ] **1.5** Commit: `fix(integrations): gate Google Ads card on feature flag, not Rails.env`
+- [x] **1.3** Run `bin/rails test test/controllers/accounts/integrations_controller_test.rb test/system/integrations_test.rb`. All green.
+- [ ] **1.4** Manual smoke on dev: toggle flag for a test account; reload `/account/integrations`; confirm card swaps; click Connect; OAuth flow runs; smoke a dry-run callback. **User action.**
+- [x] **1.5** Commit: `fix(integrations): gate Google Ads card on feature flag, not Rails.env`
 
-### Phase 2 — Bulk-enable for paid accounts
+### Phase 2 — Bulk-enable for paid accounts (code ✅ · prod run pending)
 
-- [ ] **2.1** Write `lib/tasks/google_ads_rollout.rake` with `google_ads_rollout:enable_for_paid_accounts` task:
+Status: rake task shipped 2026-05-15 in commit `8c33104`. Dry-run smoke against dev DB passed (1 paid account, flag already on). Prod run gated on Phase 0 confirmation.
+
+- [x] **2.1** Write `lib/tasks/google_ads_rollout.rake` with `google_ads_rollout:enable_for_paid_accounts` task:
   - Iterate `Account.where(plan: <paid plans>)` (use the existing scope on `Account::Billing` if there is one, else inline the predicate)
   - For each account: skip if `feature_enabled?(FeatureFlags::GOOGLE_ADS_INTEGRATION)` already true
   - Else `enable_feature!(FeatureFlags::GOOGLE_ADS_INTEGRATION)` and log `Enabled google_ads_integration for #{account.prefix_id} (#{account.name})`
   - Print summary at end: enabled X, skipped Y already-on, skipped Z non-paid
   - Idempotent (rerun should no-op for accounts already enabled)
-- [ ] **2.2** RED: test the rake task against a fixture set: paid + flag OFF (gets enabled), paid + flag ON (skipped), free (skipped). Verify counts.
-- [ ] **2.3** GREEN: implement, all tests pass.
-- [ ] **2.4** Dry-run on staging or a prod readonly replica: count how many accounts would flip. Sanity-check that count vs admin dashboard's "paid accounts" figure.
-- [ ] **2.5** Run in prod: `bin/rails google_ads_rollout:enable_for_paid_accounts`. Capture stdout to a file for audit.
-- [ ] **2.6** Spot-check 3 paid accounts: log in as the account owner (impersonation or staging mirror), confirm Google Ads card is live.
-- [ ] **2.7** Commit: `chore(integrations): bulk-enable google_ads_integration for paid accounts`
+- [x] **2.2** RED: test the rake task against a fixture set: paid + flag OFF (gets enabled), paid + flag ON (skipped), free (skipped). Verify counts. (6 tests in `test/tasks/google_ads_rollout_test.rb`)
+- [x] **2.3** GREEN: implement, all tests pass.
+- [ ] **2.4** Dry-run on prod: `DRY_RUN=true bin/rails google_ads_rollout:enable_for_paid_accounts`. Sanity-check the count vs admin dashboard's "paid accounts" figure. **User action.**
+- [ ] **2.5** Run in prod: `bin/rails google_ads_rollout:enable_for_paid_accounts`. Capture stdout to a file for audit. **User action — gated on Phase 0.**
+- [ ] **2.6** Spot-check 3 paid accounts: log in as the account owner (impersonation), confirm Google Ads card is live. **User action.**
+- [x] **2.7** Commit: `feat(integrations): rake task to bulk-enable Google Ads for paid accounts`
 
 ### Phase 3 — Marketing copy + cross-spec links
 
