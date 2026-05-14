@@ -29,6 +29,10 @@ gem "jbuilder"
 # CORS support for API endpoints [https://github.com/cyu/rack-cors]
 gem "rack-cors"
 
+# Official Model Context Protocol SDK — powers the MCP server at mcp.mbuzz.co
+# [https://github.com/modelcontextprotocol/ruby-sdk]
+gem "mcp", "0.16.0"
+
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 gem "bcrypt", "~> 3.1.7"
 
