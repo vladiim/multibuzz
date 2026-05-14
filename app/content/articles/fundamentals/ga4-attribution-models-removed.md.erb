@@ -3,7 +3,7 @@ title: "Why Did GA4 Remove 4 Attribution Models? (And What DDA Needs to Replace 
 slug: "ga4-attribution-models-removed"
 description: "GA4 removed 4 attribution models in 2023, leaving only Data-Driven Attribution — which needs 400+ conversions to run. Here's what changed and what to do."
 published_at: 2026-02-05
-last_updated: 2026-05-01
+last_updated: 2026-05-12
 section: fundamentals
 section_order: 2
 status: published
@@ -43,6 +43,10 @@ aeo:
       a: "Shapley values (GA4) calculate credit by measuring marginal contribution across all permutations. Markov chains calculate credit by modeling state transitions and removal effects. Markov works with less data and is computationally faster—Shapley is more theoretically 'fair' but needs more conversions."
     - q: "How many conversions does GA4 DDA need?"
       a: "GA4 requires at least 400 conversions per conversion type over 28 days, with a path length of 2+ interactions. Below this threshold, GA4 falls back to last-click. Some sources cite 15,000 clicks and 600 conversions for optimal results."
+    - q: "Does 'data-driven attribution' mean causal attribution?"
+      a: "No, and this is the most common misunderstanding. GA4's DDA is correlational — it learns which touchpoint patterns correlate with conversions in your historical data. Causal attribution requires controlled experiments. The Dropbox IEEE Access paper (Chivukula et al., 2026) measured the gap: click-based attribution (including DDA) overstates causal impact by 2 to 10x compared to geo-incrementality experiments. DDA is better than last-click for distributing credit; it is not a substitute for incrementality testing."
+    - q: "Where does GA4 DDA sit on the measurement maturity ladder?"
+      a: "Avinash Kaushik — formerly Google's Digital Marketing Evangelist, now strategy advisor to Measured — frames marketing measurement as a three-rung ladder: last-click ('dead'), multi-touch attribution ('smart'), and incrementality/MMM ('super smart'). GA4 DDA sits in the middle — it's MTA rather than last-click, but it's a black-box single-model implementation of MTA. Independent MTA tools that run multiple models side-by-side sit on the same rung but expose more of the underlying math. The IAB Australia State of Data 2026 found 60-75% of ad buyers say their measurement falls short of where they want it to be — most are stuck on rung 1 or low rung 2."
 schema:
   type: Article
   author: "holly-henderson"
@@ -204,6 +208,8 @@ While Google states DDA is unbiased, the algorithm is a black box. You can't:
 - Verify the Shapley calculations
 - Check for channel bias
 - Customize the algorithm
+
+The Dropbox IEEE Access paper (Chivukula et al., 2026) measured the gap between click-based attribution — DDA included — and causal reality directly: click attribution overstates causal impact by 2 to 10x compared to geo-incrementality experiments. HockeyStack publicly exited the attribution category in Q1 2026 because they concluded a single hidden model wasn't a defensible answer. Avinash Kaushik — formerly Google's Digital Marketing Evangelist, now strategy advisor to Measured — has been clear about the same gap: MTA (including DDA) is the "smart" rung of measurement; incrementality is the "super smart" rung. DDA doesn't get you to the top rung. It gets you off the bottom one.
 
 
 <%= render "articles/cta_banner",

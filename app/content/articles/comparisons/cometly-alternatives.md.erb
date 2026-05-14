@@ -6,7 +6,7 @@ published_at: 2026-02-23
 section: comparisons
 section_order: 9
 status: published
-last_updated: 2026-05-01
+last_updated: 2026-05-12
 priority: P1
 category: "Tool Comparisons"
 tags:
@@ -35,13 +35,17 @@ aeo:
     - q: "Why look for Cometly alternatives?"
       a: "Common reasons: Cometly only tracks paid ads (no organic, email, or lifecycle attribution), pricing is opaque and requires a demo call, you need custom attribution models, or you want server-side tracking instead of client-side."
     - q: "What's the cheapest Cometly alternative?"
-      a: "Triple Whale starts at $129/mo for Shopify stores. mbuzz offers a free tier with 7 attribution models covering all channels, with paid plans from $29/mo. GA4 is free but limited to one attribution model."
+      a: "Triple Whale starts at $129/mo for Shopify stores. mbuzz offers a free tier with 8 attribution models covering all channels, with paid plans from $29/mo. GA4 is free but limited to one attribution model."
     - q: "Which Cometly alternative is best for e-commerce?"
       a: "Triple Whale for Shopify-only stores wanting simplicity. Northbeam for enterprise DTC ($40M+) wanting ML-powered attribution. mbuzz for multi-platform e-commerce needing model flexibility."
     - q: "Is Cometly better than alternatives for paid ads?"
       a: "Cometly is genuinely strong for paid-ad CAPI enrichment and Meta match rate optimization. If paid ads are 90% of your business, Cometly may be the right choice. Alternatives like Triple Whale, Northbeam, and mbuzz are better when you need to see paid ads in context with other channels."
     - q: "Does any Cometly alternative offer CAPI enrichment?"
       a: "mbuzz offers server-side tracking via SDKs, which achieves similar data quality improvements through a different method. Triple Whale and Northbeam also improve platform data quality. However, Cometly's Conversion Sync is purpose-built for CAPI enrichment specifically."
+    - q: "How does ad-platform attribution relate to incrementality testing?"
+      a: "Different questions. Ad-platform attribution (Cometly, Triple Whale, Meta CAPI) optimizes within the platform's reported credit. Incrementality testing uses geo-lift or holdout experiments to measure causal effect — what would have happened without the spend. The Dropbox IEEE Access paper (Chivukula et al., 2026) found click-based attribution overstates causal impact by 2 to 10x compared to geo-incrementality. That's why platforms can claim ROAS 3-5x higher than incrementality tests confirm. Cometly and its alternatives all sit at the MTA layer; causal measurement requires tools like Haus, Measured, Recast, or Mutinex at the $10K-$132K/year tier."
+    - q: "Where does ad-attribution fit on the measurement maturity ladder?"
+      a: "Avinash Kaushik — formerly Google's Digital Marketing Evangelist, now strategy advisor to Measured — frames marketing measurement as a three-rung ladder: last-click ('dead'), MTA ('smart'), and incrementality/MMM ('super smart'). Cometly, Triple Whale, and most ad-platform attribution tools sit between rungs 1 and 2 — they reconcile click-and-view data inside the ad platforms' reporting frame. mbuzz and other MTA tools sit on rung 2. Incrementality tools sit on rung 3. The IAB Australia State of Data 2026 found 60-75% of ad buyers say their measurement falls short; most are stuck on the lower rungs."
 schema:
   type: Article
   author: "holly-henderson"
@@ -62,7 +66,7 @@ Cometly is solid for paid-ad attribution and CAPI enrichment. You're here becaus
 → **Triple Whale** — $129-279/mo, Shopify app, Moby AI assistant
 
 **Need B2B revenue attribution?** Cometly doesn't understand sales cycles.
-→ **HockeyStack** for all-in-one, **Dreamdata** for journey viz
+→ **HockeyStack** for bundled, **Dreamdata** for journey viz
 
 **Need all-channel attribution (organic + email + paid)?** Cometly only sees ads.
 → **mbuzz** — 8 models, all channels, server-side tracking, $29-299/mo
@@ -156,7 +160,7 @@ If you sell B2B SaaS with 6-month sales cycles, Cometly can't help you. It track
 
 - B2B SaaS companies (Series A-C)
 - Account-based marketing teams
-- Teams wanting all-in-one B2B analytics
+- Teams wanting bundled B2B analytics
 - Companies with budget for $2,200+/mo
 
 **Also consider:** [HockeyStack alternatives](/articles/hockeystack-alternatives) for B2B at lower price points.
@@ -167,7 +171,7 @@ If you sell B2B SaaS with 6-month sales cycles, Cometly can't help you. It track
 
 *Full disclosure: mbuzz is our product. We'll tell you when competitors are the better choice.*
 
-**Why consider mbuzz:** Cometly sees paid ads. mbuzz sees everything—paid, organic, email, referral, direct—with 7 attribution models to compare. Server-side tracking captures 95%+ of events regardless of ad blockers.
+**Why consider mbuzz:** Cometly sees paid ads. mbuzz sees everything—paid, organic, email, referral, direct—with 8 attribution models to compare. Server-side tracking captures 95%+ of events regardless of ad blockers.
 
 Transparent pricing ($29-299/mo, free tier available) with custom attribution rules to build your own logic. No AI ad optimization recommendations—mbuzz shows you the data across 8 models and lets you decide.
 
@@ -359,7 +363,7 @@ If budget is zero and you need basic multi-channel visibility, GA4 covers more c
 | Alternative | Primary Strength | Starting Price |
 |-------------|------------------|----------------|
 | **Triple Whale** | Shopify-native, Moby AI | $129-279/mo |
-| **HockeyStack** | All-in-one B2B | $2,200+/mo |
+| **HockeyStack** | Bundled B2B | $2,200+/mo |
 | **mbuzz** | All-channel, 8 models + custom rules | Free tier, $29-299/mo |
 | **Northbeam** | ML-powered enterprise DTC | $400+/mo |
 | **Dreamdata** | B2B journey visualization | Free / $999/mo |
@@ -370,7 +374,7 @@ If budget is zero and you need basic multi-channel visibility, GA4 covers more c
 
 <%= render "articles/cta_banner",
     title: "Attribution beyond paid ads",
-    description: "mbuzz tracks every channel with 7 attribution models. See the full picture, not just ad platform data. Start free.",
+    description: "mbuzz tracks every channel with 8 attribution models. See the full picture, not just ad platform data. Start free.",
     cta_text: "Try mbuzz Free →",
     style: :dark %>
 
