@@ -445,11 +445,11 @@ Ran `~/Downloads/mbuzz_api_uat.sh` against `mbuzz.co` with a `sk_live_*` key.
 
 A1.1, A1.2, A1.3 (auth boundary). A2.1 (default conversions), A2.3 (per_page clamping high + low), A2.4 status, A2.5 channel filter, A3.1 status, A3.2 status, A3.3 channel filter, A4.1 status, A4.3 metadata-is-object, A4.4 channel filter, A6.4 invalid channel ignored.
 
-### Script flaws (not API bugs — to fix in `~/Downloads/mbuzz_api_uat.sh`)
+### Script flaws (not API bugs — fixed in `~/Downloads/mbuzz_api_uat.sh`)
 
-- **A2.2** "page 2 disjoint" compared only `date` arrays. With 207k+ rows on the same date under `ORDER BY converted_at ASC`, both pages show the same five dates. Tighten the comparison to the full row contents (or to a unique-enough subset of fields).
-- **A2.4** "date range observed" min/max sampled only 5 rows. First 5 rows by `converted_at ASC` in a six-week window are all on day 1. Either widen `per_page` or sort by random or check `meta.total_count` against an independent count.
-- **A6.2** "page beyond range" used `page=999`, but `total_pages` from A2.1 was 2074. 999 is in range. Use a clearly out-of-bounds page like `page=99999`.
+- [x] **A2.2** Replaced the date-only comparison with a full-row JSON-hash intersection — pages 1 and 2 must have 0 overlapping rows.
+- [x] **A2.4** Replaced the 5-row min/max read with a stronger contract: a 1-day window's `meta.total_count` must be strictly less than the default 30d total, AND every returned row must have `date == that day` (with `per_page=1000` so the sample is meaningful). Uses `date -v-3d` (macOS) with a GNU `date -d` fallback.
+- [x] **A6.2** Bumped `page=999` to `page=999999` (the live dataset has ~2,074 pages so 999 was still in range).
 
 ### Real bugs found + fixed (TDD round, 2026-05-14)
 
