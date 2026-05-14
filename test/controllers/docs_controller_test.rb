@@ -102,4 +102,33 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
 
     assert_select "a[href=?]", docs_path(page: "data-downloads")
   end
+
+  test "show renders the mcp page" do
+    get docs_path(page: "mcp")
+
+    assert_response :success
+  end
+
+  test "mcp page documents the server URL and the three tools" do
+    get docs_path(page: "mcp")
+
+    body = response.body
+
+    assert_match %r{mbuzz\.co/mcp}, body
+    assert_match(/mbuzz_get_conversions/, body)
+    assert_match(/mbuzz_get_spend/, body)
+  end
+
+  test "mcp page links from the docs nav" do
+    get docs_path(page: "getting-started")
+
+    assert_select "a[href=?]", docs_path(page: "mcp")
+  end
+
+  test "mcp page links from the API keys page" do
+    sign_in_as users(:one)
+    get account_api_keys_path
+
+    assert_select "a[href=?]", docs_path(page: "mcp")
+  end
 end

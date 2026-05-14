@@ -26,6 +26,15 @@
               </button>
             </div>
 
+            <div class="px-6 py-4 bg-indigo-50 border-b border-indigo-100">
+              <p class="text-sm text-indigo-900">
+                <span class="font-medium">Use any key with the MCP server.</span>
+                Connect mbuzz to Claude, ChatGPT, or Cursor at
+                <code class="px-1.5 py-0.5 bg-white border border-indigo-200 rounded text-xs font-mono">https://mbuzz.co/mcp</code>.
+                <%= link_to "MCP setup docs →", docs_path(page: "mcp"), class: "font-medium text-indigo-700 hover:underline" %>
+              </p>
+            </div>
+
             <% if @api_keys.any? %>
               <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
