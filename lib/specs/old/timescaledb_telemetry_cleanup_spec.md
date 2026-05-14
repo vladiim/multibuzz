@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-11 (approach refined 2026-05-12 after research)
 **Priority:** P0
-**Status:** In Progress — Phase 1 complete (emergency truncate); Phases 0, 2–6 pending
+**Status:** Phases 0–5 complete (2026-05-12); Phase 6 (1-week verification) pending
 **Branch:** TBD (suggest `fix/timescaledb-telemetry-cleanup`)
 
 ---
@@ -356,6 +356,7 @@ Per `feedback_no_mocks.md`: no stubbing or mocking the truncate. The service run
 - `config/database.yml` — confirms Rails connects to `primary`/`cache`/`queue`/`cable`/`errors` only (not `postgres` or `template1`); the basis of "Why Not a Rails Migration?" reason #1
 - `config/deploy.yml` — Kamal config touched in Phase 0
 - `lib/docs/architecture/data_integrity_runbook.md` — style/structure reference for the new `timescaledb_operations.md` doc
+- `lib/docs/architecture/timescaledb_operations.md` — operations doc produced by Phase 5 (cluster topology, retention policy, debugging)
 - `CLAUDE.md` — TimescaleDB-in-tests guard, multi-tenancy and service-object conventions
 - Related (different mechanism, similar shape — Puma starvation under DB pressure): `lib/specs/incidents/2026-04-22-puma-jam-reattribution-cache-flood.md`
 

@@ -53,6 +53,8 @@ RAILS_ENV=test bin/rails db:schema:load
 
 **Never** `db:drop db:create db:migrate` for test DB.
 
+**Production operations** (cluster topology, which DBs have the extension, retention policy, debugging unbounded telemetry growth): see `lib/docs/architecture/timescaledb_operations.md`.
+
 ## Production
 
 | Domain | mbuzz.co |
