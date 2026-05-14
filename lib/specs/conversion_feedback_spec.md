@@ -15,9 +15,11 @@ The spec ships **BSA-tenant-scoped first** (single customer, hardcoded destinati
 
 Two non-trivial gates were under-stated in the prior draft and now sit in front of any code:
 
-1. **Google Ads use-case extension.** mbuzz's existing developer token (Basic Access, approved 11 Mar 2026) was scoped to **read-only spend reporting**. Server-side conversion uploads are a different permissible use, requires submitting the **Google Ads API Tool Change Form**. Per the **February 2026 conversion-data rules**, NEW developers cannot use IP / session attributes in conversion imports anyway. mbuzz uses **Enhanced Conversions for Leads (hashed user data) plus click IDs only**.
+1. **Google Ads use-case extension.** mbuzz's existing developer token (Basic Access, approved 11 Mar 2026) was scoped to **read-only spend reporting**. Server-side conversion uploads are a different permissible use, requires submitting the **Google Ads API Tool Change Form**. Per the **February 2026 conversion-data rules**, NEW developers cannot use IP / session attributes in conversion imports anyway. mbuzz uses **Enhanced Conversions for Leads (hashed user data) plus click IDs only**. The OAuth scope is unchanged (single `auth/adwords` scope already covers read + write); only the developer token's permissible use needs extending.
 
 2. **Match-key capture gap.** mbuzz captures `fbclid` from URL params but not `_fbp` or `_fbc` cookies; identities store an arbitrary `traits` JSONB but no normalised hashed email / phone; sessions don't persist country / postal code. Without these, Meta EMQ caps low and Google EC has nothing to match on. A pre-dispatcher phase is needed to close the gap.
+
+**API integration alignment in one sentence:** Meta CAPI is independent of all other Meta App work (per-Pixel customer-issued tokens, no App Review, no Business Verification dependency); Google EC reuses the existing OAuth scope and developer token, requires only a Tool Change Form to extend permissible use to "Server-side conversion uploads / Enhanced Conversions for Leads". See "API Integration Alignment" below for the full per-layer breakdown.
 
 **No IP, no UA, ever.** Symmetric with both platforms. Google forbids them for new developers. Meta accepts them but mbuzz declines: Sessions store only `device_fingerprint = SHA256(ip|ua)[0:32]`, so feeding Meta raw IP would mean changing the data flow for ~0.5 EMQ points. mbuzz's privacy-respecting brand position would also be compromised. The primary Meta match key is `external_id` = `SHA-256(Identity#external_id)`, which links to the advertiser's own Custom Audience uploads and Pixel events.
 
@@ -53,12 +55,44 @@ Two non-trivial gates were under-stated in the prior draft and now sit in front 
 | No country / postal_code on Session | Meta EMQ secondary match keys missing | Phase 2 |
 | No `consent_marketing` on Conversion | Future deletion-propagation flow blocked. Out of scope for v1 (see Out of Scope). | Future spec |
 
-### API approval state (cross-ref `lib/specs/platform_api_approvals_spec.md`)
+### API Integration Alignment (verified 2026-05-10 against `platform_api_approvals_spec.md`)
 
-| Platform | Token / scope today | Needed for outbound | Action |
+What conversion feedback needs vs what mbuzz already has, broken down per integration layer. This determines what's blocking and what can ship in parallel.
+
+#### Meta CAPI
+
+| Layer | Conversion feedback needs | mbuzz current state | Aligned? |
 |---|---|---|---|
-| Meta Marketing API (Forebrite Pty Ltd) | `ads_read` Standard Access; Business Verification BLOCKED on entity registration | None at App level. CAPI uses a per-Pixel access token generated from the customer's Business Manager Events Manager UI. No App Review required, Meta auto-creates a system user behind the token. | Per-customer setup: BSA's BM admin opens Events Manager → Pixel → Settings → Conversions API → Generate Access Token → hands token + Pixel ID to mbuzz. Document in 1Password. |
-| Google Ads API | Basic Access, "read-shaped" use case (approved 11 Mar 2026) | Use-case extension to "Server-side conversion uploads / Enhanced Conversions for Leads" via the **Google Ads API Tool Change Form**. Existing token can keep its Basic Access tier (Basic = 15K ops/day, RMF doesn't apply at Basic). | **Submit Tool Change Form before Phase 5.** Approval typically 48 hours to 3 weeks per recent threads. February 2026 rule change: NEW developers cannot use IP / session attributes in conversion imports. Enhanced Conversions for Leads (hashed user data) or click IDs only. |
+| OAuth scope on mbuzz's Meta App | None. CAPI tokens are issued by the customer's BM, not by mbuzz's App. | mbuzz's App `1572699803993069` is configured for `ads_read` (Standard Access today, Advanced Access pending and blocked on Business Verification → entity registration). | ✓ **Independent.** mbuzz's App scope and approval status do not gate CAPI. |
+| App Review | None. Meta auto-creates a Conversions API "app" + system user behind each per-Pixel token in the customer's BM. No mbuzz-side App Review. | mbuzz's `ads_read` Advanced Access submission (Step 4 in `platform_api_approvals_spec.md`) is not started. | ✓ **Independent.** Phase 4 (Meta CAPI dispatcher) can ship before any mbuzz Meta App Review work. |
+| Business Verification | None. BSA's BM has its own verification; mbuzz piggybacks on BSA's customer relationship. | mbuzz's Business Verification (Step 2) is BLOCKED on entity registration (no Mbuzz ABN yet). | ✓ **Independent.** Not a blocker for Phase 4. |
+| Per-customer setup | Customer's BM admin generates a per-Pixel CAPI access token from Events Manager → Pixel → Settings → Conversions API → Generate Access Token. Token is long-lived (~60 days). | Not done for any customer yet. | ⏳ **Phase 0B.** Per-customer manual step. |
+| `appsecret_proof` HMAC hardening | Optional. Needs the secret of the *auto-created* CAPI app (NOT mbuzz's own app secret). Customer's BM admin would have to share it. | n/a | ⏳ **Defer to v2.** Skip in v1; bare token works. |
+
+**Net delta:** zero changes to mbuzz's Meta App. Per-customer Phase 0B token setup is the only new step.
+
+#### Google Ads API (Conversion Upload + Enhanced Conversions for Leads)
+
+| Layer | Conversion feedback needs | mbuzz current state | Aligned? |
+|---|---|---|---|
+| OAuth scope (per-customer refresh token) | `https://www.googleapis.com/auth/adwords`. Single scope covers read + write across the entire Ads API surface. | mbuzz already requests this scope for spend pull (Basic Access approved 11 Mar 2026). Customer refresh tokens are stored on `AdPlatformConnection`. | ✓ **Aligned.** Same OAuth, same refresh token, no re-consent. The customer who already linked Google Ads for spend pull can have conversion uploads enabled with no new OAuth flow. |
+| Developer token tier | Basic Access (15K ops/day). For BSA's volume that's plenty. | Basic Access. | ✓ **Aligned.** No need to apply for Standard Access. RMF (Required Minimum Functionality) is Standard-only. |
+| Developer token permissible use | "Server-side conversion uploads / Enhanced Conversions for Leads". Per the Feb 2026 rule, NEW developers cannot use IP / session attributes. | Current permissible use: read-shaped (reporting). Conversion uploads require the use-case extension. | ⏳ **Phase 0A.** Submit the **Google Ads API Tool Change Form** to extend the existing developer token's permissible use. Same token, no re-application, no Standard Access upgrade. Approval typically 48 hours to 3 weeks. |
+| Manager link / `login_customer_id` | If BSA's account is under a manager (MCC), mbuzz includes `login-customer-id: <MCC_ID>` header on uploads. | mbuzz already handles `login_customer_id` in the spend-pull adapter. | ✓ **Aligned.** Reuse existing handling. |
+| Enhanced Conversions for Leads on each conversion action | BSA toggles "Enhanced conversions for leads → Set up via API" per conversion action in Google Ads UI. | Not done. | ⏳ **Phase 0C.** Per-customer config in Google Ads UI. No mbuzz code change. |
+
+**Net delta:** Tool Change Form submission (Phase 0A) is the only mbuzz-side change. Per-customer Phase 0C is BSA UI clicks. OAuth, dev token tier, manager-link plumbing all reuse existing infrastructure.
+
+#### Other platforms (LinkedIn, TikTok, etc.)
+
+Out of scope for this spec. Each gets its own conversion feedback adapter when prioritised. The destination model is platform-shaped from the start, so adding TikTok Events API or LinkedIn Conversions API later means a new `AdDestinations::TikTok::*` namespace, not a refactor.
+
+#### Implications for shipping order
+
+- **Phase 4 (Meta CAPI) is unblocked TODAY.** It does not depend on Meta Business Verification, mbuzz's `ads_read` approval, or any other Meta App Review milestone. Phase 4 can run in parallel with Step 2-4 of `platform_api_approvals_spec.md`.
+- **Phase 5 (Google EC for Leads) is gated on Phase 0A approval** (Tool Change Form). Submit early so it's not the critical path. While we wait, Phases 1, 2, 3, 4, 6, 7 can all proceed.
+
+The rewrite of `platform_api_approvals_spec.md` should reflect this alignment by adding a note at the top: "Conversion feedback (`conversion_feedback_spec.md`) requires (a) Google Ads Tool Change Form submission and (b) per-customer Meta CAPI tokens. Neither blocks nor is blocked by the existing Step 1-5 work-streams."
 
 ---
 
@@ -106,7 +140,7 @@ OutboundConversionJob:
 | `app/models/conversion_dispatch.rb` | One row per (conversion × destination); tracks status, response, retries | New (Phase 3) |
 | `app/services/ad_destinations/base_dispatcher.rb` | Shared interface: build payload, fire, record outcome | New (Phase 3) |
 | `app/services/ad_destinations/registry.rb` | Maps `platform` → dispatcher class. Mirrors `ad_platforms/registry.rb`. | New (Phase 3) |
-| `app/services/ad_destinations/meta/api_client.rb` | POST to `https://graph.facebook.com/v{N}/{pixel_id}/events` with `appsecret_proof` HMAC | New (Phase 4) |
+| `app/services/ad_destinations/meta/api_client.rb` | POST to `https://graph.facebook.com/v{N}/{pixel_id}/events` with bearer token (no `appsecret_proof` in v1; see Phase 0B.3) | New (Phase 4) |
 | `app/services/ad_destinations/meta/payload_builder.rb` | Build CAPI event payload from `Conversion` + `Identity` + `Session` | New (Phase 4) |
 | `app/services/ad_destinations/meta/dispatcher.rb` | Orchestrator (build → post → record) | New (Phase 4) |
 | `app/services/ad_destinations/google/api_client.rb` | Wraps `ConversionUploadService.UploadClickConversions` via `google-ads-googleads` gem | New (Phase 5) |
@@ -261,7 +295,7 @@ No code. Confirms the path is clear before cutting a line.
 
 - [ ] **0B.1** Ask BSA's Business Manager admin to open **Events Manager → BSA's Pixel → Settings → Conversions API → Generate Access Token**. Meta auto-creates a system user behind the token. **No App Review required, no special permissions.**
 - [ ] **0B.2** Receive token + Pixel ID. Store in 1Password (`Conversion Feedback / BSA / Meta`). Never commit. Rotation reminder at 50 days (cookies expire ~60).
-- [ ] **0B.3** Optional: BSA admin can also generate `appsecret_proof` HMAC by sharing app secret. This is recommended for production hardening (Meta strongly suggests `appsecret_proof` on every CAPI call).
+- [ ] **0B.3** Defer `appsecret_proof` to v2. The auto-created CAPI app (created behind the per-Pixel token) is owned by the customer's BM, not by mbuzz. Computing `appsecret_proof` would require BSA's BM admin to share that auto-created app's secret. v1 ships with bare token auth, which Meta supports. Revisit in a hardening pass.
 - [ ] **0B.4** Smoke-test manually:
   ```
   curl -X POST 'https://graph.facebook.com/v22.0/{PIXEL_ID}/events?access_token={TOKEN}' \
@@ -297,7 +331,7 @@ No code. Confirms the path is clear before cutting a line.
 
 **Exit criteria for Phase 0:**
 - Google Ads Tool Change Form submitted (track ticket); `lib/specs/platform_api_approvals_spec.md` updated.
-- Meta CAPI token + Pixel ID + (ideally) appsecret_proof in 1Password.
+- Meta CAPI token + Pixel ID in 1Password.
 - BSA Google Ads conversion actions + EC for Leads enabled; resource names captured.
 - Privacy policy compliance confirmed.
 - Both Meta and Google smoke tests landed events in their respective preview tools.
@@ -343,7 +377,7 @@ The dispatcher payload is only as good as the inputs. mbuzz captures `fbclid` an
   - **`attribution_model_id`** (FK to `attribution_models`, NOT NULL): which model credits decide whether to fire and how to value the dispatch
   - **`revenue_mode`** (string, default `full`; one of `full` | `scaled`): full-conversion revenue to every platform credited, or `revenue × credit_share`
   - **`minimum_credit_threshold`** (decimal, default `0.0`): suppress dispatch when platform credit below this fraction (0.0 = any positive credit fires)
-  - `meta_pixel_id` (string, nullable), `meta_access_token` (text, encrypted via `encrypts :meta_access_token`), `meta_appsecret_proof_secret` (text, encrypted, nullable)
+  - `meta_pixel_id` (string, nullable), `meta_access_token` (text, encrypted via `encrypts :meta_access_token`). No `appsecret_proof` secret column in v1.
   - `google_customer_id` (string, nullable), `google_login_customer_id` (string, nullable; manager link)
   - `google_conversion_action_resource_name` (string, nullable; can also live in event_type_mapping if multiple events map to different actions)
   - `ad_platform_connection_id` (FK to `ad_platform_connections`, nullable; used for Google's OAuth refresh)
@@ -368,7 +402,7 @@ Independent of Google. Can ship after Phases 0B + 1 + 2 + 3, no Phase 5 dependen
 
 - [ ] **4.1** `AdDestinations::Meta::PayloadBuilder` — pure function, takes `Conversion` + `ConversionDestination` + `MatchKeyResolver` output, returns CAPI event hash. Tested against fixture conversions, no HTTP. Builder follows Meta's CAPI payload spec (`event_name`, `event_time`, `event_id`, `event_source_url`, `action_source: "website"`, `user_data: {...}`, optional `custom_data: { value, currency }`). **`user_data` excludes `client_ip_address` and `client_user_agent` by design** (see "Why no IP / UA" in the architecture section).
 - [ ] **4.2** Hashing: reuse `Identities::Normaliser` from Phase 2. Re-hash safety: if input is already 64 lowercase hex chars, treat as already hashed. Country lowercased ISO-2 then SHA-256. Postal hashed for Meta. **fbp / fbc never hashed.** `external_id` is `SHA-256(Identity#external_id)`.
-- [ ] **4.3** `AdDestinations::Meta::ApiClient` — POST to `https://graph.facebook.com/v22.0/{pixel_id}/events`. Computes `appsecret_proof` HMAC-SHA-256 of `access_token` keyed by `app_secret` when configured. Calls `AdPlatforms::ApiUsageTracker.increment!(:meta_capi)` per request. Uses Rails `Net::HTTP` (no new gem dependency).
+- [ ] **4.3** `AdDestinations::Meta::ApiClient` — POST to `https://graph.facebook.com/v22.0/{pixel_id}/events` with bearer-style `access_token` query param. **No `appsecret_proof` in v1** (would require the customer's BM admin to share the auto-created CAPI app's secret; deferred to v2 hardening pass per Phase 0B.3). Calls `AdPlatforms::ApiUsageTracker.increment!(:meta_capi)` per request. Uses Rails `Net::HTTP` (no new gem dependency).
 - [ ] **4.4** `AdDestinations::Meta::Dispatcher` — orchestrator: build payload → POST → write dispatch row. Maps platform response codes to dispatch statuses per the All States table.
 - [ ] **4.5** Register in `AdDestinations::Registry`.
 - [ ] **4.6** VCR cassettes: success (`Lead` event), 400 (bad payload), 401 (token expired), 429 (rate limited), 500 (transient).
