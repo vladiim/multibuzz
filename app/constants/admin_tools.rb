@@ -37,6 +37,12 @@ module AdminTools
       description: "Toggle features per account"
     ),
     Tool.new(
+      category: Categories::PLATFORM_OPERATIONS,
+      name: "Conversion Dispatches",
+      path: "/admin/conversion_dispatches",
+      description: "Outbound conversion-feedback sends to Meta CAPI and Google EC"
+    ),
+    Tool.new(
       category: Categories::DIAGNOSTICS,
       name: "Customer Metrics",
       path: "/admin/customer_metrics",
