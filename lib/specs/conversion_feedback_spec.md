@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-10
 **Priority:** P1
-**Status:** Draft. Pending approval submissions before implementation can start.
+**Status:** Phase 4 (Meta CAPI) wired end-to-end on a branch; awaiting BSA Pixel token + Tool Change Form approval before going live. Phase 5 (Google EC) blocked on Tool Change Form. Phase 7 (admin) and 8 (BSA wire-up) not started.
 **Branch:** `feat/conversion-feedback`
 
 ---
@@ -282,8 +282,8 @@ No code. Confirms the path is clear before cutting a line.
 
 #### 0A — Google Ads API Tool Change Form (BLOCKING for Phase 5)
 
-- [ ] **0A.1** In Google Ads UI: go to **Tools → Setup → API Center**. Confirm current developer token + access tier (Basic, approved 11 Mar 2026).
-- [ ] **0A.2** Submit the **Google Ads API Tool Change Form** (linked from the API Center "Update access" CTA) to extend permissible use of the existing developer token.
+- [x] **0A.1** In Google Ads UI: go to **Tools → Setup → API Center**. Confirm current developer token + access tier (Basic, approved 11 Mar 2026).
+- [x] **0A.2** Submit the **Google Ads API Tool Change Form** (linked from the API Center "Update access" CTA) to extend permissible use of the existing developer token.
   - Tool name: `mbuzz`
   - Change requested: "Add server-side conversion upload functionality. mbuzz will use `ConversionUploadService.UploadClickConversions` to upload click conversions and Enhanced Conversions for Leads (hashed user-provided data) on behalf of advertisers. mbuzz will NOT use IP / session attributes (per the February 2026 conversion-data policy update for new developers)."
   - Use case: "Reporting + Server-side Conversion Upload" (multi-select if available)
@@ -338,9 +338,9 @@ No code. Confirms the path is clear before cutting a line.
 
 ### Phase 1 — Feature flag
 
-- [ ] **1.1** Add `CONVERSION_FEEDBACK = "conversion_feedback"` to `app/constants/feature_flags.rb`; append to `FeatureFlags::ALL`.
+- [x] **1.1** Add `CONVERSION_FEEDBACK = "conversion_feedback"` to `app/constants/feature_flags.rb`; append to `FeatureFlags::ALL`.
 - [ ] **1.2** Smoke-test enable for BSA's mbuzz account: `bin/rails feature_flags:enable ACCT=acct_xxx FLAG=conversion_feedback`.
-- [ ] **1.3** Tests: `feature_flags_test.rb` already covers the toggle pattern; add an assertion that the new flag is recognised.
+- [x] **1.3** Tests: `feature_flags_test.rb` already covers the toggle pattern; add an assertion that the new flag is recognised.
 
 ### Phase 2 — Match-key capture (NEW; gates dispatcher quality)
 
@@ -356,23 +356,23 @@ The dispatcher payload is only as good as the inputs. mbuzz captures `fbclid` an
 
 #### 2B — Server: persist match keys
 
-- [ ] **2B.1** Migration: add `country` (varchar 2), `postal_code` (varchar 16), `fbp` (varchar 64), `fbc` (varchar 256), `gclid` (varchar 256, denormalised from `click_ids` JSONB for index efficiency) to `sessions`. Indexes on `(account_id, gclid)` and `(account_id, fbp)`.
-- [ ] **2B.2** Migration: add `email_sha256` (varchar 64), `phone_e164_sha256` (varchar 64), `first_name_sha256` (varchar 64), `last_name_sha256` (varchar 64) to `identities`. Index on `email_sha256` (account-scoped lookup for ad-platform match-rate diagnostics).
-- [ ] **2B.3** Service: `Identities::Normaliser` (pure module, no AR). Methods: `normalise_email`, `normalise_phone_e164`, `normalise_name`, `sha256`. Tests on canonical fixtures from Meta and Google docs.
-- [ ] **2B.4** Service: `Identities::IdentificationService` accepts canonical raw fields (`email`, `phone`, `first_name`, `last_name`) in `traits`, normalises and hashes server-side, writes to the new columns. Existing arbitrary `traits` JSONB stays untouched for backwards compatibility (customers may already write to `traits.email`).
-- [ ] **2B.5** Service: `Sessions::TrackingService` accepts `fbp`, `fbc`, `country`, `postal_code` from session create payloads. Persist on the session row.
+- [x] **2B.1** Migration: add `country` (varchar 2), `postal_code` (varchar 16), `fbp` (varchar 64), `fbc` (varchar 256), `gclid` (varchar 256, denormalised from `click_ids` JSONB for index efficiency) to `sessions`. Indexes on `(account_id, gclid)` and `(account_id, fbp)`.
+- [x] **2B.2** Migration: add `email_sha256` (varchar 64), `phone_e164_sha256` (varchar 64), `first_name_sha256` (varchar 64), `last_name_sha256` (varchar 64) to `identities`. Index on `email_sha256` (account-scoped lookup for ad-platform match-rate diagnostics).
+- [x] **2B.3** Service: `Identities::Normaliser` (pure module, no AR). Methods: `normalise_email`, `normalise_phone_e164`, `normalise_name`, `sha256`. Tests on canonical fixtures from Meta and Google docs.
+- [x] **2B.4** Service: `Identities::IdentificationService` accepts canonical raw fields (`email`, `phone`, `first_name`, `last_name`) in `traits`, normalises and hashes server-side, writes to the new columns. Existing arbitrary `traits` JSONB stays untouched for backwards compatibility (customers may already write to `traits.email`).
+- [x] **2B.5** Service: `Sessions::TrackingService` accepts `fbp`, `fbc`, `country`, `postal_code` from session create payloads. Persist on the session row.
 - [ ] **2B.6** Backfill task: `bin/rails conversion_feedback:backfill_hashed_pii ACCT=...` reads existing identities' `traits["email"]` / `traits["phone"]` (best-effort by common key names: `email`, `Email`, `e_mail`, `phone`, `mobile`) and populates the new hashed columns. Surfaces a report of identities with no recoverable email or phone.
-- [ ] **2B.7** Tests: column round-trip, normaliser correctness against Meta + Google fixture vectors, backfill idempotency.
+- [x] **2B.7** Tests: column round-trip, normaliser correctness against Meta + Google fixture vectors, backfill idempotency.
 
 #### 2C — Conversion match-key resolver
 
-- [ ] **2C.1** `Conversions::MatchKeyResolver.call(conversion)` returns a struct with `external_id` (= `SHA-256(Identity#external_id)`), `em`, `ph`, `fn`, `ln`, `country`, `zp`, `fbp`, `fbc`, `gclid`, `gbraid`, `wbraid`. Pulls from the conversion's `Identity` (PII, external_id) and `Session` (cookies, country, postal). Returns nil values where data is absent. **No `client_ip_address` or `client_user_agent` fields** — mbuzz declines to send these.
-- [ ] **2C.2** Predicate: `MatchKeyResolver#meta_sufficient?` (at least one of `external_id`, `em`, `ph`, `fbc`, `fbp`). `#google_sufficient?` (at least one of `email_sha256`, `phone_e164_sha256`, `gclid`, `gbraid`, `wbraid`).
-- [ ] **2C.3** Tests: resolver pulls correct fields, sufficiency predicates per platform.
+- [x] **2C.1** `Conversions::MatchKeyResolver.call(conversion)` returns a struct with `external_id` (= `SHA-256(Identity#external_id)`), `em`, `ph`, `fn`, `ln`, `country`, `zp`, `fbp`, `fbc`, `gclid`, `gbraid`, `wbraid`. Pulls from the conversion's `Identity` (PII, external_id) and `Session` (cookies, country, postal). Returns nil values where data is absent. **No `client_ip_address` or `client_user_agent` fields** — mbuzz declines to send these.
+- [x] **2C.2** Predicate: `MatchKeyResolver#meta_sufficient?` (at least one of `external_id`, `em`, `ph`, `fbc`, `fbp`). `#google_sufficient?` (at least one of `email_sha256`, `phone_e164_sha256`, `gclid`, `gbraid`, `wbraid`).
+- [x] **2C.3** Tests: resolver pulls correct fields, sufficiency predicates per platform.
 
 ### Phase 3 — Models + migrations for dispatch tracking
 
-- [ ] **3.1** Migration: `conversion_destinations`
+- [x] **3.1** Migration: `conversion_destinations`
   - `id`, `account_id` (FK), `platform` (string: `meta_capi` | `google_ec`), `name` (string), `enabled` (bool, default false)
   - **`attribution_model_id`** (FK to `attribution_models`, NOT NULL): which model credits decide whether to fire and how to value the dispatch
   - **`revenue_mode`** (string, default `full`; one of `full` | `scaled`): full-conversion revenue to every platform credited, or `revenue × credit_share`
@@ -384,7 +384,7 @@ The dispatcher payload is only as good as the inputs. mbuzz captures `fbclid` an
   - `event_type_mapping` (jsonb, default `{}`): `{ "Lead" => { "meta_event" => "Lead", "google_resource_name" => "customers/123/conversionActions/456" }, ... }`
   - `created_at`, `updated_at`
   - Indexes: `(account_id, platform)`, `(account_id, enabled)`, `(attribution_model_id)`
-- [ ] **3.2** Migration: `conversion_dispatches`
+- [x] **3.2** Migration: `conversion_dispatches`
   - `id`, `conversion_id` (FK), `conversion_destination_id` (FK), `account_id` (FK, denormalised for fast admin queries)
   - `status` (enum-as-string): `pending`, `delivered`, `skipped_no_identity`, `skipped_no_credit`, `skipped_account_suspended`, `token_failed`, `failed_transient`, `failed_permanent`
   - **`attribution_model_id`** (FK, denormalised snapshot of which model decided this dispatch — destinations may change models over time, dispatch row records what was used)
@@ -392,19 +392,19 @@ The dispatcher payload is only as good as the inputs. mbuzz captures `fbclid` an
   - `payload` (jsonb), `response` (jsonb, nullable), `error` (text, nullable), `retries_count` (int, default 0)
   - `fired_at` (datetime, nullable), `created_at`, `updated_at`
   - Indexes: unique `(conversion_id, conversion_destination_id)`, `(account_id, status, created_at)` for admin queries
-- [ ] **3.3** Models with associations + scopes (`account.conversion_destinations`, `conversion.conversion_dispatches`, `ConversionDispatch#delivered?`, `ConversionDestination#meta?` / `#google?`).
-- [ ] **3.4** Tests: model validations, scopes, encryption round-trip on `meta_access_token` (verify `Rails 7+ encrypts` works; do NOT reach for `attr_encrypted` gem).
+- [x] **3.3** Models with associations + scopes (`account.conversion_destinations`, `conversion.conversion_dispatches`, `ConversionDispatch#delivered?`, `ConversionDestination#meta?` / `#google?`).
+- [x] **3.4** Tests: model validations, scopes, encryption round-trip on `meta_access_token` (verify `Rails 7+ encrypts` works; do NOT reach for `attr_encrypted` gem).
 - [ ] **3.5** Update `lib/docs/BUSINESS_RULES.md` with new entities + dispatch status semantics (new section 13).
 
 ### Phase 4 — Meta CAPI dispatcher
 
 Independent of Google. Can ship after Phases 0B + 1 + 2 + 3, no Phase 5 dependency.
 
-- [ ] **4.1** `AdDestinations::Meta::PayloadBuilder` — pure function, takes `Conversion` + `ConversionDestination` + `MatchKeyResolver` output, returns CAPI event hash. Tested against fixture conversions, no HTTP. Builder follows Meta's CAPI payload spec (`event_name`, `event_time`, `event_id`, `event_source_url`, `action_source: "website"`, `user_data: {...}`, optional `custom_data: { value, currency }`). **`user_data` excludes `client_ip_address` and `client_user_agent` by design** (see "Why no IP / UA" in the architecture section).
-- [ ] **4.2** Hashing: reuse `Identities::Normaliser` from Phase 2. Re-hash safety: if input is already 64 lowercase hex chars, treat as already hashed. Country lowercased ISO-2 then SHA-256. Postal hashed for Meta. **fbp / fbc never hashed.** `external_id` is `SHA-256(Identity#external_id)`.
-- [ ] **4.3** `AdDestinations::Meta::ApiClient` — POST to `https://graph.facebook.com/v22.0/{pixel_id}/events` with bearer-style `access_token` query param. **No `appsecret_proof` in v1** (would require the customer's BM admin to share the auto-created CAPI app's secret; deferred to v2 hardening pass per Phase 0B.3). Calls `AdPlatforms::ApiUsageTracker.increment!(:meta_capi)` per request. Uses Rails `Net::HTTP` (no new gem dependency).
-- [ ] **4.4** `AdDestinations::Meta::Dispatcher` — orchestrator: build payload → POST → write dispatch row. Maps platform response codes to dispatch statuses per the All States table.
-- [ ] **4.5** Register in `AdDestinations::Registry`.
+- [x] **4.1** `AdDestinations::Meta::PayloadBuilder` — pure function, takes `Conversion` + `ConversionDestination` + `MatchKeyResolver` output, returns CAPI event hash. Tested against fixture conversions, no HTTP. Builder follows Meta's CAPI payload spec (`event_name`, `event_time`, `event_id`, `event_source_url`, `action_source: "website"`, `user_data: {...}`, optional `custom_data: { value, currency }`). **`user_data` excludes `client_ip_address` and `client_user_agent` by design** (see "Why no IP / UA" in the architecture section).
+- [x] **4.2** Hashing: reuse `Identities::Normaliser` from Phase 2. Re-hash safety: if input is already 64 lowercase hex chars, treat as already hashed. Country lowercased ISO-2 then SHA-256. Postal hashed for Meta. **fbp / fbc never hashed.** `external_id` is `SHA-256(Identity#external_id)`.
+- [x] **4.3** `AdDestinations::Meta::ApiClient` — POST to `https://graph.facebook.com/v22.0/{pixel_id}/events` with bearer-style `access_token` query param. **No `appsecret_proof` in v1** (would require the customer's BM admin to share the auto-created CAPI app's secret; deferred to v2 hardening pass per Phase 0B.3). Calls `AdPlatforms::ApiUsageTracker.increment!(:meta_capi)` per request. Uses Rails `Net::HTTP` (no new gem dependency).
+- [x] **4.4** `AdDestinations::Meta::Dispatcher` — orchestrator: build payload → POST → write dispatch row. Maps platform response codes to dispatch statuses per the All States table.
+- [x] **4.5** Register in `AdDestinations::Registry`.
 - [ ] **4.6** VCR cassettes: success (`Lead` event), 400 (bad payload), 401 (token expired), 429 (rate limited), 500 (transient).
 - [ ] **4.7** Rake task `conversion_feedback:meta:smoke ACCT=... DEST=... CONV=...` builds + sends a single dispatch end-to-end against Meta's Test Events endpoint. Includes a `test_event_code` field so events land in Test Events tab, not production.
 - [ ] **4.8** Manual QA: fire one BSA conversion against Test Events. Verify EMQ ≥ 6.5 (target without IP/UA; 6.0 minimum acceptable). If EMQ is low, the lever is broader match-key coverage (more identifies with email/phone/external_id), not adding IP/UA.
@@ -432,17 +432,17 @@ Independent of Google. Can ship after Phases 0B + 1 + 2 + 3, no Phase 5 dependen
 
 ### Phase 6 — Trigger from conversion lifecycle + dispatch service
 
-- [ ] **6.1** `Conversions::DispatchService.call(conversion)` finds enabled `ConversionDestinations` for the account + maps `conversion_type` via `event_type_mapping`, then enqueues `OutboundConversionJob` per (conversion × destination) where no `delivered` dispatch already exists. Does NOT compute attribution credit shares — that happens inside the job so retries can re-read fresh credits if the model recalculates between attempts.
-- [ ] **6.2** `OutboundConversionJob` — Solid Queue worker. Steps:
+- [x] **6.1** `Conversions::DispatchService.call(conversion)` finds enabled `ConversionDestinations` for the account + maps `conversion_type` via `event_type_mapping`, then enqueues `OutboundConversionJob` per (conversion × destination) where no `delivered` dispatch already exists. Does NOT compute attribution credit shares — that happens inside the job so retries can re-read fresh credits if the model recalculates between attempts.
+- [x] **6.2** `OutboundConversionJob` — Solid Queue worker. Steps:
   1. Load conversion + destination + destination's `attribution_model`
   2. **Compute platform credit share via `Conversions::PlatformCreditCalculator.call(conversion, destination)`**: returns the fraction (0.0 to 1.0) of credit assigned to the destination's platform under the model. Touchpoint matching uses the destination registry's `source_match` predicate (Meta = fbclid present OR paid_social with meta-family source; Google = gclid/gbraid/wbraid present OR paid_search with google source).
   3. **If credit_share < destination.minimum_credit_threshold → mark `skipped_no_credit`, record `platform_credit_share`, return.**
   4. Build payload via `AdDestinations::Registry.dispatcher_for(destination)`. Pass `revenue` adjusted per `destination.revenue_mode`: `full` sends `Conversion#revenue` unchanged; `scaled` sends `revenue × credit_share`.
   5. POST. Increment `ApiUsageTracker`. Update dispatch row.
   6. Idempotent on retry. Status transitions: `pending` → `delivered` | `failed_*` | `skipped_*`.
-- [ ] **6.3** Hook `Conversions::DispatchService.call` into the conversion creation lifecycle. **Open question 2 below decides where**: an `after_commit` on `Conversion` keeps it implicit; a direct call from `Conversions::TrackingService#run` keeps it explicit (preferred per CLAUDE.md "no callbacks for cross-aggregate side effects" pattern in `feedback_global_processor_pattern.md`). Verify before wiring.
-- [ ] **6.4** Solid Queue retry config: 3 retries with exponential backoff, max 1h delay. Confirm via `Solid Queue.config` or job-level `retry_on` declaration.
-- [ ] **6.5** Tests: dispatch service finds correct destinations, enqueues jobs, skips disabled, skips already-delivered, skips when account suspended. Job retries on transient failure, fails permanent on 4xx, records full request/response on failure.
+- [x] **6.3** Hook `Conversions::DispatchService.call` into the conversion creation lifecycle. **Open question 2 below decides where**: an `after_commit` on `Conversion` keeps it implicit; a direct call from `Conversions::TrackingService#run` keeps it explicit (preferred per CLAUDE.md "no callbacks for cross-aggregate side effects" pattern in `feedback_global_processor_pattern.md`). Verify before wiring.
+- [x] **6.4** Solid Queue retry config: 3 retries with exponential backoff, max 1h delay. Confirm via `Solid Queue.config` or job-level `retry_on` declaration.
+- [x] **6.5** Tests: dispatch service finds correct destinations, enqueues jobs, skips disabled, skips already-delivered, skips when account suspended. Job retries on transient failure, fails permanent on 4xx, records full request/response on failure.
 
 ### Phase 7 — Admin surface + monitoring
 
