@@ -64,6 +64,25 @@ class Mcp::ServerControllerTest < ActionDispatch::IntegrationTest
     assert_kind_of Array, result.dig("structuredContent", "data")
   end
 
+  test "resources/list advertises the account summary resource" do
+    post "/mcp", params: resources_list_request, headers: bearer(TEST_KEY), as: :json
+
+    assert_response :success
+    uris = response.parsed_body["result"]["resources"].map { |resource| resource["uri"] }
+
+    assert_includes uris, "mbuzz://account/summary"
+  end
+
+  test "resources/read returns the account summary snapshot" do
+    post "/mcp", params: summary_read_request, headers: bearer(TEST_KEY), as: :json
+
+    assert_response :success
+    contents = response.parsed_body.dig("result", "contents").first
+    snapshot = JSON.parse(contents["text"])
+
+    assert_equal accounts(:one).name, snapshot["account_name"]
+  end
+
   test "a notification yields an empty 202 response" do
     post "/mcp", params: initialized_notification, headers: bearer(TEST_KEY), as: :json
 
@@ -92,6 +111,14 @@ class Mcp::ServerControllerTest < ActionDispatch::IntegrationTest
 
   def spend_call_request
     { jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "mbuzz_get_spend", arguments: {} } }
+  end
+
+  def resources_list_request
+    { jsonrpc: "2.0", id: 4, method: "resources/list", params: {} }
+  end
+
+  def summary_read_request
+    { jsonrpc: "2.0", id: 5, method: "resources/read", params: { uri: "mbuzz://account/summary" } }
   end
 
   def initialized_notification
