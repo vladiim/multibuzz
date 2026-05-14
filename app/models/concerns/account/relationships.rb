@@ -13,6 +13,8 @@ module Account::Relationships
     # Most dependent tables first, then their parents
     has_many :rerun_jobs, dependent: :destroy
     has_many :conversion_property_keys, dependent: :destroy
+    has_many :conversion_dispatches, dependent: :destroy
+    has_many :conversion_destinations, dependent: :destroy
     has_many :attribution_credits, dependent: :destroy  # depends on conversions
     has_many :conversions, dependent: :destroy          # depends on visitors
     has_many :events, dependent: :destroy               # depends on visitors
