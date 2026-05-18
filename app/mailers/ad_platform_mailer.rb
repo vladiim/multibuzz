@@ -9,7 +9,7 @@ class AdPlatformMailer < ApplicationMailer
     @remaining = limit - operations_today
 
     mail(
-      to: FormSubmissionMailer::NOTIFICATION_EMAIL,
+      to: internal_notification_email,
       subject: "[mbuzz] #{platform_name} API usage at #{percentage}% (#{number_with_delimiter(operations_today)}/#{number_with_delimiter(limit)})"
     )
   end

@@ -3,8 +3,9 @@
 require "test_helper"
 
 class AdPlatformMailerTest < ActionMailer::TestCase
-  test "api_usage_warning delivers to notification email" do
-    assert_equal [ FormSubmissionMailer::NOTIFICATION_EMAIL ], google_email.to
+  test "api_usage_warning delivers to the configured notification email" do
+    assert_predicate notification_email, :present?, "notifications.internal_email must be set in credentials"
+    assert_equal [ notification_email ], google_email.to
   end
 
   test "api_usage_warning subject includes platform name, percentage and count" do
@@ -35,6 +36,10 @@ class AdPlatformMailerTest < ActionMailer::TestCase
   end
 
   private
+
+  def notification_email
+    @notification_email ||= Rails.application.credentials.dig(:notifications, :internal_email)
+  end
 
   def google_email
     @google_email ||= AdPlatformMailer.api_usage_warning(

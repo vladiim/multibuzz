@@ -12,7 +12,7 @@ Logged-in users have no way to ask for help without leaving the app. The public 
 
 - Public contact form exists at `/contact` (`ContactsController`, `ContactSubmission < FormSubmission`)
 - `FormSubmission` STI base handles notification emails via `FormSubmissionMailer`, status tracking (`pending/contacted/completed/spam`), and admin view at `/admin/submissions`
-- Mailer currently sends to `vlad@forebrite.com` — needs updating to `vlad@mbuzz.co`
+- `FormSubmissionMailer` sends submission notifications to the internal recipient configured in credentials (`notifications.internal_email`); no mailer change is needed for this feature
 - JSONB `data` column with `store_accessor` per subclass
 - Authenticated layout renders `layouts/_nav.html.erb` on every page
 - `modal_controller.js` exists for open/close/escape behavior
@@ -32,7 +32,7 @@ User clicks help icon
       - User-provided: message, category
       - Auto-captured: page_url, user prefix_id, account prefix_id,
         account name, user email, IP, user agent
-  → FormSubmissionMailer fires to vlad@mbuzz.co (existing after_create_commit)
+  → FormSubmissionMailer fires to the internal recipient (existing after_create_commit)
   → Modal shows success state, auto-closes after 3s
   → Submission appears in /admin/submissions with all context
 ```
@@ -47,7 +47,6 @@ User clicks help icon
 | `app/views/layouts/_nav.html.erb` | Render the widget partial | Add `render` call |
 | `app/controllers/help_submissions_controller.rb` | Handle create | New |
 | `config/routes.rb` | `POST /help` | Add route |
-| `app/mailers/form_submission_mailer.rb` | Update recipient to `vlad@mbuzz.co` | Update |
 | `app/helpers/admin/submissions_helper.rb` | Badge color for Help type | Update |
 | `app/views/admin/submissions/show.html.erb` | Render help-specific fields | Update |
 | `config/locales/en.yml` | Category labels | Update |
@@ -62,13 +61,13 @@ User clicks help icon
 | Capture context server-side | Yes — controller reads `current_user`, `current_account`, referrer | User doesn't have to type it. More reliable than client-side. |
 | Page URL capture | `request.referrer` in controller (form submits via Turbo) | Captures the page they were actually on, not the POST endpoint. |
 | Success UX | Inline success message in modal, auto-close | No page redirect. Keeps user in context. |
-| Notification email | `vlad@mbuzz.co` | All form submissions (including existing contact form) should use the mbuzz domain. |
+| Notification email | Configured in credentials (`notifications.internal_email`) | All form submissions route through `FormSubmissionMailer` to one internal recipient; no address in git. |
 
 ## All States
 
 | State | Condition | Expected Behavior |
 |-------|-----------|-------------------|
-| Happy path | Logged-in user submits valid form | Submission created, email sent to `vlad@mbuzz.co`, success message shown |
+| Happy path | Logged-in user submits valid form | Submission created, notification email sent to the internal recipient, success message shown |
 | Not logged in | `logged_in?` is false | Widget not rendered at all |
 | Empty message | User submits without message | Validation error shown inline |
 | Turbo submission | Form submits via Turbo Stream | Modal content replaced with success or errors — no page reload |
@@ -82,7 +81,7 @@ User clicks help icon
 - [ ] Clicking icon opens modal with category select and message textarea
 - [ ] Submitting with empty message shows validation error
 - [ ] Successful submission captures: message, category, page_url, user email, user prefix_id, account prefix_id, account name, IP, user agent
-- [ ] `FormSubmissionMailer` sends to `vlad@mbuzz.co` (update existing mailer — affects all form submissions)
+- [ ] Help submission triggers a notification email via the inherited `FormSubmission` `after_create_commit` (recipient from credentials; no mailer change needed)
 - [ ] Submission appears in `/admin/submissions` with help-specific detail rendering
 - [ ] Admin badge shows distinct color for Help type
 - [ ] Modal shows success state after submission (no page redirect)
@@ -144,9 +143,9 @@ class HelpSubmissionsController < ApplicationController
 end
 ```
 
-### Mailer Update
+### Mailer
 
-Update `FormSubmissionMailer` recipient from `vlad@forebrite.com` to `vlad@mbuzz.co`. This applies to all `FormSubmission` subclasses (contact, waitlist, SDK waitlist, feature waitlist, integration requests, and the new help submissions).
+`FormSubmissionMailer` already sends to the internal recipient configured in credentials (`notifications.internal_email`), and `HelpSubmission < FormSubmission` inherits the `after_create_commit` notification. No mailer change is needed for this feature.
 
 ### Widget Partial
 
