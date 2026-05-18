@@ -2,13 +2,14 @@
 
 module Conversions
   class ReattributionService < ApplicationService
-    def initialize(conversion)
+    def initialize(conversion, conversion_paths: nil)
       @conversion = conversion
+      @conversion_paths = conversion_paths
     end
 
     private
 
-    attr_reader :conversion
+    attr_reader :conversion, :conversion_paths
 
     def run
       return error_result([ "Conversion has no identity" ]) unless identity
@@ -37,14 +38,20 @@ module Conversions
     end
 
     def delete_existing_credits
-      conversion.attribution_credits.destroy_all
+      conversion.attribution_credits.delete_all
     end
 
     def calculate_new_credits
       @credits_by_model = active_models.each_with_object({}) do |model, hash|
-        credits = calculate_and_persist_credits(model)
-        hash[model.name] = credits
+        hash[model.name] = calculate_model_safely(model)
       end
+    end
+
+    def calculate_model_safely(model)
+      calculate_and_persist_credits(model)
+    rescue StandardError => e
+      Rails.logger.error("[Reattribution] #{model.name} failed for conversion #{conversion.id}: #{e.message}")
+      []
     end
 
     def credits_by_model
@@ -59,7 +66,8 @@ module Conversions
       Attribution::CrossDeviceCalculator.new(
         conversion: conversion,
         identity: identity,
-        attribution_model: model
+        attribution_model: model,
+        conversion_paths: conversion_paths
       ).call
     end
 
