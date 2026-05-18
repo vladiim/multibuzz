@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-18
 **Priority:** P1
-**Status:** Draft
+**Status:** In Progress — all five phases built, full suite green; pending dev QA and deploy
 **Branch:** `fix/reattribution-reliability`
 
 ---
@@ -187,16 +187,18 @@ The incident was a slow per-conversion cost with no bound. Three changes, all in
 
 ### Phase 4: Queue isolation
 
-- [ ] **4.1** `config/queue.yml`: a `:default` worker (excluding `reattribution`) and a dedicated `reattribution` worker with its own threads
-- [ ] **4.2** `config/deploy.yml`: confirm the jobs role boots both workers; document
-- [ ] **4.3** `limits_concurrency to: 1, key: account_id` on `ReattributionChunkJob`
+- [x] **4.1** `config/queue.yml`: the default worker handles `[default, low, solid_queue_recurring]` and never `reattribution`; a dedicated `reattribution` worker has its own 2 threads
+- [x] **4.2** `config/deploy.yml`: `bin/jobs` on the jobs role boots both workers from `queue.yml` (documented inline)
+- [x] **4.3** `limits_concurrency to: 1` on `ReattributionChunkJob`, keyed by batch (per-batch is per-account given Phase 3 coalescing), `duration` exceeds the chunk budget
 
 ### Phase 5: Watchdog (the catch-all safety net)
 
-A wall-clock budget and a `statement_timeout` bound the *known* slow paths. The watchdog catches *any* future hang, in Ruby or SQL, in reattribution or any other job. It is the layer that would have paged within minutes on 2026-05-18 instead of the hang running unnoticed for over an hour.
+A wall-clock budget and a `statement_timeout` bound the *known* slow paths. The watchdog catches *any* future hang, in Ruby or SQL, in reattribution or any other job.
 
-- [ ] **5.1** Extend `Infrastructure::QueueDepthAlert` (or add a check) to alert when a job has been `claimed` longer than a threshold
-- [ ] **5.2** Test the alert fires on a synthetic long-claimed execution
+`Infrastructure::QueueDepthAlert` already alerts when a job has been `claimed` past `DEFAULT_STUCK_DURATION` (`report_stuck_jobs!`), with tests. The 2026-05-18 gap was not a missing check: the watchdog job runs on the `:default` worker, which was itself jammed, so it never ran. Phase 4 isolates reattribution off `:default`, and the reattribution worker also polls the default-side queues at lower priority, so a jam on either worker pool cannot silence the watchdog.
+
+- [x] **5.1** Claimed-too-long alerting confirmed in `QueueDepthAlert#report_stuck_jobs!`; watchdog made un-starvable via the fallback worker in `config/queue.yml`
+- [x] **5.2** Existing test "reports stuck jobs when any claim is older than stuck_duration" covers the alert
 
 ---
 
@@ -227,14 +229,14 @@ A wall-clock budget and a `statement_timeout` bound the *known* slow paths. The 
 
 ## Definition of Done
 
-- [ ] All phases complete
-- [ ] Tests pass (unit and integration), no regressions
+- [x] All phases complete
+- [x] Tests pass (unit and integration), no regressions (3962 tests, 0 failures)
 - [ ] Manual QA on dev confirms queue isolation
-- [ ] `BatchReattributionJob` and `ReattributionJob` removed
+- [x] `BatchReattributionJob` and `ReattributionJob` removed
 - [ ] `lib/docs/architecture/` note on the reattribution pipeline added or updated
-- [ ] `lib/docs/BUSINESS_RULES.md` reviewed: reattribution timing is internal, so update only if user-visible behaviour changed (it should not)
-- [ ] Spec moved to `lib/specs/old/`
-- [ ] `lib/memory/project_batch_reattribution_worker_lockup.md` updated to resolved
+- [x] `lib/docs/BUSINESS_RULES.md` reviewed: reattribution timing is internal, no user-visible behaviour changed
+- [ ] Spec moved to `lib/specs/old/` (after dev QA sign-off)
+- [x] `lib/memory/project_batch_reattribution_worker_lockup.md` updated
 
 ---
 
