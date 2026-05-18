@@ -14,6 +14,8 @@ module Conversions
     end
 
     def call
+      return if batch.reload.completed?
+
       remaining = with_statement_timeout { process_within_budget }
       remaining.any? ? ReattributionChunkJob.perform_later(batch.id, remaining) : finalize
     end

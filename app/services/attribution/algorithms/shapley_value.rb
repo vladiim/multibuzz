@@ -61,6 +61,16 @@ module Attribution
       end
 
       def coalition_value(channels)
+        coalition_values[channels.sort] ||= compute_coalition_value(channels)
+      end
+
+      # The same channel coalitions recur thousands of times across the power
+      # sets, so memoise them. There are at most 2^channels distinct sets.
+      def coalition_values
+        @coalition_values ||= {}
+      end
+
+      def compute_coalition_value(channels)
         return 0.0 if conversion_paths.empty?
 
         paths_completable = conversion_paths.count { |path| path_completable_with?(path, channels) }

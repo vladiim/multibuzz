@@ -35,6 +35,16 @@ module Conversions
       assert_equal 0, batch.reload.processed
     end
 
+    test "does nothing once the batch is already completed" do
+      Conversions::ChunkReattribution.new(batch, [ conversion.id ]).call
+
+      assert_predicate batch.reload, :completed?
+
+      Conversions::ChunkReattribution.new(batch, [ conversion.id ]).call
+
+      assert_equal 1, batch.reload.processed
+    end
+
     private
 
     def batch

@@ -15,7 +15,7 @@ module Attribution
 
       SESSION_LOAD_BATCH_SIZE = 10_000
       CACHE_TTL = 10.minutes
-      MAX_PATHS = 5_000
+      MAX_PATHS = 500
 
       # Per-account cache so a reattribution or model-rerun burst computes the
       # full account's paths once, not once per conversion.

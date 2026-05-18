@@ -26,6 +26,15 @@ module Conversions
       assert_predicate batch.reload, :completed?
     end
 
+    test "a second coordinator run does not re-enqueue chunks" do
+      batch = create_batch((1..120).to_a)
+      Conversions::ReattributionCoordinator.new(batch).call
+
+      assert_no_enqueued_jobs do
+        Conversions::ReattributionCoordinator.new(batch.reload).call
+      end
+    end
+
     private
 
     def create_batch(ids)

@@ -11,15 +11,20 @@ module Conversions
     end
 
     def call
-      return batch.mark_completed! if batch.conversion_ids.empty?
+      return unless claim_batch
 
-      batch.mark_processing!
-      ActiveJob.perform_all_later(chunk_jobs)
+      batch.conversion_ids.empty? ? batch.mark_completed! : ActiveJob.perform_all_later(chunk_jobs)
     end
 
     private
 
     attr_reader :batch
+
+    # Atomically claim the batch so a duplicate coordinator cannot enqueue a
+    # second set of chunk jobs for the same batch.
+    def claim_batch
+      batch.with_lock { batch.pending? && batch.mark_processing! }
+    end
 
     def chunk_jobs
       batch.conversion_ids.each_slice(CHUNK_SIZE).map do |ids|
