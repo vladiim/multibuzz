@@ -465,108 +465,43 @@ ORDER BY attributed_revenue DESC;
     5. Template IDs: position-u-shaped, position-w-shaped, position-intro-heavy, position-closer-heavy, etc.
 %>
 
-mbuzz uses **AML (Attribution Model Language)** to configure attribution models. Position-based models have configurable weights for first, middle, and last positions—plus support for W-shaped with a lead creation position.
+mbuzz uses **AML (Attribution Modeling Language)** — a small Ruby DSL — to define how credit is distributed. U-shaped is a three-line program; the weights are explicit arguments rather than hidden config.
 
-### Basic U-Shaped Model (40-20-40)
+### Basic U-Shaped (40-20-40)
 
-```yaml
-# mbuzz AML - Position-Based Attribution
-model: position_based
-name: "U-Shaped"
-description: "40% first, 40% last, 20% middle"
-
-settings:
-  first_weight: 0.40
-  last_weight: 0.40
-  middle_weight: 0.20        # Split among all middle touches
-  lookback_window: 90d
-  include_direct: true
+```ruby
+within_window 90.days
+  apply 0.4 to touchpoints[0]
+  apply 0.4 to touchpoints[-1]
+  apply 0.2 to touchpoints[1..-2], distribute: :equal
+end
 ```
 
-### W-Shaped Model (30-30-30-10)
+40% to the first touchpoint, 40% to the last, 20% split equally across the middle. The `distribute: :equal` modifier handles the middle pool. Edge cases (1 or 2 touchpoints) collapse cleanly: a single touchpoint takes all the credit; two touchpoints split 50/50.
 
-For B2B with distinct lead creation moment:
+### Custom weight distributions
 
-```yaml
-model: position_based
-name: "W-Shaped"
-variant: w_shaped
+Change the literal values to skew the model toward introduction, conversion, or nurture:
 
-settings:
-  first_weight: 0.30
-  lead_creation_weight: 0.30
-  last_weight: 0.30
-  other_weight: 0.10         # Split among remaining touches
-  lookback_window: 90d
+```ruby
+# Closer-heavy (performance focus)
+within_window 90.days
+  apply 0.3 to touchpoints[0]
+  apply 0.5 to touchpoints[-1]
+  apply 0.2 to touchpoints[1..-2], distribute: :equal
+end
 
-# Define what counts as "lead creation"
-lead_creation_events:
-  - form_submission
-  - demo_request
-  - free_trial_start
-  - contact_sales
+# Nurture-heavy (content-driven sales)
+within_window 90.days
+  apply 0.25 to touchpoints[0]
+  apply 0.25 to touchpoints[-1]
+  apply 0.5 to touchpoints[1..-2], distribute: :equal
+end
 ```
 
-### Custom Weight Distributions
+### W-Shaped (with a lead-creation position)
 
-```yaml
-# Heavy on introduction (brand awareness focus)
-model: position_based
-name: "Intro-Heavy"
-settings:
-  first_weight: 0.50
-  last_weight: 0.30
-  middle_weight: 0.20
-
----
-
-# Heavy on conversion (performance focus)
-model: position_based
-name: "Closer-Heavy"
-settings:
-  first_weight: 0.30
-  last_weight: 0.50
-  middle_weight: 0.20
-
----
-
-# Heavy on nurture (content-driven sales)
-model: position_based
-name: "Nurture-Heavy"
-settings:
-  first_weight: 0.25
-  last_weight: 0.25
-  middle_weight: 0.50
-```
-
-### Compare Different Position Weights
-
-```yaml
-# Test which weight distribution matches reality
-models:
-  - model: position_based
-    name: "Standard (40-20-40)"
-    settings:
-      first_weight: 0.40
-      last_weight: 0.40
-
-  - model: position_based
-    name: "Intro Focus (50-20-30)"
-    settings:
-      first_weight: 0.50
-      last_weight: 0.30
-
-  - model: position_based
-    name: "Closer Focus (30-20-50)"
-    settings:
-      first_weight: 0.30
-      last_weight: 0.50
-
-comparison:
-  enabled: true
-  primary: "Standard (40-20-40)"
-  validate_with: incrementality    # Flag if test results differ
-```
+W-shaped extends the model with a third anchor point — typically the lead-creation event (demo request, free trial start, contact sales). Implementing it in AML uses the same conditional-logic pattern shown for custom models in the [AML reference](/docs/attribution-models): select the lead-creation touchpoints by their channel or event tag, then apply a fourth weight band.
 
 ## Tuning Position-Based for Your Business
 
@@ -584,163 +519,15 @@ Position-based is highly customizable. Here's how to tune the weights.
 | **Performance-driven** | 30% | 20% | 50% | Closer-heavy |
 | **Brand-building focus** | 50% | 20% | 30% | Intro-heavy |
 
-### By Business Stage
+In AML, the levers are the literals on each `apply` line and the `within_window` duration. Stretch the window to 180 days for enterprise cycles; tighten it to 30 days for product launches.
 
-```yaml
-# Early-stage B2B: Standard U-shaped, learn patterns
-model: position_based
-name: "Startup Position"
-settings:
-  first_weight: 0.40
-  last_weight: 0.40
-  lookback_window: 60d
+### Seasonal and campaign adjustments
 
----
+For a product launch view, increase `first_weight` to 0.50 (every introduction matters when the product is new) and shorten the window to 30 days. For an end-of-quarter closer view, push `last_weight` to 0.55 on a 45-day window. For a brand campaign view, run an intro-heavy variant (0.55 / 0.20 / 0.25) on a 60-day window. Run any of these in parallel with your standard U-shaped and compare the credit split.
 
-# Growth-stage: Refine based on what you've learned
-model: position_based
-name: "Growth Position"
-settings:
-  first_weight: 0.35           # Adjusted based on data
-  last_weight: 0.45            # Closers slightly more important
-  lookback_window: 90d
-  include_direct: false        # Exclude brand noise
+### Team-based views
 
----
-
-# Scale-stage: W-shaped with clear funnel stages
-model: position_based
-name: "Enterprise W-Shaped"
-variant: w_shaped
-settings:
-  first_weight: 0.30
-  lead_creation_weight: 0.30
-  last_weight: 0.30
-  lookback_window: 180d        # Long enterprise cycles
-
-lead_creation_events:
-  - demo_scheduled
-  - proposal_sent
-```
-
-### Seasonal and Campaign Adjustments
-
-During major campaigns, the journey pattern shifts:
-
-```yaml
-# Product Launch: Heavy on introduction
-model: position_based
-name: "Launch Position"
-settings:
-  first_weight: 0.50           # First touch really matters for new product
-  last_weight: 0.35
-  middle_weight: 0.15
-  lookback_window: 30d         # Short window for launch
-
-date_range:
-  start: "2024-03-01"
-  end: "2024-03-31"
-
-filters:
-  require_campaign:
-    - "product-launch-2024"
-```
-
-```yaml
-# End of Quarter Push: Heavy on closers
-model: position_based
-name: "EOQ Position"
-settings:
-  first_weight: 0.30
-  last_weight: 0.55            # Closing matters most in Q-end push
-  middle_weight: 0.15
-  lookback_window: 45d
-
-date_range:
-  start: "2024-03-15"
-  end: "2024-03-31"
-```
-
-```yaml
-# Brand Campaign: Heavy on introduction
-model: position_based
-name: "Brand Campaign Position"
-settings:
-  first_weight: 0.55           # Brand awareness = first touch value
-  last_weight: 0.25
-  middle_weight: 0.20
-  lookback_window: 60d
-
-filters:
-  require_campaign:
-    - "brand-awareness-q1"
-```
-
-### Team-Based Attribution Views
-
-Different teams need different perspectives:
-
-```yaml
-# Demand Gen View: Emphasize sourcing
-models:
-  - model: position_based
-    name: "Demand Gen View"
-    settings:
-      first_weight: 0.60       # Heavily credit sourcing
-      last_weight: 0.25
-    audience: demand_gen_team
-
-  - model: position_based
-    name: "Performance View"
-    settings:
-      first_weight: 0.25
-      last_weight: 0.60        # Heavily credit closing
-    audience: performance_team
-
-  - model: position_based
-    name: "Executive View"
-    settings:
-      first_weight: 0.40
-      last_weight: 0.40        # Balanced for leadership
-    audience: executives
-
-reporting:
-  show_all_views: true
-  highlight_differences: true
-```
-
-### Dynamic Weights Based on Journey Length
-
-Adjust weights based on how many touchpoints occurred:
-
-```yaml
-# Short journeys: More balanced (not much middle to credit)
-# Long journeys: Protect middle-funnel credit
-
-model: position_based
-name: "Dynamic Position"
-
-settings:
-  lookback_window: 90d
-
-dynamic_weights:
-  short_journey:               # 2-3 touchpoints
-    threshold: 3
-    first_weight: 0.50
-    last_weight: 0.50
-
-  medium_journey:              # 4-7 touchpoints
-    threshold: 7
-    first_weight: 0.40
-    last_weight: 0.40
-    middle_weight: 0.20
-
-  long_journey:                # 8+ touchpoints
-    threshold: 999
-    first_weight: 0.35
-    last_weight: 0.35
-    middle_weight: 0.30        # More credit to nurturing
-```
+Different teams need different perspectives. Run multiple AML programs side-by-side: a demand-gen view (`first_weight: 0.60`), a performance view (`last_weight: 0.60`), and a leadership view (balanced 40/20/40). The DSL is small enough that maintaining three variants is cheap, and showing all three side-by-side is exactly what makes the political conversation tractable.
 
 ### Parameter Tuning Cheatsheet
 

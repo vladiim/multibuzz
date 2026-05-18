@@ -33,7 +33,9 @@ Rails.application.routes.draw do
   # Webhooks (before API routes for clarity)
   namespace :webhooks do
     post "stripe", to: "stripe#create"
-    post "shopify", to: "shopify#create"
+    # Shopify webhook route disabled 2026-05-15 — channel killed.
+    # See mbuzz-org memory/long_term/key_decisions.md. Uncomment to reinstate.
+    # post "shopify", to: "shopify#create"
   end
 
   # API routes
@@ -45,6 +47,11 @@ Rails.application.routes.draw do
       post "identify", to: "identify#create"
       get "validate", to: "validate#show"
       get "health", to: "health#show"
+
+      # Data Downloads: paginated JSON exports
+      get "data/conversions", to: "data#conversions"
+      get "data/funnel", to: "data#funnel"
+      get "data/spend", to: "data#spend"
 
       # Test endpoints (test/dev environments only)
       if Rails.env.test? || Rails.env.development?
@@ -61,6 +68,9 @@ Rails.application.routes.draw do
       post "consent", to: "consent#create"
     end
   end
+
+  # MCP server — streamable HTTP, served at mcp.mbuzz.co/mcp
+  post "/mcp", to: "mcp/server#handle"
 
   # Public demo dashboard (full dashboard experience, no auth)
   get "demo", to: redirect("/demo/dashboard")
@@ -164,11 +174,15 @@ Rails.application.routes.draw do
 
   # Admin routes
   namespace :admin do
+    root to: "dashboard#index"
     get "billing", to: "billing#show", as: :billing
     resources :accounts, only: [ :show, :update ]
     resources :customer_metrics, only: [ :index ]
     resources :submissions, only: [ :index, :show ]
     resources :data_integrity, only: [ :index, :show ]
+    resources :conversion_dispatches, only: [ :index, :show ] do
+      post :retry, on: :member
+    end
     get "feature_flags", to: "feature_flags#index", as: :feature_flags
     post "feature_flags", to: "feature_flags#create"
     delete "feature_flags", to: "feature_flags#destroy"

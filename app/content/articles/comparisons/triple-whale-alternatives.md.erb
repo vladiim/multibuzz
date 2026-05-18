@@ -6,7 +6,7 @@ published_at: 2026-01-20
 section: comparisons
 section_order: 2
 status: published
-last_updated: 2026-05-01
+last_updated: 2026-05-12
 priority: P1
 category: "Tool Comparisons"
 tags:
@@ -37,13 +37,17 @@ aeo:
     - q: "Why look for Triple Whale alternatives?"
       a: "Common reasons: you're not on Shopify (Triple Whale is Shopify-only), you need view-through attribution (Triple Whale only tracks clicks), you're scaling past $30M revenue (Triple Whale struggles at scale), or you want more attribution models and custom logic."
     - q: "What's the cheapest Triple Whale alternative?"
-      a: "mbuzz offers a free tier with 7 attribution models—more than Triple Whale's paid plans. Paid plans start at $29/mo. Rockerbox also has a free tier with paid from $200/mo. However, cheapest isn't always best—consider what measurement capabilities you actually need."
+      a: "mbuzz offers a free tier with 8 attribution models—more than Triple Whale's paid plans. Paid plans start at $29/mo. Rockerbox also has a free tier with paid from $200/mo. However, cheapest isn't always best—consider what measurement capabilities you actually need."
     - q: "Which Triple Whale alternative works with WooCommerce?"
       a: "mbuzz, Northbeam, Rockerbox, and Wicked Reports all support WooCommerce. Triple Whale is the only major attribution tool that's Shopify-exclusive."
     - q: "Which alternative is best for high-ticket products?"
       a: "Hyros specializes in high-ticket ($500+ AOV) with longer sales cycles. mbuzz and Northbeam also handle extended attribution windows well. Triple Whale is optimized for faster, lower-AOV purchases."
     - q: "Can I migrate from Triple Whale to another tool?"
       a: "Yes, but expect some data loss. Export what you can, run both tools in parallel for 4-6 weeks to establish baselines, then transition. Historical Triple Whale data won't import into other platforms."
+    - q: "How does e-commerce MTA relate to incrementality testing?"
+      a: "Different layers. Triple Whale, Cometly, mbuzz, and Northbeam all sit at the MTA layer — distributing credit across observed touchpoints. Incrementality testing uses geo-lift or holdout experiments to measure causal effect. The Dropbox IEEE Access paper (Chivukula et al., 2026) found click-based attribution overstates causal impact by 2 to 10x compared to geo-incrementality. Avinash Kaushik (Measured strategy advisor, formerly Google's Digital Marketing Evangelist) calls MTA the 'smart' rung of measurement and incrementality/MMM the 'super smart' rung. Most DTC brands move up the ladder as ad spend grows past $500K/month. Haus, Measured, Recast, and Mutinex serve the top rung at $10K-$132K/year."
+    - q: "How do MMM tools handle adstock and saturation in DTC?"
+      a: "Modern MMM tools — Meta's open-source Robyn, Recast, Mutinex — fit per-channel adstock decay curves and Hill saturation functions directly from spend-vs-revenue data. Triple Whale doesn't do MMM; it does MTA. The MMM layer answers different questions: how much of next month's revenue is base demand, how much is each channel's incremental contribution, and where does each channel hit diminishing returns. Mutinex's CMO Whitepaper 2026 documents the methodology in detail."
 schema:
   type: Article
   author: "holly-henderson"
@@ -76,7 +80,7 @@ You're here because Triple Whale isn't working—or you're worried it won't scal
 
 Triple Whale is fine for small Shopify stores that just want "a number." But it's a walled garden. The moment you add WooCommerce, go headless, or want to understand *why* a channel gets credit—you're stuck.
 
-The bigger issue: Triple Whale only tracks clicks. In a world of YouTube ads, podcast mentions, and display impressions, that's leaving 30-40% of your attribution story on the table.
+The bigger issue: Triple Whale only tracks clicks. In a world of YouTube ads, podcast mentions, and display impressions, that's leaving 30-40% of your attribution story on the table. Eric Seufert at [Mobile Dev Memo](https://mobiledevmemo.com/) has documented this dynamic for years in mobile UA: view-through and aggregated-signal attribution matters more, not less, as click-tracking deteriorates post-iOS 14.5. The Dropbox IEEE Access paper (Chivukula et al., 2026) goes further — click-based attribution overstates causal impact by 2 to 10x compared to geo-incrementality experiments. Click-only tools sit at the most distorted end of that spread.
 
 *If you're a small Shopify store wanting zero-code simplicity, Triple Whale might genuinely be your best bet. This guide is for everyone else.*
 
@@ -111,7 +115,7 @@ If any of these apply, here are your best options.
 
 **Why consider mbuzz:** Most attribution tools give you 3 models and call it a day. mbuzz gives you 8 built-in models plus custom rules to build your own logic. *Disclosure: mbuzz is our product.*
 
-Server-side tracking captures 95%+ of customer journeys (vs Triple Whale's client-side tracking losing ~30% to ad blockers). 7 attribution models side-by-side — compare First Touch, Last Touch, Markov Chain, Shapley Value, and more. Custom rules via DSL let you define your own attribution logic. LTV attribution tracks recurring payments back to acquisition source.
+Server-side tracking captures 95%+ of customer journeys (vs Triple Whale's client-side tracking losing ~30% to ad blockers). 8 attribution models side-by-side — compare First Touch, Last Touch, Markov Chain, Shapley Value, and more. Custom rules via DSL let you define your own attribution logic. LTV attribution tracks recurring payments back to acquisition source.
 
 **10-minute setup** with native SDKs for [Rails](https://rubygems.org/gems/mbuzz), [Django](https://pypi.org/project/mbuzz), [Laravel](https://packagist.org/packages/mbuzz/mbuzz-php), and [Node.js](https://www.npmjs.com/package/mbuzz). Pricing: Free tier, then $29-299/mo. Works with any platform, not just Shopify.
 
@@ -140,7 +144,7 @@ Server-side tracking captures 95%+ of customer journeys (vs Triple Whale's clien
       Pros
     </h4>
     <ul class="space-y-2 text-sm text-emerald-900">
-      <li>7 attribution models + custom rules for your own logic</li>
+      <li>8 attribution models + custom rules for your own logic</li>
       <li>Server-side tracking captures 95%+ of events</li>
       <li>Transparent, flat pricing—no surprise bills</li>
       <li>Works with any platform, not just Shopify</li>

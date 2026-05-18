@@ -11,6 +11,8 @@ servers:
   jobs:
     hosts:
       - 159.89.136.202
+    # bin/jobs boots every worker defined in config/queue.yml: the default
+    # worker and the dedicated reattribution worker.
     cmd: bin/jobs
 
 # Enable SSL auto certification via Let's Encrypt and allow for multiple apps on a single web server.
@@ -101,7 +103,10 @@ builder:
 # Use accessory services (secrets come from .kamal/secrets).
 accessories:
   postgres:
-    image: timescale/timescaledb:latest-pg18
+    # Pinned 2026-05-12 to match the version currently running on mbuzz-db
+    # (verified via SELECT extversion FROM pg_extension WHERE extname='timescaledb').
+    # See lib/specs/timescaledb_telemetry_cleanup_spec.md Phase 0.4.
+    image: timescale/timescaledb:2.23.1-pg18
     host: 64.225.47.17
     port: "10.120.0.3:5432:5432"
     env:
@@ -111,6 +116,12 @@ accessories:
       secret:
         - POSTGRES_PASSWORD
     files:
+      # initdb.d scripts run in alphabetical order on a fresh PGDATA.
+      # aaa-drop-timescaledb-from-template1.sql runs after the image's
+      # 001_add_timescaledb.sh and before setup.sql, so the Solid Stack
+      # DBs created by setup.sql do not inherit timescaledb from template1.
+      # See lib/specs/timescaledb_telemetry_cleanup_spec.md.
+      - config/postgres/initdb.d/aaa-drop-timescaledb-from-template1.sql:/docker-entrypoint-initdb.d/aaa-drop-timescaledb-from-template1.sql
       - db/production_setup.sql:/docker-entrypoint-initdb.d/setup.sql
     directories:
       - data:/var/lib/postgresql/data

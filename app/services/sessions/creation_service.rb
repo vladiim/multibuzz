@@ -61,9 +61,13 @@ module Sessions
 
     def validation_error
       return error_result([ "visitor_id is required" ]) unless visitor_id.present?
-      return error_result([ "visitor_id format invalid" ]) unless visitor_id.match?(Visitor::Validations::ID_FORMAT)
+      return error_result([ "visitor_id #{Visitor::Validations::ID_FORMAT_MESSAGE}" ]) unless valid_visitor_id_format?
       return error_result([ "session_id is required" ]) unless session_id.present?
       error_result([ "url is required" ]) unless url.present?
+    end
+
+    def valid_visitor_id_format?
+      visitor_id.to_s.match?(Visitor::Validations::ID_FORMAT)
     end
 
     def with_session_lock
@@ -268,8 +272,41 @@ module Sessions
         suspect: classification[:suspect],
         suspect_reason: classification[:suspect_reason],
         user_agent: user_agent,
-        landing_page_host: normalized_page_host
+        landing_page_host: normalized_page_host,
+        fbp: fbp,
+        fbc: fbc,
+        country: country,
+        postal_code: postal_code,
+        gclid: gclid
       }.compact
+    end
+
+    def fbp
+      params[:fbp]
+    end
+
+    def fbc
+      @fbc ||= params[:fbc] || derived_fbc_from_fbclid
+    end
+
+    def derived_fbc_from_fbclid
+      Identities::FbcCookie.new(fbclid: fbclid, captured_at: started_at).to_s
+    end
+
+    def fbclid
+      click_ids[ClickIdentifiers::FBCLID.to_sym] || click_ids[ClickIdentifiers::FBCLID]
+    end
+
+    def country
+      params[:country]&.to_s&.downcase&.presence
+    end
+
+    def postal_code
+      params[:postal_code]
+    end
+
+    def gclid
+      click_ids[ClickIdentifiers::GCLID.to_sym] || click_ids[ClickIdentifiers::GCLID]
     end
 
     def known_bot?

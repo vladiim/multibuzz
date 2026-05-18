@@ -34,7 +34,7 @@ module Attribution
     end
 
     def conversion_paths
-      @conversion_paths ||= precomputed_conversion_paths || Markov::ConversionPathsQuery.new(account).call
+      @conversion_paths ||= precomputed_conversion_paths || Markov::ConversionPathsQuery.cached_for(account)
     end
   end
 end

@@ -2,7 +2,7 @@
 
 <div class="min-h-[60vh] flex items-center justify-center">
   <div id="export-status" class="text-center max-w-sm">
-    <% if @export.completed? %>
+    <% if @export.csv.attached? && !@export.expired? %>
       <%= render "dashboard/exports/download_ready", export: @export %>
     <% elsif @export.failed? %>
       <%= render "dashboard/exports/failed" %>

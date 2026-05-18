@@ -58,7 +58,7 @@ class FeatureFlagsTaskTest < ActiveSupport::TestCase
 
   test "feature_flags:enable rejects unknown flag names" do
     assert_raises(SystemExit) do
-      capture_stdout do
+      capture_stderr do
         run_task("feature_flags:enable", acct: account_one.prefix_id, flag: "made_up")
       end
     end
@@ -66,7 +66,7 @@ class FeatureFlagsTaskTest < ActiveSupport::TestCase
 
   test "feature_flags:enable rejects unknown account prefix" do
     assert_raises(SystemExit) do
-      capture_stdout do
+      capture_stderr do
         run_task("feature_flags:enable", acct: "acct_doesnotexist", flag: FeatureFlags::META_ADS_INTEGRATION)
       end
     end
@@ -90,6 +90,15 @@ class FeatureFlagsTaskTest < ActiveSupport::TestCase
     $stdout.string
   ensure
     $stdout = original
+  end
+
+  def capture_stderr
+    original = $stderr
+    $stderr = StringIO.new
+    yield
+    $stderr.string
+  ensure
+    $stderr = original
   end
 
   def account_one = @account_one ||= accounts(:one)

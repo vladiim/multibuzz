@@ -1,0 +1,78 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Conversion Dispatches</h1>
+      <p class="text-sm text-gray-600 mt-1">Outbound conversion-feedback sends to Meta CAPI (and later Google EC).</p>
+    </div>
+    <%= link_to "Back to admin", admin_root_path, class: "text-sm text-indigo-600 hover:text-indigo-800" %>
+  </div>
+
+  <%= form_with url: admin_conversion_dispatches_path, method: :get, local: true, class: "bg-white border border-gray-200 rounded-lg p-4 mb-6" do |f| %>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      <div>
+        <%= f.label :status, class: "block text-xs font-medium text-gray-600 mb-1" %>
+        <%= f.select :status,
+          [ [ "All statuses", "" ] ] + ConversionDispatch::Statuses::ALL.map { |s| [ s.humanize, s ] },
+          { selected: @filter_params[:status] },
+          class: "w-full text-sm border-gray-300 rounded-md" %>
+      </div>
+      <div>
+        <%= f.label :account_id, "Account", class: "block text-xs font-medium text-gray-600 mb-1" %>
+        <%= f.text_field :account_id, value: @filter_params[:account_id], placeholder: "acct_…",
+          class: "w-full text-sm border-gray-300 rounded-md font-mono" %>
+      </div>
+      <div>
+        <%= f.label :conversion_destination_id, "Destination", class: "block text-xs font-medium text-gray-600 mb-1" %>
+        <%= f.number_field :conversion_destination_id, value: @filter_params[:conversion_destination_id],
+          class: "w-full text-sm border-gray-300 rounded-md" %>
+      </div>
+      <div>
+        <%= f.label :from, class: "block text-xs font-medium text-gray-600 mb-1" %>
+        <%= f.date_field :from, value: @filter_params[:from], class: "w-full text-sm border-gray-300 rounded-md" %>
+      </div>
+      <div>
+        <%= f.label :to, class: "block text-xs font-medium text-gray-600 mb-1" %>
+        <%= f.date_field :to, value: @filter_params[:to], class: "w-full text-sm border-gray-300 rounded-md" %>
+      </div>
+    </div>
+    <div class="flex gap-3 mt-3">
+      <%= f.submit "Filter", class: "px-4 py-2 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700" %>
+      <%= link_to "Reset", admin_conversion_dispatches_path, class: "px-4 py-2 text-sm text-gray-600 hover:text-gray-800" %>
+    </div>
+  <% end %>
+
+  <div class="bg-white shadow rounded-lg overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Destination</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fired</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Retries</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <% @dispatches.each do |dispatch| %>
+            <tr data-testid="dispatch-row" data-status="<%= dispatch.status %>" data-prefix-id="<%= dispatch.prefix_id %>" class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600"><%= dispatch.created_at.to_fs(:short) %></td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-700"><%= dispatch.account.prefix_id %></td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                <%= dispatch.conversion_destination.name %>
+                <span class="ml-1 inline-block px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded"><%= dispatch.conversion_destination.platform %></span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm"><%= render "status_badge", status: dispatch.status %></td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600"><%= dispatch.fired_at&.to_fs(:short) %></td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600"><%= dispatch.retries_count %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+      <% if @dispatches.empty? %>
+        <div class="text-center py-12 text-gray-500 text-sm">No dispatches match the current filter.</div>
+      <% end %>
+    </div>
+  </div>
+</div>

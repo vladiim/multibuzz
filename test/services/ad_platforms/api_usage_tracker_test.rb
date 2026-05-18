@@ -22,7 +22,7 @@ class AdPlatforms::ApiUsageTrackerTest < ActiveSupport::TestCase
   end
 
   test "tracked platforms returns keys of LIMITS" do
-    assert_equal [ :google_ads, :meta_ads ], tracker.tracked_platforms
+    assert_equal [ :google_ads, :meta_ads, :meta_capi, :google_ec ], tracker.tracked_platforms
   end
 
   test "display_name_for returns the human name for each platform" do

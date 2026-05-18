@@ -29,6 +29,10 @@ gem "jbuilder"
 # CORS support for API endpoints [https://github.com/cyu/rack-cors]
 gem "rack-cors"
 
+# Official Model Context Protocol SDK — powers the MCP server at mcp.mbuzz.co
+# [https://github.com/modelcontextprotocol/ruby-sdk]
+gem "mcp", "0.16.0"
+
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 gem "bcrypt", "~> 3.1.7"
 
@@ -83,6 +87,12 @@ gem "kamal", require: false
 # Add HTTP asset caching/compression and X-Sendfile acceleration to Puma [https://github.com/basecamp/thruster/]
 gem "thruster", require: false
 
+# Unsafe migration prevention [https://github.com/ankane/strong_migrations]
+# Top-level (not dev/test only) so production deploys run the check and
+# safety_assured { ... } resolves in prod migrations (required for hypertables
+# that cannot use algorithm: :concurrently).
+gem "strong_migrations"
+
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 # gem "image_processing", "~> 1.2"
 
@@ -114,9 +124,6 @@ group :development, :test do
   # N+1 query detection [https://github.com/charkost/prosopite]
   gem "prosopite"
   gem "pg_query"
-
-  # Unsafe migration prevention [https://github.com/ankane/strong_migrations]
-  gem "strong_migrations"
 end
 
 group :development do

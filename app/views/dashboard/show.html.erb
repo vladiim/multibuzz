@@ -9,12 +9,15 @@
     <main>
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Main Dashboard Container -->
-        <% active_tab = %w[conversions funnel spend events].include?(params[:tab]) ? params[:tab] : "conversions" %>
-        <div data-controller="toggle"
+        <% active_tab = DashboardTabs::ALL.include?(params[:tab]) ? params[:tab] : DashboardTabs::CONVERSIONS %>
+        <% exportable_tab = DashboardTabs::EXPORTABLE.include?(active_tab) ? active_tab : DashboardTabs::CONVERSIONS %>
+        <div data-controller="toggle export-button"
           data-toggle-default-value="<%= active_tab %>"
           data-toggle-url-param-value="tab"
           data-toggle-active-class="border-indigo-500 text-indigo-600"
-          data-toggle-inactive-class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+          data-toggle-inactive-class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+          data-export-button-initial-tab-value="<%= active_tab %>"
+          data-export-button-exportable-tabs-value="<%= DashboardTabs::EXPORTABLE.to_json %>">
 
           <!-- Tab Bar: Two rows on phones only, single row on sm+ (640px+) -->
           <div class="border-b border-gray-200">
@@ -23,29 +26,29 @@
               <nav class="-mb-px flex gap-4 sm:gap-6">
                 <button type="button"
                   data-toggle-target="trigger"
-                  data-action="toggle#select"
-                  data-value="conversions"
+                  data-action="toggle#select export-button#tabSelected"
+                  data-value="<%= DashboardTabs::CONVERSIONS %>"
                   class="py-3 px-1 text-sm font-medium border-b-2 whitespace-nowrap">
                   Conversions
                 </button>
                 <button type="button"
                   data-toggle-target="trigger"
-                  data-action="toggle#select"
-                  data-value="funnel"
+                  data-action="toggle#select export-button#tabSelected"
+                  data-value="<%= DashboardTabs::FUNNEL %>"
                   class="py-3 px-1 text-sm font-medium border-b-2 whitespace-nowrap">
                   Funnel
                 </button>
                 <button type="button"
                   data-toggle-target="trigger"
-                  data-action="toggle#select"
-                  data-value="spend"
+                  data-action="toggle#select export-button#tabSelected"
+                  data-value="<%= DashboardTabs::SPEND %>"
                   class="py-3 px-1 text-sm font-medium border-b-2 whitespace-nowrap">
                   Spend
                 </button>
                 <button type="button"
                   data-toggle-target="trigger"
-                  data-action="toggle#select"
-                  data-value="events"
+                  data-action="toggle#select export-button#tabSelected"
+                  data-value="<%= DashboardTabs::EVENTS %>"
                   class="py-3 px-1 text-sm font-medium border-b-2 whitespace-nowrap">
                   Events
                 </button>
@@ -71,38 +74,42 @@
                   </svg>
                   Filters
                 </button>
-                <!-- Export Dropdown -->
-                <div data-controller="toggle" data-toggle-close-on-click-outside-value="true" class="relative">
-                  <button type="button" data-action="click->toggle#toggle" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50">
+                <!-- Export Dropdown: CSV (tab-aware) + API + MCP -->
+                <div data-controller="toggle"
+                  data-toggle-close-on-click-outside-value="true"
+                  class="relative"
+                  data-export-button-target="container">
+                  <button type="button"
+                    data-action="click->toggle#toggle"
+                    data-export-button-target="trigger"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                     </svg>
                     Export
                   </button>
                   <div data-toggle-target="content" class="hidden absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10 p-2">
-                    <%= form_with url: dashboard_export_path, method: :post do %>
-                      <%= hidden_params_for(request.query_parameters) %>
-                      <button type="submit" class="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded">
-                        Conversions CSV
-                      </button>
-                    <% end %>
-                    <%= form_with url: dashboard_export_path, method: :post do %>
-                      <%= hidden_params_for(request.query_parameters) %>
-                      <input type="hidden" name="export_type" value="funnel">
-                      <button type="submit" class="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded">
-                        Funnel CSV
-                      </button>
-                    <% end %>
-                    <div class="border-t border-gray-100 mt-1 pt-1">
-                      <%= waitlist_button(
-                        feature_key: "api_extract",
-                        feature_name: "API Extract",
-                        context: "dashboard_export",
-                        label: "API Extract",
-                        class: "block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded"
-                      ) %>
-                      <p class="px-3 py-1 text-xs text-gray-400">Coming soon</p>
+                    <div data-export-button-target="csvRow">
+                      <%= form_with url: dashboard_export_path, method: :post do %>
+                        <%= hidden_params_for(request.query_parameters.except("export_type")) %>
+                        <input type="hidden"
+                          name="export_type"
+                          value="<%= exportable_tab %>"
+                          data-export-button-target="input">
+                        <button type="submit" class="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded">
+                          Download CSV
+                        </button>
+                      <% end %>
                     </div>
+                    <%= link_to account_api_keys_path,
+                        class: "block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded" do %>
+                      API
+                    <% end %>
+                    <%= link_to docs_path(page: "mcp"),
+                        data: { testid: "mcp-row" },
+                        class: "block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded" do %>
+                      MCP
+                    <% end %>
                   </div>
                 </div>
               </div>

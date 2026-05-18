@@ -22,16 +22,12 @@ module Dashboard
     end
 
     def download
-      export = current_account.exports.completed.find_by_prefix_id!(params[:id])
+      export = current_account.exports.find_by_prefix_id!(params[:id])
 
-      if export.expired?
-        head :gone
-      else
-        send_file export.file_path,
-          filename: export.filename,
-          type: "text/csv",
-          disposition: "attachment"
-      end
+      return head :gone if export.expired?
+      return redirect_to dashboard_export_status_path(id: export.prefix_id) unless export.csv.attached?
+
+      redirect_to export.download_url, allow_other_host: true
     rescue ActiveRecord::RecordNotFound
       head :not_found
     end
@@ -39,7 +35,7 @@ module Dashboard
     private
 
     def export_type
-      params[:export_type].presence_in(Export::EXPORT_TYPES) || "conversions"
+      params[:export_type].presence_in(Export::EXPORT_TYPES) || DashboardTabs::CONVERSIONS
     end
 
     def serialized_filter_params

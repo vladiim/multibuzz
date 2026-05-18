@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+# DISABLED 2026-05-15 — the Shopify channel was killed. The webhook route in
+# config/routes.rb is commented out, so this controller is unreachable. The
+# code is kept as a banked asset. See mbuzz-org memory/long_term/key_decisions.md.
 module Webhooks
   class ShopifyController < ApplicationController
     skip_forgery_protection

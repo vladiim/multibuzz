@@ -1,18 +1,18 @@
 # Platform API Approvals
 
-**Date:** 2026-03-05
+**Date:** 2026-03-05 (last updated 2026-05-15)
 **Priority:** P1
 **Status:** In Progress
 
 ---
 
-> **Context**: Google Ads Basic Access was approved 11 Mar 2026 — UAT for Ad Spend Intelligence is now unblocked (see `ad_spend_intelligence_spec.md`). To avoid similar bottlenecks for future platforms, we're preemptively starting approval processes that don't require working code.
+> **Context**: Google Ads Basic Access was approved 11 Mar 2026, OAuth consent screen published 15 May 2026 (read-only, awaiting incognito confirmation). UAT for Ad Spend Intelligence is unblocked (see `ad_spend_intelligence_spec.md`). To avoid similar bottlenecks for future platforms, we're preemptively starting approval processes that don't require working code.
 
 ---
 
 ## Summary
 
-Pre-register for ad platform API access across Meta Ads, LinkedIn Ads, and TikTok Ads ahead of building their adapters. Each platform has different approval gates, timelines, and requirements. LinkedIn and Meta Business Verification can start immediately (no code needed). TikTok deferred — fast approval but requires a working demo.
+Pre-register for ad platform API access across Meta Ads, LinkedIn Ads, and TikTok Ads ahead of building their adapters. Each platform has different approval gates, timelines, and requirements. LinkedIn and Meta Business Verification can start immediately (no code needed). TikTok deferred, fast approval but requires a working demo.
 
 ---
 
@@ -25,6 +25,42 @@ Pre-register for ad platform API access across Meta Ads, LinkedIn Ads, and TikTo
 | **Requires working demo?** | Yes (design doc PDF) | Yes (screencast) | Yes (demo video) | No |
 | **Can apply before building?** | Partially | Business Verification: yes | No | Yes |
 | **Blocking risk** | HIGH | HIGH — two sequential gates | Medium | Low |
+
+---
+
+## Step 0: Google Ads — Status Snapshot (2026-05-15)
+
+Google Ads has two independent approval tracks. Both must clear before general availability.
+
+### 0.1 Developer token (Google Ads API quota)
+
+- ✅ **Basic Access** granted 11 Mar 2026 (15,000 ops/day, sufficient for read-only spend reporting)
+- ❌ **Standard Access** denied 30 Apr 2026 (auto-rejection: account not hitting `RESOURCE_EXHAUSTED` yet). Reapply when daily volume regularly hits the 15k cap. Not blocking.
+- Application details, MCC ID, contact email: see Rails credentials and `lib/docs/google_ads_api_application.md`.
+
+### 0.2 OAuth consent screen verification (`adwords` sensitive scope)
+
+- ✅ **Verification submitted** 6 May 2026 (demo video, scope justification, Branding verified)
+- ✅ **Published "In production" / External** 15 May 2026 (3 weeks earlier than the 4-6 week ETA)
+- ⚠️ **Unverified-app warning not yet confirmed cleared.** Per Google's docs, sensitive-scope apps can publish without verification but show the "Google hasn't verified this app" interstitial and cap at 100 users. Need to walk a fresh OAuth flow in incognito with a non-test-user Google account to confirm the warning is gone.
+
+### 0.3 What Standard denial does NOT block
+
+Read-only spend reporting works fully on Basic. Conversion push (offline conversion imports / Enhanced Conversions) is also technically allowed on Basic up to the 15k ops/day cap. Conversion push is gated separately on:
+1. Amending the API Center application to declare conversion-management capability (Q11) and a write-intent business description (Q6)
+2. Privacy policy update at `mbuzz.co/privacy` covering server-to-server conversion uploads
+
+Tracked in `lib/specs/future/google_ads_conversion_push_spec.md`. Not in scope for the current GA rollout, which stays read-only.
+
+### 0.4 Next actions for Google
+
+| Action | When | Spec |
+|---|---|---|
+| Incognito confirmation that consent screen is verified (no warning) | Immediately | `lib/specs/google_ads_rollout_spec.md` Phase 0 |
+| Flip view-card gate from `Rails.env.production?` to feature flag | After 0.4 row 1 | `lib/specs/google_ads_rollout_spec.md` Phase 1 |
+| Bulk-enable `GOOGLE_ADS_INTEGRATION` for paid accounts | After 0.4 row 2 | `lib/specs/google_ads_rollout_spec.md` Phase 2 |
+| Pet-resort production E2E | After 0.4 row 3 | `ad_platforms_meta_rollout_spec.md` Phase 5 |
+| Reapply for Standard when volume warrants | When daily ops hit 15k cap | This spec |
 
 ---
 
@@ -179,7 +215,7 @@ Pre-register for ad platform API access across Meta Ads, LinkedIn Ads, and TikTo
 
 | Platform | Status | API Complexity | Notes |
 |---|---|---|---|
-| **Google Ads** | **Basic Access approved** (11 Mar 2026) | High | OAuth + developer token + consent screen verification |
+| **Google Ads** | Basic Access ✅ (11 Mar 2026), Standard denied (30 Apr 2026, auto, reapply when 15k cap hit), OAuth published 15 May 2026 (verification of unverified-warning clearance pending) | High | OAuth + developer token + consent screen verification |
 | **Meta Ads** | App created, Business Verification blocked on entity | High | Tech Provider path, Business + Access Verification + App Review |
 | **LinkedIn Ads** | Submitted 5 Mar 2026 (expect 2-4 weeks) | Medium | Development tier sufficient for read-only |
 | **TikTok Ads** | Deferred | Low | Sandbox → Production, single approval, fast |

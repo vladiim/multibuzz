@@ -26,7 +26,7 @@ This spec is the umbrella. Each phase below ships its own RED→GREEN tests and 
 | 2 — Meta Ads adapter | 2 | ✅ Done | `lib/specs/ad_platform_meta_integration_spec.md` |
 | 3 — Metadata mapping: finish + UAT | (was 4) | ✅ Build + Meta UAT complete | inline below |
 | 4 — Apply metadata UX to Google + lock pattern | NEW | ✅ Pattern locked · Google UAT blocked on verification | inline below |
-| 5 — Pet-resort production E2E test | (was 5) | 🚫 Blocked on Google OAuth verification (4-6 wk review) | `lib/specs/ad_platform_meta_test_findings.md` (created on completion) |
+| 5 — Pet-resort production E2E test | (was 5) | 🟢 Unblocked 2026-05-15: see `lib/specs/google_ads_rollout_spec.md`. Pending Phase 0 incognito confirmation, then runnable. | `lib/specs/ad_platform_meta_test_findings.md` (created on completion) |
 | 6 — Spend dashboard metadata filter + breakdown | NEW (post-merge) | 📋 Specced — separate branch | `lib/specs/spend_dashboard_metadata_breakdown_spec.md` |
 
 ---

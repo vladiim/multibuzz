@@ -83,7 +83,7 @@ module Attribution
     def precomputed_conversion_paths
       return nil unless attribution_model.markov_chain? || attribution_model.shapley_value?
 
-      @precomputed_conversion_paths ||= Markov::ConversionPathsQuery.new(account).call
+      @precomputed_conversion_paths ||= Markov::ConversionPathsQuery.cached_for(account)
     end
 
     def identity_for(conversion)

@@ -1040,11 +1040,60 @@ class Sessions::CreationServiceTest < ActiveSupport::TestCase
     malformed_result = Sessions::CreationService.new(account, malformed_params).call
 
     assert_not malformed_result[:success]
-    # Boundary check returns "visitor_id format invalid" — proves we short-circuited before
+    # Boundary check returns the visitor_id format error, proving we short-circuited before
     # find_or_create_by! could raise RecordInvalid (which would be reported via Rails.error.report).
-    assert_includes malformed_result[:errors].join, "visitor_id format invalid"
+    assert_includes malformed_result[:errors].join, Visitor::Validations::ID_FORMAT_MESSAGE
     assert_not_includes malformed_result[:errors].join, "Record invalid"
     assert_not account.visitors.exists?(visitor_id: "foo bar+baz")
+  end
+
+  # --- Conversion-feedback match keys ---
+
+  test "stores fbp from session params" do
+    fbp_value = "fb.1.1700000000000.1234567890"
+    Sessions::CreationService.new(account, params.merge(fbp: fbp_value)).call
+
+    assert_equal fbp_value, account.sessions.find_by(session_id: params[:session_id]).fbp
+  end
+
+  test "stores fbc from session params when SDK supplies it" do
+    fbc_value = "fb.1.1700000000000.AbCdEfFbclidValue"
+    Sessions::CreationService.new(account, params.merge(fbc: fbc_value)).call
+
+    assert_equal fbc_value, account.sessions.find_by(session_id: params[:session_id]).fbc
+  end
+
+  test "derives fbc from fbclid in URL when SDK does not supply it" do
+    Sessions::CreationService.new(account, params.merge(url: "https://example.com/page?fbclid=AbCdEfFbclidValue")).call
+    fbc = account.sessions.find_by(session_id: params[:session_id]).fbc
+
+    assert_match(/\Afb\.1\.\d+\.AbCdEfFbclidValue\z/, fbc)
+  end
+
+  test "leaves fbc nil when no fbclid and no SDK-supplied fbc" do
+    Sessions::CreationService.new(account, params).call
+
+    assert_nil account.sessions.find_by(session_id: params[:session_id]).fbc
+  end
+
+  test "stores country lowercased ISO-2" do
+    Sessions::CreationService.new(account, params.merge(country: "AU")).call
+
+    assert_equal "au", account.sessions.find_by(session_id: params[:session_id]).country
+  end
+
+  test "stores postal_code as supplied" do
+    Sessions::CreationService.new(account, params.merge(postal_code: "2000")).call
+
+    assert_equal "2000", account.sessions.find_by(session_id: params[:session_id]).postal_code
+  end
+
+  test "denormalises gclid from URL into top-level column" do
+    Sessions::CreationService.new(account, params.merge(url: "https://example.com/page?gclid=Cj0KCQiABCDEF")).call
+    session = account.sessions.find_by(session_id: params[:session_id])
+
+    assert_equal "Cj0KCQiABCDEF", session.gclid
+    assert_equal "Cj0KCQiABCDEF", session.click_ids["gclid"]
   end
 
   private

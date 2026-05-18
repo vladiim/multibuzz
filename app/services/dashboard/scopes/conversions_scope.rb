@@ -3,22 +3,26 @@
 module Dashboard
   module Scopes
     class ConversionsScope
-      def initialize(account:, date_range:, channels: Channels::ALL, test_mode: false)
+      # rubocop:disable Metrics/ParameterLists -- matches EventsScope kwarg shape
+      def initialize(account:, date_range:, channels: Channels::ALL, test_mode: false, funnel: nil)
         @account = account
         @date_range = date_range
         @channels = channels
         @test_mode = test_mode
+        @funnel = funnel
       end
+      # rubocop:enable Metrics/ParameterLists
 
       def call
         base_scope
           .then { |scope| apply_date_range(scope) }
           .then { |scope| apply_channels(scope) }
+          .then { |scope| apply_funnel(scope) }
       end
 
       private
 
-      attr_reader :account, :date_range, :channels, :test_mode
+      attr_reader :account, :date_range, :channels, :test_mode, :funnel
 
       def base_scope
         account
@@ -37,6 +41,12 @@ module Dashboard
         scope
           .joins("INNER JOIN sessions ON sessions.id = conversions.session_id")
           .where(sessions: { channel: channels })
+      end
+
+      def apply_funnel(scope)
+        return scope if funnel.blank? || funnel == "all"
+
+        scope.where(funnel: funnel)
       end
     end
   end

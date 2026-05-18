@@ -162,7 +162,7 @@ module Oauth
     def require_feature_flag
       return if current_account.feature_enabled?(FeatureFlags::GOOGLE_ADS_INTEGRATION)
 
-      redirect_to account_integrations_path, alert: "Google Ads is currently in private beta. Contact support to be added."
+      redirect_to account_integrations_path, alert: "Google Ads is not enabled for this account. Contact support for access."
     end
 
     def require_paid_plan

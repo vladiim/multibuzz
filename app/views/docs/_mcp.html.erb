@@ -1,0 +1,82 @@
+<%= render_markdown <<~MD
+  # MCP Server
+
+  Connect mbuzz to your AI assistant. The mbuzz MCP server exposes your conversion, funnel, and ad spend data as tools that Claude, ChatGPT, and Cursor can call directly inside a conversation. No code, no CSV exports.
+
+  It is the same data as the [Data Downloads API](#{docs_path(page: "data-downloads")}), wrapped in the [Model Context Protocol](https://modelcontextprotocol.io) so an AI agent can pull it on demand.
+
+  ---
+
+  ## What you get
+
+  Three read-only tools:
+
+  | Tool | Returns |
+  |---|---|
+  | `mbuzz_get_conversions` | Attributed conversions — channel, attribution model, credit, revenue, UTMs |
+  | `mbuzz_get_funnel` | The funnel timeline — visits, events, and conversions in time order |
+  | `mbuzz_get_spend` | Ad spend from connected platforms — cost, impressions, clicks |
+
+  Plus the `mbuzz://account/summary` resource: a one-read snapshot of your account (date range, connected ad platforms, default attribution model, available funnels) so the assistant can ground its answers before it calls a tool.
+
+  ---
+
+  ## Connect
+
+  The server runs at:
+
+  ```
+  https://mbuzz.co/mcp
+  ```
+
+  Authenticate with an mbuzz API key — create one on your [API Keys page](#{account_api_keys_path}). A `sk_test_*` key returns test data; a `sk_live_*` key returns live data. The key travels in the `Authorization` header, exactly like the JSON API.
+
+  ### Claude Desktop / Cursor
+
+  Add the server to your MCP client config (`claude_desktop_config.json` for Claude Desktop, `.cursor/mcp.json` for Cursor):
+
+  ```json
+  {
+    "mcpServers": {
+      "mbuzz": {
+        "url": "https://mbuzz.co/mcp",
+        "headers": {
+          "Authorization": "Bearer sk_live_your_key_here"
+        }
+      }
+    }
+  }
+  ```
+
+  Restart the client. "mbuzz" appears in its tool list.
+
+  ### ChatGPT
+
+  In a workspace that supports custom connectors, add a new MCP connector pointing at `https://mbuzz.co/mcp` with an `Authorization: Bearer sk_live_your_key_here` header.
+
+  Exact steps differ by client and version — what every client needs is the same two things: the URL above and the bearer header.
+
+  ---
+
+  ## Ask it something
+
+  Once connected, ask in plain language:
+
+  > "What was our blended ROAS over the last 30 days?"
+
+  > "Which channel drove the most conversions in April?"
+
+  > "How much did we spend on Google Ads last week?"
+
+  The assistant reads the account summary, picks the right tool, pulls your data, and answers.
+
+  ---
+
+  ## Notes
+
+  - **Read-only.** The MCP server never writes to your mbuzz account or your ad platforms.
+  - **Same scope rules as the API.** Account isolation, test/live separation, and key revocation all apply. Revoke a key and the connection stops working on its next call.
+  - **Dates are optional.** Tools default to the last 30 days. Pass `start_date` / `end_date` (`YYYY-MM-DD`) to widen the window.
+  - **Errors are recoverable.** Bad input — a malformed date, for instance — comes back as a tool error the assistant can read and retry, not a hard failure.
+  MD
+%>

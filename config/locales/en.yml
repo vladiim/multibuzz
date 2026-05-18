@@ -63,7 +63,7 @@ en:
         subtitle: "What you actually get when you sign up."
         privacy_tracking:
           title: "10-minute setup"
-          description: "Native SDKs for Ruby, Node, Python, and PHP. GTM, Shopify, and REST too. Server-side capture starts immediately, no JavaScript snippets to debug."
+          description: "Native SDKs for Ruby, Node, Python, and PHP. GTM and REST too. Server-side capture starts immediately, no JavaScript snippets to debug."
         dark_funnel:
           title: "Eight attribution models"
           description: "First-touch, last-touch, linear, time-decay, position-based, Markov, Shapley, data-driven. All running on the same data, side by side, so you can see the spread."

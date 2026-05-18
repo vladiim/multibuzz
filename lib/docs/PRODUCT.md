@@ -154,7 +154,7 @@ The mbuzz dashboard provides:
 - **Customer lifetime value (CLV)** -- cohort analysis showing long-term value by acquisition channel
 - **Journey explorer** -- the most common paths customers take to conversion
 - **Real-time event feed** -- live stream of events as they happen
-- **CSV exports** -- download any report for further analysis
+- **Data export** -- CSV downloads, a JSON data API, and an MCP server for pulling reports into your own tools or AI assistant
 
 Everything updates in real time. No waiting for data processing.
 

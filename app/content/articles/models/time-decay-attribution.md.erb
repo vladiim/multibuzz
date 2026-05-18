@@ -433,97 +433,35 @@ ORDER BY attributed_revenue DESC;
     5. Template IDs: time-decay-3d, time-decay-7d, time-decay-21d, time-decay-floored, etc.
 %>
 
-mbuzz uses **AML (Attribution Model Language)** to configure attribution models. For time-decay, the key parameter is `half_life`—how quickly credit decays as touchpoints age.
+mbuzz uses **AML (Attribution Modeling Language)** — a small Ruby DSL — to define how credit is distributed. The `time_decay` helper takes a `half_life` argument and normalizes credits to sum to 1.0 across all touchpoints in the window.
 
-### Basic Time-Decay Model
+### Basic time-decay
 
-```yaml
-# mbuzz AML - Time-Decay Attribution
-model: time_decay
-name: "7-Day Decay"
-description: "Credit decays by 50% every 7 days"
-
-settings:
-  half_life: 7d
-  lookback_window: 30d
-  include_direct: true
-  dedupe_level: session
+```ruby
+within_window 30.days
+  time_decay half_life: 7.days
+end
 ```
 
-### Configuring Different Half-Lives
+A 30-day lookback with credit halving every 7 days. The most recent touchpoint gets the highest weight; a touchpoint 7 days older gets half; 14 days older, a quarter; and so on.
 
-```yaml
-# E-commerce: Fast decay (recent touches matter most)
-model: time_decay
-name: "E-commerce Decay"
-settings:
-  half_life: 3d
-  lookback_window: 14d
+### Tuning the half-life
 
----
+Change the half-life to match your sales cycle:
 
-# Considered purchase: Moderate decay
-model: time_decay
-name: "Considered Purchase"
-settings:
-  half_life: 7d
-  lookback_window: 30d
+```ruby
+# E-commerce: fast decay
+within_window 14.days
+  time_decay half_life: 3.days
+end
 
----
-
-# B2B SaaS: Slow decay (don't crush early touches)
-model: time_decay
-name: "B2B Decay"
-settings:
-  half_life: 21d
-  lookback_window: 90d
+# B2B SaaS: slow decay, don't crush early touches
+within_window 90.days
+  time_decay half_life: 21.days
+end
 ```
 
-### Compare Multiple Half-Lives
-
-```yaml
-# A/B test half-life settings
-models:
-  - model: time_decay
-    name: "Fast Decay (3d)"
-    settings:
-      half_life: 3d
-      lookback_window: 30d
-
-  - model: time_decay
-    name: "Standard Decay (7d)"
-    settings:
-      half_life: 7d
-      lookback_window: 30d
-
-  - model: time_decay
-    name: "Slow Decay (14d)"
-    settings:
-      half_life: 14d
-      lookback_window: 30d
-
-comparison:
-  enabled: true
-  primary: "Standard Decay (7d)"
-  highlight_divergence: true    # Flag when models disagree by >20%
-```
-
-### Time-Decay with Minimum Credit Floor
-
-Prevent early touchpoints from getting near-zero credit:
-
-```yaml
-model: time_decay
-name: "Floored Time-Decay"
-
-settings:
-  half_life: 7d
-  lookback_window: 30d
-  min_credit_floor: 0.05    # No touchpoint gets less than 5%
-
-# This prevents the 60-day-old touchpoint from getting 0.1% credit
-# It will get at least 5%, preserving some awareness value
-```
+The full AML reference — including segment weights, conditional logic, and channel filtering — is at [docs/attribution-models](/docs/attribution-models).
 
 ## Tuning Time-Decay for Your Business
 
@@ -541,133 +479,23 @@ Time-decay has more levers than linear. Here's how to tune them.
 | **Mid-market SaaS** | 14 days | 60 days | Sales involvement |
 | **Enterprise B2B** | 21-30 days | 90+ days | Long cycles, don't crush early |
 
-### By Business Stage
+In AML, both levers are arguments: `within_window` for the lookback and `half_life:` on `time_decay`.
 
-```yaml
-# Early-stage: Standard decay, learn patterns
-model: time_decay
-name: "Startup Time-Decay"
-settings:
-  half_life: 7d
-  lookback_window: 30d
+### Seasonal adjustments
 
----
+Buying behavior compresses during high-intent periods. For BFCM week, run a parallel model with a 2-day half-life and a 7-day window — credit lands on the immediate pre-purchase touches. For the post-holiday gift card window, stretch the lookback to 45 days and the half-life to 10–14 days so original holiday campaigns still get credit when redemptions land in January.
 
-# Growth-stage: Tune based on observed patterns
-model: time_decay
-name: "Growth Time-Decay"
-settings:
-  half_life: 5d              # Faster if you see quick conversions
-  lookback_window: 21d
-  include_direct: false      # Exclude brand strength noise
+### Campaign launch adjustments
 
----
+For a launch attribution view, narrow the lookback and accelerate the decay so credit lands on the immediate pre-conversion touches:
 
-# Scale-stage: Segment-specific decay
-models:
-  - model: time_decay
-    name: "New Customer Decay"
-    settings:
-      half_life: 10d         # Longer consideration for new
-      lookback_window: 45d
-    filters:
-      user_segment: new_customers
-
-  - model: time_decay
-    name: "Returning Decay"
-    settings:
-      half_life: 3d          # Fast for returning customers
-      lookback_window: 14d
-    filters:
-      user_segment: returning_customers
+```ruby
+within_window 14.days
+  time_decay half_life: 3.days
+end
 ```
 
-### Seasonal Adjustments
-
-Buying behavior compresses during high-intent periods:
-
-```yaml
-# Black Friday / Cyber Monday
-model: time_decay
-name: "BFCM Time-Decay"
-settings:
-  half_life: 2d              # Decisions happen in hours, not days
-  lookback_window: 7d        # Only credit recent awareness
-
-date_range:
-  start: "2024-11-25"
-  end: "2024-12-02"
-
----
-
-# Post-holiday / January
-model: time_decay
-name: "January Recovery"
-settings:
-  half_life: 10d             # Gift card redemptions take time
-  lookback_window: 45d       # Credit holiday marketing
-
-date_range:
-  start: "2024-12-26"
-  end: "2025-01-31"
-```
-
-### Campaign Launch Adjustments
-
-When launching something new, recency matters even more:
-
-```yaml
-# Product Launch: Heavy recency weighting
-model: time_decay
-name: "Launch Time-Decay"
-
-settings:
-  half_life: 3d              # Very recent touches drive launch conversions
-  lookback_window: 14d       # Don't credit pre-launch activity
-
-filters:
-  require_campaign:
-    - "product-launch-2024"
-
-# Daily tracking for launch week
-reporting:
-  granularity: daily
-  start_date: "2024-03-01"
-  end_date: "2024-03-14"
-```
-
-### Dynamic Half-Life (Advanced)
-
-For sophisticated setups, vary half-life by conversion type:
-
-```yaml
-# Different decay for different conversion values
-models:
-  - model: time_decay
-    name: "Small Purchase Decay"
-    settings:
-      half_life: 3d          # Quick decisions
-    filters:
-      conversion_value:
-        max: 50
-
-  - model: time_decay
-    name: "Medium Purchase Decay"
-    settings:
-      half_life: 7d          # Moderate consideration
-    filters:
-      conversion_value:
-        min: 50
-        max: 200
-
-  - model: time_decay
-    name: "Large Purchase Decay"
-    settings:
-      half_life: 14d         # Extended consideration
-    filters:
-      conversion_value:
-        min: 200
-```
+To restrict the model to a single launch campaign, or to vary half-life by conversion value, see the channel-filtering and conditional-logic patterns at [docs/attribution-models](/docs/attribution-models).
 
 ### Parameter Tuning Cheatsheet
 

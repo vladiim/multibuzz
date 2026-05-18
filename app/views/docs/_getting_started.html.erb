@@ -11,7 +11,6 @@
 
   | Platform | Integration Type | Guide |
   |----------|------------------|-------|
-  | **Shopify** | Zero-code (App + Pixel) | [Shopify Integration →](#{docs_path('platforms-shopify')}) |
   | **Server-Side GTM** | Tag template (no code) | [sGTM Integration →](#{docs_path('integrations-sgtm')}) |
 
   For custom applications, continue with the SDK integration below.
@@ -1428,8 +1427,10 @@ MD
   3. **Record conversions** - Call `conversion()` for revenue events
   4. **Identify users** - Call `identify()` on signup/login (enables cross-device)
   5. **View attribution** - Check [your dashboard](#{dashboard_path}) for attribution data
+  6. **Pull data back out** - Use the [Data Downloads API](#{docs_path('data-downloads')}) to push your conversions, funnel, and ad spend into your warehouse, BI tool, or AI assistant
 
   **Need help?** Check out:
   - [Authentication](#{docs_path('authentication')}) - API key management
+  - [Data Downloads](#{docs_path('data-downloads')}) - JSON reporting API for conversions, funnel, and spend
 MD
 %>

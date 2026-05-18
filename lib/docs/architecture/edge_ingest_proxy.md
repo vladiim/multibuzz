@@ -257,7 +257,6 @@ Mbuzz.init(
 | Node | `https://api.mbuzz.co/api/v1` | `https://mbuzz.co/api/v1` | `src/config.ts:11` |
 | Python | `https://api.mbuzz.co/api/v1` | `https://mbuzz.co/api/v1` | `src/mbuzz/config.py:6` |
 | PHP | `https://api.mbuzz.co/api/v1` | `https://mbuzz.co/api/v1` | `src/Mbuzz/Config.php:11` |
-| Shopify | 3 files | N/A (client-side) | See spec Phase 3.5 |
 | sGTM | `template.tpl` | N/A | See spec Phase 3.6 |
 
 **Permanent dual-endpoint policy:** `mbuzz.co/api/v1` is a permanent, documented, supported direct endpoint. It is not deprecated. If Cloudflare has a global outage, customers flip one config value and bypass the proxy entirely.

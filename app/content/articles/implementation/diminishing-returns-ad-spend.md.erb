@@ -3,7 +3,7 @@ title: "Diminishing Returns in Ad Spend: The Marginal ROAS Hiding in Your Averag
 slug: "diminishing-returns-ad-spend"
 description: "A channel showing 4x average ROAS can return only 0.6x on the next dollar. Average ROAS hides marginal ROAS. Here's how to find your true saturation point."
 published_at: 2026-04-04
-last_updated: 2026-05-01
+last_updated: 2026-05-12
 section: implementation
 section_order: 5
 status: published
@@ -42,6 +42,10 @@ aeo:
       a: "Partially. Three approaches: (1) New audience — targeting a different segment gives you a fresh curve. (2) New funnel stage — if you've saturated retargeting, try prospecting. (3) New creative format — video vs static, different messaging angles. None of these increase the total addressable market, but they can find pockets of efficiency within it."
     - q: "How much data do I need to detect diminishing returns?"
       a: "Minimum 12 weeks of weekly data. The more data points, the more reliable the curve fit. With fewer than 12 weeks, you're guessing. With 6+ months, you can see seasonal patterns overlaid on the diminishing returns curve."
+    - q: "Where does the Hill response curve come from?"
+      a: "Archibald Hill described the S-shape in 1910 to model oxygen binding to hemoglobin. The same shape — accelerated initial returns, then bending, then plateau — describes ad spend saturation, dose-response in pharmacology, and population growth in ecology. Meta's open-source marketing mix modeling library Robyn, Recast's causal MMM, and Mutinex's CMO modeling all fit Hill functions to weekly spend data when modeling saturation. The math is settled; what changes by tool is which curve best fits your channels."
+    - q: "How does diminishing returns differ from incrementality?"
+      a: "Diminishing returns is a property of any spend curve: the next dollar returns less than the previous one. Incrementality is the only measurement method that proves causal effect — what would have happened without the spend, tested via geo-lift or holdout experiments. The Dropbox IEEE Access paper (Chivukula et al., 2026) found click attribution overstates causal impact by 2 to 10x compared to geo-incrementality. Multi-touch attribution, including mbuzz, is not a substitute for incrementality testing. MTA shows the spread between models on the same data; incrementality shows the spread between with-spend and without-spend. Different questions, different tools."
 schema:
   type: Article
   author: "holly-henderson"
@@ -61,6 +65,8 @@ Six weeks later, ROAS has dropped to 2.8x. Still positive, so you hold steady. A
 What happened: you hit the point of diminishing returns. The first $10,000 per month returned $50,000 in revenue. The next $5,000 returned only $8,000. Your average ROAS of 2.8x is hiding the fact that your marginal ROAS — the return on the last dollars spent — dropped below 1.0.
 
 You're spending money to lose money, and average ROAS is concealing it.
+
+Dropbox engineers reported in IEEE Access (Chivukula et al., 2026) that click attribution overstates causal impact by 2 to 10x compared to geo-incrementality experiments. The channel ROAS your dashboard shows is already inflated before diminishing returns make it worse. Average ROAS smears the bad marginal dollars together with the good ones, and platform self-reporting over-credits the whole pile.
 
 ## The Three Phases of Ad Spend
 
@@ -84,7 +90,11 @@ You've reached most of the addressable audience on this channel with this target
 
 Revenue flattens. Spend keeps rising. Marginal ROAS drops below 1.0.
 
+Eric Seufert at [Mobile Dev Memo](https://mobiledevmemo.com/) has documented this dynamic in mobile user acquisition for over a decade: audience pools are finite. Once you've reached everyone who can be efficiently converted at a given CPM, additional impressions buy you the same person twice rather than a new buyer.
+
 ## Average ROAS vs Marginal ROAS: The Metric That Changes Everything
+
+Avinash Kaushik — formerly Google's Digital Marketing Evangelist, now strategy advisor to Measured — frames this as the one ratio a CMO should defend to a CFO: cost per incremental sale, not average ROAS. The "incremental" qualifier kills the average-ROAS illusion. Only the next dollar's outcome matters for the next decision.
 
 | Scenario | Average ROAS | Marginal ROAS | What It Means |
 |----------|-------------|---------------|---------------|
@@ -96,6 +106,8 @@ Revenue flattens. Spend keeps rising. Marginal ROAS drops below 1.0.
 The dangerous zone is "at saturation" — where average ROAS looks healthy enough that nobody questions the budget, but marginal ROAS has collapsed. Most companies operate here without knowing it.
 
 ## How Response Curves Work
+
+The shape isn't ad-specific. Archibald Hill described it in 1910 to model how oxygen binds to hemoglobin. The same S-curve describes ad spend saturation, dose-response in pharmacology, and population growth in ecology. Meta's open-source MMM library [Robyn](https://facebookexperimental.github.io/Robyn/), [Recast's](https://getrecast.com/) causal MMM, and [Mutinex's](https://mutinex.co/) marketing modeling all fit Hill functions to weekly spend data. The math is settled. What changes by tool is which curve fits your channels.
 
 Mathematically, diminishing returns follow a response curve. The one mbuzz uses is the Hill function:
 
@@ -175,7 +187,9 @@ The efficient zone is where marginal ROAS is between 1.0x and 1.5x. You're still
 
 **Outdoor Solar Outlet:** Cut Google Ads spend by 26%. Revenue increased 25%. How? They reallocated the savings to Microsoft Ads and social retargeting — channels that were under-invested and still in Phase 1. Less total spend, more total revenue.
 
-Both cases demonstrate the same principle: the goal isn't maximum spend. It's optimal spend.
+**Dropbox (IEEE Access, 2026):** Replaced click-attribution-led budget allocation with a geo-incrementality framework on its Individual Account team. Reallocated $25M of annual paid spend. Reported a 53% improvement in LTV:CAC on that team. Bad attribution doesn't only misallocate at the margin. At enterprise scale, it misallocates millions before the dashboard finishes loading.
+
+All three cases demonstrate the same principle: the goal isn't maximum spend. It's optimal spend.
 
 <%= render "articles/cta_banner",
   title: "See your channels' diminishing returns",

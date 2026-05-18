@@ -99,7 +99,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_not_nil session[:plaintext_api_key], "Session should keep key for install step"
     assert_select "code.text-green-400", /sk_test_/
 
-    # Key remains available for install page (needed for Shopify)
+    # Key remains available for install page (needed for custom-install SDKs)
     get onboarding_setup_path
 
     assert_select "code.text-green-400", /sk_test_/
@@ -226,11 +226,11 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to onboarding_setup_path
   end
 
-  test "install shows plaintext API key for Shopify when available" do
+  test "install shows plaintext API key for a custom-install SDK when available" do
     sign_in_as_new_user
     # Visit setup first to create API key and store in session
     get onboarding_setup_path
-    @test_account.update!(selected_sdk: "shopify")
+    @test_account.update!(selected_sdk: "sgtm")
 
     get onboarding_install_path
 
@@ -238,9 +238,9 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_select "code.text-green-400", /sk_test_/
   end
 
-  test "install shows regenerate option for Shopify when key not in session" do
+  test "install shows regenerate option for a custom-install SDK when key not in session" do
     sign_in
-    account.update!(selected_sdk: "shopify")
+    account.update!(selected_sdk: "sgtm")
     # Don't visit setup, so no plaintext key in session
 
     get onboarding_install_path

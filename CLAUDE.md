@@ -53,6 +53,8 @@ RAILS_ENV=test bin/rails db:schema:load
 
 **Never** `db:drop db:create db:migrate` for test DB.
 
+**Production operations** (cluster topology, which DBs have the extension, retention policy, debugging unbounded telemetry growth): see `lib/docs/architecture/timescaledb_operations.md`.
+
 ## Production
 
 | Domain | mbuzz.co |
@@ -291,6 +293,18 @@ Use `prefixed_ids` gem for external-facing IDs:
 
 Exceptions: API keys (`sk_{env}_{random32}`), internal job IDs, DB foreign keys.
 
+**Lookup with `find`, not `find_by_prefix_id`.** The gem patches `find` (and `find_by_id`) to accept either a raw integer id or a prefixed id string. Use it everywhere — controllers, console, services, tests. `find_by_prefix_id` exists but is redundant noise.
+
+```ruby
+# YES
+account.exports.find("exp_50nkDj2oRp21nU1GQvzgA9Je")
+account.exports.completed.find(params[:id])      # params[:id] is "exp_..."
+Export.find("exp_50nkDj2oRp21nU1GQvzgA9Je")      # console one-liner
+
+# NO — verbose, no upside
+account.exports.find_by_prefix_id!("exp_...")
+```
+
 Compare via `prefix_id`, not `id`:
 ```ruby
 @filter_params[:model]&.prefix_id == model.prefix_id
@@ -341,6 +355,17 @@ Scopes: `auth`, `event`, `visitor`, `session`, `api`, `dashboard`, `docs`
 ## DDD Workflow
 
 Doc spec → RED test → GREEN code → run all tests → refactor → update spec → commit.
+
+---
+
+## Project Memory
+
+Persistent project memory lives **in the repo** at `lib/memory/`, never in a global or per-user Claude directory. Memory is versioned and reviewed like code.
+
+- One fact per file, kebab-case filename, with frontmatter (`name`, `description`, `metadata.type` of `user`, `feedback`, `project`, or `reference`).
+- `lib/memory/README.md` is the index: one line per memory. Add a pointer when you add a file.
+- If the harness points memory at a global path (e.g. `~/.claude/...`), override it and write to `lib/memory/` instead.
+- The CRITICAL secrets rule applies in full. These files are committed to git, so no credentials, tokens, account IDs, emails, or customer PII. Use placeholders.
 
 ---
 

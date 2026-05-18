@@ -85,8 +85,12 @@ end
 
 ActionDispatch::IntegrationTest.include SignInHelper
 
+require "turbo/broadcastable/test_helper"
+
 module ActiveSupport
   class TestCase
+    include Turbo::Broadcastable::TestHelper
+
     # Run tests in parallel with specified workers
     parallelize(workers: :number_of_processors)
 
@@ -96,6 +100,7 @@ module ActiveSupport
 
     parallelize_teardown do |_worker|
       SimpleCov.result if ENV["COVERAGE"]
+      FileUtils.rm_rf(Rails.root.join("tmp/storage", Process.pid.to_s))
     end
 
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.

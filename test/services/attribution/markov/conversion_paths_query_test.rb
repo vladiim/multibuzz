@@ -172,6 +172,41 @@ module Attribution
         assert_equal [ %w[organic_search email] ], paths
       end
 
+      test "loads sessions in a single query regardless of conversion count" do
+        create_conversion_with_sessions(%w[organic_search email])
+        create_conversion_with_sessions(%w[paid_search])
+        create_conversion_with_sessions(%w[email paid_search])
+
+        assert_queries_match(/FROM "sessions"/, count: 1) do
+          query.call
+        end
+      end
+
+      test "cached_for serves repeated calls from cache" do
+        original_cache = Rails.cache
+        Rails.cache = ActiveSupport::Cache::MemoryStore.new
+        create_conversion_with_sessions(%w[organic_search email])
+
+        cached = ConversionPathsQuery.cached_for(account)
+        account.conversions.destroy_all # underlying data changes
+
+        assert_equal cached, ConversionPathsQuery.cached_for(account),
+          "repeat call within TTL should return cached paths, not re-query"
+        assert_equal [ %w[organic_search email] ], cached
+      ensure
+        Rails.cache = original_cache
+      end
+
+      test "caps the number of paths at max_paths" do
+        create_conversion_with_sessions(%w[organic_search])
+        create_conversion_with_sessions(%w[email])
+        create_conversion_with_sessions(%w[paid_search])
+
+        paths = ConversionPathsQuery.new(account, max_paths: 2).call
+
+        assert_equal 2, paths.size
+      end
+
       private
 
       def query

@@ -20,13 +20,17 @@
       <h1 class="text-4xl font-bold text-gray-900 tracking-tight mb-4">
         <%= @article.title %>
       </h1>
-      <div class="flex items-center gap-4 text-sm text-gray-500">
+      <div class="flex items-center gap-4 text-sm text-gray-500 flex-wrap">
         <% if @article.published_at %>
           <time datetime="<%= @article.published_at.iso8601 %>">
             <%= @article.published_at.strftime("%B %d, %Y") %>
           </time>
-          <span>&middot;</span>
         <% end %>
+        <% if @article.date_modified && @article.date_modified > @article.published_at %>
+          <span>&middot;</span>
+          <span>Last updated <time datetime="<%= @article.date_modified.iso8601 %>"><%= @article.date_modified.strftime("%B %d, %Y") %></time></span>
+        <% end %>
+        <span>&middot;</span>
         <span><%= @article.reading_time %> min read</span>
         <% if @article.has_download %>
           <span>&middot;</span>

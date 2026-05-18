@@ -13,7 +13,7 @@ class Oauth::GoogleAdsControllerTest < ActionDispatch::IntegrationTest
 
   # --- feature flag gate ---
 
-  test "connect redirects with private-beta alert when feature flag is off" do
+  test "connect redirects with not-enabled alert when feature flag is off" do
     account.disable_feature!(FeatureFlags::GOOGLE_ADS_INTEGRATION)
     sign_in
     assign_plan(:growth)
@@ -21,7 +21,7 @@ class Oauth::GoogleAdsControllerTest < ActionDispatch::IntegrationTest
     get oauth_google_ads_connect_path
 
     assert_redirected_to account_integrations_path
-    assert_match(/private beta/i, flash[:alert])
+    assert_match(/not enabled/i, flash[:alert])
   end
 
   # --- connect ---

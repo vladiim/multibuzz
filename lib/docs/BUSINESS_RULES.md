@@ -539,6 +539,31 @@ mbuzz automatically detects and filters bot traffic to ensure clean data.
    --> Attribution recalculated if needed
 ```
 
+### Data Downloads API
+
+Read-only JSON endpoints for pulling data back out of mbuzz, separate from the four ingestion endpoints above.
+
+| Endpoint | Returns |
+|----------|---------|
+| `GET /api/v1/data/conversions` | One row per attribution credit |
+| `GET /api/v1/data/funnel` | Visits, events, and conversions in time order |
+| `GET /api/v1/data/spend` | Ad spend records from connected ad platforms |
+
+| # | Rule | Detail |
+|---|------|--------|
+| DA1 | Same Bearer-token auth as ingestion | Test keys return test data, live keys return live data (see AP2) |
+| DA2 | Responses are paginated | Shape is `{ data: [...], meta: { total_count, page, per_page, total_pages } }`. Up to 1000 rows per page. |
+| DA3 | Every query is account-scoped | Results are limited to the key's account |
+| DA4 | Date range defaults to 30 days | Pass `start_date` / `end_date` (`YYYY-MM-DD`) or a `date_range` preset. A malformed date returns 400. |
+
+### MCP Server
+
+| # | Rule | Detail |
+|---|------|--------|
+| MC1 | The MCP server exposes the Data Downloads API as AI-assistant tools | Served at `mbuzz.co/mcp`. Lets Claude, ChatGPT, and Cursor query a customer's data directly in a conversation. |
+| MC2 | Read-only | Three tools — `mbuzz_get_conversions`, `mbuzz_get_funnel`, `mbuzz_get_spend` — plus an `mbuzz://account/summary` resource. The server never writes. |
+| MC3 | Same auth and scoping as the API | Bearer API key, test/live separation, account isolation, and key revocation all apply (see AP1, AP2, DA3). |
+
 ---
 
 ## 12. Spend Dashboard Semantics

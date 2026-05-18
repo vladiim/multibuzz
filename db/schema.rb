@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_05_08_141750) do
+ActiveRecord::Schema[8.0].define(version: 2026_05_18_043950) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -93,6 +93,34 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_08_141750) do
     t.index ["stripe_customer_id"], name: "index_accounts_on_stripe_customer_id", unique: true
     t.index ["stripe_subscription_id"], name: "index_accounts_on_stripe_subscription_id", unique: true
     t.index ["trial_ends_at"], name: "index_accounts_on_trial_ends_at"
+  end
+
+  create_table "active_storage_attachments", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "record_type", null: false
+    t.bigint "record_id", null: false
+    t.bigint "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", force: :cascade do |t|
+    t.string "key", null: false
+    t.string "filename", null: false
+    t.string "content_type"
+    t.text "metadata"
+    t.string "service_name", null: false
+    t.bigint "byte_size", null: false
+    t.string "checksum"
+    t.datetime "created_at", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "active_storage_variant_records", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.string "variation_digest", null: false
+    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
   create_table "ad_platform_connections", force: :cascade do |t|
@@ -279,6 +307,52 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_08_141750) do
     t.index ["visitor_id"], name: "index_consent_logs_on_visitor_id"
   end
 
+  create_table "conversion_destinations", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "platform", null: false
+    t.string "name", null: false
+    t.boolean "enabled", default: false, null: false
+    t.bigint "attribution_model_id", null: false
+    t.string "revenue_mode", default: "full", null: false
+    t.decimal "minimum_credit_threshold", precision: 5, scale: 4, default: "0.0", null: false
+    t.string "meta_pixel_id"
+    t.text "meta_access_token"
+    t.string "google_customer_id"
+    t.string "google_login_customer_id"
+    t.string "google_conversion_action_resource_name"
+    t.bigint "ad_platform_connection_id"
+    t.jsonb "event_type_mapping", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "enabled"], name: "index_conversion_destinations_on_account_id_and_enabled"
+    t.index ["account_id", "platform"], name: "index_conversion_destinations_on_account_id_and_platform"
+    t.index ["account_id"], name: "index_conversion_destinations_on_account_id"
+    t.index ["ad_platform_connection_id"], name: "index_conversion_destinations_on_ad_platform_connection_id"
+    t.index ["attribution_model_id"], name: "index_conversion_destinations_on_attribution_model_id"
+  end
+
+  create_table "conversion_dispatches", force: :cascade do |t|
+    t.bigint "conversion_id", null: false
+    t.bigint "conversion_destination_id", null: false
+    t.bigint "account_id", null: false
+    t.string "status", default: "pending", null: false
+    t.jsonb "payload", default: {}, null: false
+    t.jsonb "response", default: {}
+    t.text "error"
+    t.integer "retries_count", default: 0, null: false
+    t.datetime "fired_at"
+    t.bigint "attribution_model_id"
+    t.decimal "platform_credit_share", precision: 5, scale: 4
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "status", "created_at"], name: "idx_conversion_dispatches_admin_lookup"
+    t.index ["account_id"], name: "index_conversion_dispatches_on_account_id"
+    t.index ["attribution_model_id"], name: "index_conversion_dispatches_on_attribution_model_id"
+    t.index ["conversion_destination_id"], name: "index_conversion_dispatches_on_conversion_destination_id"
+    t.index ["conversion_id", "conversion_destination_id"], name: "idx_conversion_dispatches_unique_per_destination", unique: true
+    t.index ["conversion_id"], name: "index_conversion_dispatches_on_conversion_id"
+  end
+
   create_table "conversion_property_keys", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.string "property_key", null: false
@@ -410,6 +484,11 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_08_141750) do
     t.boolean "is_test", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "email_sha256", limit: 64
+    t.string "phone_e164_sha256", limit: 64
+    t.string "first_name_sha256", limit: 64
+    t.string "last_name_sha256", limit: 64
+    t.index ["account_id", "email_sha256"], name: "index_identities_on_account_email_sha256", where: "(email_sha256 IS NOT NULL)"
     t.index ["account_id", "external_id"], name: "index_identities_on_account_id_and_external_id", unique: true
     t.index ["account_id"], name: "index_identities_on_account_id"
     t.index ["external_id"], name: "index_identities_on_external_id"
@@ -434,6 +513,22 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_08_141750) do
     t.index ["is_active"], name: "index_plans_on_is_active"
     t.index ["slug"], name: "index_plans_on_slug", unique: true
     t.index ["sort_order"], name: "index_plans_on_sort_order"
+  end
+
+  create_table "reattribution_batches", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.integer "trigger", null: false
+    t.integer "status", default: 0, null: false
+    t.integer "total", default: 0, null: false
+    t.integer "processed", default: 0, null: false
+    t.integer "failed", default: 0, null: false
+    t.datetime "started_at"
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "conversion_ids", default: [], null: false, array: true
+    t.index ["account_id", "status"], name: "index_reattribution_batches_on_account_id_and_status"
+    t.index ["account_id"], name: "index_reattribution_batches_on_account_id"
   end
 
   create_table "referrer_sources", force: :cascade do |t|
@@ -538,6 +633,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_08_141750) do
     t.text "user_agent"
     t.string "suspect_reason"
     t.string "request_id"
+    t.string "fbp"
+    t.string "fbc"
+    t.string "country", limit: 2
+    t.string "postal_code", limit: 16
+    t.string "gclid"
+    t.index ["account_id", "fbp"], name: "index_sessions_on_account_fbp", where: "(fbp IS NOT NULL)"
+    t.index ["account_id", "gclid"], name: "index_sessions_on_account_gclid", where: "(gclid IS NOT NULL)"
     t.index ["account_id", "landing_page_host"], name: "index_sessions_on_account_and_landing_page_host"
     t.index ["account_id", "request_id"], name: "index_sessions_on_account_request_id", where: "(request_id IS NOT NULL)"
     t.index ["account_id", "session_id", "started_at"], name: "index_sessions_on_account_id_and_session_id", unique: true
@@ -611,6 +713,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_08_141750) do
   add_foreign_key "account_memberships", "accounts"
   add_foreign_key "account_memberships", "users"
   add_foreign_key "accounts", "plans"
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "ad_platform_connections", "accounts"
   add_foreign_key "ad_spend_records", "accounts"
   add_foreign_key "ad_spend_records", "ad_platform_connections"
@@ -623,6 +727,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_08_141750) do
   add_foreign_key "attribution_models", "accounts"
   add_foreign_key "billing_events", "accounts"
   add_foreign_key "consent_logs", "accounts"
+  add_foreign_key "conversion_destinations", "accounts"
+  add_foreign_key "conversion_destinations", "ad_platform_connections"
+  add_foreign_key "conversion_destinations", "attribution_models"
+  add_foreign_key "conversion_dispatches", "accounts"
+  add_foreign_key "conversion_dispatches", "attribution_models"
+  add_foreign_key "conversion_dispatches", "conversion_destinations"
+  add_foreign_key "conversion_dispatches", "conversions"
   add_foreign_key "conversion_property_keys", "accounts"
   add_foreign_key "conversions", "accounts"
   add_foreign_key "conversions", "identities"
@@ -632,6 +743,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_08_141750) do
   add_foreign_key "events", "visitors"
   add_foreign_key "exports", "accounts"
   add_foreign_key "identities", "accounts"
+  add_foreign_key "reattribution_batches", "accounts"
   add_foreign_key "rerun_jobs", "accounts"
   add_foreign_key "rerun_jobs", "attribution_models"
   add_foreign_key "score_assessments", "accounts"

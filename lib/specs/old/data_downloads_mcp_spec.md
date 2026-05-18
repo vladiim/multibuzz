@@ -1,0 +1,334 @@
+# Data Downloads MCP Server Specification
+
+**Date:** 2026-05-13 (research decisions resolved 2026-05-15)
+**Priority:** P1
+**Status:** ✅ Complete — shipped and live at `mbuzz.co/mcp`, UAT signed off 2026-05-15
+**Branch:** `feat/data-downloads-mcp` off `main` (`feat/conversion-feedback` deployed 2026-05-15)
+**Depends on:** `old/data_downloads_api_spec.md` — **shipped 2026-05-12**. The three JSON endpoints, query services, and namespace (`DataDownloads::*`) are live; this spec wraps them as MCP tools.
+
+---
+
+## Summary
+
+Expose mbuzz attribution, funnel, and spend data through the Model Context Protocol (MCP) so customers can plug their account into Claude Desktop, ChatGPT, Cursor, and any other MCP-aware AI client. The MCP server reuses the JSON endpoints from `data_downloads_api_spec.md` — same auth, same scopes, same data — wrapped in MCP's tool-call protocol so an AI agent can pull a customer's data into a conversation without the customer pasting CSVs or building a custom integration.
+
+This unlocks the workflow that today is the API spec's hidden hard part: turning "your data is in an API" into "your data is in your AI assistant." The API is for engineers; MCP is for marketers.
+
+---
+
+## Current State
+
+No MCP surface exists. References to MCP in the repo are marketing copy on landing pages only (`vs_ga4.html.erb`, `vs_hyros.html.erb`, etc.). No gem dependency, no server code, no transport. Greenfield.
+
+The data the MCP server will expose is the data the API spec ships (shipped 2026-05-12):
+
+| Resource | API endpoint | Query service | Underlying scope |
+|----------|--------------|---------------|------------------|
+| Conversions | `GET /api/v1/data/conversions` | `DataDownloads::ConversionsQueryService` | `Dashboard::Scopes::FilteredCreditsScope` |
+| Funnel | `GET /api/v1/data/funnel` | `DataDownloads::FunnelQueryService` | `SessionsScope` + `EventsScope` + `ConversionsScope` |
+| Spend | `GET /api/v1/data/spend` | `DataDownloads::SpendQueryService` | `SpendIntelligence::Scopes::SpendScope` |
+
+All three return `{ data: [...], meta: { total_count, page, per_page, total_pages } }` shaped responses. Auth uses existing API keys (`sk_test_*` / `sk_live_*`) with environment-determined data scope. Account isolation, revocation, audit logging — all inherited from `ApiKeys::AuthenticationService` and `Api::V1::BaseController`.
+
+### Data Flow (Current — none)
+
+```
+(no MCP)
+```
+
+---
+
+## Proposed Solution
+
+A streamable-HTTP MCP server at `mbuzz.co/mcp` — a route in the main Rails app, authenticated by the same API key the JSON API uses. The server exposes three MCP **tools**, each a thin shim over a JSON endpoint:
+
+- `mbuzz_get_conversions`
+- `mbuzz_get_funnel`
+- `mbuzz_get_spend`
+
+Plus one **resource** (`mbuzz://account/summary`) that returns a one-shot overview the AI can read at conversation start: account name, date of first event, list of active SDKs, active ad platforms, default attribution model. This is the "load my context" affordance — it lets the agent give grounded answers without 50 tool calls.
+
+### Why MCP (Not Just the API)
+
+| Consideration | MCP | Raw API |
+|---|---|---|
+| Discovery | Tools self-describe to the client | Customer must read docs |
+| Auth | Standard bearer flow over HTTP/SSE | Same |
+| Pagination | Client iterates via `next_cursor` in tool result | Same |
+| Caller | AI agent, with autonomy to pick which tool | Human / scripted client |
+| UX | "Plug mbuzz into Claude. Ask questions." | "Build an integration." |
+
+The API spec ships a programmatic surface for engineers. MCP ships an AI-native surface for marketers and analysts who don't write code but live in Claude / ChatGPT.
+
+### Why Streamable HTTP (Not stdio)
+
+| Transport | Hosting model | Fit |
+|---|---|---|
+| **stdio** | Customer runs the server locally (Node / Python) | Wrong fit — would mean we ship a customer-side binary and they configure env vars with their API key. Friction. |
+| **Streamable HTTP** | mbuzz hosts the server, customer adds the URL to their MCP client | Customer pastes API key, pastes URL, done. Centralised auth + rate limiting on our side. |
+
+Streamable HTTP is the post-2025-03-26 successor to SSE in the MCP spec. Bearer auth in the HTTP header, server-sent events for streaming responses if needed.
+
+### Run in stateless mode
+
+The official SDK's streamable HTTP transport stores session state in-memory, which would otherwise force single-process deployment or sticky-session routing. **Run with `stateless: true`.** Our tool surface is read-only with no session continuity — each tool call is an independent, separately-authenticated request. Stateless mode drops the in-memory session store entirely, which means the host droplet needs no sticky routing and the surface scales horizontally if it ever needs to.
+
+### Auth Model
+
+The MCP client sends `Authorization: Bearer sk_{env}_{key}` on every HTTP call (request + every subsequent SSE message). Server validates via `ApiKeys::AuthenticationService` — exact same code path as the JSON API. Account, env (test vs live), revocation state, suspended-account check: all reused.
+
+No new credentials. No OAuth dance. No per-tool scopes (yet). The API key is the account's identity to the MCP server.
+
+### Tool Surface
+
+Each tool's input schema mirrors the matching JSON endpoint's query parameters. Output is the same `{ data: [...], meta: { ... } }` shape, returned as MCP tool result content with type `application/json`.
+
+```
+mbuzz_get_conversions(start_date, end_date, channels?, funnel?, page?, per_page?)
+mbuzz_get_funnel(start_date, end_date, channels?, funnel?, page?, per_page?)
+mbuzz_get_spend(start_date, end_date, channels?, page?, per_page?)
+```
+
+Tool descriptions (the strings the AI reads to decide which tool to call) are written for an agent, not a human:
+
+> `mbuzz_get_spend` — Returns one row per ad spend record from the customer's connected ad platforms (Google Ads, Meta, etc.). Each row has spend, impressions, clicks, platform conversions, and any operator-applied metadata tags. Use when the user asks about ad costs, ROAS, campaign performance, or "what are we spending on X". Date range required; default to last 30 days if unspecified.
+
+### Resource Surface
+
+```
+mbuzz://account/summary
+```
+
+Returned as `application/json`. Lets the agent prime itself before answering:
+
+```json
+{
+  "account_name": "Acme Co",
+  "first_event_at": "2025-11-04",
+  "currency": "USD",
+  "active_sdks": ["ruby", "shopify"],
+  "active_ad_platforms": ["google_ads", "meta_ads"],
+  "default_attribution_model": "linear",
+  "available_funnels": ["sales", "trial_signup"]
+}
+```
+
+### Data Flow (Proposed)
+
+```
+Claude Desktop / Cursor / ChatGPT
+  → POST mbuzz.co/mcp (Authorization: Bearer sk_live_...)
+    → Mcp::ServerController (main Rails app, POST /mcp route)
+      → authenticate via ApiKeys::AuthenticationService
+      → Mcp::ServerFactory builds a per-request MCP::Server (stateless)
+      → server.handle_json dispatches the tool call
+        → DataDownloads::ConversionsQueryService / FunnelQueryService / SpendQueryService
+          → existing scopes
+          → JSON result → MCP tool_result content
+```
+
+### Key Files
+
+| File | Purpose | Changes |
+|------|---------|---------|
+| `Gemfile` | Official `mcp` gem (`modelcontextprotocol/ruby-sdk`) | ✅ Done |
+| `app/controllers/mcp/server_controller.rb` | `Mcp::ServerController` — auth + `handle_json` dispatch | ✅ Done |
+| `app/services/mcp/server_factory.rb` | `Mcp::ServerFactory.build` — per-request `MCP::Server` | ✅ Done (tools/resources arrays filled in Phase 2/3) |
+| `app/services/mcp/tools/get_conversions.rb` | Conversions tool — delegates to `DataDownloads::ConversionsQueryService` | **Create (Phase 2)** |
+| `app/services/mcp/tools/get_funnel.rb` | Funnel tool — delegates to `DataDownloads::FunnelQueryService` | **Create (Phase 2)** |
+| `app/services/mcp/tools/get_spend.rb` | Spend tool — delegates to `DataDownloads::SpendQueryService` | **Create (Phase 2)** |
+| `app/services/mcp/resources/account_summary.rb` | Account summary resource | **Create (Phase 3)** |
+| `config/routes.rb` | `post "/mcp"` → `mcp/server#handle` | ✅ Done |
+| `app/controllers/api/v1/base_controller.rb` | No change — MCP doesn't go through it (separate auth surface) | unchanged ✅ |
+| `app/services/data_downloads/{conversions,funnel,spend}_query_service.rb` | Reused from API spec (shipped 2026-05-12) | unchanged |
+| `app/views/docs/mcp.html.erb` | Customer-facing MCP setup docs | **Create** |
+| `app/views/accounts/api_keys/show.html.erb` | Add "Use this key with MCP" block with the URL + setup snippet | **Edit** |
+
+### Choice of MCP Library — decided 2026-05-15
+
+**Use the official `modelcontextprotocol/ruby-sdk` (gem name `mcp`).** Research on 2026-05-15:
+
+| Option | Verdict | Notes |
+|---|---|---|
+| **`mcp` — official Ruby SDK** | ✅ **Chosen** | v0.16.0 released 2026-05-14, actively maintained. True streamable HTTP transport (post-2025-03-26 standard). Rack-mountable: `mount transport => "/mcp"`. Custom header auth — we read `Authorization` ourselves and resolve the account. `stateless: true` mode available. |
+| `fast-mcp` | ❌ Rejected | v1.6.0, last release Sept 2025 (stale). Its "HTTP" is the legacy SSE transport, not streamable HTTP. **Dealbreaker: auth is a single static `auth_token` string** — cannot resolve a per-account API key through `ApiKeys::AuthenticationService`. |
+| Roll our own | ❌ | MCP protocol is non-trivial (handshake, capability negotiation, content types). No reason. |
+| Node sidecar | ❌ | Extra service to operate. Unnecessary now that the official Ruby SDK covers streamable HTTP. |
+
+**Caveat:** the official SDK is pre-1.0 — its API may shift before 1.0. Acceptable: it's the official, actively-shipped implementation and this spec is greenfield. Pin the exact version in `Gemfile.lock` and review release notes on each bump.
+
+---
+
+## All States
+
+| State | Condition | Expected Behavior |
+|-------|-----------|-------------------|
+| Initial handshake | MCP client connects with valid key | Server returns capabilities: 3 tools + 1 resource |
+| Tool call — happy path | Valid args, data present | Returns `tool_result` with `{ data: [...], meta: {...} }` |
+| Tool call — empty result | Valid args, no matching rows | Returns `tool_result` with `{ data: [], meta: { total_count: 0, ... } }` |
+| Tool call — paginated | `per_page` exceeded | First page returned with `meta.total_pages > 1`; agent can call again with `page+1` |
+| Missing auth header | No `Authorization` | 401 — connection rejected before handshake |
+| Invalid key | Bad token | 401 with `{ error: "Invalid or expired API key" }` |
+| Revoked key | Key revoked mid-session | 401 on next call; connection terminated |
+| Suspended account | Account not active | 401 on next call |
+| Test key | `sk_test_*` | Tools return test data; account summary marked `"environment": "test"` |
+| Live key | `sk_live_*` | Tools return live data; account summary marked `"environment": "live"` |
+| Bad arg shape | `start_date=foo` | Tool returns `is_error: true` with parseable message; client surfaces to agent |
+| Date range too wide | `end - start > 365d` | Same — `is_error: true`, agent can retry with smaller window |
+| Resource read — account/summary | Valid key | Returns JSON snapshot |
+| Cross-account | Account A's key | Never returns account B's data |
+
+---
+
+## Implementation Tasks
+
+### Phase 1: Auth + transport foundation ✅ (2026-05-15)
+
+Shipped in commits `54b2785` (gem) + `4be2085` (foundation). 7 controller tests green, full suite green (3932).
+
+**Structure landed differently from the original plan — three decisions made during the spike:**
+
+1. **Controller action, not `mount transport`.** The SDK's `StreamableHTTPTransport` carries an in-memory session store. For a stateless, read-only surface a plain controller action that calls `MCP::Server#handle_json` on the request body is genuinely stateless — a fresh server per request, no session store at all. `mount transport` was not used.
+2. **Code lives in `app/services/mcp/`, not `app/mcp/`.** Making `app/mcp` a Zeitwerk root would map `app/mcp/server.rb` → top-level `Server` and `app/mcp/tools/*` → top-level `Tools::*`, colliding with everything. `app/services/mcp/` autoloads cleanly as `Mcp::*` with zero config. Controllers stay at `app/controllers/mcp/` → `Mcp::ServerController` (already namespaced).
+3. **Auth is a controller `before_action`, not a Rack middleware.** No `app/mcp/authentication.rb`. The controller reuses `ApiKeys::AuthenticationService` directly in a `before_action`, independent of `Api::V1::BaseController`.
+
+- [x] **1.1** Official `mcp` gem added to `Gemfile`, pinned `0.16.0`, `bundle install`, committed
+- [x] **1.2** Spike: confirmed via real tests — `MCP::Server#handle_json` processes JSON-RPC, `server_context` flows to the tool layer, the `initialize` handshake and `tools/list` both work. (Error-model confirmation for Open Question #4 deferred to Phase 2 when the first tool exists.)
+- [x] **1.3** `Mcp::ServerController#authenticate_api_key` `before_action` — bearer-token check via `ApiKeys::AuthenticationService`, sets `@current_account` / `@current_api_key`
+- [x] **1.4** `post "/mcp"` route → `mcp/server#handle` on the main app. The `/mcp` path collides with nothing.
+- [x] **1.5** `test/controllers/mcp/server_controller_test.rb`: valid key → handshake; no/invalid/revoked/suspended key → 401; notification → 202
+- [x] **1.6** `Api::V1::BaseController` untouched — `Mcp::ServerController < ActionController::API` with its own auth
+
+### Phase 2: Tool surface ✅ (2026-05-15)
+
+Shipped in commit `67f1f73`. Code at `app/services/mcp/tools/`, tests at `test/services/mcp/tools_test.rb` (one file covers all three). Full suite green (3939).
+
+- [x] **2.1** `Mcp::Tools::GetConversions` → `DataDownloads::ConversionsQueryService`
+- [x] **2.2** Tests: each tool returns `{ data, meta }`; bad date → MCP error response (`isError: true`), not a raised exception
+- [x] **2.3** `Mcp::Tools::GetFunnel` → `DataDownloads::FunnelQueryService`
+- [x] **2.4** `Mcp::Tools::GetSpend` → `DataDownloads::SpendQueryService`
+- [x] **2.5** Descriptions written agent-first, intent-focused, under ~300 chars
+- [x] **2.6** Cross-account isolation: a fresh account sees zero rows; tools read `server_context[:account]`. Per-platform query services already carry their own isolation tests.
+
+**Notes:**
+- A shared `Mcp::Tools::Base` holds the param-building, `test_mode`-from-API-key, and response-formatting logic. Each tool subclass declares its own `tool_name` / `description` / `input_schema` and a one-line `call`.
+- Tool `call` takes `(server_context:, **args)` — args land in a hash rather than enumerated kwargs. Robust to unknown args and keeps the param count within rubocop limits.
+- `input_schema` must omit `required:` entirely when nothing is required — JSON Schema draft-04 rejects `required: []`.
+- `test_mode` is derived from the API key (`server_context[:api_key].test?`), never a tool argument — the key decides test vs live, same as the JSON API.
+
+### Phase 3: Resource ✅ (2026-05-15)
+
+Shipped in commit `ecdf679`. `app/services/mcp/resources/account_summary.rb`, tests at `test/services/mcp/account_summary_test.rb`.
+
+- [x] **3.1** `Mcp::Resources::AccountSummary` — snapshot of account name, earliest event date, connected ad platforms, default attribution model, available funnels, currencies. `ServerFactory` registers the resource and wires a `resources_read_handler`.
+- [x] **3.2** Tests: `to_h` returns the full shape, reflects account state; integration tests cover `resources/list` and `resources/read`
+- [x] **3.3** Account isolation: the read handler scopes to `server_context[:account]`; a fresh account yields empty collections
+
+**Adjusted from the draft shape to the real schema:**
+- The account has a single `selected_sdk` string column, not a plural `active_sdks` list. The snapshot reports `selected_sdk`.
+- There is no account-level `currency` column. `currencies` is the distinct set seen across the account's conversions.
+- Added `environment` (`test` / `live`, from the API key) so the agent knows which data mode it is in.
+
+### Phase 4: Customer-facing setup ✅ (2026-05-15)
+
+Shipped in commit `f118d71`.
+
+- [x] **4.1** `app/views/docs/_mcp.html.erb` — rendered by `docs#show` (`mcp` added to `DocsController::ALLOWED_PAGES`). Covers what the server exposes, the `mbuzz.co/mcp` URL, bearer-key auth, per-client connect snippets, example questions. Shows only placeholder keys, so no `skip_marketing_analytics` needed (consistent with the data-downloads docs page).
+- [x] **4.2** `app/views/accounts/api_keys/index.html.erb` — added an MCP callout with the server URL and a docs link. (The page is `index.html.erb`, not `show.html.erb` — there is no show. Controller already declares `skip_marketing_analytics`.) Kept it a static callout rather than a collapsible block — simpler, and a two-line callout does not need a toggle.
+- [x] **4.3** Docs nav gains an MCP link; the data-downloads page's MCP section now points at the live `/docs/mcp` page.
+- [x] **4.4** Dashboard Export dropdown MCP row flipped from the greyed "soon" stub to a live `link_to docs_path(page: "mcp")`. `export_dropdown_test` updated to assert the live link.
+
+### Phase 5: Manual verification (MCP UAT) ✅ (2026-05-15)
+
+UAT walked by the user against prod: Claude Desktop connected to `https://mbuzz.co/mcp` with a live API key, the server handshook, tools were callable and returned data. Signed off.
+
+- [x] **5.1** Claude Desktop connected against prod — tools callable, resource readable
+- [x] **5.3** In-conversation question answered from tool data
+- [ ] **5.2 / 5.4 / 5.5 / 5.6** Deeper checks (test/live env split, mid-conversation revocation, dashboard reconciliation, ChatGPT/Cursor) not exhaustively walked — fold into a follow-up if a discrepancy surfaces in use
+- [ ] **5.7** Tick `data_downloads_surface_and_uat_spec.md` M0 + M1 — left for whoever next touches that spec
+
+### Phase 5b: Deploy ✅ (2026-05-15)
+
+The MCP server is `POST /mcp` in the main Rails app — it shipped with the normal `kamal deploy`. No subdomain, no DNS record, no kamal-proxy change, no separate role or droplet.
+
+- [x] **5b.1** `kamal deploy` ran clean (web + jobs containers healthy). `POST https://mbuzz.co/mcp` with no auth returns `401 {"error":"Missing Authorization header"}` — route, controller, and auth path all confirmed live. A full authenticated handshake is covered by Phase 5 UAT.
+
+### Phase 6: Ship
+
+- [x] **6.1** Full test suite passes — green at 3940
+- [x] **6.2** Manual QA from Phase 5 signed off
+- [x] **6.3** MCP docs page live (`/docs/mcp`)
+- [x] **6.4** API keys page surfaces MCP connection details
+- [x] **6.5** Business docs review — `BUSINESS_RULES.md` section 11 gained Data Downloads API + MCP subsections; `PRODUCT.md` names the data API + MCP in the export feature
+- [x] **6.6** Spec archived to `old/`
+
+---
+
+## Testing Strategy
+
+### Unit Tests
+
+| Test | File | Verifies |
+|------|------|----------|
+| Bearer auth | `test/mcp/authentication_test.rb` | Valid key → account set; invalid → 401; revoked → 401; suspended → 401 |
+| Conversions tool | `test/mcp/tools/get_conversions_test.rb` | Tool result shape, pagination, account isolation, bad-arg handling |
+| Funnel tool | `test/mcp/tools/get_funnel_test.rb` | Same shape, funnel param, account isolation |
+| Spend tool | `test/mcp/tools/get_spend_test.rb` | Spend in major units, metadata as JSON object, account isolation |
+| Account summary | `test/mcp/resources/account_summary_test.rb` | Reflects account state, env-aware, account isolation |
+
+### Integration Tests
+
+| Test | File | Verifies |
+|------|------|----------|
+| Handshake | `test/mcp/server_test.rb` | Capabilities advertised, all 3 tools + 1 resource present |
+| End-to-end tool call | Same | POST → auth → tool dispatch → query service → JSON response |
+| Test vs live isolation | Same | `sk_test_*` connection cannot see live data |
+
+### Manual QA
+
+See Phase 5 above. The "real-world agent grounding" check is what catches design failures — descriptions that confuse the model, schemas that read awkwardly, missing context the resource should carry.
+
+---
+
+## Key Decisions
+
+| Decision | Choice | Why |
+|----------|--------|-----|
+| Transport | Streamable HTTP, `stateless: true` | We host. Customer pastes URL + key, no local server. Stateless drops the in-memory session store — no sticky routing on the droplet. |
+| Auth | Existing API keys | Zero new credential surface. Account scoping, env, revocation, logging — already built. |
+| Library | Official `mcp` SDK (`modelcontextprotocol/ruby-sdk`) | Decided 2026-05-15. True streamable HTTP, Rack-mountable, custom header auth so we resolve per-account keys. `fast-mcp` rejected — stale + static-token auth. |
+| Hosting | `mbuzz.co/mcp` — a route in the main app | Revised 2026-05-15. The MCP server is `POST /mcp` in the main Rails app; it deploys and runs with the main app. No subdomain, no separate role, no separate droplet. |
+| Tool naming | snake_case, `mbuzz_`-prefixed: `mbuzz_get_conversions` etc. | Decided 2026-05-15. snake_case is the 90%+ MCP convention; vendor prefix groups tools + avoids collisions; dots are discouraged. Dotted `mbuzz.spend.list` alternative rejected. |
+| Tool granularity | 3 broad tools, not many narrow ones | An agent picks better from "get spend" than from 12 hyper-specific tools. Mirrors API shape. |
+| Resource: account summary | Yes | Lets the agent prime itself in 1 read instead of N tool calls. |
+| Per-tool scopes | No (v1) | The API key represents account-level access. Sub-scopes (read-only conversions only, e.g.) is a separate auth feature. |
+| Rate limiting | Reuse whatever the JSON API has | Rate limiting is currently disabled globally per `base_controller.rb:9–12`; revisit when billing tiers ship — applies equally to API and MCP. |
+
+---
+
+## Out of Scope
+
+- **Write tools** (e.g. `mbuzz_create_account`, `mbuzz_invite_user`). MCP v1 is read-only.
+- **OAuth-based MCP auth** (third-party agent acts on behalf of a user). Bearer-key auth is enough until a partner asks for it.
+- **Per-tool scoping** — granular permissions per tool. Defer until customers ask.
+- **Streaming long results.** Pagination is fine for the data sizes we expose; true streaming is a future optimisation.
+- **stdio transport / desktop-installable server.** Hosted-only in v1. Could ship a stdio variant later for power users.
+- **Caching / response memoization at the MCP layer.** Underlying query services already cache where appropriate.
+- **Custom AI assistant inside the mbuzz dashboard.** MCP is for connecting external assistants. An in-product assistant is a separate product.
+- **Analytics on MCP usage.** Standard request logs are enough for v1; per-tool usage dashboards can come later.
+
+---
+
+## Open Questions
+
+1. ~~**Hosting endpoint shape.**~~ **Resolved 2026-05-15:** `mbuzz.co/mcp` — a plain route in the main Rails app. No subdomain, no DNS, no proxy change. Ships with the main app deploy. (The subdomain and the `mbuzz-shopify` droplet were both considered and dropped.)
+2. ~~**Tool naming.**~~ **Resolved 2026-05-15:** snake_case, `mbuzz_`-prefixed (`mbuzz_get_conversions` / `mbuzz_get_funnel` / `mbuzz_get_spend`). Matches the dominant MCP convention; dotted form rejected (dots discouraged in tool names).
+3. **Tool description length.** MCP clients vary in how they truncate descriptions. Keep under ~300 chars per tool, test in real clients in Phase 5.
+4. ~~**Error semantics.**~~ **Resolved 2026-05-15 (Phase 2):** bad input (e.g. malformed date) returns an `MCP::Tool::Response` with `error: true` (`isError: true` on the wire) — a recoverable tool error the agent sees. Auth failures are transport-level 401s from the controller `before_action`.
+5. ~~**Co-tenancy on `mbuzz-shopify`.**~~ **Moot — Shopify channel killed 2026-05-15, droplet decommissioned. MCP runs on the main web droplet as part of the main app.**
+
+---
+
+## Dependencies
+
+`data_downloads_api_spec.md` — **satisfied 2026-05-12**. The three query services (`DataDownloads::ConversionsQueryService`, `DataDownloads::FunnelQueryService`, `DataDownloads::SpendQueryService`) and the matching controller endpoints are shipped. MCP tools delegate directly to those services; no further changes to the API surface are required to start this spec.

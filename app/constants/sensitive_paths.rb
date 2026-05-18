@@ -14,6 +14,7 @@ module SensitivePaths
   API_KEYS_ROUTE           = %r{\A/accounts/[^/]+/api_keys}
   BILLING_ROUTE            = %r{\A/accounts/[^/]+/billing}
   INTEGRATIONS_ROUTE       = %r{\A/accounts/[^/]+/integrations}
+  TEAM_ROUTE               = %r{\A/accounts/[^/]+/team}
   ONBOARDING_API_KEY_PAGES = %r{\A/onboarding/(install|setup)(/|\z)}
   IDENTITIES_ROUTE         = %r{\A/dashboard/identities}
   CONVERSION_DETAIL        = %r{\A/dashboard/conversion_detail}
@@ -29,6 +30,7 @@ module SensitivePaths
     API_KEYS_ROUTE,
     BILLING_ROUTE,
     INTEGRATIONS_ROUTE,
+    TEAM_ROUTE,
     ONBOARDING_API_KEY_PAGES,
     IDENTITIES_ROUTE,
     CONVERSION_DETAIL,

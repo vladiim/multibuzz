@@ -60,8 +60,8 @@ class MarketingAnalyticsEnabledTest < ActiveSupport::TestCase
     assert enabled_for(EnabledController, "/onboarding/attribution")
   end
 
-  test "marketing_analytics_enabled? returns true on team paths" do
-    assert enabled_for(EnabledController, "/accounts/acct_abc/team")
+  test "marketing_analytics_enabled? returns false on team paths" do
+    refute enabled_for(EnabledController, "/accounts/acct_abc/team")
   end
 
   test "marketing_analytics_enabled? returns false on identity show path" do

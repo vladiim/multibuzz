@@ -1,0 +1,488 @@
+<%= render_markdown <<~MD
+  # Data Downloads API
+
+  Three JSON endpoints for pulling your conversion, funnel, and ad spend data out of mbuzz.
+
+  - **`GET /api/v1/data/conversions`** — one row per attribution credit
+  - **`GET /api/v1/data/funnel`** — one row per visit / event / conversion, time-ordered
+  - **`GET /api/v1/data/spend`** — one row per ad spend record from connected platforms
+
+  Same data the dashboard renders, in a programmatic shape. Same auth as the rest of the API.
+
+  ---
+
+  ## Quickstart
+
+  Under a minute to your first real response.
+
+  **1. Create an API key** in [your dashboard](#{account_api_keys_path}) → "Generate New Key" → choose **Test** for a dry run.
+
+  **2. Export it:**
+
+  ```bash
+  export MBUZZ_API_KEY=sk_test_your_key_here
+  ```
+
+  **3. Make a call:**
+
+  ```bash
+  curl -s -H "Authorization: Bearer $MBUZZ_API_KEY" \\
+    "https://mbuzz.co/api/v1/data/conversions?per_page=2" | jq
+  ```
+
+  You'll get back:
+
+  ```json
+  {
+    "data": [
+      {
+        "date": "2026-05-12",
+        "type": "conversion",
+        "name": "purchase",
+        "funnel": "sales",
+        "attribution_model": "Linear",
+        "algorithm": "Linear",
+        "channel": "paid_search",
+        "credit": 0.5,
+        "revenue": 149.0,
+        "revenue_credit": 74.5,
+        "currency": "USD",
+        "utm_source": "google",
+        "utm_medium": "cpc",
+        "utm_campaign": "spring_sale",
+        "is_acquisition": true,
+        "properties": { "order_id": "ord_8821" },
+        "journey_position": "first_touch",
+        "touchpoint_index": 0,
+        "journey_length": 2,
+        "days_to_conversion": 3
+      },
+      {
+        "date": "2026-05-12",
+        "type": "conversion",
+        "name": "purchase",
+        "funnel": "sales",
+        "attribution_model": "Linear",
+        "algorithm": "Linear",
+        "channel": "direct",
+        "credit": 0.5,
+        "revenue": 149.0,
+        "revenue_credit": 74.5,
+        "currency": "USD",
+        "utm_source": null,
+        "utm_medium": null,
+        "utm_campaign": null,
+        "is_acquisition": true,
+        "properties": { "order_id": "ord_8821" },
+        "journey_position": "last_touch",
+        "touchpoint_index": 1,
+        "journey_length": 2,
+        "days_to_conversion": 0
+      }
+    ],
+    "meta": { "total_count": 1342, "page": 1, "per_page": 2, "total_pages": 671 }
+  }
+  ```
+
+  That's the whole shape: `data` (rows) + `meta` (paging). Every endpoint returns the same envelope.
+
+  ---
+
+  ## Authentication
+
+  Every request needs a Bearer token in the `Authorization` header:
+
+  ```
+  Authorization: Bearer sk_live_your_key_here
+  ```
+
+  See [Authentication](#{docs_path(page: 'authentication')}) for how to create, store, and rotate keys.
+
+  ---
+
+  ## Test vs live keys
+
+  The key's prefix decides what data the endpoint returns:
+
+  | Prefix | Returns | Use for |
+  |---|---|---|
+  | `sk_test_*` | Test-mode data only (events you marked `test_mode: true` from your SDK) | Local development, CI, integration tests |
+  | `sk_live_*` | Live data only | Production reporting, BI pipelines |
+
+  A test key never sees live data and vice versa, even on the same account. Switch keys to switch environments. The dashboard's view-mode toggle (top-right) shows you the same split.
+
+  ---
+
+  ## Versioning
+
+  All endpoints sit under `/api/v1/`. We treat additive changes (new fields on a row, new optional query params) as non-breaking. Breaking changes go to a new major version (`/api/v2/`); we will not silently rename or remove fields under `v1`.
+
+  ---
+
+  ## Rate limits
+
+  Per-key rate limiting is currently disabled while we finalise billing tiers. Keep request volume reasonable (a few requests per second per key); we'll publish enforced limits with billing.
+
+  ---
+
+  ## Common parameters
+
+  All three endpoints share the same query parameters.
+
+  | Param | Default | Notes |
+  |---|---|---|
+  | `start_date` + `end_date` | last 30 days | `YYYY-MM-DD`. Both required if either is present. |
+  | `date_range` | `30d` | Alternative to start/end. Examples: `7d`, `30d`, `90d`. |
+  | `channels[]` | all channels | Repeat the param to filter to multiple, e.g. `channels[]=paid_search&channels[]=direct`. |
+  | `page` | `1` | 1-indexed. |
+  | `per_page` | `100` | Clamped to `[1, 1000]`. |
+  | `funnel` | none | Conversions + funnel only. Filters to a single funnel name. |
+
+  Bad date format returns `400 Bad Request` with `{"error":"Invalid date format. Use YYYY-MM-DD."}`.
+
+  ---
+
+  ## Response shape
+
+  Every endpoint returns:
+
+  ```json
+  {
+    "data": [ /* rows */ ],
+    "meta": {
+      "total_count": 1234,
+      "page": 1,
+      "per_page": 100,
+      "total_pages": 13
+    }
+  }
+  ```
+
+  Iterate by incrementing `page` until `page > total_pages`.
+
+  ---
+
+  ## Pagination
+
+  A copy-paste-ready loop that walks every page and prints each row.
+MD
+%>
+
+<%= code_tabs(filter_live_examples({
+  curl: {
+    label: 'cURL',
+    syntax: 'bash',
+    code: <<~CODE
+      # Walk all pages of /data/conversions, 1000 rows at a time
+      page=1
+      total_pages=1
+      while [ "$page" -le "$total_pages" ]; do
+        response=$(curl -s -H "Authorization: Bearer $MBUZZ_API_KEY" \\
+          "https://mbuzz.co/api/v1/data/conversions?per_page=1000&page=$page")
+        echo "$response" | jq -c '.data[]'
+        total_pages=$(echo "$response" | jq '.meta.total_pages')
+        page=$((page + 1))
+      done
+    CODE
+  },
+  ruby: {
+    label: 'Ruby',
+    syntax: 'ruby',
+    code: <<~CODE
+      require "net/http"
+      require "json"
+
+      def each_page(path, params = {})
+        page = 1
+        loop do
+          uri = URI("https://mbuzz.co\#{path}")
+          uri.query = URI.encode_www_form(params.merge(page: page, per_page: 1000))
+          req = Net::HTTP::Get.new(uri)
+          req["Authorization"] = "Bearer \#{ENV['MBUZZ_API_KEY']}"
+          body = JSON.parse(Net::HTTP.start(uri.host, uri.port, use_ssl: true) { |h| h.request(req) }.body)
+          body.fetch("data").each { |row| yield row }
+          break if page >= body.dig("meta", "total_pages").to_i
+          page += 1
+        end
+      end
+
+      each_page("/api/v1/data/conversions") { |row| puts row.inspect }
+    CODE
+  },
+  nodejs: {
+    label: 'Node.js',
+    syntax: 'javascript',
+    code: <<~CODE
+      // Requires Node 18+ for global fetch
+      async function* eachPage(path, params = {}) {
+        let page = 1;
+        while (true) {
+          const url = new URL(`https://mbuzz.co\${path}`);
+          Object.entries({ ...params, page, per_page: 1000 })
+            .forEach(([k, v]) => url.searchParams.set(k, v));
+          const res = await fetch(url, {
+            headers: { Authorization: `Bearer \${process.env.MBUZZ_API_KEY}` }
+          });
+          const body = await res.json();
+          for (const row of body.data) yield row;
+          if (page >= body.meta.total_pages) break;
+          page += 1;
+        }
+      }
+
+      for await (const row of eachPage('/api/v1/data/conversions')) {
+        console.log(row);
+      }
+    CODE
+  },
+  python: {
+    label: 'Python',
+    syntax: 'python',
+    code: <<~CODE
+      import os, requests
+
+      def each_page(path, **params):
+          page = 1
+          while True:
+              r = requests.get(
+                  f"https://mbuzz.co{path}",
+                  params={**params, "page": page, "per_page": 1000},
+                  headers={"Authorization": f"Bearer {os.environ['MBUZZ_API_KEY']}"},
+              )
+              body = r.json()
+              for row in body["data"]:
+                  yield row
+              if page >= body["meta"]["total_pages"]:
+                  break
+              page += 1
+
+      for row in each_page("/api/v1/data/conversions"):
+          print(row)
+    CODE
+  }
+}), default: :curl) %>
+
+<%= render_markdown <<~MD
+  ---
+
+  ## GET /api/v1/data/conversions
+
+  One row per attribution credit. A single conversion across N attribution models produces N rows (one per model).
+
+  ### Row fields
+
+  | Field | Type | Notes |
+  |---|---|---|
+  | `date` | string | `YYYY-MM-DD`, conversion date |
+  | `type` | string | always `"conversion"` |
+  | `name` | string | conversion type (e.g. `purchase`, `signup`) |
+  | `funnel` | string\\|null | funnel name if assigned |
+  | `attribution_model` | string | model name |
+  | `algorithm` | string | model algorithm label (e.g. `Linear`, `Last Touch`) |
+  | `channel` | string | crediting touchpoint's channel |
+  | `credit` | float | fractional credit `0.0`-`1.0` |
+  | `revenue` | float\\|null | total conversion revenue |
+  | `revenue_credit` | float\\|null | this row's share of revenue |
+  | `currency` | string | ISO 4217 |
+  | `utm_source` / `utm_medium` / `utm_campaign` | string\\|null | crediting touchpoint UTMs |
+  | `is_acquisition` | bool | first conversion for the user? |
+  | `properties` | object | event properties JSON |
+  | `journey_position` | string | `first_touch` / `assisted` / `last_touch` |
+  | `touchpoint_index` | int | 0-indexed position in journey |
+  | `journey_length` | int | total touchpoints in journey |
+  | `days_to_conversion` | int | days from this touchpoint to conversion |
+
+  ### Example
+
+  ```bash
+  curl -s -H "Authorization: Bearer $MBUZZ_API_KEY" \\
+    "https://mbuzz.co/api/v1/data/conversions?start_date=2026-04-01&end_date=2026-05-14&channels[]=paid_search&per_page=50"
+  ```
+
+  ### Sample response
+
+  ```json
+  {
+    "data": [
+      {
+        "date": "2026-04-12",
+        "type": "conversion",
+        "name": "purchase",
+        "funnel": "sales",
+        "attribution_model": "Linear",
+        "algorithm": "Linear",
+        "channel": "paid_search",
+        "credit": 1.0,
+        "revenue": 89.0,
+        "revenue_credit": 89.0,
+        "currency": "USD",
+        "utm_source": "google",
+        "utm_medium": "cpc",
+        "utm_campaign": "spring_sale",
+        "is_acquisition": true,
+        "properties": { "order_id": "ord_4471" },
+        "journey_position": "first_touch",
+        "touchpoint_index": 0,
+        "journey_length": 1,
+        "days_to_conversion": 0
+      }
+    ],
+    "meta": { "total_count": 412, "page": 1, "per_page": 50, "total_pages": 9 }
+  }
+  ```
+
+  ---
+
+  ## GET /api/v1/data/funnel
+
+  One row per funnel event: visits, custom events, and conversions, ordered by time. Use this when you want raw event sequencing rather than attribution credits.
+
+  When `funnel=<name>` is set, visit rows are excluded (visits are not funnel-scoped).
+
+  ### Row fields
+
+  | Field | Type | Notes |
+  |---|---|---|
+  | `date` | string | `YYYY-MM-DD` |
+  | `type` | string | `visit`, `event`, or `conversion` |
+  | `name` | string\\|null | event/conversion name; null for visits |
+  | `funnel` | string\\|null | funnel name |
+  | `channel` | string | session channel |
+  | `utm_source` / `utm_medium` / `utm_campaign` | string\\|null | session initial UTMs |
+  | `revenue` | float\\|null | conversion rows only |
+  | `currency` | string\\|null | conversion rows only |
+  | `is_acquisition` | bool\\|null | conversion rows only |
+  | `properties` | object\\|null | event/conversion properties |
+  | `session_id` | int | internal session id (joinable across rows) |
+
+  ### Example
+
+  ```bash
+  curl -s -H "Authorization: Bearer $MBUZZ_API_KEY" \\
+    "https://mbuzz.co/api/v1/data/funnel?funnel=sales&per_page=20"
+  ```
+
+  ### Sample response
+
+  ```json
+  {
+    "data": [
+      {
+        "date": "2026-05-10",
+        "type": "event",
+        "name": "add_to_cart",
+        "funnel": "sales",
+        "channel": "paid_search",
+        "utm_source": "google",
+        "utm_medium": "cpc",
+        "utm_campaign": "spring_sale",
+        "revenue": null,
+        "currency": null,
+        "is_acquisition": null,
+        "properties": { "product_id": "SKU-7741", "price": 49.99 },
+        "session_id": 188214
+      },
+      {
+        "date": "2026-05-10",
+        "type": "conversion",
+        "name": "purchase",
+        "funnel": "sales",
+        "channel": "paid_search",
+        "utm_source": "google",
+        "utm_medium": "cpc",
+        "utm_campaign": "spring_sale",
+        "revenue": 149.0,
+        "currency": "USD",
+        "is_acquisition": true,
+        "properties": { "order_id": "ord_9012" },
+        "session_id": 188214
+      }
+    ],
+    "meta": { "total_count": 1782, "page": 1, "per_page": 20, "total_pages": 90 }
+  }
+  ```
+
+  ---
+
+  ## GET /api/v1/data/spend
+
+  One row per ad spend record from your connected ad platforms. Money fields are in major units (e.g. dollars, not cents/micros).
+
+  ### Row fields
+
+  | Field | Type | Notes |
+  |---|---|---|
+  | `spend_date` | string | `YYYY-MM-DD` |
+  | `channel` | string | mbuzz channel mapping |
+  | `platform` | string | `google_ads`, `meta_ads`, etc. |
+  | `campaign_name` | string | |
+  | `campaign_type` / `network_type` / `device` | string\\|null | platform breakdowns |
+  | `spend_hour` | int\\|null | hour 0-23 if hourly granularity available |
+  | `spend` | float | major units |
+  | `currency` | string | ISO 4217 |
+  | `impressions` | int | |
+  | `clicks` | int | |
+  | `platform_conversions` | float | platform's own conversion count |
+  | `platform_conversion_value` | float | platform's reported conversion value |
+  | `metadata` | object | operator-applied metadata tags |
+
+  Channel filter still applies; `funnel` is ignored for spend.
+
+  ### Example
+
+  ```bash
+  curl -s -H "Authorization: Bearer $MBUZZ_API_KEY" \\
+    "https://mbuzz.co/api/v1/data/spend?start_date=2026-04-01&end_date=2026-05-14"
+  ```
+
+  ### Sample response
+
+  ```json
+  {
+    "data": [
+      {
+        "spend_date": "2026-04-01",
+        "channel": "paid_search",
+        "platform": "google_ads",
+        "campaign_name": "Spring Sale - Brand",
+        "campaign_type": "SEARCH",
+        "network_type": "SEARCH",
+        "device": "MOBILE",
+        "spend_hour": null,
+        "spend": 142.37,
+        "currency": "USD",
+        "impressions": 8421,
+        "clicks": 312,
+        "platform_conversions": 11.0,
+        "platform_conversion_value": 1639.0,
+        "metadata": { "team": "growth", "tier": "core" }
+      }
+    ],
+    "meta": { "total_count": 184, "page": 1, "per_page": 100, "total_pages": 2 }
+  }
+  ```
+
+  ---
+
+  ## Errors
+
+  All errors return JSON `{ "error": "<message>" }` with the appropriate status code.
+
+  | Status | When | Example body |
+  |---|---|---|
+  | `401` | missing/invalid/revoked key, or suspended account | `{"error":"Missing Authorization header"}` |
+  | `400` | malformed date | `{"error":"Invalid date format. Use YYYY-MM-DD."}` |
+
+  ---
+
+  ## What's next
+
+  - **Connecting it to BI?** Loop the [pagination recipe](#pagination) above into your warehouse loader.
+  - **Want it in your AI assistant?** The [MCP server](#{docs_path(page: "mcp")}) exposes this same data as tools for Claude, ChatGPT, and Cursor.
+  - **Need a different shape or a missing field?** Open a request from your dashboard.
+
+  ## MCP
+
+  Prefer to query your data from an AI assistant? The [mbuzz MCP server](#{docs_path(page: "mcp")}) exposes these same three endpoints as tools that Claude, ChatGPT, and Cursor can call directly — no code, just paste the server URL and your API key into the client.
+MD
+%>

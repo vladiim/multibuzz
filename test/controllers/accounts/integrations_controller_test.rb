@@ -4,6 +4,11 @@ require "test_helper"
 
 class Accounts::IntegrationsControllerTest < ActionDispatch::IntegrationTest
   include ActiveJob::TestHelper
+
+  setup do
+    account.enable_feature!(FeatureFlags::GOOGLE_ADS_INTEGRATION)
+  end
+
   # --- show ---
 
   test "show renders integrations page" do
@@ -272,6 +277,29 @@ class Accounts::IntegrationsControllerTest < ActionDispatch::IntegrationTest
     post notify_account_integrations_path, params: { platform_name: "Meta Ads" }
 
     assert_redirected_to login_path
+  end
+
+  # --- google_ads (feature-flagged) ---
+
+  test "show renders Google Ads as Coming Soon when feature flag off" do
+    account.disable_feature!(FeatureFlags::GOOGLE_ADS_INTEGRATION)
+    sign_in
+
+    get account_integrations_path
+
+    assert_select "a[href='#{google_ads_account_integrations_path}']", count: 0
+    assert_match(/Google Ads/, response.body)
+    assert_match(/Coming soon/, response.body)
+  end
+
+  test "show renders live Google Ads card when feature flag on" do
+    account.enable_feature!(FeatureFlags::GOOGLE_ADS_INTEGRATION)
+    sign_in
+
+    get account_integrations_path
+
+    assert_select "[data-platform='google-ads']"
+    assert_select "a[href='#{google_ads_account_integrations_path}']"
   end
 
   # --- meta_ads (feature-flagged) ---

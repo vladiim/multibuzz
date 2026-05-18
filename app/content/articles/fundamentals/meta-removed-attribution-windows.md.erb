@@ -3,7 +3,7 @@ title: "Meta Removed Your Attribution Windows. Here's What's Broken Three Months
 slug: "meta-removed-attribution-windows"
 description: "Meta killed 7-day and 28-day view-through windows in January 2026. Some advertisers lost 30-40% of reported conversions overnight. What's changed since."
 published_at: 2026-02-12
-last_updated: 2026-05-01
+last_updated: 2026-05-12
 section: fundamentals
 section_order: 6
 status: published
@@ -44,6 +44,10 @@ aeo:
       a: "Meta announced the change in October 2024, giving roughly 3 months notice. However, most advertisers missed it because it was buried in API documentation updates rather than communicated prominently in Ads Manager."
     - q: "How do I measure view-through conversions now?"
       a: "Meta only provides 1-day view attribution natively. For longer view-through measurement, you need an independent attribution tool that tracks users across touchpoints server-side—capturing conversions that Meta can no longer report."
+    - q: "Why do platforms keep changing attribution rules?"
+      a: "Each platform measures its own performance and sells its own ads — the conflict of interest is structural. When platforms shrink attribution windows or change model definitions, advertisers lose data and have to recalibrate. Eric Seufert at Mobile Dev Memo has documented this pattern across iOS 14.5, Meta's earlier window changes, and the GA4 model removal: every change reduces what platforms can tell you about your marketing, and the changes will keep coming. The companies that thrive are the ones building first-party measurement (server-side capture, independent attribution, in-house MMM via tools like Robyn or Recast)."
+    - q: "How does platform attribution compare to incrementality testing?"
+      a: "Platform attribution (Meta, Google, GA4) is correlational and biased toward the platform reporting it. Incrementality testing uses geo-lift or holdout experiments to measure causal effect — what would have happened without the spend. The Dropbox IEEE Access paper (Chivukula et al., 2026) measured the gap directly: click-based attribution overstates causal impact by 2 to 10x compared to geo-incrementality. Avinash Kaushik (Measured strategy advisor, formerly Google) calls MTA the 'smart' rung of measurement and incrementality the 'super smart' rung. Tools like Haus, Measured, Recast, and Mutinex serve the top rung at $10K-$132K/year. Platform-attribution rule changes don't affect incrementality tests — that's the point of them."
 schema:
   type: Article
   author: "holly-henderson"
@@ -120,6 +124,8 @@ This is not an isolated event. It's part of a pattern:
 Every time a platform changes its attribution rules, advertisers lose data and have to recalibrate. This is the fundamental problem with platform-controlled measurement: **you don't own the ruler.**
 
 Google decides how to credit. Meta decides what to count. And they can change the definitions at any time—without your input, often without your awareness.
+
+Eric Seufert at [Mobile Dev Memo](https://mobiledevmemo.com/) has covered this pattern since iOS 14.5 first hit in 2021: every platform retreat from measurement reduces what advertisers can see, and the changes never go in the opposite direction. The Dropbox IEEE Access paper (Chivukula et al., 2026) put a number on what the platforms over-report when they DO report: click-based attribution overstates causal impact by 2 to 10x compared to geo-incrementality experiments. HockeyStack publicly exited the attribution category in Q1 2026 partly because the platform-reporting layer keeps moving. Independent MMM tools — Meta's own open-source [Robyn](https://facebookexperimental.github.io/Robyn/), [Recast](https://getrecast.com/), [Mutinex](https://mutinex.co/) — solve the problem by fitting models from your own spend-vs-revenue data, ignoring platform-reported credit entirely.
 
 ## What to Do Now
 

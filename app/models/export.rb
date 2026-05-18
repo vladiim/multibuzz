@@ -1,10 +1,13 @@
 # frozen_string_literal: true
 
 class Export < ApplicationRecord
-  EXPORT_TYPES = %w[conversions funnel].freeze
+  EXPORT_TYPES = DashboardTabs::EXPORTABLE
   EXPIRY_DURATION = 1.hour
+  DOWNLOAD_URL_TTL = 5.minutes
 
   belongs_to :account
+
+  has_one_attached :csv
 
   has_prefix_id :exp
 
@@ -16,8 +19,21 @@ class Export < ApplicationRecord
     expires_at.present? && expires_at < Time.current
   end
 
+  def blob_key
+    "accounts/#{account.prefix_id}/exports/#{prefix_id}.csv"
+  end
+
+  def download_url
+    csv.url(
+      expires_in: DOWNLOAD_URL_TTL,
+      disposition: "attachment",
+      filename: ActiveStorage::Filename.new(filename),
+      content_type: "text/csv"
+    )
+  end
+
   def cleanup!
-    File.delete(file_path) if file_path.present? && File.exist?(file_path)
+    csv.purge if csv.attached?
     destroy!
   end
 end

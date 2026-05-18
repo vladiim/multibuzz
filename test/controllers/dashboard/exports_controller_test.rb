@@ -106,6 +106,15 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "funnel", export.export_type
   end
 
+  test "create with spend export type" do
+    sign_in
+    post dashboard_export_path, params: { export_type: "spend" }
+
+    export = Export.last
+
+    assert_equal "spend", export.export_type
+  end
+
   # ==========================================
   # Show (export status page)
   # ==========================================
@@ -133,6 +142,18 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
   test "show renders download button for completed export" do
     sign_in
     export = create_completed_export
+
+    get dashboard_export_status_path(id: export.prefix_id)
+
+    assert_response :success
+    assert_select "h2", "Export ready"
+    assert_select "a[href=?]", dashboard_export_download_path(id: export.prefix_id)
+  end
+
+  test "show renders download button when blob is attached regardless of status" do
+    sign_in
+    export = create_completed_export
+    export.update!(status: :processing)
 
     get dashboard_export_status_path(id: export.prefix_id)
 
@@ -174,24 +195,87 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
   # Download (file delivery)
   # ==========================================
 
-  test "download sends completed export file" do
+  test "download redirects to signed storage url for completed export" do
     sign_in
     export = create_completed_export
 
     get dashboard_export_download_path(id: export.prefix_id)
 
-    assert_response :success
-    assert_equal "text/csv", response.content_type
-    assert_match "attachment", response.headers["Content-Disposition"]
+    assert_response :redirect
+    assert_includes response.location, export.filename
   end
 
-  test "download returns 404 for pending export" do
+  test "download redirects to status page when status is :completed but blob is missing" do
+    sign_in
+    export = Export.create!(
+      account: account,
+      export_type: "conversions",
+      status: :completed,
+      filename: "mbuzz-conversions-#{Date.current}.csv",
+      completed_at: Time.current,
+      expires_at: 1.hour.from_now
+    )
+
+    get dashboard_export_download_path(id: export.prefix_id)
+
+    assert_redirected_to dashboard_export_status_path(id: export.prefix_id)
+  end
+
+  test "download redirects pending export to status page" do
     sign_in
     export = Export.create!(account: account, export_type: "conversions")
 
     get dashboard_export_download_path(id: export.prefix_id)
 
+    assert_redirected_to dashboard_export_status_path(id: export.prefix_id)
+  end
+
+  test "download redirects processing export to status page" do
+    sign_in
+    export = Export.create!(account: account, export_type: "conversions", status: :processing)
+
+    get dashboard_export_download_path(id: export.prefix_id)
+
+    assert_redirected_to dashboard_export_status_path(id: export.prefix_id)
+  end
+
+  test "download redirects failed export to status page so customer sees the failure" do
+    sign_in
+    export = Export.create!(account: account, export_type: "conversions", status: :failed)
+
+    get dashboard_export_download_path(id: export.prefix_id)
+
+    assert_redirected_to dashboard_export_status_path(id: export.prefix_id)
+  end
+
+  test "download returns 404 for unknown export id" do
+    sign_in
+
+    get dashboard_export_download_path(id: "exp_doesnotexist")
+
     assert_response :not_found
+  end
+
+  test "download serves the file when csv is attached regardless of status (flap defense)" do
+    sign_in
+    export = create_completed_export
+    export.update!(status: :processing)
+
+    get dashboard_export_download_path(id: export.prefix_id)
+
+    assert_response :redirect
+    assert_includes response.location, export.filename
+  end
+
+  test "download serves the file for a :failed status export if the blob is attached" do
+    sign_in
+    export = create_completed_export
+    export.update!(status: :failed)
+
+    get dashboard_export_download_path(id: export.prefix_id)
+
+    assert_response :redirect
+    assert_includes response.location, export.filename
   end
 
   test "download returns 410 for expired export" do
@@ -213,15 +297,80 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # ==========================================
-  # Dashboard UI
+  # Dashboard UI: single tab-aware Download CSV
   # ==========================================
 
-  test "dashboard has export dropdown" do
+  test "dashboard has export dropdown trigger" do
     sign_in
     get dashboard_path
 
     assert_response :success
     assert_select "button", text: /Export/
+  end
+
+  test "dashboard renders a single Download CSV submit row" do
+    sign_in
+    get dashboard_path
+
+    assert_response :success
+    download_buttons = css_select("[data-export-button-target='container'] button[type='submit']")
+
+    assert_equal 1, download_buttons.size, "expected exactly one CSV submit button in the dropdown"
+    assert_match(/Download CSV/i, download_buttons.first.text)
+  end
+
+  test "dashboard no longer renders separate Conversions CSV / Funnel CSV rows" do
+    sign_in
+    get dashboard_path
+
+    assert_response :success
+    assert_select "button", text: "Conversions CSV", count: 0
+    assert_select "button", text: "Funnel CSV", count: 0
+  end
+
+  test "dashboard no longer renders API Extract waitlist row in export dropdown" do
+    sign_in
+    get dashboard_path
+
+    assert_response :success
+    dropdown_html = css_select("[data-export-button-target='container']").first&.to_html.to_s
+
+    assert_no_match(/API Extract/i, dropdown_html)
+    assert_no_match(/waitlist/i, dropdown_html)
+  end
+
+  test "dashboard hidden export_type input defaults to conversions" do
+    sign_in
+    get dashboard_path
+
+    assert_response :success
+    assert_select "[data-controller~='export-button'] input[name='export_type'][value='conversions']"
+  end
+
+  test "dashboard hidden export_type input reflects ?tab= param" do
+    sign_in
+    get dashboard_path(tab: DashboardTabs::SPEND)
+
+    assert_response :success
+    assert_select "[data-controller~='export-button'] input[name='export_type'][value='spend']"
+  end
+
+  test "dashboard hidden export_type input falls back to conversions when tab is events" do
+    sign_in
+    get dashboard_path(tab: DashboardTabs::EVENTS)
+
+    assert_response :success
+    # Events tab is not exportable; the input still posts a valid value but the
+    # button is hidden client-side via Stimulus.
+    assert_select "[data-controller~='export-button'] input[name='export_type'][value='conversions']"
+  end
+
+  test "dashboard exposes initial tab via export-button data attribute" do
+    sign_in
+    get dashboard_path(tab: DashboardTabs::FUNNEL)
+
+    assert_response :success
+    assert_select "[data-controller~='export-button'][data-export-button-initial-tab-value='funnel']"
   end
 
   private
@@ -242,12 +391,12 @@ class Dashboard::ExportsControllerTest < ActionDispatch::IntegrationTest
       expires_at: expires_at
     )
 
-    # Write a real file
-    dir = Rails.root.join("tmp/exports")
-    FileUtils.mkdir_p(dir)
-    file_path = dir.join("#{export.prefix_id}.csv")
-    File.write(file_path, CSV.generate { |csv| csv << %w[date type name] })
-    export.update!(file_path: file_path.to_s)
+    export.csv.attach(
+      io: StringIO.new(CSV.generate { |csv| csv << %w[date type name] }),
+      filename: export.filename,
+      content_type: "text/csv",
+      key: export.blob_key
+    )
 
     export
   end

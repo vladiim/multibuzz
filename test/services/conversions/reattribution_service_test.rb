@@ -95,6 +95,25 @@ module Conversions
         "Direct AttributionCredit.create! outside the service should trigger one CacheInvalidator (got #{counting_cache.delete_matched_count})"
     end
 
+    test "does not re-query conversion paths when they are supplied" do
+      markov_model # an active probabilistic model so conversion paths are consulted
+      precomputed = Attribution::Markov::ConversionPathsQuery.new(conversion.account).call
+
+      assert_no_queries_match(/journey_session_ids/) do
+        Conversions::ReattributionService.new(conversion, conversion_paths: precomputed).call
+      end
+    end
+
+    test "one failing attribution model does not abort the others" do
+      broken_model # an active model whose algorithm raises
+
+      result = service.call
+
+      assert result[:success], "Expected success despite a broken model: #{result[:errors]&.join(', ')}"
+      assert_includes result[:credits_by_model].keys, "First Touch"
+      assert_includes result[:credits_by_model].keys, "Last Touch"
+    end
+
     private
 
     setup do
@@ -130,6 +149,28 @@ module Conversions
 
     def service
       @service ||= Conversions::ReattributionService.new(conversion)
+    end
+
+    def markov_model
+      @markov_model ||= conversion.account.attribution_models.create!(
+        name: "Markov Chain",
+        model_type: :preset,
+        algorithm: :markov_chain,
+        is_active: true,
+        is_default: false,
+        lookback_days: 30
+      )
+    end
+
+    def broken_model
+      @broken_model ||= conversion.account.attribution_models.create!(
+        name: "Broken",
+        model_type: :preset,
+        algorithm: :first_touch,
+        is_active: true,
+        is_default: false,
+        lookback_days: 30
+      ).tap { |model| model.update_column(:algorithm, nil) }
     end
 
     def conversion
