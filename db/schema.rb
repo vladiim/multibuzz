@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_05_13_055604) do
+ActiveRecord::Schema[8.0].define(version: 2026_05_18_042009) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -515,6 +515,21 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_13_055604) do
     t.index ["sort_order"], name: "index_plans_on_sort_order"
   end
 
+  create_table "reattribution_batches", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.integer "trigger", null: false
+    t.integer "status", default: 0, null: false
+    t.integer "total", default: 0, null: false
+    t.integer "processed", default: 0, null: false
+    t.integer "failed", default: 0, null: false
+    t.datetime "started_at"
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "status"], name: "index_reattribution_batches_on_account_id_and_status"
+    t.index ["account_id"], name: "index_reattribution_batches_on_account_id"
+  end
+
   create_table "referrer_sources", force: :cascade do |t|
     t.string "domain", null: false
     t.string "source_name", null: false
@@ -727,6 +742,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_13_055604) do
   add_foreign_key "events", "visitors"
   add_foreign_key "exports", "accounts"
   add_foreign_key "identities", "accounts"
+  add_foreign_key "reattribution_batches", "accounts"
   add_foreign_key "rerun_jobs", "accounts"
   add_foreign_key "rerun_jobs", "attribution_models"
   add_foreign_key "score_assessments", "accounts"

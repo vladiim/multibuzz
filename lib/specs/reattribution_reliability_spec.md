@@ -170,9 +170,9 @@ The incident was a slow per-conversion cost with no bound. Three changes, all in
 
 ### Phase 2: `ReattributionBatch` progress record
 
-- [ ] **2.1** Migration: `reattribution_batches` (account, trigger enum, total, processed, failed, status enum, timestamps); `prefixed_ids` prefix `rbatch`
-- [ ] **2.2** `ReattributionBatch` model with concerns (`Enums`, `Relationships`, `Validations`, `Scopes`); `increment_processed!`, `increment_failed!`, status transitions; mirror `RerunJob`
-- [ ] **2.3** Tests for state transitions and counters
+- [x] **2.1** Migration: `reattribution_batches` (account, trigger enum, total, processed, failed, status enum, timestamps); `prefixed_ids` prefix `rbatch`
+- [x] **2.2** `ReattributionBatch` model with concerns (`Enums`, `Relationships`, `Validations`, `Scopes`); `increment_processed!`, `increment_failed!`, status transitions; mirror `RerunJob`
+- [x] **2.3** Tests for state transitions and counters (10 tests)
 
 ### Phase 3: Coordinator and chunk jobs
 
