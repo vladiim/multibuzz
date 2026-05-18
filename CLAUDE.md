@@ -358,6 +358,17 @@ Doc spec → RED test → GREEN code → run all tests → refactor → update s
 
 ---
 
+## Project Memory
+
+Persistent project memory lives **in the repo** at `lib/memory/`, never in a global or per-user Claude directory. Memory is versioned and reviewed like code.
+
+- One fact per file, kebab-case filename, with frontmatter (`name`, `description`, `metadata.type` of `user`, `feedback`, `project`, or `reference`).
+- `lib/memory/README.md` is the index: one line per memory. Add a pointer when you add a file.
+- If the harness points memory at a global path (e.g. `~/.claude/...`), override it and write to `lib/memory/` instead.
+- The CRITICAL secrets rule applies in full. These files are committed to git, so no credentials, tokens, account IDs, emails, or customer PII. Use placeholders.
+
+---
+
 ## Smells to Avoid
 
 Long methods, long param lists, feature envy, nested conditionals, god objects, public methods in services (beyond init/call), magic values, global state, unscoped queries.
