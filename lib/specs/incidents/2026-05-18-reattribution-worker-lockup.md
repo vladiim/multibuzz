@@ -1,7 +1,7 @@
 # Reattribution Worker Lockup Investigation
 
 **Date:** 2026-05-18
-**Status:** Resolved, pending one production re-test of the final fix
+**Status:** Resolved. Final fix verified in production 2026-05-18: a 27-conversion batch completed in seconds with `processed == total` and no overshoot.
 
 ---
 
@@ -73,6 +73,6 @@ Post-deploy fix (`bbbf44c`) for the reprocessing defect:
 
 ## Outstanding
 
-1. **Production re-test (required).** Re-run a reattribution batch and confirm it completes in seconds with `processed == total` exactly. The speed fix is sound in principle but has not yet been measured on real account data.
+1. **Production re-test: done.** A 27-conversion batch completed in seconds with `processed == total` exactly, no overshoot. The speed and reprocessing fixes are verified on real account data.
 2. **Per-batch coalition precompute (recommended optimisation, not required).** Shapley's `coalition_value` and Markov's removal effects depend only on the account's path history, not the individual conversion. They could be computed once per batch and shared across all conversions, rather than memoised per conversion. The deployed per-conversion memoisation already makes each conversion fast; this would make a whole batch cheaper still. Safe to schedule as ordinary follow-up work.
 3. **Export status-page bugs** found during recovery (no failure broadcast, retry re-attach `RecordNotUnique`, `Date::Error` on custom ranges) remain for their own spec.
