@@ -260,7 +260,7 @@ GEM
       net-smtp
     marcel (1.1.0)
     matrix (0.4.3)
-    mbuzz (0.7.5)
+    mbuzz (0.8.2)
       rack (>= 2.0)
     mcp (0.16.0)
       json-schema (>= 4.1)
@@ -568,7 +568,7 @@ DEPENDENCIES
   importmap-rails
   jbuilder
   kamal
-  mbuzz (~> 0.7.5)
+  mbuzz (~> 0.8.2)
   mcp (= 0.16.0)
   memory_profiler
   minitest (~> 5.0)
