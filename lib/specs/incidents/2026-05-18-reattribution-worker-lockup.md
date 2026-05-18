@@ -9,7 +9,7 @@
 
 The production background-job system froze for roughly 24 minutes. Three `Conversions::BatchReattributionJob`s, each reattributing an identity's conversions, ran for 24 to 64+ minutes and occupied all three threads of the single jobs worker. Every other job, including a customer's CSV export, sat unrun.
 
-The reattribution pipeline was then rebuilt over five phases to be bounded, isolated, and observable (`lib/specs/reattribution_reliability_spec.md`). The rebuilt pipeline shipped with a second-order defect, a finished batch could be reprocessed many times over, which was caught in production testing and fixed.
+The reattribution pipeline was then rebuilt over five phases to be bounded, isolated, and observable (`lib/specs/old/reattribution_reliability_spec.md`). The rebuilt pipeline shipped with a second-order defect, a finished batch could be reprocessed many times over, which was caught in production testing and fixed.
 
 ---
 
@@ -42,7 +42,7 @@ Three layers caused the freeze.
 
 ## Fix Applied
 
-Full design and phase detail: `lib/specs/reattribution_reliability_spec.md`.
+Full design and phase detail: `lib/specs/old/reattribution_reliability_spec.md`.
 
 | Phase | Change |
 |-------|--------|

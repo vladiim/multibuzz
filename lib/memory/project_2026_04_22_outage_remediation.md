@@ -10,5 +10,5 @@ Full site outage 2026-04-22, roughly 00:43 to 01:17 UTC. Root cause: `Conversion
 
 **How to apply:**
 - The remediation replaced the per-conversion `ReattributionJob` fan-out with one `Conversions::BatchReattributionJob` per identity merge.
-- Follow-on problem (2026-05-18): that `BatchReattributionJob` is itself unbounded and head-of-line-blocked the worker. The April fix traded a fan-out flood for a head-of-line block. See [[project_batch_reattribution_worker_lockup]] and `lib/specs/reattribution_reliability_spec.md`.
+- Follow-on problem (2026-05-18): that `BatchReattributionJob` is itself unbounded and head-of-line-blocked the worker. The April fix traded a fan-out flood for a head-of-line block. See [[project_batch_reattribution_worker_lockup]] and `lib/specs/old/reattribution_reliability_spec.md`.
 - Incident report: `lib/specs/incidents/2026-04-22-puma-jam-reattribution-cache-flood.md`. Remediation spec still in `lib/specs/`, not yet moved to `old/`.

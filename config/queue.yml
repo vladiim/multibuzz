@@ -13,7 +13,7 @@ default: &default
     # The reattribution worker prioritises reattribution but also polls the
     # other queues at lower priority, so a jam on the default worker cannot
     # silence the QueueDepthAlert watchdog.
-    # See lib/specs/reattribution_reliability_spec.md.
+    # See lib/docs/architecture/reattribution_pipeline.md.
     - queues: [ reattribution, default, low, solid_queue_recurring ]
       threads: 2
       processes: 1

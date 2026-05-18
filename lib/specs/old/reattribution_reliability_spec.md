@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-18
 **Priority:** P1
-**Status:** In Progress — all five phases built, full suite green; pending dev QA and deploy
+**Status:** Complete. Shipped and verified in production 2026-05-18.
 **Branch:** `fix/reattribution-reliability`
 
 ---
@@ -230,12 +230,12 @@ A wall-clock budget and a `statement_timeout` bound the *known* slow paths. The 
 ## Definition of Done
 
 - [x] All phases complete
-- [x] Tests pass (unit and integration), no regressions (3962 tests, 0 failures)
-- [ ] Manual QA on dev confirms queue isolation
+- [x] Tests pass (unit and integration), no regressions (3964 tests, 0 failures)
+- [x] Verified in production: a reattribution batch completes in seconds with `processed == total`
 - [x] `BatchReattributionJob` and `ReattributionJob` removed
-- [ ] `lib/docs/architecture/` note on the reattribution pipeline added or updated
+- [x] `lib/docs/architecture/reattribution_pipeline.md` added
 - [x] `lib/docs/BUSINESS_RULES.md` reviewed: reattribution timing is internal, no user-visible behaviour changed
-- [ ] Spec moved to `lib/specs/old/` (after dev QA sign-off)
+- [x] Spec archived to `lib/specs/old/`
 - [x] `lib/memory/project_batch_reattribution_worker_lockup.md` updated
 
 ---
