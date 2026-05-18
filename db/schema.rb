@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_05_18_042009) do
+ActiveRecord::Schema[8.0].define(version: 2026_05_18_043950) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -526,6 +526,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_18_042009) do
     t.datetime "completed_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "conversion_ids", default: [], null: false, array: true
     t.index ["account_id", "status"], name: "index_reattribution_batches_on_account_id_and_status"
     t.index ["account_id"], name: "index_reattribution_batches_on_account_id"
   end

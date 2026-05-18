@@ -86,7 +86,9 @@ module Identities
 
     def queue_reattribution_if_needed
       ids = conversions_needing_reattribution.map(&:id)
-      Conversions::BatchReattributionJob.perform_later(ids) if ids.any?
+      return unless ids.any?
+
+      Conversions::Reattribution.enqueue(account: account, conversion_ids: ids, trigger: :identity_merge)
     end
 
     def conversions_needing_reattribution

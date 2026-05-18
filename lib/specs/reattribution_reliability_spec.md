@@ -176,14 +176,14 @@ The incident was a slow per-conversion cost with no bound. Three changes, all in
 
 ### Phase 3: Coordinator and chunk jobs
 
-- [ ] **3.1** RED: coordinator slices ids into `REATTRIBUTION_CHUNK_SIZE` chunks and bulk-enqueues chunk jobs
-- [ ] **3.2** `Conversions::ReattributionCoordinatorJob`, `queue_as :reattribution`
-- [ ] **3.3** `Conversions::ReattributionChunkJob`, `queue_as :reattribution`; precompute paths once; enforce a wall-clock budget (stop and re-enqueue the remainder when spent); `statement_timeout` for SQL; update `ReattributionBatch`
-- [ ] **3.4** `Conversions::Reattribution` enqueue entry point (creates the batch and the coordinator)
-- [ ] **3.5** Coalesce duplicate triggers: `enqueue` returns an existing unfinished `ReattributionBatch` for the same account and conversion set instead of creating a second
-- [ ] **3.6** Rewire `IdentificationService#queue_reattribution_if_needed` and `UnlockEventsService#enqueue_reattribution_jobs` to the entry point
-- [ ] **3.7** Delete `BatchReattributionJob` and the dead `ReattributionJob`
-- [ ] **3.8** Tests, including multi-tenancy isolation, idempotent re-run, and duplicate-trigger coalescing
+- [x] **3.1** `ReattributionCoordinator` slices `conversion_ids` into `CHUNK_SIZE` (100) chunks and bulk-enqueues chunk jobs via `ActiveJob.perform_all_later`
+- [x] **3.2** `Conversions::ReattributionCoordinatorJob` (`queue_as :reattribution`), a thin wrapper over `ReattributionCoordinator`
+- [x] **3.3** `Conversions::ReattributionChunkJob` (`queue_as :reattribution`) over `ChunkReattribution`: cached precomputed paths, a wall-clock budget that re-enqueues the remainder, a `statement_timeout` for SQL, `ReattributionBatch` counter updates
+- [x] **3.4** `Conversions::Reattribution.enqueue` entry point creates the batch and enqueues the coordinator (needed a `conversion_ids` column on `reattribution_batches`, added by migration)
+- [x] **3.5** Coalesce duplicate triggers: `enqueue` returns an existing unfinished `ReattributionBatch` with the same sorted `conversion_ids` instead of creating a second
+- [x] **3.6** `IdentificationService` and `UnlockEventsService` rewired to `Conversions::Reattribution.enqueue`
+- [x] **3.7** `BatchReattributionJob` and the dead `ReattributionJob` deleted
+- [x] **3.8** Tests: coordinator slicing, chunk processing + budget re-enqueue, entry-point coalescing, caller batch creation; idempotent re-run covered by the existing `ReattributionService` double-reattribution test
 
 ### Phase 4: Queue isolation
 

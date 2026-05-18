@@ -58,7 +58,9 @@ module Billing
 
     def enqueue_reattribution_jobs
       ids = conversions_in_locked_period.pluck(:id)
-      Conversions::BatchReattributionJob.perform_later(ids) if ids.any?
+      return unless ids.any?
+
+      Conversions::Reattribution.enqueue(account: account, conversion_ids: ids, trigger: :billing_unlock)
     end
 
     # --- Queries ---

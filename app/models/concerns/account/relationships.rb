@@ -12,6 +12,7 @@ module Account::Relationships
     # Order matters for dependent: :destroy (foreign key constraints)
     # Most dependent tables first, then their parents
     has_many :rerun_jobs, dependent: :destroy
+    has_many :reattribution_batches, dependent: :destroy
     has_many :conversion_property_keys, dependent: :destroy
     has_many :conversion_dispatches, dependent: :destroy
     has_many :conversion_destinations, dependent: :destroy
