@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-19
 **Priority:** P1
-**Status:** Ready
+**Status:** In Progress — Phases 1–4 complete, Phase 5 underway
 **Branch:** `feat/guided-setup-service`
 
 ---
@@ -280,47 +280,47 @@ Post-purchase: confirms the credit and subscription, captures an optional free-t
 
 ## Implementation Tasks
 
-### Phase 1: Account Credit
+### Phase 1: Account Credit ✅
 
-- [ ] **1.1** Migration: create `account_credits`
-- [ ] **1.2** `AccountCredit` model — `status` enum (`active`/`voided`), `cred_` prefix, scopes
-- [ ] **1.3** `Account::Billing`: `has_many :account_credits`, `credit_balance_cents` (Stripe customer balance, cached)
-- [ ] **1.4** `app/constants/billing.rb`: `GUIDED_SETUP_CREDIT_CENTS`
-- [ ] **1.5** `Billing::GrantCreditService` — Stripe customer balance credit + `AccountCredit` row
-- [ ] **1.6** Extend `Billing::Handlers::SubscriptionDeleted` — void the credit on cancellation
-- [ ] **1.7** Tests
+- [x] **1.1** Migration: create `account_credits`
+- [x] **1.2** `AccountCredit` model — `status` enum (`active`/`voided`), `cred_` prefix, scopes
+- [x] **1.3** `Account::Billing`: `has_many :account_credits` (`credit_balance_cents` display helper folded into Phase 6)
+- [x] **1.4** `app/constants/billing.rb`: `GUIDED_SETUP_CREDIT_CENTS`
+- [x] **1.5** `Billing::GrantCreditService` — Stripe customer balance credit + `AccountCredit` row
+- [x] **1.6** Extend `Billing::Handlers::SubscriptionDeleted` — void the credit on cancellation
+- [x] **1.7** Tests
 
-### Phase 2: Guided Setup Engagement
+### Phase 2: Guided Setup Engagement ✅
 
-- [ ] **2.1** Migration: create `guided_setups` (incl. `scheduling_note`)
-- [ ] **2.2** `GuidedSetup` model + `Relationships`/`Scopes` concerns; `status` enum; milestone methods; `gst_` prefix
-- [ ] **2.3** `Account` `has_one :guided_setup`
-- [ ] **2.4** `Admin::GuidedSetupsController` + index/show/update views — declare `skip_marketing_analytics`
-- [ ] **2.5** Tests
+- [x] **2.1** Migration: create `guided_setups` (incl. `scheduling_note`)
+- [x] **2.2** `GuidedSetup` model + `Relationships`/`Scopes` concerns; `status` enum; milestone methods; `gst_` prefix
+- [x] **2.3** `Account` `has_one :guided_setup`
+- [x] **2.4** `Admin::GuidedSetupsController` + index/show/update views — declare `skip_marketing_analytics`
+- [x] **2.5** Tests
 
-### Phase 3: Setup-Choice Screen + Routing
+### Phase 3: Setup-Choice Screen + Routing ✅
 
-- [ ] **3.1** Migration: add `setup_path` to `accounts`
-- [ ] **3.2** `Account`: `setup_path` enum
-- [ ] **3.3** `OnboardingController#show` renders the setup-choice screen; `#choose_path` (POST) stores `setup_path` and routes the three paths
-- [ ] **3.4** `onboarding/show.html.erb` → setup-choice screen; routes
-- [ ] **3.5** Re-home demo data — dashboard shows sample data for any account with no real events, decoupled from `onboarding_persona`
-- [ ] **3.6** Tests
+- [x] **3.1** Migration: add `setup_path` to `accounts`
+- [x] **3.2** `Account`: `setup_path` enum
+- [x] **3.3** `OnboardingController#show` renders the setup-choice screen; `#choose_path` (POST) stores `setup_path` and routes the three paths
+- [x] **3.4** `onboarding/show.html.erb` → setup-choice screen; routes
+- [x] **3.5** ~~Re-home demo data~~ — moot: no code gates demo data on `onboarding_persona`, so removing the persona screen broke nothing
+- [x] **3.6** Tests
 
-### Phase 4: Discovery
+### Phase 4: Discovery ✅
 
-- [ ] **4.1** Migration: add `setup_profile` jsonb + `setup_profile_completed_at` to `accounts`
-- [ ] **4.2** `Account`: JSONB validation (`is_a?(Hash)`, 50KB limit)
-- [ ] **4.3** `OnboardingController#discovery` GET/POST — assisted path only; stores `setup_profile`
-- [ ] **4.4** `onboarding/discovery.html.erb` — 4 questions, each with an "Other" free-text
-- [ ] **4.5** Tests
+- [x] **4.1** Migration: add `setup_profile` jsonb + `setup_profile_completed_at` to `accounts`
+- [x] **4.2** `Account`: JSONB validation (`is_a?(Hash)`, 50KB limit)
+- [x] **4.3** `OnboardingController#discovery` GET/POST — assisted path only; stores `setup_profile`
+- [x] **4.4** `onboarding/discovery.html.erb` — 4 questions, each with an "Other" free-text
+- [x] **4.5** Tests
 
-### Phase 5: Guided Setup Page + Credit Purchase
+### Phase 5: Guided Setup Page + Credit Purchase — in progress
 
 - [ ] **5.1** `OnboardingController#guided_setup`, `accept` (requires `plan_id`), `confirmation` + routes
 - [ ] **5.2** `onboarding/guided_setup.html.erb` + `confirmation.html.erb` (captures `scheduling_note`)
-- [ ] **5.3** `Billing::CreditCheckoutService` — $1,500 Stripe Checkout (mode `payment`), `guided_setup` + `plan_id` metadata
-- [ ] **5.4** `Billing::Handlers::CreditPurchaseCompleted` — router branches on `session.mode`; grant credit, start the chosen plan's subscription, transition `GuidedSetup`
+- [x] **5.3** `Billing::CreditCheckoutService` — $1,500 Stripe Checkout (mode `payment`), `guided_setup` + `plan_id` metadata
+- [x] **5.4** `Billing::Handlers::CreditPurchaseCompleted` — router branches on `session.mode`; grant credit, start the chosen plan's subscription, transition `GuidedSetup`
 - [ ] **5.5** `GuidedSetupMailer` — `welcome`, `internal_notification`
 - [ ] **5.6** Audit `skip_marketing_analytics` on `OnboardingController` and `Accounts::BillingController`
 - [ ] **5.7** Tests
