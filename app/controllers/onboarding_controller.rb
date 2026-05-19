@@ -4,6 +4,7 @@ class OnboardingController < ApplicationController
   skip_marketing_analytics
   before_action :require_login
   before_action :ensure_sdk_selected, only: [ :install, :verify, :conversion ]
+  before_action :require_assisted_path, only: %i[discovery submit_discovery]
 
   def show
     redirect_to setup_path_destination if current_account.setup_path
@@ -15,6 +16,14 @@ class OnboardingController < ApplicationController
     Lifecycle::Tracker.track("onboarding_setup_path_chosen", current_account, setup_path: current_account.setup_path)
 
     redirect_to setup_path_destination
+  end
+
+  def discovery; end
+
+  def submit_discovery
+    current_account.update!(setup_profile: discovery_params, setup_profile_completed_at: Time.current)
+    Lifecycle::Tracker.track("onboarding_discovery_completed", current_account)
+    redirect_to onboarding_guided_setup_path
   end
 
   def setup
@@ -97,6 +106,19 @@ class OnboardingController < ApplicationController
     when "assisted" then onboarding_discovery_path
     else onboarding_setup_path
     end
+  end
+
+  def require_assisted_path
+    redirect_to onboarding_path unless current_account.assisted?
+  end
+
+  def discovery_params
+    params.require(:setup_profile).permit(
+      :attribution_goal, :attribution_goal_other,
+      :monthly_ad_spend, :monthly_ad_spend_other,
+      :ad_platforms_other, :install_platforms_other,
+      ad_platforms: [], install_platforms: []
+    ).to_h
   end
 
   def first_event_completed?

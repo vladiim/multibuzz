@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_05_19_110000) do
+ActiveRecord::Schema[8.0].define(version: 2026_05_19_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -100,6 +100,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_19_110000) do
     t.bigint "lifetime_value_cents", default: 0, null: false
     t.datetime "subscription_cancelled_at"
     t.integer "setup_path"
+    t.jsonb "setup_profile", default: {}, null: false
+    t.datetime "setup_profile_completed_at"
     t.index ["billing_status"], name: "index_accounts_on_billing_status"
     t.index ["free_until"], name: "index_accounts_on_free_until"
     t.index ["payment_failed_at"], name: "index_accounts_on_payment_failed_at"

@@ -65,6 +65,55 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to account_team_path
   end
 
+  # --- Discovery ---
+
+  test "discovery requires authentication" do
+    get onboarding_discovery_path
+
+    assert_redirected_to login_path
+  end
+
+  test "discovery renders the form for an assisted account" do
+    sign_in
+    account.update!(setup_path: :assisted)
+
+    get onboarding_discovery_path
+
+    assert_response :success
+    assert_select "[data-testid='discovery-form']"
+  end
+
+  test "discovery redirects accounts not on the assisted path" do
+    sign_in
+    account.update!(setup_path: :self_serve)
+
+    get onboarding_discovery_path
+
+    assert_redirected_to onboarding_path
+  end
+
+  test "submit_discovery stores the profile and marks it completed" do
+    sign_in
+    account.update!(setup_path: :assisted)
+
+    post onboarding_discovery_path,
+      params: { setup_profile: { attribution_goal: "b2b_leads", monthly_ad_spend: "25k_100k" } }
+
+    account.reload
+
+    assert_equal "b2b_leads", account.setup_profile["attribution_goal"]
+    assert_predicate account, :setup_profile_completed?
+  end
+
+  test "submit_discovery redirects to the guided setup page" do
+    sign_in
+    account.update!(setup_path: :assisted)
+
+    post onboarding_discovery_path, params: { setup_profile: { attribution_goal: "b2b_leads" } }
+
+    assert_redirected_to onboarding_guided_setup_path
+  end
+
   # --- Setup (API key + SDK selection) ---
 
   test "setup requires authentication" do

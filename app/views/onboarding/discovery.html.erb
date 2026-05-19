@@ -1,0 +1,76 @@
+<div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+  <div class="sm:mx-auto sm:w-full sm:max-w-2xl">
+    <h2 class="text-center text-3xl font-extrabold text-gray-900">Tell us about your setup</h2>
+    <p class="mt-2 text-center text-lg text-gray-600">
+      So your specialist can tailor your Guided Setup. 4 quick questions.
+    </p>
+  </div>
+
+  <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-2xl px-4">
+    <%= form_with url: onboarding_discovery_path, method: :post, data: { testid: "discovery-form" } do %>
+      <div class="bg-white p-6 rounded-lg shadow space-y-8">
+        <fieldset>
+          <legend class="text-sm font-semibold text-gray-900 mb-3">1 &middot; What are you trying to attribute?</legend>
+          <% [ [ "Ecommerce purchases", "ecommerce" ], [ "B2B leads & deals", "b2b_leads" ], [ "Signups & subscriptions", "signups" ] ].each do |label, value| %>
+            <label class="flex items-center gap-2 py-1 text-sm text-gray-700">
+              <%= radio_button_tag "setup_profile[attribution_goal]", value %>
+              <%= label %>
+            </label>
+          <% end %>
+          <label class="flex items-center gap-2 py-1 text-sm text-gray-700">
+            <%= radio_button_tag "setup_profile[attribution_goal]", "other" %>
+            Other:
+            <%= text_field_tag "setup_profile[attribution_goal_other]", nil, placeholder: "type your answer", class: "text-sm border-gray-300 rounded-md" %>
+          </label>
+        </fieldset>
+
+        <fieldset>
+          <legend class="text-sm font-semibold text-gray-900 mb-3">2 &middot; Which ad platforms do you run?</legend>
+          <% [ [ "Meta", "meta" ], [ "Google Ads", "google_ads" ], [ "TikTok", "tiktok" ], [ "LinkedIn", "linkedin" ], [ "None", "none" ] ].each do |label, value| %>
+            <label class="flex items-center gap-2 py-1 text-sm text-gray-700">
+              <%= check_box_tag "setup_profile[ad_platforms][]", value %>
+              <%= label %>
+            </label>
+          <% end %>
+          <label class="flex items-center gap-2 py-1 text-sm text-gray-700">
+            Other:
+            <%= text_field_tag "setup_profile[ad_platforms_other]", nil, placeholder: "type your answer", class: "text-sm border-gray-300 rounded-md" %>
+          </label>
+        </fieldset>
+
+        <fieldset>
+          <legend class="text-sm font-semibold text-gray-900 mb-3">3 &middot; Which platform(s) is mbuzz going on?</legend>
+          <% [ [ "Ruby", "ruby" ], [ "Python", "python" ], [ "Node.js", "node" ], [ "PHP", "php" ], [ "Server-side GTM", "sgtm" ], [ "Shopify", "shopify" ], [ "Magento", "magento" ], [ "REST API", "rest_api" ] ].each do |label, value| %>
+            <label class="flex items-center gap-2 py-1 text-sm text-gray-700">
+              <%= check_box_tag "setup_profile[install_platforms][]", value %>
+              <%= label %>
+            </label>
+          <% end %>
+          <label class="flex items-center gap-2 py-1 text-sm text-gray-700">
+            Other:
+            <%= text_field_tag "setup_profile[install_platforms_other]", nil, placeholder: "type your answer", class: "text-sm border-gray-300 rounded-md" %>
+          </label>
+        </fieldset>
+
+        <fieldset>
+          <legend class="text-sm font-semibold text-gray-900 mb-3">4 &middot; Roughly how much do you spend on ads per month?</legend>
+          <% [ [ "Under $5k", "under_5k" ], [ "$5k - $25k", "5k_25k" ], [ "$25k - $100k", "25k_100k" ], [ "$100k+", "over_100k" ] ].each do |label, value| %>
+            <label class="flex items-center gap-2 py-1 text-sm text-gray-700">
+              <%= radio_button_tag "setup_profile[monthly_ad_spend]", value %>
+              <%= label %>
+            </label>
+          <% end %>
+          <label class="flex items-center gap-2 py-1 text-sm text-gray-700">
+            <%= radio_button_tag "setup_profile[monthly_ad_spend]", "other" %>
+            Other:
+            <%= text_field_tag "setup_profile[monthly_ad_spend_other]", nil, placeholder: "type your answer", class: "text-sm border-gray-300 rounded-md" %>
+          </label>
+        </fieldset>
+      </div>
+
+      <div class="mt-6 text-right">
+        <%= submit_tag "Continue", class: "px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 cursor-pointer" %>
+      </div>
+    <% end %>
+  </div>
+</div>
