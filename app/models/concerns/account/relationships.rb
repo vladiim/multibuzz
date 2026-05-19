@@ -8,6 +8,7 @@ module Account::Relationships
     has_many :members, through: :account_memberships, source: :user
     has_many :users, through: :account_memberships
     has_many :api_keys, dependent: :destroy
+    has_one :guided_setup, dependent: :destroy
 
     # Order matters for dependent: :destroy (foreign key constraints)
     # Most dependent tables first, then their parents

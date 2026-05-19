@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_05_19_090000) do
+ActiveRecord::Schema[8.0].define(version: 2026_05_19_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -491,6 +491,26 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_19_090000) do
     t.index ["type"], name: "index_form_submissions_on_type"
   end
 
+  create_table "guided_setups", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.integer "status", default: 0, null: false
+    t.string "integration_target", default: "none", null: false
+    t.string "specialist_name"
+    t.text "scheduling_note"
+    t.text "notes"
+    t.datetime "accepted_at"
+    t.datetime "kickoff_call_at"
+    t.datetime "install_completed_at"
+    t.datetime "integration_connected_at"
+    t.datetime "training_call_at"
+    t.datetime "value_check_at"
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_guided_setups_on_account_id", unique: true
+    t.index ["status", "updated_at"], name: "index_guided_setups_on_status_and_updated_at"
+  end
+
   create_table "identities", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.string "external_id", null: false
@@ -760,6 +780,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_19_090000) do
   add_foreign_key "events", "accounts"
   add_foreign_key "events", "visitors"
   add_foreign_key "exports", "accounts"
+  add_foreign_key "guided_setups", "accounts"
   add_foreign_key "identities", "accounts"
   add_foreign_key "reattribution_batches", "accounts"
   add_foreign_key "rerun_jobs", "accounts"
