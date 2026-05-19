@@ -266,7 +266,9 @@ GEM
       json-schema (>= 4.1)
     memory_profiler (1.1.0)
     mini_mime (1.1.5)
-    minitest (5.27.0)
+    minitest (6.0.6)
+      drb (~> 2.0)
+      prism (~> 1.5)
     msgpack (1.8.0)
     net-imap (0.6.4)
       date
@@ -571,7 +573,7 @@ DEPENDENCIES
   mbuzz (~> 0.7.5)
   mcp (= 0.16.0)
   memory_profiler
-  minitest (~> 5.0)
+  minitest (~> 6.0)
   ostruct
   parser
   pg (~> 1.1)

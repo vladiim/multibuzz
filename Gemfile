@@ -139,7 +139,7 @@ end
 
 group :test do
   # Pin minitest to 5.x (v6 extracted minitest/mock into separate gem)
-  gem "minitest", "~> 5.0"
+  gem "minitest", "~> 6.0"
 
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
