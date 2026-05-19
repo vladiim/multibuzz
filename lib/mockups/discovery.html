@@ -1,0 +1,40 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Discovery</title><link rel="stylesheet" href="wireframe.css"></head><body>
+<div class="meta">GET /onboarding/discovery<span class="tag">NEW — help path only</span></div>
+<div class="screen">
+<div class="topbar"><span>mbuzz</span><span class="right">Guided Setup</span></div>
+<div class="body">
+<h1>Tell us about your setup</h1>
+<p class="muted">So your specialist can tailor your Guided Setup. 4 quick questions.</p>
+<h2>1 · What are you trying to attribute?</h2>
+<label class="opt"><input type="radio" name="q1"> Ecommerce purchases</label>
+<label class="opt"><input type="radio" name="q1"> B2B leads &amp; deals</label>
+<label class="opt"><input type="radio" name="q1"> Signups &amp; subscriptions</label>
+<label class="opt"><input type="radio" name="q1"> Other: <input type="text" placeholder="type your answer"></label>
+<h2>2 · Which ad platforms do you run? (select all)</h2>
+<label class="opt"><input type="checkbox"> Meta</label>
+<label class="opt"><input type="checkbox"> Google Ads</label>
+<label class="opt"><input type="checkbox"> TikTok</label>
+<label class="opt"><input type="checkbox"> LinkedIn</label>
+<label class="opt"><input type="checkbox"> None</label>
+<label class="opt"><input type="checkbox"> Other: <input type="text" placeholder="type your answer"></label>
+<h2>3 · Which platform(s) is mbuzz going on? (select all)</h2>
+<label class="opt"><input type="checkbox"> Ruby</label>
+<label class="opt"><input type="checkbox"> Python</label>
+<label class="opt"><input type="checkbox"> Node.js</label>
+<label class="opt"><input type="checkbox"> PHP</label>
+<label class="opt"><input type="checkbox"> Server-side GTM</label>
+<label class="opt"><input type="checkbox"> Shopify</label>
+<label class="opt"><input type="checkbox"> Magento</label>
+<label class="opt"><input type="checkbox"> REST API</label>
+<label class="opt"><input type="checkbox"> Other: <input type="text" placeholder="type your answer"></label>
+<h2>4 · Roughly how much do you spend on ads per month?</h2>
+<label class="opt"><input type="radio" name="q4"> Under $5k</label>
+<label class="opt"><input type="radio" name="q4"> $5k &ndash; $25k</label>
+<label class="opt"><input type="radio" name="q4"> $25k &ndash; $100k</label>
+<label class="opt"><input type="radio" name="q4"> $100k+</label>
+<label class="opt"><input type="radio" name="q4"> Other: <input type="text" placeholder="type your answer"></label>
+<div class="actions"><a class="btn primary" href="guided-setup.html">Continue &rarr;</a></div>
+</div></div>
+<div class="notes">NEW. Shown only on the "I'd like help" path. Every question has an "Other" free-text. Answers stored in <code>accounts.setup_profile</code> (jsonb) as context for the specialist; the ad-spend answer recommends a plan on the next screen. No fit score &mdash; the customer has already chosen help, so there is nothing to gate.</div>
+<nav class="flownav"><a href="invite-teammate.html">&larr; Invite teammate</a><a href="guided-setup.html">Guided Setup &rarr;</a></nav>
+</body></html>

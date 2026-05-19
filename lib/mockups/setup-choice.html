@@ -1,0 +1,16 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Setup choice</title><link rel="stylesheet" href="wireframe.css"></head><body>
+<div class="meta">GET /onboarding<span class="tag">NEW — replaces persona</span></div>
+<div class="screen">
+<div class="topbar"><span>mbuzz</span><span class="right">Onboarding</span></div>
+<div class="body">
+<h1>Welcome to mbuzz</h1>
+<p class="muted">How do you want to get set up?</p>
+<div class="row">
+<div class="tile"><div class="ico"></div><strong>I'll set it up myself</strong><p class="muted">Install the SDK and API calls myself</p></div>
+<div class="tile"><div class="ico"></div><strong>A teammate will</strong><p class="muted">Invite a developer to handle the install</p></div>
+<div class="tile"><div class="ico"></div><strong>I'd like help</strong><p class="muted">Our team sets it up for you &mdash; Guided Setup</p></div>
+</div>
+</div></div>
+<div class="notes">NEW &mdash; replaces the old persona screen. Three paths: self-serve, invite a teammate (routes to the existing <code>Team::InvitationService</code>), or Guided Setup. Stored as <code>accounts.setup_path</code>. The old marketer demo-data routing is re-homed: demo data shows on any account until real data arrives.</div>
+<nav class="flownav"><a href="index.html">&larr; All screens</a><a href="invite-teammate.html">Invite teammate &rarr;</a></nav>
+</body></html>
