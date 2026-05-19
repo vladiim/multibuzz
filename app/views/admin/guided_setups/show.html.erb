@@ -1,0 +1,61 @@
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">Guided Setup · <%= @guided_setup.account.name %></h1>
+    <%= link_to "Back", admin_guided_setups_path, class: "text-sm text-indigo-600 hover:text-indigo-800" %>
+  </div>
+
+  <div class="bg-white shadow rounded-lg p-6 mb-6">
+    <dl class="grid grid-cols-2 gap-4 text-sm">
+      <div>
+        <dt class="text-gray-500">Status</dt>
+        <dd data-testid="guided-setup-status" class="text-gray-900 font-medium"><%= @guided_setup.status.humanize %></dd>
+      </div>
+      <div>
+        <dt class="text-gray-500">Integration target</dt>
+        <dd class="text-gray-900"><%= @guided_setup.integration_target.humanize %></dd>
+      </div>
+      <div class="col-span-2">
+        <dt class="text-gray-500">Preferred call times</dt>
+        <dd class="text-gray-900"><%= @guided_setup.scheduling_note.presence || "—" %></dd>
+      </div>
+    </dl>
+  </div>
+
+  <div class="bg-white shadow rounded-lg p-6 mb-6">
+    <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Milestones</h2>
+    <ul class="divide-y divide-gray-100">
+      <li class="flex items-center justify-between py-2 text-sm">
+        <span class="text-gray-700">Accepted</span>
+        <span class="text-gray-500"><%= @guided_setup.accepted_at&.to_fs(:short) || "—" %></span>
+      </li>
+      <% GuidedSetup::Milestones::MILESTONES.each do |key| %>
+        <li class="flex items-center justify-between py-2 text-sm" data-testid="milestone-<%= key %>">
+          <span class="text-gray-700"><%= key.humanize %></span>
+          <% stamped_at = @guided_setup.public_send("#{key}_at") %>
+          <% if stamped_at %>
+            <span class="text-gray-500"><%= stamped_at.to_fs(:short) %></span>
+          <% else %>
+            <%= button_to "Mark done",
+              record_milestone_admin_guided_setup_path(@guided_setup),
+              params: { milestone: key },
+              class: "px-3 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700" %>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+
+  <%= form_with model: [ :admin, @guided_setup ] do |f| %>
+    <div class="bg-white shadow rounded-lg p-6">
+      <div class="mb-4">
+        <%= f.label :specialist_name, "Specialist", class: "block text-xs font-medium text-gray-600 mb-1" %>
+        <%= f.text_field :specialist_name, class: "w-full text-sm border-gray-300 rounded-md" %>
+      </div>
+      <div class="mb-4">
+        <%= f.label :notes, class: "block text-xs font-medium text-gray-600 mb-1" %>
+        <%= f.text_area :notes, rows: 4, class: "w-full text-sm border-gray-300 rounded-md" %>
+      </div>
+      <%= f.submit "Save", class: "px-4 py-2 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700" %>
+    </div>
+  <% end %>
+</div>

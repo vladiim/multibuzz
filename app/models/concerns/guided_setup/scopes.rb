@@ -10,4 +10,8 @@ module GuidedSetup::Scopes
   included do
     scope :stalled, -> { in_progress.where(updated_at: ...STALLED_AFTER.ago) }
   end
+
+  def stalled?
+    in_progress? && updated_at < STALLED_AFTER.ago
+  end
 end

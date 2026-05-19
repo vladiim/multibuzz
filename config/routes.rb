@@ -178,6 +178,9 @@ Rails.application.routes.draw do
     get "billing", to: "billing#show", as: :billing
     resources :accounts, only: [ :show, :update ]
     resources :customer_metrics, only: [ :index ]
+    resources :guided_setups, only: [ :index, :show, :update ] do
+      post :record_milestone, on: :member
+    end
     resources :submissions, only: [ :index, :show ]
     resources :data_integrity, only: [ :index, :show ]
     resources :conversion_dispatches, only: [ :index, :show ] do

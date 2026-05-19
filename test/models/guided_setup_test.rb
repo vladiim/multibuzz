@@ -70,6 +70,18 @@ class GuidedSetupTest < ActiveSupport::TestCase
     assert_equal guided_setup, account.reload.guided_setup
   end
 
+  test "stalled? is true for an in-progress engagement untouched for over 14 days" do
+    guided_setup.update_columns(status: GuidedSetup.statuses[:in_progress], updated_at: 20.days.ago)
+
+    assert_predicate guided_setup, :stalled?
+  end
+
+  test "stalled? is false for a recently-touched engagement" do
+    guided_setup.update!(status: :in_progress)
+
+    assert_not guided_setup.stalled?
+  end
+
   private
 
   def account = @account ||= accounts(:one)
