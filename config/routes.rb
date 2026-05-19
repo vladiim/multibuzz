@@ -135,7 +135,8 @@ Rails.application.routes.draw do
 
   # Onboarding (authenticated)
   get "onboarding", to: "onboarding#show", as: :onboarding
-  post "onboarding/persona", to: "onboarding#persona", as: :onboarding_persona
+  post "onboarding/choose_path", to: "onboarding#choose_path", as: :onboarding_choose_path
+  get "onboarding/discovery", to: "onboarding#discovery", as: :onboarding_discovery
   get "onboarding/setup", to: "onboarding#setup", as: :onboarding_setup
   post "onboarding/regenerate_api_key", to: "onboarding#regenerate_api_key", as: :onboarding_regenerate_api_key
   post "onboarding/select_sdk", to: "onboarding#select_sdk", as: :onboarding_select_sdk

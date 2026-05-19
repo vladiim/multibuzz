@@ -3,7 +3,7 @@
 require "test_helper"
 
 class OnboardingControllerTest < ActionDispatch::IntegrationTest
-  # --- Show (main onboarding entry point) ---
+  # --- Show (setup-choice screen) ---
 
   test "show requires authentication" do
     get onboarding_path
@@ -11,54 +11,58 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to login_path
   end
 
-  test "show renders persona selection for new users" do
+  test "show renders the setup-choice screen for new users" do
     sign_in
 
     get onboarding_path
 
     assert_response :success
-    assert_select "[data-onboarding-persona]"
+    assert_select "[data-testid='setup-choice']"
   end
 
-  test "show redirects to setup if persona already selected" do
+  test "show redirects forward when a setup path is already chosen" do
     sign_in
-    account.update!(onboarding_persona: :developer)
-    account.complete_onboarding_step!(:persona_selected)
+    account.update!(setup_path: :self_serve)
 
     get onboarding_path
 
     assert_redirected_to onboarding_setup_path
   end
 
-  # --- Persona ---
+  # --- Choose path ---
 
-  test "persona requires authentication" do
-    post onboarding_persona_path, params: { persona: "developer" }
+  test "choose_path requires authentication" do
+    post onboarding_choose_path_path, params: { setup_path: "self_serve" }
 
     assert_redirected_to login_path
   end
 
-  test "persona updates account persona and redirects to setup" do
+  test "choose_path stores the path and routes self-serve to setup" do
     sign_in_as_new_user
 
-    post onboarding_persona_path, params: { persona: "developer" }
+    post onboarding_choose_path_path, params: { setup_path: "self_serve" }
 
     @test_account.reload
 
-    assert_predicate @test_account, :developer?
+    assert_predicate @test_account, :self_serve?
     assert @test_account.onboarding_step_completed?(:persona_selected)
     assert_redirected_to onboarding_setup_path
   end
 
-  test "persona redirects marketer to dashboard with demo data" do
+  test "choose_path routes the assisted path to discovery" do
     sign_in_as_new_user
 
-    post onboarding_persona_path, params: { persona: "marketer" }
+    post onboarding_choose_path_path, params: { setup_path: "assisted" }
 
-    @test_account.reload
+    assert_redirected_to onboarding_discovery_path
+  end
 
-    assert_predicate @test_account, :marketer?
-    assert_redirected_to dashboard_path
+  test "choose_path routes the teammate path to the team page" do
+    sign_in_as_new_user
+
+    post onboarding_choose_path_path, params: { setup_path: "teammate" }
+
+    assert_redirected_to account_team_path
   end
 
   # --- Setup (API key + SDK selection) ---

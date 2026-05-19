@@ -6,15 +6,15 @@ class OnboardingController < ApplicationController
   before_action :ensure_sdk_selected, only: [ :install, :verify, :conversion ]
 
   def show
-    redirect_to onboarding_setup_path if persona_selected?
+    redirect_to setup_path_destination if current_account.setup_path
   end
 
-  def persona
-    current_account.update!(onboarding_persona: params[:persona])
+  def choose_path
+    current_account.update!(setup_path: params[:setup_path])
     current_account.complete_onboarding_step!(:persona_selected)
-    Lifecycle::Tracker.track("onboarding_persona_selected", current_account, persona: current_account.onboarding_persona)
+    Lifecycle::Tracker.track("onboarding_setup_path_chosen", current_account, setup_path: current_account.setup_path)
 
-    redirect_to current_account.marketer? ? dashboard_path : onboarding_setup_path
+    redirect_to setup_path_destination
   end
 
   def setup
@@ -91,8 +91,12 @@ class OnboardingController < ApplicationController
     redirect_to onboarding_setup_path unless current_account.selected_sdk.present?
   end
 
-  def persona_selected?
-    current_account.onboarding_step_completed?(:persona_selected)
+  def setup_path_destination
+    case current_account.setup_path
+    when "teammate" then account_team_path
+    when "assisted" then onboarding_discovery_path
+    else onboarding_setup_path
+    end
   end
 
   def first_event_completed?
