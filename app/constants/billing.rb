@@ -116,6 +116,11 @@ module Billing
     PLAN_PRO => PRO_OVERAGE_CENTS
   }.freeze
 
+  # --- Guided Setup ---
+  # The concierge-setup credit: the customer pays this and it is granted back
+  # in full as account credit applied to their chosen plan.
+  GUIDED_SETUP_CREDIT_CENTS = 150_000  # $1,500
+
   # --- Time Periods ---
   GRACE_PERIOD_DAYS = 3
 
