@@ -222,7 +222,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_select "body", text: /Net cost/i
     assert_select "body", text: /prepaid mbuzz/i
     assert_select "body", text: /Non-refundable payment, due after the kickoff call/
-    assert_select "body", text: /build one for you/i
+    assert_select "body", text: /build and implement the integration/i
     assert_select "body", text: /No contract/i
     refute_includes response.body, "What happens next"
     refute_includes response.body, "Non-refundable mbuzz credit"
