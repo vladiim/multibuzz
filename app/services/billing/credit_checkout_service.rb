@@ -63,7 +63,12 @@ module Billing
         customer: account.stripe_customer_id,
         mode: "payment",
         line_items: line_items,
-        success_url: urls[:success],
+        # Stripe substitutes {CHECKOUT_SESSION_ID} at redirect time. The
+        # success URL handler uses the session id to verify payment
+        # synchronously instead of waiting for the webhook (necessary in
+        # local dev without the Stripe CLI and a useful production
+        # fallback when the webhook races or drops).
+        success_url: "#{urls[:success]}?session_id={CHECKOUT_SESSION_ID}",
         cancel_url: urls[:cancel],
         metadata: session_metadata
       }

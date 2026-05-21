@@ -26,7 +26,9 @@ module Onboarding
         redirect_to(onboarding_payment_setup_path, alert: checkout_result[:errors].first)
     end
 
-    def payment_complete; end
+    def payment_complete
+      verify_checkout_session_if_present
+    end
 
     private
 
@@ -56,6 +58,22 @@ module Onboarding
 
     def plan_slug
       params[:plan_slug].to_s.presence
+    end
+
+    # Stripe's webhook is canonical but it races the success_url redirect
+    # and doesn't fire at all in local dev without the Stripe CLI. We
+    # verify the session ourselves on landing so the customer isn't stuck
+    # on the processing state. The handler the verifier delegates to is
+    # idempotent -- if the webhook also lands, it no-ops.
+    def verify_checkout_session_if_present
+      return if params[:session_id].blank?
+      return if current_account.guided_setup&.in_progress?
+
+      Billing::VerifyCheckoutSessionService.new(
+        session_id: params[:session_id],
+        account: current_account
+      ).call
+      current_account.guided_setup&.reload
     end
 
     def checkout_result

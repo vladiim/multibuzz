@@ -65,6 +65,15 @@ class Billing::CreditCheckoutServiceTest < ActiveSupport::TestCase
     assert_equal plan.slug, captured[:metadata][:plan_slug]
   end
 
+  test "success_url carries Stripe's session-id template so the redirect can verify the session" do
+    account.update!(stripe_customer_id: "cus_123")
+    captured = nil
+
+    service(stripe_client: mock_stripe_client { |params| captured = params }).call
+
+    assert_includes captured[:success_url], "session_id={CHECKOUT_SESSION_ID}"
+  end
+
   test "handles Stripe errors gracefully" do
     account.update!(stripe_customer_id: "cus_123")
     error_client = Object.new
