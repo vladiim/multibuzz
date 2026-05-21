@@ -286,8 +286,75 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "[data-testid='guided-setup']"
     assert_select "[data-testid='book-kickoff-form']"
-    assert_select "input[name='scheduling_preferences[timezone]']"
+    assert_select "select[name='scheduling_preferences[timezone]']"
     assert_select "input[type=submit][value='Book kickoff call']"
+  end
+
+  test "guided_setup leads with Last step header and form-first layout" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+
+    get onboarding_guided_setup_path
+
+    assert_select "h2", text: /Last step/
+    assert_select "[data-testid='book-kickoff-form'] h3", text: /Book your kickoff/
+    form_index = response.body.index('data-testid="book-kickoff-form"')
+    steps_index = response.body.index("What happens next")
+    inclusions_index = response.body.index("Install service inclusions")
+
+    assert_predicate form_index, :present?
+    assert_predicate steps_index, :present?
+    assert_predicate inclusions_index, :present?
+    assert_operator form_index, :<, steps_index, "form should render before 'What happens next'"
+    assert_operator steps_index, :<, inclusions_index, "steps should render before inclusions"
+  end
+
+  test "guided_setup uses a searchable select for timezone with no schedule hint" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+
+    get onboarding_guided_setup_path
+
+    assert_select "[data-controller~='searchable-select']"
+    assert_select "select[name='scheduling_preferences[timezone]']"
+    assert_select "input[list='scheduling-timezones']", count: 0
+    refute_includes response.body, "We need this to schedule the kickoff call"
+  end
+
+  test "guided_setup uses preferred days and times labels with single hints" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+
+    get onboarding_guided_setup_path
+
+    assert_select "label, span", text: "Your preferred days"
+    assert_select "label, span", text: "Your preferred times"
+    refute_includes response.body, "Days that work"
+    refute_includes response.body, "Times that work"
+    refute_includes response.body, "Leave blank for any day"
+  end
+
+  test "guided_setup renders inclusions block with price and credit copy" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+
+    get onboarding_guided_setup_path
+
+    assert_select "body", text: /Install service inclusions/
+    assert_select "body", text: /Price: \$1,500 USD/
+    assert_select "body", text: /Non-refundable mbuzz credit/
+    assert_select "body", text: /Payment due after the kickoff call/
+    refute_includes response.body, "Pricing &amp; plan covered on the kickoff call"
+    refute_includes response.body, "Pricing & plan covered on the kickoff call"
+  end
+
+  test "guided_setup step 3 mentions building an integration when missing" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+
+    get onboarding_guided_setup_path
+
+    assert_select "body", text: /build one for you/i
   end
 
   test "guided_setup redirects to kickoff_booked once a booking exists" do

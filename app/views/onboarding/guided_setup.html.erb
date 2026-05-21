@@ -4,44 +4,16 @@
   </div>
   <div class="sm:mx-auto sm:w-full sm:max-w-3xl" data-testid="guided-setup">
     <div class="text-center">
-      <h2 class="text-3xl font-extrabold text-gray-900">Guided Setup</h2>
-      <p class="mt-2 text-lg text-gray-600">
-        Our specialist installs mbuzz, connects one ad platform, and trains your team. Book the kickoff and we'll take it from there.
-      </p>
-    </div>
-
-    <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-100">
-        <div class="text-sm font-semibold text-indigo-600">1 &middot; Kickoff call</div>
-        <p class="mt-1 text-sm text-gray-600">Agree goals and the value moment you want to see.</p>
-      </div>
-      <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-100">
-        <div class="text-sm font-semibold text-indigo-600">2 &middot; Install</div>
-        <p class="mt-1 text-sm text-gray-600">We install the four mbuzz API calls in your stack.</p>
-      </div>
-      <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-100">
-        <div class="text-sm font-semibold text-indigo-600">3 &middot; Integration</div>
-        <p class="mt-1 text-sm text-gray-600">Connect Meta Ads, Google Ads, or server-side GTM.</p>
-      </div>
-      <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-100">
-        <div class="text-sm font-semibold text-indigo-600">4 &middot; Training &amp; value check</div>
-        <p class="mt-1 text-sm text-gray-600">Dashboard walkthrough plus a 30-day check-in.</p>
-      </div>
-    </div>
-
-    <div class="mt-8 bg-indigo-50 border border-indigo-100 rounded-lg p-5">
-      <div class="text-lg font-semibold text-indigo-900">Pricing &amp; plan covered on the kickoff call</div>
-      <p class="mt-2 text-sm text-indigo-900">
-        We'll talk through what you're trying to attribute, agree the value moment, and recommend the right plan tier before any payment.
-      </p>
+      <h2 class="text-3xl font-extrabold text-gray-900">Last step</h2>
+      <p class="mt-2 text-lg text-gray-600">Book the kickoff and we'll take it from there.</p>
     </div>
 
     <%= form_with url: onboarding_book_kickoff_path, method: :post, data: { testid: "book-kickoff-form" } do %>
       <div class="mt-8 bg-white p-6 rounded-lg shadow space-y-6">
-        <h3 class="text-xl font-semibold text-gray-900">When works for the kickoff?</h3>
-        <p class="text-sm text-gray-600">
-          Tell us your time zone and any days or times that suit you. We'll come back within one business day with options.
-        </p>
+        <div>
+          <h3 class="text-xl font-semibold text-gray-900">Book your kickoff</h3>
+          <p class="mt-1 text-sm text-gray-600">We'll respond within one business day with options.</p>
+        </div>
 
         <% if @scheduling_error.present? %>
           <div class="p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700" data-testid="scheduling-error">
@@ -49,28 +21,29 @@
           </div>
         <% end %>
 
-        <div>
+        <div data-controller="searchable-select">
           <label for="scheduling_preferences_timezone" class="block text-sm font-semibold text-gray-900">Your time zone <span class="text-red-600">*</span></label>
-          <p class="mt-1 text-sm text-gray-600">Start typing your city. We need this to schedule the kickoff call.</p>
           <input type="text"
-            id="scheduling_preferences_timezone"
-            name="scheduling_preferences[timezone]"
-            list="scheduling-timezones"
-            value="<%= @scheduling_form.timezone %>"
-            required
+            data-searchable-select-target="input"
+            data-action="input->searchable-select#filter"
+            placeholder="Type to filter (e.g. Sydney, London, New York)"
             autocomplete="off"
-            placeholder="e.g. Sydney, London, New York"
             class="mt-2 w-full border-gray-300 rounded-md text-sm focus:border-indigo-500 focus:ring-indigo-500">
-          <datalist id="scheduling-timezones">
+          <select id="scheduling_preferences_timezone"
+            name="scheduling_preferences[timezone]"
+            data-searchable-select-target="select"
+            required
+            class="mt-2 w-full border-gray-300 rounded-md text-sm focus:border-indigo-500 focus:ring-indigo-500">
+            <option value="">Select your time zone</option>
             <% ActiveSupport::TimeZone.all.map(&:name).each do |tz_name| %>
-              <option value="<%= tz_name %>"></option>
+              <option value="<%= tz_name %>" <%= "selected" if @scheduling_form.timezone == tz_name %>><%= tz_name %></option>
             <% end %>
-          </datalist>
+          </select>
         </div>
 
         <div>
-          <span class="block text-sm font-semibold text-gray-900">Days that work (optional)</span>
-          <p class="mt-1 text-sm text-gray-600">Tick all that work. Leave blank for any day.</p>
+          <span class="block text-sm font-semibold text-gray-900">Your preferred days</span>
+          <p class="mt-1 text-sm text-gray-600">Tick all the days that work.</p>
           <div class="mt-2 flex flex-wrap gap-2">
             <% SchedulingPreferences::DAYS_OF_WEEK.each do |day| %>
               <label class="cursor-pointer select-none">
@@ -84,8 +57,8 @@
         </div>
 
         <div>
-          <span class="block text-sm font-semibold text-gray-900">Times that work (optional)</span>
-          <p class="mt-1 text-sm text-gray-600">Tick all that work. Times are in your time zone.</p>
+          <span class="block text-sm font-semibold text-gray-900">Your preferred times</span>
+          <p class="mt-1 text-sm text-gray-600">Tick all the times that work. Times are in your time zone.</p>
           <div class="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2">
             <% SchedulingPreferences::TIME_BLOCKS.each do |block| %>
               <label class="cursor-pointer select-none">
@@ -104,5 +77,36 @@
         <%= submit_tag "Book kickoff call", class: "px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 cursor-pointer font-semibold" %>
       </div>
     <% end %>
+
+    <div class="mt-12">
+      <h3 class="text-lg font-semibold text-gray-900">What happens next</h3>
+      <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-100">
+          <div class="text-sm font-semibold text-indigo-600">1 &middot; Kickoff call</div>
+          <p class="mt-1 text-sm text-gray-600">Agree goals and the value moment you want to see.</p>
+        </div>
+        <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-100">
+          <div class="text-sm font-semibold text-indigo-600">2 &middot; Install</div>
+          <p class="mt-1 text-sm text-gray-600">We install the four mbuzz API calls in your stack.</p>
+        </div>
+        <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-100">
+          <div class="text-sm font-semibold text-indigo-600">3 &middot; Integration</div>
+          <p class="mt-1 text-sm text-gray-600">Connect Meta Ads, Google Ads, or server-side GTM. We'll build one for you if you don't have one.</p>
+        </div>
+        <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-100">
+          <div class="text-sm font-semibold text-indigo-600">4 &middot; Training &amp; value check</div>
+          <p class="mt-1 text-sm text-gray-600">Dashboard walkthrough plus a 30-day check-in.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-12">
+      <h3 class="text-lg font-semibold text-gray-900">Install service inclusions</h3>
+      <div class="mt-4 bg-white rounded-lg shadow-sm border border-gray-100 p-5 space-y-1">
+        <p class="text-xl font-semibold text-gray-900">Price: $1,500 USD</p>
+        <p class="text-sm text-gray-600">Non-refundable mbuzz credit</p>
+        <p class="text-sm text-gray-600">Payment due after the kickoff call</p>
+      </div>
+    </div>
   </div>
 </div>
