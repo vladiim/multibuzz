@@ -216,12 +216,15 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     get onboarding_install_service_path
 
     assert_response :success
-    assert_select "h2", text: /mbuzz install service/
+    assert_select "body", text: /mbuzz install service/
+    assert_select "h2", text: /attribution/i
     assert_select "body", text: /\$1,500/
     assert_select "body", text: /\bmbuzz credit\b/
-    assert_select "body", text: /Use it to pay for your ongoing mbuzz service/
+    assert_select "body", text: /Net cost/i
+    assert_select "body", text: /prepaid mbuzz/i
     assert_select "body", text: /Non-refundable payment, due after the kickoff call/
     assert_select "body", text: /build one for you/i
+    assert_select "body", text: /No contract/i
     refute_includes response.body, "What happens next"
     refute_includes response.body, "Non-refundable mbuzz credit"
   end
