@@ -185,14 +185,37 @@ class OnboardingChromeHelperTest < ActionView::TestCase
     assert_nil onboarding_pip_link(pip(:pay))
   end
 
-  test "done pick_path pip links back to clear the setup_path" do
-    account.update!(setup_path: :assisted)
+  test "done pick_path pip links back to clear the setup_path when the branch is uncommitted" do
+    account.update!(setup_path: :assisted, setup_profile_completed_at: nil)
     @onboarding_current_pip = :discovery
 
     link = onboarding_pip_link(pip(:pick_path))
 
     assert_equal onboarding_change_setup_path_path, link[:path]
     assert_equal :delete, link[:method]
+  end
+
+  test "pick_path pip is not clickable once self-serve has received events" do
+    account.update!(setup_path: :self_serve)
+    @onboarding_current_pip = :install
+    # fixtures already give accounts(:one) events
+
+    assert_nil onboarding_pip_link(pip(:pick_path))
+  end
+
+  test "pick_path pip is not clickable once a teammate invite has been sent" do
+    account.update!(setup_path: :teammate)
+    @onboarding_current_pip = :invite_sent
+    # fixtures already give accounts(:one) a pending non-owner membership
+
+    assert_nil onboarding_pip_link(pip(:pick_path))
+  end
+
+  test "pick_path pip is not clickable once assisted discovery is complete" do
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+    @onboarding_current_pip = :book_kickoff
+
+    assert_nil onboarding_pip_link(pip(:pick_path))
   end
 
   # --- onboarding_current_pip_label ---

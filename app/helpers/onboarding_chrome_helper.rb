@@ -74,13 +74,25 @@ module OnboardingChromeHelper
 
   # Pips marked :done can carry a back-navigation target. Today only the
   # path-reset (pick_path) is wired; other completed steps stay passive
-  # markers until their back-nav gating is defined.
+  # markers until their back-nav gating is defined. Per DESIGN_SYSTEM
+  # §3.10, branch-switching is only allowed before the user has committed
+  # to the branch (no events, no teammate invite, no discovery answers).
   def onboarding_pip_link(pip)
     return nil unless pip.state == :done
+    return nil if pip.key == :pick_path && branch_committed?
 
     case pip.key
     when :pick_path
       { path: onboarding_change_setup_path_path, method: :delete }
+    end
+  end
+
+  def branch_committed?
+    case current_account&.setup_path
+    when SetupPaths::SELF_SERVE then current_account.events.exists?
+    when SetupPaths::TEAMMATE   then current_account.account_memberships.where.not(role: :owner).exists?
+    when SetupPaths::ASSISTED   then current_account.setup_profile_completed_at.present?
+    else false
     end
   end
 
