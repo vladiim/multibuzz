@@ -1,0 +1,27 @@
+<%#
+  Resume-nav pill rendered in the main app top nav while onboarding is in
+  progress. Two states:
+   - Actionable: filled indigo link to the next step (most cases).
+   - Status-only: lighter pill with no click target (e.g. assisted
+     branch waiting for admin to send a payment link, or work
+     in_progress with mbuzz delivering).
+  Per DESIGN_SYSTEM §10 (Onboarding chrome -> resume nav).
+%>
+<% status = onboarding_resume_status %>
+<% if status.present? %>
+  <% if status.path.present? %>
+    <%= link_to status.path,
+          class: "inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-indigo-700",
+          data: { testid: "onboarding-resume-pill" } do %>
+      <span class="w-1.5 h-1.5 rounded-full bg-white" aria-hidden="true"></span>
+      <%= status.label %>
+    <% end %>
+  <% else %>
+    <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-700 text-sm font-medium rounded-md border border-indigo-100"
+          data-testid="onboarding-resume-pill"
+          data-state="status-only">
+      <span class="w-1.5 h-1.5 rounded-full bg-indigo-500" aria-hidden="true"></span>
+      <%= status.label %>
+    </span>
+  <% end %>
+<% end %>

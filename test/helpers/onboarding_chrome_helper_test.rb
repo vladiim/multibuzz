@@ -209,6 +209,94 @@ class OnboardingChromeHelperTest < ActionView::TestCase
     assert_nil onboarding_current_pip_label
   end
 
+  # --- onboarding_resume_status (the main-app nav pill) ---
+
+  test "resume status is nil when current_account is nil" do
+    @current_account = nil
+
+    assert_nil onboarding_resume_status
+  end
+
+  test "resume status is nil when no setup_path has been chosen" do
+    account.update!(setup_path: nil)
+
+    assert_nil onboarding_resume_status
+  end
+
+  test "resume status is nil when onboarding was skipped" do
+    account.update!(setup_path: :self_serve, onboarding_skipped_at: Time.current)
+
+    assert_nil onboarding_resume_status
+  end
+
+  test "self-serve resume status points at the attribution screen until it has been viewed" do
+    account.update!(setup_path: :self_serve)
+
+    assert_equal onboarding_setup_path, onboarding_resume_status.path
+    assert_equal "Finish setup", onboarding_resume_status.label
+  end
+
+  test "self-serve resume status is nil once attribution has been viewed" do
+    account.update!(setup_path: :self_serve)
+    account.complete_onboarding_step!(:attribution_viewed)
+
+    assert_nil onboarding_resume_status
+  end
+
+  test "teammate resume status points at the invite step until first event lands" do
+    account.update!(setup_path: :teammate)
+    account.events.destroy_all
+
+    assert_equal onboarding_invite_teammate_path, onboarding_resume_status.path
+  end
+
+  test "assisted resume status routes to install_service before discovery is done" do
+    account.update!(setup_path: :assisted, setup_profile_completed_at: nil)
+
+    assert_equal onboarding_install_service_path, onboarding_resume_status.path
+  end
+
+  test "assisted resume status routes to book-kickoff once discovery is done" do
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+
+    assert_equal onboarding_guided_setup_path, onboarding_resume_status.path
+  end
+
+  test "assisted resume status is status-only (no path) once the kickoff is booked but no payment link yet" do
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+    GuidedSetup.create!(account: account, kickoff_booked_at: Time.current)
+
+    status = onboarding_resume_status
+
+    assert_predicate status, :present?
+    assert_nil status.path
+    assert_match(/booked/i, status.label)
+  end
+
+  test "assisted resume status routes to payment_setup when a payment token is active" do
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+    GuidedSetup.create!(account: account, kickoff_booked_at: Time.current).mint_payment_token!
+
+    assert_equal onboarding_payment_setup_path, onboarding_resume_status.path
+  end
+
+  test "assisted resume status is status-only (no path) once paid but not yet delivered" do
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+    GuidedSetup.create!(account: account, kickoff_booked_at: Time.current, status: :in_progress, accepted_at: Time.current)
+
+    status = onboarding_resume_status
+
+    assert_predicate status, :present?
+    assert_nil status.path
+  end
+
+  test "assisted resume status is nil once the engagement is delivered" do
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+    GuidedSetup.create!(account: account, status: :delivered, completed_at: Time.current)
+
+    assert_nil onboarding_resume_status
+  end
+
   # --- onboarding_pip_dot_classes ---
 
   test "pip dot classes for done and current use the indigo fill" do

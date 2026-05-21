@@ -9,6 +9,7 @@
 # helper testable as a pure function of (current_account, @current_pip).
 module OnboardingChromeHelper
   Pip = Data.define(:key, :label, :state)
+  ResumeStatus = Data.define(:label, :path)
 
   BRANCH_LABELS = {
     SetupPaths::SELF_SERVE => "Self-serve setup",
@@ -84,6 +85,21 @@ module OnboardingChromeHelper
     PIP_DOT_CLASSES.fetch(state)
   end
 
+  # Resume-nav pill shown in the main app nav while onboarding is in
+  # progress. Returns a ResumeStatus(label, path) or nil if there's no
+  # pill to show (no path chosen, skipped, or fully complete). Path may
+  # be nil for status-only states (e.g. assisted waiting for admin to
+  # send a payment link).
+  def onboarding_resume_status
+    return nil if current_account.blank? || current_account.setup_path.blank? || current_account.onboarding_skipped?
+
+    case current_account.setup_path
+    when SetupPaths::SELF_SERVE then self_serve_resume_status
+    when SetupPaths::TEAMMATE   then teammate_resume_status
+    when SetupPaths::ASSISTED   then assisted_resume_status
+    end
+  end
+
   def onboarding_pip_connector_classes(previous_state)
     previous_state == :done ? "bg-indigo-600" : "bg-gray-300"
   end
@@ -126,5 +142,47 @@ module OnboardingChromeHelper
     return true if guided_setup.nil?
 
     !(guided_setup.payment_token_active? || guided_setup.in_progress? || guided_setup.delivered?)
+  end
+
+  def self_serve_resume_status
+    return nil if current_account.onboarding_step_completed?(:attribution_viewed)
+
+    ResumeStatus.new(label: "Finish setup", path: self_serve_resume_path)
+  end
+
+  def self_serve_resume_path
+    return onboarding_setup_path      unless current_account.onboarding_step_completed?(:sdk_selected)
+    return onboarding_install_path    unless current_account.onboarding_step_completed?(:first_event_received)
+    return onboarding_verify_path     unless current_account.onboarding_step_completed?(:first_event_received)
+    return onboarding_conversion_path unless current_account.onboarding_step_completed?(:first_conversion)
+
+    onboarding_attribution_path
+  end
+
+  def teammate_resume_status
+    return nil if current_account.events.exists?
+
+    ResumeStatus.new(label: "Resume teammate invite", path: onboarding_invite_teammate_path)
+  end
+
+  def assisted_resume_status
+    case assisted_resume_state
+    when :discovery_pending then ResumeStatus.new(label: "Finish setup", path: onboarding_install_service_path)
+    when :booking_pending   then ResumeStatus.new(label: "Book your kickoff", path: onboarding_guided_setup_path)
+    when :payment_ready     then ResumeStatus.new(label: "Pay for your setup", path: onboarding_payment_setup_path)
+    when :paid_in_progress  then ResumeStatus.new(label: "Setup in progress", path: nil)
+    when :awaiting_link     then ResumeStatus.new(label: "Kickoff booked — we'll be in touch", path: nil)
+    end
+  end
+
+  def assisted_resume_state
+    guided_setup = current_account.guided_setup
+    return nil if guided_setup&.delivered?
+    return :discovery_pending if current_account.setup_profile_completed_at.blank?
+    return :booking_pending   if guided_setup.nil? || guided_setup.kickoff_booked_at.blank?
+    return :payment_ready     if guided_setup.payment_token_active?
+    return :paid_in_progress  if guided_setup.in_progress?
+
+    :awaiting_link
   end
 end
