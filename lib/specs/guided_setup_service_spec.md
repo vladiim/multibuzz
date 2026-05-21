@@ -21,6 +21,8 @@ On the help path the customer **pays $1,500**, chooses a plan, and the full $1,5
 
 This spec is the signed-off plan; the wireframes in `lib/mockups/` are its companion. Annual billing was considered and dropped — see `lib/specs/future/annual_plans_spec.md`.
 
+**Visual + flow rules.** Every onboarding screen — across all three branches — conforms to `lib/docs/DESIGN_SYSTEM.md`. The unified onboarding chrome and the resume-nav pill are specified in §10 of that doc; the canonical wireframes are at `lib/mockups/onboarding-chrome.html`. The cohesion work that brings the existing screens onto the system is tracked in a follow-up spec; this Guided Setup spec assumes the system is in effect.
+
 ---
 
 ## Pivot — 2026-05-21
