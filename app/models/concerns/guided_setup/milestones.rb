@@ -7,6 +7,19 @@ module GuidedSetup::Milestones
     kickoff_call install_completed integration_connected training_call value_check
   ].freeze
 
+  # integration_target maps to an AdPlatformConnection#platform. Lets the
+  # admin milestone "Integration connected" derive automatically from real
+  # connection data instead of being clicked manually. sgtm/none don't
+  # have a connection model -- the admin can still manually stamp those.
+  AD_PLATFORM_FOR_INTEGRATION_TARGET = {
+    "meta" => "meta_ads",
+    "google_ads" => "google_ads"
+  }.freeze
+
+  def integration_connected_at
+    super || derived_integration_connected_at
+  end
+
   def mark_in_progress!
     update!(status: :in_progress, accepted_at: Time.current)
   end
@@ -23,6 +36,13 @@ module GuidedSetup::Milestones
   end
 
   private
+
+  def derived_integration_connected_at
+    platform = AD_PLATFORM_FOR_INTEGRATION_TARGET[integration_target]
+    return nil unless platform
+
+    account.ad_platform_connections.where(platform: platform).order(:created_at).first&.created_at
+  end
 
   def milestone_attributes(name)
     { "#{name}_at" => Time.current }.tap do |attrs|

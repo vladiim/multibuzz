@@ -22,6 +22,28 @@ class GuidedSetupTest < ActiveSupport::TestCase
     assert_predicate guided_setup.accepted_at, :present?
   end
 
+  test "integration_connected_at is derived from a matching ad_platform_connection when not manually stamped" do
+    setup = GuidedSetup.create!(account: account, integration_target: :meta)
+    connection = account.ad_platform_connections.create!(platform: :meta_ads, status: :connected, platform_account_id: "act_123", currency: "USD")
+
+    assert_equal connection.created_at, setup.integration_connected_at
+  end
+
+  test "integration_connected_at stays nil for sgtm/none targets — no AdPlatformConnection exists for those" do
+    setup = GuidedSetup.create!(account: account, integration_target: :sgtm)
+    account.ad_platform_connections.create!(platform: :meta_ads, status: :connected, platform_account_id: "act_123", currency: "USD")
+
+    assert_nil setup.integration_connected_at
+  end
+
+  test "a manually stamped integration_connected_at wins over the derived value" do
+    stamped_at = 1.week.ago
+    setup = GuidedSetup.create!(account: account, integration_target: :meta, integration_connected_at: stamped_at)
+    account.ad_platform_connections.create!(platform: :meta_ads, status: :connected, platform_account_id: "act_123", currency: "USD")
+
+    assert_in_delta stamped_at, setup.integration_connected_at, 1.second
+  end
+
   test "record_milestone! stamps the milestone timestamp" do
     guided_setup.record_milestone!(:kickoff_call)
 
