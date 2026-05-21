@@ -38,13 +38,13 @@ module Dashboard
       assert_select "a[data-testid='onboarding-resume-pill'][href=?]", onboarding_setup_path, text: /Finish setup/
     end
 
-    test "assisted renders a status-only pill after kickoff is booked, before the payment link arrives" do
+    test "assisted renders a non-actionable but clickable pill after kickoff is booked, before the payment link arrives" do
       account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
       GuidedSetup.create!(account: account, kickoff_booked_at: Time.current)
 
       get dashboard_path
 
-      assert_select "[data-testid='onboarding-resume-pill'][data-state='status-only']", text: /booked/i
+      assert_select "a[data-testid='onboarding-resume-pill'][data-state='status-only'][href=?]", onboarding_guided_setup_path, text: /booked/i
     end
 
     test "assisted renders an actionable pill when the payment link is live" do

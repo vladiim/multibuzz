@@ -450,14 +450,15 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Leave blank for any day"
   end
 
-  test "guided_setup redirects to dashboard once a booking exists" do
+  test "guided_setup renders the booked-status state once a booking exists" do
     sign_in
     account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
     GuidedSetup.create!(account: account, kickoff_booked_at: Time.current)
 
     get onboarding_guided_setup_path
 
-    assert_redirected_to dashboard_path
+    assert_response :success
+    assert_select "[data-testid='success-state']", text: /Kickoff booked/
   end
 
   # --- Book kickoff ---

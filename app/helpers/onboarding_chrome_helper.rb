@@ -9,7 +9,10 @@
 # helper testable as a pure function of (current_account, @current_pip).
 module OnboardingChromeHelper
   Pip = Data.define(:key, :label, :state)
-  ResumeStatus = Data.define(:label, :path)
+  # actionable: true  -> filled-indigo "do this next" link.
+  # actionable: false -> light-indigo "we're working / wait for us" link
+  # back into the relevant onboarding screen. Both states are clickable.
+  ResumeStatus = Data.define(:label, :path, :actionable)
 
   BRANCH_LABELS = {
     SetupPaths::SELF_SERVE => "Self-serve setup",
@@ -147,7 +150,7 @@ module OnboardingChromeHelper
   def self_serve_resume_status
     return nil if current_account.onboarding_step_completed?(:attribution_viewed)
 
-    ResumeStatus.new(label: "Finish setup", path: self_serve_resume_path)
+    ResumeStatus.new(label: "Finish setup", path: self_serve_resume_path, actionable: true)
   end
 
   def self_serve_resume_path
@@ -162,16 +165,16 @@ module OnboardingChromeHelper
   def teammate_resume_status
     return nil if current_account.events.exists?
 
-    ResumeStatus.new(label: "Resume teammate invite", path: onboarding_invite_teammate_path)
+    ResumeStatus.new(label: "Resume teammate invite", path: onboarding_invite_teammate_path, actionable: true)
   end
 
   def assisted_resume_status
     case assisted_resume_state
-    when :discovery_pending then ResumeStatus.new(label: "Finish setup", path: onboarding_install_service_path)
-    when :booking_pending   then ResumeStatus.new(label: "Book your kickoff", path: onboarding_guided_setup_path)
-    when :payment_ready     then ResumeStatus.new(label: "Pay for your setup", path: onboarding_payment_setup_path)
-    when :paid_in_progress  then ResumeStatus.new(label: "Setup in progress", path: nil)
-    when :awaiting_link     then ResumeStatus.new(label: "Kickoff booked — we'll be in touch", path: nil)
+    when :discovery_pending then ResumeStatus.new(label: "Finish setup", path: onboarding_install_service_path, actionable: true)
+    when :booking_pending   then ResumeStatus.new(label: "Book your kickoff", path: onboarding_guided_setup_path, actionable: true)
+    when :payment_ready     then ResumeStatus.new(label: "Pay for your setup", path: onboarding_payment_setup_path, actionable: true)
+    when :paid_in_progress  then ResumeStatus.new(label: "Setup in progress", path: onboarding_payment_complete_path, actionable: false)
+    when :awaiting_link     then ResumeStatus.new(label: "Kickoff booked — we'll be in touch", path: onboarding_guided_setup_path, actionable: false)
     end
   end
 

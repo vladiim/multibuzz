@@ -39,9 +39,8 @@ module Onboarding
     end
 
     def guided_setup
-      return redirect_to(dashboard_path) if current_account.guided_setup&.kickoff_booked_at.present?
-
       @scheduling_form = SchedulingPreferencesPresenter.from(current_account.guided_setup&.scheduling_preferences)
+      @kickoff_booked  = current_account.guided_setup&.kickoff_booked_at.present?
     end
 
     def book_kickoff

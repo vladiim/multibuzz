@@ -262,14 +262,14 @@ class OnboardingChromeHelperTest < ActionView::TestCase
     assert_equal onboarding_guided_setup_path, onboarding_resume_status.path
   end
 
-  test "assisted resume status is status-only (no path) once the kickoff is booked but no payment link yet" do
+  test "assisted resume status is non-actionable but still links back to onboarding once the kickoff is booked" do
     account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
     GuidedSetup.create!(account: account, kickoff_booked_at: Time.current)
 
     status = onboarding_resume_status
 
-    assert_predicate status, :present?
-    assert_nil status.path
+    assert_not status.actionable
+    assert_equal onboarding_guided_setup_path, status.path
     assert_match(/booked/i, status.label)
   end
 
@@ -280,14 +280,14 @@ class OnboardingChromeHelperTest < ActionView::TestCase
     assert_equal onboarding_payment_setup_path, onboarding_resume_status.path
   end
 
-  test "assisted resume status is status-only (no path) once paid but not yet delivered" do
+  test "assisted resume status is non-actionable but links to payment_complete once paid and in progress" do
     account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
     GuidedSetup.create!(account: account, kickoff_booked_at: Time.current, status: :in_progress, accepted_at: Time.current)
 
     status = onboarding_resume_status
 
-    assert_predicate status, :present?
-    assert_nil status.path
+    assert_not status.actionable
+    assert_equal onboarding_payment_complete_path, status.path
   end
 
   test "assisted resume status is nil once the engagement is delivered" do
