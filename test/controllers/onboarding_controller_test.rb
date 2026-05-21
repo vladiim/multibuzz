@@ -216,8 +216,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     get onboarding_install_service_path
 
     assert_response :success
-    assert_select "body", text: /mbuzz install service/
-    assert_select "h2", text: /attribution/i
+    assert_select "h2", text: /mbuzz install service/
     assert_select "body", text: /\$1,500/
     assert_select "body", text: /\bmbuzz credit\b/
     assert_select "body", text: /Net cost/i
