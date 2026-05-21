@@ -135,6 +135,107 @@ class GuidedSetupTest < ActiveSupport::TestCase
     assert_not guided_setup.stalled?
   end
 
+  # --- Payment journey ---
+
+  test "book_kickoff! stamps the booking time and persists scheduling preferences" do
+    prefs = { "timezone" => "Sydney", "days" => [ "tue" ], "time_blocks" => [ "morning" ] }
+
+    guided_setup.book_kickoff!(scheduling_preferences: prefs)
+
+    assert_predicate guided_setup.kickoff_booked_at, :present?
+    assert_equal prefs, guided_setup.scheduling_preferences
+  end
+
+  test "book_kickoff! keeps the engagement pending" do
+    guided_setup.book_kickoff!(scheduling_preferences: { "timezone" => "Sydney" })
+
+    assert_predicate guided_setup, :pending?
+  end
+
+  test "mint_payment_token! generates a token and an expiry" do
+    guided_setup.mint_payment_token!
+
+    assert_predicate guided_setup.payment_token, :present?
+    assert_in_delta 48.hours.from_now, guided_setup.payment_token_expires_at, 5.seconds
+  end
+
+  test "mint_payment_token! returns the token" do
+    token = guided_setup.mint_payment_token!
+
+    assert_equal guided_setup.payment_token, token
+  end
+
+  test "mint_payment_token! rotates an existing token" do
+    first = guided_setup.mint_payment_token!
+    second = guided_setup.mint_payment_token!
+
+    assert_not_equal first, second
+  end
+
+  test "payment_token_active? is true when the token is present and unexpired" do
+    guided_setup.mint_payment_token!
+
+    assert_predicate guided_setup, :payment_token_active?
+  end
+
+  test "payment_token_active? is false when there is no token" do
+    assert_not guided_setup.payment_token_active?
+  end
+
+  test "payment_token_active? is false when the token has expired" do
+    guided_setup.mint_payment_token!
+    guided_setup.update_columns(payment_token_expires_at: 1.minute.ago)
+
+    assert_not guided_setup.payment_token_active?
+  end
+
+  test "awaiting_payment? is true when pending with an active token" do
+    guided_setup.mint_payment_token!
+
+    assert_predicate guided_setup, :awaiting_payment?
+  end
+
+  test "awaiting_payment? is false once the engagement has moved past pending" do
+    guided_setup.mint_payment_token!
+    guided_setup.update!(status: :in_progress)
+
+    assert_not guided_setup.awaiting_payment?
+  end
+
+  test "awaiting_payment? is false when the token has expired" do
+    guided_setup.mint_payment_token!
+    guided_setup.update_columns(payment_token_expires_at: 1.minute.ago)
+
+    assert_not guided_setup.awaiting_payment?
+  end
+
+  test "clear_payment_token! removes the token and its expiry" do
+    guided_setup.mint_payment_token!
+
+    guided_setup.clear_payment_token!
+
+    assert_nil guided_setup.payment_token
+    assert_nil guided_setup.payment_token_expires_at
+  end
+
+  test "find_by_active_payment_token returns the engagement for an unexpired token" do
+    token = guided_setup.mint_payment_token!
+
+    assert_equal guided_setup, GuidedSetup.find_by_active_payment_token(token)
+  end
+
+  test "find_by_active_payment_token returns nil for an expired token" do
+    token = guided_setup.mint_payment_token!
+    guided_setup.update_columns(payment_token_expires_at: 1.minute.ago)
+
+    assert_nil GuidedSetup.find_by_active_payment_token(token)
+  end
+
+  test "find_by_active_payment_token returns nil for an unknown or blank token" do
+    assert_nil GuidedSetup.find_by_active_payment_token("does-not-exist")
+    assert_nil GuidedSetup.find_by_active_payment_token(nil)
+  end
+
   private
 
   def account = @account ||= accounts(:one)

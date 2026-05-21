@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_05_21_020000) do
+ActiveRecord::Schema[8.0].define(version: 2026_05_21_030000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -510,7 +510,11 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_21_020000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.jsonb "scheduling_preferences", default: {}, null: false
+    t.string "payment_token"
+    t.datetime "payment_token_expires_at"
+    t.datetime "kickoff_booked_at"
     t.index ["account_id"], name: "index_guided_setups_on_account_id", unique: true
+    t.index ["payment_token"], name: "index_guided_setups_on_payment_token", unique: true, where: "(payment_token IS NOT NULL)"
     t.index ["status", "updated_at"], name: "index_guided_setups_on_status_and_updated_at"
   end
 

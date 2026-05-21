@@ -6,6 +6,7 @@ class GuidedSetup < ApplicationRecord
   include GuidedSetup::Validations
   include GuidedSetup::Scopes
   include GuidedSetup::Milestones
+  include GuidedSetup::PaymentJourney
   include GuidedSetup::Recommendations
 
   has_prefix_id :gst
