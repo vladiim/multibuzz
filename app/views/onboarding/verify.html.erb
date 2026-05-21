@@ -3,11 +3,10 @@
 <div class="py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
   <div class="max-w-2xl mx-auto">
     <%= turbo_frame_tag "verification_status", src: onboarding_event_status_path, data: { turbo_stream: true } do %>
-      <%= render layout: "shared/waiting_state",
-                 locals: { heading: "Waiting for your first event",
-                           body: current_sdk.platform? ?
-                             "Events will appear once visitors interact with your store." :
-                             "Run the code below in your application." } do %>
+      <%= render layout: "shared/waiting_state", locals: {
+        heading: "Waiting for your first event",
+        body: current_sdk.platform? ? "Events will appear once visitors interact with your store." : "Run the code below in your application."
+      } do %>
         <% if current_sdk.platform? %>
           <p class="font-semibold mb-2 text-sm text-gray-900">To trigger a test event:</p>
           <ol class="list-decimal list-inside space-y-1 text-sm text-gray-700">

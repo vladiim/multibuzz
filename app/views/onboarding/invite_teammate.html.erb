@@ -3,13 +3,13 @@
     <% if @invited_email.present? && @invite_error.blank? %>
       <div data-testid="teammate-invite-sent">
         <%= render "shared/success_state",
-              emoji: "📨",
-              heading: "Invite sent to #{@invited_email}",
-              body: "We'll let you know when they accept. You can invite more teammates or head to the dashboard.",
-              primary_cta_label: "Go to dashboard",
-              primary_cta_path: dashboard_path,
-              secondary_cta_label: "Invite another",
-              secondary_cta_path: onboarding_invite_teammate_path %>
+          emoji: "📨",
+          heading: "Invite sent to #{@invited_email}",
+          body: "We'll let you know when they accept. You can invite more teammates or head to the dashboard.",
+          primary_cta_label: "Go to dashboard",
+          primary_cta_path: dashboard_path,
+          secondary_cta_label: "Invite another",
+          secondary_cta_path: onboarding_invite_teammate_path %>
       </div>
     <% else %>
       <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Invite the teammate who'll install mbuzz</h2>

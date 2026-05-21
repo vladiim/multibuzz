@@ -16,22 +16,22 @@ module OnboardingChromeHelper
 
   BRANCH_LABELS = {
     SetupPaths::SELF_SERVE => "Self-serve setup",
-    SetupPaths::TEAMMATE   => "Teammate setup",
-    SetupPaths::ASSISTED   => "Guided Setup"
+    SetupPaths::TEAMMATE => "Teammate setup",
+    SetupPaths::ASSISTED => "Guided Setup"
   }.freeze
 
   PIP_SEQUENCE = {
     SetupPaths::SELF_SERVE => %i[pick_path api_key install verify conversion done],
-    SetupPaths::TEAMMATE   => %i[pick_path invite_sent teammate_installs done],
-    SetupPaths::ASSISTED   => %i[pick_path discovery book_kickoff pay done]
+    SetupPaths::TEAMMATE => %i[pick_path invite_sent teammate_installs done],
+    SetupPaths::ASSISTED => %i[pick_path discovery book_kickoff pay done]
   }.freeze
 
   # First pip carries the user's choice phrase, not a generic "Pick path".
   # Reads as the user's own story across the chrome.
   PIP_CHOICE_LABELS = {
     SetupPaths::SELF_SERVE => "I'll do it",
-    SetupPaths::TEAMMATE   => "My teammate will",
-    SetupPaths::ASSISTED   => "mbuzz will do it"
+    SetupPaths::TEAMMATE => "My teammate will",
+    SetupPaths::ASSISTED => "mbuzz will do it"
   }.freeze
 
   PIP_LABELS = {
@@ -48,10 +48,10 @@ module OnboardingChromeHelper
   }.freeze
 
   PIP_DOT_CLASSES = {
-    done:     "bg-indigo-600 border-2 border-indigo-600",
-    current:  "bg-indigo-600 border-2 border-indigo-600 ring-2 ring-white ring-offset-2 ring-offset-indigo-600",
+    done: "bg-indigo-600 border-2 border-indigo-600",
+    current: "bg-indigo-600 border-2 border-indigo-600 ring-2 ring-white ring-offset-2 ring-offset-indigo-600",
     upcoming: "bg-white border-2 border-gray-300",
-    locked:   "bg-white border-2 border-dashed border-gray-300"
+    locked: "bg-white border-2 border-dashed border-gray-300"
   }.freeze
 
   def onboarding_branch_label
@@ -90,8 +90,8 @@ module OnboardingChromeHelper
   def branch_committed?
     case current_account&.setup_path
     when SetupPaths::SELF_SERVE then current_account.events.exists?
-    when SetupPaths::TEAMMATE   then current_account.account_memberships.where.not(role: :owner).exists?
-    when SetupPaths::ASSISTED   then current_account.setup_profile_completed_at.present?
+    when SetupPaths::TEAMMATE then current_account.account_memberships.where.not(role: :owner).exists?
+    when SetupPaths::ASSISTED then current_account.setup_profile_completed_at.present?
     else false
     end
   end
@@ -110,8 +110,8 @@ module OnboardingChromeHelper
 
     case current_account.setup_path
     when SetupPaths::SELF_SERVE then self_serve_resume_status
-    when SetupPaths::TEAMMATE   then teammate_resume_status
-    when SetupPaths::ASSISTED   then assisted_resume_status
+    when SetupPaths::TEAMMATE then teammate_resume_status
+    when SetupPaths::ASSISTED then assisted_resume_status
     end
   end
 
@@ -164,9 +164,9 @@ module OnboardingChromeHelper
   end
 
   def self_serve_resume_path
-    return onboarding_setup_path      unless current_account.onboarding_step_completed?(:sdk_selected)
-    return onboarding_install_path    unless current_account.onboarding_step_completed?(:first_event_received)
-    return onboarding_verify_path     unless current_account.onboarding_step_completed?(:first_event_received)
+    return onboarding_setup_path unless current_account.onboarding_step_completed?(:sdk_selected)
+    return onboarding_install_path unless current_account.onboarding_step_completed?(:first_event_received)
+    return onboarding_verify_path unless current_account.onboarding_step_completed?(:first_event_received)
     return onboarding_conversion_path unless current_account.onboarding_step_completed?(:first_conversion)
 
     onboarding_attribution_path
@@ -174,17 +174,17 @@ module OnboardingChromeHelper
 
   def teammate_resume_status
     case teammate_resume_state
-    when :invite_needed   then ResumeStatus.new(label: "Invite your teammate", path: onboarding_invite_teammate_path, actionable: true)
+    when :invite_needed then ResumeStatus.new(label: "Invite your teammate", path: onboarding_invite_teammate_path, actionable: true)
     when :awaiting_accept then ResumeStatus.new(label: "Awaiting your teammate", path: onboarding_invite_teammate_path, actionable: false)
-    when :awaiting_event  then ResumeStatus.new(label: "Awaiting first event from your teammate", path: onboarding_invite_teammate_path, actionable: false)
+    when :awaiting_event then ResumeStatus.new(label: "Awaiting first event from your teammate", path: onboarding_invite_teammate_path, actionable: false)
     end
   end
 
   def teammate_resume_state
     invites = current_account.account_memberships.where.not(role: :owner)
-    return :invite_needed   if invites.none?
+    return :invite_needed if invites.none?
     return :awaiting_accept if invites.where(status: :pending).exists?
-    return nil              if current_account.events.exists?
+    return nil if current_account.events.exists?
 
     :awaiting_event
   end
