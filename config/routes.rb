@@ -143,6 +143,10 @@ Rails.application.routes.draw do
   post "onboarding/discovery", to: "onboarding#submit_discovery"
   get "onboarding/guided_setup", to: "onboarding#guided_setup", as: :onboarding_guided_setup
   post "onboarding/book_kickoff", to: "onboarding#book_kickoff", as: :onboarding_book_kickoff
+  get "onboarding/payment/:token", to: "onboarding/payment_links#show", as: :onboarding_payment_link
+  get "onboarding/payment_setup", to: "onboarding#payment_setup", as: :onboarding_payment_setup
+  post "onboarding/start_payment", to: "onboarding#start_payment", as: :onboarding_start_payment
+  get "onboarding/payment_complete", to: "onboarding#payment_complete", as: :onboarding_payment_complete
   get "onboarding/setup", to: "onboarding#setup", as: :onboarding_setup
   post "onboarding/regenerate_api_key", to: "onboarding#regenerate_api_key", as: :onboarding_regenerate_api_key
   post "onboarding/select_sdk", to: "onboarding#select_sdk", as: :onboarding_select_sdk
@@ -187,6 +191,7 @@ Rails.application.routes.draw do
     resources :customer_metrics, only: [ :index ]
     resources :guided_setups, only: [ :index, :show, :update ] do
       post :record_milestone, on: :member
+      post :generate_payment_link, on: :member
     end
     resources :submissions, only: [ :index, :show ]
     resources :data_integrity, only: [ :index, :show ]

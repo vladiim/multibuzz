@@ -29,4 +29,8 @@ module Account::Relationships
     has_many :data_integrity_checks, dependent: :destroy
     has_many :exports, dependent: :destroy
   end
+
+  def owner_user
+    account_memberships.owner.accepted.first&.user
+  end
 end
