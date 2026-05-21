@@ -9,6 +9,7 @@ module Onboarding
     extend ActiveSupport::Concern
 
     included do
+      before_action :skip_if_already_paid, only: %i[payment_setup start_payment]
       before_action :require_active_payment_link, only: %i[payment_setup start_payment]
       before_action :require_payment_context, only: %i[payment_complete]
     end
@@ -28,6 +29,12 @@ module Onboarding
     def payment_complete; end
 
     private
+
+    def skip_if_already_paid
+      return unless current_account.guided_setup&.in_progress?
+
+      redirect_to dashboard_path
+    end
 
     def require_active_payment_link
       return if current_account.guided_setup&.payment_token_active?

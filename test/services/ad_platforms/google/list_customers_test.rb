@@ -108,6 +108,23 @@ class AdPlatforms::Google::ListCustomersTest < ActiveSupport::TestCase
     end
   end
 
+  test "falls back to id-based name when direct customer has no descriptive name" do
+    stub_api(list_response: accessible_response, detail_responses: { "1234567890" => unnamed_customer_detail }) do
+      assert_equal "Account 1234567890", service.call[:customers].first[:name]
+    end
+  end
+
+  test "falls back to id-based name when sub-account has no descriptive name" do
+    responses = {
+      "9999999999" => manager_detail,
+      "9999999999:sub" => unnamed_sub_accounts_response
+    }
+
+    stub_api(list_response: single_manager_response, detail_responses: responses) do
+      assert_equal "Account 5555555555", service.call[:customers].first[:name]
+    end
+  end
+
   private
 
   def service = @service ||= AdPlatforms::Google::ListCustomers.new(access_token: "test_token")
@@ -156,6 +173,31 @@ class AdPlatforms::Google::ListCustomersTest < ActiveSupport::TestCase
         "customerClient" => {
           "id" => "5555555555",
           "descriptiveName" => "Sub Account",
+          "currencyCode" => "AUD",
+          "manager" => false,
+          "level" => "1"
+        }
+      } ]
+    }
+  end
+
+  def unnamed_customer_detail
+    {
+      "results" => [ {
+        "customer" => {
+          "id" => "1234567890",
+          "currencyCode" => "USD",
+          "manager" => false
+        }
+      } ]
+    }
+  end
+
+  def unnamed_sub_accounts_response
+    {
+      "results" => [ {
+        "customerClient" => {
+          "id" => "5555555555",
           "currencyCode" => "AUD",
           "manager" => false,
           "level" => "1"

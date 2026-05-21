@@ -859,6 +859,24 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to onboarding_path
   end
 
+  test "payment_setup redirects to dashboard once payment has landed" do
+    sign_in
+    GuidedSetup.create!(account: account, status: :in_progress, accepted_at: Time.current, kickoff_booked_at: Time.current)
+
+    get onboarding_payment_setup_path
+
+    assert_redirected_to dashboard_path
+  end
+
+  test "start_payment redirects to dashboard once payment has landed" do
+    sign_in
+    GuidedSetup.create!(account: account, status: :in_progress, accepted_at: Time.current, kickoff_booked_at: Time.current)
+
+    post onboarding_start_payment_path, params: { plan_slug: "growth" }
+
+    assert_redirected_to dashboard_path
+  end
+
   test "payment_setup renders the plan picker when the token is active" do
     sign_in
     GuidedSetup.create!(account: account, kickoff_booked_at: Time.current).mint_payment_token!
