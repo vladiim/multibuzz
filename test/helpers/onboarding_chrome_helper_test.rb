@@ -139,6 +139,39 @@ class OnboardingChromeHelperTest < ActionView::TestCase
     assert_equal :upcoming, pip(:pay).state
   end
 
+  # --- onboarding_pip_link (clickable done pips for back-navigation) ---
+
+  test "pip link is nil for the current pip" do
+    account.update!(setup_path: :assisted)
+    @onboarding_current_pip = :discovery
+
+    assert_nil onboarding_pip_link(pip(:discovery))
+  end
+
+  test "pip link is nil for upcoming pips" do
+    account.update!(setup_path: :assisted)
+    @onboarding_current_pip = :discovery
+
+    assert_nil onboarding_pip_link(pip(:book_kickoff))
+  end
+
+  test "pip link is nil for locked pips" do
+    account.update!(setup_path: :assisted)
+    @onboarding_current_pip = :discovery
+
+    assert_nil onboarding_pip_link(pip(:pay))
+  end
+
+  test "done pick_path pip links back to clear the setup_path" do
+    account.update!(setup_path: :assisted)
+    @onboarding_current_pip = :discovery
+
+    link = onboarding_pip_link(pip(:pick_path))
+
+    assert_equal onboarding_change_setup_path_path, link[:path]
+    assert_equal :delete, link[:method]
+  end
+
   # --- onboarding_current_pip_label ---
 
   test "current pip label returns the current pip's human label" do

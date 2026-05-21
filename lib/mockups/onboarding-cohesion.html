@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onboarding cohesion — every screen</title>
+<link rel="stylesheet" href="wireframe.css">
+<style>
+  /* Chrome additions (kept in sync with onboarding-chrome.html) */
+  .chrome-topbar{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #000;padding:9px 16px;font-weight:700;font-size:14px}
+  .chrome-topbar .branch{font-weight:400;font-size:12px;color:#444;margin-left:10px}
+  .chrome-topbar .exit{font-weight:400;font-size:12px;color:#000;text-decoration:none;border:1px solid #000;padding:2px 8px}
+  .pip-rail{display:flex;align-items:center;justify-content:center;border-bottom:1px solid #000;padding:9px 12px;background:#fafafa;font-size:11px}
+  .pip{display:flex;align-items:center;gap:6px}
+  .pip .dot{width:9px;height:9px;border:1.5px solid #000;border-radius:50%;background:#fff}
+  .pip.done .dot{background:#000}
+  .pip.current .dot{background:#000;box-shadow:0 0 0 3px #fff,0 0 0 4.5px #000}
+  .pip.locked .dot{background:#fff;border-style:dashed;border-color:#999}
+  .pip.locked{color:#999}
+  .pip-rail .bar{flex:0 0 22px;height:1.5px;background:#000;margin:0 4px}
+  .pip-rail .bar.upcoming{background:#999}
+  .pip-rail .bar.locked{background:transparent;border-top:1.5px dashed #999}
+
+  /* Body archetype tokens */
+  .frame-h{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:#666;margin:24px 0 6px;width:740px;max-width:100%}
+  .body{padding:18px 18px 20px}
+  .body h1{font-size:20px;margin:0;font-weight:700;letter-spacing:-.01em}
+  .body h1.hero{text-align:center;font-size:22px}
+  .body .sub{font-size:13px;color:#555;margin:4px 0 0}
+  .body .sub.hero{text-align:center}
+  .body h2{font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin:18px 0 6px;color:#222}
+  .card-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-top:14px}
+  .card-row.two{grid-template-columns:1fr 1fr}
+  .card{border:1px solid #000;background:#fff;padding:11px 12px;font-size:12px;min-height:60px}
+  .card h3{font-size:12px;margin:0 0 3px;font-weight:700}
+  .card p{font-size:11.5px;margin:0;color:#555;line-height:1.45}
+  .field{border:1px solid #000;background:#fff;padding:6px 9px;font-size:12px;color:#333;margin:4px 0;display:flex;justify-content:space-between;gap:10px;align-items:center}
+  .field .ph{color:#888}
+  .actions{margin-top:18px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .actions.right{justify-content:flex-end}
+  .btn{display:inline-block;border:1.5px solid #000;background:#fff;color:#000;padding:7px 14px;font-size:12px;text-decoration:none}
+  .btn.primary{background:#000;color:#fff}
+  .num-circle{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#eef;color:#000;border:1px solid #000;font-size:10px;font-weight:700;margin-right:6px}
+  .promo{border:1.5px solid #000;background:#222;color:#fff;padding:18px;margin-top:14px;font-size:13px}
+  .promo strong{display:block;font-size:18px;line-height:1.2;margin-bottom:8px}
+  .stack{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+  .chip-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+  .chip{border:1px solid #000;padding:3px 8px;font-size:11px;background:#fff}
+  .chip.on{background:#000;color:#fff}
+  .center{text-align:center}
+  .spinner{width:34px;height:34px;border:2.5px solid #000;border-right-color:#ddd;border-radius:50%;margin:14px auto;animation:sp 1s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .small{font-size:11px;color:#666;margin-top:6px}
+  .row{display:flex;gap:6px;flex-wrap:wrap}
+  .row .field{flex:1;min-width:160px}
+</style>
+</head>
+<body>
+
+<div class="meta">mbuzz · onboarding cohesion — every screen in one place</div>
+
+<div class="notes" style="margin-bottom:12px">
+  Every onboarding screen wrapped in the same chrome, the same body archetypes, the same typography, the same button placement. Same primary action position (bottom right). Hero screens centered, task screens left-aligned. Cards share one border/padding pattern. Pricing pitch lives in the sanctioned indigo promo card (used on install_service only).
+  <br><br>
+  <strong>Body archetypes</strong> in use:
+  <ul style="margin:6px 0 0 18px;padding:0">
+    <li><strong>Chooser</strong> — setup-choice. Centered hero heading + horizontal row of N tappable cards.</li>
+    <li><strong>Explainer</strong> — install_service. Centered title + numbered card grid + sanctioned promo + risk-reversal strip + bottom-right Continue.</li>
+    <li><strong>Form</strong> — discovery, guided_setup, invite_teammate, payment_setup. Left-aligned heading + cards containing labeled fields/options + bottom-right primary CTA. Optional left-aligned Back.</li>
+    <li><strong>Waiting</strong> — verify, payment_complete (processing). Centered spinner + heading + helper copy. Auto-advances.</li>
+    <li><strong>Success</strong> — attribution, payment_complete (in_progress). Centered hero emoji + heading + body + single primary CTA.</li>
+    <li><strong>Setup grid</strong> — self-serve setup (API key + SDK). Same form archetype but with mixed content blocks: code panel + card grid.</li>
+  </ul>
+</div>
+
+<!-- ============================================================ -->
+<!-- SHARED CHOOSER: setup-choice                                  -->
+<!-- ============================================================ -->
+
+<div class="frame-h">All branches · Setup choice (entry)</div>
+<div class="screen">
+  <div class="chrome-topbar"><span>mbuzz</span><a class="exit" href="#">Exit to dashboard ×</a></div>
+  <!-- no pip rail: no branch chosen -->
+  <div class="body">
+    <h1 class="hero">Welcome to mbuzz 👋</h1>
+    <p class="sub hero">Who's handling your set up?</p>
+    <div class="card-row">
+      <div class="card"><h3>🛠 I'll do it</h3><p>You install the SDK and API calls.</p></div>
+      <div class="card"><h3>👥 My teammate will</h3><p>Invite a developer to handle the install.</p></div>
+      <div class="card"><h3>🤝 I want mbuzz to do it</h3><p>We'll do the install for a fee.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ASSISTED: install_service                                     -->
+<!-- ============================================================ -->
+
+<div class="frame-h">Assisted · Install service (explainer)</div>
+<div class="screen">
+  <div class="chrome-topbar"><span>mbuzz <span class="branch">· Guided Setup</span></span><a class="exit" href="#">Exit to dashboard ×</a></div>
+  <div class="pip-rail">
+    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
+    <div class="bar"></div>
+    <div class="pip current"><div class="dot"></div><span>Discovery</span></div>
+    <div class="bar upcoming"></div>
+    <div class="pip"><div class="dot"></div><span>Book kickoff</span></div>
+    <div class="bar locked"></div>
+    <div class="pip locked"><div class="dot"></div><span>Pay</span></div>
+    <div class="bar locked"></div>
+    <div class="pip"><div class="dot"></div><span>Done</span></div>
+  </div>
+  <div class="body">
+    <h1 class="hero">mbuzz install service</h1>
+    <h2>What you get</h2>
+    <div class="card-row two">
+      <div class="card"><h3><span class="num-circle">1</span>Kickoff call</h3><p>30-min working session. Value moment + conversions + which ad platforms first.</p></div>
+      <div class="card"><h3><span class="num-circle">2</span>We write the code</h3><p>The four mbuzz API calls in your stack. Ruby/Node/Python/PHP/sGTM/REST.</p></div>
+      <div class="card"><h3><span class="num-circle">3</span>Ad platform integration</h3><p>Meta or Google Ads. If we don't support yours, we build it as part of this.</p></div>
+      <div class="card"><h3><span class="num-circle">4</span>Test, train, follow up</h3><p>First events live, dashboard walkthrough, 30-day check-in.</p></div>
+    </div>
+    <div class="promo">
+      <strong>$1,500 setup. $1,500 mbuzz credit. Net cost: $0.</strong>
+      The $1,500 lands back on your mbuzz balance and burns down against your monthly subscription. Prepaid mbuzz with the install thrown in.
+    </div>
+    <div class="card-row" style="margin-top:10px">
+      <div class="card"><h3>✓ One-off</h3><p>No contract. No lock-in.</p></div>
+      <div class="card"><h3>✓ Pay after the call</h3><p>You only commit once the plan is agreed.</p></div>
+      <div class="card"><h3>✓ Non-refundable</h3><p>Due after the kickoff. The credit covers it.</p></div>
+    </div>
+    <div class="actions right"><a class="btn primary" href="#">Continue →</a></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ASSISTED: discovery                                           -->
+<!-- ============================================================ -->
+
+<div class="frame-h">Assisted · Discovery (form)</div>
+<div class="screen">
+  <div class="chrome-topbar"><span>mbuzz <span class="branch">· Guided Setup</span></span><a class="exit" href="#">Exit to dashboard ×</a></div>
+  <div class="pip-rail">
+    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
+    <div class="bar"></div>
+    <div class="pip current"><div class="dot"></div><span>Discovery</span></div>
+    <div class="bar upcoming"></div>
+    <div class="pip"><div class="dot"></div><span>Book kickoff</span></div>
+    <div class="bar locked"></div>
+    <div class="pip locked"><div class="dot"></div><span>Pay</span></div>
+    <div class="bar locked"></div>
+    <div class="pip"><div class="dot"></div><span>Done</span></div>
+  </div>
+  <div class="body">
+    <h1>Tell us about your setup</h1>
+    <p class="sub">Four quick questions so the specialist comes to the kickoff prepared.</p>
+    <div class="card"><h3>1 · What are you trying to attribute?</h3>
+      <div class="stack">
+        <label>☐ Ecommerce purchases</label>
+        <label>☐ B2B leads &amp; deals</label>
+        <label>☐ Signups &amp; subscriptions</label>
+        <label>☐ Other… <span class="field" style="display:inline-block;width:160px"><span class="ph">type your answer</span></span></label>
+      </div>
+    </div>
+    <div class="card" style="margin-top:8px"><h3>2 · Where do you run ads?</h3>
+      <div class="chip-row">
+        <span class="chip">Meta</span><span class="chip">Google Ads</span><span class="chip">TikTok</span><span class="chip">LinkedIn</span><span class="chip">None</span><span class="chip">Other…</span>
+      </div>
+    </div>
+    <div class="card" style="margin-top:8px"><h3>3 · Which platform(s) is mbuzz going on?</h3>
+      <div class="chip-row">
+        <span class="chip">Ruby</span><span class="chip">Python</span><span class="chip">Node.js</span><span class="chip">PHP</span><span class="chip">sGTM</span><span class="chip">Shopify</span><span class="chip">REST</span>
+      </div>
+    </div>
+    <div class="card" style="margin-top:8px"><h3>4 · Monthly ad spend</h3>
+      <div class="chip-row">
+        <span class="chip">&lt; $5k</span><span class="chip">$5–25k</span><span class="chip">$25–100k</span><span class="chip">$100k+</span>
+      </div>
+    </div>
+    <div class="actions right"><a class="btn primary" href="#">Continue →</a></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ASSISTED: guided_setup (book kickoff form)                    -->
+<!-- ============================================================ -->
+
+<div class="frame-h">Assisted · Book kickoff (form)</div>
+<div class="screen">
+  <div class="chrome-topbar"><span>mbuzz <span class="branch">· Guided Setup</span></span><a class="exit" href="#">Exit to dashboard ×</a></div>
+  <div class="pip-rail">
+    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
+    <div class="bar"></div>
+    <div class="pip done"><div class="dot"></div><span>Discovery</span></div>
+    <div class="bar"></div>
+    <div class="pip current"><div class="dot"></div><span>Book kickoff</span></div>
+    <div class="bar locked"></div>
+    <div class="pip locked"><div class="dot"></div><span>Pay</span></div>
+    <div class="bar locked"></div>
+    <div class="pip"><div class="dot"></div><span>Done</span></div>
+  </div>
+  <div class="body">
+    <h1>Book your kickoff</h1>
+    <p class="sub">Tell us when works. We'll come back within one business day with options.</p>
+    <div class="card">
+      <h3>Your time zone <span style="color:#a00">*</span></h3>
+      <div class="field"><span class="ph">Search a city…</span><span>▾</span></div>
+
+      <h3 style="margin-top:12px">Preferred days</h3>
+      <div class="chip-row"><span class="chip">Mon</span><span class="chip on">Tue</span><span class="chip">Wed</span><span class="chip">Thu</span><span class="chip">Fri</span></div>
+
+      <h3 style="margin-top:12px">Preferred times</h3>
+      <div class="chip-row"><span class="chip">Morning</span><span class="chip on">Midday</span><span class="chip">Afternoon</span><span class="chip">Evening</span></div>
+    </div>
+    <div class="actions right"><a class="btn primary" href="#">Book now</a></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ASSISTED: payment_setup (plan picker)                         -->
+<!-- ============================================================ -->
+
+<div class="frame-h">Assisted · Pay (plan picker after admin sends the link)</div>
+<div class="screen">
+  <div class="chrome-topbar"><span>mbuzz <span class="branch">· Guided Setup</span></span><a class="exit" href="#">Exit to dashboard ×</a></div>
+  <div class="pip-rail">
+    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
+    <div class="bar"></div>
+    <div class="pip done"><div class="dot"></div><span>Discovery</span></div>
+    <div class="bar"></div>
+    <div class="pip done"><div class="dot"></div><span>Book kickoff</span></div>
+    <div class="bar"></div>
+    <div class="pip current"><div class="dot"></div><span>Pay</span></div>
+    <div class="bar upcoming"></div>
+    <div class="pip"><div class="dot"></div><span>Done</span></div>
+  </div>
+  <div class="body">
+    <h1 class="hero">Pay for your Guided Setup</h1>
+    <p class="sub hero">$1,500 today. Becomes mbuzz credit on your account.</p>
+    <div class="card-row" style="margin-top:14px">
+      <div class="card"><h3>Starter</h3><p>50K events / mo<br><strong style="font-size:14px">$29/mo</strong></p></div>
+      <div class="card" style="border-width:2px"><h3>Growth · Recommended</h3><p>250K events / mo<br><strong style="font-size:14px">$99/mo</strong></p></div>
+      <div class="card"><h3>Pro</h3><p>1M events / mo<br><strong style="font-size:14px">$299/mo</strong></p></div>
+    </div>
+    <div class="promo" style="background:#eef;color:#000;border:1px solid #000">
+      <strong>$1,500 today, applied as credit to your plan.</strong>
+      <p style="margin:0;font-size:12px">Full amount credits back to your account; drawn down by your plan's invoices. Non-refundable.</p>
+    </div>
+    <div class="actions right"><a class="btn primary" href="#">Pay $1,500</a></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ASSISTED: payment_complete (success)                          -->
+<!-- ============================================================ -->
+
+<div class="frame-h">Assisted · Payment complete (success state)</div>
+<div class="screen">
+  <div class="chrome-topbar"><span>mbuzz <span class="branch">· Guided Setup</span></span><a class="exit" href="#">Exit to dashboard ×</a></div>
+  <div class="pip-rail">
+    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
+    <div class="bar"></div>
+    <div class="pip done"><div class="dot"></div><span>Discovery</span></div>
+    <div class="bar"></div>
+    <div class="pip done"><div class="dot"></div><span>Book kickoff</span></div>
+    <div class="bar"></div>
+    <div class="pip done"><div class="dot"></div><span>Pay</span></div>
+    <div class="bar"></div>
+    <div class="pip current"><div class="dot"></div><span>Done</span></div>
+  </div>
+  <div class="body center">
+    <div style="font-size:36px">🎉</div>
+    <h1 class="hero">Payment received. Your specialist is on it.</h1>
+    <p class="sub hero">Your $1,500 is on your mbuzz balance and your plan is active.</p>
+    <div class="actions" style="justify-content:center;margin-top:14px"><a class="btn primary" href="#">Go to dashboard</a></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ASSISTED: payment_complete (processing race)                  -->
+<!-- ============================================================ -->
+
+<div class="frame-h">Assisted · Payment processing (Stripe race window)</div>
+<div class="screen">
+  <div class="chrome-topbar"><span>mbuzz <span class="branch">· Guided Setup</span></span><a class="exit" href="#">Exit to dashboard ×</a></div>
+  <div class="pip-rail">
+    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
+    <div class="bar"></div>
+    <div class="pip done"><div class="dot"></div><span>Discovery</span></div>
+    <div class="bar"></div>
+    <div class="pip done"><div class="dot"></div><span>Book kickoff</span></div>
+    <div class="bar"></div>
+    <div class="pip current"><div class="dot"></div><span>Pay</span></div>
+    <div class="bar upcoming"></div>
+    <div class="pip"><div class="dot"></div><span>Done</span></div>
+  </div>
+  <div class="body center">
+    <div class="spinner"></div>
+    <h1 class="hero">Confirming your payment…</h1>
+    <p class="sub hero">Stripe is finishing up. Page will update the moment it lands.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TEAMMATE: invite_teammate                                     -->
+<!-- ============================================================ -->
+
+<div class="frame-h">Teammate · Invite teammate (form)</div>
+<div class="screen">
+  <div class="chrome-topbar"><span>mbuzz <span class="branch">· Teammate setup</span></span><a class="exit" href="#">Exit to dashboard ×</a></div>
+  <div class="pip-rail">
+    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
+    <div class="bar"></div>
+    <div class="pip current"><div class="dot"></div><span>Invite sent</span></div>
+    <div class="bar upcoming"></div>
+    <div class="pip"><div class="dot"></div><span>Teammate installs</span></div>
+    <div class="bar upcoming"></div>
+    <div class="pip"><div class="dot"></div><span>Done</span></div>
+  </div>
+  <div class="body">
+    <h1>Invite the teammate who'll install mbuzz</h1>
+    <p class="sub">They'll get the API key, the SDK, and the install steps.</p>
+    <div class="card">
+      <h3>Teammate's email</h3>
+      <div class="field"><span class="ph">developer@yourcompany.com</span></div>
+      <h3 style="margin-top:12px">Role</h3>
+      <div class="field"><span>Admin (recommended for the person installing)</span><span>▾</span></div>
+    </div>
+    <div class="actions right"><a class="btn primary" href="#">Send invite</a></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TEAMMATE: invite_sent confirmation                            -->
+<!-- ============================================================ -->
+
+<div class="frame-h">Teammate · Invite sent (success state)</div>
+<div class="screen">
+  <div class="chrome-topbar"><span>mbuzz <span class="branch">· Teammate setup</span></span><a class="exit" href="#">Exit to dashboard ×</a></div>
+  <div class="pip-rail">
+    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
+    <div class="bar"></div>
+    <div class="pip done"><div class="dot"></div><span>Invite sent</span></div>
+    <div class="bar upcoming"></div>
+    <div class="pip current"><div class="dot"></div><span>Teammate installs</span></div>
+    <div class="bar upcoming"></div>
+    <div class="pip"><div class="dot"></div><span>Done</span></div>
+  </div>
+  <div class="body center">
+    <div style="font-size:36px">📨</div>
+    <h1 class="hero">Invite sent to devperson@example.com</h1>
+    <p class="sub hero">We'll let you know when they accept. Head to the dashboard — demo data is on so you can poke around.</p>
+    <div class="actions" style="justify-content:center;margin-top:14px">
+      <a class="btn" href="#">Invite another</a>
+      <a class="btn primary" href="#">Go to dashboard</a>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SELF-SERVE: setup (API key + SDK)                             -->
+<!-- ============================================================ -->
+
+<div class="frame-h">Self-serve · API key &amp; SDK</div>
+<div class="screen">
+  <div class="chrome-topbar"><span>mbuzz <span class="branch">· Self-serve setup</span></span><a class="exit" href="#">Exit to dashboard ×</a></div>
+  <div class="pip-rail">
+    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
+    <div class="bar"></div>
+    <div class="pip current"><div class="dot"></div><span>API key</span></div>
+    <div class="bar upcoming"></div>
+    <div class="pip"><div class="dot"></div><span>Install</span></div>
+    <div class="bar upcoming"></div>
+    <div class="pip"><div class="dot"></div><span>Verify event</span></div>
+    <div class="bar upcoming"></div>
+    <div class="pip"><div class="dot"></div><span>Conversion</span></div>
+    <div class="bar upcoming"></div>
+    <div class="pip"><div class="dot"></div><span>Done</span></div>
+  </div>
+  <div class="body">
+    <h1>Set up your SDK</h1>
+    <p class="sub">Grab your test key, then choose an SDK to start sending events.</p>
+
+    <div class="card" style="margin-top:14px">
+      <h3>Your API key</h3>
+      <p>Use this test key during development. Switch to a live key when ready for production.</p>
+      <div class="field"><span style="font-family:monospace">sk_test_••••••••••••••••</span><span class="btn" style="padding:2px 7px;font-size:11px">Copy</span></div>
+      <p class="small">Save this now — for security it won't be shown again.</p>
+    </div>
+
+    <div class="card" style="margin-top:8px">
+      <h3>Choose your SDK</h3>
+      <div class="card-row" style="grid-template-columns:1fr 1fr 1fr 1fr;margin-top:6px">
+        <div class="card center" style="min-height:0"><strong>Ruby</strong></div>
+        <div class="card center" style="min-height:0"><strong>Node.js</strong></div>
+        <div class="card center" style="min-height:0"><strong>Python</strong></div>
+        <div class="card center" style="min-height:0"><strong>PHP</strong></div>
+        <div class="card center" style="min-height:0">sGTM</div>
+        <div class="card center" style="min-height:0">Shopify</div>
+        <div class="card center" style="min-height:0">REST</div>
+        <div class="card center" style="min-height:0;color:#999">Magento (waitlist)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SELF-SERVE: install (SDK code)                                -->
+<!-- ============================================================ -->
+
+<div class="frame-h">Self-serve · Install (per-SDK)</div>
+<div class="screen">
+  <div class="chrome-topbar"><span>mbuzz <span class="branch">· Self-serve setup</span></span><a class="exit" href="#">Exit to dashboard ×</a></div>
+  <div class="pip-rail">
+    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
+    <div class="bar"></div>
+    <div class="pip done"><div class="dot"></div><span>API key</span></div>
+    <div class="bar"></div>
+    <div class="pip current"><div class="dot"></div><span>Install</span></div>
+    <div class="bar upcoming"></div>
+    <div class="pip"><div class="dot"></div><span>Verify event</span></div>
+    <div class="bar upcoming"></div>
+    <div class="pip"><div class="dot"></div><span>Conversion</span></div>
+    <div class="bar upcoming"></div>
+    <div class="pip"><div class="dot"></div><span>Done</span></div>
+  </div>
+  <div class="body">
+    <h1>Install the Ruby SDK</h1>
+    <p class="sub">Follow these steps to start tracking events.</p>
+    <div class="card" style="margin-top:14px">
+      <h3>1 · Add the gem</h3>
+      <div class="field" style="font-family:monospace;background:#0f0f10;color:#9eff9e">gem 'mbuzz'</div>
+    </div>
+    <div class="card" style="margin-top:8px">
+      <h3>2 · Configure</h3>
+      <div class="field" style="font-family:monospace;background:#0f0f10;color:#9eff9e">Mbuzz.configure { |c| c.api_key = ENV['MBUZZ_API_KEY'] }</div>
+    </div>
+    <div class="card" style="margin-top:8px">
+      <h3>3 · Send your first event</h3>
+      <div class="field" style="font-family:monospace;background:#0f0f10;color:#9eff9e">Mbuzz.track('page_view', visitor_id: 'vis_…')</div>
+    </div>
+    <div class="actions"><a class="btn" href="#">← Back</a><a class="btn primary" href="#">I've installed it →</a></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SELF-SERVE: verify (waiting)                                  -->
+<!-- ============================================================ -->
+
+<div class="frame-h">Self-serve · Verify event (waiting)</div>
+<div class="screen">
+  <div class="chrome-topbar"><span>mbuzz <span class="branch">· Self-serve setup</span></span><a class="exit" href="#">Exit to dashboard ×</a></div>
+  <div class="pip-rail">
+    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
+    <div class="bar"></div>
+    <div class="pip done"><div class="dot"></div><span>API key</span></div>
+    <div class="bar"></div>
+    <div class="pip done"><div class="dot"></div><span>Install</span></div>
+    <div class="bar"></div>
+    <div class="pip current"><div class="dot"></div><span>Verify event</span></div>
+    <div class="bar upcoming"></div>
+    <div class="pip"><div class="dot"></div><span>Conversion</span></div>
+    <div class="bar upcoming"></div>
+    <div class="pip"><div class="dot"></div><span>Done</span></div>
+  </div>
+  <div class="body center">
+    <div class="spinner"></div>
+    <h1 class="hero">Waiting for your first event…</h1>
+    <p class="sub hero">Run the code in your app. This page updates automatically.</p>
+    <div class="card" style="text-align:left;margin-top:14px">
+      <h3>To trigger a test event</h3>
+      <div class="field" style="font-family:monospace;background:#0f0f10;color:#9eff9e">Mbuzz.track('test_event')</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SELF-SERVE: conversion                                        -->
+<!-- ============================================================ -->
+
+<div class="frame-h">Self-serve · Track conversions (form-style)</div>
+<div class="screen">
+  <div class="chrome-topbar"><span>mbuzz <span class="branch">· Self-serve setup</span></span><a class="exit" href="#">Exit to dashboard ×</a></div>
+  <div class="pip-rail">
+    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
+    <div class="bar"></div>
+    <div class="pip done"><div class="dot"></div><span>API key</span></div>
+    <div class="bar"></div>
+    <div class="pip done"><div class="dot"></div><span>Install</span></div>
+    <div class="bar"></div>
+    <div class="pip done"><div class="dot"></div><span>Verify event</span></div>
+    <div class="bar"></div>
+    <div class="pip current"><div class="dot"></div><span>Conversion</span></div>
+    <div class="bar upcoming"></div>
+    <div class="pip"><div class="dot"></div><span>Done</span></div>
+  </div>
+  <div class="body">
+    <h1>Track conversions</h1>
+    <p class="sub">Tell mbuzz when a user converts (purchase, sign-up, lead) so attribution can do its job.</p>
+    <div class="card" style="margin-top:14px">
+      <h3>Add conversion tracking</h3>
+      <div class="field" style="font-family:monospace;background:#0f0f10;color:#9eff9e">Mbuzz.convert('purchase', revenue: 99.99, visitor_id: 'vis_…')</div>
+    </div>
+    <div class="actions"><a class="btn" href="#">← Back</a><a class="btn primary" href="#">View attribution →</a></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SELF-SERVE: attribution (success)                             -->
+<!-- ============================================================ -->
+
+<div class="frame-h">Self-serve · Attribution (success state)</div>
+<div class="screen">
+  <div class="chrome-topbar"><span>mbuzz <span class="branch">· Self-serve setup</span></span><a class="exit" href="#">Exit to dashboard ×</a></div>
+  <div class="pip-rail">
+    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
+    <div class="bar"></div>
+    <div class="pip done"><div class="dot"></div><span>API key</span></div>
+    <div class="bar"></div>
+    <div class="pip done"><div class="dot"></div><span>Install</span></div>
+    <div class="bar"></div>
+    <div class="pip done"><div class="dot"></div><span>Verify event</span></div>
+    <div class="bar"></div>
+    <div class="pip done"><div class="dot"></div><span>Conversion</span></div>
+    <div class="bar"></div>
+    <div class="pip current"><div class="dot"></div><span>Done</span></div>
+  </div>
+  <div class="body center">
+    <div style="font-size:36px">🎉</div>
+    <h1 class="hero">You're all set.</h1>
+    <p class="sub hero">mbuzz is now tracking your customer journeys.</p>
+    <div class="card" style="text-align:left;margin-top:14px">
+      <h3>Next steps</h3>
+      <ul style="margin:6px 0 0 18px;padding:0;font-size:12.5px;line-height:1.6">
+        <li>Add event tracking to key pages</li>
+        <li>Track conversions at purchase/signup points</li>
+        <li>Link anonymous visitors to known users with <code>identify()</code></li>
+      </ul>
+    </div>
+    <div class="actions" style="justify-content:center;margin-top:14px"><a class="btn primary" href="#">Explore dashboard</a></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- DASHBOARD: resume nav pill (cohesion glue)                    -->
+<!-- ============================================================ -->
+
+<div class="frame-h">Dashboard · Resume nav (any partially-onboarded account)</div>
+<div class="screen">
+  <div class="chrome-topbar" style="background:#fff">
+    <div style="display:flex;align-items:center;gap:16px"><strong>mbuzz</strong><span style="font-weight:400;font-size:12px">Dashboard</span><span style="font-weight:400;font-size:12px;color:#888">Reports</span><span style="font-weight:400;font-size:12px;color:#888">Sources</span></div>
+    <a class="exit" href="#" style="background:#000;color:#fff;border-color:#000">● Finish setup · 60%</a>
+  </div>
+  <div class="body">
+    <h2>Today</h2>
+    <p class="sub">Demo data shown until your first real events arrive.</p>
+    <div class="card-row">
+      <div class="card center"><strong>1,234</strong><p>Events</p></div>
+      <div class="card center"><strong>87</strong><p>Sessions</p></div>
+      <div class="card center"><strong>4.1%</strong><p>Conversion</p></div>
+    </div>
+  </div>
+</div>
+<div class="notes">The pill in the top-right of the main app nav is the <em>only</em> reentry surface and the visible reminder that onboarding isn't done. Clicking it lands the user back on their last incomplete step (resolver in <code>Account#onboarding_resume_path</code>, follow-up piece). Hides the moment <code>onboarding_status</code> is <code>:complete</code>.</div>
+
+<nav class="flownav" style="margin-top:20px"><a href="index.html">← All mockups</a><a href="onboarding-chrome.html">Chrome anatomy →</a></nav>
+
+</body>
+</html>
