@@ -9,7 +9,9 @@ class OnboardingController < ApplicationController
   before_action :ensure_sdk_selected, only: [ :install, :verify, :conversion ]
 
   def show
-    redirect_to setup_path_destination if current_account.setup_path
+    return redirect_to setup_path_destination if current_account.setup_path
+
+    @user_id_hashed = Digest::SHA256.hexdigest(current_user.email.downcase.strip)
   end
 
   def choose_path

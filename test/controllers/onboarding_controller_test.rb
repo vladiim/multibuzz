@@ -29,6 +29,26 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to onboarding_setup_path
   end
 
+  test "show mounts the gtm-event controller for signup_complete on first landing" do
+    sign_in
+
+    get onboarding_path
+
+    assert_response :success
+    assert_includes response.body, 'data-controller="gtm-event"'
+    assert_includes response.body, 'data-gtm-event-name-value="signup_complete"'
+  end
+
+  test "show hashes the user email for the user_id_hashed gtm property" do
+    user.update!(email: "Newuser@Example.com")
+    sign_in
+    expected_hash = Digest::SHA256.hexdigest("newuser@example.com")
+
+    get onboarding_path
+
+    assert_includes response.body, expected_hash
+  end
+
   # --- Choose path ---
 
   test "choose_path requires authentication" do

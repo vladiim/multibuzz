@@ -1,3 +1,14 @@
+<%# Marketing analytics: fire signup_complete to dataLayer for GA4 / Google
+    Ads / Meta Pixel via the gtm-event Stimulus controller. Renders only on
+    the post-signup landing (setup_path blank) so it fires once. The
+    conversion is also recorded server-side via mbuzz; this is the parallel
+    client-side hit for ad-platform optimisation. user_id is hashed (SHA256
+    of lowercase email) for Enhanced Conversions / Advanced Matching —
+    never raw PII. %>
+<div data-controller="gtm-event"
+     data-gtm-event-name-value="signup_complete"
+     data-gtm-event-properties-value="<%= { user_id_hashed: @user_id_hashed }.to_json %>"></div>
+
 <div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
   <div class="sm:mx-auto sm:w-full sm:max-w-3xl">
     <h2 class="text-center text-3xl font-extrabold text-gray-900">
