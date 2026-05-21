@@ -12,11 +12,22 @@ class OnboardingController < ApplicationController
   before_action :set_onboarding_current_pip
 
   # Maps the running action to the pip the user is currently on. Actions
-  # missing from this map render no pip rail -- the screen hasn't been
-  # migrated to the chrome yet. Each onboarding-cohesion piece adds its
-  # action here.
+  # absent from this map render no pip rail (e.g. setup-choice before a
+  # path is chosen, or POST actions that redirect).
   CURRENT_PIP_FOR_ACTION = {
-    "install_service" => :discovery
+    "install_service"      => :discovery,
+    "discovery"            => :discovery,
+    "guided_setup"         => :book_kickoff,
+    "payment_setup"        => :pay,
+    "start_payment"        => :pay,
+    "payment_complete"     => :done,
+    "invite_teammate"      => :invite_sent,
+    "send_teammate_invite" => :invite_sent,
+    "setup"                => :api_key,
+    "install"              => :install,
+    "verify"               => :verify,
+    "conversion"           => :conversion,
+    "attribution"          => :done
   }.freeze
 
   def show
