@@ -3,45 +3,54 @@
     the post-signup landing (setup_path blank) so it fires once. The
     conversion is also recorded server-side via mbuzz; this is the parallel
     client-side hit for ad-platform optimisation. user_id is hashed (SHA256
-    of lowercase email) for Enhanced Conversions / Advanced Matching —
+    of lowercase email) for Enhanced Conversions / Advanced Matching --
     never raw PII. %>
 <div data-controller="gtm-event"
      data-gtm-event-name-value="signup_complete"
      data-gtm-event-properties-value="<%= { user_id_hashed: @user_id_hashed }.to_json %>"></div>
 
-<div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-  <div class="sm:mx-auto sm:w-full sm:max-w-5xl">
-    <h2 class="text-center text-3xl font-extrabold text-gray-900">
+<div class="py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-4xl mx-auto">
+    <h2 class="text-center text-2xl sm:text-3xl font-bold text-gray-900">
       Welcome to mbuzz! 👋
     </h2>
-    <p class="mt-2 text-center text-lg text-gray-600">
+    <p class="mt-2 text-center text-base sm:text-lg text-gray-600">
       Who's handling your set up?
     </p>
-  </div>
 
-  <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-5xl" data-testid="setup-choice">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 px-4">
-      <%= button_to onboarding_choose_path_path, params: { setup_path: SetupPaths::SELF_SERVE }, method: :post, class: "bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer border-2 border-transparent hover:border-indigo-500 text-left" do %>
-        <div class="text-3xl mb-3">🛠️</div>
-        <h3 class="text-lg font-semibold text-gray-900 mb-1">I'll do it</h3>
-        <p class="text-sm text-gray-600">You install the SDK and API calls.</p>
+    <div class="mt-6 sm:mt-8 grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4" data-testid="setup-choice">
+      <%= button_to onboarding_choose_path_path, params: { setup_path: SetupPaths::SELF_SERVE }, method: :post,
+            class: "block w-full bg-white p-4 sm:p-5 rounded-lg shadow-sm border border-gray-200 hover:border-indigo-400 hover:shadow text-left transition-shadow cursor-pointer" do %>
+        <div class="flex items-start gap-3">
+          <div class="text-2xl leading-none flex-shrink-0">🛠️</div>
+          <div class="min-w-0">
+            <h3 class="text-base font-semibold text-gray-900 mb-0.5">I'll do it</h3>
+            <p class="text-sm text-gray-600">You install the SDK and API calls.</p>
+          </div>
+        </div>
       <% end %>
 
-      <%= button_to onboarding_choose_path_path, params: { setup_path: SetupPaths::TEAMMATE }, method: :post, class: "bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer border-2 border-transparent hover:border-indigo-500 text-left" do %>
-        <div class="text-3xl mb-3">👥</div>
-        <h3 class="text-lg font-semibold text-gray-900 mb-1">My teammate will</h3>
-        <p class="text-sm text-gray-600">Invite a developer to handle the install.</p>
+      <%= button_to onboarding_choose_path_path, params: { setup_path: SetupPaths::TEAMMATE }, method: :post,
+            class: "block w-full bg-white p-4 sm:p-5 rounded-lg shadow-sm border border-gray-200 hover:border-indigo-400 hover:shadow text-left transition-shadow cursor-pointer" do %>
+        <div class="flex items-start gap-3">
+          <div class="text-2xl leading-none flex-shrink-0">👥</div>
+          <div class="min-w-0">
+            <h3 class="text-base font-semibold text-gray-900 mb-0.5">My teammate will</h3>
+            <p class="text-sm text-gray-600">Invite a developer to handle the install.</p>
+          </div>
+        </div>
       <% end %>
 
-      <%= button_to onboarding_choose_path_path, params: { setup_path: SetupPaths::ASSISTED }, method: :post, class: "bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer border-2 border-transparent hover:border-indigo-500 text-left" do %>
-        <div class="text-3xl mb-3">🤝</div>
-        <h3 class="text-lg font-semibold text-gray-900 mb-1">I want mbuzz to do it</h3>
-        <p class="text-sm text-gray-600">We'll do the install for a fee.</p>
+      <%= button_to onboarding_choose_path_path, params: { setup_path: SetupPaths::ASSISTED }, method: :post,
+            class: "block w-full bg-white p-4 sm:p-5 rounded-lg shadow-sm border border-gray-200 hover:border-indigo-400 hover:shadow text-left transition-shadow cursor-pointer" do %>
+        <div class="flex items-start gap-3">
+          <div class="text-2xl leading-none flex-shrink-0">🤝</div>
+          <div class="min-w-0">
+            <h3 class="text-base font-semibold text-gray-900 mb-0.5">I want mbuzz to do it</h3>
+            <p class="text-sm text-gray-600">We'll do the install for a fee.</p>
+          </div>
+        </div>
       <% end %>
-    </div>
-
-    <div class="mt-8 text-center">
-      <%= button_to "Skip setup and go to dashboard", onboarding_skip_path, method: :post, class: "text-sm text-gray-400 hover:text-gray-600" %>
     </div>
   </div>
 </div>
