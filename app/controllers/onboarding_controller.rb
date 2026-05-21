@@ -5,6 +5,7 @@ class OnboardingController < ApplicationController
   before_action :require_login
 
   include Onboarding::AssistedPath
+  include Onboarding::PaymentFlow
 
   before_action :ensure_sdk_selected, only: [ :install, :verify, :conversion ]
 

@@ -100,6 +100,56 @@ class Admin::GuidedSetupsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path
   end
 
+  # --- Payment link ---
+
+  test "show offers a generate button once the kickoff is booked and pending" do
+    guided_setup.update!(kickoff_booked_at: Time.current)
+    sign_in_as(admin_user)
+
+    get admin_guided_setup_path(guided_setup)
+
+    assert_select "[data-testid='generate-payment-link']"
+    assert_select "[data-testid='payment-link-url']", count: 0
+  end
+
+  test "show surfaces the generated URL once a token is active" do
+    guided_setup.update!(kickoff_booked_at: Time.current)
+    guided_setup.mint_payment_token!
+    sign_in_as(admin_user)
+
+    get admin_guided_setup_path(guided_setup)
+
+    assert_select "[data-testid='payment-link-url']", text: /\/onboarding\/payment\/#{guided_setup.payment_token}/
+  end
+
+  test "generate_payment_link mints a token and redirects back to show" do
+    guided_setup.update!(kickoff_booked_at: Time.current)
+    sign_in_as(admin_user)
+
+    post generate_payment_link_admin_guided_setup_path(guided_setup)
+
+    assert_predicate guided_setup.reload, :payment_token_active?
+    assert_redirected_to admin_guided_setup_path(guided_setup)
+  end
+
+  test "generate_payment_link rotates an existing token" do
+    guided_setup.update!(kickoff_booked_at: Time.current)
+    first = guided_setup.mint_payment_token!
+    sign_in_as(admin_user)
+
+    post generate_payment_link_admin_guided_setup_path(guided_setup)
+
+    assert_not_equal first, guided_setup.reload.payment_token
+  end
+
+  test "generate_payment_link requires admin" do
+    sign_in_as(regular_user)
+
+    post generate_payment_link_admin_guided_setup_path(guided_setup)
+
+    assert_redirected_to root_path
+  end
+
   private
 
   def admin_user = @admin_user ||= users(:admin)

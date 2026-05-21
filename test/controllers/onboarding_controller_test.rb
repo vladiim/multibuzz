@@ -849,6 +849,66 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to dashboard_path
   end
 
+  # --- Payment setup (post-magic-link plan picker) ---
+
+  test "payment_setup redirects to onboarding without an active token" do
+    sign_in
+
+    get onboarding_payment_setup_path
+
+    assert_redirected_to onboarding_path
+  end
+
+  test "payment_setup renders the plan picker when the token is active" do
+    sign_in
+    GuidedSetup.create!(account: account, kickoff_booked_at: Time.current).mint_payment_token!
+
+    get onboarding_payment_setup_path
+
+    assert_response :success
+    assert_select "[data-testid='payment-setup']"
+    assert_select "input[type=submit][value=?]", "Pay $1,500"
+  end
+
+  test "start_payment requires a plan to be chosen" do
+    sign_in
+    GuidedSetup.create!(account: account, kickoff_booked_at: Time.current).mint_payment_token!
+
+    post onboarding_start_payment_path
+
+    assert_redirected_to onboarding_payment_setup_path
+    assert_predicate flash[:alert], :present?
+  end
+
+  test "start_payment redirects to Stripe Checkout when the plan is valid" do
+    sign_in
+    account.update!(stripe_customer_id: "cus_payment_test")
+    GuidedSetup.create!(account: account, kickoff_booked_at: Time.current).mint_payment_token!
+
+    post onboarding_start_payment_path, params: { plan_slug: "growth" }
+
+    assert_response :redirect
+  end
+
+  test "payment_complete renders the success page when the engagement is in_progress" do
+    sign_in
+    GuidedSetup.create!(account: account, status: :in_progress, accepted_at: Time.current)
+
+    get onboarding_payment_complete_path
+
+    assert_response :success
+    assert_select "[data-testid='payment-complete']"
+  end
+
+  test "payment_complete redirects back to payment_setup when not yet paid" do
+    sign_in
+    GuidedSetup.create!(account: account, kickoff_booked_at: Time.current).mint_payment_token!
+
+    get onboarding_payment_complete_path
+
+    assert_redirected_to onboarding_payment_setup_path
+  end
+
   private
 
   def sign_in

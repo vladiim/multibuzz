@@ -68,4 +68,16 @@ class SchedulingPreferencesPresenterTest < ActiveSupport::TestCase
 
     assert_equal "Funday", presenter.day_labels
   end
+
+  test "time_block_labels_with_hours appends the human time range" do
+    presenter = SchedulingPreferencesPresenter.from("time_blocks" => [ "midday", "morning" ])
+
+    assert_equal "Midday (12pm-3pm), Morning (6am-12pm)", presenter.time_block_labels_with_hours
+  end
+
+  test "time_block_labels_with_hours falls back gracefully for unknown blocks" do
+    presenter = SchedulingPreferencesPresenter.from("time_blocks" => [ "midnight" ])
+
+    assert_equal "Midnight", presenter.time_block_labels_with_hours
+  end
 end

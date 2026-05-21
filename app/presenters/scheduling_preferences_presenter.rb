@@ -50,6 +50,14 @@ class SchedulingPreferencesPresenter
     time_blocks.map { |b| SchedulingPreferences::TIME_BLOCK_LABELS.fetch(b, b.to_s.capitalize) }.join(", ")
   end
 
+  def time_block_labels_with_hours
+    time_blocks.map { |b|
+      label = SchedulingPreferences::TIME_BLOCK_LABELS.fetch(b, b.to_s.capitalize)
+      hours = SchedulingPreferences::TIME_BLOCK_HOURS.fetch(b, "")
+      hours.present? ? "#{label} (#{hours})" : label
+    }.join(", ")
+  end
+
   private
 
   attr_reader :prefs
