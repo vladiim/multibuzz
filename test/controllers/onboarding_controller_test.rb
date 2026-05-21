@@ -57,12 +57,80 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to onboarding_discovery_path
   end
 
-  test "choose_path routes the teammate path to the team page" do
+  test "choose_path routes the teammate path to the in-onboarding invite step" do
     sign_in_as_new_user
 
     post onboarding_choose_path_path, params: { setup_path: "teammate" }
 
-    assert_redirected_to account_team_path
+    assert_redirected_to onboarding_invite_teammate_path
+  end
+
+  # --- Change setup path ---
+
+  test "change_setup_path requires authentication" do
+    delete onboarding_change_setup_path_path
+
+    assert_redirected_to login_path
+  end
+
+  test "change_setup_path clears the chosen path and returns to the choice screen" do
+    sign_in
+    account.update!(setup_path: :self_serve)
+
+    delete onboarding_change_setup_path_path
+
+    assert_nil account.reload.setup_path
+    assert_redirected_to onboarding_path
+  end
+
+  # --- Invite Teammate ("A teammate will" path) ---
+
+  test "invite_teammate requires authentication" do
+    get onboarding_invite_teammate_path
+
+    assert_redirected_to login_path
+  end
+
+  test "invite_teammate redirects accounts not on the teammate path" do
+    sign_in
+    account.update!(setup_path: :self_serve)
+
+    get onboarding_invite_teammate_path
+
+    assert_redirected_to onboarding_path
+  end
+
+  test "invite_teammate renders the invite form within the onboarding chrome" do
+    sign_in
+    account.update!(setup_path: :teammate)
+
+    get onboarding_invite_teammate_path
+
+    assert_response :success
+    assert_select "[data-testid='teammate-invite-form']"
+  end
+
+  test "send_teammate_invite creates a pending membership and re-renders with success" do
+    sign_in
+    account.update!(setup_path: :teammate)
+
+    assert_difference -> { account.account_memberships.pending.count }, 1 do
+      post onboarding_send_teammate_invite_path, params: { email: "newdev@example.com", role: "admin" }
+    end
+
+    assert_response :success
+    assert_select "[data-testid='teammate-invite-sent']", /newdev@example\.com/
+  end
+
+  test "send_teammate_invite re-renders with an alert on a service error" do
+    sign_in
+    account.update!(setup_path: :teammate)
+
+    post onboarding_send_teammate_invite_path, params: { email: "not-an-email", role: "admin" }
+
+    assert_response :success
+    assert_select "[data-testid='teammate-invite-form']"
+    assert_select ".text-red-700", /invalid/i
   end
 
   # --- Discovery ---
@@ -112,6 +180,198 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     post onboarding_discovery_path, params: { setup_profile: { attribution_goal: "b2b_leads" } }
 
     assert_redirected_to onboarding_guided_setup_path
+  end
+
+  # --- Guided Setup (details + plan picker) ---
+
+  test "guided_setup requires authentication" do
+    get onboarding_guided_setup_path
+
+    assert_redirected_to login_path
+  end
+
+  test "guided_setup redirects accounts not on the assisted path" do
+    sign_in
+    account.update!(setup_path: :self_serve)
+
+    get onboarding_guided_setup_path
+
+    assert_redirected_to onboarding_path
+  end
+
+  test "guided_setup redirects to discovery if discovery is not completed" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: nil)
+
+    get onboarding_guided_setup_path
+
+    assert_redirected_to onboarding_discovery_path
+  end
+
+  test "guided_setup renders the plan picker with the recommended tier pre-selected" do
+    sign_in
+    account.update!(
+      setup_path: :assisted,
+      setup_profile: { "monthly_ad_spend" => "over_100k" },
+      setup_profile_completed_at: Time.current
+    )
+
+    get onboarding_guided_setup_path
+
+    assert_response :success
+    assert_select "[data-testid='guided-setup']"
+    assert_select "input[type=radio][name='plan_slug'][value='pro'][checked]"
+  end
+
+  # --- Accept (Guided Setup -> Stripe Checkout) ---
+
+  test "accept_guided_setup requires authentication" do
+    post onboarding_accept_guided_setup_path, params: { plan_slug: "growth" }
+
+    assert_redirected_to login_path
+  end
+
+  test "accept_guided_setup requires the assisted path" do
+    sign_in
+    account.update!(setup_path: :self_serve)
+
+    post onboarding_accept_guided_setup_path, params: { plan_slug: "growth" }
+
+    assert_redirected_to onboarding_path
+  end
+
+  test "accept_guided_setup requires a plan to be chosen" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+
+    post onboarding_accept_guided_setup_path
+
+    assert_redirected_to onboarding_guided_setup_path
+    assert_predicate flash[:alert], :present?
+  end
+
+  test "accept_guided_setup creates a pending GuidedSetup with the inferred integration target" do
+    sign_in
+    account.update!(
+      setup_path: :assisted,
+      setup_profile: { "ad_platforms" => [ "meta" ] },
+      setup_profile_completed_at: Time.current,
+      stripe_customer_id: "cus_assisted_test"
+    )
+
+    assert_difference -> { GuidedSetup.count }, 1 do
+      post onboarding_accept_guided_setup_path, params: { plan_slug: "growth" }
+    end
+
+    engagement = account.reload.guided_setup
+
+    assert_predicate engagement, :pending?
+    assert_equal "meta", engagement.integration_target
+    assert_response :redirect
+  end
+
+  test "accept_guided_setup is idempotent for the existing pending engagement" do
+    sign_in
+    account.update!(
+      setup_path: :assisted,
+      setup_profile_completed_at: Time.current,
+      stripe_customer_id: "cus_assisted_test"
+    )
+    GuidedSetup.create!(account: account)
+
+    assert_no_difference -> { GuidedSetup.count } do
+      post onboarding_accept_guided_setup_path, params: { plan_slug: "growth" }
+    end
+  end
+
+  test "accept_guided_setup re-renders with an alert when the plan is the free plan" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+
+    post onboarding_accept_guided_setup_path, params: { plan_slug: "free" }
+
+    assert_redirected_to onboarding_guided_setup_path
+    assert_includes flash[:alert].to_s, "free plan"
+  end
+
+  # --- Confirmation ---
+
+  test "confirmation requires authentication" do
+    get onboarding_confirmation_path
+
+    assert_redirected_to login_path
+  end
+
+  test "confirmation requires the assisted path" do
+    sign_in
+    account.update!(setup_path: :self_serve)
+
+    get onboarding_confirmation_path
+
+    assert_redirected_to onboarding_path
+  end
+
+  test "confirmation renders the in-progress state when the engagement is live" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+    GuidedSetup.create!(account: account, status: :in_progress, accepted_at: Time.current)
+
+    get onboarding_confirmation_path
+
+    assert_response :success
+    assert_select "[data-testid='confirmation-form']"
+  end
+
+  test "confirmation renders the processing state when the engagement is still pending" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+    GuidedSetup.create!(account: account, status: :pending)
+
+    get onboarding_confirmation_path
+
+    assert_response :success
+    assert_select "[data-testid='confirmation-processing']"
+  end
+
+  test "submit_confirmation stores the structured scheduling preferences" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+    engagement = GuidedSetup.create!(account: account, status: :in_progress, accepted_at: Time.current)
+
+    post onboarding_confirmation_path,
+      params: { scheduling_preferences: { timezone: "Sydney", days: [ "tue", "wed" ], time_blocks: [ "morning", "afternoon" ] } }
+
+    prefs = engagement.reload.scheduling_preferences
+
+    assert_equal "Sydney", prefs["timezone"]
+    assert_equal [ "tue", "wed" ], prefs["days"]
+    assert_equal [ "morning", "afternoon" ], prefs["time_blocks"]
+    assert_redirected_to dashboard_path
+  end
+
+  test "submit_confirmation re-renders with an error when timezone is blank" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+    GuidedSetup.create!(account: account, status: :in_progress, accepted_at: Time.current)
+
+    post onboarding_confirmation_path, params: { scheduling_preferences: { timezone: "" } }
+
+    assert_response :unprocessable_entity
+    assert_select "[data-testid='scheduling-error']", /time zone/i
+  end
+
+  test "submit_confirmation drops unknown day-of-week and time-block values" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+    engagement = GuidedSetup.create!(account: account, status: :in_progress, accepted_at: Time.current)
+
+    post onboarding_confirmation_path,
+      params: { scheduling_preferences: { timezone: "Sydney", days: [ "tue", "funday" ], time_blocks: [ "morning", "midnight" ] } }
+
+    prefs = engagement.reload.scheduling_preferences
+
+    assert_equal [ "tue" ], prefs["days"]
+    assert_equal [ "morning" ], prefs["time_blocks"]
   end
 
   # --- Setup (API key + SDK selection) ---

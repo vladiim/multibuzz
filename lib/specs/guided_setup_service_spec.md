@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-19
 **Priority:** P1
-**Status:** In Progress — Phases 1–4 complete, Phase 5 underway
+**Status:** In Progress — Phases 1–5 complete, Phase 6 underway
 **Branch:** `feat/guided-setup-service`
 
 ---
@@ -133,7 +133,7 @@ choose "I'd like help"
 
 ## Account Credit Detail
 
-The **Stripe customer credit balance** applies the credit automatically to every invoice. mbuzz keeps an **`account_credits` ledger** as the record of the grant — for display and audit. The live remaining balance is the Stripe balance, shown on the billing page (cached ~5 min). There is **no expiry**: the credit is committed to an active subscription at purchase.
+The **Stripe customer credit balance** applies the credit automatically to **every** invoice mbuzz raises for that customer: subscription renewals, proration when the customer changes plan, one-off invoices, and metered/usage overages. Nothing in the codebase needs to opt invoices in. mbuzz keeps an **`account_credits` ledger** as the record of the grant for display and audit. The live remaining balance is the Stripe balance, shown on the billing page (cached ~5 min). There is **no expiry**: the credit sits on the customer balance and is drawn down by any mbuzz charge until it hits zero.
 
 ### Schema (`account_credits`)
 
@@ -315,15 +315,15 @@ Post-purchase: confirms the credit and subscription, captures an optional free-t
 - [x] **4.4** `onboarding/discovery.html.erb` — 4 questions, each with an "Other" free-text
 - [x] **4.5** Tests
 
-### Phase 5: Guided Setup Page + Credit Purchase — in progress
+### Phase 5: Guided Setup Page + Credit Purchase ✅
 
-- [ ] **5.1** `OnboardingController#guided_setup`, `accept` (requires `plan_id`), `confirmation` + routes
-- [ ] **5.2** `onboarding/guided_setup.html.erb` + `confirmation.html.erb` (captures `scheduling_note`)
-- [x] **5.3** `Billing::CreditCheckoutService` — $1,500 Stripe Checkout (mode `payment`), `guided_setup` + `plan_id` metadata
+- [x] **5.1** `OnboardingController#guided_setup`, `accept_guided_setup` (requires `plan_slug`), `confirmation`, `submit_confirmation` + routes
+- [x] **5.2** `onboarding/guided_setup.html.erb` + `confirmation.html.erb` (captures `scheduling_note`)
+- [x] **5.3** `Billing::CreditCheckoutService` — $1,500 Stripe Checkout (mode `payment`), `guided_setup` + `plan_slug` metadata
 - [x] **5.4** `Billing::Handlers::CreditPurchaseCompleted` — router branches on `session.mode`; grant credit, start the chosen plan's subscription, transition `GuidedSetup`
-- [ ] **5.5** `GuidedSetupMailer` — `welcome`, `internal_notification`
-- [ ] **5.6** Audit `skip_marketing_analytics` on `OnboardingController` and `Accounts::BillingController`
-- [ ] **5.7** Tests
+- [x] **5.5** `GuidedSetupMailer` — `welcome` (to customer), `internal_notification` (to internal_email from credentials)
+- [x] **5.6** `skip_marketing_analytics` confirmed on `OnboardingController`, `Accounts::BillingController`, and `Admin::BaseController` (covers `Admin::GuidedSetupsController`)
+- [x] **5.7** Tests — `OnboardingControllerTest` (assisted-path actions), `GuidedSetupMailerTest`, `CreditPurchaseCompletedTest` (mailer enqueuing), `PlanTest` + `GuidedSetupTest` (recommendation + integration-target helpers)
 
 ### Phase 6: Billing Surface, Analytics, Docs
 

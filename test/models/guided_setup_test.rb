@@ -55,6 +55,30 @@ class GuidedSetupTest < ActiveSupport::TestCase
     assert_not_includes GuidedSetup.stalled, fresh
   end
 
+  test "rejects scheduling_preferences with an unknown timezone" do
+    guided_setup.scheduling_preferences = { "timezone" => "Mars/Olympus" }
+
+    assert_not guided_setup.valid?
+    assert_includes guided_setup.errors[:scheduling_preferences].join, "unknown timezone"
+  end
+
+  test "rejects scheduling_preferences with unknown day-of-week values" do
+    guided_setup.scheduling_preferences = { "timezone" => "Sydney", "days" => [ "tue", "funday" ] }
+
+    assert_not guided_setup.valid?
+    assert_includes guided_setup.errors[:scheduling_preferences].join, "day-of-week"
+  end
+
+  test "accepts a fully-populated scheduling_preferences hash" do
+    guided_setup.scheduling_preferences = {
+      "timezone" => "Sydney",
+      "days" => [ "tue", "wed" ],
+      "time_blocks" => [ "morning", "afternoon" ]
+    }
+
+    assert_predicate guided_setup, :valid?
+  end
+
   test "allows only one engagement per account" do
     GuidedSetup.create!(account: account)
     duplicate = GuidedSetup.new(account: account)
@@ -68,6 +92,35 @@ class GuidedSetupTest < ActiveSupport::TestCase
 
   test "is reachable from its account" do
     assert_equal guided_setup, account.reload.guided_setup
+  end
+
+  test "integration_target_for picks Meta when the customer runs Meta ads" do
+    profile = { "ad_platforms" => [ "meta", "tiktok" ] }
+
+    assert_equal "meta", GuidedSetup.integration_target_for(profile)
+  end
+
+  test "integration_target_for prefers Meta over Google Ads when both are run" do
+    profile = { "ad_platforms" => [ "google_ads", "meta" ] }
+
+    assert_equal "meta", GuidedSetup.integration_target_for(profile)
+  end
+
+  test "integration_target_for picks Google Ads when Meta is absent" do
+    profile = { "ad_platforms" => [ "google_ads", "linkedin" ] }
+
+    assert_equal "google_ads", GuidedSetup.integration_target_for(profile)
+  end
+
+  test "integration_target_for picks sGTM when only sGTM install is planned" do
+    profile = { "ad_platforms" => [ "none" ], "install_platforms" => [ "sgtm" ] }
+
+    assert_equal "sgtm", GuidedSetup.integration_target_for(profile)
+  end
+
+  test "integration_target_for falls back to none when nothing matches" do
+    assert_equal "none", GuidedSetup.integration_target_for({})
+    assert_equal "none", GuidedSetup.integration_target_for(nil)
   end
 
   test "stalled? is true for an in-progress engagement untouched for over 14 days" do

@@ -121,6 +121,16 @@ module Billing
   # in full as account credit applied to their chosen plan.
   GUIDED_SETUP_CREDIT_CENTS = 150_000  # $1,500
 
+  # Plan pre-selected on the Guided Setup page, keyed by the discovery
+  # `monthly_ad_spend` answer. The recommendation is a UI hint, not a gate.
+  GUIDED_SETUP_PLAN_RECOMMENDATIONS = {
+    "under_5k" => PLAN_STARTER,
+    "5k_25k" => PLAN_STARTER,
+    "25k_100k" => PLAN_GROWTH,
+    "over_100k" => PLAN_PRO
+  }.freeze
+  GUIDED_SETUP_DEFAULT_RECOMMENDATION = PLAN_GROWTH
+
   # --- Time Periods ---
   GRACE_PERIOD_DAYS = 3
 

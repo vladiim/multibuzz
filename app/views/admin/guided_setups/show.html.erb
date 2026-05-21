@@ -15,8 +15,26 @@
         <dd class="text-gray-900"><%= @guided_setup.integration_target.humanize %></dd>
       </div>
       <div class="col-span-2">
-        <dt class="text-gray-500">Preferred call times</dt>
-        <dd class="text-gray-900"><%= @guided_setup.scheduling_note.presence || "—" %></dd>
+        <dt class="text-gray-500">Time zone</dt>
+        <dd class="text-gray-900"><%= @guided_setup.scheduling_preferences[SchedulingPreferences::TIMEZONE_KEY].presence || "—" %></dd>
+      </div>
+      <div class="col-span-2">
+        <dt class="text-gray-500">Preferred days</dt>
+        <dd class="text-gray-900">
+          <%
+            days = Array(@guided_setup.scheduling_preferences[SchedulingPreferences::DAYS_KEY])
+          %>
+          <%= days.any? ? days.map { |d| SchedulingPreferences::DAY_LABELS.fetch(d, d) }.join(", ") : "any" %>
+        </dd>
+      </div>
+      <div class="col-span-2">
+        <dt class="text-gray-500">Preferred times</dt>
+        <dd class="text-gray-900">
+          <%
+            blocks = Array(@guided_setup.scheduling_preferences[SchedulingPreferences::TIME_BLOCKS_KEY])
+          %>
+          <%= blocks.any? ? blocks.map { |b| "#{SchedulingPreferences::TIME_BLOCK_LABELS.fetch(b, b)} (#{SchedulingPreferences::TIME_BLOCK_HOURS.fetch(b, '')})" }.join(", ") : "any" %>
+        </dd>
       </div>
     </dl>
   </div>

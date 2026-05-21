@@ -7,6 +7,13 @@ class Plan < ApplicationRecord
   scope :sorted, -> { order(:sort_order) }
   scope :paid, -> { where.not(slug: ::Billing::PLAN_FREE) }
 
+  def self.recommended_for_ad_spend(spend_tier)
+    slug = ::Billing::GUIDED_SETUP_PLAN_RECOMMENDATIONS.fetch(
+      spend_tier, ::Billing::GUIDED_SETUP_DEFAULT_RECOMMENDATION
+    )
+    find_by(slug: slug)
+  end
+
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true
   validates :events_included, presence: true, numericality: { greater_than: 0 }

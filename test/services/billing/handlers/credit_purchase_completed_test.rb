@@ -6,6 +6,7 @@ require "ostruct"
 module Billing
   module Handlers
     class CreditPurchaseCompletedTest < ActiveSupport::TestCase
+      include ActiveJob::TestHelper
       test "grants a Guided Setup credit" do
         assert_difference -> { account.account_credits.count }, 1 do
           handler.call
@@ -28,6 +29,34 @@ module Billing
         handler.call
 
         assert_predicate guided_setup.reload, :in_progress?
+      end
+
+      test "sends the customer welcome and internal notification emails" do
+        guided_setup
+
+        assert_enqueued_jobs 2, only: ActionMailer::MailDeliveryJob do
+          handler.call
+        end
+      end
+
+      test "broadcasts a Turbo Stream replace so the confirmation page updates live" do
+        guided_setup
+
+        assert_broadcasts("onboarding_#{account.prefix_id}", 1) do
+          handler.call
+        end
+      end
+
+      test "does not broadcast when no GuidedSetup exists" do
+        assert_no_broadcasts("onboarding_#{account.prefix_id}") do
+          handler.call
+        end
+      end
+
+      test "skips the emails when no GuidedSetup engagement exists" do
+        assert_no_enqueued_jobs only: ActionMailer::MailDeliveryJob do
+          handler.call
+        end
       end
 
       test "returns an error when the plan is not found" do

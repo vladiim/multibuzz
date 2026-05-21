@@ -10,22 +10,22 @@
 
   <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-3xl" data-testid="setup-choice">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 px-4">
-      <%= button_to onboarding_choose_path_path, params: { setup_path: "self_serve" }, method: :post, class: "bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer border-2 border-transparent hover:border-indigo-500 text-left" do %>
+      <%= button_to onboarding_choose_path_path, params: { setup_path: SetupPaths::SELF_SERVE }, method: :post, class: "bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer border-2 border-transparent hover:border-indigo-500 text-left" do %>
         <div class="text-3xl mb-3">🛠️</div>
         <h3 class="text-lg font-semibold text-gray-900 mb-1">I'll set it up myself</h3>
         <p class="text-sm text-gray-600">Install the SDK and API calls myself.</p>
       <% end %>
 
-      <%= button_to onboarding_choose_path_path, params: { setup_path: "teammate" }, method: :post, class: "bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer border-2 border-transparent hover:border-indigo-500 text-left" do %>
+      <%= button_to onboarding_choose_path_path, params: { setup_path: SetupPaths::TEAMMATE }, method: :post, class: "bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer border-2 border-transparent hover:border-indigo-500 text-left" do %>
         <div class="text-3xl mb-3">👥</div>
         <h3 class="text-lg font-semibold text-gray-900 mb-1">A teammate will</h3>
         <p class="text-sm text-gray-600">Invite a developer to handle the install.</p>
       <% end %>
 
-      <%= button_to onboarding_choose_path_path, params: { setup_path: "assisted" }, method: :post, class: "bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer border-2 border-transparent hover:border-indigo-500 text-left" do %>
+      <%= button_to onboarding_choose_path_path, params: { setup_path: SetupPaths::ASSISTED }, method: :post, class: "bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer border-2 border-transparent hover:border-indigo-500 text-left" do %>
         <div class="text-3xl mb-3">🤝</div>
         <h3 class="text-lg font-semibold text-gray-900 mb-1">I'd like help</h3>
-        <p class="text-sm text-gray-600">Our team sets it up for you — Guided Setup.</p>
+        <p class="text-sm text-gray-600">Our team sets it up for you. Guided Setup.</p>
       <% end %>
     </div>
 

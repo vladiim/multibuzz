@@ -21,7 +21,7 @@ module Account::Onboarding
 
   included do
     enum :onboarding_persona, { developer: 0, marketer: 1, both: 2 }
-    enum :setup_path, { self_serve: 0, teammate: 1, assisted: 2 }
+    enum :setup_path, SetupPaths::ENUM_VALUES
     validate :setup_profile_within_limits
   end
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_05_19_120000) do
+ActiveRecord::Schema[8.0].define(version: 2026_05_21_020000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -499,7 +499,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_19_120000) do
     t.integer "status", default: 0, null: false
     t.string "integration_target", default: "none", null: false
     t.string "specialist_name"
-    t.text "scheduling_note"
     t.text "notes"
     t.datetime "accepted_at"
     t.datetime "kickoff_call_at"
@@ -510,6 +509,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_19_120000) do
     t.datetime "completed_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "scheduling_preferences", default: {}, null: false
     t.index ["account_id"], name: "index_guided_setups_on_account_id", unique: true
     t.index ["status", "updated_at"], name: "index_guided_setups_on_status_and_updated_at"
   end
@@ -677,6 +677,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_19_120000) do
     t.string "country", limit: 2
     t.string "postal_code", limit: 16
     t.string "gclid"
+    t.index ["account_id", "device_fingerprint", "created_at"], name: "index_sessions_on_account_fingerprint_created_at", where: "(device_fingerprint IS NOT NULL)"
+    t.index ["account_id", "device_fingerprint", "created_at"], name: "index_sessions_on_account_fp_created"
     t.index ["account_id", "fbp"], name: "index_sessions_on_account_fbp", where: "(fbp IS NOT NULL)"
     t.index ["account_id", "gclid"], name: "index_sessions_on_account_gclid", where: "(gclid IS NOT NULL)"
     t.index ["account_id", "landing_page_host"], name: "index_sessions_on_account_and_landing_page_host"

@@ -25,6 +25,26 @@ module Billing
 
         activate_chosen_plan
         account.guided_setup&.mark_in_progress!
+        broadcast_confirmation_update
+        send_notifications
+      end
+
+      def broadcast_confirmation_update
+        return unless account.guided_setup&.in_progress?
+
+        Turbo::StreamsChannel.broadcast_replace_to(
+          "onboarding_#{account.prefix_id}",
+          target: "guided_setup_confirmation",
+          partial: "onboarding/confirmation_in_progress",
+          locals: { guided_setup: account.guided_setup }
+        )
+      end
+
+      def send_notifications
+        return unless account.guided_setup
+
+        GuidedSetupMailer.welcome(guided_setup: account.guided_setup).deliver_later
+        GuidedSetupMailer.internal_notification(guided_setup: account.guided_setup).deliver_later
       end
 
       # Stripe delivers webhooks at least once; the granted credit is the
