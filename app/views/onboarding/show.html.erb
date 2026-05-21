@@ -10,7 +10,7 @@
      data-gtm-event-properties-value="<%= { user_id_hashed: @user_id_hashed }.to_json %>"></div>
 
 <div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-  <div class="sm:mx-auto sm:w-full sm:max-w-3xl">
+  <div class="sm:mx-auto sm:w-full sm:max-w-5xl">
     <h2 class="text-center text-3xl font-extrabold text-gray-900">
       Welcome to mbuzz! 👋
     </h2>
@@ -19,7 +19,7 @@
     </p>
   </div>
 
-  <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-3xl" data-testid="setup-choice">
+  <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-5xl" data-testid="setup-choice">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 px-4">
       <%= button_to onboarding_choose_path_path, params: { setup_path: SetupPaths::SELF_SERVE }, method: :post, class: "bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer border-2 border-transparent hover:border-indigo-500 text-left" do %>
         <div class="text-3xl mb-3">🛠️</div>
