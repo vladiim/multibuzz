@@ -1,13 +1,8 @@
 <%= turbo_frame_tag "payment_complete_state" do %>
-  <div class="text-center" data-testid="payment-complete-success">
-    <div class="text-5xl mb-3">🎉</div>
-    <h2 class="text-3xl font-extrabold text-gray-900">Payment received. Your specialist is on it.</h2>
-    <p class="mt-2 text-lg text-gray-600">
-      Your $1,500 is on your mbuzz balance and your plan is active. We'll start the installation work right after the kickoff call.
-    </p>
-
-    <div class="mt-8 inline-flex">
-      <%= link_to "Go to dashboard", dashboard_path, class: "px-6 py-3 bg-indigo-600 text-white rounded-md shadow-sm hover:bg-indigo-700 font-semibold" %>
-    </div>
-  </div>
+  <%= render "shared/success_state",
+        emoji: "🎉",
+        heading: "Payment received. Your specialist is on it.",
+        body: "Your $1,500 is on your mbuzz balance and your plan is active. We'll start the installation work right after the kickoff call.",
+        primary_cta_label: "Go to dashboard",
+        primary_cta_path: dashboard_path %>
 <% end %>

@@ -779,7 +779,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     get onboarding_verify_path
 
     assert_response :success
-    assert_select "[data-verification]"
+    assert_select "[data-testid='waiting-state']", text: /Waiting for your first event/
   end
 
   test "verify redirects to conversion if first_event_received already completed" do
@@ -939,7 +939,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     get onboarding_payment_complete_path
 
     assert_response :success
-    assert_select "[data-testid='payment-complete-success']"
+    assert_select "[data-testid='success-state']", text: /Payment received/
   end
 
   test "payment_complete renders the processing state when the webhook has not landed yet" do
@@ -949,7 +949,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     get onboarding_payment_complete_path
 
     assert_response :success
-    assert_select "[data-testid='payment-complete-processing']"
+    assert_select "[data-testid='waiting-state']", text: /Confirming your payment/
   end
 
   test "payment_complete redirects to onboarding when there is no payment context" do
