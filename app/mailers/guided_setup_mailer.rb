@@ -22,6 +22,18 @@ class GuidedSetupMailer < ApplicationMailer
     )
   end
 
+  def kickoff_booked(guided_setup:)
+    @guided_setup = guided_setup
+    @account = guided_setup.account
+    @scheduling_form = SchedulingPreferencesPresenter.from(guided_setup.scheduling_preferences)
+    @customer_email = customer_email(@account)
+
+    mail(
+      to: internal_notification_email,
+      subject: "[mbuzz] Kickoff booked: #{@account.name} (#{@account.prefix_id})"
+    )
+  end
+
   private
 
   def customer_email(account)

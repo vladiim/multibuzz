@@ -35,6 +35,40 @@ class GuidedSetupMailerTest < ActionMailer::TestCase
     assert_match(/training/i, body)
   end
 
+  # --- kickoff_booked (to the mbuzz team, on customer booking) ---
+
+  test "kickoff_booked delivers to the configured internal email" do
+    assert_predicate notification_email, :present?, "notifications.internal_email must be set in credentials"
+    assert_equal [ notification_email ], kickoff_booked_email.to
+  end
+
+  test "kickoff_booked subject identifies the account by name and prefix id" do
+    assert_match(/Kickoff booked/i, kickoff_booked_email.subject)
+    assert_includes kickoff_booked_email.subject, account.name
+    assert_includes kickoff_booked_email.subject, account.prefix_id
+  end
+
+  test "kickoff_booked body includes scheduling preferences" do
+    body = kickoff_booked_email.body.encoded
+
+    assert_includes body, "Sydney"
+    assert_match(/Tue/, body)
+    assert_match(/Midday/, body)
+  end
+
+  test "kickoff_booked body includes the integration target" do
+    assert_includes kickoff_booked_email.body.encoded, "Meta"
+  end
+
+  test "kickoff_booked body includes discovery answers when present" do
+    account.update!(setup_profile: { "attribution_goal" => [ "ecommerce" ], "monthly_ad_spend" => "5k_25k" })
+
+    body = kickoff_booked_email.body.encoded
+
+    assert_includes body, "ecommerce"
+    assert_includes body, "5k_25k"
+  end
+
   # --- internal_notification (to the mbuzz team) ---
 
   test "internal_notification delivers to the configured internal email" do
@@ -64,12 +98,29 @@ class GuidedSetupMailerTest < ActionMailer::TestCase
     @internal_email ||= GuidedSetupMailer.internal_notification(guided_setup: guided_setup)
   end
 
+  def kickoff_booked_email
+    @kickoff_booked_email ||= GuidedSetupMailer.kickoff_booked(guided_setup: booked_guided_setup)
+  end
+
   def guided_setup
     @guided_setup ||= GuidedSetup.create!(
       account: account,
       status: :in_progress,
       integration_target: :meta,
       accepted_at: Time.current
+    )
+  end
+
+  def booked_guided_setup
+    @booked_guided_setup ||= GuidedSetup.create!(
+      account: account,
+      integration_target: :meta,
+      kickoff_booked_at: Time.current,
+      scheduling_preferences: {
+        SchedulingPreferences::TIMEZONE_KEY    => "Sydney",
+        SchedulingPreferences::DAYS_KEY        => [ "tue" ],
+        SchedulingPreferences::TIME_BLOCKS_KEY => [ "midday" ]
+      }
     )
   end
 

@@ -54,7 +54,9 @@ module Onboarding
         return
       end
 
-      ensure_pending_guided_setup.book_kickoff!(scheduling_preferences: draft)
+      guided_setup = ensure_pending_guided_setup
+      guided_setup.book_kickoff!(scheduling_preferences: draft)
+      GuidedSetupMailer.kickoff_booked(guided_setup: guided_setup).deliver_later
       Lifecycle::Tracker.track("onboarding_kickoff_booked", current_account)
       redirect_to dashboard_path, notice: "Kickoff booked. We'll be in touch."
     end

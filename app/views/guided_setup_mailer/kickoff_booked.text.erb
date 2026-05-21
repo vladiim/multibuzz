@@ -1,0 +1,27 @@
+New kickoff booked
+==================
+
+Account: <%= @account.name %> (<%= @account.prefix_id %>)
+Customer email: <%= @customer_email %>
+Engagement: <%= @guided_setup.prefix_id %>
+Integration target: <%= @guided_setup.integration_target.humanize %>
+
+Scheduling preferences
+----------------------
+
+- Time zone: <%= @scheduling_form.timezone.presence || "(not set)" %>
+- Days that work: <%= @scheduling_form.any_days? ? @scheduling_form.day_labels : "any" %>
+- Times that work: <%= @scheduling_form.any_time_blocks? ? @scheduling_form.time_block_labels : "any" %>
+
+Discovery answers
+-----------------
+
+<% if @account.setup_profile.present? %>
+<% @account.setup_profile.each do |key, value| %>
+- <%= key.to_s.humanize %>: <%= Array(value).join(", ") %>
+<% end %>
+<% else %>
+No discovery profile recorded.
+<% end %>
+
+Admin: <%= admin_guided_setup_url(@guided_setup) %>

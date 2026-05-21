@@ -3,6 +3,7 @@
 require "test_helper"
 
 class OnboardingControllerTest < ActionDispatch::IntegrationTest
+  include ActionMailer::TestHelper
   # --- Show (setup-choice screen) ---
 
   test "show requires authentication" do
@@ -492,6 +493,22 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Sydney", engagement.scheduling_preferences["timezone"]
     assert_redirected_to dashboard_path
     assert_equal "Kickoff booked. We'll be in touch.", flash[:notice]
+  end
+
+  test "book_kickoff enqueues the kickoff-booked internal notification email" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+
+    assert_enqueued_emails 1 do
+      post onboarding_book_kickoff_path,
+        params: { scheduling_preferences: { timezone: "Sydney", days: [ "tue" ], time_blocks: [ "midday" ] } }
+    end
+
+    enqueued = ActionMailer::Base.deliveries.empty? ? enqueued_jobs.last : nil
+    args = enqueued&.dig("arguments")
+
+    assert_equal "GuidedSetupMailer", args&.first
+    assert_equal "kickoff_booked", args&.second
   end
 
   test "book_kickoff success banner shows on the dashboard after redirect" do
