@@ -14,12 +14,12 @@ module Dashboard
       account.events.destroy_all
     end
 
-    test "no pill when no setup_path is chosen" do
+    test "fresh account with no setup_path gets a 'Start setup' pill linking to onboarding" do
       account.update!(setup_path: nil)
 
       get dashboard_path
 
-      assert_select "[data-testid='onboarding-resume-pill']", count: 0
+      assert_select "a[data-testid='onboarding-resume-pill'][href=?]", onboarding_path, text: /Start setup/
     end
 
     test "no pill when onboarding was skipped" do

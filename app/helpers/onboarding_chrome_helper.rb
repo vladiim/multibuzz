@@ -119,7 +119,8 @@ module OnboardingChromeHelper
   # be nil for status-only states (e.g. assisted waiting for admin to
   # send a payment link).
   def onboarding_resume_status
-    return nil if current_account.blank? || effective_setup_path.blank? || current_account.onboarding_skipped?
+    return nil if current_account.blank? || current_account.onboarding_skipped?
+    return ResumeStatus.new(label: "Start setup", path: onboarding_path, actionable: true) if effective_setup_path.blank?
 
     case effective_setup_path
     when SetupPaths::SELF_SERVE then self_serve_resume_status

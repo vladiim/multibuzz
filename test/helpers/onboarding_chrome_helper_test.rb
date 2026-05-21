@@ -263,10 +263,14 @@ class OnboardingChromeHelperTest < ActionView::TestCase
     assert_nil onboarding_resume_status
   end
 
-  test "resume status is nil when no setup_path has been chosen" do
+  test "resume status is a 'Start setup' pill linking to onboarding when no setup_path has been chosen" do
     account.update!(setup_path: nil)
 
-    assert_nil onboarding_resume_status
+    status = onboarding_resume_status
+
+    assert status.actionable
+    assert_equal onboarding_path, status.path
+    assert_match(/start setup/i, status.label)
   end
 
   test "resume status is nil when onboarding was skipped" do
