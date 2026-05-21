@@ -13,3 +13,4 @@ Never put secrets, tokens, API keys, account IDs, email addresses, or customer P
 
 ## Feedback
 - [Visible form inputs are non-negotiable](feedback_visible_form_inputs.md): every input/select/textarea needs a visible resting border and real padding — never transparent-at-rest
+- [Register every new admin surface in `AdminTools::ALL`](feedback_admin_surfaces_register_in_admintools.md): the `/admin` hub renders this registry; an unlisted surface is invisible to operators
