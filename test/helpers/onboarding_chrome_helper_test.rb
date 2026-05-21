@@ -1,0 +1,193 @@
+# frozen_string_literal: true
+
+require "test_helper"
+
+class OnboardingChromeHelperTest < ActionView::TestCase
+  # --- onboarding_branch_label ---
+
+  test "branch label is nil when current_account is nil" do
+    @current_account = nil
+
+    assert_nil onboarding_branch_label
+  end
+
+  test "branch label is nil when setup_path is nil" do
+    account.update!(setup_path: nil)
+
+    assert_nil onboarding_branch_label
+  end
+
+  test "branch label maps self_serve to Self-serve setup" do
+    account.update!(setup_path: :self_serve)
+
+    assert_equal "Self-serve setup", onboarding_branch_label
+  end
+
+  test "branch label maps teammate to Teammate setup" do
+    account.update!(setup_path: :teammate)
+
+    assert_equal "Teammate setup", onboarding_branch_label
+  end
+
+  test "branch label maps assisted to Guided Setup" do
+    account.update!(setup_path: :assisted)
+
+    assert_equal "Guided Setup", onboarding_branch_label
+  end
+
+  # --- onboarding_pips: visibility ---
+
+  test "pips list is empty when current_account is nil" do
+    @current_account = nil
+    @onboarding_current_pip = :discovery
+
+    assert_empty onboarding_pips
+  end
+
+  test "pips list is empty when no setup_path is chosen" do
+    account.update!(setup_path: nil)
+    @onboarding_current_pip = :discovery
+
+    assert_empty onboarding_pips
+  end
+
+  test "pips list is empty when no current_pip is set" do
+    account.update!(setup_path: :assisted)
+    @onboarding_current_pip = nil
+
+    assert_empty onboarding_pips
+  end
+
+  # --- onboarding_pips: states ---
+
+  test "assisted pip sequence has the expected keys" do
+    account.update!(setup_path: :assisted)
+    @onboarding_current_pip = :discovery
+
+    assert_equal %i[pick_path discovery book_kickoff pay done], onboarding_pips.map(&:key)
+  end
+
+  test "pip before the current one is marked done" do
+    account.update!(setup_path: :assisted)
+    @onboarding_current_pip = :discovery
+
+    assert_equal :done, pip(:pick_path).state
+  end
+
+  test "pip matching the current one is marked current" do
+    account.update!(setup_path: :assisted)
+    @onboarding_current_pip = :discovery
+
+    assert_equal :current, pip(:discovery).state
+  end
+
+  test "pip after the current one is marked upcoming" do
+    account.update!(setup_path: :assisted)
+    @onboarding_current_pip = :discovery
+
+    assert_equal :upcoming, pip(:book_kickoff).state
+  end
+
+  test "self-serve sequence renders without any locked pips" do
+    account.update!(setup_path: :self_serve)
+    @onboarding_current_pip = :install
+
+    states = onboarding_pips.map(&:state)
+
+    assert_not_includes states, :locked
+  end
+
+  test "teammate sequence renders without any locked pips" do
+    account.update!(setup_path: :teammate)
+    @onboarding_current_pip = :invite_sent
+
+    states = onboarding_pips.map(&:state)
+
+    assert_not_includes states, :locked
+  end
+
+  # --- onboarding_pips: locked pay on the assisted path ---
+
+  test "assisted pay pip is locked when no GuidedSetup exists" do
+    account.update!(setup_path: :assisted)
+    @onboarding_current_pip = :discovery
+
+    assert_equal :locked, pip(:pay).state
+  end
+
+  test "assisted pay pip is locked when the engagement is pending with no active token" do
+    account.update!(setup_path: :assisted)
+    GuidedSetup.create!(account: account)
+    @onboarding_current_pip = :discovery
+
+    assert_equal :locked, pip(:pay).state
+  end
+
+  test "assisted pay pip is upcoming when the payment token is active" do
+    account.update!(setup_path: :assisted)
+    GuidedSetup.create!(account: account).mint_payment_token!
+    @onboarding_current_pip = :discovery
+
+    assert_equal :upcoming, pip(:pay).state
+  end
+
+  test "assisted pay pip is upcoming once the engagement is in_progress" do
+    account.update!(setup_path: :assisted)
+    GuidedSetup.create!(account: account, status: :in_progress, accepted_at: Time.current)
+    @onboarding_current_pip = :discovery
+
+    assert_equal :upcoming, pip(:pay).state
+  end
+
+  # --- onboarding_current_pip_label ---
+
+  test "current pip label returns the current pip's human label" do
+    @onboarding_current_pip = :discovery
+
+    assert_equal "Discovery", onboarding_current_pip_label
+  end
+
+  test "current pip label is nil when no current pip is set" do
+    @onboarding_current_pip = nil
+
+    assert_nil onboarding_current_pip_label
+  end
+
+  # --- onboarding_pip_dot_classes ---
+
+  test "pip dot classes for done and current use the indigo fill" do
+    assert_includes onboarding_pip_dot_classes(:done), "bg-indigo-600"
+    assert_includes onboarding_pip_dot_classes(:current), "ring"
+  end
+
+  test "pip dot classes for upcoming and locked use a white fill" do
+    assert_includes onboarding_pip_dot_classes(:upcoming), "bg-white"
+    assert_includes onboarding_pip_dot_classes(:locked), "border-dashed"
+  end
+
+  # --- onboarding_pip_connector_classes ---
+
+  test "connector after a done pip is indigo" do
+    assert_includes onboarding_pip_connector_classes(:done), "indigo"
+  end
+
+  test "connector after a non-done pip is gray" do
+    assert_includes onboarding_pip_connector_classes(:current), "gray"
+    assert_includes onboarding_pip_connector_classes(:upcoming), "gray"
+    assert_includes onboarding_pip_connector_classes(:locked), "gray"
+  end
+
+  private
+
+  def current_account
+    @current_account
+  end
+
+  def account
+    @current_account ||= accounts(:one)
+  end
+
+  def pip(key)
+    onboarding_pips.find { |p| p.key == key }
+  end
+end

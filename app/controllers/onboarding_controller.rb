@@ -9,6 +9,15 @@ class OnboardingController < ApplicationController
   include Onboarding::PaymentFlow
 
   before_action :ensure_sdk_selected, only: [ :install, :verify, :conversion ]
+  before_action :set_onboarding_current_pip
+
+  # Maps the running action to the pip the user is currently on. Actions
+  # missing from this map render no pip rail -- the screen hasn't been
+  # migrated to the chrome yet. Each onboarding-cohesion piece adds its
+  # action here.
+  CURRENT_PIP_FOR_ACTION = {
+    "install_service" => :discovery
+  }.freeze
 
   def show
     return redirect_to setup_path_destination if current_account.setup_path
@@ -93,6 +102,10 @@ class OnboardingController < ApplicationController
   end
 
   private
+
+  def set_onboarding_current_pip
+    @onboarding_current_pip = CURRENT_PIP_FOR_ACTION[action_name]
+  end
 
   def ensure_sdk_selected
     redirect_to onboarding_setup_path unless current_account.selected_sdk.present?

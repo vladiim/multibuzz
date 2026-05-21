@@ -238,6 +238,30 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", onboarding_discovery_path, text: /Continue/
   end
 
+  test "install_service renders the onboarding pip rail with Discovery as current" do
+    sign_in
+    account.update!(setup_path: :assisted)
+
+    get onboarding_install_service_path
+
+    assert_select "[data-testid='onboarding-pip-rail']"
+    assert_select "[data-testid='onboarding-pip-pick_path'][data-state='done']"
+    assert_select "[data-testid='onboarding-pip-discovery'][data-state='current']"
+    assert_select "[data-testid='onboarding-pip-book_kickoff'][data-state='upcoming']"
+    assert_select "[data-testid='onboarding-pip-pay'][data-state='locked']"
+    assert_select "[data-testid='onboarding-pip-done'][data-state='upcoming']"
+    assert_select "[data-testid='onboarding-pip-rail-mobile-caption']", text: "Discovery"
+  end
+
+  test "setup-choice page does not render the pip rail (no path chosen yet)" do
+    sign_in
+    account.update!(setup_path: nil)
+
+    get onboarding_path
+
+    assert_select "[data-testid='onboarding-pip-rail']", count: 0
+  end
+
   # --- Discovery ---
 
   test "discovery requires authentication" do
