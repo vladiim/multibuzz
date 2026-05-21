@@ -110,10 +110,10 @@ module Onboarding
 
     def discovery_params
       params.require(:setup_profile).permit(
-        :attribution_goal, :attribution_goal_other,
+        :attribution_goal_other,
         :monthly_ad_spend, :monthly_ad_spend_other,
         :ad_platforms_other, :install_platforms_other,
-        ad_platforms: [], install_platforms: []
+        attribution_goal: [], ad_platforms: [], install_platforms: []
       ).to_h
     end
 

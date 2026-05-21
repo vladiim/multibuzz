@@ -3,10 +3,8 @@
     <%= button_to "← Change setup option", onboarding_change_setup_path_path, method: :delete, class: "text-sm text-gray-500 hover:text-gray-700" %>
   </div>
   <div class="sm:mx-auto sm:w-full sm:max-w-2xl">
-    <h2 class="text-center text-3xl font-extrabold text-gray-900">Tell us about your setup</h2>
-    <p class="mt-2 text-center text-lg text-gray-600">
-      So your specialist can tailor your Guided Setup. 4 quick questions.
-    </p>
+    <h2 class="text-center text-3xl font-extrabold text-gray-900">Let's get started</h2>
+    <p class="mt-2 text-center text-lg text-gray-600">4 quick questions</p>
   </div>
 
   <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-2xl px-4">
@@ -16,12 +14,11 @@
           <legend class="text-sm font-semibold text-gray-900 mb-3">1 &middot; What are you trying to attribute?</legend>
           <% [ [ "Ecommerce purchases", "ecommerce" ], [ "B2B leads & deals", "b2b_leads" ], [ "Signups & subscriptions", "signups" ] ].each do |label, value| %>
             <label class="flex items-center gap-2 py-1 text-sm text-gray-700">
-              <%= radio_button_tag "setup_profile[attribution_goal]", value %>
+              <%= check_box_tag "setup_profile[attribution_goal][]", value %>
               <%= label %>
             </label>
           <% end %>
           <label class="flex items-center gap-2 py-1 text-sm text-gray-700">
-            <%= radio_button_tag "setup_profile[attribution_goal]", "other" %>
             Other:
             <%= text_field_tag "setup_profile[attribution_goal_other]", nil, placeholder: "type your answer", class: "text-sm border-gray-300 rounded-md" %>
           </label>
@@ -42,7 +39,7 @@
         </fieldset>
 
         <fieldset>
-          <legend class="text-sm font-semibold text-gray-900 mb-3">3 &middot; Which platform(s) is mbuzz going on?</legend>
+          <legend class="text-sm font-semibold text-gray-900 mb-3">3 &middot; Which platform/s do you use?</legend>
           <% [ [ "Ruby", "ruby" ], [ "Python", "python" ], [ "Node.js", "node" ], [ "PHP", "php" ], [ "Server-side GTM", "sgtm" ], [ "Shopify", "shopify" ], [ "Magento", "magento" ], [ "REST API", "rest_api" ] ].each do |label, value| %>
             <label class="flex items-center gap-2 py-1 text-sm text-gray-700">
               <%= check_box_tag "setup_profile[install_platforms][]", value %>
@@ -52,6 +49,10 @@
           <label class="flex items-center gap-2 py-1 text-sm text-gray-700">
             Other:
             <%= text_field_tag "setup_profile[install_platforms_other]", nil, placeholder: "type your answer", class: "text-sm border-gray-300 rounded-md" %>
+          </label>
+          <label class="flex items-center gap-2 py-1 text-sm text-gray-700">
+            <%= check_box_tag "setup_profile[install_platforms][]", "unsure" %>
+            I'm not sure yet
           </label>
         </fieldset>
 

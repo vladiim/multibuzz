@@ -183,6 +183,39 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_select "[data-testid='discovery-form']"
   end
 
+  test "discovery uses Let's get started and 4 quick questions copy" do
+    sign_in
+    account.update!(setup_path: :assisted)
+
+    get onboarding_discovery_path
+
+    assert_select "h2", text: "Let's get started"
+    assert_select "p", text: "4 quick questions"
+  end
+
+  test "discovery Q1 is a multiselect on attribution_goal" do
+    sign_in
+    account.update!(setup_path: :assisted)
+
+    get onboarding_discovery_path
+
+    assert_select "input[type=checkbox][name='setup_profile[attribution_goal][]'][value=?]", "ecommerce"
+    assert_select "input[type=checkbox][name='setup_profile[attribution_goal][]'][value=?]", "b2b_leads"
+    assert_select "input[type=checkbox][name='setup_profile[attribution_goal][]'][value=?]", "signups"
+    assert_select "input[type=radio][name='setup_profile[attribution_goal]']", count: 0
+  end
+
+  test "discovery Q3 asks which platforms you use and offers an unsure option" do
+    sign_in
+    account.update!(setup_path: :assisted)
+
+    get onboarding_discovery_path
+
+    assert_select "legend", text: /Which platform\/s do you use\?/
+    assert_select "input[type=checkbox][name='setup_profile[install_platforms][]'][value=?]", "unsure"
+    assert_select "label", text: /I'm not sure yet/
+  end
+
   test "discovery redirects accounts not on the assisted path" do
     sign_in
     account.update!(setup_path: :self_serve)
@@ -192,16 +225,16 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to onboarding_path
   end
 
-  test "submit_discovery stores the profile and marks it completed" do
+  test "submit_discovery stores the multiselect profile and marks it completed" do
     sign_in
     account.update!(setup_path: :assisted)
 
     post onboarding_discovery_path,
-      params: { setup_profile: { attribution_goal: "b2b_leads", monthly_ad_spend: "25k_100k" } }
+      params: { setup_profile: { attribution_goal: %w[ecommerce b2b_leads], monthly_ad_spend: "25k_100k" } }
 
     account.reload
 
-    assert_equal "b2b_leads", account.setup_profile["attribution_goal"]
+    assert_equal %w[ecommerce b2b_leads], account.setup_profile["attribution_goal"]
     assert_predicate account, :setup_profile_completed?
   end
 
@@ -209,7 +242,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     sign_in
     account.update!(setup_path: :assisted)
 
-    post onboarding_discovery_path, params: { setup_profile: { attribution_goal: "b2b_leads" } }
+    post onboarding_discovery_path, params: { setup_profile: { attribution_goal: %w[b2b_leads] } }
 
     assert_redirected_to onboarding_guided_setup_path
   end
