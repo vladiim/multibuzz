@@ -223,7 +223,7 @@ class OnboardingChromeHelperTest < ActionView::TestCase
   test "current pip label returns the current pip's human label" do
     @onboarding_current_pip = :discovery
 
-    assert_equal "Discovery", onboarding_current_pip_label
+    assert_equal "About", onboarding_current_pip_label
   end
 
   test "current pip label is nil when no current pip is set" do

@@ -41,7 +41,7 @@ module OnboardingChromeHelper
     conversion: "Conversion",
     invite_sent: "Invite sent",
     teammate_installs: "Teammate installs",
-    discovery: "Discovery",
+    discovery: "About",
     book_kickoff: "Book kickoff",
     pay: "Pay",
     done: "Done"

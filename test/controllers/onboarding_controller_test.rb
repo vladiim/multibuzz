@@ -277,7 +277,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_select "[data-testid='onboarding-pip-book_kickoff'][data-state='upcoming']"
     assert_select "[data-testid='onboarding-pip-pay'][data-state='locked']"
     assert_select "[data-testid='onboarding-pip-done'][data-state='upcoming']"
-    assert_select "[data-testid='onboarding-pip-rail-mobile-caption']", text: "Discovery"
+    assert_select "[data-testid='onboarding-pip-rail-mobile-caption']", text: "About"
   end
 
   test "setup-choice page does not render the pip rail (no path chosen yet)" do
