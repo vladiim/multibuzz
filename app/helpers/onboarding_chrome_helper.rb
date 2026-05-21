@@ -197,6 +197,7 @@ module OnboardingChromeHelper
     when :booking_pending   then ResumeStatus.new(label: "Book your kickoff", path: onboarding_guided_setup_path, actionable: true)
     when :payment_ready     then ResumeStatus.new(label: "Pay for your setup", path: onboarding_payment_setup_path, actionable: true)
     when :paid_in_progress  then ResumeStatus.new(label: "Setup in progress", path: onboarding_payment_complete_path, actionable: false)
+    when :payment_required  then ResumeStatus.new(label: "Payment required", path: onboarding_guided_setup_path, actionable: false)
     when :awaiting_link     then ResumeStatus.new(label: "Kickoff booked — we'll be in touch", path: onboarding_guided_setup_path, actionable: false)
     end
   end
@@ -205,9 +206,15 @@ module OnboardingChromeHelper
     guided_setup = current_account.guided_setup
     return nil if guided_setup&.delivered?
     return :discovery_pending if current_account.setup_profile_completed_at.blank?
-    return :booking_pending   if guided_setup.nil? || guided_setup.kickoff_booked_at.blank?
-    return :payment_ready     if guided_setup.payment_token_active?
-    return :paid_in_progress  if guided_setup.in_progress?
+    return :booking_pending if guided_setup.nil? || guided_setup.kickoff_booked_at.blank?
+
+    assisted_post_booking_state(guided_setup)
+  end
+
+  def assisted_post_booking_state(guided_setup)
+    return :payment_ready if guided_setup.payment_token_active?
+    return :paid_in_progress if guided_setup.in_progress?
+    return :payment_required if guided_setup.kickoff_call_at.present?
 
     :awaiting_link
   end

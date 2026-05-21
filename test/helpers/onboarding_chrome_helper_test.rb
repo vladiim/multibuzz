@@ -329,6 +329,17 @@ class OnboardingChromeHelperTest < ActionView::TestCase
     assert_match(/booked/i, status.label)
   end
 
+  test "assisted resume status flips to 'Payment required' once the kickoff call is marked done" do
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+    GuidedSetup.create!(account: account, kickoff_booked_at: Time.current, kickoff_call_at: Time.current)
+
+    status = onboarding_resume_status
+
+    assert_not status.actionable
+    assert_equal "Payment required", status.label
+    assert_equal onboarding_guided_setup_path, status.path
+  end
+
   test "assisted resume status routes to payment_setup when a payment token is active" do
     account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
     GuidedSetup.create!(account: account, kickoff_booked_at: Time.current).mint_payment_token!

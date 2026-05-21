@@ -1,12 +1,19 @@
 <div class="py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
   <div class="max-w-3xl mx-auto" data-testid="guided-setup">
-    <% if @kickoff_booked %>
+    <% if @kickoff_call_done %>
       <%= render "shared/success_state",
-            emoji: "📅",
-            heading: "Kickoff booked. We'll be in touch.",
-            body: "Your specialist will email within one business day to confirm a time and walk through pricing. Nothing for you to do here right now.",
-            primary_cta_label: "Go to dashboard",
-            primary_cta_path: dashboard_path %>
+        emoji: "✅",
+        heading: "Kickoff complete. Payment link incoming.",
+        body: "Your specialist will email a payment link shortly. Once you've paid, we'll start the install.",
+        primary_cta_label: "Go to dashboard",
+        primary_cta_path: dashboard_path %>
+    <% elsif @kickoff_booked %>
+      <%= render "shared/success_state",
+        emoji: "📅",
+        heading: "Kickoff booked. We'll be in touch.",
+        body: "Your specialist will email within one business day to confirm a time and walk through pricing. Nothing for you to do here right now.",
+        primary_cta_label: "Go to dashboard",
+        primary_cta_path: dashboard_path %>
     <% else %>
     <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Last step</h2>
     <p class="mt-2 text-base sm:text-lg text-gray-600">Book your kickoff, we'll be in touch ASAP.</p>
