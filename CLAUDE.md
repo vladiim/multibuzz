@@ -59,13 +59,15 @@ RAILS_ENV=test bin/rails db:schema:load
 
 ## Hotwire / Turbo gotchas
 
-Forms submitted via Turbo Drive (`form_with` default) **fail silently** in two recurring patterns. If a form "does nothing" or the page shows "Content missing", check these first.
+Forms submitted via Turbo Drive (`form_with` default) **fail silently** in three recurring patterns. If a form "does nothing" or the page shows "Content missing", check these first.
 
 1. **Cross-origin redirects.** `form_with` + a controller `redirect_to(allow_other_host: true)` to e.g. Stripe Checkout silently no-ops. Turbo's `fetch` can't follow cross-origin redirects. **Fix:** `data: { turbo: false }` on the form. Reference: `app/views/accounts/billing/show.html.erb`.
 
 2. **Forms inside `<turbo-frame>` that redirect outside the frame.** The form submission stays scoped to the frame; Turbo expects the response to contain a matching `<turbo-frame id="...">`. A redirect to a totally different page (dashboard, etc.) has no such frame → user sees "Content missing". **Fix:** `data: { turbo_frame: "_top" }` on the form so the redirect navigates the whole page.
 
-**Rule of thumb:** if a form's success path is a redirect to a different host or a different page (no matching frame), don't let Turbo intercept it. Use `data: { turbo: false }` or `data: { turbo_frame: "_top" }` explicitly. Tests using `assert_response :redirect` will pass either way — these bugs only show up in a real browser.
+3. **POST + same-page render (no redirect).** A form that POSTs and the controller `render`s the same template (200 OK HTML, no redirect, no turbo_stream) gets silently swallowed. POSTs without a redirect don't fit Turbo's navigation model. **Fix options, pick one:** `data: { turbo: false }` on the form (simplest when the success state IS rendering the same page); render with `status: :unprocessable_entity` (Turbo treats this as a form-error swap and DOES update the page); respond with a turbo_stream. `local: true` is a Rails 6 holdover — does NOT opt out of Turbo in Rails 7+.
+
+**Rule of thumb:** if a form's success path isn't a same-origin redirect, don't let Turbo intercept it. Tests using `assert_response :redirect` or `:success` will pass either way — these bugs only show up in a real browser.
 
 ## Production
 

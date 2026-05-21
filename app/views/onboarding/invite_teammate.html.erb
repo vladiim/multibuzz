@@ -15,7 +15,7 @@
       <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Invite the teammate who'll install mbuzz</h2>
       <p class="mt-2 text-base sm:text-lg text-gray-600">They'll get an email with everything they need: the API key, the SDK, the install steps.</p>
 
-      <%= form_with url: onboarding_send_teammate_invite_path, method: :post, local: true, data: { testid: "teammate-invite-form" } do %>
+      <%= form_with url: onboarding_send_teammate_invite_path, method: :post, data: { turbo: false, testid: "teammate-invite-form" } do %>
         <div class="mt-6 sm:mt-8 bg-white border border-gray-200 rounded-lg shadow-sm p-4 sm:p-5 space-y-4">
           <% if @invite_error.present? %>
             <div class="p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700">
