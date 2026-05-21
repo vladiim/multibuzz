@@ -22,6 +22,13 @@ module GuidedSetup::PaymentJourney
     update!(payment_token: nil, payment_token_expires_at: nil)
   end
 
+  def mark_paid!
+    transaction do
+      mark_in_progress!
+      clear_payment_token!
+    end
+  end
+
   def payment_token_active?
     payment_token.present? && payment_token_expires_at.present? && payment_token_expires_at > Time.current
   end

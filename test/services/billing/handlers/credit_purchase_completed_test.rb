@@ -39,18 +39,12 @@ module Billing
         end
       end
 
-      test "broadcasts a Turbo Stream replace so the confirmation page updates live" do
-        guided_setup
+      test "clears the payment token once the credit lands" do
+        guided_setup.mint_payment_token!
 
-        assert_broadcasts("onboarding_#{account.prefix_id}", 1) do
-          handler.call
-        end
-      end
+        handler.call
 
-      test "does not broadcast when no GuidedSetup exists" do
-        assert_no_broadcasts("onboarding_#{account.prefix_id}") do
-          handler.call
-        end
+        assert_nil guided_setup.reload.payment_token
       end
 
       test "skips the emails when no GuidedSetup engagement exists" do

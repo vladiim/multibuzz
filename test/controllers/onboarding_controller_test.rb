@@ -208,7 +208,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to onboarding_discovery_path
   end
 
-  test "guided_setup renders the plan picker with the recommended tier pre-selected" do
+  test "guided_setup renders the offer page with the scheduling form" do
     sign_in
     account.update!(
       setup_path: :assisted,
@@ -220,158 +220,140 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "[data-testid='guided-setup']"
-    assert_select "input[type=radio][name='plan_slug'][value='pro'][checked]"
+    assert_select "[data-testid='book-kickoff-form']"
+    assert_select "input[name='scheduling_preferences[timezone]']"
+    assert_select "input[type=submit][value='Book kickoff call']"
   end
 
-  # --- Accept (Guided Setup -> Stripe Checkout) ---
+  test "guided_setup redirects to kickoff_booked once a booking exists" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+    GuidedSetup.create!(account: account, kickoff_booked_at: Time.current)
 
-  test "accept_guided_setup requires authentication" do
-    post onboarding_accept_guided_setup_path, params: { plan_slug: "growth" }
+    get onboarding_guided_setup_path
+
+    assert_redirected_to onboarding_kickoff_booked_path
+  end
+
+  # --- Book kickoff ---
+
+  test "book_kickoff requires authentication" do
+    post onboarding_book_kickoff_path, params: { scheduling_preferences: { timezone: "Sydney" } }
 
     assert_redirected_to login_path
   end
 
-  test "accept_guided_setup requires the assisted path" do
+  test "book_kickoff requires the assisted path" do
     sign_in
     account.update!(setup_path: :self_serve)
 
-    post onboarding_accept_guided_setup_path, params: { plan_slug: "growth" }
+    post onboarding_book_kickoff_path, params: { scheduling_preferences: { timezone: "Sydney" } }
 
     assert_redirected_to onboarding_path
   end
 
-  test "accept_guided_setup requires a plan to be chosen" do
+  test "book_kickoff requires discovery to be completed" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: nil)
+
+    post onboarding_book_kickoff_path, params: { scheduling_preferences: { timezone: "Sydney" } }
+
+    assert_redirected_to onboarding_discovery_path
+  end
+
+  test "book_kickoff re-renders the offer with an error when the timezone is blank" do
     sign_in
     account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
 
-    post onboarding_accept_guided_setup_path
+    post onboarding_book_kickoff_path, params: { scheduling_preferences: { timezone: "" } }
 
-    assert_redirected_to onboarding_guided_setup_path
-    assert_predicate flash[:alert], :present?
+    assert_response :unprocessable_entity
+    assert_select "[data-testid='scheduling-error']", /time zone/i
   end
 
-  test "accept_guided_setup creates a pending GuidedSetup with the inferred integration target" do
+  test "book_kickoff creates the engagement with the inferred integration target and stamps kickoff_booked_at" do
     sign_in
     account.update!(
       setup_path: :assisted,
       setup_profile: { "ad_platforms" => [ "meta" ] },
-      setup_profile_completed_at: Time.current,
-      stripe_customer_id: "cus_assisted_test"
+      setup_profile_completed_at: Time.current
     )
 
     assert_difference -> { GuidedSetup.count }, 1 do
-      post onboarding_accept_guided_setup_path, params: { plan_slug: "growth" }
+      post onboarding_book_kickoff_path,
+        params: { scheduling_preferences: { timezone: "Sydney", days: [ "tue", "wed" ], time_blocks: [ "morning" ] } }
     end
 
     engagement = account.reload.guided_setup
 
     assert_predicate engagement, :pending?
     assert_equal "meta", engagement.integration_target
-    assert_response :redirect
+    assert_predicate engagement.kickoff_booked_at, :present?
+    assert_equal "Sydney", engagement.scheduling_preferences["timezone"]
+    assert_redirected_to onboarding_kickoff_booked_path
   end
 
-  test "accept_guided_setup is idempotent for the existing pending engagement" do
+  test "book_kickoff updates an existing pending engagement instead of creating a new one" do
     sign_in
-    account.update!(
-      setup_path: :assisted,
-      setup_profile_completed_at: Time.current,
-      stripe_customer_id: "cus_assisted_test"
-    )
-    GuidedSetup.create!(account: account)
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+    engagement = GuidedSetup.create!(account: account)
 
     assert_no_difference -> { GuidedSetup.count } do
-      post onboarding_accept_guided_setup_path, params: { plan_slug: "growth" }
+      post onboarding_book_kickoff_path,
+        params: { scheduling_preferences: { timezone: "Sydney" } }
     end
+
+    assert_predicate engagement.reload.kickoff_booked_at, :present?
   end
 
-  test "accept_guided_setup re-renders with an alert when the plan is the free plan" do
+  test "book_kickoff drops unknown day-of-week and time-block values" do
     sign_in
     account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
 
-    post onboarding_accept_guided_setup_path, params: { plan_slug: "free" }
+    post onboarding_book_kickoff_path,
+      params: { scheduling_preferences: { timezone: "Sydney", days: [ "tue", "funday" ], time_blocks: [ "morning", "midnight" ] } }
 
-    assert_redirected_to onboarding_guided_setup_path
-    assert_includes flash[:alert].to_s, "free plan"
+    prefs = account.reload.guided_setup.scheduling_preferences
+
+    assert_equal [ "tue" ], prefs["days"]
+    assert_equal [ "morning" ], prefs["time_blocks"]
   end
 
-  # --- Confirmation ---
+  # --- Kickoff booked ---
 
-  test "confirmation requires authentication" do
-    get onboarding_confirmation_path
+  test "kickoff_booked requires authentication" do
+    get onboarding_kickoff_booked_path
 
     assert_redirected_to login_path
   end
 
-  test "confirmation requires the assisted path" do
+  test "kickoff_booked requires the assisted path" do
     sign_in
     account.update!(setup_path: :self_serve)
 
-    get onboarding_confirmation_path
+    get onboarding_kickoff_booked_path
 
     assert_redirected_to onboarding_path
   end
 
-  test "confirmation renders the in-progress state when the engagement is live" do
+  test "kickoff_booked redirects back to the offer when no booking exists" do
     sign_in
     account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
-    GuidedSetup.create!(account: account, status: :in_progress, accepted_at: Time.current)
 
-    get onboarding_confirmation_path
+    get onboarding_kickoff_booked_path
+
+    assert_redirected_to onboarding_guided_setup_path
+  end
+
+  test "kickoff_booked renders the confirmation page when a booking exists" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+    GuidedSetup.create!(account: account, kickoff_booked_at: Time.current)
+
+    get onboarding_kickoff_booked_path
 
     assert_response :success
-    assert_select "[data-testid='confirmation-form']"
-  end
-
-  test "confirmation renders the processing state when the engagement is still pending" do
-    sign_in
-    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
-    GuidedSetup.create!(account: account, status: :pending)
-
-    get onboarding_confirmation_path
-
-    assert_response :success
-    assert_select "[data-testid='confirmation-processing']"
-  end
-
-  test "submit_confirmation stores the structured scheduling preferences" do
-    sign_in
-    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
-    engagement = GuidedSetup.create!(account: account, status: :in_progress, accepted_at: Time.current)
-
-    post onboarding_confirmation_path,
-      params: { scheduling_preferences: { timezone: "Sydney", days: [ "tue", "wed" ], time_blocks: [ "morning", "afternoon" ] } }
-
-    prefs = engagement.reload.scheduling_preferences
-
-    assert_equal "Sydney", prefs["timezone"]
-    assert_equal [ "tue", "wed" ], prefs["days"]
-    assert_equal [ "morning", "afternoon" ], prefs["time_blocks"]
-    assert_redirected_to dashboard_path
-  end
-
-  test "submit_confirmation re-renders with an error when timezone is blank" do
-    sign_in
-    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
-    GuidedSetup.create!(account: account, status: :in_progress, accepted_at: Time.current)
-
-    post onboarding_confirmation_path, params: { scheduling_preferences: { timezone: "" } }
-
-    assert_response :unprocessable_entity
-    assert_select "[data-testid='scheduling-error']", /time zone/i
-  end
-
-  test "submit_confirmation drops unknown day-of-week and time-block values" do
-    sign_in
-    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
-    engagement = GuidedSetup.create!(account: account, status: :in_progress, accepted_at: Time.current)
-
-    post onboarding_confirmation_path,
-      params: { scheduling_preferences: { timezone: "Sydney", days: [ "tue", "funday" ], time_blocks: [ "morning", "midnight" ] } }
-
-    prefs = engagement.reload.scheduling_preferences
-
-    assert_equal [ "tue" ], prefs["days"]
-    assert_equal [ "morning" ], prefs["time_blocks"]
+    assert_select "[data-testid='kickoff-booked']"
   end
 
   # --- Setup (API key + SDK selection) ---

@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-# Shape of GuidedSetup#scheduling_preferences (jsonb). Captured on the
-# confirmation step after Guided Setup purchase so the specialist knows
-# when to reach out for the kickoff call.
+# Shape of GuidedSetup#scheduling_preferences (jsonb). Captured when the
+# customer books the kickoff (before any payment) so the specialist knows
+# when to reach out.
 module SchedulingPreferences
   TIMEZONE_KEY = "timezone"
   DAYS_KEY = "days"

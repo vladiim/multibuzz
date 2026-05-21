@@ -5,8 +5,8 @@ module Onboarding
     extend ActiveSupport::Concern
 
     included do
-      before_action :require_assisted_path, only: %i[discovery submit_discovery guided_setup accept_guided_setup confirmation submit_confirmation]
-      before_action :require_completed_discovery, only: %i[guided_setup accept_guided_setup]
+      before_action :require_assisted_path, only: %i[discovery submit_discovery guided_setup book_kickoff kickoff_booked]
+      before_action :require_completed_discovery, only: %i[guided_setup book_kickoff]
       before_action :require_teammate_path, only: %i[invite_teammate send_teammate_invite]
 
       helper_method :recommended_plan
@@ -37,33 +37,31 @@ module Onboarding
     end
 
     def guided_setup
-      @plans = Plan.active.paid.sorted
-      @recommended_plan = recommended_plan
+      return redirect_to(onboarding_kickoff_booked_path) if current_account.guided_setup&.kickoff_booked_at.present?
+
+      @scheduling_form = SchedulingPreferencesPresenter.from(current_account.guided_setup&.scheduling_preferences)
     end
 
-    def accept_guided_setup
-      return redirect_with_alert("Choose a plan to continue.") if plan_slug.blank?
+    def book_kickoff
+      draft = scheduling_preferences_params
+      @scheduling_form = SchedulingPreferencesPresenter.from(draft)
 
-      ensure_pending_guided_setup
-      accept_result[:success] ? redirect_to(accept_result[:checkout_url], allow_other_host: true) : redirect_with_alert(accept_result[:errors].first)
-    end
-
-    def confirmation
-      @guided_setup = current_account.guided_setup
-    end
-
-    def submit_confirmation
-      @guided_setup = current_account.guided_setup
-      @scheduling_draft = scheduling_preferences_params
-
-      if @scheduling_draft[SchedulingPreferences::TIMEZONE_KEY].blank?
+      if @scheduling_form.timezone.blank?
         @scheduling_error = "Choose a time zone so we know when to reach you."
-        render :confirmation, status: :unprocessable_entity
+        render :guided_setup, status: :unprocessable_entity
         return
       end
 
-      @guided_setup&.update!(scheduling_preferences: @scheduling_draft)
-      redirect_to dashboard_path
+      ensure_pending_guided_setup.book_kickoff!(scheduling_preferences: draft)
+      Lifecycle::Tracker.track("onboarding_kickoff_booked", current_account)
+      redirect_to onboarding_kickoff_booked_path
+    end
+
+    def kickoff_booked
+      @guided_setup = current_account.guided_setup
+      return redirect_to(onboarding_guided_setup_path) unless @guided_setup&.kickoff_booked_at.present?
+
+      @scheduling_form = SchedulingPreferencesPresenter.from(@guided_setup.scheduling_preferences)
     end
 
     private
@@ -108,22 +106,6 @@ module Onboarding
 
     def current_guided_setup
       @current_guided_setup ||= current_account.guided_setup
-    end
-
-    def accept_result
-      @accept_result ||= Billing::CreditCheckoutService.new(
-        account: current_account,
-        plan_slug: plan_slug,
-        urls: { success: onboarding_confirmation_url, cancel: onboarding_guided_setup_url }
-      ).call
-    end
-
-    def plan_slug
-      params[:plan_slug].to_s.presence
-    end
-
-    def redirect_with_alert(message)
-      redirect_to onboarding_guided_setup_path, alert: message
     end
 
     def discovery_params

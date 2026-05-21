@@ -24,20 +24,8 @@ module Billing
         return credit_result unless credit_result[:success]
 
         activate_chosen_plan
-        account.guided_setup&.mark_in_progress!
-        broadcast_confirmation_update
+        account.guided_setup&.mark_paid!
         send_notifications
-      end
-
-      def broadcast_confirmation_update
-        return unless account.guided_setup&.in_progress?
-
-        Turbo::StreamsChannel.broadcast_replace_to(
-          "onboarding_#{account.prefix_id}",
-          target: "guided_setup_confirmation",
-          partial: "onboarding/confirmation_in_progress",
-          locals: { guided_setup: account.guided_setup }
-        )
       end
 
       def send_notifications
