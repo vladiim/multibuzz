@@ -100,6 +100,14 @@ class Admin::GuidedSetupsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path
   end
 
+  test "show surfaces the account owner email so the operator knows who to contact" do
+    sign_in_as(admin_user)
+
+    get admin_guided_setup_path(guided_setup)
+
+    assert_select "[data-testid='guided-setup-owner']", text: /#{guided_setup.account.owner_user.email}/
+  end
+
   # --- Payment link ---
 
   test "show offers a generate button once the kickoff is booked and pending" do

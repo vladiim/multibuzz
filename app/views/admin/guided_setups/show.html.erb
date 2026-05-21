@@ -1,7 +1,16 @@
 <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-  <div class="flex items-center justify-between mb-6">
-    <h1 class="text-2xl font-bold text-gray-900">Guided Setup · <%= @guided_setup.account.name %></h1>
-    <%= link_to "Back", admin_guided_setups_path, class: "text-sm text-indigo-600 hover:text-indigo-800" %>
+  <div class="flex items-start justify-between gap-3 mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Guided Setup · <%= @guided_setup.account.name %></h1>
+      <% owner = @guided_setup.account.owner_user %>
+      <% if owner %>
+        <p class="mt-1 text-sm text-gray-600" data-testid="guided-setup-owner">
+          Signed up by
+          <%= mail_to owner.email, owner.email, class: "text-indigo-600 hover:text-indigo-800" %>
+        </p>
+      <% end %>
+    </div>
+    <%= link_to "Back", admin_guided_setups_path, class: "text-sm text-indigo-600 hover:text-indigo-800 flex-shrink-0" %>
   </div>
 
   <div class="bg-white shadow rounded-lg p-6 mb-6">
