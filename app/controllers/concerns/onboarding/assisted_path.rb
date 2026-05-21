@@ -22,11 +22,13 @@ module Onboarding
     def invite_teammate
       @invited_email = nil
       @invite_error = nil
+      load_teammate_invites
     end
 
     def send_teammate_invite
       @invited_email = params[:email].to_s.strip
       invite_teammate_result[:success] ? deliver_teammate_invitation : (@invite_error = invite_teammate_result[:errors].first)
+      load_teammate_invites
       render :invite_teammate
     end
 
@@ -88,6 +90,14 @@ module Onboarding
         membership: invite_teammate_result[:membership],
         token: invite_teammate_result[:invitation_token]
       ).deliver_later
+    end
+
+    def load_teammate_invites
+      @teammate_invites = current_account
+        .account_memberships
+        .includes(:user)
+        .where.not(role: :owner)
+        .order(created_at: :desc)
     end
 
     def recommended_plan

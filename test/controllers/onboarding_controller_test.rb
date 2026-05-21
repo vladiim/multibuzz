@@ -182,6 +182,33 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_select "[data-testid='teammate-invite-sent']", /newdev@example\.com/
   end
 
+  test "invite_teammate lists prior invites with status when memberships exist" do
+    sign_in
+    account.update!(setup_path: :teammate)
+    # account :one has a pending non-owner membership from fixtures (user :two)
+
+    get onboarding_invite_teammate_path
+
+    assert_response :success
+    expected_rows = account.account_memberships.where.not(role: :owner).count
+
+    assert_select "[data-testid='teammate-invite-list']"
+    assert_select "[data-testid='teammate-invite-row']", count: expected_rows
+    assert_select "[data-testid='teammate-invite-row']", text: /pending/i
+    assert_select "[data-testid='teammate-invite-row']", text: /#{users(:two).email}/
+  end
+
+  test "invite_teammate omits the invites list when only the owner has a membership" do
+    sign_in
+    account.update!(setup_path: :teammate)
+    account.account_memberships.where.not(role: :owner).destroy_all
+
+    get onboarding_invite_teammate_path
+
+    assert_response :success
+    assert_select "[data-testid='teammate-invite-list']", count: 0
+  end
+
   test "send_teammate_invite re-renders with an alert on a service error" do
     sign_in
     account.update!(setup_path: :teammate)
