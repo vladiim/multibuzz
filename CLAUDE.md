@@ -55,6 +55,16 @@ RAILS_ENV=test bin/rails db:schema:load
 
 **Production operations** (cluster topology, which DBs have the extension, retention policy, debugging unbounded telemetry growth): see `lib/docs/architecture/timescaledb_operations.md`.
 
+## Hotwire / Turbo gotchas
+
+Forms submitted via Turbo Drive (`form_with` default) **fail silently** in two recurring patterns. If a form "does nothing" or the page shows "Content missing", check these first.
+
+1. **Cross-origin redirects.** `form_with` + a controller `redirect_to(allow_other_host: true)` to e.g. Stripe Checkout silently no-ops. Turbo's `fetch` can't follow cross-origin redirects. **Fix:** `data: { turbo: false }` on the form. Reference: `app/views/accounts/billing/show.html.erb`.
+
+2. **Forms inside `<turbo-frame>` that redirect outside the frame.** The form submission stays scoped to the frame; Turbo expects the response to contain a matching `<turbo-frame id="...">`. A redirect to a totally different page (dashboard, etc.) has no such frame → user sees "Content missing". **Fix:** `data: { turbo_frame: "_top" }` on the form so the redirect navigates the whole page.
+
+**Rule of thumb:** if a form's success path is a redirect to a different host or a different page (no matching frame), don't let Turbo intercept it. Use `data: { turbo: false }` or `data: { turbo_frame: "_top" }` explicitly. Tests using `assert_response :redirect` will pass either way — these bugs only show up in a real browser.
+
 ## Production
 
 | Domain | mbuzz.co |
