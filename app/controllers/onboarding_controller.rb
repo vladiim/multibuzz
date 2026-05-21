@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class OnboardingController < ApplicationController
+  layout "onboarding"
   skip_marketing_analytics
   before_action :require_login
 

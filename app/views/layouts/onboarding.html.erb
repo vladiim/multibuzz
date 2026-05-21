@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "mbuzz" %></title>
+    <%= render "layouts/head" %>
+    <%= yield :head %>
+  </head>
+
+  <body class="bg-gray-50">
+    <%= render "shared/gtm_loader" %>
+
+    <header class="bg-white border-b border-gray-200" data-testid="onboarding-chrome">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-lg font-bold text-gray-900">mbuzz</span>
+          <% if onboarding_branch_label %>
+            <span class="text-sm text-gray-500" data-testid="onboarding-branch-label">&middot; <%= onboarding_branch_label %></span>
+          <% end %>
+        </div>
+        <%= link_to dashboard_path,
+              class: "inline-flex items-center gap-1.5 text-sm text-gray-700 border border-gray-300 rounded-md px-3 py-1.5 shadow-sm bg-white hover:bg-gray-50 font-medium",
+              data: { testid: "exit-to-dashboard" } do %>
+          Exit to dashboard
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        <% end %>
+      </div>
+    </header>
+
+    <main>
+      <%= yield %>
+    </main>
+
+    <%= render "shared/consent_banner" %>
+  </body>
+</html>
