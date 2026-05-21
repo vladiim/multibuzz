@@ -9,3 +9,4 @@ Never put secrets, tokens, API keys, account IDs, email addresses, or customer P
 ## Active Incidents / Remediation
 - [2026-04-22 outage remediation](project_2026_04_22_outage_remediation.md): shipped, queues unpaused, jobs on a dedicated droplet
 - [BatchReattributionJob worker lockup](project_batch_reattribution_worker_lockup.md): 2026-05-18, an unbounded job froze the 3-thread worker; fix specced in `lib/specs/old/reattribution_reliability_spec.md`
+- [Sessions fingerprint CPU storm](project_2026_05_21_sessions_fingerprint_cpu_storm.md): 2026-05-21, missing `(account_id, device_fingerprint, created_at)` index held the per-create advisory lock for 700ms+; index shipped
