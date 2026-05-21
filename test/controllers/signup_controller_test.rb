@@ -14,6 +14,16 @@ class SignupControllerTest < ActionDispatch::IntegrationTest
     assert_select "input[name='account[name]']"
   end
 
+  test "new shows Create your account as the page header with no-credit-card subhead" do
+    get signup_path
+
+    assert_response :success
+    assert_select "h1", text: /Create your account/
+    assert_select "body", text: /No credit card required/
+    assert_select "body", text: /\bmbuzz\b/, count: 0
+    assert_select "body", text: /Server-side marketing attribution/, count: 0
+  end
+
   test "create with valid params creates user and account" do
     assert_difference [ "User.count", "Account.count", "AccountMembership.count" ], 1 do
       post signup_path, params: {
