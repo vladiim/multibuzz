@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-19 (pivot 2026-05-21)
 **Priority:** P1
-**Status:** In Progress — Phases 1–5 complete; Phase 6 in flight under the pivoted flow below
+**Status:** Phases 1–7 shipped on `feat/guided-setup-service`. Remaining: lifecycle events (6.7), billing surface card (6.8), admin conversion metric (6.9), `BUSINESS_RULES.md` / `PRODUCT.md` updates (6.10). Onboarding cohesion across all three branches tracked separately (see §"Onboarding cohesion follow-up" below).
 **Branch:** `feat/guided-setup-service`
 
 ---
@@ -101,23 +101,42 @@ signup
 - **Non-refundable:** neither the $1,500 nor any unconsumed credit is refundable; remaining credit is forfeited on cancellation.
 - **No fit score / no gating** — the customer self-selects "I'd like help"; anyone on that path can buy. The specialist team's capacity is the only throttle, managed operationally.
 
-### Data Flow (Proposed)
+### Data Flow (shipped, post-pivot)
 
 ```
-choose "I'd like help"
+choose "I want mbuzz to do it"
   → accounts.setup_path = assisted
-  → /onboarding/discovery  (answers → accounts.setup_profile jsonb)
-  → /onboarding/guided_setup  (plan picker, recommended tier from ad-spend answer)
-  → accept → create GuidedSetup (pending)
-  → Billing::CreditCheckoutService → Stripe Checkout (mode: payment, $1,500,
-                                     metadata: guided_setup=true, plan_id)
-  → checkout.session.completed (mode: payment)
-  → Billing::Handlers::CreditPurchaseCompleted
-       → Billing::GrantCreditService (Stripe customer credit balance + AccountCredit row)
-       → start the chosen plan's subscription
-       → GuidedSetup → in_progress
-       → GuidedSetupMailer (customer welcome; internal notification)
-  → /onboarding/confirmation  (optional preferred-call-times → GuidedSetup.scheduling_note)
+  → /onboarding/install_service       (overview + pricing mechanics)
+  → /onboarding/discovery             (answers → accounts.setup_profile jsonb)
+  → /onboarding/guided_setup          (book-kickoff form: scheduling_preferences)
+  → POST /onboarding/book_kickoff
+       → GuidedSetup created (pending) with kickoff_booked_at + scheduling_preferences
+       → GuidedSetupMailer.kickoff_booked → internal_email
+       → redirect to dashboard with notice
+  → (specialist runs the kickoff call externally)
+  → admin /admin/guided_setups/:id → "Generate payment link"
+       → GuidedSetup.mint_payment_token! (48h single-use)
+       → admin copies URL, sends to customer manually
+  → /onboarding/payment/:token        (Onboarding::PaymentLinksController)
+       → token validated, account owner signed in
+       → redirect to /onboarding/payment_setup
+  → /onboarding/payment_setup         (plan picker)
+       → POST /onboarding/start_payment
+       → Billing::CreditCheckoutService → Stripe Checkout
+          (mode: payment, $1,500, success_url=…?session_id={CHECKOUT_SESSION_ID})
+  → Stripe success_url → /onboarding/payment_complete?session_id=cs_xxx
+       → Billing::VerifyCheckoutSessionService retrieves the session, confirms
+         payment_status=paid + metadata.account_id matches, invokes the same
+         CreditPurchaseCompleted handler the webhook would
+       → handler is idempotent on AccountCredit; whichever lands first wins
+  → checkout.session.completed (webhook, parallel path)
+       → Billing::Handlers::CreditPurchaseCompleted
+         → Billing::GrantCreditService (Stripe customer credit balance + AccountCredit row)
+         → start the chosen plan's subscription
+         → GuidedSetup → mark_paid! (status=in_progress, clears payment_token)
+         → Turbo Stream broadcast → swaps processing state for success state
+         → GuidedSetupMailer.welcome + .internal_notification
+  → /onboarding/payment_complete      (success state; revisits → /dashboard)
   → specialist delivers: kickoff → install → integration → training → value check
   → GuidedSetup → delivered
 ```
@@ -134,17 +153,26 @@ choose "I'd like help"
 | `app/models/account_credit.rb` | Credit grant ledger row |
 | `app/models/guided_setup.rb` | Engagement state machine + milestones |
 | `app/models/concerns/account/billing.rb` | `credit_balance_cents`, `has_many :account_credits` |
-| `app/services/billing/credit_checkout_service.rb` | One-time $1,500 Stripe Checkout |
+| `app/services/billing/credit_checkout_service.rb` | One-time $1,500 Stripe Checkout; success URL templated with `?session_id={CHECKOUT_SESSION_ID}` |
 | `app/services/billing/grant_credit_service.rb` | Stripe customer balance credit + ledger row |
-| `app/services/billing/handlers/credit_purchase_completed.rb` | Webhook handler |
+| `app/services/billing/handlers/credit_purchase_completed.rb` | Webhook handler; idempotent on `AccountCredit` |
+| `app/services/billing/verify_checkout_session_service.rb` | Success-URL Stripe session verifier; calls the handler synchronously (race + dev fallback) |
 | `app/services/billing/handlers/subscription_deleted.rb` | Existing — void the credit on cancellation |
-| `app/controllers/onboarding_controller.rb` | Setup-choice, discovery, guided_setup, accept, confirmation |
-| `app/controllers/admin/guided_setups_controller.rb` | Manage engagements; `skip_marketing_analytics` |
-| `app/mailers/guided_setup_mailer.rb` | Customer welcome + internal notification |
+| `app/controllers/onboarding_controller.rb` | Setup-choice + entry routing |
+| `app/controllers/concerns/onboarding/assisted_path.rb` | Discovery, install-service, guided_setup, book_kickoff |
+| `app/controllers/concerns/onboarding/payment_flow.rb` | payment_setup, start_payment, payment_complete; skip-if-paid + active-token guards |
+| `app/controllers/onboarding/payment_links_controller.rb` | Magic-link landing: validate token, sign in owner, redirect to payment_setup |
+| `app/controllers/admin/guided_setups_controller.rb` | Manage engagements; "Generate payment link"; `skip_marketing_analytics` |
+| `app/models/concerns/guided_setup/payment_journey.rb` | `book_kickoff!`, `mint_payment_token!`, `mark_paid!`, `awaiting_payment?`, `find_by_active_payment_token` |
+| `app/mailers/guided_setup_mailer.rb` | Customer welcome + internal notification + kickoff_booked notification |
+| `app/presenters/scheduling_preferences_presenter.rb` | View-facing wrapper around `scheduling_preferences` |
 | `app/views/onboarding/show.html.erb` | Setup-choice screen (replaces persona) |
+| `app/views/onboarding/install_service.html.erb` | Assisted-path overview + pricing mechanics |
 | `app/views/onboarding/discovery.html.erb` | 4-question discovery form |
-| `app/views/onboarding/guided_setup.html.erb` | Details + plan picker |
-| `app/views/onboarding/confirmation.html.erb` | Post-purchase confirmation |
+| `app/views/onboarding/guided_setup.html.erb` | Book-kickoff form (scheduling preferences) |
+| `app/views/onboarding/payment_setup.html.erb` | Token-authed plan picker |
+| `app/views/onboarding/payment_complete.html.erb` | Stripe success landing; processing / success states with Turbo Stream subscription |
+| `app/constants/admin_tools.rb` | Registers the Guided Setups card on `/admin` |
 
 ---
 
@@ -200,20 +228,28 @@ Columns (`guided_setups`):
 - `status` (integer enum) — `{ pending: 0, in_progress: 1, delivered: 2, cancelled: 3 }`
 - `integration_target` (string) — enum-validated: `meta`, `google_ads`, `sgtm`, `none`
 - `specialist_name` (string, nullable)
-- `scheduling_note` (text, nullable) — the customer's optional preferred call times, from the confirmation screen
+- `scheduling_preferences` (jsonb) — structured: `{ timezone, days[], time_blocks[] }`. Captured at booking, validated against `SchedulingPreferences` constants.
+- `kickoff_booked_at` (datetime, nullable) — stamped by `book_kickoff!`; the customer is past the offer page.
+- `payment_token` (string, nullable, partial unique index) + `payment_token_expires_at` (datetime, nullable) — single-use, 48h, minted by admin; cleared by `mark_paid!`.
 - `accepted_at`, `kickoff_call_at`, `install_completed_at`, `integration_connected_at`, `training_call_at`, `value_check_at`, `completed_at` (datetimes)
 - `notes` (text, nullable)
 - `prefixed_ids` prefix `gst_`
 
-Behaviour: created `pending` on offer acceptance; the credit-purchase webhook moves it to `in_progress` and stamps `accepted_at`; a specialist stamps milestones via admin; stamping `value_check_at` moves it to `delivered` and sets `completed_at`. Extract `GuidedSetup::Relationships` and `GuidedSetup::Scopes` (`in_progress`, `stalled` — in progress, no milestone in 14 days).
+Behaviour: created `pending` when the customer first books (`book_kickoff!` sets `kickoff_booked_at`). Admin mints a 48h `payment_token` after the kickoff call. On Stripe webhook OR success-URL verification, `mark_paid!` transitions to `in_progress`, stamps `accepted_at`, and clears the token in one transaction. A specialist stamps milestones via admin; stamping `value_check_at` moves it to `delivered` and sets `completed_at`. Concerns: `Relationships`, `Scopes` (`in_progress`, `stalled` = in progress, no milestone in 14 days), `Milestones`, `PaymentJourney`, `Recommendations`, `Validations`.
 
 ### Admin
 
-`Admin::GuidedSetupsController` — index (`stalled` highlighted), show, update (stamp milestones, assign specialist, edit notes). Shows the customer's `scheduling_note`. Declares `skip_marketing_analytics`. Uses `find` with prefixed IDs.
+`Admin::GuidedSetupsController` — index (`stalled` highlighted), show, update (stamp milestones, assign specialist, edit notes), `generate_payment_link` (mints a 48h token, surfaces the URL with a Copy button + Regenerate). Renders `scheduling_preferences` via `SchedulingPreferencesPresenter`. Declares `skip_marketing_analytics`. Uses `find` with prefixed IDs. Registered on the `/admin` hub via `AdminTools::ALL`.
 
 ### Booking & Emails
 
-No scheduling tool. The confirmation screen captures an optional `scheduling_note`; the specialist emails the customer to arrange the calls. `GuidedSetupMailer` — `welcome` (to the customer: what to expect, the four touchpoints) and `internal_notification` (to the mbuzz team address, read from credentials — **no email address in git**).
+No scheduling tool. The book-kickoff form captures `scheduling_preferences` (timezone + days + time blocks); the specialist emails the customer to arrange the calls. `GuidedSetupMailer`:
+
+- `kickoff_booked` — fires on booking → internal_email. Includes scheduling preferences, integration target, discovery answers.
+- `welcome` — fires on payment landing → customer. The four touchpoints + what to expect.
+- `internal_notification` — fires on payment landing → internal_email. Identifies the account, integration target, chosen plan.
+
+Internal email address read from credentials; **no email address in git**.
 
 ---
 
@@ -255,21 +291,44 @@ Answers are context for the specialist; `monthly_ad_spend` recommends a tier on 
 
 ---
 
-## Guided Setup Page, Purchase & Confirmation
+## Book-first surface (post-pivot)
 
-### Guided Setup page (`/onboarding/guided_setup`)
+### Install service overview (`/onboarding/install_service`)
 
-The details + plan picker for the assisted path (not a pushed offer). Shows the four touchpoints, the **$1,500 → credit** mechanics, and a plan picker (Starter / Growth / Pro) with the tier matching `monthly_ad_spend` pre-selected. Terms stated plainly: applied to the chosen plan now, non-refundable, cannot be saved.
+First screen on the assisted path. High-level explainer: four touchpoints, the **$1,500 → credit** mechanics, risk reversal ("Pay after the call", "No contract", "Non-refundable"). One primary CTA → discovery. No payment surface, no plan picker.
 
-### Purchase
+### Book Kickoff (`/onboarding/guided_setup`)
 
-- **Accept** (a plan is selected) → create `GuidedSetup` (`pending`, `integration_target` inferred from `setup_profile`), call `Billing::CreditCheckoutService`, redirect to Stripe Checkout — **mode `payment`**, one $1,500 line item, metadata `guided_setup=true` + `plan_id`.
-- `checkout.session.completed` with **`mode == "payment"`** + `guided_setup` metadata → `Billing::Handlers::CreditPurchaseCompleted`: grant credit, start the chosen plan's subscription, transition `GuidedSetup` to `in_progress`, fire `GuidedSetupMailer`. The webhook router branches on `session.mode`; the existing `checkout_completed` handler keeps `mode == "subscription"`.
-- **Abandoned** → `GuidedSetup` stays `pending`; no charge, credit, or subscription.
+The customer captures scheduling preferences (timezone + preferred days + preferred time blocks) and clicks **Book now**. `book_kickoff` POST creates the `GuidedSetup` (if absent), stamps `kickoff_booked_at` + `scheduling_preferences`, and fires `GuidedSetupMailer.kickoff_booked` to ops. Customer is redirected to the dashboard. Revisits to this URL once booked → redirect to dashboard.
 
-### Confirmation (`/onboarding/confirmation`)
+### Admin → Generate payment link
 
-Post-purchase: confirms the credit and subscription, captures an optional free-text **preferred call times** → `GuidedSetup.scheduling_note`.
+After the kickoff call, vlad opens the engagement at `/admin/guided_setups/:id` and clicks **Generate payment link**. `GuidedSetup#mint_payment_token!` mints a 48h URL-safe token; the admin page surfaces the full URL (`/onboarding/payment/:token`) in a copyable code block + a Regenerate button (rotates the token). Vlad sends the URL to the customer manually (email/Slack).
+
+### Magic-link sign-in (`/onboarding/payment/:token`)
+
+`Onboarding::PaymentLinksController#show`: looks up the engagement by `find_by_active_payment_token`, signs in `account.owner_user`, redirects to `/onboarding/payment_setup`. Invalid or expired token → redirect to login with an alert. Token is *not* cleared on click — the customer can re-open the link until the credit lands.
+
+### Payment plan picker (`/onboarding/payment_setup`)
+
+Token-authed plan picker. Three plan tiers; the tier matching `setup_profile.monthly_ad_spend` is pre-selected. **Pay $1,500** prominent CTA. `start_payment` POST invokes `Billing::CreditCheckoutService` and redirects to Stripe Checkout. Guards: `skip_if_already_paid` (in_progress → dashboard), `require_active_payment_link` (no token → onboarding with "expired link" alert).
+
+### Payment complete (`/onboarding/payment_complete?session_id=cs_xxx`)
+
+Stripe's `success_url`. Branches:
+
+- **`current_account.guided_setup.in_progress?`** → success state (🎉 + "Go to dashboard").
+- **Otherwise** → processing state (spinner + "Confirming your payment...") wrapped in a `turbo_frame_tag`.
+
+Before rendering, the action calls `Billing::VerifyCheckoutSessionService` with the `session_id`. The service retrieves the Stripe session, verifies `payment_status=="paid"` and `metadata.account_id` matches, then invokes the same `CreditPurchaseCompleted` handler the webhook would. The handler is idempotent on `AccountCredit` — whichever path lands first wins; the other is a no-op.
+
+When the webhook lands, `mark_paid!` runs and broadcasts a Turbo Stream replace targeting `payment_complete_state` on the `guided_setup_payment_<account>` channel. Customer's page swaps to the success state without reload.
+
+### Abandonment
+
+- Customer never gets the link from vlad → engagement stays `pending` with no token; admin can mint a fresh one anytime.
+- Customer clicks the link but doesn't pay → token persists for 48h; they can re-click. Stripe's `cancel_url` returns them to `/onboarding/payment_setup`.
+- Token expires before payment → admin regenerates from the admin show page.
 
 ---
 
@@ -277,21 +336,22 @@ Post-purchase: confirms the credit and subscription, captures an optional free-t
 
 | State | Condition | Behaviour |
 |-------|-----------|-----------|
-| Path not chosen | `setup_path` nil | Show the setup-choice screen |
+| Path not chosen | `setup_path` nil | Setup-choice screen |
 | Path = self_serve | choice saved | Existing self-serve onboarding |
-| Path = teammate | choice saved | Redirect to the team-invitation flow |
-| Path = assisted | choice saved | Route to `/onboarding/discovery` |
-| Discovery incomplete | `setup_profile_completed_at` nil | Show discovery |
-| Offer shown, no plan | on the Guided Setup page | Primary CTA disabled until a plan is chosen |
-| Offer accepted | plan chosen, "Get Guided Setup" | Create `GuidedSetup` pending; redirect to $1,500 Checkout |
-| Checkout abandoned | returns without paying | `GuidedSetup` stays `pending`; no charge/credit/subscription |
-| Payment completed | `checkout.session.completed`, `mode=payment` | Credit granted; chosen plan started; `GuidedSetup` → `in_progress`; emails sent |
+| Path = teammate | choice saved | `/onboarding/invite_teammate` |
+| Path = assisted, discovery incomplete | `setup_profile_completed_at` nil | `/onboarding/install_service` → `/onboarding/discovery` |
+| Path = assisted, discovery complete, not yet booked | `setup_profile_completed_at` set, `guided_setup&.kickoff_booked_at` nil | Book-kickoff form on `/onboarding/guided_setup` |
+| Booked, awaiting payment link | `guided_setup.kickoff_booked_at` set, `payment_token` nil, status pending | Revisits to `/onboarding/guided_setup` → dashboard; admin generates the link when ready |
+| Payment link active | `payment_token_active?` true, status pending | Customer clicks link → signed in → plan picker; the resume-nav pill (see `lib/docs/DESIGN_SYSTEM.md` §10) lands them here too |
+| Payment landing (race window) | on `/onboarding/payment_complete?session_id=…`, status still pending | `VerifyCheckoutSessionService` runs synchronously; view shows processing state with Turbo subscription |
+| Payment completed | webhook OR success-URL verifier finalised | `AccountCredit` granted, plan started, `GuidedSetup` → `in_progress`, token cleared, emails sent |
+| Already paid, revisits payment surface | status `in_progress`, hits `payment_setup` or `start_payment` | `skip_if_already_paid` → dashboard |
+| Token expired before payment | token cleared by TTL | Admin regenerates from `/admin/guided_setups/:id` |
 | Credit drawing down | active subscription invoices | Stripe applies the credit automatically |
 | Credit exhausted | Stripe credit balance hits zero | Normal monthly billing resumes on the card on file |
 | Account cancelled with credit left | subscription cancelled | Remaining credit forfeited; `AccountCredit` → `voided`; `GuidedSetup` → `cancelled` if not delivered |
 | Engagement stalled | `in_progress`, no milestone in 14 days | Surfaced in the admin `stalled` scope |
 | Engagement delivered | `value_check_at` stamped | `GuidedSetup` → `delivered`, `completed_at` set |
-| Empty discovery submit | required answers missing | Re-render with errors; `setup_profile` unchanged |
 
 ---
 
@@ -342,19 +402,33 @@ Post-purchase: confirms the credit and subscription, captures an optional free-t
 - [x] **5.6** `skip_marketing_analytics` confirmed on `OnboardingController`, `Accounts::BillingController`, and `Admin::BaseController` (covers `Admin::GuidedSetupsController`)
 - [x] **5.7** Tests — `OnboardingControllerTest` (assisted-path actions), `GuidedSetupMailerTest`, `CreditPurchaseCompletedTest` (mailer enqueuing), `PlanTest` + `GuidedSetupTest` (recommendation + integration-target helpers)
 
-### Phase 6: Book-first pivot — capture-then-pay flow
+### Phase 6: Book-first pivot — capture-then-pay flow ✅ (6.1–6.5 shipped)
 
-- [ ] **6.1** Customer-side reframe: `guided_setup.html.erb` becomes the offer page (no plan picker, no price-button); CTA reads **"Book kickoff"**. New `book_kickoff` action captures `scheduling_preferences` and stamps `kickoff_booked_at`.
-- [ ] **6.2** Migration: add `payment_token` (indexed, unique, nullable), `payment_token_expires_at` (datetime), `kickoff_booked_at` (datetime) to `guided_setups`. `GuidedSetup#awaiting_payment?` returns true when the token is present and the engagement has not yet been paid for.
-- [ ] **6.3** Admin: "Generate payment link" button on `Admin::GuidedSetupsController#show`. Mints a 48-hour, single-use token; the view surfaces the full URL to copy. vlad sends it to the customer manually.
-- [ ] **6.4** Magic-link landing: `Onboarding::PaymentLinksController#show` (GET `/onboarding/payment/:token`) — verifies the token, signs the customer's owner user in, redirects to `/onboarding/payment_setup`. Reuses the `InvitationsController` token-sign-in pattern.
-- [ ] **6.5** Payment plan-picker page (`/onboarding/payment_setup`) — only available with an active token. Picks a plan and submits to the existing `accept_guided_setup` action (rewired). Stripe Checkout flow is unchanged.
-- [ ] **6.6** Unpaid-kickoff banner: `ApplicationController` before_action sets `@guided_setup_payment_pending` from `current_account.guided_setup&.awaiting_payment?`; `app/views/shared/_guided_setup_payment_banner.html.erb` renders site-wide.
-- [ ] **6.7** `Lifecycle::Tracker` events: `setup_path_chosen`, `discovery_completed`, `kickoff_booked`, `payment_link_generated`, `credit_granted`.
+- [x] **6.1** Customer-side reframe: `guided_setup.html.erb` is the book-kickoff form. `book_kickoff` action stamps `kickoff_booked_at` + persists `scheduling_preferences`; status stays `pending`.
+- [x] **6.2** Migration `20260521030000_add_payment_link_columns_to_guided_setups`: `payment_token` (partial unique index), `payment_token_expires_at`, `kickoff_booked_at`. `GuidedSetup::PaymentJourney` concern owns `book_kickoff!`, `mint_payment_token!`, `mark_paid!`, `awaiting_payment?`, `find_by_active_payment_token`.
+- [x] **6.3** Admin "Generate payment link" button on `Admin::GuidedSetupsController#show`. URL surfaced in a copyable code block; Regenerate rotates the token.
+- [x] **6.4** Magic-link landing: `Onboarding::PaymentLinksController#show` validates the token, signs in `account.owner_user`, redirects to `/onboarding/payment_setup`.
+- [x] **6.5** Plan picker (`/onboarding/payment_setup`) + `start_payment` POST + `payment_complete` GET, all gated by `require_active_payment_link` and `skip_if_already_paid` in the `Onboarding::PaymentFlow` concern.
+- [ ] **6.6** ~~Unpaid-kickoff banner~~ — **superseded** by the resume-nav pill specified in `lib/docs/DESIGN_SYSTEM.md` §10, landing in the onboarding cohesion follow-up.
+- [ ] **6.7** `Lifecycle::Tracker` events: `setup_path_chosen` (shipped), `discovery_completed` (shipped), `kickoff_booked` (shipped), `payment_link_generated`, `credit_granted`.
 - [ ] **6.8** Credit balance + Guided Setup status card on `accounts/billing/show.html.erb`.
 - [ ] **6.9** Admin metric: booking → payment-link → purchase conversion; activation within 30/60 days.
 - [ ] **6.10** Update `lib/docs/BUSINESS_RULES.md` (billing — credits) and `lib/docs/PRODUCT.md`.
 - [ ] **6.11** Move this spec to `lib/specs/old/` on completion.
+
+### Phase 7: Hardening ✅
+
+- [x] **7.1** `Billing::CreditCheckoutService` templates `?session_id={CHECKOUT_SESSION_ID}` into the success URL.
+- [x] **7.2** `Billing::VerifyCheckoutSessionService` retrieves the Stripe session on the success URL, confirms `payment_status=paid` and `metadata.account_id` matches, invokes the webhook handler synchronously. Handler stays idempotent on `AccountCredit`; whichever path lands first wins. Independent of webhook delivery — fixes local dev (no Stripe CLI listener needed) and the production race window.
+- [x] **7.3** `payment_complete` view branches on `in_progress?`: success state or Turbo-subscribed processing state. Webhook broadcasts `payment_complete_state` replace to `guided_setup_payment_<account>` so the page swaps live.
+- [x] **7.4** `skip_if_already_paid` before_action on `payment_setup` and `start_payment` — once paid, both surfaces redirect straight to dashboard.
+- [x] **7.5** Admin Guided Setups card registered in `AdminTools::ALL` (and CLAUDE.md rule added: every new admin surface must register).
+- [x] **7.6** Admin form inputs adopt the visible-border baseline (`lib/memory/feedback_visible_form_inputs.md`).
+- [x] **7.7** `SchedulingPreferencesPresenter` extracts view-side hash munging; admin show and `kickoff_booked` confirmation consume it.
+
+### Phase 8: Onboarding cohesion (follow-up spec)
+
+Tracked separately. See `lib/docs/DESIGN_SYSTEM.md` §10 (chrome + resume nav) and the §"Onboarding cohesion follow-up" pointer below.
 
 ---
 
@@ -375,13 +449,16 @@ No mocks or stubs — test outcomes and business logic directly. Stripe is cover
 
 ### Manual QA (dev)
 
-1. New signup → setup-choice → "I'd like help" → discovery → Guided Setup page (recommended tier pre-selected).
-2. Choose a plan, accept, complete Stripe test checkout (payment mode) → `AccountCredit` granted, Stripe balance credited, chosen plan active, `GuidedSetup` `in_progress`, emails sent.
-3. Confirmation screen → enter preferred times → confirm `GuidedSetup.scheduling_note` saved and shown in admin.
-4. New signup → "A teammate will" → lands in the existing invitation flow.
-5. New signup → "I'll set it up myself" → existing self-serve onboarding, unchanged.
-6. Admin → stamp milestones through `value_check_at` → `delivered` + `completed_at`.
-7. Cancel a subscription with credit remaining → `AccountCredit` `voided`, nothing refunded.
+1. New signup → setup-choice → "I want mbuzz to do it" → install-service overview → discovery → Book-kickoff form (timezone + days + times) → submits → redirected to dashboard with notice. `kickoff_booked` mailer enqueued.
+2. Admin → `/admin/guided_setups/:id` → "Generate payment link" → URL appears with Copy + Regenerate. Open URL in a fresh incognito window (or as a different user).
+3. Magic-link lands the customer on `/onboarding/payment_setup` (signed in as the account owner). Plan picker shows recommended tier pre-selected.
+4. Choose plan → Pay → Stripe test checkout (mode `payment`) → success → land on `/onboarding/payment_complete?session_id=cs_xxx`.
+5. Verify either path lands the engagement: with `stripe listen` running, the webhook finalises and the Turbo broadcast swaps the page to success. Without `stripe listen`, the `VerifyCheckoutSessionService` finalises synchronously on the success URL.
+6. Reload `/onboarding/payment_setup` after payment → redirect to dashboard (skip-if-paid).
+7. Admin → stamp milestones through `value_check_at` → `delivered` + `completed_at`.
+8. Cancel a subscription with credit remaining → `AccountCredit` `voided`, nothing refunded.
+9. New signup → "My teammate will" → lands in the in-onboarding invite step; send invite → "Invite sent" state.
+10. New signup → "I'll do it" → existing self-serve onboarding, unchanged.
 
 ---
 
@@ -404,5 +481,19 @@ No mocks or stubs — test outcomes and business logic directly. Stripe is cover
 - **Fit score / offer gating** — removed; the customer self-selects the help path.
 - **Banked, transferable, or expiring credit** — the credit is committed to a chosen plan at purchase.
 - **Credit refunds** — the $1,500 and any unconsumed credit are non-refundable.
-- **Scheduling tool integration** — the specialist arranges calls by email; only a free-text preference is captured.
+- **Scheduling tool integration** — the specialist arranges calls by email; only structured `scheduling_preferences` are captured.
 - **Promo / coupon codes; multi-currency** — credit and pricing are USD.
+
+---
+
+## Onboarding cohesion follow-up
+
+The 2026-05 onboarding cohesion audit (see `lib/docs/DESIGN_SYSTEM.md`) identified drift across all three branches: container widths, typography, escape hatches, status idioms, the "Step X of 5" lie, no reentry surface for partially-onboarded accounts, branch-unaware `current_onboarding_step`. Resolving it is a separate work stream:
+
+- Unified onboarding chrome (top bar + pip rail + exit) wrapping every screen — wireframes at `lib/mockups/onboarding-chrome.html`.
+- Branch-aware `Account#onboarding_step` + `Account#onboarding_resume_path` resolver.
+- Resume-nav pill in the main app top nav, replacing the obsolete `_onboarding_banner` and the deferred Phase 6.6 unpaid-kickoff banner.
+- Shared `_waiting_state` and `_success_state` partials, factoring out the duplicated spinner + emoji-hero markup.
+- Per-screen migration to the system documented in `lib/docs/DESIGN_SYSTEM.md`.
+
+Tracked in a follow-up spec (TBD: `lib/specs/onboarding_cohesion_spec.md`).
