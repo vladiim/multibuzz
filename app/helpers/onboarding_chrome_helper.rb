@@ -22,8 +22,15 @@ module OnboardingChromeHelper
     SetupPaths::ASSISTED   => %i[pick_path discovery book_kickoff pay done]
   }.freeze
 
+  # First pip carries the user's choice phrase, not a generic "Pick path".
+  # Reads as the user's own story across the chrome.
+  PIP_CHOICE_LABELS = {
+    SetupPaths::SELF_SERVE => "I'll do it",
+    SetupPaths::TEAMMATE   => "My teammate will",
+    SetupPaths::ASSISTED   => "mbuzz will do it"
+  }.freeze
+
   PIP_LABELS = {
-    pick_path: "Pick path",
     api_key: "API key",
     install: "Install",
     verify: "Verify event",
@@ -52,13 +59,25 @@ module OnboardingChromeHelper
   end
 
   def onboarding_current_pip_label
-    PIP_LABELS[onboarding_current_pip]
+    pip_label_for(onboarding_current_pip)
   end
 
   def onboarding_pips
     return [] if pip_sequence.blank? || onboarding_current_pip.nil?
 
     pip_sequence.map.with_index { |key, index| build_pip(key, index) }
+  end
+
+  # Pips marked :done can carry a back-navigation target. Today only the
+  # path-reset (pick_path) is wired; other completed steps stay passive
+  # markers until their back-nav gating is defined.
+  def onboarding_pip_link(pip)
+    return nil unless pip.state == :done
+
+    case pip.key
+    when :pick_path
+      { path: onboarding_change_setup_path_path, method: :delete }
+    end
   end
 
   def onboarding_pip_dot_classes(state)
@@ -80,7 +99,13 @@ module OnboardingChromeHelper
   end
 
   def build_pip(key, index)
-    Pip.new(key: key, label: PIP_LABELS[key], state: pip_state(key, index))
+    Pip.new(key: key, label: pip_label_for(key), state: pip_state(key, index))
+  end
+
+  def pip_label_for(key)
+    return PIP_CHOICE_LABELS[current_account&.setup_path] if key == :pick_path
+
+    PIP_LABELS[key]
   end
 
   def pip_state(key, index)

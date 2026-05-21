@@ -67,6 +67,29 @@ class OnboardingChromeHelperTest < ActionView::TestCase
     assert_equal %i[pick_path discovery book_kickoff pay done], onboarding_pips.map(&:key)
   end
 
+  # --- first pip label is the branch choice phrase ---
+
+  test "self-serve first pip label is the I'll-do-it phrase" do
+    account.update!(setup_path: :self_serve)
+    @onboarding_current_pip = :api_key
+
+    assert_equal "I'll do it", pip(:pick_path).label
+  end
+
+  test "teammate first pip label is the my-teammate-will phrase" do
+    account.update!(setup_path: :teammate)
+    @onboarding_current_pip = :invite_sent
+
+    assert_equal "My teammate will", pip(:pick_path).label
+  end
+
+  test "assisted first pip label is the mbuzz-will-do-it phrase" do
+    account.update!(setup_path: :assisted)
+    @onboarding_current_pip = :discovery
+
+    assert_equal "mbuzz will do it", pip(:pick_path).label
+  end
+
   test "pip before the current one is marked done" do
     account.update!(setup_path: :assisted)
     @onboarding_current_pip = :discovery
