@@ -54,8 +54,18 @@ module OnboardingChromeHelper
     locked: "bg-white border-2 border-dashed border-gray-300"
   }.freeze
 
+  # The setup_path perspective for the current viewer. Defaults to the
+  # account's actual setup_path, except: a non-owner on a teammate-path
+  # account is treated as self-serve (the invited dev installs the SDK,
+  # they don't manage the team-invite UX).
+  def effective_setup_path
+    return SetupPaths::SELF_SERVE if current_account&.dev_on_teammate_path?(current_user)
+
+    current_account&.setup_path
+  end
+
   def onboarding_branch_label
-    BRANCH_LABELS[current_account&.setup_path]
+    BRANCH_LABELS[effective_setup_path]
   end
 
   def onboarding_current_pip
@@ -88,6 +98,9 @@ module OnboardingChromeHelper
   end
 
   def branch_committed?
+    # Dev on a teammate path can't change the branch -- the owner picked it.
+    return true if current_account&.dev_on_teammate_path?(current_user)
+
     case current_account&.setup_path
     when SetupPaths::SELF_SERVE then current_account.events.exists?
     when SetupPaths::TEAMMATE then current_account.account_memberships.where.not(role: :owner).exists?
@@ -106,9 +119,9 @@ module OnboardingChromeHelper
   # be nil for status-only states (e.g. assisted waiting for admin to
   # send a payment link).
   def onboarding_resume_status
-    return nil if current_account.blank? || current_account.setup_path.blank? || current_account.onboarding_skipped?
+    return nil if current_account.blank? || effective_setup_path.blank? || current_account.onboarding_skipped?
 
-    case current_account.setup_path
+    case effective_setup_path
     when SetupPaths::SELF_SERVE then self_serve_resume_status
     when SetupPaths::TEAMMATE then teammate_resume_status
     when SetupPaths::ASSISTED then assisted_resume_status
@@ -122,7 +135,7 @@ module OnboardingChromeHelper
   private
 
   def pip_sequence
-    @pip_sequence ||= PIP_SEQUENCE[current_account&.setup_path]
+    @pip_sequence ||= PIP_SEQUENCE[effective_setup_path]
   end
 
   def current_pip_index
@@ -134,7 +147,7 @@ module OnboardingChromeHelper
   end
 
   def pip_label_for(key)
-    return PIP_CHOICE_LABELS[current_account&.setup_path] if key == :pick_path
+    return PIP_CHOICE_LABELS[effective_setup_path] if key == :pick_path
 
     PIP_LABELS[key]
   end

@@ -3,6 +3,29 @@
 require "test_helper"
 
 class OnboardingChromeHelperTest < ActionView::TestCase
+  # --- effective_setup_path: dev-on-teammate sees self-serve perspective ---
+
+  test "effective_setup_path falls back to self_serve for a non-owner on a teammate-path account" do
+    account.update!(setup_path: :teammate)
+    @current_user = users(:two)
+
+    assert_equal SetupPaths::SELF_SERVE, effective_setup_path
+  end
+
+  test "effective_setup_path is the account's setup_path for the owner" do
+    account.update!(setup_path: :teammate)
+    @current_user = users(:one)
+
+    assert_equal SetupPaths::TEAMMATE, effective_setup_path
+  end
+
+  test "effective_setup_path is nil when no setup_path is chosen" do
+    account.update!(setup_path: nil)
+    @current_user = users(:one)
+
+    assert_nil effective_setup_path
+  end
+
   # --- onboarding_branch_label ---
 
   test "branch label is nil when current_account is nil" do
@@ -385,6 +408,10 @@ class OnboardingChromeHelperTest < ActionView::TestCase
 
   def current_account
     @current_account
+  end
+
+  def current_user
+    @current_user ||= users(:one)
   end
 
   def account

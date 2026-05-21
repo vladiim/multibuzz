@@ -33,4 +33,12 @@ module Account::Relationships
   def owner_user
     account_memberships.owner.accepted.first&.user
   end
+
+  # True when `user` should see the self-serve onboarding chrome
+  # regardless of the account's actual setup_path. Today: a non-owner on
+  # a teammate-path account -- the invited dev who needs to install, not
+  # the owner who picked the path.
+  def dev_on_teammate_path?(user)
+    teammate? && user.present? && user != owner_user
+  end
 end

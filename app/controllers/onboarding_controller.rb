@@ -131,6 +131,8 @@ class OnboardingController < ApplicationController
   end
 
   def setup_path_destination
+    return onboarding_setup_path if current_account.dev_on_teammate_path?(current_user)
+
     case current_account.setup_path
     when SetupPaths::TEAMMATE then onboarding_invite_teammate_path
     when SetupPaths::ASSISTED then assisted_destination

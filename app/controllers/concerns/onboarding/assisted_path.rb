@@ -69,6 +69,7 @@ module Onboarding
     end
 
     def require_teammate_path
+      return redirect_to(onboarding_setup_path) if current_account.dev_on_teammate_path?(current_user)
       redirect_to onboarding_path unless current_account.teammate?
     end
 
