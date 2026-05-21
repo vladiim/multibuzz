@@ -43,7 +43,6 @@ module Onboarding
     def guided_setup
       @scheduling_form = SchedulingPreferencesPresenter.from(current_account.guided_setup&.scheduling_preferences)
       @kickoff_booked = current_account.guided_setup&.kickoff_booked_at.present?
-      @kickoff_call_done = current_account.guided_setup&.kickoff_call_at.present?
     end
 
     def book_kickoff

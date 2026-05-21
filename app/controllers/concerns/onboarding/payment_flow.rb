@@ -10,7 +10,7 @@ module Onboarding
 
     included do
       before_action :skip_if_already_paid, only: %i[payment_setup start_payment]
-      before_action :require_active_payment_link, only: %i[payment_setup start_payment]
+      before_action :require_kickoff_booked, only: %i[payment_setup start_payment]
       before_action :require_payment_context, only: %i[payment_complete]
     end
 
@@ -38,10 +38,13 @@ module Onboarding
       redirect_to dashboard_path
     end
 
-    def require_active_payment_link
-      return if current_account.guided_setup&.payment_token_active?
+    # Any signed-in customer who has booked the kickoff can pay -- the
+    # magic-link token is a convenience for getting them onto this page in
+    # one click from outside the app, never a gate.
+    def require_kickoff_booked
+      return if current_account.guided_setup&.kickoff_booked_at.present?
 
-      redirect_to onboarding_path, alert: "Your payment link has expired. Ask your specialist for a new one."
+      redirect_to onboarding_path
     end
 
     # Stripe redirects to success_url synchronously while the webhook arrives

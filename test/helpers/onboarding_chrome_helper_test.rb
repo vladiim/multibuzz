@@ -138,7 +138,7 @@ class OnboardingChromeHelperTest < ActionView::TestCase
     assert_equal :locked, pip(:pay).state
   end
 
-  test "assisted pay pip is locked when the engagement is pending with no active token" do
+  test "assisted pay pip is locked while the kickoff is not yet booked" do
     account.update!(setup_path: :assisted)
     GuidedSetup.create!(account: account)
     @onboarding_current_pip = :discovery
@@ -146,9 +146,9 @@ class OnboardingChromeHelperTest < ActionView::TestCase
     assert_equal :locked, pip(:pay).state
   end
 
-  test "assisted pay pip is upcoming when the payment token is active" do
+  test "assisted pay pip unlocks the moment the kickoff is booked" do
     account.update!(setup_path: :assisted)
-    GuidedSetup.create!(account: account).mint_payment_token!
+    GuidedSetup.create!(account: account, kickoff_booked_at: Time.current)
     @onboarding_current_pip = :discovery
 
     assert_equal :upcoming, pip(:pay).state
@@ -156,7 +156,7 @@ class OnboardingChromeHelperTest < ActionView::TestCase
 
   test "assisted pay pip is upcoming once the engagement is in_progress" do
     account.update!(setup_path: :assisted)
-    GuidedSetup.create!(account: account, status: :in_progress, accepted_at: Time.current)
+    GuidedSetup.create!(account: account, kickoff_booked_at: Time.current, status: :in_progress, accepted_at: Time.current)
     @onboarding_current_pip = :discovery
 
     assert_equal :upcoming, pip(:pay).state
@@ -318,33 +318,26 @@ class OnboardingChromeHelperTest < ActionView::TestCase
     assert_equal onboarding_guided_setup_path, onboarding_resume_status.path
   end
 
-  test "assisted resume status is non-actionable but still links back to onboarding once the kickoff is booked" do
+  test "assisted resume status routes to payment_setup as soon as kickoff is booked" do
     account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
     GuidedSetup.create!(account: account, kickoff_booked_at: Time.current)
 
     status = onboarding_resume_status
 
-    assert_not status.actionable
-    assert_equal onboarding_guided_setup_path, status.path
-    assert_match(/booked/i, status.label)
+    assert status.actionable
+    assert_equal onboarding_payment_setup_path, status.path
+    assert_match(/Pay/i, status.label)
   end
 
-  test "assisted resume status flips to 'Payment required' once the kickoff call is marked done" do
+  test "assisted resume status stays 'Pay $1,500' regardless of kickoff_call milestone or admin payment link" do
     account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
-    GuidedSetup.create!(account: account, kickoff_booked_at: Time.current, kickoff_call_at: Time.current)
+    GuidedSetup.create!(account: account, kickoff_booked_at: Time.current, kickoff_call_at: Time.current).mint_payment_token!
 
     status = onboarding_resume_status
 
-    assert_not status.actionable
-    assert_equal "Payment required", status.label
-    assert_equal onboarding_guided_setup_path, status.path
-  end
-
-  test "assisted resume status routes to payment_setup when a payment token is active" do
-    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
-    GuidedSetup.create!(account: account, kickoff_booked_at: Time.current).mint_payment_token!
-
-    assert_equal onboarding_payment_setup_path, onboarding_resume_status.path
+    assert status.actionable
+    assert_equal onboarding_payment_setup_path, status.path
+    assert_equal "Pay $1,500", status.label
   end
 
   test "assisted resume status is non-actionable but links to payment_complete once paid and in progress" do

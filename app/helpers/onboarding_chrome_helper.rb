@@ -148,15 +148,13 @@ module OnboardingChromeHelper
     :upcoming
   end
 
+  # Pay is locked on assisted only while the customer hasn't booked yet.
+  # Once kickoff is booked, they can pay any time -- the pip is just
+  # 'upcoming' until they do.
   def pip_locked?(key)
-    key == :pay && current_account&.assisted? && payment_unreachable?
-  end
+    return false unless key == :pay && current_account&.assisted?
 
-  def payment_unreachable?
-    guided_setup = current_account.guided_setup
-    return true if guided_setup.nil?
-
-    !(guided_setup.payment_token_active? || guided_setup.in_progress? || guided_setup.delivered?)
+    current_account.guided_setup&.kickoff_booked_at.blank?
   end
 
   def self_serve_resume_status
@@ -194,11 +192,9 @@ module OnboardingChromeHelper
   def assisted_resume_status
     case assisted_resume_state
     when :discovery_pending then ResumeStatus.new(label: "Finish setup", path: onboarding_install_service_path, actionable: true)
-    when :booking_pending   then ResumeStatus.new(label: "Book your kickoff", path: onboarding_guided_setup_path, actionable: true)
-    when :payment_ready     then ResumeStatus.new(label: "Pay for your setup", path: onboarding_payment_setup_path, actionable: true)
-    when :paid_in_progress  then ResumeStatus.new(label: "Setup in progress", path: onboarding_payment_complete_path, actionable: false)
-    when :payment_required  then ResumeStatus.new(label: "Payment required", path: onboarding_guided_setup_path, actionable: false)
-    when :awaiting_link     then ResumeStatus.new(label: "Kickoff booked — we'll be in touch", path: onboarding_guided_setup_path, actionable: false)
+    when :booking_pending then ResumeStatus.new(label: "Book your kickoff", path: onboarding_guided_setup_path, actionable: true)
+    when :payment_pending then ResumeStatus.new(label: "Pay $1,500", path: onboarding_payment_setup_path, actionable: true)
+    when :paid_in_progress then ResumeStatus.new(label: "Setup in progress", path: onboarding_payment_complete_path, actionable: false)
     end
   end
 
@@ -207,15 +203,8 @@ module OnboardingChromeHelper
     return nil if guided_setup&.delivered?
     return :discovery_pending if current_account.setup_profile_completed_at.blank?
     return :booking_pending if guided_setup.nil? || guided_setup.kickoff_booked_at.blank?
-
-    assisted_post_booking_state(guided_setup)
-  end
-
-  def assisted_post_booking_state(guided_setup)
-    return :payment_ready if guided_setup.payment_token_active?
     return :paid_in_progress if guided_setup.in_progress?
-    return :payment_required if guided_setup.kickoff_call_at.present?
 
-    :awaiting_link
+    :payment_pending
   end
 end

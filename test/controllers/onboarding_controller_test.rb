@@ -903,12 +903,22 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
 
   # --- Payment setup (post-magic-link plan picker) ---
 
-  test "payment_setup redirects to onboarding without an active token" do
+  test "payment_setup redirects to onboarding when kickoff has not been booked" do
     sign_in
 
     get onboarding_payment_setup_path
 
     assert_redirected_to onboarding_path
+  end
+
+  test "payment_setup is accessible once the kickoff is booked, no payment-link token needed" do
+    sign_in
+    GuidedSetup.create!(account: account, kickoff_booked_at: Time.current)
+
+    get onboarding_payment_setup_path
+
+    assert_response :success
+    assert_select "[data-testid='payment-setup']"
   end
 
   test "payment_setup redirects to dashboard once payment has landed" do
