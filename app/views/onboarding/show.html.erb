@@ -20,7 +20,8 @@
 
     <div class="mt-6 sm:mt-8 grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4" data-testid="setup-choice">
       <%= button_to onboarding_choose_path_path, params: { setup_path: SetupPaths::SELF_SERVE }, method: :post,
-            class: "block w-full bg-white p-4 sm:p-5 rounded-lg shadow-sm border border-gray-200 hover:border-indigo-400 hover:shadow text-left transition-shadow cursor-pointer" do %>
+            form_class: "h-full",
+            class: "block w-full h-full bg-white p-4 sm:p-5 rounded-lg shadow-sm border border-gray-200 hover:border-indigo-400 hover:shadow text-left transition-shadow cursor-pointer" do %>
         <div class="flex items-start gap-3">
           <div class="text-2xl leading-none flex-shrink-0">🛠️</div>
           <div class="min-w-0">
@@ -31,7 +32,8 @@
       <% end %>
 
       <%= button_to onboarding_choose_path_path, params: { setup_path: SetupPaths::TEAMMATE }, method: :post,
-            class: "block w-full bg-white p-4 sm:p-5 rounded-lg shadow-sm border border-gray-200 hover:border-indigo-400 hover:shadow text-left transition-shadow cursor-pointer" do %>
+            form_class: "h-full",
+            class: "block w-full h-full bg-white p-4 sm:p-5 rounded-lg shadow-sm border border-gray-200 hover:border-indigo-400 hover:shadow text-left transition-shadow cursor-pointer" do %>
         <div class="flex items-start gap-3">
           <div class="text-2xl leading-none flex-shrink-0">👥</div>
           <div class="min-w-0">
@@ -42,7 +44,8 @@
       <% end %>
 
       <%= button_to onboarding_choose_path_path, params: { setup_path: SetupPaths::ASSISTED }, method: :post,
-            class: "block w-full bg-white p-4 sm:p-5 rounded-lg shadow-sm border border-gray-200 hover:border-indigo-400 hover:shadow text-left transition-shadow cursor-pointer" do %>
+            form_class: "h-full",
+            class: "block w-full h-full bg-white p-4 sm:p-5 rounded-lg shadow-sm border border-gray-200 hover:border-indigo-400 hover:shadow text-left transition-shadow cursor-pointer" do %>
         <div class="flex items-start gap-3">
           <div class="text-2xl leading-none flex-shrink-0">🤝</div>
           <div class="min-w-0">
