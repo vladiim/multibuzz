@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onboarding chrome &amp; resume nav</title>
+<link rel="stylesheet" href="wireframe.css">
+<style>
+  /* Chrome additions */
+  .chrome-topbar{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #000;padding:9px 16px;font-weight:700;font-size:14px}
+  .chrome-topbar .branch{font-weight:400;font-size:12px;color:#444;margin-left:10px}
+  .chrome-topbar .right{font-weight:400;font-size:12px;color:#000;text-decoration:none;border:1px solid #000;padding:2px 8px}
+  .pip-rail{display:flex;align-items:center;justify-content:center;gap:0;border-bottom:1px solid #000;padding:10px 12px;background:#fafafa;font-size:11px}
+  .pip{display:flex;align-items:center;gap:6px}
+  .pip .dot{width:10px;height:10px;border:1.5px solid #000;border-radius:50%;background:#fff}
+  .pip.done .dot{background:#000}
+  .pip.current .dot{background:#000;box-shadow:0 0 0 3px #fff,0 0 0 4.5px #000}
+  .pip.upcoming .dot{background:#fff}
+  .pip.locked .dot{background:#fff;border-style:dashed;border-color:#999}
+  .pip.locked{color:#999}
+  .pip-rail .bar{flex:0 0 28px;height:1.5px;background:#000;margin:0 4px}
+  .pip-rail .bar.upcoming{background:#999}
+  .pip-rail .bar.locked{background:#ccc;border-top:1.5px dashed #999;background:transparent}
+  /* App nav (for the dashboard mockup) */
+  .appnav{display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #000;padding:9px 16px;font-size:13px}
+  .appnav .links{display:flex;gap:18px}
+  .appnav .links a{color:#000;text-decoration:none}
+  .appnav .links a.current{font-weight:700;border-bottom:2px solid #000;padding-bottom:1px}
+  .appnav .pill{display:inline-flex;align-items:center;gap:8px;border:2px solid #000;background:#000;color:#fff;padding:3px 11px;font-size:12px;font-weight:700;text-decoration:none}
+  .appnav .pill .mini{display:inline-block;width:34px;height:6px;border:1px solid #fff;position:relative}
+  .appnav .pill .mini i{display:block;height:100%;width:60%;background:#fff}
+  .appnav .pill.completed{display:none}
+  .pillrow{display:flex;align-items:center;gap:10px}
+  .branchtag{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#666;border:1px solid #999;padding:1px 6px}
+  /* Frame heading */
+  .frame-h{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:#666;margin:18px 0 4px;width:740px;max-width:100%}
+</style>
+</head>
+<body>
+
+<div class="meta">mbuzz · unified onboarding chrome &amp; dashboard resume nav</div>
+
+<!-- ============================================================ -->
+<!-- THE CHROME ITSELF                                              -->
+<!-- ============================================================ -->
+
+<div class="frame-h">1 &middot; Chrome anatomy (annotated)</div>
+<div class="screen">
+  <div class="chrome-topbar">
+    <span>mbuzz <span class="branch">&middot; Self-serve setup</span></span>
+    <a class="right" href="#">Exit to dashboard &times;</a>
+  </div>
+  <div class="pip-rail">
+    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
+    <div class="bar"></div>
+    <div class="pip done"><div class="dot"></div><span>API key</span></div>
+    <div class="bar"></div>
+    <div class="pip current"><div class="dot"></div><span>Install SDK</span></div>
+    <div class="bar upcoming"></div>
+    <div class="pip upcoming"><div class="dot"></div><span>Verify event</span></div>
+    <div class="bar upcoming"></div>
+    <div class="pip upcoming"><div class="dot"></div><span>Conversion</span></div>
+    <div class="bar upcoming"></div>
+    <div class="pip upcoming"><div class="dot"></div><span>Done</span></div>
+  </div>
+  <div class="body" style="background:#fafafa;border-bottom:1px dashed #000">
+    <p class="muted" style="margin:0;font-size:11px"><strong>Top bar.</strong> Always: brand &middot; current branch label &middot; <strong>Exit to dashboard</strong> (boxed link, persistent on every onboarding screen).</p>
+    <p class="muted" style="margin:6px 0 0;font-size:11px"><strong>Pip rail.</strong> Branch-specific milestone sequence. <code>done</code> = filled, <code>current</code> = filled with halo, <code>upcoming</code> = outline, <code>locked</code> = dashed outline (e.g. Pay before admin sends the link).</p>
+    <p class="muted" style="margin:6px 0 0;font-size:11px"><strong>Page body.</strong> The actual step content. No more inline "Step X of 5" / Skip / Change-setup cluster &mdash; that lived inside the body before; promoting it to chrome unifies the three branches.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SELF-SERVE: INSTALL SCREEN                                    -->
+<!-- ============================================================ -->
+
+<div class="frame-h">2 &middot; Self-serve branch &middot; Install SDK screen</div>
+<div class="screen">
+  <div class="chrome-topbar">
+    <span>mbuzz <span class="branch">&middot; Self-serve setup</span></span>
+    <a class="right" href="#">Exit to dashboard &times;</a>
+  </div>
+  <div class="pip-rail">
+    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
+    <div class="bar"></div>
+    <div class="pip done"><div class="dot"></div><span>API key</span></div>
+    <div class="bar"></div>
+    <div class="pip current"><div class="dot"></div><span>Install SDK</span></div>
+    <div class="bar upcoming"></div>
+    <div class="pip upcoming"><div class="dot"></div><span>Verify event</span></div>
+    <div class="bar upcoming"></div>
+    <div class="pip upcoming"><div class="dot"></div><span>Conversion</span></div>
+    <div class="bar upcoming"></div>
+    <div class="pip upcoming"><div class="dot"></div><span>Done</span></div>
+  </div>
+  <div class="body">
+    <h1>Install the Ruby SDK</h1>
+    <p class="muted">Follow these steps to start tracking events.</p>
+    <div class="card"><code>gem 'mbuzz'</code><br><code>bundle install</code></div>
+    <div class="card"><code>Mbuzz.configure { |c| c.api_key = ENV.fetch('MBUZZ_API_KEY') }</code></div>
+    <div class="actions">
+      <a class="btn" href="#">&larr; Back</a>
+      <a class="btn primary" href="#">I've installed it &rarr;</a>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TEAMMATE: WAITING SCREEN                                      -->
+<!-- ============================================================ -->
+
+<div class="frame-h">3 &middot; Teammate branch &middot; Waiting on teammate</div>
+<div class="screen">
+  <div class="chrome-topbar">
+    <span>mbuzz <span class="branch">&middot; Teammate setup</span></span>
+    <a class="right" href="#">Exit to dashboard &times;</a>
+  </div>
+  <div class="pip-rail">
+    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
+    <div class="bar"></div>
+    <div class="pip done"><div class="dot"></div><span>Invite sent</span></div>
+    <div class="bar"></div>
+    <div class="pip current"><div class="dot"></div><span>Teammate installs</span></div>
+    <div class="bar upcoming"></div>
+    <div class="pip upcoming"><div class="dot"></div><span>Done</span></div>
+  </div>
+  <div class="body">
+    <h1>Invite sent to devperson@example.com</h1>
+    <p>They'll get an email with everything they need: the API key, the SDK, the install steps.</p>
+    <p class="muted">We'll let you know when they accept. While you wait, head to the dashboard &mdash; demo data is on so you can poke around.</p>
+    <div class="actions">
+      <a class="btn" href="#">Invite another</a>
+      <a class="btn primary" href="#">Go to dashboard &rarr;</a>
+    </div>
+  </div>
+</div>
+<div class="notes">Teammate path no longer has Skip &mdash; once invite is sent the right CTA is the dashboard. The pip "Teammate installs" is the parking state until the teammate completes; on acceptance, it transitions to Done.</div>
+
+<!-- ============================================================ -->
+<!-- ASSISTED: DISCOVERY SCREEN                                    -->
+<!-- ============================================================ -->
+
+<div class="frame-h">4 &middot; Assisted branch &middot; Discovery screen</div>
+<div class="screen">
+  <div class="chrome-topbar">
+    <span>mbuzz <span class="branch">&middot; Guided Setup</span></span>
+    <a class="right" href="#">Exit to dashboard &times;</a>
+  </div>
+  <div class="pip-rail">
+    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
+    <div class="bar"></div>
+    <div class="pip current"><div class="dot"></div><span>Discovery</span></div>
+    <div class="bar upcoming"></div>
+    <div class="pip upcoming"><div class="dot"></div><span>Book kickoff</span></div>
+    <div class="bar locked"></div>
+    <div class="pip locked"><div class="dot"></div><span>Pay</span></div>
+    <div class="bar locked"></div>
+    <div class="pip locked"><div class="dot"></div><span>Done</span></div>
+  </div>
+  <div class="body">
+    <h1>Tell us about your setup</h1>
+    <p class="muted">Four quick questions so the specialist comes to the kickoff prepared.</p>
+    <div class="card">
+      <p><strong>1.</strong> What are you trying to attribute?</p>
+      <label class="opt"><input type="radio" name="g"> Ecommerce purchases</label>
+      <label class="opt"><input type="radio" name="g"> B2B leads &amp; deals</label>
+      <label class="opt"><input type="radio" name="g"> Signups &amp; subscriptions</label>
+      <label class="opt"><input type="radio" name="g"> Other&hellip; <input type="text" placeholder="describe"></label>
+    </div>
+    <div class="actions">
+      <a class="btn" href="#">&larr; Back</a>
+      <a class="btn primary" href="#">Continue &rarr;</a>
+    </div>
+  </div>
+</div>
+<div class="notes">"Pay" and "Done" pips are <strong>locked</strong> (dashed) until the admin generates a payment link. Communicates "this exists in your future but isn't reachable yet" without hiding it.</div>
+
+<!-- ============================================================ -->
+<!-- ASSISTED: BOOKED, AWAITING ADMIN                              -->
+<!-- ============================================================ -->
+
+<div class="frame-h">5 &middot; Assisted branch &middot; Booked, awaiting admin (post-booking parking state)</div>
+<div class="screen">
+  <div class="chrome-topbar">
+    <span>mbuzz <span class="branch">&middot; Guided Setup</span></span>
+    <a class="right" href="#">Exit to dashboard &times;</a>
+  </div>
+  <div class="pip-rail">
+    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
+    <div class="bar"></div>
+    <div class="pip done"><div class="dot"></div><span>Discovery</span></div>
+    <div class="bar"></div>
+    <div class="pip current"><div class="dot"></div><span>Kickoff booked</span></div>
+    <div class="bar locked"></div>
+    <div class="pip locked"><div class="dot"></div><span>Pay</span></div>
+    <div class="bar locked"></div>
+    <div class="pip locked"><div class="dot"></div><span>Done</span></div>
+  </div>
+  <div class="body center">
+    <div class="ico"></div>
+    <h1>Kickoff booked. We'll be in touch.</h1>
+    <p>Your specialist will email within one business day to confirm a time.</p>
+    <p class="muted" style="font-size:12px">Nothing for you to do here right now &mdash; head back to the dashboard. The "Finish setup" pill in the nav will bring you straight to the payment step the moment we're ready.</p>
+    <div class="actions" style="justify-content:center">
+      <a class="btn primary" href="#">Go to dashboard &rarr;</a>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- DASHBOARD WITH RESUME PILL                                    -->
+<!-- ============================================================ -->
+
+<div class="frame-h">6 &middot; Dashboard with resume pill (partially-onboarded account)</div>
+<div class="screen">
+  <div class="appnav">
+    <div class="pillrow">
+      <strong>mbuzz</strong>
+      <div class="links">
+        <a href="#" class="current">Dashboard</a>
+        <a href="#">Reports</a>
+        <a href="#">Sources</a>
+        <a href="#">Settings</a>
+      </div>
+    </div>
+    <a class="pill" href="#">
+      <span class="mini"><i></i></span>
+      <span>Finish setup &middot; 60%</span>
+    </a>
+  </div>
+  <div class="body">
+    <h2>Today</h2>
+    <p class="muted">Demo data shown until your first real events arrive.</p>
+    <div class="row">
+      <div class="tile"><strong>1,234</strong><p class="muted">Events</p></div>
+      <div class="tile"><strong>87</strong><p class="muted">Sessions</p></div>
+      <div class="tile"><strong>4.1%</strong><p class="muted">Conversion</p></div>
+    </div>
+    <div class="card dashed center"><p class="muted">(rest of dashboard)</p></div>
+  </div>
+</div>
+<div class="notes">The pill is the <strong>only</strong> reentry surface. It's always in the top nav while onboarding is incomplete, regardless of which page the user is on. Clicking it hits <code>onboarding_resume_path</code> which routes by branch &amp; current state:
+<ul>
+<li><code>self_serve + step=:api_key_viewed</code> &rarr; <code>onboarding_install_path</code></li>
+<li><code>teammate + invite_pending</code> &rarr; <code>onboarding_invite_teammate_path</code></li>
+<li><code>assisted + kickoff_booked, token_inactive</code> &rarr; dashboard with a banner ("We'll be in touch")</li>
+<li><code>assisted + token_active</code> &rarr; <code>onboarding_payment_setup_path</code></li>
+</ul>
+</div>
+
+<!-- ============================================================ -->
+<!-- DASHBOARD AFTER ONBOARDING COMPLETE                           -->
+<!-- ============================================================ -->
+
+<div class="frame-h">7 &middot; Dashboard after onboarding completes (pill gone)</div>
+<div class="screen">
+  <div class="appnav">
+    <div class="pillrow">
+      <strong>mbuzz</strong>
+      <div class="links">
+        <a href="#" class="current">Dashboard</a>
+        <a href="#">Reports</a>
+        <a href="#">Sources</a>
+        <a href="#">Settings</a>
+      </div>
+    </div>
+    <!-- pill removed -->
+  </div>
+  <div class="body">
+    <h2>Today</h2>
+    <div class="row">
+      <div class="tile"><strong>21,847</strong><p class="muted">Events</p></div>
+      <div class="tile"><strong>2,103</strong><p class="muted">Sessions</p></div>
+      <div class="tile"><strong>6.4%</strong><p class="muted">Conversion</p></div>
+    </div>
+    <div class="card dashed center"><p class="muted">(rest of dashboard)</p></div>
+  </div>
+</div>
+
+<nav class="flownav" style="margin-top:18px"><a href="index.html">&larr; All screens</a><span></span></nav>
+
+</body>
+</html>
