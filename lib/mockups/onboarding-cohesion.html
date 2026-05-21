@@ -6,20 +6,20 @@
 <title>Onboarding cohesion — every screen</title>
 <link rel="stylesheet" href="wireframe.css">
 <style>
-  /* Chrome additions (kept in sync with onboarding-chrome.html) */
-  .chrome-topbar{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #000;padding:9px 16px;font-weight:700;font-size:14px}
-  .chrome-topbar .branch{font-weight:400;font-size:12px;color:#444;margin-left:10px}
-  .chrome-topbar .exit{font-weight:400;font-size:12px;color:#000;text-decoration:none;border:1px solid #000;padding:2px 8px}
-  .pip-rail{display:flex;align-items:center;justify-content:center;border-bottom:1px solid #000;padding:9px 12px;background:#fafafa;font-size:11px}
-  .pip{display:flex;align-items:center;gap:6px}
+  /* ONE chrome bar: brand · pip rail · exit. */
+  .chrome-bar{display:flex;align-items:center;gap:14px;border-bottom:2px solid #000;padding:8px 14px;background:#fff}
+  .chrome-bar .brand{font-weight:700;font-size:14px;flex-shrink:0}
+  .chrome-bar .pip-rail{display:flex;flex:1;align-items:center;justify-content:center;font-size:11px;gap:0;background:transparent;border:0;padding:0}
+  .chrome-bar .exit{font-weight:400;font-size:12px;color:#000;text-decoration:none;border:1px solid #000;padding:2px 8px;flex-shrink:0}
+  .pip{display:flex;align-items:center;gap:5px}
   .pip .dot{width:9px;height:9px;border:1.5px solid #000;border-radius:50%;background:#fff}
   .pip.done .dot{background:#000}
   .pip.current .dot{background:#000;box-shadow:0 0 0 3px #fff,0 0 0 4.5px #000}
   .pip.locked .dot{background:#fff;border-style:dashed;border-color:#999}
   .pip.locked{color:#999}
-  .pip-rail .bar{flex:0 0 22px;height:1.5px;background:#000;margin:0 4px}
-  .pip-rail .bar.upcoming{background:#999}
-  .pip-rail .bar.locked{background:transparent;border-top:1.5px dashed #999}
+  .chrome-bar .pip-rail .bar{flex:0 0 18px;height:1.5px;background:#000;margin:0 4px}
+  .chrome-bar .pip-rail .bar.upcoming{background:#999}
+  .chrome-bar .pip-rail .bar.locked{background:transparent;border-top:1.5px dashed #999}
 
   /* Body archetype tokens */
   .frame-h{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:#666;margin:24px 0 6px;width:740px;max-width:100%}
@@ -51,8 +51,6 @@
   .spinner{width:34px;height:34px;border:2.5px solid #000;border-right-color:#ddd;border-radius:50%;margin:14px auto;animation:sp 1s linear infinite}
   @keyframes sp{to{transform:rotate(360deg)}}
   .small{font-size:11px;color:#666;margin-top:6px}
-  .row{display:flex;gap:6px;flex-wrap:wrap}
-  .row .field{flex:1;min-width:160px}
 </style>
 </head>
 <body>
@@ -60,27 +58,24 @@
 <div class="meta">mbuzz · onboarding cohesion — every screen in one place</div>
 
 <div class="notes" style="margin-bottom:12px">
-  Every onboarding screen wrapped in the same chrome, the same body archetypes, the same typography, the same button placement. Same primary action position (bottom right). Hero screens centered, task screens left-aligned. Cards share one border/padding pattern. Pricing pitch lives in the sanctioned indigo promo card (used on install_service only).
+  Single chrome bar: brand · pip rail · exit. The first pip carries the user's <strong>choice phrase</strong> (<em>I'll do it</em> / <em>My teammate will</em> / <em>mbuzz will do it</em>) instead of a generic "Pick path" — so the chrome reads as a story the user wrote.
   <br><br>
-  <strong>Body archetypes</strong> in use:
-  <ul style="margin:6px 0 0 18px;padding:0">
-    <li><strong>Chooser</strong> — setup-choice. Centered hero heading + horizontal row of N tappable cards.</li>
-    <li><strong>Explainer</strong> — install_service. Centered title + numbered card grid + sanctioned promo + risk-reversal strip + bottom-right Continue.</li>
-    <li><strong>Form</strong> — discovery, guided_setup, invite_teammate, payment_setup. Left-aligned heading + cards containing labeled fields/options + bottom-right primary CTA. Optional left-aligned Back.</li>
-    <li><strong>Waiting</strong> — verify, payment_complete (processing). Centered spinner + heading + helper copy. Auto-advances.</li>
-    <li><strong>Success</strong> — attribution, payment_complete (in_progress). Centered hero emoji + heading + body + single primary CTA.</li>
-    <li><strong>Setup grid</strong> — self-serve setup (API key + SDK). Same form archetype but with mixed content blocks: code panel + card grid.</li>
-  </ul>
+  All <strong>waiting</strong> states (verify event, payment processing, anything else) render the same component: spinner + heading + body. Same for <strong>success</strong> states: hero emoji + heading + body + single primary CTA. These get extracted to <code>shared/_waiting_state.html.erb</code> and <code>shared/_success_state.html.erb</code> during implementation.
+  <br><br>
+  Body archetypes: <strong>chooser</strong> (setup-choice), <strong>explainer</strong> (install_service), <strong>form</strong> (discovery, book kickoff, invite teammate, plan picker, install), <strong>waiting</strong>, <strong>success</strong>, <strong>setup grid</strong> (API key + SDK). Every screen falls into one.
 </div>
 
 <!-- ============================================================ -->
-<!-- SHARED CHOOSER: setup-choice                                  -->
+<!-- SHARED CHOOSER: setup-choice (no pip rail; no path yet)       -->
 <!-- ============================================================ -->
 
 <div class="frame-h">All branches · Setup choice (entry)</div>
 <div class="screen">
-  <div class="chrome-topbar"><span>mbuzz</span><a class="exit" href="#">Exit to dashboard ×</a></div>
-  <!-- no pip rail: no branch chosen -->
+  <div class="chrome-bar">
+    <span class="brand">mbuzz</span>
+    <span style="flex:1"></span>
+    <a class="exit" href="#">Exit to dashboard ×</a>
+  </div>
   <div class="body">
     <h1 class="hero">Welcome to mbuzz 👋</h1>
     <p class="sub hero">Who's handling your set up?</p>
@@ -93,22 +88,25 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- ASSISTED: install_service                                     -->
+<!-- ASSISTED: install_service (explainer)                         -->
 <!-- ============================================================ -->
 
 <div class="frame-h">Assisted · Install service (explainer)</div>
 <div class="screen">
-  <div class="chrome-topbar"><span>mbuzz <span class="branch">· Guided Setup</span></span><a class="exit" href="#">Exit to dashboard ×</a></div>
-  <div class="pip-rail">
-    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
-    <div class="bar"></div>
-    <div class="pip current"><div class="dot"></div><span>Discovery</span></div>
-    <div class="bar upcoming"></div>
-    <div class="pip"><div class="dot"></div><span>Book kickoff</span></div>
-    <div class="bar locked"></div>
-    <div class="pip locked"><div class="dot"></div><span>Pay</span></div>
-    <div class="bar locked"></div>
-    <div class="pip"><div class="dot"></div><span>Done</span></div>
+  <div class="chrome-bar">
+    <span class="brand">mbuzz</span>
+    <div class="pip-rail">
+      <div class="pip done"><div class="dot"></div><span>mbuzz will do it</span></div>
+      <div class="bar"></div>
+      <div class="pip current"><div class="dot"></div><span>Discovery</span></div>
+      <div class="bar upcoming"></div>
+      <div class="pip"><div class="dot"></div><span>Book kickoff</span></div>
+      <div class="bar locked"></div>
+      <div class="pip locked"><div class="dot"></div><span>Pay</span></div>
+      <div class="bar locked"></div>
+      <div class="pip"><div class="dot"></div><span>Done</span></div>
+    </div>
+    <a class="exit" href="#">Exit ×</a>
   </div>
   <div class="body">
     <h1 class="hero">mbuzz install service</h1>
@@ -133,22 +131,25 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- ASSISTED: discovery                                           -->
+<!-- ASSISTED: discovery (form)                                    -->
 <!-- ============================================================ -->
 
 <div class="frame-h">Assisted · Discovery (form)</div>
 <div class="screen">
-  <div class="chrome-topbar"><span>mbuzz <span class="branch">· Guided Setup</span></span><a class="exit" href="#">Exit to dashboard ×</a></div>
-  <div class="pip-rail">
-    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
-    <div class="bar"></div>
-    <div class="pip current"><div class="dot"></div><span>Discovery</span></div>
-    <div class="bar upcoming"></div>
-    <div class="pip"><div class="dot"></div><span>Book kickoff</span></div>
-    <div class="bar locked"></div>
-    <div class="pip locked"><div class="dot"></div><span>Pay</span></div>
-    <div class="bar locked"></div>
-    <div class="pip"><div class="dot"></div><span>Done</span></div>
+  <div class="chrome-bar">
+    <span class="brand">mbuzz</span>
+    <div class="pip-rail">
+      <div class="pip done"><div class="dot"></div><span>mbuzz will do it</span></div>
+      <div class="bar"></div>
+      <div class="pip current"><div class="dot"></div><span>Discovery</span></div>
+      <div class="bar upcoming"></div>
+      <div class="pip"><div class="dot"></div><span>Book kickoff</span></div>
+      <div class="bar locked"></div>
+      <div class="pip locked"><div class="dot"></div><span>Pay</span></div>
+      <div class="bar locked"></div>
+      <div class="pip"><div class="dot"></div><span>Done</span></div>
+    </div>
+    <a class="exit" href="#">Exit ×</a>
   </div>
   <div class="body">
     <h1>Tell us about your setup</h1>
@@ -186,17 +187,20 @@
 
 <div class="frame-h">Assisted · Book kickoff (form)</div>
 <div class="screen">
-  <div class="chrome-topbar"><span>mbuzz <span class="branch">· Guided Setup</span></span><a class="exit" href="#">Exit to dashboard ×</a></div>
-  <div class="pip-rail">
-    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
-    <div class="bar"></div>
-    <div class="pip done"><div class="dot"></div><span>Discovery</span></div>
-    <div class="bar"></div>
-    <div class="pip current"><div class="dot"></div><span>Book kickoff</span></div>
-    <div class="bar locked"></div>
-    <div class="pip locked"><div class="dot"></div><span>Pay</span></div>
-    <div class="bar locked"></div>
-    <div class="pip"><div class="dot"></div><span>Done</span></div>
+  <div class="chrome-bar">
+    <span class="brand">mbuzz</span>
+    <div class="pip-rail">
+      <div class="pip done"><div class="dot"></div><span>mbuzz will do it</span></div>
+      <div class="bar"></div>
+      <div class="pip done"><div class="dot"></div><span>Discovery</span></div>
+      <div class="bar"></div>
+      <div class="pip current"><div class="dot"></div><span>Book kickoff</span></div>
+      <div class="bar locked"></div>
+      <div class="pip locked"><div class="dot"></div><span>Pay</span></div>
+      <div class="bar locked"></div>
+      <div class="pip"><div class="dot"></div><span>Done</span></div>
+    </div>
+    <a class="exit" href="#">Exit ×</a>
   </div>
   <div class="body">
     <h1>Book your kickoff</h1>
@@ -221,17 +225,20 @@
 
 <div class="frame-h">Assisted · Pay (plan picker after admin sends the link)</div>
 <div class="screen">
-  <div class="chrome-topbar"><span>mbuzz <span class="branch">· Guided Setup</span></span><a class="exit" href="#">Exit to dashboard ×</a></div>
-  <div class="pip-rail">
-    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
-    <div class="bar"></div>
-    <div class="pip done"><div class="dot"></div><span>Discovery</span></div>
-    <div class="bar"></div>
-    <div class="pip done"><div class="dot"></div><span>Book kickoff</span></div>
-    <div class="bar"></div>
-    <div class="pip current"><div class="dot"></div><span>Pay</span></div>
-    <div class="bar upcoming"></div>
-    <div class="pip"><div class="dot"></div><span>Done</span></div>
+  <div class="chrome-bar">
+    <span class="brand">mbuzz</span>
+    <div class="pip-rail">
+      <div class="pip done"><div class="dot"></div><span>mbuzz will do it</span></div>
+      <div class="bar"></div>
+      <div class="pip done"><div class="dot"></div><span>Discovery</span></div>
+      <div class="bar"></div>
+      <div class="pip done"><div class="dot"></div><span>Book kickoff</span></div>
+      <div class="bar"></div>
+      <div class="pip current"><div class="dot"></div><span>Pay</span></div>
+      <div class="bar upcoming"></div>
+      <div class="pip"><div class="dot"></div><span>Done</span></div>
+    </div>
+    <a class="exit" href="#">Exit ×</a>
   </div>
   <div class="body">
     <h1 class="hero">Pay for your Guided Setup</h1>
@@ -250,22 +257,78 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- ASSISTED: payment_complete (success)                          -->
+<!-- WAITING (shared component, two instances)                     -->
 <!-- ============================================================ -->
 
-<div class="frame-h">Assisted · Payment complete (success state)</div>
+<div class="frame-h">Waiting · shared component (verify event &amp; payment processing render the same partial)</div>
 <div class="screen">
-  <div class="chrome-topbar"><span>mbuzz <span class="branch">· Guided Setup</span></span><a class="exit" href="#">Exit to dashboard ×</a></div>
-  <div class="pip-rail">
-    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
-    <div class="bar"></div>
-    <div class="pip done"><div class="dot"></div><span>Discovery</span></div>
-    <div class="bar"></div>
-    <div class="pip done"><div class="dot"></div><span>Book kickoff</span></div>
-    <div class="bar"></div>
-    <div class="pip done"><div class="dot"></div><span>Pay</span></div>
-    <div class="bar"></div>
-    <div class="pip current"><div class="dot"></div><span>Done</span></div>
+  <div class="chrome-bar">
+    <span class="brand">mbuzz</span>
+    <div class="pip-rail">
+      <div class="pip done"><div class="dot"></div><span>I'll do it</span></div>
+      <div class="bar"></div>
+      <div class="pip done"><div class="dot"></div><span>API key</span></div>
+      <div class="bar"></div>
+      <div class="pip done"><div class="dot"></div><span>Install</span></div>
+      <div class="bar"></div>
+      <div class="pip current"><div class="dot"></div><span>Verify event</span></div>
+      <div class="bar upcoming"></div>
+      <div class="pip"><div class="dot"></div><span>Conversion</span></div>
+      <div class="bar upcoming"></div>
+      <div class="pip"><div class="dot"></div><span>Done</span></div>
+    </div>
+    <a class="exit" href="#">Exit ×</a>
+  </div>
+  <div class="body center">
+    <div class="spinner"></div>
+    <h1 class="hero">Waiting for your first event…</h1>
+    <p class="sub hero">Run the code in your app. This page updates automatically.</p>
+  </div>
+</div>
+<div class="screen" style="margin-top:6px">
+  <div class="chrome-bar">
+    <span class="brand">mbuzz</span>
+    <div class="pip-rail">
+      <div class="pip done"><div class="dot"></div><span>mbuzz will do it</span></div>
+      <div class="bar"></div>
+      <div class="pip done"><div class="dot"></div><span>Discovery</span></div>
+      <div class="bar"></div>
+      <div class="pip done"><div class="dot"></div><span>Book kickoff</span></div>
+      <div class="bar"></div>
+      <div class="pip current"><div class="dot"></div><span>Pay</span></div>
+      <div class="bar upcoming"></div>
+      <div class="pip"><div class="dot"></div><span>Done</span></div>
+    </div>
+    <a class="exit" href="#">Exit ×</a>
+  </div>
+  <div class="body center">
+    <div class="spinner"></div>
+    <h1 class="hero">Confirming your payment…</h1>
+    <p class="sub hero">Stripe is finishing up. Page will update the moment it lands.</p>
+  </div>
+</div>
+<div class="notes">Both screens above render <code>shared/_waiting_state</code> with different heading/body strings. Spinner SVG, container, alignment, typography — all shared. Any new "we're working on it" surface in the app uses the same partial.</div>
+
+<!-- ============================================================ -->
+<!-- SUCCESS (shared component, two instances)                     -->
+<!-- ============================================================ -->
+
+<div class="frame-h">Success · shared component (payment complete &amp; attribution render the same partial)</div>
+<div class="screen">
+  <div class="chrome-bar">
+    <span class="brand">mbuzz</span>
+    <div class="pip-rail">
+      <div class="pip done"><div class="dot"></div><span>mbuzz will do it</span></div>
+      <div class="bar"></div>
+      <div class="pip done"><div class="dot"></div><span>Discovery</span></div>
+      <div class="bar"></div>
+      <div class="pip done"><div class="dot"></div><span>Book kickoff</span></div>
+      <div class="bar"></div>
+      <div class="pip done"><div class="dot"></div><span>Pay</span></div>
+      <div class="bar"></div>
+      <div class="pip current"><div class="dot"></div><span>Done</span></div>
+    </div>
+    <a class="exit" href="#">Exit ×</a>
   </div>
   <div class="body center">
     <div style="font-size:36px">🎉</div>
@@ -274,47 +337,51 @@
     <div class="actions" style="justify-content:center;margin-top:14px"><a class="btn primary" href="#">Go to dashboard</a></div>
   </div>
 </div>
-
-<!-- ============================================================ -->
-<!-- ASSISTED: payment_complete (processing race)                  -->
-<!-- ============================================================ -->
-
-<div class="frame-h">Assisted · Payment processing (Stripe race window)</div>
-<div class="screen">
-  <div class="chrome-topbar"><span>mbuzz <span class="branch">· Guided Setup</span></span><a class="exit" href="#">Exit to dashboard ×</a></div>
-  <div class="pip-rail">
-    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
-    <div class="bar"></div>
-    <div class="pip done"><div class="dot"></div><span>Discovery</span></div>
-    <div class="bar"></div>
-    <div class="pip done"><div class="dot"></div><span>Book kickoff</span></div>
-    <div class="bar"></div>
-    <div class="pip current"><div class="dot"></div><span>Pay</span></div>
-    <div class="bar upcoming"></div>
-    <div class="pip"><div class="dot"></div><span>Done</span></div>
+<div class="screen" style="margin-top:6px">
+  <div class="chrome-bar">
+    <span class="brand">mbuzz</span>
+    <div class="pip-rail">
+      <div class="pip done"><div class="dot"></div><span>I'll do it</span></div>
+      <div class="bar"></div>
+      <div class="pip done"><div class="dot"></div><span>API key</span></div>
+      <div class="bar"></div>
+      <div class="pip done"><div class="dot"></div><span>Install</span></div>
+      <div class="bar"></div>
+      <div class="pip done"><div class="dot"></div><span>Verify event</span></div>
+      <div class="bar"></div>
+      <div class="pip done"><div class="dot"></div><span>Conversion</span></div>
+      <div class="bar"></div>
+      <div class="pip current"><div class="dot"></div><span>Done</span></div>
+    </div>
+    <a class="exit" href="#">Exit ×</a>
   </div>
   <div class="body center">
-    <div class="spinner"></div>
-    <h1 class="hero">Confirming your payment…</h1>
-    <p class="sub hero">Stripe is finishing up. Page will update the moment it lands.</p>
+    <div style="font-size:36px">🎉</div>
+    <h1 class="hero">You're all set.</h1>
+    <p class="sub hero">mbuzz is now tracking your customer journeys.</p>
+    <div class="actions" style="justify-content:center;margin-top:14px"><a class="btn primary" href="#">Explore dashboard</a></div>
   </div>
 </div>
+<div class="notes">Both render <code>shared/_success_state</code>. Same emoji-hero + heading + sub + single primary CTA pattern. Teammate "invite sent" success also uses this (with two CTAs allowed when there's a secondary action like "Invite another").</div>
 
 <!-- ============================================================ -->
-<!-- TEAMMATE: invite_teammate                                     -->
+<!-- TEAMMATE: invite_teammate (form)                              -->
 <!-- ============================================================ -->
 
 <div class="frame-h">Teammate · Invite teammate (form)</div>
 <div class="screen">
-  <div class="chrome-topbar"><span>mbuzz <span class="branch">· Teammate setup</span></span><a class="exit" href="#">Exit to dashboard ×</a></div>
-  <div class="pip-rail">
-    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
-    <div class="bar"></div>
-    <div class="pip current"><div class="dot"></div><span>Invite sent</span></div>
-    <div class="bar upcoming"></div>
-    <div class="pip"><div class="dot"></div><span>Teammate installs</span></div>
-    <div class="bar upcoming"></div>
-    <div class="pip"><div class="dot"></div><span>Done</span></div>
+  <div class="chrome-bar">
+    <span class="brand">mbuzz</span>
+    <div class="pip-rail">
+      <div class="pip done"><div class="dot"></div><span>My teammate will</span></div>
+      <div class="bar"></div>
+      <div class="pip current"><div class="dot"></div><span>Invite sent</span></div>
+      <div class="bar upcoming"></div>
+      <div class="pip"><div class="dot"></div><span>Teammate installs</span></div>
+      <div class="bar upcoming"></div>
+      <div class="pip"><div class="dot"></div><span>Done</span></div>
+    </div>
+    <a class="exit" href="#">Exit ×</a>
   </div>
   <div class="body">
     <h1>Invite the teammate who'll install mbuzz</h1>
@@ -330,20 +397,23 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- TEAMMATE: invite_sent confirmation                            -->
+<!-- TEAMMATE: invite_sent (success variant)                       -->
 <!-- ============================================================ -->
 
-<div class="frame-h">Teammate · Invite sent (success state)</div>
+<div class="frame-h">Teammate · Invite sent (success state, two CTAs allowed)</div>
 <div class="screen">
-  <div class="chrome-topbar"><span>mbuzz <span class="branch">· Teammate setup</span></span><a class="exit" href="#">Exit to dashboard ×</a></div>
-  <div class="pip-rail">
-    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
-    <div class="bar"></div>
-    <div class="pip done"><div class="dot"></div><span>Invite sent</span></div>
-    <div class="bar upcoming"></div>
-    <div class="pip current"><div class="dot"></div><span>Teammate installs</span></div>
-    <div class="bar upcoming"></div>
-    <div class="pip"><div class="dot"></div><span>Done</span></div>
+  <div class="chrome-bar">
+    <span class="brand">mbuzz</span>
+    <div class="pip-rail">
+      <div class="pip done"><div class="dot"></div><span>My teammate will</span></div>
+      <div class="bar"></div>
+      <div class="pip done"><div class="dot"></div><span>Invite sent</span></div>
+      <div class="bar upcoming"></div>
+      <div class="pip current"><div class="dot"></div><span>Teammate installs</span></div>
+      <div class="bar upcoming"></div>
+      <div class="pip"><div class="dot"></div><span>Done</span></div>
+    </div>
+    <a class="exit" href="#">Exit ×</a>
   </div>
   <div class="body center">
     <div style="font-size:36px">📨</div>
@@ -357,24 +427,27 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- SELF-SERVE: setup (API key + SDK)                             -->
+<!-- SELF-SERVE: setup (API key + SDK grid)                        -->
 <!-- ============================================================ -->
 
-<div class="frame-h">Self-serve · API key &amp; SDK</div>
+<div class="frame-h">Self-serve · API key &amp; SDK (setup-grid archetype)</div>
 <div class="screen">
-  <div class="chrome-topbar"><span>mbuzz <span class="branch">· Self-serve setup</span></span><a class="exit" href="#">Exit to dashboard ×</a></div>
-  <div class="pip-rail">
-    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
-    <div class="bar"></div>
-    <div class="pip current"><div class="dot"></div><span>API key</span></div>
-    <div class="bar upcoming"></div>
-    <div class="pip"><div class="dot"></div><span>Install</span></div>
-    <div class="bar upcoming"></div>
-    <div class="pip"><div class="dot"></div><span>Verify event</span></div>
-    <div class="bar upcoming"></div>
-    <div class="pip"><div class="dot"></div><span>Conversion</span></div>
-    <div class="bar upcoming"></div>
-    <div class="pip"><div class="dot"></div><span>Done</span></div>
+  <div class="chrome-bar">
+    <span class="brand">mbuzz</span>
+    <div class="pip-rail">
+      <div class="pip done"><div class="dot"></div><span>I'll do it</span></div>
+      <div class="bar"></div>
+      <div class="pip current"><div class="dot"></div><span>API key</span></div>
+      <div class="bar upcoming"></div>
+      <div class="pip"><div class="dot"></div><span>Install</span></div>
+      <div class="bar upcoming"></div>
+      <div class="pip"><div class="dot"></div><span>Verify event</span></div>
+      <div class="bar upcoming"></div>
+      <div class="pip"><div class="dot"></div><span>Conversion</span></div>
+      <div class="bar upcoming"></div>
+      <div class="pip"><div class="dot"></div><span>Done</span></div>
+    </div>
+    <a class="exit" href="#">Exit ×</a>
   </div>
   <div class="body">
     <h1>Set up your SDK</h1>
@@ -404,24 +477,27 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- SELF-SERVE: install (SDK code)                                -->
+<!-- SELF-SERVE: install (form-style, code blocks)                 -->
 <!-- ============================================================ -->
 
-<div class="frame-h">Self-serve · Install (per-SDK)</div>
+<div class="frame-h">Self-serve · Install (per-SDK form)</div>
 <div class="screen">
-  <div class="chrome-topbar"><span>mbuzz <span class="branch">· Self-serve setup</span></span><a class="exit" href="#">Exit to dashboard ×</a></div>
-  <div class="pip-rail">
-    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
-    <div class="bar"></div>
-    <div class="pip done"><div class="dot"></div><span>API key</span></div>
-    <div class="bar"></div>
-    <div class="pip current"><div class="dot"></div><span>Install</span></div>
-    <div class="bar upcoming"></div>
-    <div class="pip"><div class="dot"></div><span>Verify event</span></div>
-    <div class="bar upcoming"></div>
-    <div class="pip"><div class="dot"></div><span>Conversion</span></div>
-    <div class="bar upcoming"></div>
-    <div class="pip"><div class="dot"></div><span>Done</span></div>
+  <div class="chrome-bar">
+    <span class="brand">mbuzz</span>
+    <div class="pip-rail">
+      <div class="pip done"><div class="dot"></div><span>I'll do it</span></div>
+      <div class="bar"></div>
+      <div class="pip done"><div class="dot"></div><span>API key</span></div>
+      <div class="bar"></div>
+      <div class="pip current"><div class="dot"></div><span>Install</span></div>
+      <div class="bar upcoming"></div>
+      <div class="pip"><div class="dot"></div><span>Verify event</span></div>
+      <div class="bar upcoming"></div>
+      <div class="pip"><div class="dot"></div><span>Conversion</span></div>
+      <div class="bar upcoming"></div>
+      <div class="pip"><div class="dot"></div><span>Done</span></div>
+    </div>
+    <a class="exit" href="#">Exit ×</a>
   </div>
   <div class="body">
     <h1>Install the Ruby SDK</h1>
@@ -443,55 +519,27 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- SELF-SERVE: verify (waiting)                                  -->
+<!-- SELF-SERVE: conversion (form-style, code blocks)              -->
 <!-- ============================================================ -->
 
-<div class="frame-h">Self-serve · Verify event (waiting)</div>
+<div class="frame-h">Self-serve · Track conversions (form)</div>
 <div class="screen">
-  <div class="chrome-topbar"><span>mbuzz <span class="branch">· Self-serve setup</span></span><a class="exit" href="#">Exit to dashboard ×</a></div>
-  <div class="pip-rail">
-    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
-    <div class="bar"></div>
-    <div class="pip done"><div class="dot"></div><span>API key</span></div>
-    <div class="bar"></div>
-    <div class="pip done"><div class="dot"></div><span>Install</span></div>
-    <div class="bar"></div>
-    <div class="pip current"><div class="dot"></div><span>Verify event</span></div>
-    <div class="bar upcoming"></div>
-    <div class="pip"><div class="dot"></div><span>Conversion</span></div>
-    <div class="bar upcoming"></div>
-    <div class="pip"><div class="dot"></div><span>Done</span></div>
-  </div>
-  <div class="body center">
-    <div class="spinner"></div>
-    <h1 class="hero">Waiting for your first event…</h1>
-    <p class="sub hero">Run the code in your app. This page updates automatically.</p>
-    <div class="card" style="text-align:left;margin-top:14px">
-      <h3>To trigger a test event</h3>
-      <div class="field" style="font-family:monospace;background:#0f0f10;color:#9eff9e">Mbuzz.track('test_event')</div>
+  <div class="chrome-bar">
+    <span class="brand">mbuzz</span>
+    <div class="pip-rail">
+      <div class="pip done"><div class="dot"></div><span>I'll do it</span></div>
+      <div class="bar"></div>
+      <div class="pip done"><div class="dot"></div><span>API key</span></div>
+      <div class="bar"></div>
+      <div class="pip done"><div class="dot"></div><span>Install</span></div>
+      <div class="bar"></div>
+      <div class="pip done"><div class="dot"></div><span>Verify event</span></div>
+      <div class="bar"></div>
+      <div class="pip current"><div class="dot"></div><span>Conversion</span></div>
+      <div class="bar upcoming"></div>
+      <div class="pip"><div class="dot"></div><span>Done</span></div>
     </div>
-  </div>
-</div>
-
-<!-- ============================================================ -->
-<!-- SELF-SERVE: conversion                                        -->
-<!-- ============================================================ -->
-
-<div class="frame-h">Self-serve · Track conversions (form-style)</div>
-<div class="screen">
-  <div class="chrome-topbar"><span>mbuzz <span class="branch">· Self-serve setup</span></span><a class="exit" href="#">Exit to dashboard ×</a></div>
-  <div class="pip-rail">
-    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
-    <div class="bar"></div>
-    <div class="pip done"><div class="dot"></div><span>API key</span></div>
-    <div class="bar"></div>
-    <div class="pip done"><div class="dot"></div><span>Install</span></div>
-    <div class="bar"></div>
-    <div class="pip done"><div class="dot"></div><span>Verify event</span></div>
-    <div class="bar"></div>
-    <div class="pip current"><div class="dot"></div><span>Conversion</span></div>
-    <div class="bar upcoming"></div>
-    <div class="pip"><div class="dot"></div><span>Done</span></div>
+    <a class="exit" href="#">Exit ×</a>
   </div>
   <div class="body">
     <h1>Track conversions</h1>
@@ -505,49 +553,17 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- SELF-SERVE: attribution (success)                             -->
-<!-- ============================================================ -->
-
-<div class="frame-h">Self-serve · Attribution (success state)</div>
-<div class="screen">
-  <div class="chrome-topbar"><span>mbuzz <span class="branch">· Self-serve setup</span></span><a class="exit" href="#">Exit to dashboard ×</a></div>
-  <div class="pip-rail">
-    <div class="pip done"><div class="dot"></div><span>Pick path</span></div>
-    <div class="bar"></div>
-    <div class="pip done"><div class="dot"></div><span>API key</span></div>
-    <div class="bar"></div>
-    <div class="pip done"><div class="dot"></div><span>Install</span></div>
-    <div class="bar"></div>
-    <div class="pip done"><div class="dot"></div><span>Verify event</span></div>
-    <div class="bar"></div>
-    <div class="pip done"><div class="dot"></div><span>Conversion</span></div>
-    <div class="bar"></div>
-    <div class="pip current"><div class="dot"></div><span>Done</span></div>
-  </div>
-  <div class="body center">
-    <div style="font-size:36px">🎉</div>
-    <h1 class="hero">You're all set.</h1>
-    <p class="sub hero">mbuzz is now tracking your customer journeys.</p>
-    <div class="card" style="text-align:left;margin-top:14px">
-      <h3>Next steps</h3>
-      <ul style="margin:6px 0 0 18px;padding:0;font-size:12.5px;line-height:1.6">
-        <li>Add event tracking to key pages</li>
-        <li>Track conversions at purchase/signup points</li>
-        <li>Link anonymous visitors to known users with <code>identify()</code></li>
-      </ul>
-    </div>
-    <div class="actions" style="justify-content:center;margin-top:14px"><a class="btn primary" href="#">Explore dashboard</a></div>
-  </div>
-</div>
-
-<!-- ============================================================ -->
-<!-- DASHBOARD: resume nav pill (cohesion glue)                    -->
+<!-- DASHBOARD: resume nav pill                                    -->
 <!-- ============================================================ -->
 
 <div class="frame-h">Dashboard · Resume nav (any partially-onboarded account)</div>
 <div class="screen">
-  <div class="chrome-topbar" style="background:#fff">
-    <div style="display:flex;align-items:center;gap:16px"><strong>mbuzz</strong><span style="font-weight:400;font-size:12px">Dashboard</span><span style="font-weight:400;font-size:12px;color:#888">Reports</span><span style="font-weight:400;font-size:12px;color:#888">Sources</span></div>
+  <div class="chrome-bar">
+    <span class="brand">mbuzz</span>
+    <span style="font-weight:400;font-size:12px">Dashboard</span>
+    <span style="font-weight:400;font-size:12px;color:#888">Reports</span>
+    <span style="font-weight:400;font-size:12px;color:#888">Sources</span>
+    <span style="flex:1"></span>
     <a class="exit" href="#" style="background:#000;color:#fff;border-color:#000">● Finish setup · 60%</a>
   </div>
   <div class="body">
@@ -560,7 +576,7 @@
     </div>
   </div>
 </div>
-<div class="notes">The pill in the top-right of the main app nav is the <em>only</em> reentry surface and the visible reminder that onboarding isn't done. Clicking it lands the user back on their last incomplete step (resolver in <code>Account#onboarding_resume_path</code>, follow-up piece). Hides the moment <code>onboarding_status</code> is <code>:complete</code>.</div>
+<div class="notes">Same chrome bar pattern as onboarding screens — brand left, nav middle, primary affordance right. Onboarding has Exit; the main app has the resume pill. The pill disappears the moment <code>onboarding_status</code> is <code>:complete</code>.</div>
 
 <nav class="flownav" style="margin-top:20px"><a href="index.html">← All mockups</a><a href="onboarding-chrome.html">Chrome anatomy →</a></nav>
 
