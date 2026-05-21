@@ -243,11 +243,44 @@ class OnboardingChromeHelperTest < ActionView::TestCase
     assert_nil onboarding_resume_status
   end
 
-  test "teammate resume status points at the invite step until first event lands" do
+  test "teammate resume status invites the user to send an invite when no memberships exist" do
     account.update!(setup_path: :teammate)
+    account.account_memberships.where.not(role: :owner).destroy_all
+
+    status = onboarding_resume_status
+
+    assert_equal onboarding_invite_teammate_path, status.path
+    assert status.actionable
+    assert_match(/invite your teammate/i, status.label)
+  end
+
+  test "teammate resume status reports 'awaiting your teammate' while invites are pending" do
+    account.update!(setup_path: :teammate)
+    # The fixtures supply a pending invite for accounts(:one).
+
+    status = onboarding_resume_status
+
+    assert_not status.actionable
+    assert_match(/awaiting your teammate/i, status.label)
+  end
+
+  test "teammate resume status reports 'awaiting first event' once teammate accepted but no events yet" do
+    account.update!(setup_path: :teammate)
+    account.account_memberships.where(status: :pending).update_all(status: :accepted, accepted_at: Time.current)
     account.events.destroy_all
 
-    assert_equal onboarding_invite_teammate_path, onboarding_resume_status.path
+    status = onboarding_resume_status
+
+    assert_not status.actionable
+    assert_match(/first event/i, status.label)
+  end
+
+  test "teammate resume status is nil once the teammate has accepted and events have landed" do
+    account.update!(setup_path: :teammate)
+    account.account_memberships.where(status: :pending).update_all(status: :accepted, accepted_at: Time.current)
+    # account :one has events in fixtures.
+
+    assert_nil onboarding_resume_status
   end
 
   test "assisted resume status routes to install_service before discovery is done" do

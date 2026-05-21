@@ -163,9 +163,20 @@ module OnboardingChromeHelper
   end
 
   def teammate_resume_status
-    return nil if current_account.events.exists?
+    case teammate_resume_state
+    when :invite_needed   then ResumeStatus.new(label: "Invite your teammate", path: onboarding_invite_teammate_path, actionable: true)
+    when :awaiting_accept then ResumeStatus.new(label: "Awaiting your teammate", path: onboarding_invite_teammate_path, actionable: false)
+    when :awaiting_event  then ResumeStatus.new(label: "Awaiting first event from your teammate", path: onboarding_invite_teammate_path, actionable: false)
+    end
+  end
 
-    ResumeStatus.new(label: "Resume teammate invite", path: onboarding_invite_teammate_path, actionable: true)
+  def teammate_resume_state
+    invites = current_account.account_memberships.where.not(role: :owner)
+    return :invite_needed   if invites.none?
+    return :awaiting_accept if invites.where(status: :pending).exists?
+    return nil              if current_account.events.exists?
+
+    :awaiting_event
   end
 
   def assisted_resume_status
