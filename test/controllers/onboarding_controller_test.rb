@@ -357,14 +357,14 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_select "body", text: /build one for you/i
   end
 
-  test "guided_setup redirects to kickoff_booked once a booking exists" do
+  test "guided_setup redirects to dashboard once a booking exists" do
     sign_in
     account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
     GuidedSetup.create!(account: account, kickoff_booked_at: Time.current)
 
     get onboarding_guided_setup_path
 
-    assert_redirected_to onboarding_kickoff_booked_path
+    assert_redirected_to dashboard_path
   end
 
   # --- Book kickoff ---
@@ -422,7 +422,23 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_equal "meta", engagement.integration_target
     assert_predicate engagement.kickoff_booked_at, :present?
     assert_equal "Sydney", engagement.scheduling_preferences["timezone"]
-    assert_redirected_to onboarding_kickoff_booked_path
+    assert_redirected_to dashboard_path
+    assert_equal "Kickoff booked. We'll be in touch.", flash[:notice]
+  end
+
+  test "book_kickoff success banner shows on the dashboard after redirect" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+
+    post onboarding_book_kickoff_path, params: { scheduling_preferences: { timezone: "Sydney" } }
+    follow_redirect!
+
+    assert_response :success
+    assert_select "[data-testid='flash-notice']", text: /Kickoff booked\. We'll be in touch\./
+  end
+
+  test "kickoff_booked route no longer resolves" do
+    assert_raises(NameError) { onboarding_kickoff_booked_path }
   end
 
   test "book_kickoff updates an existing pending engagement instead of creating a new one" do
@@ -449,43 +465,6 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
 
     assert_equal [ "tue" ], prefs["days"]
     assert_equal [ "morning" ], prefs["time_blocks"]
-  end
-
-  # --- Kickoff booked ---
-
-  test "kickoff_booked requires authentication" do
-    get onboarding_kickoff_booked_path
-
-    assert_redirected_to login_path
-  end
-
-  test "kickoff_booked requires the assisted path" do
-    sign_in
-    account.update!(setup_path: :self_serve)
-
-    get onboarding_kickoff_booked_path
-
-    assert_redirected_to onboarding_path
-  end
-
-  test "kickoff_booked redirects back to the offer when no booking exists" do
-    sign_in
-    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
-
-    get onboarding_kickoff_booked_path
-
-    assert_redirected_to onboarding_guided_setup_path
-  end
-
-  test "kickoff_booked renders the confirmation page when a booking exists" do
-    sign_in
-    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
-    GuidedSetup.create!(account: account, kickoff_booked_at: Time.current)
-
-    get onboarding_kickoff_booked_path
-
-    assert_response :success
-    assert_select "[data-testid='kickoff-booked']"
   end
 
   # --- Setup (API key + SDK selection) ---

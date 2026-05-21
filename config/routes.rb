@@ -142,7 +142,6 @@ Rails.application.routes.draw do
   post "onboarding/discovery", to: "onboarding#submit_discovery"
   get "onboarding/guided_setup", to: "onboarding#guided_setup", as: :onboarding_guided_setup
   post "onboarding/book_kickoff", to: "onboarding#book_kickoff", as: :onboarding_book_kickoff
-  get "onboarding/kickoff_booked", to: "onboarding#kickoff_booked", as: :onboarding_kickoff_booked
   get "onboarding/setup", to: "onboarding#setup", as: :onboarding_setup
   post "onboarding/regenerate_api_key", to: "onboarding#regenerate_api_key", as: :onboarding_regenerate_api_key
   post "onboarding/select_sdk", to: "onboarding#select_sdk", as: :onboarding_select_sdk

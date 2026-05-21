@@ -5,7 +5,7 @@ module Onboarding
     extend ActiveSupport::Concern
 
     included do
-      before_action :require_assisted_path, only: %i[discovery submit_discovery guided_setup book_kickoff kickoff_booked]
+      before_action :require_assisted_path, only: %i[discovery submit_discovery guided_setup book_kickoff]
       before_action :require_completed_discovery, only: %i[guided_setup book_kickoff]
       before_action :require_teammate_path, only: %i[invite_teammate send_teammate_invite]
 
@@ -37,7 +37,7 @@ module Onboarding
     end
 
     def guided_setup
-      return redirect_to(onboarding_kickoff_booked_path) if current_account.guided_setup&.kickoff_booked_at.present?
+      return redirect_to(dashboard_path) if current_account.guided_setup&.kickoff_booked_at.present?
 
       @scheduling_form = SchedulingPreferencesPresenter.from(current_account.guided_setup&.scheduling_preferences)
     end
@@ -54,14 +54,7 @@ module Onboarding
 
       ensure_pending_guided_setup.book_kickoff!(scheduling_preferences: draft)
       Lifecycle::Tracker.track("onboarding_kickoff_booked", current_account)
-      redirect_to onboarding_kickoff_booked_path
-    end
-
-    def kickoff_booked
-      @guided_setup = current_account.guided_setup
-      return redirect_to(onboarding_guided_setup_path) unless @guided_setup&.kickoff_booked_at.present?
-
-      @scheduling_form = SchedulingPreferencesPresenter.from(@guided_setup.scheduling_preferences)
+      redirect_to dashboard_path, notice: "Kickoff booked. We'll be in touch."
     end
 
     private
