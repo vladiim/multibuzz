@@ -20,6 +20,18 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_select "[data-testid='setup-choice']"
   end
 
+  test "show renders the three setup-path cards with updated copy" do
+    sign_in
+
+    get onboarding_path
+
+    assert_select "h3", text: "I'll do it"
+    assert_select "h3", text: "My teammate will"
+    assert_select "h3", text: "We'll do the install"
+    assert_select "p", text: "You install the SDK and API calls."
+    assert_select "p", text: "We'll do the install for a fee."
+  end
+
   test "show redirects forward when a setup path is already chosen" do
     sign_in
     account.update!(setup_path: :self_serve)
