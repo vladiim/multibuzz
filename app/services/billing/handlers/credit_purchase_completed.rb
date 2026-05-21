@@ -25,7 +25,22 @@ module Billing
 
         activate_chosen_plan
         account.guided_setup&.mark_paid!
+        broadcast_payment_complete
         send_notifications
+      end
+
+      # Stripe's success_url redirect races with this webhook. The customer
+      # may be sitting on payment_complete rendering the processing state.
+      # Broadcast the success partial into the page so it updates without
+      # the user needing to refresh.
+      def broadcast_payment_complete
+        return unless account.guided_setup&.in_progress?
+
+        Turbo::StreamsChannel.broadcast_replace_to(
+          "guided_setup_payment_#{account.prefix_id}",
+          target: "payment_complete_state",
+          partial: "onboarding/payment_complete_success"
+        )
       end
 
       def send_notifications

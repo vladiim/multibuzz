@@ -890,23 +890,32 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_response :redirect
   end
 
-  test "payment_complete renders the success page when the engagement is in_progress" do
+  test "payment_complete renders the success state when the engagement is in_progress" do
     sign_in
-    GuidedSetup.create!(account: account, status: :in_progress, accepted_at: Time.current)
+    GuidedSetup.create!(account: account, status: :in_progress, accepted_at: Time.current, kickoff_booked_at: Time.current)
 
     get onboarding_payment_complete_path
 
     assert_response :success
-    assert_select "[data-testid='payment-complete']"
+    assert_select "[data-testid='payment-complete-success']"
   end
 
-  test "payment_complete redirects back to payment_setup when not yet paid" do
+  test "payment_complete renders the processing state when the webhook has not landed yet" do
     sign_in
     GuidedSetup.create!(account: account, kickoff_booked_at: Time.current).mint_payment_token!
 
     get onboarding_payment_complete_path
 
-    assert_redirected_to onboarding_payment_setup_path
+    assert_response :success
+    assert_select "[data-testid='payment-complete-processing']"
+  end
+
+  test "payment_complete redirects to onboarding when there is no payment context" do
+    sign_in
+
+    get onboarding_payment_complete_path
+
+    assert_redirected_to onboarding_path
   end
 
   private

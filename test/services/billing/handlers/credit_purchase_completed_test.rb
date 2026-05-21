@@ -47,6 +47,20 @@ module Billing
         assert_nil guided_setup.reload.payment_token
       end
 
+      test "broadcasts a Turbo Stream replace so payment_complete updates live" do
+        guided_setup
+
+        assert_broadcasts("guided_setup_payment_#{account.prefix_id}", 1) do
+          handler.call
+        end
+      end
+
+      test "does not broadcast when no GuidedSetup exists" do
+        assert_no_broadcasts("guided_setup_payment_#{account.prefix_id}") do
+          handler.call
+        end
+      end
+
       test "skips the emails when no GuidedSetup engagement exists" do
         assert_no_enqueued_jobs only: ActionMailer::MailDeliveryJob do
           handler.call
