@@ -27,9 +27,18 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
 
     assert_select "h3", text: "I'll do it"
     assert_select "h3", text: "My teammate will"
-    assert_select "h3", text: "We'll do the install"
+    assert_select "h3", text: "We'll do it"
     assert_select "p", text: "You install the SDK and API calls."
     assert_select "p", text: "We'll do the install for a fee."
+  end
+
+  test "show asks who's handling the set up" do
+    sign_in
+
+    get onboarding_path
+
+    assert_select "p", text: "Who's handling your set up?"
+    refute_includes response.body, "How do you want to get set up?"
   end
 
   test "show redirects forward when a setup path is already chosen" do
@@ -81,12 +90,30 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to onboarding_setup_path
   end
 
-  test "choose_path routes the assisted path to discovery" do
+  test "choose_path routes the assisted path to the install-service overview" do
     sign_in_as_new_user
 
     post onboarding_choose_path_path, params: { setup_path: "assisted" }
 
+    assert_redirected_to onboarding_install_service_path
+  end
+
+  test "show routes a revisiting assisted user to discovery if no profile yet" do
+    sign_in
+    account.update!(setup_path: :assisted)
+
+    get onboarding_path
+
     assert_redirected_to onboarding_discovery_path
+  end
+
+  test "show routes a revisiting assisted user to guided_setup once discovery is done" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+
+    get onboarding_path
+
+    assert_redirected_to onboarding_guided_setup_path
   end
 
   test "choose_path routes the teammate path to the in-onboarding invite step" do
@@ -165,6 +192,47 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_select ".text-red-700", /invalid/i
   end
 
+  # --- Install service overview (shown right after picking the assisted card) ---
+
+  test "install_service requires authentication" do
+    get onboarding_install_service_path
+
+    assert_redirected_to login_path
+  end
+
+  test "install_service redirects accounts not on the assisted path" do
+    sign_in
+    account.update!(setup_path: :self_serve)
+
+    get onboarding_install_service_path
+
+    assert_redirected_to onboarding_path
+  end
+
+  test "install_service renders the inclusions overview for an assisted account" do
+    sign_in
+    account.update!(setup_path: :assisted)
+
+    get onboarding_install_service_path
+
+    assert_response :success
+    assert_select "h2", text: /Install service inclusions/
+    assert_select "body", text: /What happens next/
+    assert_select "body", text: /Price: \$1,500 USD/
+    assert_select "body", text: /Non-refundable mbuzz credit/
+    assert_select "body", text: /Payment due after the kickoff call/
+    assert_select "body", text: /build one for you/i
+  end
+
+  test "install_service has a Continue link to discovery" do
+    sign_in
+    account.update!(setup_path: :assisted)
+
+    get onboarding_install_service_path
+
+    assert_select "a[href=?]", onboarding_discovery_path, text: /Continue/
+  end
+
   # --- Discovery ---
 
   test "discovery requires authentication" do
@@ -203,6 +271,16 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_select "input[type=checkbox][name='setup_profile[attribution_goal][]'][value=?]", "b2b_leads"
     assert_select "input[type=checkbox][name='setup_profile[attribution_goal][]'][value=?]", "signups"
     assert_select "input[type=radio][name='setup_profile[attribution_goal]']", count: 0
+  end
+
+  test "discovery Q2 reads Where do you run ads?" do
+    sign_in
+    account.update!(setup_path: :assisted)
+
+    get onboarding_discovery_path
+
+    assert_select "legend", text: /Where do you run ads\?/
+    refute_includes response.body, "Which ad platforms do you run?"
   end
 
   test "discovery Q3 asks which platforms you use and offers an unsure option" do
@@ -287,26 +365,31 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_select "[data-testid='guided-setup']"
     assert_select "[data-testid='book-kickoff-form']"
     assert_select "select[name='scheduling_preferences[timezone]']"
-    assert_select "input[type=submit][value='Book kickoff call']"
+    assert_select "input[type=submit][value='Book now']"
   end
 
-  test "guided_setup leads with Last step header and form-first layout" do
+  test "guided_setup leads with Last step header and book-your-kickoff subhead" do
     sign_in
     account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
 
     get onboarding_guided_setup_path
 
     assert_select "h2", text: /Last step/
-    assert_select "[data-testid='book-kickoff-form'] h3", text: /Book your kickoff/
-    form_index = response.body.index('data-testid="book-kickoff-form"')
-    steps_index = response.body.index("What happens next")
-    inclusions_index = response.body.index("Install service inclusions")
+    assert_select "p", text: "Book your kickoff, we'll be in touch ASAP."
+    assert_select "[data-testid='book-kickoff-form'] h3", count: 0
+    refute_includes response.body, "We'll respond within one business day with options."
+  end
 
-    assert_predicate form_index, :present?
-    assert_predicate steps_index, :present?
-    assert_predicate inclusions_index, :present?
-    assert_operator form_index, :<, steps_index, "form should render before 'What happens next'"
-    assert_operator steps_index, :<, inclusions_index, "steps should render before inclusions"
+  test "guided_setup does not render the inclusions overview content" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+
+    get onboarding_guided_setup_path
+
+    refute_includes response.body, "What happens next"
+    refute_includes response.body, "Install service inclusions"
+    refute_includes response.body, "Price: $1,500 USD"
+    refute_includes response.body, "build one for you"
   end
 
   test "guided_setup uses a searchable select for timezone with no schedule hint" do
@@ -332,29 +415,6 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Days that work"
     refute_includes response.body, "Times that work"
     refute_includes response.body, "Leave blank for any day"
-  end
-
-  test "guided_setup renders inclusions block with price and credit copy" do
-    sign_in
-    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
-
-    get onboarding_guided_setup_path
-
-    assert_select "body", text: /Install service inclusions/
-    assert_select "body", text: /Price: \$1,500 USD/
-    assert_select "body", text: /Non-refundable mbuzz credit/
-    assert_select "body", text: /Payment due after the kickoff call/
-    refute_includes response.body, "Pricing &amp; plan covered on the kickoff call"
-    refute_includes response.body, "Pricing & plan covered on the kickoff call"
-  end
-
-  test "guided_setup step 3 mentions building an integration when missing" do
-    sign_in
-    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
-
-    get onboarding_guided_setup_path
-
-    assert_select "body", text: /build one for you/i
   end
 
   test "guided_setup redirects to dashboard once a booking exists" do

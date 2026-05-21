@@ -25,7 +25,7 @@
         </fieldset>
 
         <fieldset>
-          <legend class="text-sm font-semibold text-gray-900 mb-3">2 &middot; Which ad platforms do you run?</legend>
+          <legend class="text-sm font-semibold text-gray-900 mb-3">2 &middot; Where do you run ads?</legend>
           <% [ [ "Meta", "meta" ], [ "Google Ads", "google_ads" ], [ "TikTok", "tiktok" ], [ "LinkedIn", "linkedin" ], [ "None", "none" ] ].each do |label, value| %>
             <label class="flex items-center gap-2 py-1 text-sm text-gray-700">
               <%= check_box_tag "setup_profile[ad_platforms][]", value %>

@@ -138,6 +138,7 @@ Rails.application.routes.draw do
   delete "onboarding/setup_path", to: "onboarding#change_setup_path", as: :onboarding_change_setup_path
   get "onboarding/invite_teammate", to: "onboarding#invite_teammate", as: :onboarding_invite_teammate
   post "onboarding/invite_teammate", to: "onboarding#send_teammate_invite", as: :onboarding_send_teammate_invite
+  get "onboarding/install_service", to: "onboarding#install_service", as: :onboarding_install_service
   get "onboarding/discovery", to: "onboarding#discovery", as: :onboarding_discovery
   post "onboarding/discovery", to: "onboarding#submit_discovery"
   get "onboarding/guided_setup", to: "onboarding#guided_setup", as: :onboarding_guided_setup

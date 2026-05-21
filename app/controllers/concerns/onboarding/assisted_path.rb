@@ -5,12 +5,14 @@ module Onboarding
     extend ActiveSupport::Concern
 
     included do
-      before_action :require_assisted_path, only: %i[discovery submit_discovery guided_setup book_kickoff]
+      before_action :require_assisted_path, only: %i[install_service discovery submit_discovery guided_setup book_kickoff]
       before_action :require_completed_discovery, only: %i[guided_setup book_kickoff]
       before_action :require_teammate_path, only: %i[invite_teammate send_teammate_invite]
 
       helper_method :recommended_plan
     end
+
+    def install_service; end
 
     def change_setup_path
       current_account.update!(setup_path: nil)

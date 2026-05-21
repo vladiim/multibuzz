@@ -19,7 +19,7 @@ class OnboardingController < ApplicationController
     current_account.complete_onboarding_step!(:persona_selected)
     Lifecycle::Tracker.track("onboarding_setup_path_chosen", current_account, setup_path: current_account.setup_path)
 
-    redirect_to setup_path_destination
+    redirect_to choose_path_destination
   end
 
   def setup
@@ -96,12 +96,24 @@ class OnboardingController < ApplicationController
     redirect_to onboarding_setup_path unless current_account.selected_sdk.present?
   end
 
+  def choose_path_destination
+    case current_account.setup_path
+    when SetupPaths::TEAMMATE then onboarding_invite_teammate_path
+    when SetupPaths::ASSISTED then onboarding_install_service_path
+    else onboarding_setup_path
+    end
+  end
+
   def setup_path_destination
     case current_account.setup_path
     when SetupPaths::TEAMMATE then onboarding_invite_teammate_path
-    when SetupPaths::ASSISTED then onboarding_discovery_path
+    when SetupPaths::ASSISTED then assisted_destination
     else onboarding_setup_path
     end
+  end
+
+  def assisted_destination
+    current_account.setup_profile_completed? ? onboarding_guided_setup_path : onboarding_discovery_path
   end
 
   def first_event_completed?

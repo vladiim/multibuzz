@@ -5,16 +5,11 @@
   <div class="sm:mx-auto sm:w-full sm:max-w-3xl" data-testid="guided-setup">
     <div class="text-center">
       <h2 class="text-3xl font-extrabold text-gray-900">Last step</h2>
-      <p class="mt-2 text-lg text-gray-600">Book the kickoff and we'll take it from there.</p>
+      <p class="mt-2 text-lg text-gray-600">Book your kickoff, we'll be in touch ASAP.</p>
     </div>
 
     <%= form_with url: onboarding_book_kickoff_path, method: :post, data: { testid: "book-kickoff-form" } do %>
       <div class="mt-8 bg-white p-6 rounded-lg shadow space-y-6">
-        <div>
-          <h3 class="text-xl font-semibold text-gray-900">Book your kickoff</h3>
-          <p class="mt-1 text-sm text-gray-600">We'll respond within one business day with options.</p>
-        </div>
-
         <% if @scheduling_error.present? %>
           <div class="p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700" data-testid="scheduling-error">
             <%= @scheduling_error %>
@@ -74,39 +69,8 @@
       </div>
 
       <div class="mt-6 text-right">
-        <%= submit_tag "Book kickoff call", class: "px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 cursor-pointer font-semibold" %>
+        <%= submit_tag "Book now", class: "px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 cursor-pointer font-semibold" %>
       </div>
     <% end %>
-
-    <div class="mt-12">
-      <h3 class="text-lg font-semibold text-gray-900">What happens next</h3>
-      <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-100">
-          <div class="text-sm font-semibold text-indigo-600">1 &middot; Kickoff call</div>
-          <p class="mt-1 text-sm text-gray-600">Agree goals and the value moment you want to see.</p>
-        </div>
-        <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-100">
-          <div class="text-sm font-semibold text-indigo-600">2 &middot; Install</div>
-          <p class="mt-1 text-sm text-gray-600">We install the four mbuzz API calls in your stack.</p>
-        </div>
-        <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-100">
-          <div class="text-sm font-semibold text-indigo-600">3 &middot; Integration</div>
-          <p class="mt-1 text-sm text-gray-600">Connect Meta Ads, Google Ads, or server-side GTM. We'll build one for you if you don't have one.</p>
-        </div>
-        <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-100">
-          <div class="text-sm font-semibold text-indigo-600">4 &middot; Training &amp; value check</div>
-          <p class="mt-1 text-sm text-gray-600">Dashboard walkthrough plus a 30-day check-in.</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="mt-12">
-      <h3 class="text-lg font-semibold text-gray-900">Install service inclusions</h3>
-      <div class="mt-4 bg-white rounded-lg shadow-sm border border-gray-100 p-5 space-y-1">
-        <p class="text-xl font-semibold text-gray-900">Price: $1,500 USD</p>
-        <p class="text-sm text-gray-600">Non-refundable mbuzz credit</p>
-        <p class="text-sm text-gray-600">Payment due after the kickoff call</p>
-      </div>
-    </div>
   </div>
 </div>
