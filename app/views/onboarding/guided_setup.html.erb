@@ -16,24 +16,53 @@
           </div>
         <% end %>
 
-        <div data-controller="searchable-select">
-          <label for="scheduling_preferences_timezone" class="block text-sm font-semibold text-gray-900">Your time zone <span class="text-red-600">*</span></label>
-          <input type="text"
-            data-searchable-select-target="input"
-            data-action="input->searchable-select#filter"
-            placeholder="Type to filter (e.g. Sydney, London, New York)"
-            autocomplete="off"
-            class="mt-2 w-full border-gray-300 rounded-md text-sm focus:border-indigo-500 focus:ring-indigo-500">
-          <select id="scheduling_preferences_timezone"
+        <div data-controller="searchable-select" class="relative">
+          <span class="block text-sm font-semibold text-gray-900">Your time zone <span class="text-red-600">*</span></span>
+
+          <button type="button"
+            data-action="click->searchable-select#toggle"
+            data-searchable-select-target="trigger"
+            class="mt-2 w-full flex items-center justify-between gap-3 px-3 py-2 bg-white border border-gray-300 rounded-md text-sm text-left focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 hover:border-gray-400 transition-colors">
+            <span data-searchable-select-target="label" class="<%= @scheduling_form.timezone.blank? ? "text-gray-400" : "text-gray-900" %>">
+              <%= @scheduling_form.timezone.presence || "Select your time zone" %>
+            </span>
+            <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+            </svg>
+          </button>
+
+          <input type="hidden"
             name="scheduling_preferences[timezone]"
-            data-searchable-select-target="select"
-            required
-            class="mt-2 w-full border-gray-300 rounded-md text-sm focus:border-indigo-500 focus:ring-indigo-500">
-            <option value="">Select your time zone</option>
-            <% ActiveSupport::TimeZone.all.map(&:name).each do |tz_name| %>
-              <option value="<%= tz_name %>" <%= "selected" if @scheduling_form.timezone == tz_name %>><%= tz_name %></option>
-            <% end %>
-          </select>
+            data-searchable-select-target="hidden"
+            value="<%= @scheduling_form.timezone %>">
+
+          <div data-searchable-select-target="panel" class="hidden absolute z-20 mt-1 w-full bg-white shadow-lg rounded-md border border-gray-200 overflow-hidden">
+            <div class="p-2 border-b border-gray-100 bg-gray-50">
+              <div class="relative">
+                <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
+                </svg>
+                <input type="text"
+                  data-action="input->searchable-select#filter"
+                  data-searchable-select-target="input"
+                  placeholder="Search time zones"
+                  autocomplete="off"
+                  class="w-full pl-8 pr-3 py-1.5 text-sm bg-white border border-gray-200 rounded-md focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+              </div>
+            </div>
+            <ul data-searchable-select-target="list" class="max-h-64 overflow-y-auto py-1">
+              <% ActiveSupport::TimeZone.all.map(&:name).each do |tz_name| %>
+                <li data-action="click->searchable-select#select"
+                  data-searchable-select-option
+                  data-value="<%= tz_name %>"
+                  data-search-label="<%= tz_name %>"
+                  class="px-3 py-1.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-900 cursor-pointer">
+                  <%= tz_name %>
+                </li>
+              <% end %>
+              <li data-searchable-select-target="empty" hidden class="px-3 py-3 text-sm text-gray-500 italic">No matches.</li>
+            </ul>
+          </div>
         </div>
 
         <div>

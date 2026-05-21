@@ -27,7 +27,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
 
     assert_select "h3", text: "I'll do it"
     assert_select "h3", text: "My teammate will"
-    assert_select "h3", text: "We'll do it"
+    assert_select "h3", text: "I want mbuzz to do it"
     assert_select "p", text: "You install the SDK and API calls."
     assert_select "p", text: "We'll do the install for a fee."
   end
@@ -209,19 +209,21 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to onboarding_path
   end
 
-  test "install_service renders the inclusions overview for an assisted account" do
+  test "install_service renders the overview for an assisted account" do
     sign_in
     account.update!(setup_path: :assisted)
 
     get onboarding_install_service_path
 
     assert_response :success
-    assert_select "h2", text: /Install service inclusions/
-    assert_select "body", text: /What happens next/
-    assert_select "body", text: /Price: \$1,500 USD/
-    assert_select "body", text: /Non-refundable mbuzz credit/
-    assert_select "body", text: /Payment due after the kickoff call/
+    assert_select "h2", text: /mbuzz install service/
+    assert_select "body", text: /\$1,500/
+    assert_select "body", text: /\bmbuzz credit\b/
+    assert_select "body", text: /Use it to pay for your ongoing mbuzz service/
+    assert_select "body", text: /Non-refundable payment, due after the kickoff call/
     assert_select "body", text: /build one for you/i
+    refute_includes response.body, "What happens next"
+    refute_includes response.body, "Non-refundable mbuzz credit"
   end
 
   test "install_service has a Continue link to discovery" do
@@ -364,7 +366,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "[data-testid='guided-setup']"
     assert_select "[data-testid='book-kickoff-form']"
-    assert_select "select[name='scheduling_preferences[timezone]']"
+    assert_select "input[type=hidden][name='scheduling_preferences[timezone]']"
     assert_select "input[type=submit][value='Book now']"
   end
 
@@ -392,14 +394,18 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "build one for you"
   end
 
-  test "guided_setup uses a searchable select for timezone with no schedule hint" do
+  test "guided_setup uses a combobox for timezone with hidden input and panel" do
     sign_in
     account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
 
     get onboarding_guided_setup_path
 
     assert_select "[data-controller~='searchable-select']"
-    assert_select "select[name='scheduling_preferences[timezone]']"
+    assert_select "[data-searchable-select-target='trigger']"
+    assert_select "[data-searchable-select-target='panel']"
+    assert_select "[data-searchable-select-target='input']"
+    assert_select "[data-searchable-select-target='hidden'][name='scheduling_preferences[timezone]']"
+    assert_select "select[name='scheduling_preferences[timezone]']", count: 0
     assert_select "input[list='scheduling-timezones']", count: 0
     refute_includes response.body, "We need this to schedule the kickoff call"
   end
