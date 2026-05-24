@@ -3,7 +3,8 @@
 require "test_helper"
 
 class OnboardingControllerTest < ActionDispatch::IntegrationTest
-  # --- Show (main onboarding entry point) ---
+  include ActionMailer::TestHelper
+  # --- Show (setup-choice screen) ---
 
   test "show requires authentication" do
     get onboarding_path
@@ -11,54 +12,596 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to login_path
   end
 
-  test "show renders persona selection for new users" do
+  test "show renders the setup-choice screen for new users" do
     sign_in
 
     get onboarding_path
 
     assert_response :success
-    assert_select "[data-onboarding-persona]"
+    assert_select "[data-testid='setup-choice']"
   end
 
-  test "show redirects to setup if persona already selected" do
+  test "show renders the three setup-path cards with updated copy" do
     sign_in
-    account.update!(onboarding_persona: :developer)
-    account.complete_onboarding_step!(:persona_selected)
+
+    get onboarding_path
+
+    assert_select "h3", text: "I'll do it"
+    assert_select "h3", text: "My teammate will"
+    assert_select "h3", text: "I want mbuzz to do it"
+    assert_select "p", text: "You install the SDK and API calls."
+    assert_select "p", text: "We'll do the install for a fee."
+  end
+
+  test "show asks who's handling the set up" do
+    sign_in
+
+    get onboarding_path
+
+    assert_select "p", text: "Who's handling your set up?"
+    refute_includes response.body, "How do you want to get set up?"
+  end
+
+  test "show redirects forward when a setup path is already chosen" do
+    sign_in
+    account.update!(setup_path: :self_serve)
 
     get onboarding_path
 
     assert_redirected_to onboarding_setup_path
   end
 
-  # --- Persona ---
+  test "show mounts the gtm-event controller for signup_complete on first landing" do
+    sign_in
 
-  test "persona requires authentication" do
-    post onboarding_persona_path, params: { persona: "developer" }
+    get onboarding_path
+
+    assert_response :success
+    assert_includes response.body, 'data-controller="gtm-event"'
+    assert_includes response.body, 'data-gtm-event-name-value="signup_complete"'
+  end
+
+  test "show hashes the user email for the user_id_hashed gtm property" do
+    user.update!(email: "Newuser@Example.com")
+    sign_in
+    expected_hash = Digest::SHA256.hexdigest("newuser@example.com")
+
+    get onboarding_path
+
+    assert_includes response.body, expected_hash
+  end
+
+  # --- Choose path ---
+
+  test "choose_path requires authentication" do
+    post onboarding_choose_path_path, params: { setup_path: "self_serve" }
 
     assert_redirected_to login_path
   end
 
-  test "persona updates account persona and redirects to setup" do
+  test "choose_path stores the path and routes self-serve to setup" do
     sign_in_as_new_user
 
-    post onboarding_persona_path, params: { persona: "developer" }
+    post onboarding_choose_path_path, params: { setup_path: "self_serve" }
 
     @test_account.reload
 
-    assert_predicate @test_account, :developer?
+    assert_predicate @test_account, :self_serve?
     assert @test_account.onboarding_step_completed?(:persona_selected)
     assert_redirected_to onboarding_setup_path
   end
 
-  test "persona redirects marketer to dashboard with demo data" do
+  test "choose_path routes the assisted path to the install-service overview" do
     sign_in_as_new_user
 
-    post onboarding_persona_path, params: { persona: "marketer" }
+    post onboarding_choose_path_path, params: { setup_path: "assisted" }
 
-    @test_account.reload
+    assert_redirected_to onboarding_install_service_path
+  end
 
-    assert_predicate @test_account, :marketer?
+  test "show routes a revisiting assisted user to discovery if no profile yet" do
+    sign_in
+    account.update!(setup_path: :assisted)
+
+    get onboarding_path
+
+    assert_redirected_to onboarding_discovery_path
+  end
+
+  test "show routes a revisiting assisted user to guided_setup once discovery is done" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+
+    get onboarding_path
+
+    assert_redirected_to onboarding_guided_setup_path
+  end
+
+  test "choose_path routes the teammate path to the in-onboarding invite step" do
+    sign_in_as_new_user
+
+    post onboarding_choose_path_path, params: { setup_path: "teammate" }
+
+    assert_redirected_to onboarding_invite_teammate_path
+  end
+
+  # --- Change setup path ---
+
+  test "change_setup_path requires authentication" do
+    delete onboarding_change_setup_path_path
+
+    assert_redirected_to login_path
+  end
+
+  test "change_setup_path clears the chosen path and returns to the choice screen" do
+    sign_in
+    account.update!(setup_path: :self_serve)
+
+    delete onboarding_change_setup_path_path
+
+    assert_nil account.reload.setup_path
+    assert_redirected_to onboarding_path
+  end
+
+  # --- Invite Teammate ("A teammate will" path) ---
+
+  test "invite_teammate requires authentication" do
+    get onboarding_invite_teammate_path
+
+    assert_redirected_to login_path
+  end
+
+  test "invite_teammate redirects accounts not on the teammate path" do
+    sign_in
+    account.update!(setup_path: :self_serve)
+
+    get onboarding_invite_teammate_path
+
+    assert_redirected_to onboarding_path
+  end
+
+  test "invite_teammate renders the invite form within the onboarding chrome" do
+    sign_in
+    account.update!(setup_path: :teammate)
+
+    get onboarding_invite_teammate_path
+
+    assert_response :success
+    assert_select "[data-testid='teammate-invite-form']"
+  end
+
+  test "send_teammate_invite creates a pending membership and re-renders with success" do
+    sign_in
+    account.update!(setup_path: :teammate)
+
+    assert_difference -> { account.account_memberships.pending.count }, 1 do
+      post onboarding_send_teammate_invite_path, params: { email: "newdev@example.com", role: "admin" }
+    end
+
+    assert_response :success
+    assert_select "[data-testid='teammate-invite-sent']", /newdev@example\.com/
+  end
+
+  test "invite_teammate lists prior invites with status when memberships exist" do
+    sign_in
+    account.update!(setup_path: :teammate)
+    # account :one has a pending non-owner membership from fixtures (user :two)
+
+    get onboarding_invite_teammate_path
+
+    assert_response :success
+    expected_rows = account.account_memberships.where.not(role: :owner).count
+
+    assert_select "[data-testid='teammate-invite-list']"
+    assert_select "[data-testid='teammate-invite-row']", count: expected_rows
+    assert_select "[data-testid='teammate-invite-row']", text: /pending/i
+    assert_select "[data-testid='teammate-invite-row']", text: /#{users(:two).email}/
+  end
+
+  test "invite_teammate omits the invites list when only the owner has a membership" do
+    sign_in
+    account.update!(setup_path: :teammate)
+    account.account_memberships.where.not(role: :owner).destroy_all
+
+    get onboarding_invite_teammate_path
+
+    assert_response :success
+    assert_select "[data-testid='teammate-invite-list']", count: 0
+  end
+
+  test "send_teammate_invite re-renders with an alert on a service error" do
+    sign_in
+    account.update!(setup_path: :teammate)
+
+    post onboarding_send_teammate_invite_path, params: { email: "not-an-email", role: "admin" }
+
+    assert_response :success
+    assert_select "[data-testid='teammate-invite-form']"
+    assert_select ".text-red-700", /invalid/i
+  end
+
+  # --- Install service overview (shown right after picking the assisted card) ---
+
+  test "install_service requires authentication" do
+    get onboarding_install_service_path
+
+    assert_redirected_to login_path
+  end
+
+  test "install_service redirects accounts not on the assisted path" do
+    sign_in
+    account.update!(setup_path: :self_serve)
+
+    get onboarding_install_service_path
+
+    assert_redirected_to onboarding_path
+  end
+
+  test "install_service renders the overview for an assisted account" do
+    sign_in
+    account.update!(setup_path: :assisted)
+
+    get onboarding_install_service_path
+
+    assert_response :success
+    assert_select "h2", text: /mbuzz install service/
+    assert_select "body", text: /\$1,500/
+    assert_select "body", text: /\bmbuzz credit\b/
+    assert_select "body", text: /Net cost/i
+    assert_select "body", text: /prepaid mbuzz/i
+    assert_select "body", text: /Non-refundable payment, due after the kickoff call/
+    assert_select "body", text: /build and implement the integration/i
+    assert_select "body", text: /No contract/i
+    refute_includes response.body, "What happens next"
+    refute_includes response.body, "Non-refundable mbuzz credit"
+  end
+
+  test "install_service has a Continue link to discovery" do
+    sign_in
+    account.update!(setup_path: :assisted)
+
+    get onboarding_install_service_path
+
+    assert_select "a[href=?]", onboarding_discovery_path, text: /Continue/
+  end
+
+  test "install_service renders the onboarding pip rail with Discovery as current" do
+    sign_in
+    account.update!(setup_path: :assisted)
+
+    get onboarding_install_service_path
+
+    assert_select "[data-testid='onboarding-pip-rail']"
+    assert_select "[data-testid='onboarding-pip-pick_path'][data-state='done']"
+    assert_select "[data-testid='onboarding-pip-discovery'][data-state='current']"
+    assert_select "[data-testid='onboarding-pip-book_kickoff'][data-state='upcoming']"
+    assert_select "[data-testid='onboarding-pip-pay'][data-state='locked']"
+    assert_select "[data-testid='onboarding-pip-done'][data-state='upcoming']"
+    assert_select "[data-testid='onboarding-pip-rail-mobile-caption']", text: "About"
+  end
+
+  test "setup-choice page does not render the pip rail (no path chosen yet)" do
+    sign_in
+    account.update!(setup_path: nil)
+
+    get onboarding_path
+
+    assert_select "[data-testid='onboarding-pip-rail']", count: 0
+  end
+
+  # --- Discovery ---
+
+  test "discovery requires authentication" do
+    get onboarding_discovery_path
+
+    assert_redirected_to login_path
+  end
+
+  test "discovery renders the form for an assisted account" do
+    sign_in
+    account.update!(setup_path: :assisted)
+
+    get onboarding_discovery_path
+
+    assert_response :success
+    assert_select "[data-testid='discovery-form']"
+  end
+
+  test "discovery uses Let's get started and 4 quick questions copy" do
+    sign_in
+    account.update!(setup_path: :assisted)
+
+    get onboarding_discovery_path
+
+    assert_select "h2", text: "Let's get started"
+    assert_select "p", text: "4 quick questions"
+  end
+
+  test "discovery Q1 is a multiselect on attribution_goal" do
+    sign_in
+    account.update!(setup_path: :assisted)
+
+    get onboarding_discovery_path
+
+    assert_select "input[type=checkbox][name='setup_profile[attribution_goal][]'][value=?]", "ecommerce"
+    assert_select "input[type=checkbox][name='setup_profile[attribution_goal][]'][value=?]", "b2b_leads"
+    assert_select "input[type=checkbox][name='setup_profile[attribution_goal][]'][value=?]", "signups"
+    assert_select "input[type=radio][name='setup_profile[attribution_goal]']", count: 0
+  end
+
+  test "discovery Q2 reads Where do you run ads?" do
+    sign_in
+    account.update!(setup_path: :assisted)
+
+    get onboarding_discovery_path
+
+    assert_select "legend", text: /Where do you run ads\?/
+    refute_includes response.body, "Which ad platforms do you run?"
+  end
+
+  test "discovery Q3 asks which platforms you use and offers an unsure option" do
+    sign_in
+    account.update!(setup_path: :assisted)
+
+    get onboarding_discovery_path
+
+    assert_select "legend", text: /Which platform\/s do you use\?/
+    assert_select "input[type=checkbox][name='setup_profile[install_platforms][]'][value=?]", "unsure"
+    assert_select "label", text: /I'm not sure yet/
+  end
+
+  test "discovery redirects accounts not on the assisted path" do
+    sign_in
+    account.update!(setup_path: :self_serve)
+
+    get onboarding_discovery_path
+
+    assert_redirected_to onboarding_path
+  end
+
+  test "submit_discovery stores the multiselect profile and marks it completed" do
+    sign_in
+    account.update!(setup_path: :assisted)
+
+    post onboarding_discovery_path,
+      params: { setup_profile: { attribution_goal: %w[ecommerce b2b_leads], monthly_ad_spend: "25k_100k" } }
+
+    account.reload
+
+    assert_equal %w[ecommerce b2b_leads], account.setup_profile["attribution_goal"]
+    assert_predicate account, :setup_profile_completed?
+  end
+
+  test "submit_discovery redirects to the guided setup page" do
+    sign_in
+    account.update!(setup_path: :assisted)
+
+    post onboarding_discovery_path, params: { setup_profile: { attribution_goal: %w[b2b_leads] } }
+
+    assert_redirected_to onboarding_guided_setup_path
+  end
+
+  # --- Guided Setup (details + plan picker) ---
+
+  test "guided_setup requires authentication" do
+    get onboarding_guided_setup_path
+
+    assert_redirected_to login_path
+  end
+
+  test "guided_setup redirects accounts not on the assisted path" do
+    sign_in
+    account.update!(setup_path: :self_serve)
+
+    get onboarding_guided_setup_path
+
+    assert_redirected_to onboarding_path
+  end
+
+  test "guided_setup redirects to discovery if discovery is not completed" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: nil)
+
+    get onboarding_guided_setup_path
+
+    assert_redirected_to onboarding_discovery_path
+  end
+
+  test "guided_setup renders the offer page with the scheduling form" do
+    sign_in
+    account.update!(
+      setup_path: :assisted,
+      setup_profile: { "monthly_ad_spend" => "over_100k" },
+      setup_profile_completed_at: Time.current
+    )
+
+    get onboarding_guided_setup_path
+
+    assert_response :success
+    assert_select "[data-testid='guided-setup']"
+    assert_select "[data-testid='book-kickoff-form']"
+    assert_select "input[type=hidden][name='scheduling_preferences[timezone]']"
+    assert_select "input[type=submit][value='Book now']"
+  end
+
+  test "guided_setup leads with Last step header and book-your-kickoff subhead" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+
+    get onboarding_guided_setup_path
+
+    assert_select "h2", text: /Last step/
+    assert_select "p", text: "Book your kickoff, we'll be in touch ASAP."
+    assert_select "[data-testid='book-kickoff-form'] h3", count: 0
+    refute_includes response.body, "We'll respond within one business day with options."
+  end
+
+  test "guided_setup does not render the inclusions overview content" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+
+    get onboarding_guided_setup_path
+
+    refute_includes response.body, "What happens next"
+    refute_includes response.body, "Install service inclusions"
+    refute_includes response.body, "Price: $1,500 USD"
+    refute_includes response.body, "build one for you"
+  end
+
+  test "guided_setup uses a combobox for timezone with hidden input and panel" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+
+    get onboarding_guided_setup_path
+
+    assert_select "[data-controller~='searchable-select']"
+    assert_select "[data-searchable-select-target='trigger']"
+    assert_select "[data-searchable-select-target='panel']"
+    assert_select "[data-searchable-select-target='input']"
+    assert_select "[data-searchable-select-target='hidden'][name='scheduling_preferences[timezone]']"
+    assert_select "select[name='scheduling_preferences[timezone]']", count: 0
+    assert_select "input[list='scheduling-timezones']", count: 0
+    refute_includes response.body, "We need this to schedule the kickoff call"
+  end
+
+  test "guided_setup uses preferred days and times labels with single hints" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+
+    get onboarding_guided_setup_path
+
+    assert_select "label, span", text: "Your preferred days"
+    assert_select "label, span", text: "Your preferred times"
+    refute_includes response.body, "Days that work"
+    refute_includes response.body, "Times that work"
+    refute_includes response.body, "Leave blank for any day"
+  end
+
+  test "guided_setup renders the booked-status state once a booking exists" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+    GuidedSetup.create!(account: account, kickoff_booked_at: Time.current)
+
+    get onboarding_guided_setup_path
+
+    assert_response :success
+    assert_select "[data-testid='success-state']", text: /Kickoff booked/
+  end
+
+  # --- Book kickoff ---
+
+  test "book_kickoff requires authentication" do
+    post onboarding_book_kickoff_path, params: { scheduling_preferences: { timezone: "Sydney" } }
+
+    assert_redirected_to login_path
+  end
+
+  test "book_kickoff requires the assisted path" do
+    sign_in
+    account.update!(setup_path: :self_serve)
+
+    post onboarding_book_kickoff_path, params: { scheduling_preferences: { timezone: "Sydney" } }
+
+    assert_redirected_to onboarding_path
+  end
+
+  test "book_kickoff requires discovery to be completed" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: nil)
+
+    post onboarding_book_kickoff_path, params: { scheduling_preferences: { timezone: "Sydney" } }
+
+    assert_redirected_to onboarding_discovery_path
+  end
+
+  test "book_kickoff re-renders the offer with an error when the timezone is blank" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+
+    post onboarding_book_kickoff_path, params: { scheduling_preferences: { timezone: "" } }
+
+    assert_response :unprocessable_entity
+    assert_select "[data-testid='scheduling-error']", /time zone/i
+  end
+
+  test "book_kickoff creates the engagement with the inferred integration target and stamps kickoff_booked_at" do
+    sign_in
+    account.update!(
+      setup_path: :assisted,
+      setup_profile: { "ad_platforms" => [ "meta" ] },
+      setup_profile_completed_at: Time.current
+    )
+
+    assert_difference -> { GuidedSetup.count }, 1 do
+      post onboarding_book_kickoff_path,
+        params: { scheduling_preferences: { timezone: "Sydney", days: [ "tue", "wed" ], time_blocks: [ "morning" ] } }
+    end
+
+    engagement = account.reload.guided_setup
+
+    assert_predicate engagement, :pending?
+    assert_equal "meta", engagement.integration_target
+    assert_predicate engagement.kickoff_booked_at, :present?
+    assert_equal "Sydney", engagement.scheduling_preferences["timezone"]
     assert_redirected_to dashboard_path
+    assert_equal "Kickoff booked. We'll be in touch.", flash[:notice]
+  end
+
+  test "book_kickoff enqueues the kickoff-booked internal notification email" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+
+    assert_enqueued_emails 1 do
+      post onboarding_book_kickoff_path,
+        params: { scheduling_preferences: { timezone: "Sydney", days: [ "tue" ], time_blocks: [ "midday" ] } }
+    end
+
+    enqueued = ActionMailer::Base.deliveries.empty? ? enqueued_jobs.last : nil
+    args = enqueued&.dig("arguments")
+
+    assert_equal "GuidedSetupMailer", args&.first
+    assert_equal "kickoff_booked", args&.second
+  end
+
+  test "book_kickoff success banner shows on the dashboard after redirect" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+
+    post onboarding_book_kickoff_path, params: { scheduling_preferences: { timezone: "Sydney" } }
+    follow_redirect!
+
+    assert_response :success
+    assert_select "[data-testid='flash-notice']", text: /Kickoff booked\. We'll be in touch\./
+  end
+
+  test "kickoff_booked route no longer resolves" do
+    assert_raises(NameError) { onboarding_kickoff_booked_path }
+  end
+
+  test "book_kickoff updates an existing pending engagement instead of creating a new one" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+    engagement = GuidedSetup.create!(account: account)
+
+    assert_no_difference -> { GuidedSetup.count } do
+      post onboarding_book_kickoff_path,
+        params: { scheduling_preferences: { timezone: "Sydney" } }
+    end
+
+    assert_predicate engagement.reload.kickoff_booked_at, :present?
+  end
+
+  test "book_kickoff drops unknown day-of-week and time-block values" do
+    sign_in
+    account.update!(setup_path: :assisted, setup_profile_completed_at: Time.current)
+
+    post onboarding_book_kickoff_path,
+      params: { scheduling_preferences: { timezone: "Sydney", days: [ "tue", "funday" ], time_blocks: [ "morning", "midnight" ] } }
+
+    prefs = account.reload.guided_setup.scheduling_preferences
+
+    assert_equal [ "tue" ], prefs["days"]
+    assert_equal [ "morning" ], prefs["time_blocks"]
   end
 
   # --- Setup (API key + SDK selection) ---
@@ -264,7 +807,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     get onboarding_verify_path
 
     assert_response :success
-    assert_select "[data-verification]"
+    assert_select "[data-testid='waiting-state']", text: /Waiting for your first event/
   end
 
   test "verify redirects to conversion if first_event_received already completed" do
@@ -356,6 +899,103 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     get onboarding_complete_path
 
     assert_redirected_to dashboard_path
+  end
+
+  # --- Payment setup (post-magic-link plan picker) ---
+
+  test "payment_setup redirects to onboarding when kickoff has not been booked" do
+    sign_in
+
+    get onboarding_payment_setup_path
+
+    assert_redirected_to onboarding_path
+  end
+
+  test "payment_setup is accessible once the kickoff is booked, no payment-link token needed" do
+    sign_in
+    GuidedSetup.create!(account: account, kickoff_booked_at: Time.current)
+
+    get onboarding_payment_setup_path
+
+    assert_response :success
+    assert_select "[data-testid='payment-setup']"
+  end
+
+  test "payment_setup redirects to dashboard once payment has landed" do
+    sign_in
+    GuidedSetup.create!(account: account, status: :in_progress, accepted_at: Time.current, kickoff_booked_at: Time.current)
+
+    get onboarding_payment_setup_path
+
+    assert_redirected_to dashboard_path
+  end
+
+  test "start_payment redirects to dashboard once payment has landed" do
+    sign_in
+    GuidedSetup.create!(account: account, status: :in_progress, accepted_at: Time.current, kickoff_booked_at: Time.current)
+
+    post onboarding_start_payment_path, params: { plan_slug: "growth" }
+
+    assert_redirected_to dashboard_path
+  end
+
+  test "payment_setup renders the plan picker when the token is active" do
+    sign_in
+    GuidedSetup.create!(account: account, kickoff_booked_at: Time.current).mint_payment_token!
+
+    get onboarding_payment_setup_path
+
+    assert_response :success
+    assert_select "[data-testid='payment-setup']"
+    assert_select "input[type=submit][value=?]", "Pay $1,500"
+  end
+
+  test "start_payment requires a plan to be chosen" do
+    sign_in
+    GuidedSetup.create!(account: account, kickoff_booked_at: Time.current).mint_payment_token!
+
+    post onboarding_start_payment_path
+
+    assert_redirected_to onboarding_payment_setup_path
+    assert_predicate flash[:alert], :present?
+  end
+
+  test "start_payment redirects to Stripe Checkout when the plan is valid" do
+    sign_in
+    account.update!(stripe_customer_id: "cus_payment_test")
+    GuidedSetup.create!(account: account, kickoff_booked_at: Time.current).mint_payment_token!
+
+    post onboarding_start_payment_path, params: { plan_slug: "growth" }
+
+    assert_response :redirect
+  end
+
+  test "payment_complete renders the success state when the engagement is in_progress" do
+    sign_in
+    GuidedSetup.create!(account: account, status: :in_progress, accepted_at: Time.current, kickoff_booked_at: Time.current)
+
+    get onboarding_payment_complete_path
+
+    assert_response :success
+    assert_select "[data-testid='success-state']", text: /Payment received/
+  end
+
+  test "payment_complete renders the processing state when the webhook has not landed yet" do
+    sign_in
+    GuidedSetup.create!(account: account, kickoff_booked_at: Time.current).mint_payment_token!
+
+    get onboarding_payment_complete_path
+
+    assert_response :success
+    assert_select "[data-testid='waiting-state']", text: /Confirming your payment/
+  end
+
+  test "payment_complete redirects to onboarding when there is no payment context" do
+    sign_in
+
+    get onboarding_payment_complete_path
+
+    assert_redirected_to onboarding_path
   end
 
   private

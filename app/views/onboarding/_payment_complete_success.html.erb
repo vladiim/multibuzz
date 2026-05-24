@@ -1,0 +1,8 @@
+<%= turbo_frame_tag "payment_complete_state" do %>
+  <%= render "shared/success_state",
+    emoji: "🎉",
+    heading: "Payment received. Your specialist is on it.",
+    body: "Your $1,500 is on your mbuzz balance and your plan is active. The install starts now — you'll hear from your specialist with the next step.",
+    primary_cta_label: "Go to dashboard",
+    primary_cta_path: dashboard_path %>
+<% end %>

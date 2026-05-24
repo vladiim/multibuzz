@@ -1,0 +1,202 @@
+---
+title: "GA4 Attribution vs the Alternatives, Side by Side (2026)"
+slug: "ga4-attribution-vs-alternatives"
+description: "GA4 vs Northbeam, Rockerbox, HockeyStack, Triple Whale, Dreamdata, and mbuzz. Compare models, conversion threshold, server-side, and cost in one table."
+published_at: 2026-05-24
+section: comparisons
+section_order: 14
+status: published
+last_updated: 2026-05-25
+priority: P1
+category: "Tool Comparisons"
+tags:
+  - GA4 vs alternatives
+  - Google Analytics attribution
+  - attribution comparison
+  - multi-touch attribution
+  - data-driven attribution
+related_articles:
+  - ga4-attribution-alternatives
+  - mbuzz-vs-ga4-attribution
+  - multi-touch-attribution-tools-compared
+  - northbeam-alternatives
+  - rockerbox-alternatives
+  - hockeystack-alternatives
+  - triple-whale-alternatives
+seo:
+  title: "GA4 Attribution vs the Alternatives, Side by Side (2026)"
+aeo:
+  target_query: "GA4 attribution vs alternatives"
+  tldr: "GA4 removed all attribution models except Data-Driven Attribution in 2023, and DDA needs 400+ conversions per channel to activate. Alternatives: <strong>Northbeam</strong> ($400+/mo, ML black box for enterprise DTC), <strong>Rockerbox</strong> (free / $200/mo, strong on podcast and TV), <strong>HockeyStack</strong> ($2,200+/mo, but exited attribution Q1 2026), <strong>Triple Whale</strong> ($129/mo, Shopify-only), <strong>Dreamdata</strong> (free / $999/mo, B2B SaaS), <strong>mbuzz</strong> (free / $29-299/mo, 8 models side-by-side + Attribution DSL). For technical marketers who want to inspect the model, mbuzz is the only tool that shows all 8 model outputs simultaneously."
+  key_takeaways:
+    - "GA4 removed all attribution models except Data-Driven Attribution in 2023; DDA needs 400+ conversions per channel before it activates"
+    - "Every paid alternative ships a proprietary model under the hood; only mbuzz exposes all 8 models side-by-side"
+    - "Pricing ranges from free (GA4, mbuzz free tier) to $2,200+/mo (HockeyStack); most alternatives sit between $129 and $999/mo"
+    - "Triple Whale is Shopify-only; Rockerbox is strongest for offline channels; Dreamdata leads B2B SaaS; Northbeam targets enterprise DTC"
+    - "HockeyStack publicly exited attribution in Q1 2026. Picking it today means betting against the vendor's own roadmap"
+  faq:
+    - q: "What's the best GA4 attribution alternative?"
+      a: "Depends on the buyer. Shopify DTC under $30M revenue: Triple Whale or mbuzz. Multi-channel including podcast and TV: Rockerbox. Enterprise DTC with sophisticated media buying: Northbeam. B2B SaaS: Dreamdata. Technical marketers who want to inspect the model and write their own: mbuzz. Anyone who wants a free tier to start: mbuzz or GA4 itself."
+    - q: "Why did GA4 remove its attribution models?"
+      a: "Google removed first-click, linear, time-decay, and position-based attribution from GA4 in 2023, leaving only Data-Driven Attribution. The official reason is that DDA is more accurate. The practical effect is that GA4 attribution went from configurable to single-model with no inspection. DDA also requires 400+ conversions per channel before it activates."
+    - q: "Can I run GA4 alongside another attribution tool?"
+      a: "Yes, and most teams should. GA4 is excellent for web analytics, traffic analysis, and Google Ads integration. Add a dedicated attribution tool (mbuzz, Dreamdata, Rockerbox, or another) alongside it for the attribution layer. They solve different problems and don't conflict."
+    - q: "Which GA4 alternative is cheapest?"
+      a: "mbuzz has a free tier with 8 attribution models. Rockerbox has a free tier with paid plans from $200/mo. Triple Whale starts at $129/mo (Shopify only). Dreamdata has a free tier for individuals, paid from $999/mo. HockeyStack starts at $2,200+/mo. Northbeam is enterprise-priced at $400+/mo and scales up."
+    - q: "Should I replace GA4 entirely with an alternative?"
+      a: "No. Keep GA4 for web analytics and Google Ads integration. Add a dedicated attribution tool alongside it. The alternatives on this page focus on attribution, not full web analytics. Running both is the common pattern."
+    - q: "What does 'multi-model attribution' mean and why does it matter?"
+      a: "Multi-model attribution means running the same touchpoint data through multiple attribution algorithms simultaneously and comparing the outputs. mbuzz runs 8: first-touch, last-touch, linear, time-decay, position-based, Markov chain, Shapley value, and data-driven. It matters because a model is an opinion about how credit moves through the journey. Different opinions give different answers on identical data. If 6 of 8 models agree on a channel's contribution, that's high confidence. If they disagree by 20 percentage points, you know the answer is a call you have to make yourself, not a number to copy off a dashboard."
+    - q: "Does any alternative solve attribution the way Haus or Measured do?"
+      a: "No. Haus, Measured, Recast, and Mutinex run incrementality testing via geo-lift experiments. That's causal measurement, not multi-touch attribution. The Dropbox IEEE Access paper (Chivukula et al., 2026) showed click attribution overstates causal impact by 2-10x compared to geo-incrementality. Incrementality fills that gap, but it costs $10K-$132K/year and requires PhDs, millions in spend, and month-long channel blackouts. The tools on this page are MTA: they distribute credit across observed touchpoints. At scale you typically need both."
+schema:
+  type: Article
+  author: "holly-henderson"
+has_code_examples: false
+has_calculator: false
+has_download: false
+---
+
+<%= render_tldr(@article.tldr) %>
+
+## Who this page is for
+
+You're searching "ga4 attribution vs alternatives" because GA4 removed every attribution model except Data-Driven Attribution in 2023, and DDA needs 400+ conversions per channel to even turn on. You came for the bake-off.
+
+Here it is. One table. Seven tools. Cost, models offered, server-side, who it's actually for.
+
+## The Comparison
+
+<%= render "articles/embeds/comparison_table",
+  competitors: [
+    {
+      slug: "ga4",
+      name: "GA4",
+      attribution_models: "1 (DDA only)",
+      custom_models: "No",
+      server_side: "No (client-side)",
+      starting_price: "Free",
+      best_for: "Web analytics + Google Ads"
+    },
+    {
+      slug: "mbuzz",
+      name: "mbuzz",
+      attribution_models: "8 + custom",
+      custom_models: "Yes (Attribution DSL)",
+      server_side: "Yes",
+      starting_price: "Free / $29-299",
+      best_for: "Technical marketers, model inspection"
+    },
+    {
+      slug: "northbeam",
+      name: "Northbeam",
+      attribution_models: "ML (opaque)",
+      custom_models: "No",
+      server_side: "Yes",
+      starting_price: "$400+/mo",
+      best_for: "Enterprise DTC, ML media buying"
+    },
+    {
+      slug: "rockerbox",
+      name: "Rockerbox",
+      attribution_models: "MTA + MMM",
+      custom_models: "No",
+      server_side: "Yes",
+      starting_price: "Free / $200/mo",
+      best_for: "Multi-channel inc. podcast/TV"
+    },
+    {
+      slug: "hockeystack",
+      name: "HockeyStack",
+      attribution_models: "Bundled (proprietary)",
+      custom_models: "No",
+      server_side: "Yes",
+      starting_price: "$2,200+/mo",
+      best_for: "B2B (vendor exited attribution Q1 2026)"
+    },
+    {
+      slug: "triple-whale",
+      name: "Triple Whale",
+      attribution_models: "4-6 (proprietary)",
+      custom_models: "No",
+      server_side: "Yes (Shopify only)",
+      starting_price: "$129/mo",
+      best_for: "Shopify DTC"
+    },
+    {
+      slug: "dreamdata",
+      name: "Dreamdata",
+      attribution_models: "Multiple (proprietary)",
+      custom_models: "No",
+      server_side: "Yes",
+      starting_price: "Free / $999/mo",
+      best_for: "B2B SaaS, account-level"
+    }
+  ],
+  columns: [:attribution_models, :custom_models, :server_side, :starting_price, :best_for] %>
+
+The table is the answer. Below is a one-paragraph per tool with the actual trade-off named, then a per-use-case decision guide, then the part most comparison pages won't say out loud.
+
+## GA4: free, but one black-box model
+
+GA4 is excellent as web analytics. As attribution, you get exactly one model: Data-Driven Attribution. DDA needs 400+ conversions per channel to activate; below that, GA4 falls back to last-click. The model itself is closed: Google won't show you the weights. Documented bias toward Google channels (Ads, organic Search, YouTube). The killer feature is the price. Zero.
+
+## mbuzz: 8 models, write your own
+
+8 attribution models running side-by-side on the same data: first-touch, last-touch, linear, time-decay, position-based, Markov chain, Shapley value, data-driven. The wedge is the spread. If last-touch says Google is 60% of conversions and Markov says it's 35%, the real number lives in that fight between the models. Attribution DSL lets you write or fork any model in a SQL-like language. Server-side tracking closes the 30-40% gap that client-side trackers lose to ad blockers and iOS privacy. Free tier covers solo work; $29-299/mo for teams.
+
+## Northbeam: enterprise DTC ML
+
+Used by larger DTC brands with seven-figure monthly media budgets. Sophisticated ML attribution. The trade-off is that the model is a black box and pricing scales to $2-5K/month at volume. If you don't have a dedicated media-buying team to interpret the output, you're paying for a number you can't audit. See [Northbeam alternatives](/articles/northbeam-alternatives) for a deeper breakdown.
+
+## Rockerbox: multi-channel including offline
+
+The strongest tool on this list for measuring podcast, TV, and direct mail alongside digital. Combines MTA with MMM in one product. Free tier exists; paid plans start ~$200/mo. Fewer attribution models than mbuzz, less platform-specific depth than Triple Whale. Best fit when offline channels are part of your mix. See [Rockerbox alternatives](/articles/rockerbox-alternatives).
+
+## HockeyStack: bundled B2B, but exited attribution
+
+HockeyStack publicly exited attribution in Q1 2026, repositioning the company around "AI revenue agents." The product still ships, but their 300+ attribution articles are no longer maintained and the company's strategic bet is elsewhere. $2,200+/mo. Picking HockeyStack today for attribution means buying against the vendor's own roadmap. See [HockeyStack alternatives](/articles/hockeystack-alternatives).
+
+## Triple Whale: Shopify only
+
+Purpose-built for Shopify DTC. Easy install, dashboard-first, fast time to value. $129/mo entry. Shopify-only is the hard limit. No WooCommerce, no Magento, no custom carts. Multiple pricing restructures in 2026, so check current rates before signing. See [Triple Whale alternatives](/articles/triple-whale-alternatives).
+
+## Dreamdata: B2B journey
+
+Strong on B2B sales-cycle attribution: account-level credit, multi-stakeholder journeys, long attribution windows. Free tier for individuals; paid from ~$999/mo. Closed-model approach (you don't write your own). Best fit for B2B SaaS teams that need account-level attribution and don't need to inspect the math. See [Dreamdata alternatives](/articles/dreamdata-alternatives).
+
+## Choose by use case
+
+**Shopify DTC under $30M revenue.** Triple Whale or mbuzz. Triple Whale is faster to set up. mbuzz gives you more models and works beyond Shopify if you grow off-platform.
+
+**DTC at $40M+ with offline channels.** Rockerbox for multi-channel including podcast/TV, or Northbeam for digital ML attribution.
+
+**B2B SaaS.** Dreamdata for closed-model account-level attribution. mbuzz for model inspection and custom rules.
+
+**Anyone who wants to keep GA4 and add a real attribution layer.** mbuzz. The free tier runs alongside GA4. No migration, no rip-and-replace.
+
+**Bootstrapped or under $20K/mo ad spend.** Stay on GA4 for now and add mbuzz's free tier. Below $20K/mo the conversion sample is too small for any model to settle, so the cheap stack wins.
+
+## The part most comparison pages won't say
+
+Every tool above ships with a model baked in and reports its number as if it came from physics. GA4 has DDA. Northbeam has its ML. HockeyStack, Dreamdata, Triple Whale, and Rockerbox each have a proprietary "data-driven" model under the hood. Each one will tell you a different answer on the same touchpoint data.
+
+That's how attribution works. A model is an opinion about how credit moves through the journey, and different opinions weight things differently. The dishonest part is presenting a single opinion as truth.
+
+mbuzz runs eight at once so you can see the spread. If six of the eight models agree on a channel's contribution, that's high confidence. If they disagree by 20 percentage points, you know the answer is a judgement call, not a number to copy off a dashboard.
+
+<%= render "articles/cta_banner",
+  title: "Compare 8 attribution models on your own data",
+  description: "Run first-touch, last-touch, linear, time-decay, position-based, Markov, Shapley, and data-driven side-by-side. Write your own in the Attribution DSL. Free tier, no credit card.",
+  cta_text: "Try mbuzz Free →",
+  style: :dark %>
+
+## Related comparisons
+
+- [GA4 Attribution Alternatives](/articles/ga4-attribution-alternatives) — list-format version of this page
+- [mbuzz vs GA4 Attribution](/articles/mbuzz-vs-ga4-attribution) — single head-to-head
+- [Multi-Touch Attribution Tools Compared](/articles/multi-touch-attribution-tools-compared) — full market overview
+
+<%= render_key_takeaways(@article.key_takeaways) %>
+
+<%= render_faq(@article.faq) %>

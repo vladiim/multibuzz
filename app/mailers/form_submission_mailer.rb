@@ -1,13 +1,11 @@
 # frozen_string_literal: true
 
 class FormSubmissionMailer < ApplicationMailer
-  NOTIFICATION_EMAIL = "vlad@forebrite.com"
-
   def notify(submission)
     @submission = submission
 
     mail(
-      to: NOTIFICATION_EMAIL,
+      to: internal_notification_email,
       subject: subject_for(submission)
     )
   end

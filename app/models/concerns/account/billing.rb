@@ -6,6 +6,7 @@ module Account::Billing
   included do
     belongs_to :plan, optional: true
     has_many :billing_events, dependent: :destroy
+    has_many :account_credits, dependent: :destroy
 
     enum :billing_status, {
       free_forever: 0,

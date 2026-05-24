@@ -1,0 +1,24 @@
+<h1>New Guided Setup purchase</h1>
+
+<p>
+  <strong>Account:</strong> <%= @account.name %> (<%= @account.prefix_id %>)<br>
+  <strong>Engagement:</strong> <%= @guided_setup.prefix_id %><br>
+  <strong>Plan:</strong> <%= @account.plan&.name %><br>
+  <strong>Integration target:</strong> <%= @guided_setup.integration_target.humanize %>
+</p>
+
+<h2>Discovery answers</h2>
+
+<% if @account.setup_profile.present? %>
+  <ul>
+    <% @account.setup_profile.each do |key, value| %>
+      <li><strong><%= key.to_s.humanize %>:</strong> <%= Array(value).join(", ") %></li>
+    <% end %>
+  </ul>
+<% else %>
+  <p>No discovery profile recorded.</p>
+<% end %>
+
+<p>
+  <%= link_to "Open in admin", admin_guided_setup_url(@guided_setup) %>
+</p>

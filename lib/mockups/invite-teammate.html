@@ -1,0 +1,17 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Invite teammate</title><link rel="stylesheet" href="wireframe.css"></head><body>
+<div class="meta">GET /accounts/team/invitations/new<span class="tag">existing flow</span></div>
+<div class="screen">
+<div class="topbar"><span>mbuzz</span><span class="right">Onboarding</span></div>
+<div class="body">
+<h1>Invite the person who'll set up mbuzz</h1>
+<p class="muted">They get an email with a link to finish onboarding.</p>
+<h2>Email address</h2>
+<p><input type="text" placeholder="name@company.com"></p>
+<h2>Role</h2>
+<label class="opt"><input type="radio" name="role" checked> Admin &mdash; full access</label>
+<label class="opt"><input type="radio" name="role"> Member &mdash; limited access</label>
+<div class="actions"><a class="btn" href="setup.html">Skip for now</a><a class="btn primary" href="#">Send invite &rarr;</a></div>
+</div></div>
+<div class="notes">Routes into mbuzz's existing team-invitation flow &mdash; <code>Team::InvitationService</code>, <code>AccountMembership</code>, <code>invitations_controller</code>, <code>TeamMailer</code>. No new build; the setup-choice screen just links here.</div>
+<nav class="flownav"><a href="setup-choice.html">&larr; Setup choice</a><a href="discovery.html">Discovery &rarr;</a></nav>
+</body></html>

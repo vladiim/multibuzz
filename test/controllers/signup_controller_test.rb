@@ -14,6 +14,16 @@ class SignupControllerTest < ActionDispatch::IntegrationTest
     assert_select "input[name='account[name]']"
   end
 
+  test "new shows Create your account as the page header with no-credit-card subhead" do
+    get signup_path
+
+    assert_response :success
+    assert_select "h1", text: /Create your account/
+    assert_select "body", text: /No credit card required/
+    assert_select "body", text: /\bmbuzz\b/, count: 0
+    assert_select "body", text: /Server-side marketing attribution/, count: 0
+  end
+
   test "create with valid params creates user and account" do
     assert_difference [ "User.count", "Account.count", "AccountMembership.count" ], 1 do
       post signup_path, params: {
@@ -22,7 +32,7 @@ class SignupControllerTest < ActionDispatch::IntegrationTest
       }
     end
 
-    assert_redirected_to signup_welcome_path
+    assert_redirected_to onboarding_path
   end
 
   test "create logs in the new user" do
@@ -103,36 +113,6 @@ class SignupControllerTest < ActionDispatch::IntegrationTest
     account = Account.find_by(name: "New Company")
 
     assert_predicate account.api_keys.test, :exists?
-  end
-
-  test "welcome page mounts the gtm-event controller for signup_complete" do
-    post signup_path, params: {
-      user: { email: "newuser@example.com", password: "password123" },
-      account: { name: "New Company" }
-    }
-    get signup_welcome_path
-
-    assert_response :success
-    assert_includes response.body, 'data-controller="gtm-event"'
-    assert_includes response.body, 'data-gtm-event-name-value="signup_complete"'
-  end
-
-  test "welcome page hashes the user email for the user_id_hashed property" do
-    post signup_path, params: {
-      user: { email: "Newuser@Example.com", password: "password123" },
-      account: { name: "New Company" }
-    }
-    get signup_welcome_path
-
-    expected_hash = Digest::SHA256.hexdigest("newuser@example.com")
-
-    assert_includes response.body, expected_hash
-  end
-
-  test "welcome page redirects to signup when no user is signed in" do
-    get signup_welcome_path
-
-    assert_redirected_to signup_path
   end
 
   test "create enqueues the internal new-signup notification" do

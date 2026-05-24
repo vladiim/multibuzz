@@ -31,6 +31,12 @@ module AdminTools
       description: "Billing summary and usage across accounts"
     ),
     Tool.new(
+      category: Categories::CUSTOMER_SUPPORT,
+      name: "Guided Setup",
+      path: "/admin/guided_setups",
+      description: "Concierge onboarding engagements; generate payment links"
+    ),
+    Tool.new(
       category: Categories::PLATFORM_OPERATIONS,
       name: "Feature Flags",
       path: "/admin/feature_flags",

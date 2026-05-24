@@ -1,0 +1,37 @@
+<%#
+  Shared success state. Used by payment_complete (success), attribution,
+  invite_teammate (post-send), and any other "this happened" surface.
+  Per DESIGN_SYSTEM §7.2.
+
+  Locals:
+    emoji              - required, the hero emoji
+    heading            - required, the headline
+    body               - required, the supporting copy
+    primary_cta_label  - required, the primary action label
+    primary_cta_path   - required, the primary action URL
+    secondary_cta_label - optional, label for a second action
+    secondary_cta_path  - optional, URL for a second action
+
+  Optional yield block renders below the CTAs (e.g. a "next steps" card).
+%>
+<% extras = capture { yield } if block_given? %>
+<div class="text-center" data-testid="success-state">
+  <div class="text-5xl mb-3"><%= emoji %></div>
+  <h2 class="text-2xl sm:text-3xl font-bold text-gray-900"><%= heading %></h2>
+  <p class="mt-2 text-base sm:text-lg text-gray-600 max-w-xl mx-auto"><%= body %></p>
+  <div class="mt-6 flex justify-center gap-3 flex-wrap">
+    <% if local_assigns[:secondary_cta_label].present? %>
+      <%= link_to local_assigns[:secondary_cta_label],
+        local_assigns[:secondary_cta_path],
+        class: "px-5 py-2.5 bg-white text-gray-700 border border-gray-300 rounded-md shadow-sm font-medium hover:bg-gray-50",
+        data: { turbo_frame: "_top" } %>
+    <% end %>
+    <%= link_to primary_cta_label,
+      primary_cta_path,
+      class: "px-5 py-2.5 bg-indigo-600 text-white rounded-md shadow-sm font-medium hover:bg-indigo-700",
+      data: { turbo_frame: "_top" } %>
+  </div>
+  <% if extras.present? %>
+    <div class="mt-8 text-left"><%= extras %></div>
+  <% end %>
+</div>

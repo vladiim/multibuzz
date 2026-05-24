@@ -1,19 +1,47 @@
 # frozen_string_literal: true
 
 class OnboardingController < ApplicationController
+  layout "onboarding"
+  skip_marketing_analytics
   before_action :require_login
+
+  include Onboarding::AssistedPath
+  include Onboarding::PaymentFlow
+
   before_action :ensure_sdk_selected, only: [ :install, :verify, :conversion ]
+  before_action :set_onboarding_current_pip
+
+  # Maps the running action to the pip the user is currently on. Actions
+  # absent from this map render no pip rail (e.g. setup-choice before a
+  # path is chosen, or POST actions that redirect).
+  CURRENT_PIP_FOR_ACTION = {
+    "install_service"      => :discovery,
+    "discovery"            => :discovery,
+    "guided_setup"         => :book_kickoff,
+    "payment_setup"        => :pay,
+    "start_payment"        => :pay,
+    "payment_complete"     => :done,
+    "invite_teammate"      => :invite_sent,
+    "send_teammate_invite" => :invite_sent,
+    "setup"                => :api_key,
+    "install"              => :install,
+    "verify"               => :verify,
+    "conversion"           => :conversion,
+    "attribution"          => :done
+  }.freeze
 
   def show
-    redirect_to onboarding_setup_path if persona_selected?
+    return redirect_to setup_path_destination if current_account.setup_path
+
+    @user_id_hashed = Digest::SHA256.hexdigest(current_user.email.downcase.strip)
   end
 
-  def persona
-    current_account.update!(onboarding_persona: params[:persona])
+  def choose_path
+    current_account.update!(setup_path: params[:setup_path])
     current_account.complete_onboarding_step!(:persona_selected)
-    Lifecycle::Tracker.track("onboarding_persona_selected", current_account, persona: current_account.onboarding_persona)
+    Lifecycle::Tracker.track("onboarding_setup_path_chosen", current_account, setup_path: current_account.setup_path)
 
-    redirect_to current_account.marketer? ? dashboard_path : onboarding_setup_path
+    redirect_to choose_path_destination
   end
 
   def setup
@@ -86,12 +114,34 @@ class OnboardingController < ApplicationController
 
   private
 
+  def set_onboarding_current_pip
+    @onboarding_current_pip = CURRENT_PIP_FOR_ACTION[action_name]
+  end
+
   def ensure_sdk_selected
     redirect_to onboarding_setup_path unless current_account.selected_sdk.present?
   end
 
-  def persona_selected?
-    current_account.onboarding_step_completed?(:persona_selected)
+  def choose_path_destination
+    case current_account.setup_path
+    when SetupPaths::TEAMMATE then onboarding_invite_teammate_path
+    when SetupPaths::ASSISTED then onboarding_install_service_path
+    else onboarding_setup_path
+    end
+  end
+
+  def setup_path_destination
+    return onboarding_setup_path if current_account.dev_on_teammate_path?(current_user)
+
+    case current_account.setup_path
+    when SetupPaths::TEAMMATE then onboarding_invite_teammate_path
+    when SetupPaths::ASSISTED then assisted_destination
+    else onboarding_setup_path
+    end
+  end
+
+  def assisted_destination
+    current_account.setup_profile_completed? ? onboarding_guided_setup_path : onboarding_discovery_path
   end
 
   def first_event_completed?

@@ -59,7 +59,7 @@ module AdPlatforms
       def parse_customer(customer)
         {
           id: customer[FIELD_ID],
-          name: customer[FIELD_DESCRIPTIVE_NAME],
+          name: customer[FIELD_DESCRIPTIVE_NAME].presence || "Account #{customer[FIELD_ID]}",
           currency: customer[FIELD_CURRENCY_CODE],
           time_zone: customer[FIELD_TIME_ZONE],
           manager: customer[FIELD_MANAGER] == true
@@ -79,7 +79,7 @@ module AdPlatforms
 
         {
           id: client[FIELD_ID],
-          name: client[FIELD_DESCRIPTIVE_NAME],
+          name: client[FIELD_DESCRIPTIVE_NAME].presence || "Account #{client[FIELD_ID]}",
           currency: client[FIELD_CURRENCY_CODE],
           time_zone: client[FIELD_TIME_ZONE]
         }

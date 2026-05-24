@@ -1,0 +1,17 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Verify</title><link rel="stylesheet" href="wireframe.css"></head><body>
+<div class="meta">GET /onboarding/verify<span class="tag">current — unchanged</span></div>
+<div class="screen">
+<div class="topbar"><span>mbuzz</span><span class="right">Onboarding</span></div>
+<div class="body">
+<div style="display:flex;justify-content:space-between;font-size:12px"><span>Step 4 of 5</span><span>80%</span></div>
+<div class="progress"><div style="width:80%"></div></div>
+<div class="center">
+<div class="spin"></div>
+<h1>Waiting for your first event&hellip;</h1>
+<p class="muted">Trigger an event from your app &mdash; we detect it automatically. Polls every 3 seconds.</p>
+</div>
+<div class="field"><span>curl &hellip; /api/v1/events &hellip;</span><span class="copy">Copy</span></div>
+</div></div>
+<div class="notes">Unchanged screen. Live polling of <code>/onboarding/event_status</code>; advances itself when the first event lands.</div>
+<nav class="flownav"><a href="install.html">&larr; Install</a><a href="conversion.html">Conversion &rarr;</a></nav>
+</body></html>
