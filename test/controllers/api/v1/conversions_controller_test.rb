@@ -89,13 +89,13 @@ module Api
       # Identifier validation tests
       # ==========================================
 
-      test "returns 422 when neither event_id nor visitor_id provided" do
+      test "returns 422 when no identifier provided" do
         post api_v1_conversions_path,
           params: { conversion: { conversion_type: "signup" } },
           headers: auth_headers
 
         assert_response :unprocessable_entity
-        assert_includes response.parsed_body["errors"], "event_id or visitor_id is required"
+        assert_includes response.parsed_body["errors"], "event_id, visitor_id, or user_id is required"
       end
 
       # ==========================================

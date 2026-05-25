@@ -52,7 +52,7 @@ module Conversions
     end
 
     def validation_error
-      return error_result([ "event_id or visitor_id is required" ]) unless has_identifier?
+      return error_result([ "event_id, visitor_id, or user_id is required" ]) unless has_identifier?
       return error_result([ "conversion_type is required" ]) unless conversion_type.present?
       return error_result([ "Event not found" ]) if event_id.present? && !event
       return error_result([ "Event belongs to different account" ]) if event && !event_belongs_to_account?
@@ -62,7 +62,7 @@ module Conversions
     end
 
     def has_identifier?
-      event_id.present? || visitor_id_param.present?
+      event_id.present? || visitor_id_param.present? || user_id.present?
     end
 
     # Event lookup (when event_id provided)
@@ -76,9 +76,19 @@ module Conversions
       event&.account_id == account.id
     end
 
-    # Resolution: event takes precedence, then visitor_id lookup, then fingerprint fallback
+    # Resolution chain — strongest signal first:
+    #   1. event_id → its bound visitor
+    #   2. visitor_id (cookie) → direct lookup
+    #   3. fingerprint (ip+ua within 30s) → recent session's visitor
+    #   4. user_id → identity's most recent visitor, creating both if missing.
+    #      Enables cookieless server-side attribution (e.g. WooCommerce guest
+    #      checkouts where the only identifier is billing email).
     def resolved_visitor
-      @resolved_visitor ||= event&.visitor || find_visitor_by_id || find_visitor_by_fingerprint
+      @resolved_visitor ||=
+        event&.visitor ||
+          find_visitor_by_id ||
+          find_visitor_by_fingerprint ||
+          find_visitor_via_user_id
     end
 
     def find_visitor_by_id
@@ -91,6 +101,36 @@ module Conversions
       return nil unless can_fingerprint?
 
       recent_fingerprint_session&.visitor
+    end
+
+    # Cookieless fallback. Creates an Identity for the user_id (if needed) and
+    # returns the identity's most-recent visitor — or creates a new anonymous
+    # one when this is the first time we've seen this user_id.
+    #
+    # The cookied journey, when it eventually arrives, will be merged onto the
+    # same identity by Identities::IdentificationService, which queues
+    # Conversions::ReattributionJob for any conversion captured here.
+    def find_visitor_via_user_id
+      return nil unless user_id.present?
+
+      identity = persisted_identity_for_user_id
+      identity.visitors.order(updated_at: :desc).first || create_anonymous_visitor_for(identity)
+    end
+
+    def persisted_identity_for_user_id
+      @persisted_identity ||= account.identities.find_or_create_by!(external_id: user_id) do |i|
+        i.first_identified_at = Time.current
+        i.last_identified_at = Time.current
+        i.is_test = is_test
+      end
+    end
+
+    def create_anonymous_visitor_for(identity)
+      account.visitors.create!(
+        visitor_id: SecureRandom.hex(32),
+        identity: identity,
+        is_test: is_test
+      )
     end
 
     def can_fingerprint?
@@ -161,7 +201,10 @@ module Conversions
     def identity_from_user_id
       return nil unless user_id.present?
 
-      account.identities.find_by(external_id: user_id)
+      # Reuse the identity persisted during cookieless visitor resolution to
+      # avoid a redundant SELECT; otherwise fall back to the existing find_by
+      # behavior so logged-in/cookied flows are byte-for-byte unchanged.
+      @persisted_identity || account.identities.find_by(external_id: user_id)
     end
 
     # Flatten nested "properties" key if present
