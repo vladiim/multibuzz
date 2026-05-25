@@ -15,8 +15,14 @@ module Account::Onboarding
     :onboarding_complete
   ].freeze
 
+  # Discovery answers (assisted-path onboarding) live in setup_profile;
+  # cap it like the other jsonb columns in the codebase.
+  SETUP_PROFILE_MAX_BYTES = 50.kilobytes
+
   included do
     enum :onboarding_persona, { developer: 0, marketer: 1, both: 2 }
+    enum :setup_path, SetupPaths::ENUM_VALUES
+    validate :setup_profile_within_limits
   end
 
   def onboarding_step_completed?(step)
@@ -70,7 +76,18 @@ module Account::Onboarding
     update!(onboarding_skipped_at: nil)
   end
 
+  def setup_profile_completed?
+    setup_profile_completed_at.present?
+  end
+
   private
+
+  def setup_profile_within_limits
+    return errors.add(:setup_profile, "must be a hash") unless setup_profile.is_a?(Hash)
+    return if setup_profile.to_json.bytesize <= SETUP_PROFILE_MAX_BYTES
+
+    errors.add(:setup_profile, "is too large")
+  end
 
   def just_activated?
     activated? && activated_at.nil?

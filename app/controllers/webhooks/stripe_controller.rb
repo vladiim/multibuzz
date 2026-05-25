@@ -63,7 +63,12 @@ module Webhooks
     end
 
     def webhook_secret
-      self.class.webhook_secret_override || Rails.application.credentials.dig(:stripe, :webhook_secret)
+      # ENV override exists for local dev: `stripe listen` generates a fresh
+      # signing secret per session, so we point STRIPE_WEBHOOK_SECRET at it
+      # instead of editing credentials each time. Unset in staging/prod.
+      self.class.webhook_secret_override ||
+        ENV["STRIPE_WEBHOOK_SECRET"].presence ||
+        Rails.application.credentials.dig(:stripe, :webhook_secret)
     end
 
     def render_signature_error

@@ -1,0 +1,21 @@
+<%#
+  Resume-nav pill in the main app top nav while onboarding is in
+  progress. Always a clickable link back into the onboarding flow.
+  Visual treatment varies by ResumeStatus#actionable:
+   - true  -> filled-indigo CTA ("do this next")
+   - false -> light-indigo status link ("we're working / wait for us")
+  Per DESIGN_SYSTEM §10.
+%>
+<% status = onboarding_resume_status %>
+<% if status.present? %>
+  <% pill_class = status.actionable ?
+       "inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-indigo-700" :
+       "inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-700 text-sm font-medium rounded-md border border-indigo-100 hover:bg-indigo-100" %>
+  <% dot_class = status.actionable ? "bg-white" : "bg-indigo-500" %>
+  <%= link_to status.path,
+        class: pill_class,
+        data: { testid: "onboarding-resume-pill", state: status.actionable ? "actionable" : "status-only" } do %>
+    <span class="w-1.5 h-1.5 rounded-full <%= dot_class %>" aria-hidden="true"></span>
+    <%= status.label %>
+  <% end %>
+<% end %>

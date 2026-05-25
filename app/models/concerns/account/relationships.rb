@@ -8,6 +8,7 @@ module Account::Relationships
     has_many :members, through: :account_memberships, source: :user
     has_many :users, through: :account_memberships
     has_many :api_keys, dependent: :destroy
+    has_one :guided_setup, dependent: :destroy
 
     # Order matters for dependent: :destroy (foreign key constraints)
     # Most dependent tables first, then their parents
@@ -27,5 +28,18 @@ module Account::Relationships
     has_many :ad_platform_connections, dependent: :destroy
     has_many :data_integrity_checks, dependent: :destroy
     has_many :exports, dependent: :destroy
+    has_many :score_assessments, dependent: :nullify
+  end
+
+  def owner_user
+    account_memberships.owner.accepted.first&.user
+  end
+
+  # True when `user` should see the self-serve onboarding chrome
+  # regardless of the account's actual setup_path. Today: a non-owner on
+  # a teammate-path account -- the invited dev who needs to install, not
+  # the owner who picked the path.
+  def dev_on_teammate_path?(user)
+    teammate? && user.present? && user != owner_user
   end
 end

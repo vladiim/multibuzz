@@ -1,0 +1,20 @@
+New Guided Setup purchase
+=========================
+
+Account: <%= @account.name %> (<%= @account.prefix_id %>)
+Engagement: <%= @guided_setup.prefix_id %>
+Plan: <%= @account.plan&.name %>
+Integration target: <%= @guided_setup.integration_target.humanize %>
+
+Discovery answers
+-----------------
+
+<% if @account.setup_profile.present? %>
+<% @account.setup_profile.each do |key, value| %>
+- <%= key.to_s.humanize %>: <%= Array(value).join(", ") %>
+<% end %>
+<% else %>
+No discovery profile recorded.
+<% end %>
+
+Admin: <%= admin_guided_setup_url(@guided_setup) %>

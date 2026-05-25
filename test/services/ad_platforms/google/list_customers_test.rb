@@ -11,7 +11,24 @@ class AdPlatforms::Google::ListCustomersTest < ActiveSupport::TestCase
 
       assert result[:success]
       assert_equal 1, result[:customers].size
-      assert_equal({ id: "1234567890", name: "Acme Ads", currency: "USD" }, customer)
+      assert_equal(
+        { id: "1234567890", name: "Acme Ads", currency: "USD", time_zone: "America/Los_Angeles" },
+        customer
+      )
+    end
+  end
+
+  test "extracts time_zone for sub-accounts" do
+    responses = {
+      "9999999999" => manager_detail,
+      "9999999999:sub" => sub_accounts_response
+    }
+
+    stub_api(list_response: single_manager_response, detail_responses: responses) do
+      result = service.call
+      sub = result[:customers].first
+
+      assert_equal "Australia/Sydney", sub[:time_zone]
     end
   end
 
@@ -23,7 +40,13 @@ class AdPlatforms::Google::ListCustomersTest < ActiveSupport::TestCase
 
     stub_api(list_response: single_manager_response, detail_responses: responses) do
       result = service.call
-      expected = { id: "5555555555", name: "Sub Account", currency: "AUD", login_customer_id: "9999999999" }
+      expected = {
+        id: "5555555555",
+        name: "Sub Account",
+        currency: "AUD",
+        time_zone: "Australia/Sydney",
+        login_customer_id: "9999999999"
+      }
 
       assert result[:success]
       assert_equal [ expected ], result[:customers]
@@ -108,6 +131,23 @@ class AdPlatforms::Google::ListCustomersTest < ActiveSupport::TestCase
     end
   end
 
+  test "falls back to id-based name when direct customer has no descriptive name" do
+    stub_api(list_response: accessible_response, detail_responses: { "1234567890" => unnamed_customer_detail }) do
+      assert_equal "Account 1234567890", service.call[:customers].first[:name]
+    end
+  end
+
+  test "falls back to id-based name when sub-account has no descriptive name" do
+    responses = {
+      "9999999999" => manager_detail,
+      "9999999999:sub" => unnamed_sub_accounts_response
+    }
+
+    stub_api(list_response: single_manager_response, detail_responses: responses) do
+      assert_equal "Account 5555555555", service.call[:customers].first[:name]
+    end
+  end
+
   private
 
   def service = @service ||= AdPlatforms::Google::ListCustomers.new(access_token: "test_token")
@@ -131,7 +171,8 @@ class AdPlatforms::Google::ListCustomersTest < ActiveSupport::TestCase
           "id" => "1234567890",
           "descriptiveName" => "Acme Ads",
           "currencyCode" => "USD",
-          "manager" => false
+          "manager" => false,
+          "timeZone" => "America/Los_Angeles"
         }
       } ]
     }
@@ -156,6 +197,32 @@ class AdPlatforms::Google::ListCustomersTest < ActiveSupport::TestCase
         "customerClient" => {
           "id" => "5555555555",
           "descriptiveName" => "Sub Account",
+          "currencyCode" => "AUD",
+          "manager" => false,
+          "level" => "1",
+          "timeZone" => "Australia/Sydney"
+        }
+      } ]
+    }
+  end
+
+  def unnamed_customer_detail
+    {
+      "results" => [ {
+        "customer" => {
+          "id" => "1234567890",
+          "currencyCode" => "USD",
+          "manager" => false
+        }
+      } ]
+    }
+  end
+
+  def unnamed_sub_accounts_response
+    {
+      "results" => [ {
+        "customerClient" => {
+          "id" => "5555555555",
           "currencyCode" => "AUD",
           "manager" => false,
           "level" => "1"

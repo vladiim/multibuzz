@@ -31,6 +31,22 @@ class Score::SignupServiceTest < ActiveSupport::TestCase
     assert_nil assessment.claim_token
   end
 
+  test "stitches claimed assessment to the new account" do
+    assessment = ScoreAssessment.create!(overall_score: 2.0, overall_level: 2)
+    token = assessment.claim_token
+
+    result = Score::SignupService.new(
+      email: "stitcher@example.com",
+      password: "password123",
+      claim_token: token
+    ).call
+
+    assessment.reload
+
+    assert_equal result[:account].id, assessment.account_id
+    assert_includes result[:account].score_assessments, assessment
+  end
+
   test "derives account name from email domain" do
     result = Score::SignupService.new(
       email: "noclaim@example.com",

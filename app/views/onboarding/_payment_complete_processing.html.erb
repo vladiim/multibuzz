@@ -1,0 +1,5 @@
+<%= turbo_frame_tag "payment_complete_state" do %>
+  <%= render "shared/waiting_state",
+    heading: "Confirming your payment...",
+    body: "Stripe is finishing up. This page will update automatically the moment it lands. Usually takes a few seconds." %>
+<% end %>

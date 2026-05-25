@@ -3,14 +3,15 @@
 require "test_helper"
 
 class FormSubmissionMailerTest < ActionMailer::TestCase
-  test "notify sends to configured recipient" do
+  test "notify sends to the configured notification recipient" do
     email = FormSubmissionMailer.notify(contact_submission)
 
     assert_emails 1 do
       email.deliver_now
     end
 
-    assert_equal [ "vlad@forebrite.com" ], email.to
+    assert_predicate notification_email, :present?, "notifications.internal_email must be set in credentials"
+    assert_equal [ notification_email ], email.to
   end
 
   test "notify contact submission has correct subject" do
@@ -66,6 +67,10 @@ class FormSubmissionMailerTest < ActionMailer::TestCase
   end
 
   private
+
+  def notification_email
+    @notification_email ||= Rails.application.credentials.dig(:notifications, :internal_email)
+  end
 
   def contact_submission
     @contact_submission ||= form_submissions(:contact_general)

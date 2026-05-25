@@ -5,7 +5,14 @@
     kicker: "mbuzz vs Hyros",
     headline: "Attribution without the sales call.",
     subhead: "Hyros is the sales-led attribution suite for high-ticket DTC — call tracking, email tracking, AI-powered insights, long sales cycles. Their pricing page is a demo booking form. mbuzz does four things — eight models, a SQL-like DSL, spend intelligence, LTV mode — with public pricing. $0 to start.",
-    primary_cta_text: "Start free" %>
+    primary_cta_text: "Get 30,000 events free" %>
+
+  <%= render "landing_pages/lp_pricing_card",
+    competitor_name: "Hyros",
+    competitor_price: "$?",
+    competitor_cadence: "sales call required",
+    bg_variant: "white",
+    mbuzz_subtext: "Start free. Paid plans from $29/mo. Published, self-serve, no call required." %>
 
   <%= render "landing_pages/lp_stat_banner" %>
 
@@ -133,13 +140,6 @@
         description: "Full export on every plan — CSV, API, MCP server for agent access. No vendor lock-in, no tier gate."
       }
     ] %>
-
-  <%= render "landing_pages/lp_pricing_card",
-    competitor_name: "Hyros",
-    competitor_price: "$?",
-    competitor_cadence: "sales call required",
-    bg_variant: "white",
-    mbuzz_subtext: "Start free. Paid plans from $29/mo. Published, self-serve, no call required." %>
 
   <%= render "landing_pages/lp_bottom_cta",
     subhead: "The demo runs on sample data. Sign up free to connect your own. No credit card, no sales call." %>

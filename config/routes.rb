@@ -130,12 +130,23 @@ Rails.application.routes.draw do
   # Signup
   get "signup", to: "signup#new", as: :signup
   post "signup", to: "signup#create"
-  get "signup/welcome", to: "signup#welcome", as: :signup_welcome
   get "register", to: redirect("/signup"), as: :new_registration
 
   # Onboarding (authenticated)
   get "onboarding", to: "onboarding#show", as: :onboarding
-  post "onboarding/persona", to: "onboarding#persona", as: :onboarding_persona
+  post "onboarding/choose_path", to: "onboarding#choose_path", as: :onboarding_choose_path
+  delete "onboarding/setup_path", to: "onboarding#change_setup_path", as: :onboarding_change_setup_path
+  get "onboarding/invite_teammate", to: "onboarding#invite_teammate", as: :onboarding_invite_teammate
+  post "onboarding/invite_teammate", to: "onboarding#send_teammate_invite", as: :onboarding_send_teammate_invite
+  get "onboarding/install_service", to: "onboarding#install_service", as: :onboarding_install_service
+  get "onboarding/discovery", to: "onboarding#discovery", as: :onboarding_discovery
+  post "onboarding/discovery", to: "onboarding#submit_discovery"
+  get "onboarding/guided_setup", to: "onboarding#guided_setup", as: :onboarding_guided_setup
+  post "onboarding/book_kickoff", to: "onboarding#book_kickoff", as: :onboarding_book_kickoff
+  get "onboarding/payment/:token", to: "onboarding/payment_links#show", as: :onboarding_payment_link
+  get "onboarding/payment_setup", to: "onboarding#payment_setup", as: :onboarding_payment_setup
+  post "onboarding/start_payment", to: "onboarding#start_payment", as: :onboarding_start_payment
+  get "onboarding/payment_complete", to: "onboarding#payment_complete", as: :onboarding_payment_complete
   get "onboarding/setup", to: "onboarding#setup", as: :onboarding_setup
   post "onboarding/regenerate_api_key", to: "onboarding#regenerate_api_key", as: :onboarding_regenerate_api_key
   post "onboarding/select_sdk", to: "onboarding#select_sdk", as: :onboarding_select_sdk
@@ -178,6 +189,10 @@ Rails.application.routes.draw do
     get "billing", to: "billing#show", as: :billing
     resources :accounts, only: [ :show, :update ]
     resources :customer_metrics, only: [ :index ]
+    resources :guided_setups, only: [ :index, :show, :update ] do
+      post :record_milestone, on: :member
+      post :generate_payment_link, on: :member
+    end
     resources :submissions, only: [ :index, :show ]
     resources :data_integrity, only: [ :index, :show ]
     resources :conversion_dispatches, only: [ :index, :show ] do

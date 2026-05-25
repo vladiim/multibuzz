@@ -52,6 +52,20 @@ module Billing
         end
       end
 
+      test "voids active account credits, forfeiting them without a refund" do
+        account.update!(stripe_customer_id: "cus_test123", billing_status: :active)
+        credit = account.account_credits.create!(
+          applied_plan: plans(:growth),
+          amount_cents: ::Billing::GUIDED_SETUP_CREDIT_CENTS,
+          source: "guided_setup",
+          granted_at: Time.current
+        )
+
+        handler(valid_event_data).call
+
+        assert_predicate credit.reload, :voided?
+      end
+
       private
 
       def handler(event_data)

@@ -2,6 +2,7 @@
 
 class ScoreAssessment < ApplicationRecord
   belongs_to :user, optional: true
+  belongs_to :account, optional: true
   has_one :score_team_membership, dependent: :destroy
   has_one :score_team, through: :score_team_membership
 

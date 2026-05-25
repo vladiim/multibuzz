@@ -1,0 +1,47 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Guided Setup engagements</h1>
+      <p class="text-sm text-gray-600 mt-1">Concierge onboarding engagements across all accounts.</p>
+    </div>
+    <%= link_to "Back to admin", admin_root_path, class: "text-sm text-indigo-600 hover:text-indigo-800" %>
+  </div>
+
+  <div class="bg-white shadow rounded-lg overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Integration</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Specialist</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last activity</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <% @guided_setups.each do |gs| %>
+            <tr data-testid="guided-setup-row" data-status="<%= gs.status %>" class="hover:bg-gray-50 <%= "bg-amber-50" if gs.stalled? %>">
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                <%= link_to gs.account.name, admin_guided_setup_path(gs), class: "text-indigo-600 hover:text-indigo-800" %>
+                <div class="font-mono text-xs text-gray-400"><%= gs.account.prefix_id %></div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                <%= gs.status.humanize %>
+                <% if gs.stalled? %>
+                  <span data-testid="stalled-badge" class="ml-1 inline-block px-2 py-0.5 text-xs bg-amber-200 text-amber-900 rounded">Stalled</span>
+                <% end %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700"><%= gs.integration_target.humanize %></td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700"><%= gs.specialist_name.presence || "—" %></td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600"><%= gs.updated_at.to_fs(:short) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+      <% if @guided_setups.empty? %>
+        <div class="text-center py-12 text-gray-500 text-sm">No Guided Setup engagements yet.</div>
+      <% end %>
+    </div>
+  </div>
+</div>

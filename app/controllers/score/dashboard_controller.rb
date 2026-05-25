@@ -15,7 +15,7 @@ module Score
     private
 
     def load_assessment
-      @assessment = current_user.score_assessments.order(created_at: :desc).first
+      @assessment = current_account&.score_assessments&.order(created_at: :desc)&.first
     end
   end
 end

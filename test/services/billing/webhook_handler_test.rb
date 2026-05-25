@@ -48,6 +48,19 @@ class Billing::WebhookHandlerTest < ActiveSupport::TestCase
     assert_equal account, result[:account]
   end
 
+  test "routes a Guided Setup payment to the credit purchase handler" do
+    account.update!(stripe_customer_id: "cus_test123")
+    account.account_credits.create!(
+      applied_plan: plans(:growth), amount_cents: 150_000,
+      source: "guided_setup", granted_at: Time.current
+    )
+
+    result = handler(guided_setup_payment_event).call
+
+    assert result[:success]
+    assert_not account.reload.billing_active?
+  end
+
   test "returns success for unknown event types" do
     result = handler(unknown_event).call
 
@@ -144,6 +157,25 @@ class Billing::WebhookHandlerTest < ActiveSupport::TestCase
           metadata: {
             account_id: account.prefix_id,
             plan_slug: "starter"
+          }
+        }
+      }
+    }
+  end
+
+  def guided_setup_payment_event
+    {
+      id: "evt_gs",
+      type: "checkout.session.completed",
+      data: {
+        object: {
+          id: "cs_gs",
+          customer: "cus_test123",
+          mode: "payment",
+          metadata: {
+            account_id: account.prefix_id,
+            guided_setup: "true",
+            plan_slug: "growth"
           }
         }
       }

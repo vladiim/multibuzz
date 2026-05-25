@@ -13,6 +13,8 @@
 - **Sessions are server-side** — SDKs do NOT manage sessions.
 - **NEVER write secrets, tokens, API keys, account IDs, email addresses, or any credentials to files that are committed to git.** This includes specs, docs, code comments, and config files. Secrets go in Rails credentials or 1Password only. Use placeholders like "see Rails credentials" or "see 1Password".
 - **Sensitive controllers MUST declare `skip_marketing_analytics`.** Any controller that renders secrets, credentials, API keys, billing data, OAuth tokens, visitor PII, identity strings, or admin tooling must call `skip_marketing_analytics` at the class level so GTM/GA4/Ads/Meta tags never load on its pages. URL paths reach GA4 and Meta as `page_location` regardless of consent — a leaked API key in a URL is a leaked API key in three vendor systems. When you create or modify a controller that handles any of the above, add `skip_marketing_analytics` immediately. The `SensitivePaths` deny-list in `app/constants/sensitive_paths.rb` is a safety net, not a substitute. See `lib/specs/marketing_analytics_ga4_ads_spec.md` for the full list and rationale.
+- **Every new admin surface MUST register a card in `AdminTools::ALL`** (`app/constants/admin_tools.rb`). The `/admin` dashboard is the single hub for internal-operator tools; if a new admin page isn't listed there, the operator can't find it. Pick a `Categories` constant (Customer support / Platform operations / Diagnostics), add the entry alongside the controller/route work, and don't ship the surface without it.
+- **Every new view MUST conform to `lib/docs/DESIGN_SYSTEM.md`.** Containers, typography, buttons, inputs, cards, status idioms, iconography, and voice are specified there. Forms in particular must use the visible-border input baseline. The onboarding chrome and resume nav are specified in §10 with the canonical wireframes at `lib/mockups/onboarding-chrome.html`. If a screen needs a pattern the doc doesn't cover, add the pattern to the doc as part of the same commit — don't invent silently.
 
 ## Philosophy
 
@@ -54,6 +56,18 @@ RAILS_ENV=test bin/rails db:schema:load
 **Never** `db:drop db:create db:migrate` for test DB.
 
 **Production operations** (cluster topology, which DBs have the extension, retention policy, debugging unbounded telemetry growth): see `lib/docs/architecture/timescaledb_operations.md`.
+
+## Hotwire / Turbo gotchas
+
+Forms submitted via Turbo Drive (`form_with` default) **fail silently** in three recurring patterns. If a form "does nothing" or the page shows "Content missing", check these first.
+
+1. **Cross-origin redirects.** `form_with` + a controller `redirect_to(allow_other_host: true)` to e.g. Stripe Checkout silently no-ops. Turbo's `fetch` can't follow cross-origin redirects. **Fix:** `data: { turbo: false }` on the form. Reference: `app/views/accounts/billing/show.html.erb`.
+
+2. **Forms inside `<turbo-frame>` that redirect outside the frame.** The form submission stays scoped to the frame; Turbo expects the response to contain a matching `<turbo-frame id="...">`. A redirect to a totally different page (dashboard, etc.) has no such frame → user sees "Content missing". **Fix:** `data: { turbo_frame: "_top" }` on the form so the redirect navigates the whole page.
+
+3. **POST + same-page render (no redirect).** A form that POSTs and the controller `render`s the same template (200 OK HTML, no redirect, no turbo_stream) gets silently swallowed. POSTs without a redirect don't fit Turbo's navigation model. **Fix options, pick one:** `data: { turbo: false }` on the form (simplest when the success state IS rendering the same page); render with `status: :unprocessable_entity` (Turbo treats this as a form-error swap and DOES update the page); respond with a turbo_stream. `local: true` is a Rails 6 holdover — does NOT opt out of Turbo in Rails 7+.
+
+**Rule of thumb:** if a form's success path isn't a same-origin redirect, don't let Turbo intercept it. Tests using `assert_response :redirect` or `:success` will pass either way — these bugs only show up in a real browser.
 
 ## Production
 

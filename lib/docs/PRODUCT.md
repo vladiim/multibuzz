@@ -158,6 +158,18 @@ The mbuzz dashboard provides:
 
 Everything updates in real time. No waiting for data processing.
 
+### 8. Attribution-aware Spend Dashboard
+
+The Spend dashboard is the surface where customers tie ad spend to attributed revenue. It is attribution-aware end to end:
+
+- **Model selector** at the page level, plus a Compare pill for any second model. Every metric on the page (hero ROAS, channel ROAS, payback) recomputes against the selected model.
+- **Cash vs Accrual** accounting toggle on the trend chart. Cash dates revenue by the conversion timestamp; Accrual dates revenue by the touchpoint session that earned credit. Different shapes for the same underlying data, and the user picks which they need.
+- **Granularity D / W / M** on the trend chart, defaulting by selected range length (≤30d daily, ≤120d weekly, else monthly).
+- **Platform vs Attributed gap.** Each channel row and the hero strip show the platform's self-reported revenue alongside mbuzz-attributed revenue, with the absolute and percent gap. Different methodologies, both useful — the gap is the headline reason multi-touch attribution exists.
+- **Confidence band.** The rightmost column on the channel table shows ROAS spread across all active attribution models for each channel. Narrow band = models agree; wide band = credit is genuinely contested. Click to expand the per-model breakdown.
+- **Period delta** on hero tiles -- "+12% vs prior 28d" sub-line on Spend, Attributed Revenue, and Blended ROAS.
+- **Sync freshness** -- per-channel "Updated 2h ago" badge; if older than 36h the channel name dims and the badge tones amber so users notice without checking the integrations page.
+
 ---
 
 ## Key Concepts Glossary

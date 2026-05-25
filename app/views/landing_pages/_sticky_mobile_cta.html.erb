@@ -1,7 +1,12 @@
-<%# LP.3: Sticky mobile CTA — only visible on mobile, fixed to bottom of viewport %>
-<div class="fixed bottom-0 inset-x-0 z-50 md:hidden bg-white border-t border-gray-200 px-4 py-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-  <div class="flex gap-3">
-    <%= link_to "Start Free", signup_path, class: "flex-1 text-center py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-all" %>
-    <%= link_to "Live Demo", demo_path, class: "flex-1 text-center py-2.5 text-sm font-semibold text-gray-900 bg-white border border-gray-200 hover:border-gray-300 rounded-md transition-all" %>
+<%# LP.3: Sticky CTA. Fixed to bottom on all breakpoints. Carries the free-tier offer so cost stays visible while users scroll. %>
+<div class="fixed bottom-0 inset-x-0 z-50 bg-white border-t border-gray-200 px-4 py-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+  <div class="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+    <p class="text-sm text-gray-700 text-center sm:text-left leading-tight">
+      <span class="font-semibold text-gray-900">First 30,000 events free,</span> every month. No credit card.
+    </p>
+    <div class="flex gap-3">
+      <%= link_to "Get 30,000 events free", signup_path, class: "flex-1 sm:flex-none text-center px-4 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-all whitespace-nowrap" %>
+      <%= link_to "Live demo", demo_path, class: "flex-1 sm:flex-none text-center px-4 py-2.5 text-sm font-semibold text-gray-900 bg-white border border-gray-200 hover:border-gray-300 rounded-md transition-all" %>
+    </div>
   </div>
 </div>

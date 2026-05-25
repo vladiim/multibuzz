@@ -67,6 +67,27 @@ class ScoreAssessmentTest < ActiveSupport::TestCase
     assert_equal users(:one), assessment.user
   end
 
+  test "can belong to an account" do
+    assessment = ScoreAssessment.new(
+      overall_score: 2.3,
+      overall_level: 2,
+      account: accounts(:one)
+    )
+
+    assert_predicate assessment, :valid?
+    assert_equal accounts(:one), assessment.account
+  end
+
+  test "can exist without an account (unclaimed)" do
+    assessment = ScoreAssessment.new(
+      overall_score: 1.5,
+      overall_level: 1
+    )
+
+    assert_predicate assessment, :valid?
+    assert_nil assessment.account
+  end
+
   test "can exist without a user (unclaimed)" do
     assessment = ScoreAssessment.new(
       overall_score: 1.5,
@@ -75,6 +96,14 @@ class ScoreAssessmentTest < ActiveSupport::TestCase
 
     assert_predicate assessment, :valid?
     assert_nil assessment.user
+  end
+
+  test "Account#score_assessments scopes to that account only" do
+    own = ScoreAssessment.create!(overall_score: 2.0, overall_level: 2, user: users(:one), account: accounts(:one))
+    ScoreAssessment.create!(overall_score: 3.0, overall_level: 3, user: users(:two), account: accounts(:two))
+
+    assert_includes accounts(:one).score_assessments, own
+    assert_equal 1, accounts(:one).score_assessments.count
   end
 
   test "claimed? returns true when user is present" do

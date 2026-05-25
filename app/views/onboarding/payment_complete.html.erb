@@ -1,0 +1,11 @@
+<%= turbo_stream_from "guided_setup_payment_#{current_account.prefix_id}" %>
+
+<div class="min-h-screen bg-gray-50 py-12 sm:px-6 lg:px-8">
+  <div class="sm:mx-auto sm:w-full sm:max-w-2xl" data-testid="payment-complete">
+    <% if current_account.guided_setup&.in_progress? %>
+      <%= render "payment_complete_success" %>
+    <% else %>
+      <%= render "payment_complete_processing" %>
+    <% end %>
+  </div>
+</div>

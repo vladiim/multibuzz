@@ -5,7 +5,13 @@
     kicker: "mbuzz vs Triple Whale",
     headline: "Free attribution that shows the math.",
     subhead: "Triple Whale bundles 75 dashboards, Moby AI, a custom pixel, and Sonar data enrichment for $149/mo. mbuzz does four things — eight attribution models, a SQL-like DSL, spend intelligence, LTV mode — across server-side SDKs in six languages. No frills. $0 to start.",
-    primary_cta_text: "Start free" %>
+    primary_cta_text: "Get 30,000 events free" %>
+
+  <%= render "landing_pages/lp_pricing_card",
+    competitor_name: "Triple Whale",
+    competitor_price: "$149",
+    bg_variant: "white",
+    mbuzz_subtext: "Start free. Paid plans from $29/mo when you're ready to scale." %>
 
   <%= render "landing_pages/lp_stat_banner" %>
 
@@ -133,12 +139,6 @@
         description: "Full export on every plan — CSV, API, MCP server for agent access. No vendor lock-in, no tier gate."
       }
     ] %>
-
-  <%= render "landing_pages/lp_pricing_card",
-    competitor_name: "Triple Whale",
-    competitor_price: "$149",
-    bg_variant: "white",
-    mbuzz_subtext: "Start free. Paid plans from $29/mo when you're ready to scale." %>
 
   <%= render "landing_pages/lp_bottom_cta",
     subhead: "The demo runs on sample data. Sign up free to connect your own. No credit card, no sales call." %>

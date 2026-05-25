@@ -1,0 +1,22 @@
+<%# Required locals: band (with :by_model hash AttributionModel => Float ROAS), colspan %>
+<%
+  by_model_sorted = band[:by_model].sort_by { |_model, roas| -roas }
+  panel_max = band[:max].positive? ? band[:max] : 1.0
+%>
+<tr data-toggle-target="content" class="hidden bg-gray-50">
+  <td colspan="<%= colspan %>" class="px-4 py-3">
+    <div class="text-xs uppercase tracking-wider text-gray-500 mb-2">All attribution models · ROAS for this channel</div>
+    <div class="grid grid-cols-2 gap-x-6 gap-y-1.5">
+      <% by_model_sorted.each do |model, roas| %>
+        <div class="flex items-center gap-3">
+          <span class="w-28 text-xs text-gray-700 truncate"><%= model.name.titleize %></span>
+          <div class="flex-1 h-2 bg-gray-200 rounded relative">
+            <div class="absolute left-0 top-0 bottom-0 rounded <%= model == band[:by_model].key(band[:selected]) ? "bg-indigo-500" : "bg-gray-400" %>"
+                 style="width: <%= ((roas / panel_max) * 100).clamp(0, 100).round %>%"></div>
+          </div>
+          <span class="text-xs font-medium text-gray-900 tabular-nums w-10 text-right"><%= roas %>x</span>
+        </div>
+      <% end %>
+    </div>
+  </td>
+</tr>

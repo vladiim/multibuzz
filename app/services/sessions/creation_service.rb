@@ -106,7 +106,7 @@ module Sessions
     end
 
     def visitor_id
-      params[:visitor_id]
+      @visitor_id ||= Visitor.normalize_id(params[:visitor_id])
     end
 
     def session_id

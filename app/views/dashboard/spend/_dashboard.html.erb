@@ -16,12 +16,15 @@
   <% end %>
 </div>
 
+<!-- Attribution Model Selector -->
+<%= render "dashboard/spend/model_selector" %>
+
 <!-- Hero KPI Cards -->
 <%= render "dashboard/spend/hero_metrics", totals: totals %>
 
 <!-- Trend Chart + Channel Summary -->
 <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6">
-  <%= render "dashboard/spend/trend_chart", time_series: data[:time_series] %>
+  <%= render "dashboard/spend/trend_chart", time_series: data[:time_series], compare: data[:compare], filter_params: @filter_params %>
   <%= render "dashboard/spend/channel_summary", by_channel: data[:by_channel] %>
 </div>
 
@@ -47,7 +50,7 @@
     <!-- Overview Sub-Tab -->
     <div data-toggle-target="content" data-value="overview">
       <div class="py-4 sm:py-6">
-        <%= render "dashboard/spend/channel_table", by_channel: data[:by_channel], totals: totals %>
+        <%= render "dashboard/spend/channel_table", by_channel: data[:by_channel], totals: totals, compare: data[:compare], confidence_band_active: data[:confidence_band_active] %>
       </div>
     </div>
 

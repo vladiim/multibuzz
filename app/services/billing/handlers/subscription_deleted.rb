@@ -7,7 +7,14 @@ module Billing
 
       def handle_event
         cancel_subscription
+        void_account_credits
         track_cancelled
+      end
+
+      def void_account_credits
+        # Credit is non-refundable: on cancellation, unconsumed credit is
+        # forfeited -- never returned as cash.
+        account.account_credits.active.each(&:voided!)
       end
 
       def cancel_subscription

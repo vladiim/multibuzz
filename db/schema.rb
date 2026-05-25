@@ -10,10 +10,26 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_05_18_043950) do
+ActiveRecord::Schema[8.0].define(version: 2026_05_21_030000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
+
+  create_table "account_credits", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "applied_plan_id", null: false
+    t.integer "amount_cents", null: false
+    t.string "source", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "granted_at", null: false
+    t.string "stripe_balance_transaction_id"
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "status"], name: "index_account_credits_on_account_id_and_status"
+    t.index ["account_id"], name: "index_account_credits_on_account_id"
+    t.index ["applied_plan_id"], name: "index_account_credits_on_applied_plan_id"
+  end
 
   create_table "account_feature_flags", force: :cascade do |t|
     t.bigint "account_id", null: false
@@ -83,6 +99,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_18_043950) do
     t.boolean "live_mode_enabled", default: false, null: false
     t.bigint "lifetime_value_cents", default: 0, null: false
     t.datetime "subscription_cancelled_at"
+    t.integer "setup_path"
+    t.jsonb "setup_profile", default: {}, null: false
+    t.datetime "setup_profile_completed_at"
     t.index ["billing_status"], name: "index_accounts_on_billing_status"
     t.index ["free_until"], name: "index_accounts_on_free_until"
     t.index ["payment_failed_at"], name: "index_accounts_on_payment_failed_at"
@@ -475,6 +494,30 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_18_043950) do
     t.index ["type"], name: "index_form_submissions_on_type"
   end
 
+  create_table "guided_setups", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.integer "status", default: 0, null: false
+    t.string "integration_target", default: "none", null: false
+    t.string "specialist_name"
+    t.text "notes"
+    t.datetime "accepted_at"
+    t.datetime "kickoff_call_at"
+    t.datetime "install_completed_at"
+    t.datetime "integration_connected_at"
+    t.datetime "training_call_at"
+    t.datetime "value_check_at"
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.jsonb "scheduling_preferences", default: {}, null: false
+    t.string "payment_token"
+    t.datetime "payment_token_expires_at"
+    t.datetime "kickoff_booked_at"
+    t.index ["account_id"], name: "index_guided_setups_on_account_id", unique: true
+    t.index ["payment_token"], name: "index_guided_setups_on_payment_token", unique: true, where: "(payment_token IS NOT NULL)"
+    t.index ["status", "updated_at"], name: "index_guided_setups_on_status_and_updated_at"
+  end
+
   create_table "identities", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.string "external_id", null: false
@@ -638,6 +681,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_18_043950) do
     t.string "country", limit: 2
     t.string "postal_code", limit: 16
     t.string "gclid"
+    t.index ["account_id", "device_fingerprint", "created_at"], name: "index_sessions_on_account_fingerprint_created_at", where: "(device_fingerprint IS NOT NULL)"
+    t.index ["account_id", "device_fingerprint", "created_at"], name: "index_sessions_on_account_fp_created"
     t.index ["account_id", "fbp"], name: "index_sessions_on_account_fbp", where: "(fbp IS NOT NULL)"
     t.index ["account_id", "gclid"], name: "index_sessions_on_account_gclid", where: "(gclid IS NOT NULL)"
     t.index ["account_id", "landing_page_host"], name: "index_sessions_on_account_and_landing_page_host"
@@ -709,6 +754,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_18_043950) do
     t.index ["visitor_id"], name: "index_visitors_on_visitor_id"
   end
 
+  add_foreign_key "account_credits", "accounts"
+  add_foreign_key "account_credits", "plans", column: "applied_plan_id"
   add_foreign_key "account_feature_flags", "accounts"
   add_foreign_key "account_memberships", "accounts"
   add_foreign_key "account_memberships", "users"
@@ -742,6 +789,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_18_043950) do
   add_foreign_key "events", "accounts"
   add_foreign_key "events", "visitors"
   add_foreign_key "exports", "accounts"
+  add_foreign_key "guided_setups", "accounts"
   add_foreign_key "identities", "accounts"
   add_foreign_key "reattribution_batches", "accounts"
   add_foreign_key "rerun_jobs", "accounts"

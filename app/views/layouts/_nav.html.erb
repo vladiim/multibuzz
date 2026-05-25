@@ -16,8 +16,10 @@
       <% end %>
 
       <% if current_user %>
-        <!-- Signed In: Account & User Dropdowns -->
+        <!-- Signed In: Resume pill + Account & User Dropdowns -->
         <div class="flex items-center gap-3">
+          <%= render "shared/onboarding_resume_pill" %>
+
           <!-- Account Dropdown -->
           <div data-controller="toggle" data-toggle-close-on-click-outside-value="true" class="relative">
             <button type="button" data-action="click->toggle#toggle" class="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:text-gray-900 rounded-md hover:bg-gray-50">
@@ -29,7 +31,7 @@
             <div data-toggle-target="content" class="hidden absolute right-0 mt-1 w-56 bg-white border border-gray-200 rounded-md shadow-lg z-20">
               <!-- Account List -->
               <div class="py-1">
-                <% current_user.active_memberships.each do |membership| %>
+                <% current_user.active_memberships.includes(account: :score_assessments).each do |membership| %>
                   <%= link_to dashboard_path(account_id: membership.account.prefix_id),
                     class: "flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 #{current_account?(membership.account) ? 'bg-gray-50' : ''}" do %>
                     <% if current_account?(membership.account) %>
@@ -40,6 +42,10 @@
                       <span class="w-4 flex-shrink-0"></span>
                     <% end %>
                     <span class="flex-1 truncate <%= current_account?(membership.account) ? 'font-medium text-gray-900' : '' %>"><%= membership.account.name %></span>
+                    <% level = account_maturity_level(membership.account) %>
+                    <% if level %>
+                      <span class="account-level-pill inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-indigo-50 text-indigo-700">L<%= level %></span>
+                    <% end %>
                     <%= render_compact_role_badge(membership.role) %>
                   <% end %>
                 <% end %>
@@ -86,6 +92,29 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
                   Account Settings
+                <% end %>
+              </div>
+
+              <div class="border-t border-gray-100"></div>
+
+              <!-- Measurement Maturity -->
+              <div class="py-1">
+                <% current_level = account_maturity_level(current_account) %>
+                <% if current_level %>
+                  <%= link_to score_dashboard_path, class: "flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" do %>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2 4 4 8-8 4 4" />
+                    </svg>
+                    <span class="flex-1">Measurement Maturity</span>
+                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-indigo-50 text-indigo-700">Level <%= current_level %></span>
+                  <% end %>
+                <% else %>
+                  <%= link_to score_path, class: "flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" do %>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2 4 4 8-8 4 4" />
+                    </svg>
+                    Take Measurement Assessment
+                  <% end %>
                 <% end %>
               </div>
             </div>

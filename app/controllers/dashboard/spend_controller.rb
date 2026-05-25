@@ -11,6 +11,13 @@ module Dashboard
 
     private
 
+    def filter_params
+      super.merge(
+        accounting_mode: params[:accounting_mode].presence,
+        granularity: params[:granularity].presence
+      )
+    end
+
     def spend_result
       SpendIntelligence::MetricsService.new(current_account, filter_params).call
     end

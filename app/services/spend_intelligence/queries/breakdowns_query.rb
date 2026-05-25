@@ -5,14 +5,24 @@ module SpendIntelligence
     class BreakdownsQuery
       MICRO_UNIT = AdSpendRecord::MICRO_UNIT
 
-      def initialize(spend_scope:, credits_scope:, timezone_offset: nil)
+      ACCOUNTING_MODES = %i[cash accrual].freeze
+      GRANULARITIES = %i[daily weekly monthly].freeze
+      GRANULARITY_TRUNC_FIELD = { weekly: "week", monthly: "month" }.freeze
+
+      def initialize(spend_scope:, credits_scope:, timezone_offset: nil, timezone: nil, accounting_mode: :cash, granularity: :daily) # rubocop:disable Metrics/ParameterLists
+        raise ArgumentError, "unknown accounting_mode #{accounting_mode}" unless ACCOUNTING_MODES.include?(accounting_mode)
+        raise ArgumentError, "unknown granularity #{granularity}" unless GRANULARITIES.include?(granularity)
+
         @spend_scope = spend_scope
         @credits_scope = credits_scope
         @timezone_offset = timezone_offset || 0
+        @timezone = timezone
+        @accounting_mode = accounting_mode
+        @granularity = granularity
       end
 
       def time_series
-        daily_spend.keys.sort.map { |date| time_series_entry(date) }
+        all_dates.sort.map { |date| time_series_entry(date) }
       end
 
       def by_device
@@ -30,7 +40,7 @@ module SpendIntelligence
 
       private
 
-      attr_reader :spend_scope, :credits_scope, :timezone_offset
+      attr_reader :spend_scope, :credits_scope, :timezone_offset, :timezone, :accounting_mode, :granularity
 
       # --- Time Series ---
 
@@ -48,12 +58,50 @@ module SpendIntelligence
       end
 
       def daily_spend
-        @daily_spend ||= spend_scope.group(:spend_date).sum(:spend_micros)
+        @daily_spend ||= spend_scope.group(spend_date_group_expr).sum(:spend_micros)
+      end
+
+      def spend_date_group_expr
+        trunc_field = GRANULARITY_TRUNC_FIELD[granularity]
+        trunc_field ? Arel.sql("DATE_TRUNC('#{trunc_field}', spend_date)::date") : :spend_date
+      end
+
+      def all_dates
+        daily_spend.keys | daily_revenue.keys
       end
 
       def daily_revenue
-        @daily_revenue ||= credits_scope.joins(:conversion)
-          .group(Arel.sql("DATE(conversions.converted_at)")).sum(:revenue_credit)
+        @daily_revenue ||= accounting_mode == :accrual ? accrual_daily_revenue : cash_daily_revenue
+      end
+
+      # Cash: revenue dated by the conversion timestamp.
+      # Hero KPIs use this; today's number is "what came in today."
+      def cash_daily_revenue
+        credits_scope.joins(:conversion)
+          .group(date_expr_for("conversions.converted_at")).sum(:revenue_credit)
+      end
+
+      # Accrual: revenue dated by the touchpoint session that earned credit.
+      # The timeseries uses this so single-day ROAS becomes "spend on day X
+      # attributed back to revenue from spend on day X."
+      def accrual_daily_revenue
+        credits_scope
+          .joins("INNER JOIN sessions ON sessions.id = attribution_credits.session_id")
+          .group(date_expr_for("sessions.started_at")).sum(:revenue_credit)
+      end
+
+      # Stored timestamps are UTC values in `timestamp without time zone` columns.
+      # Reinterpret as UTC, then shift to the report timezone, then extract the
+      # truncated date for the chosen granularity (daily, weekly, monthly).
+      def date_expr_for(column)
+        shifted = timezone.blank? ? column : "(#{column} AT TIME ZONE 'UTC') AT TIME ZONE ?"
+        truncated = truncate_expr(shifted)
+        timezone.blank? ? Arel.sql(truncated) : Arel.sql(ActiveRecord::Base.sanitize_sql_array([ truncated, timezone ]))
+      end
+
+      def truncate_expr(shifted)
+        trunc_field = GRANULARITY_TRUNC_FIELD[granularity]
+        trunc_field ? "DATE_TRUNC('#{trunc_field}', #{shifted})::date" : "DATE(#{shifted})"
       end
 
       # --- Device ---

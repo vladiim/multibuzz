@@ -1,0 +1,17 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin · engagements</title><link rel="stylesheet" href="wireframe.css"></head><body>
+<div class="meta">GET /admin/guided_setups<span class="tag">NEW — internal</span></div>
+<div class="screen">
+<div class="topbar"><span>mbuzz &middot; admin</span><span class="right">Guided Setups</span></div>
+<div class="body">
+<h1>Guided Setup engagements</h1>
+<table>
+<tr><th>Account</th><th>Status</th><th>Next milestone</th><th>Specialist</th></tr>
+<tr><td>acme.co</td><td>in_progress</td><td>Training call</td><td>Dana</td></tr>
+<tr><td class="warn">&#9888; getwidgets.io</td><td>in_progress</td><td class="warn">STALLED &middot; 16d</td><td>Dana</td></tr>
+<tr><td>northwind.com</td><td>delivered</td><td>&mdash;</td><td>Sam</td></tr>
+<tr><td>bluefin.io</td><td>pending</td><td>awaiting payment</td><td>&mdash;</td></tr>
+</table>
+</div></div>
+<div class="notes">NEW. <code>Admin::GuidedSetupsController</code>, declares <code>skip_marketing_analytics</code>. Stalled rows (in progress, no milestone stamped in 14 days) are flagged for proactive outreach.</div>
+<nav class="flownav"><a href="billing.html">&larr; Billing</a><a href="admin-engagement.html">Engagement detail &rarr;</a></nav>
+</body></html>

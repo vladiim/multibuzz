@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "mbuzz" %></title>
+    <%= render "layouts/head" %>
+    <%= yield :head %>
+  </head>
+
+  <body class="bg-gray-50">
+    <%= render "shared/gtm_loader" %>
+
+    <header class="bg-white border-b border-gray-200" data-testid="onboarding-chrome">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center gap-3 sm:gap-4">
+        <span class="text-lg font-bold text-gray-900 flex-shrink-0">mbuzz</span>
+
+        <% pips = onboarding_pips %>
+        <% if pips.any? %>
+          <nav class="flex-1 flex items-center justify-center min-w-0"
+               aria-label="Onboarding progress"
+               data-testid="onboarding-pip-rail">
+            <ol class="flex items-center text-xs">
+              <% pips.each_with_index do |pip, index| %>
+                <% if index.positive? %>
+                  <span class="w-3 sm:w-6 h-px <%= onboarding_pip_connector_classes(pips[index - 1].state) %> mx-1 sm:mx-2" aria-hidden="true"></span>
+                <% end %>
+                <%= render "shared/onboarding_pip", pip: pip %>
+              <% end %>
+            </ol>
+          </nav>
+        <% else %>
+          <span class="flex-1"></span>
+        <% end %>
+
+        <%= link_to dashboard_path,
+              class: "inline-flex items-center gap-1.5 text-sm text-gray-700 border border-gray-300 rounded-md px-2.5 sm:px-3 py-1.5 shadow-sm bg-white hover:bg-gray-50 font-medium whitespace-nowrap flex-shrink-0",
+              data: { testid: "exit-to-dashboard" } do %>
+          <span class="hidden sm:inline">Exit to dashboard</span>
+          <span class="sm:hidden">Exit</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        <% end %>
+      </div>
+
+      <% if onboarding_current_pip_label %>
+        <p class="sm:hidden border-t border-gray-100 px-4 py-1.5 text-center text-xs text-gray-700"
+           data-testid="onboarding-pip-rail-mobile-caption">
+          <%= onboarding_current_pip_label %>
+        </p>
+      <% end %>
+    </header>
+
+    <main>
+      <%= yield %>
+    </main>
+
+    <%= render "shared/consent_banner" %>
+  </body>
+</html>
