@@ -108,14 +108,116 @@ module Conversions
     end
 
     # ==========================================
+    # User-id-based (cookieless) conversion tests
+    # ==========================================
+
+    test "creates conversion from user_id alone, auto-creating identity and visitor" do
+      assert_difference -> { account.identities.count } => 1,
+                        -> { account.visitors.count } => 1 do
+        result = build_service(user_id: "new_user_xyz").call
+
+        assert result[:success]
+        assert_instance_of Conversion, result[:conversion]
+        new_identity = account.identities.find_by!(external_id: "new_user_xyz")
+        assert_equal new_identity.id, result[:conversion].identity_id
+        assert_equal new_identity.id, result[:conversion].visitor.identity_id
+      end
+    end
+
+    test "reuses existing identity when user_id already known" do
+      existing = identity
+
+      assert_no_difference -> { account.identities.count } do
+        result = build_service(user_id: existing.external_id).call
+
+        assert result[:success]
+        assert_equal existing.id, result[:conversion].identity_id
+      end
+    end
+
+    test "reuses identity's most-recent visitor when user_id provided alone" do
+      identity.update!(last_identified_at: Time.current)
+      prior_visitor = account.visitors.create!(
+        visitor_id: "prior_visitor_#{SecureRandom.hex(8)}",
+        identity: identity
+      )
+
+      assert_no_difference -> { account.visitors.count } do
+        result = build_service(user_id: identity.external_id).call
+
+        assert result[:success]
+        assert_equal prior_visitor.id, result[:conversion].visitor_id
+      end
+    end
+
+    test "propagates is_test from API key to new identity and visitor" do
+      service = Conversions::TrackingService.new(
+        account,
+        { conversion_type: "signup", user_id: "test_user_99" },
+        is_test: true
+      )
+      result = service.call
+
+      assert result[:success]
+      created_identity = account.identities.find_by!(external_id: "test_user_99")
+      assert created_identity.is_test
+      assert result[:conversion].visitor.is_test
+    end
+
+    test "user_id with stale identity creates a fresh visitor when identity has none" do
+      orphan_identity = account.identities.create!(
+        external_id: "orphan_user",
+        first_identified_at: 1.day.ago,
+        last_identified_at: 1.day.ago
+      )
+
+      assert_difference -> { account.visitors.count } => 1 do
+        result = build_service(user_id: orphan_identity.external_id).call
+
+        assert result[:success]
+        assert_equal orphan_identity.id, result[:conversion].visitor.identity_id
+      end
+    end
+
+    test "does not auto-create identity when visitor_id resolves to a visitor" do
+      # The cookied path is unchanged: a new user_id alongside a valid
+      # visitor_id should NOT create an Identity. (Identify endpoint is
+      # responsible for that.)
+      assert_no_difference -> { account.identities.count } do
+        result = build_service(
+          visitor_id: visitor.visitor_id,
+          user_id: "brand_new_user_id"
+        ).call
+
+        assert result[:success]
+        assert_equal visitor.id, result[:conversion].visitor_id
+        assert_nil result[:conversion].identity_id
+      end
+    end
+
+    test "user_id from different account creates fresh identity scoped to current account" do
+      other_account_identity = identities(:other_account_identity)
+
+      assert_difference -> { account.identities.count } => 1 do
+        result = build_service(user_id: other_account_identity.external_id).call
+
+        assert result[:success]
+        # New identity belongs to THIS account, not the other one.
+        new_identity = result[:conversion].identity
+        refute_equal other_account_identity.id, new_identity.id
+        assert_equal account.id, new_identity.account_id
+      end
+    end
+
+    # ==========================================
     # Identifier validation tests
     # ==========================================
 
-    test "returns error when neither event_id nor visitor_id provided" do
-      result = build_service(event_id: nil, visitor_id: nil).call
+    test "returns error when no identifier provided" do
+      result = build_service(event_id: nil, visitor_id: nil, user_id: nil).call
 
       assert_not result[:success]
-      assert_includes result[:errors], "event_id or visitor_id is required"
+      assert_includes result[:errors], "event_id, visitor_id, or user_id is required"
     end
 
     test "prefers event_id when both identifiers provided" do
