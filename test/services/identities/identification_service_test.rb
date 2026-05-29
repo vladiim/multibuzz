@@ -147,6 +147,33 @@ module Identities
       assert_equal "user@example.com", identity.traits["email"]
     end
 
+    test "truncates traits to MAX_PROPERTY_KEYS when over the cap" do
+      thirty = (1..30).each_with_object({}) { |i, h| h["t#{i}"] = i }
+
+      result = service(user_id: "trunc_user", traits: thirty).call
+
+      assert result[:success]
+      identity = account.identities.unscope(where: :is_test).find_by(external_id: "trunc_user")
+
+      assert_equal 25, identity.traits.size
+    end
+
+    test "returns warning when traits are truncated" do
+      result = service(user_id: "warn_user", traits: (1..30).each_with_object({}) { |i, h| h["t#{i}"] = i }).call
+
+      assert result[:success]
+      assert_match(/traits/, result[:warnings].first)
+      assert_match(/30/, result[:warnings].first)
+      assert_match(/25/, result[:warnings].first)
+    end
+
+    test "no warning when traits are within the cap" do
+      result = service(user_id: "ok_user", traits: { plan: "pro" }).call
+
+      assert result[:success]
+      assert_empty Array(result[:warnings])
+    end
+
     test "deep merges nested trait hashes" do
       existing = create_test_identity(
         external_id: "nested_user",

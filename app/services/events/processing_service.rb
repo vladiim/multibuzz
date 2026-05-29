@@ -168,7 +168,7 @@ module Events
     end
 
     def save_event
-      return success_result(event: event) if event.save
+      return success_result(event: event, warnings: warnings) if event.save
 
       error_result(event.errors.full_messages)
     end
@@ -179,12 +179,15 @@ module Events
         visitor: visitor,
         session: session,
         occurred_at: event_timestamp,
-        properties: event_data["properties"],
+        properties: truncated_properties,
         funnel: event_data["funnel"] || event_data[:funnel],
         is_test: is_test,
         locked: account.should_lock_events?,
         request_id: event_request_id
       )
     end
+
+    def truncated_properties = @truncated_properties ||= PropertyKeyLimit.truncate(event_properties)
+    def warnings = [ PropertyKeyLimit.warning_for(:properties, event_properties) ].compact
   end
 end

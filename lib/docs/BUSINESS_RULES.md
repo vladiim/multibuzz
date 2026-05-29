@@ -19,6 +19,7 @@
 9. [Billing and Usage](#9-billing-and-usage)
 10. [Data Retention and Privacy](#10-data-retention-and-privacy)
 11. [API and Authentication](#11-api-and-authentication)
+12. [Property Key Limits](#12-property-key-limits)
 
 ---
 
@@ -199,7 +200,7 @@ An **event** is any action a visitor takes -- a page view, a button click, a for
 | E2 | Events are processed in batches | The API accepts arrays of events in a single request for efficiency |
 | E3 | Events are enriched server-side | The server extracts and adds: URL components (host, path), UTM parameters, referrer information, anonymized IP address |
 | E4 | Events are attached to sessions | Each event is linked to the visitor's active session. If the visitor has no active session, server-side resolution creates or finds one based on the device fingerprint. |
-| E5 | Events carry custom properties | Any key-value data can be attached to an event (product ID, price, category, etc.). Maximum 50KB per event. |
+| E5 | Events carry custom properties | Any key-value data can be attached to an event (product ID, price, category, etc.). 50KB byte cap (rejected if exceeded). 25-custom-key cap (truncated and warned, not rejected). See [section 12](#12-property-key-limits). |
 | E6 | Events are immutable | Once stored, events are never modified or deleted (append-only) |
 | E7 | Event timestamps can be provided by the client | If no timestamp is sent, the server uses the current time |
 
@@ -464,7 +465,7 @@ mbuzz automatically detects and filters bot traffic to ensure clean data.
 | P3 | All data is account-isolated | Every database query is scoped to the requesting account. Account A cannot see Account B's data under any circumstances. |
 | P4 | API keys are stored as hashes | The actual key value is never stored. Only its SHA256 digest is kept for authentication matching. |
 | P5 | Visitor data has no PII by default | Visitor records contain only a random ID and device fingerprint. No names, emails, or personal data unless explicitly provided via the identify endpoint. |
-| P6 | Custom properties have size limits | JSONB fields (event properties, UTM data, identity traits) are capped at 50KB to prevent abuse |
+| P6 | Custom properties have size and key-count limits | JSONB fields (event properties, conversion properties, identity traits, visitor traits, UTM data) are capped at 50KB (rejected if exceeded) and 25 custom keys per call (truncated and warned, not rejected). See [section 12](#12-property-key-limits) for full rules. |
 
 ---
 
@@ -584,6 +585,25 @@ The spend dashboard reconciles ad spend against attributed revenue. Several of i
 | SD8 | Confidence band shows ROAS spread across the account's active attribution models | Wide band = models disagree; narrow band = models agree. `selected` is the primary model's ROAS for that channel. Hidden when only one attribution model is active. |
 | SD9 | Period delta compares the selected range to the immediately preceding equal-length range | "vs prior 28d" sub-line. Each metric's percent delta is nil when the prior value was zero. |
 | SD10 | Channel sync freshness is the max `ad_spend_records.updated_at` for that channel | Older than 36 hours dims the channel name and tones the badge amber. Single threshold across platforms in v1. |
+
+---
+
+## 12. Property Key Limits
+
+Custom properties on ingested records are bounded so a misbehaving SDK or a hostile client cannot bloat JSONB columns or pollute the dashboard's discovered-property surface. Two different rules apply: a hard byte cap that rejects, and a soft key-count cap that truncates and warns.
+
+### Rules
+
+| # | Rule | Detail |
+|---|------|--------|
+| PK1 | Each ingested JSONB blob is **rejected** (422) when over 50KB | Applies to `events.properties`, `conversions.properties`, `identities.traits`, `visitors.traits`, `sessions.initial_utm`. The byte cap is a hard limit because oversize blobs threaten storage and query cost in ways the truncation rule cannot bound. |
+| PK2 | Each ingested JSONB blob is **truncated** (not rejected) when over 25 custom keys per call | The server keeps the first 25 keys in insertion order and drops the rest. The request still succeeds. This avoids breaking SDK callers in production for an instrumentation mistake. The cap matches GA4 (the strictest mainstream analytics platform). Mixpanel = 255, Segment / Amplitude = effectively unlimited per call. 25 gives B2B identify and ecommerce conversion payloads real headroom while bounding abuse. |
+| PK3 | Truncation surfaces a `warnings` array on the API response | Format: `"properties: kept first 25 of N keys, dropped the rest"`. The field is **omitted entirely** when no truncation happened. SDK authors should log warnings (debug mode) and surface them via an `onWarning` hook if available. SDKs MUST NOT raise on a warning. |
+| PK4 | Reserved system keys do not count toward the 25-key cap | For conversions, `url` and `referrer` are system-captured and excluded from the count and from truncation. A conversion with `{url, referrer, k1..k25}` ships all 27 keys. A conversion with `{url, k1..k47}` ships `url` plus the first 25 custom keys with a warning about the 22 dropped. |
+| PK5 | The cap is per-call, not per-account | An account may accumulate many distinct property keys over time across many records. The 25-key cap is on a single ingested record. |
+| PK6 | The dashboard filter UI surfaces the 20 most-populated property keys per account | Independent of the per-call cap. Long-tail keys remain queryable via the API and raw export but do not appear in the filter chips. Stale keys (last seen >90 days ago) are pruned. |
+| PK7 | The 25-key value is a single shared constant | `PropertyKeyLimit::MAX_PROPERTY_KEYS`. All ingestion services read from the same source. To raise or lower the limit, change the constant in one place. |
+| PK8 | The truncation logic lives at the service layer, not the model | `PropertyKeyLimit.truncate(hash, reserved: [...])` is a pure function called by `Identities::IdentificationService`, `Conversions::TrackingService`, and `Events::ProcessingService`. The model only enforces the 50KB hard cap. Direct ActiveRecord calls (Rails console, internal jobs) are not auto-truncated; if internal code ingests user data, it should call `PropertyKeyLimit.truncate` first. |
 
 ---
 

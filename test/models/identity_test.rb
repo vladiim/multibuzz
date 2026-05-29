@@ -16,6 +16,12 @@ class IdentityTest < ActiveSupport::TestCase
     assert_predicate identity, :valid?
   end
 
+  test "model does not reject traits with more than 25 keys (services truncate)" do
+    identity.traits = (1..30).each_with_object({}) { |i, h| h["trait#{i}"] = i }
+
+    assert_predicate identity, :valid?
+  end
+
   private
 
   def identity

@@ -848,6 +848,49 @@ module Conversions
       end
     end
 
+    # ==========================================
+    # Property key truncation tests
+    # ==========================================
+
+    test "truncates conversion properties to MAX_PROPERTY_KEYS when over the cap" do
+      thirty = (1..30).each_with_object({}) { |i, h| h["k#{i}"] = i }
+      result = build_service(visitor_id: visitor.visitor_id, properties: thirty).call
+
+      assert result[:success]
+      assert_equal 25, result[:conversion].properties.size
+    end
+
+    test "preserves reserved keys (url, referrer) outside the 25-key cap" do
+      twenty_five = (1..25).each_with_object({}) { |i, h| h["k#{i}"] = i }
+      props = twenty_five.merge("url" => "https://example.com", "referrer" => "https://google.com")
+
+      result = build_service(visitor_id: visitor.visitor_id, properties: props).call
+
+      assert result[:success]
+      assert_equal "https://example.com", result[:conversion].properties["url"]
+      assert_equal "https://google.com", result[:conversion].properties["referrer"]
+      assert_equal 27, result[:conversion].properties.size
+    end
+
+    test "returns warning when conversion properties are truncated" do
+      result = build_service(visitor_id: visitor.visitor_id,
+        properties: (1..30).each_with_object({}) { |i, h| h["k#{i}"] = i }).call
+
+      assert result[:success]
+      warning = Array(result[:warnings]).first
+
+      assert_match(/properties/, warning)
+      assert_match(/30/, warning)
+      assert_match(/25/, warning)
+    end
+
+    test "no warning when conversion properties are within the cap" do
+      result = build_service(visitor_id: visitor.visitor_id, properties: { plan: "pro" }).call
+
+      assert result[:success]
+      assert_empty Array(result[:warnings])
+    end
+
     private
 
     def usage_counter

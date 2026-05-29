@@ -48,6 +48,12 @@ class EventTest < ActiveSupport::TestCase
     assert_predicate event, :valid?
   end
 
+  test "model does not reject properties with more than 25 keys (services truncate)" do
+    event.properties = (1..30).each_with_object({}) { |i, h| h["k#{i}"] = i }
+
+    assert_predicate event, :valid?
+  end
+
   test "belongs to account" do
     assert_equal account, event.account
   end

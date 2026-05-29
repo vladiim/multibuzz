@@ -152,6 +152,29 @@ class ConversionTest < ActiveSupport::TestCase
     assert_predicate conversion, :valid?
   end
 
+  # ==========================================
+  # Properties JSONB limits
+  # ==========================================
+
+  test "rejects properties exceeding 50KB" do
+    conversion.properties = { "data" => "x" * 51_200 }
+
+    assert_not conversion.valid?
+    assert_match(/exceeds maximum size/, conversion.errors[:properties].join)
+  end
+
+  test "accepts properties within 50KB" do
+    conversion.properties = { "plan" => "pro", "mrr" => 99 }
+
+    assert_predicate conversion, :valid?
+  end
+
+  test "model does not reject properties with more than 25 custom keys (services truncate)" do
+    conversion.properties = (1..30).each_with_object({}) { |i, h| h["k#{i}"] = i }
+
+    assert_predicate conversion, :valid?
+  end
+
   private
 
   def identity

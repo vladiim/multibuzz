@@ -230,6 +230,27 @@ For browser-based SDKs (JavaScript), these values are captured from HTTP request
 }
 ```
 
+When an event's `properties` exceeded the 25-key cap, the accepted event entry includes a `warnings` array. The server kept the first 25 keys (insertion order) and dropped the rest. The event was still saved.
+
+```json
+{
+  "accepted": 1,
+  "rejected": [],
+  "events": [
+    {
+      "id": "evt_abc123",
+      "event_type": "add_to_cart",
+      "visitor_id": "a1b2c3d4...",
+      "session_id": "x1y2z3a4...",
+      "status": "accepted",
+      "warnings": [
+        "properties: kept first 25 of 47 keys, dropped the rest"
+      ]
+    }
+  ]
+}
+```
+
 **Billing Blocked Response** (202 Accepted):
 
 When the account cannot accept events due to billing issues (exceeded quota, payment failed, etc.):
@@ -328,6 +349,19 @@ This enables LTV by acquisition channel, CAC payback analysis, and retention by 
 }
 ```
 
+When `properties` exceeded the 25-custom-key cap, the response includes a top-level `warnings` array. The conversion was still created with the first 25 custom keys. Reserved keys (`url`, `referrer`) are preserved separately and do not count toward the cap.
+
+```json
+{
+  "conversion": { "...": "..." },
+  "attribution": { "status": "pending" },
+  "duplicate": false,
+  "warnings": [
+    "properties: kept first 25 of 47 custom keys, dropped the rest"
+  ]
+}
+```
+
 **Note**: Attribution is calculated asynchronously. The initial response returns `"status": "pending"`. Attribution credits can be retrieved via the dashboard or API once processing completes (typically within seconds).
 
 ---
@@ -374,10 +408,24 @@ This enables LTV by acquisition channel, CAC payback analysis, and retention by 
 }
 ```
 
+When `traits` exceeded the 25-key cap, the response includes a top-level `warnings` array. Traits are merged into the identity using only the first 25 keys; the rest are dropped before the merge so they never enter storage.
+
+```json
+{
+  "success": true,
+  "identity_id": "idt_abc123def456",
+  "visitor_linked": true,
+  "warnings": [
+    "traits: kept first 25 of 47 keys, dropped the rest"
+  ]
+}
+```
+
 **Response Fields**:
 - `success` (Boolean) - Whether the operation succeeded
 - `identity_id` (String) - The prefixed ID of the identity record
 - `visitor_linked` (Boolean) - Whether a visitor was linked to the identity (false if visitor_id not provided or not found)
+- `warnings` (Array, optional) - Present only when graceful-degradation rules fired
 
 **Note**: The `/api/v1/alias` endpoint has been deprecated. Use `identify` with `visitor_id` for cross-device linking.
 
@@ -470,15 +518,41 @@ _mbuzz_vid=<64 hex chars>; Max-Age=63072000; Path=/; HttpOnly; SameSite=Lax; Sec
 2025-11-28T10:30:00+00:00
 ```
 
-### Properties Object
+### Properties / Traits Object
 
 **Type**: JSON object (hash/dictionary)
-**Max Size**: 64KB
+**Max byte size**: 50KB per blob — applies to `events.properties`, `conversions.properties`, `identities.traits`, `visitors.traits`, `sessions.initial_utm`. Blobs over 50KB are rejected with 422.
+**Max key count**: 25 custom keys per call. Blobs over 25 are **NOT rejected** — the server keeps the first 25 keys in insertion order, drops the rest, and returns a `warnings` array on the response. The request still succeeds. SDKs should log warnings if present but must not crash.
 **Max Depth**: 5 levels of nesting
 
-**Reserved property keys** (SDK should populate):
-- `url` - Current page URL (for UTM extraction)
-- `referrer` - Referring URL (for channel attribution)
+**Reserved keys** (excluded from the 25-key cap, system-captured):
+- `url` - Current page URL (for UTM extraction). Conversions and events.
+- `referrer` - Referring URL (for channel attribution). Conversions and events.
+
+A conversion sending `{ url, referrer, k1..k25 }` is valid (27 total keys, 25 custom). A conversion sending `{ url, k1..k26 }` keeps `url` plus the first 25 custom keys and warns about the dropped key.
+
+**Why the cap exists**: bounds JSONB row size and prevents misbehaving clients from polluting the dashboard's discovered-property surface (`PropertyKeyDiscoveryService` surfaces the top 20 most-populated keys per account in the filter UI).
+
+**Industry context**: 25 matches GA4's per-event parameter cap (the strictest mainstream platform). Mixpanel allows 255, Segment and Amplitude are effectively uncapped per call.
+
+### Warnings on Ingestion
+
+Every ingestion endpoint response can optionally include a top-level `warnings` array. When present, the request still succeeded but the server applied a graceful-degradation rule that the SDK author should know about.
+
+```json
+{
+  "success": true,
+  "identity_id": "idt_abc123def456",
+  "warnings": [
+    "traits: kept first 25 of 47 keys, dropped the rest"
+  ]
+}
+```
+
+Warnings are **never returned for valid input** — the field is omitted entirely when there is nothing to warn about. SDKs should:
+- Log warnings in debug mode
+- Surface warnings via an `onWarning` hook if available
+- Never raise on a warning
 
 ---
 

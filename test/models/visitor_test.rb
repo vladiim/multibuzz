@@ -112,6 +112,25 @@ class VisitorTest < ActiveSupport::TestCase
     assert_equal "macOS", visitor.traits["os"]
   end
 
+  test "rejects traits exceeding 50KB" do
+    visitor.traits = { "data" => "x" * 51_200 }
+
+    assert_not visitor.valid?
+    assert_match(/exceeds maximum size/, visitor.errors[:traits].join)
+  end
+
+  test "accepts traits within 50KB" do
+    visitor.traits = { "browser" => "Chrome", "country" => "AU" }
+
+    assert_predicate visitor, :valid?
+  end
+
+  test "model does not reject traits with more than 25 keys (services truncate)" do
+    visitor.traits = (1..30).each_with_object({}) { |i, h| h["t#{i}"] = i }
+
+    assert_predicate visitor, :valid?
+  end
+
   test "should track first_seen_at on creation" do
     new_visitor = Visitor.create!(
       account: account,

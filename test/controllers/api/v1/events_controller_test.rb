@@ -436,6 +436,29 @@ class Api::V1::EventsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 32, created_event.session.device_fingerprint.length
   end
 
+  test "accepts event with warnings when properties exceed 25 keys" do
+    thirty = (1..30).each_with_object({}) { |i, h| h["k#{i}"] = "v#{i}" }
+    payload = { events: [ valid_event_data.merge("properties" => thirty) ] }
+
+    post api_v1_events_path, params: payload, headers: auth_headers, as: :json
+
+    assert_response :accepted
+    accepted_event = json_response["events"].first
+    warnings = Array(accepted_event["warnings"])
+
+    assert_equal 1, warnings.size
+    assert_match(/properties/, warnings.first)
+  end
+
+  test "accepted events have no warnings field when properties are within the cap" do
+    post api_v1_events_path, params: events_payload, headers: auth_headers, as: :json
+
+    assert_response :accepted
+    json_response["events"].each do |event|
+      assert_nil event["warnings"]
+    end
+  end
+
   private
 
   def extract_cookie_value(cookie_name)

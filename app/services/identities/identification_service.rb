@@ -29,7 +29,8 @@ module Identities
 
       success_result(
         identity_id: identity.prefix_id,
-        visitor_linked: visitor_was_linked
+        visitor_linked: visitor_was_linked,
+        warnings: warnings
       )
     end
 
@@ -44,12 +45,19 @@ module Identities
     end
 
     def persist_identity
-      identity.traits = (identity.traits || {}).deep_merge(stringified_traits)
+      identity.traits = (identity.traits || {}).deep_merge(truncated_traits.deep_stringify_keys)
       identity.last_identified_at = Time.current
       identity.assign_attributes(hashed_pii_assignments)
       identity.save!
     end
 
+    def truncated_traits
+      @truncated_traits ||= PropertyKeyLimit.truncate(raw_traits)
+    end
+
+    # PII hashing reads the full trait set, not the truncated one, so an
+    # email/phone past the key cap still resolves identity even when it's
+    # dropped from the stored traits.
     def stringified_traits
       @stringified_traits ||= raw_traits.deep_stringify_keys
     end
@@ -64,6 +72,10 @@ module Identities
 
     def applicable_pii_rules
       HASHED_PII_RULES.select { |trait_key, _| stringified_traits[trait_key].present? }
+    end
+
+    def warnings
+      [ PropertyKeyLimit.warning_for(:traits, raw_traits) ].compact
     end
 
     def link_visitor_if_present

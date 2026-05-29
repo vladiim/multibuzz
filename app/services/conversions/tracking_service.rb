@@ -36,7 +36,7 @@ module Conversions
       update_session_activity
       increment_usage! unless duplicate?
       enqueue_outbound_dispatches unless duplicate?
-      success_result(conversion: conversion, duplicate: duplicate?)
+      success_result(conversion: conversion, duplicate: duplicate?, warnings: warnings)
     end
 
     def enqueue_outbound_dispatches
@@ -207,13 +207,17 @@ module Conversions
       @persisted_identity || account.identities.find_by(external_id: user_id)
     end
 
-    # Flatten nested "properties" key if present
+    # Flatten nested "properties" key if present, then truncate to MAX_PROPERTY_KEYS.
     # Input:  { "url" => "...", "properties" => { "location" => "Sydney" } }
     # Output: { "url" => "...", "location" => "Sydney" }
-    def normalized_properties
-      props = properties.respond_to?(:to_unsafe_h) ? properties.to_unsafe_h : properties.to_h
-      return props unless props.is_a?(Hash)
+    def normalized_properties = @normalized_properties ||= PropertyKeyLimit.truncate(flattened_properties, reserved: reserved_keys)
+    def flattened_properties = @flattened_properties ||= flatten_properties(raw_properties)
+    def raw_properties = @raw_properties ||= properties.respond_to?(:to_unsafe_h) ? properties.to_unsafe_h : properties.to_h
+    def reserved_keys = Conversion::Validations::RESERVED_PROPERTY_KEYS
+    def warnings = [ PropertyKeyLimit.warning_for(:properties, flattened_properties, reserved: reserved_keys) ].compact
 
+    def flatten_properties(props)
+      return props unless props.is_a?(Hash)
       nested = props["properties"] || props[:properties]
       return props unless nested.respond_to?(:to_h)
 

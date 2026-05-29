@@ -246,6 +246,8 @@ Clients can send any custom properties. No code changes needed:
 
 These are preserved and queryable via JSONB operators.
 
+**Limits**: 50KB byte cap (rejected if exceeded) and 25-custom-key cap per call (truncated and warned, not rejected). See `BUSINESS_RULES.md` § 12 for full rules. Reserved keys (`url`, `referrer` on conversions) are excluded from the 25-key count.
+
 ## Performance Considerations
 
 - **GIN indexes**: Enable fast `WHERE properties->>'key' = value` queries
