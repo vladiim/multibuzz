@@ -179,6 +179,31 @@ module SpendIntelligence
       assert_nil prior_period[:attributed_revenue_pct]
     end
 
+    test "totals, by_channel sum, and time_series sum agree under compare + channel filter" do # rubocop:disable Minitest/MultipleAssertions
+      # Regression for the production divergence reported on 2026-05-08 where
+      # hero attributed revenue read 2.2x the channel-table sum and the
+      # timeseries was flat at zero. The three views read from the same
+      # primary credits scope and must agree within rounding.
+
+      create_credit_for(model: attribution_model, channel: Channels::DISPLAY, revenue_credit: 30.0)
+      create_credit_for(model: first_touch_model, channel: Channels::PAID_SEARCH, revenue_credit: 17.0)
+
+      params = filter_params.merge(
+        models: [ attribution_model, first_touch_model ],
+        channels: [ Channels::PAID_SEARCH, Channels::DISPLAY ]
+      )
+      data = MetricsService.new(account, params).call[:data]
+
+      totals_revenue = data[:totals][:attributed_revenue].to_f
+      channels_sum = data[:by_channel].sum { |r| r[:attributed_revenue].to_f }
+      time_series_sum = data[:time_series].sum { |d| d[:revenue].to_f }
+
+      assert_in_delta totals_revenue, channels_sum, 0.01,
+        "totals.attributed_revenue must equal sum of by_channel attributed_revenue"
+      assert_in_delta totals_revenue, time_series_sum, 0.01,
+        "totals.attributed_revenue must equal sum of daily time_series revenue"
+    end
+
     test "confidence band is nil when only one model is active" do
       account.attribution_models.where.not(id: attribution_model.id).update_all(is_active: false)
 

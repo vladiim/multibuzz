@@ -84,10 +84,18 @@ module SpendIntelligence
       # Accrual: revenue dated by the touchpoint session that earned credit.
       # The timeseries uses this so single-day ROAS becomes "spend on day X
       # attributed back to revenue from spend on day X."
+      #
+      # LEFT JOIN + COALESCE: when an attribution_credit references a session
+      # that no longer exists (archived, retention-dropped, or never persisted),
+      # an INNER JOIN silently drops the row and the timeseries reads zero
+      # while the hero correctly shows the full attributed revenue. Fall back
+      # to the conversion timestamp so the daily total matches what the hero
+      # and channel table report.
       def accrual_daily_revenue
         credits_scope
-          .joins("INNER JOIN sessions ON sessions.id = attribution_credits.session_id")
-          .group(date_expr_for("sessions.started_at")).sum(:revenue_credit)
+          .joins("LEFT JOIN sessions ON sessions.id = attribution_credits.session_id")
+          .group(date_expr_for("COALESCE(sessions.started_at, conversions.converted_at)"))
+          .sum(:revenue_credit)
       end
 
       # Stored timestamps are UTC values in `timestamp without time zone` columns.

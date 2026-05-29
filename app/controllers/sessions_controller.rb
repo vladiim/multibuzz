@@ -61,7 +61,7 @@ class SessionsController < ApplicationController
     return unless token
 
     assessment = ScoreAssessment.find_by(claim_token: token)
-    assessment&.update!(user: user, claim_token: nil)
+    assessment&.update!(user: user, account: user.primary_account, claim_token: nil)
   end
 
   def post_login_path

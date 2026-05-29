@@ -60,7 +60,7 @@ class Score::AssessmentsControllerTest < ActionDispatch::IntegrationTest
 
     assessment = ScoreAssessment.last
 
-    assert_equal users(:one).id, assessment.user_id
+    assert_equal [ users(:one).id, accounts(:one).id ], [ assessment.user_id, assessment.account_id ]
   end
 
   test "create rejects invalid data" do
@@ -137,8 +137,8 @@ class Score::AssessmentsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assessment.reload
 
-    assert_equal users(:one).id, assessment.user_id
-    assert_nil assessment.claim_token
+    assert_equal [ users(:one).id, accounts(:one).id, nil ],
+      [ assessment.user_id, assessment.account_id, assessment.claim_token ]
   end
 
   test "claim rejects invalid token" do

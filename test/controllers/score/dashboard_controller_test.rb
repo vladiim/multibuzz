@@ -47,6 +47,30 @@ class Score::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href='#{score_path}']"
   end
 
+  test "shows report when logged-in user just completed an assessment" do
+    sign_in_as(users(:three))
+
+    post assessments_path, params: {
+      assessment: {
+        overall_score: 2.3,
+        overall_level: 2,
+        dimension_scores: {
+          reporting: 2.5, attribution: 1.5, experimentation: 1.0,
+          forecasting: 2.5, channels: 3.0, infrastructure: 2.0
+        },
+        answers: [ { question_id: "q1", answer_id: "b", score: 1.5 } ],
+        elapsed_ms: 60_000
+      }
+    }, as: :json
+
+    assert_response :created
+
+    get score_dashboard_path
+
+    assert_response :success
+    assert_select ".report-level-badge", text: /Level 2/
+  end
+
   test "renders the to-app CTA above the tabs when an assessment is present" do
     create_assessment(account: accounts(:one), level: 2)
     sign_in_as(users(:one))

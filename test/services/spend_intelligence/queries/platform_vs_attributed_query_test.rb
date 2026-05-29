@@ -54,6 +54,24 @@ module SpendIntelligence
         assert_nil query_with_zero_platform.totals[:gap_pct]
       end
 
+      test "totals only count attributed revenue from channels the platform reports" do
+        # Regression: an account with $99.99 paid-search credit + $5,000 of organic
+        # credit produced a totals gap of +$4,996 (+5000%) — making it look like
+        # mbuzz wildly over-credited the platform when really mbuzz was just
+        # attributing organic revenue the platform never saw. The totals gap
+        # comparison must restrict to channels where the platform reports.
+        organic_credit = 5_000.0
+        create_credit(channel: Channels::ORGANIC_SEARCH, revenue_credit: organic_credit)
+
+        totals = query.totals
+        expected_platform = PAID_SEARCH_PLATFORM + DISPLAY_PLATFORM
+        expected_attributed = ATTRIBUTED # only paid_search has a platform number
+
+        assert_in_delta expected_platform, totals[:platform_revenue], 0.01
+        assert_in_delta(expected_attributed - expected_platform, totals[:gap], 0.01,
+          "gap must compare paid-channel attributed revenue to platform-reported revenue, not blended")
+      end
+
       private
 
       def query
