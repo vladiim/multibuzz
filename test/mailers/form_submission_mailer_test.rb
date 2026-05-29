@@ -10,7 +10,7 @@ class FormSubmissionMailerTest < ActionMailer::TestCase
       email.deliver_now
     end
 
-    assert_predicate notification_email, :present?, "notifications.internal_email must be set in credentials"
+    assert_predicate notification_email, :present?, "internal notification email must be configured"
     assert_equal [ notification_email ], email.to
   end
 
@@ -69,7 +69,7 @@ class FormSubmissionMailerTest < ActionMailer::TestCase
   private
 
   def notification_email
-    @notification_email ||= Rails.application.credentials.dig(:notifications, :internal_email)
+    @notification_email ||= Rails.application.config.x.internal_notification_email
   end
 
   def contact_submission

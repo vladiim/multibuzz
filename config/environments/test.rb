@@ -41,6 +41,11 @@ Rails.application.configure do
   # Set host to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = { host: "example.com" }
 
+  # Internal notification recipient. Production sources this from credentials;
+  # the test environment has no credential key, so provide a deterministic
+  # address for mailers that notify the mbuzz team.
+  config.x.internal_notification_email = "internal@mbuzz.test"
+
   # Print deprecation notices to the stderr.
   config.active_support.deprecation = :stderr
 

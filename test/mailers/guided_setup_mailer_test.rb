@@ -38,7 +38,7 @@ class GuidedSetupMailerTest < ActionMailer::TestCase
   # --- kickoff_booked (to the mbuzz team, on customer booking) ---
 
   test "kickoff_booked delivers to the configured internal email" do
-    assert_predicate notification_email, :present?, "notifications.internal_email must be set in credentials"
+    assert_predicate notification_email, :present?, "internal notification email must be configured"
     assert_equal [ notification_email ], kickoff_booked_email.to
   end
 
@@ -72,7 +72,7 @@ class GuidedSetupMailerTest < ActionMailer::TestCase
   # --- internal_notification (to the mbuzz team) ---
 
   test "internal_notification delivers to the configured internal email" do
-    assert_predicate notification_email, :present?, "notifications.internal_email must be set in credentials"
+    assert_predicate notification_email, :present?, "internal notification email must be configured"
     assert_equal [ notification_email ], internal_email.to
   end
 
@@ -133,6 +133,6 @@ class GuidedSetupMailerTest < ActionMailer::TestCase
   end
 
   def notification_email
-    @notification_email ||= Rails.application.credentials.dig(:notifications, :internal_email)
+    @notification_email ||= Rails.application.config.x.internal_notification_email
   end
 end
