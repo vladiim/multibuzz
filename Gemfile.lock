@@ -497,9 +497,10 @@ GEM
     thruster (0.1.20-arm64-darwin)
     thruster (0.1.20-x86_64-linux)
     timeout (0.6.1)
-    timescaledb (0.2.9)
+    timescaledb (0.3.3)
       activerecord
       activesupport
+      ostruct
       pg (~> 1.2)
     tsort (0.2.0)
     turbo-rails (2.0.23)
@@ -601,7 +602,7 @@ DEPENDENCIES
   tailwindcss-rails (~> 3.0)
   tailwindcss-ruby (~> 3.0)
   thruster
-  timescaledb (~> 0.2.0)
+  timescaledb (~> 0.3.3)
   turbo-rails
   tzinfo-data
   undercover
