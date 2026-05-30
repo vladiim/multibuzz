@@ -1,0 +1,59 @@
+<section class="py-24 px-6 bg-white">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center">
+      <p class="text-sm font-medium text-blue-600 uppercase tracking-wide mb-4 scroll-animate" data-controller="scroll-reveal">
+        Closed-loop attribution
+      </p>
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight mb-4 scroll-animate" data-controller="scroll-reveal">
+        Your best deals close in Salesforce,
+        <span class="block mt-1">not on your website.</span>
+      </h2>
+      <p class="text-lg text-gray-600 max-w-3xl mx-auto scroll-animate" data-controller="scroll-reveal">
+        Send the conversion with a customer ID and mbuzz credits every ad, email, and visit that
+        led there &mdash; across devices, even weeks later. No cookies. No warehouse. No reverse-ETL.
+      </p>
+    </div>
+
+    <div class="mt-14 grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+      <div class="scroll-animate" data-controller="scroll-reveal">
+        <div class="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold">1</div>
+        <h3 class="mt-4 font-semibold text-gray-900">They browse, then sign in</h3>
+        <p class="mt-1 text-gray-600 text-sm">A visitor researches across devices and logs in. mbuzz ties that whole journey to their ID.</p>
+      </div>
+
+      <div class="scroll-animate" data-controller="scroll-reveal">
+        <div class="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold">2</div>
+        <h3 class="mt-4 font-semibold text-gray-900">The deal closes offline</h3>
+        <p class="mt-1 text-gray-600 text-sm">Weeks later it&rsquo;s marked won in your CRM, Stripe, or POS. You send one API call with the same ID.</p>
+      </div>
+
+      <div class="scroll-animate" data-controller="scroll-reveal">
+        <div class="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold">3</div>
+        <h3 class="mt-4 font-semibold text-gray-900">mbuzz closes the loop</h3>
+        <p class="mt-1 text-gray-600 text-sm">Every prior touch is credited to the sale &mdash; and re-attributed automatically if the deal landed before the journey did.</p>
+      </div>
+    </div>
+
+    <div class="mt-12 max-w-2xl mx-auto scroll-animate" data-controller="scroll-reveal">
+      <pre class="bg-gray-900 text-gray-100 rounded-lg p-5 text-sm overflow-x-auto"><code>POST /api/v1/conversions
+{
+  "conversion": {
+    "user_id":         "deal@acme.com",
+    "conversion_type": "closed_won",
+    "revenue":         24000
+  }
+}</code></pre>
+      <p class="mt-3 text-sm text-gray-500 text-center">
+        That&rsquo;s the whole integration &mdash; the same customer ID you already use in your CRM.
+      </p>
+    </div>
+
+    <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4 scroll-animate" data-controller="scroll-reveal">
+      <%= link_to "Try it in the demo", demo_path,
+            class: "px-6 py-3 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-all inline-flex items-center justify-center" %>
+      <%= link_to "How closed-loop attribution works &rarr;".html_safe,
+            article_path("b2b-attribution-long-sales-cycles"),
+            class: "px-6 py-3 text-sm font-semibold text-gray-900 bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 rounded-md transition-all inline-flex items-center justify-center" %>
+    </div>
+  </div>
+</section>
