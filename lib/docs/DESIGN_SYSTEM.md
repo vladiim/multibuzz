@@ -45,7 +45,19 @@ class="bg-white border border-gray-200 rounded-lg shadow-sm p-6"
 
 Standard card. `rounded-xl`, `rounded-2xl`, the borderless `shadow` (no `-sm`), and `p-5`/`p-8` are deprecated. One exception: the install-service hero promo card may use a gradient — but it's the *only* sanctioned gradient and it stays at `rounded-2xl`.
 
-### 2.4 Vertical rhythm
+### 2.4 Tables
+
+Wrap every `min-w-full` table in a horizontally scrollable container so wide tables scroll on narrow viewports instead of being clipped:
+
+```
+<div class="overflow-x-auto">
+  <table class="min-w-full divide-y divide-gray-200"> … </table>
+</div>
+```
+
+Never wrap a table in `overflow-hidden` (the card's own `overflow-hidden sm:rounded-lg` clips the right-hand columns — Last Used / Status / Actions vanish with no way to reach them). The card may keep `overflow-hidden` for its rounded corners; the inner `overflow-x-auto` wrapper owns the scroll.
+
+### 2.5 Vertical rhythm
 
 - `mb-6` between major card sections
 - `space-y-4` for stacked form rows inside a card
