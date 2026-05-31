@@ -112,19 +112,39 @@ class AdPlatforms::Meta::RowParserTest < ActiveSupport::TestCase
   end
 
   test "stamps connection metadata onto each row" do
-    connection.update!(metadata: { "location" => "Eumundi-Noosa" })
+    connection.update!(metadata: { "location" => "Portland-Metro" })
 
-    assert_equal({ "location" => "Eumundi-Noosa" }, parse(daily_row)[:metadata])
+    assert_equal({ "location" => "Portland-Metro" }, parse(daily_row)[:metadata])
   end
 
   test "stamps empty metadata when connection has none" do
     assert_equal({}, parse(daily_row)[:metadata])
   end
 
+  test "merges resolver-derived dimensions, preserving other connection metadata" do
+    connection.update!(metadata: { "region" => "South" })
+    parsed = parse(daily_row, resolver: resolver_for("location", "brand", "BrandCo"))
+
+    assert_equal "BrandCo", parsed[:metadata]["location"] # rule matched: "Brand Awareness" contains "brand"
+    assert_equal "South", parsed[:metadata]["region"]     # untouched connection metadata survives
+  end
+
+  test "a rule-derived value overrides a connection value for the same key" do
+    connection.update!(metadata: { "location" => "Default HQ" })
+
+    assert_equal "Override", parse(daily_row, resolver: resolver_for("location", "brand", "Override"))[:metadata]["location"]
+  end
+
   private
 
-  def parse(row, channel_overrides: nil)
-    AdPlatforms::Meta::RowParser.call(row, connection: connection, channel_overrides: channel_overrides)
+  def parse(row, channel_overrides: nil, resolver: nil)
+    AdPlatforms::Meta::RowParser.call(row, connection: connection, channel_overrides: channel_overrides, resolver: resolver)
+  end
+
+  def resolver_for(key, contains, output)
+    dimension = CustomDimension.new(key: key, name: key.capitalize, mapping_mode: "campaign", default_value: "Other")
+    dimension.dimension_rules.build(match_field: "campaign_name", operator: "contains", value: contains, output_value: output, position: 1)
+    CustomDimensions::Resolver.new(dimensions: [ dimension ], connection_metadata: connection.metadata)
   end
 
   def connection

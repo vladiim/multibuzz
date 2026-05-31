@@ -3,33 +3,48 @@
 module AdPlatforms
   module Google
     class RowParser
-      def self.call(row, connection:, channel_overrides: {})
-        new(row, connection: connection, channel_overrides: channel_overrides).call
+      def self.call(row, connection:, channel_overrides: {}, resolver: nil)
+        new(row, connection: connection, channel_overrides: channel_overrides, resolver: resolver).call
       end
 
-      def initialize(row, connection:, channel_overrides: {})
+      def initialize(row, connection:, channel_overrides: {}, resolver: nil)
         @campaign = row.fetch(FIELD_CAMPAIGN)
         @segments = row.fetch(FIELD_SEGMENTS)
         @metrics = row.fetch(FIELD_METRICS)
         @currency = row.dig(FIELD_CUSTOMER, FIELD_CURRENCY_CODE) || connection.currency
         @connection = connection
         @channel_overrides = channel_overrides
+        @resolver = resolver
       end
 
       def call
-        connection_attrs.merge(dimension_attrs).merge(campaign_attrs).merge(metric_attrs).merge(metadata_attrs)
+        row_attrs.merge(metadata_attrs(row_attrs))
       end
 
       private
 
-      attr_reader :campaign, :segments, :metrics, :currency, :connection, :channel_overrides
+      attr_reader :campaign, :segments, :metrics, :currency, :connection, :channel_overrides, :resolver
+
+      def row_attrs
+        @row_attrs ||= connection_attrs.merge(dimension_attrs).merge(campaign_attrs).merge(metric_attrs)
+      end
 
       def connection_attrs
         { account_id: connection.account_id, ad_platform_connection_id: connection.id }
       end
 
-      def metadata_attrs
-        { metadata: connection.metadata.is_a?(Hash) ? connection.metadata : {} }
+      # Static connection metadata is the baseline; rule-derived dimension values
+      # (CustomDimensions::Resolver) override it where they resolve.
+      def metadata_attrs(row)
+        { metadata: base_metadata.merge(resolved_dimensions(row)) }
+      end
+
+      def base_metadata
+        connection.metadata.is_a?(Hash) ? connection.metadata : {}
+      end
+
+      def resolved_dimensions(row)
+        resolver ? resolver.call(row) : {}
       end
 
       def dimension_attrs

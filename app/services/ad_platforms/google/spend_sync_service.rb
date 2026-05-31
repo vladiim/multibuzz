@@ -22,7 +22,11 @@ module AdPlatforms
       attr_reader :connection, :date_range, :channel_overrides
 
       def records
-        @records ||= raw_rows.map { |row| RowParser.call(row, connection: connection, channel_overrides: channel_overrides) }
+        @records ||= raw_rows.map { |row| RowParser.call(row, connection: connection, channel_overrides: channel_overrides, resolver: resolver) }
+      end
+
+      def resolver
+        @resolver ||= CustomDimensions::Resolver.for_connection(connection)
       end
 
       def raw_rows

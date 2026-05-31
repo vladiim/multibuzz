@@ -6,30 +6,45 @@ module AdPlatforms
     # from, returns a hash of AdSpendRecord attributes ready for upsert. No HTTP,
     # no IO, no DB.
     class RowParser
-      def self.call(row, connection:, channel_overrides: nil)
-        new(row, connection: connection, channel_overrides: channel_overrides).call
+      def self.call(row, connection:, channel_overrides: nil, resolver: nil)
+        new(row, connection: connection, channel_overrides: channel_overrides, resolver: resolver).call
       end
 
-      def initialize(row, connection:, channel_overrides: nil)
+      def initialize(row, connection:, channel_overrides: nil, resolver: nil)
         @row = row
         @connection = connection
         @channel_overrides = channel_overrides
+        @resolver = resolver
       end
 
       def call
-        connection_attrs.merge(dimension_attrs).merge(campaign_attrs).merge(metric_attrs).merge(metadata_attrs)
+        row_attrs.merge(metadata_attrs(row_attrs))
       end
 
       private
 
-      attr_reader :row, :connection, :channel_overrides
+      attr_reader :row, :connection, :channel_overrides, :resolver
+
+      def row_attrs
+        @row_attrs ||= connection_attrs.merge(dimension_attrs).merge(campaign_attrs).merge(metric_attrs)
+      end
 
       def connection_attrs
         { account_id: connection.account_id, ad_platform_connection_id: connection.id }
       end
 
-      def metadata_attrs
-        { metadata: connection.metadata.is_a?(Hash) ? connection.metadata : {} }
+      # Static connection metadata is the baseline; rule-derived dimension values
+      # (CustomDimensions::Resolver) override it where they resolve.
+      def metadata_attrs(row_data)
+        { metadata: base_metadata.merge(resolved_dimensions(row_data)) }
+      end
+
+      def base_metadata
+        connection.metadata.is_a?(Hash) ? connection.metadata : {}
+      end
+
+      def resolved_dimensions(row_data)
+        resolver ? resolver.call(row_data) : {}
       end
 
       def dimension_attrs
