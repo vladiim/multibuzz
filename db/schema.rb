@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_05_21_030000) do
+ActiveRecord::Schema[8.0].define(version: 2026_05_31_120100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "timescaledb"
@@ -415,6 +415,23 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_21_030000) do
     t.index ["visitor_id"], name: "index_conversions_on_visitor_id"
   end
 
+  create_table "custom_dimensions", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "key", null: false
+    t.string "name", null: false
+    t.string "default_value", default: "Other", null: false
+    t.string "mapping_mode", default: "campaign", null: false
+    t.integer "platform"
+    t.integer "position", default: 0, null: false
+    t.boolean "is_active", default: true, null: false
+    t.string "built_in"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "is_active"], name: "index_custom_dimensions_on_account_id_and_is_active"
+    t.index ["account_id", "key"], name: "index_custom_dimensions_on_account_id_and_key", unique: true
+    t.index ["account_id"], name: "index_custom_dimensions_on_account_id"
+  end
+
   create_table "data_integrity_checks", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.string "check_name", null: false
@@ -427,6 +444,21 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_21_030000) do
     t.datetime "updated_at", null: false
     t.index ["account_id", "check_name", "created_at"], name: "idx_integrity_checks_account_check_time"
     t.index ["account_id"], name: "index_data_integrity_checks_on_account_id"
+  end
+
+  create_table "dimension_rules", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "custom_dimension_id", null: false
+    t.integer "position", default: 0, null: false
+    t.string "match_field", null: false
+    t.string "operator", null: false
+    t.string "value", null: false
+    t.string "output_value", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_dimension_rules_on_account_id"
+    t.index ["custom_dimension_id", "position"], name: "index_dimension_rules_on_custom_dimension_id_and_position"
+    t.index ["custom_dimension_id"], name: "index_dimension_rules_on_custom_dimension_id"
   end
 
   create_table "events", primary_key: ["id", "occurred_at"], force: :cascade do |t|
@@ -785,7 +817,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_21_030000) do
   add_foreign_key "conversions", "accounts"
   add_foreign_key "conversions", "identities"
   add_foreign_key "conversions", "visitors"
+  add_foreign_key "custom_dimensions", "accounts"
   add_foreign_key "data_integrity_checks", "accounts"
+  add_foreign_key "dimension_rules", "accounts"
+  add_foreign_key "dimension_rules", "custom_dimensions"
   add_foreign_key "events", "accounts"
   add_foreign_key "events", "visitors"
   add_foreign_key "exports", "accounts"

@@ -14,6 +14,8 @@ module Account::Relationships
     # Most dependent tables first, then their parents
     has_many :rerun_jobs, dependent: :destroy
     has_many :reattribution_batches, dependent: :destroy
+    has_many :dimension_rules, dependent: :destroy       # depends on custom_dimensions
+    has_many :custom_dimensions, dependent: :destroy
     has_many :conversion_property_keys, dependent: :destroy
     has_many :conversion_dispatches, dependent: :destroy
     has_many :conversion_destinations, dependent: :destroy
