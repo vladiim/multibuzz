@@ -3,7 +3,7 @@
 class DocsController < ApplicationController
   layout "docs"
 
-  ALLOWED_PAGES = %w[getting-started authentication attribution-models integrations-sgtm data-downloads mcp].freeze
+  ALLOWED_PAGES = %w[getting-started authentication attribution-models integrations-sgtm data-downloads custom-dimensions mcp].freeze
 
   def show
     page_slug = params[:page]

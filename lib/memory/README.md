@@ -15,3 +15,5 @@ Never put secrets, tokens, API keys, account IDs, email addresses, or customer P
 - [Visible form inputs are non-negotiable](feedback_visible_form_inputs.md): every input/select/textarea needs a visible resting border and real padding — never transparent-at-rest
 - [Register every new admin surface in `AdminTools::ALL`](feedback_admin_surfaces_register_in_admintools.md): the `/admin` hub renders this registry; an unlisted surface is invisible to operators
 - [Two-space continuation indent + never align across lines](feedback_two_space_continuation_indent.md): CLAUDE.md says it, I keep regressing — multi-line continuations are exactly 2-space-indented, no padded `=`/`=>` columns
+- [No real customer examples](feedback_no_real_customer_examples.md): never use real customer names/brands/locations (e.g. PetPro) in committed specs/mockups/docs/tests — invent fictional ones (Acme Outdoors, Portland/Austin/Denver)
+- [No magic strings](feedback_no_magic_strings.md): extract meaningful/repeated literals (SQL tokens, slugs, modes, keys) to named SCREAMING_SNAKE constants and reference them; corrected twice

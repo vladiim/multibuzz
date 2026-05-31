@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mbuzz - Custom dimensions</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!--
+    MOCKUP: Custom dimensions settings flow.
+    Spec: lib/specs/custom_dimensions_spec.md
+
+    Extensibility intent (read before changing copy or markup):
+    Nothing in this screen is Google-specific. Platforms, match fields, and
+    operators are all DATA, rendered from arrays (see <script> at the bottom).
+    Adding LinkedIn / TikTok = adding a platform object, not new UI. Match
+    fields are platform-agnostic (campaign name / id / type / network / device /
+    channel) and map to each platform's equivalent at the row-parser layer.
+    The preview pulls campaign names from MANY platforms through ONE rule set,
+    which is the whole point: define a dimension once, it resolves everywhere.
+  -->
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+  <!-- App shell nav -->
+  <nav class="bg-white border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-14 items-center">
+        <div class="flex items-center gap-6">
+          <span class="text-lg font-bold text-gray-900">mbuzz</span>
+          <span class="text-sm text-gray-500">Acme Outdoors</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-sm text-gray-900 font-medium">Settings</span>
+          <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-sm font-medium text-indigo-600">VM</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- Settings sub-nav -->
+    <div class="border-b border-gray-200 mb-8">
+      <nav class="-mb-px flex gap-6 overflow-x-auto">
+        <button class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap">Account</button>
+        <button class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap">Integrations</button>
+        <button class="py-3 px-1 text-sm font-medium border-b-2 border-indigo-500 text-indigo-600 whitespace-nowrap">Custom dimensions</button>
+        <button class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap">Team</button>
+        <button class="py-3 px-1 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap">Billing</button>
+      </nav>
+    </div>
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900">Custom dimensions</h1>
+        <p class="text-lg text-gray-600 mt-2 max-w-2xl">Tag every campaign with your own attributes, like location or brand, using rules that match the campaign. One rule set applies across every connected platform.</p>
+        <a href="/docs/custom-dimensions" class="inline-flex items-center gap-1 mt-3 text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+          How custom dimensions work
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        </a>
+      </div>
+      <button onclick="newDimension()" class="px-5 py-2.5 bg-indigo-600 text-white rounded-md shadow-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 whitespace-nowrap flex-shrink-0">
+        New dimension
+      </button>
+    </div>
+
+    <!-- Platforms strip: makes the cross-platform reach explicit -->
+    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4 mb-6">
+      <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+        <span class="text-sm font-medium text-gray-700">Applies across:</span>
+        <div id="platformStrip" class="flex flex-wrap items-center gap-x-5 gap-y-2"></div>
+      </div>
+    </div>
+
+    <!-- ===================== INDEX ===================== -->
+    <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden mb-8">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead>
+            <tr class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3">Dimension</th>
+              <th class="px-6 py-3">Applies to</th>
+              <th class="px-6 py-3 text-right">Rules</th>
+              <th class="px-6 py-3">Status</th>
+              <th class="px-6 py-3"></th>
+            </tr>
+          </thead>
+          <tbody id="dimensionRows" class="divide-y divide-gray-100"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===================== EDITOR ===================== -->
+    <div id="editor" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-8">
+      <div class="flex items-center justify-between mb-1">
+        <h2 id="editorTitle" class="text-base font-semibold text-gray-900">Edit dimension: Location</h2>
+        <span id="builtInBadge" class="hidden text-xs font-medium bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded">Built in</span>
+      </div>
+      <p id="editorSubhead" class="text-sm text-gray-500 mb-6">Resolved per campaign at sync time and stored on each spend row, so every chart can slice by it.</p>
+
+      <!-- Dimension fields -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Key <span class="text-red-600">*</span></label>
+          <input id="dimKey" list="keySuggestions" value="location" class="block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+          <datalist id="keySuggestions">
+            <option value="location"><option value="region"><option value="brand"><option value="store">
+          </datalist>
+          <p class="mt-1 text-sm text-gray-500">Stored lowercased on every spend row. Used by dashboards and exports.</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Display name</label>
+          <input id="dimName" value="Location" class="block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Applies to</label>
+          <select id="dimPlatform" class="block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"></select>
+          <p class="mt-1 text-sm text-gray-500">Scope to one platform, or leave on all.</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Default value <span class="text-red-600">*</span></label>
+          <input id="dimDefault" value="Other" class="block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+          <p class="mt-1 text-sm text-gray-500">Used when no rule below matches. Every campaign always gets a value. Defaults to Other; change it to anything.</p>
+        </div>
+      </div>
+
+      <!-- Built-in channel note (shown only for the channel dimension) -->
+      <div id="channelNote" class="hidden p-3 bg-indigo-50 border border-indigo-100 rounded-md text-sm text-indigo-800 mb-6">
+        Channel is a built-in dimension. When no rule below matches, mbuzz derives the channel automatically from each campaign's type and network. Your rules run first and override that default.
+      </div>
+
+      <!-- Rules -->
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="text-base font-semibold text-gray-900">Mapping rules</h3>
+        <span class="text-sm text-gray-500">First matching rule wins, top to bottom.</span>
+      </div>
+
+      <div id="rulesList" class="space-y-2 mb-3"></div>
+
+      <button onclick="addRule()" class="px-5 py-2.5 bg-white text-gray-700 border border-gray-300 rounded-md shadow-sm font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-sm">
+        + Add rule
+      </button>
+
+      <!-- Save / cancel -->
+      <div class="flex items-center justify-between gap-3 mt-8 pt-6 border-t border-gray-200">
+        <p class="text-sm text-gray-500">Saving re-tags matching spend, including past data.</p>
+        <div class="flex items-center gap-3">
+          <button onclick="document.getElementById('editor').scrollIntoView()" class="px-5 py-2.5 bg-white text-gray-700 border border-gray-300 rounded-md shadow-sm font-medium hover:bg-gray-50">Cancel</button>
+          <button onclick="renderPreview()" class="px-5 py-2.5 bg-indigo-600 text-white rounded-md shadow-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Save dimension</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== LIVE PREVIEW ===================== -->
+    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-1">
+        <h2 class="text-base font-semibold text-gray-900">What this maps</h2>
+        <select id="previewPlatform" onchange="renderPreview()" class="border border-gray-300 rounded-md shadow-sm px-3 py-1.5 text-sm bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"></select>
+      </div>
+      <p class="text-sm text-gray-500 mb-5">Recent campaigns run through the rules above. The same rule set resolves campaigns from every platform.</p>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead>
+            <tr class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="py-3 pr-4">Platform</th>
+              <th class="py-3 pr-4">Campaign</th>
+              <th class="py-3 pr-4">Location</th>
+              <th class="py-3">Matched by</th>
+            </tr>
+          </thead>
+          <tbody id="previewRows" class="divide-y divide-gray-100 text-sm"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+<script>
+  // ---- Data: everything platform-specific lives here, not in the markup ----
+  // Adding a platform is adding an entry. The UI re-renders from this list.
+  const PLATFORMS = [
+    { id: "google_ads", name: "Google Ads", status: "connected" },
+    { id: "meta_ads",   name: "Meta",       status: "connected" },
+    { id: "linkedin_ads", name: "LinkedIn", status: "coming_soon" },
+    { id: "tiktok_ads", name: "TikTok",     status: "coming_soon" },
+  ];
+
+  const MATCH_FIELDS = [
+    { id: "campaign_name", label: "Campaign name" },
+    { id: "campaign_id",   label: "Campaign ID" },
+    { id: "campaign_type", label: "Campaign type" },
+    { id: "network_type",  label: "Network type", hint: "Google PMax only" },
+    { id: "device",        label: "Device" },
+    { id: "channel",       label: "Channel" },
+  ];
+
+  const OPERATORS = [
+    { id: "contains",     label: "contains" },
+    { id: "equals",       label: "is exactly" },
+    { id: "not_equals",   label: "is not" },
+    { id: "starts_with",  label: "starts with" },
+    { id: "ends_with",    label: "ends with" },
+    { id: "regex",        label: "matches regex" },
+  ];
+
+  // The dimensions an account has defined. "channel" is built in.
+  const DIMENSIONS = [
+    {
+      key: "channel", name: "Channel", platform: null, builtIn: true, active: true,
+      default: "Auto (from campaign type)",
+      rules: [
+        { field: "campaign_name", op: "regex", value: "display|banner", out: "display" },
+      ],
+    },
+    {
+      key: "location", name: "Location", platform: null, builtIn: false, active: true,
+      default: "Other",
+      rules: [
+        { field: "campaign_name", op: "contains", value: "portland", out: "Portland" },
+        { field: "campaign_name", op: "contains", value: "austin",   out: "Austin" },
+        { field: "campaign_name", op: "regex",    value: "den|denver", out: "Denver" },
+      ],
+    },
+    {
+      key: "brand", name: "Brand", platform: "meta_ads", builtIn: false, active: false,
+      default: "House",
+      rules: [
+        { field: "campaign_name", op: "starts_with", value: "Premium_", out: "Premium" },
+      ],
+    },
+  ];
+
+  // Sample campaigns across platforms, to prove one rule set spans all of them.
+  const SAMPLE_CAMPAIGNS = [
+    { platform: "google_ads", name: "AcmeOutdoors | Portland | Search" },
+    { platform: "google_ads", name: "AcmeOutdoors | Austin | PMax" },
+    { platform: "google_ads", name: "Denver Search - Apparel" },
+    { platform: "meta_ads",   name: "Austin_Retargeting_Sales" },
+    { platform: "meta_ads",   name: "Brand_Awareness_US" },
+  ];
+
+  let editingKey = "location"; // which dimension is open in the editor
+
+  // ---- Tiny resolver mirroring CustomDimensions::Resolver semantics ----
+  function matches(op, candidate, value) {
+    const c = (candidate || "").toLowerCase(), v = (value || "").toLowerCase();
+    switch (op) {
+      case "contains":    return c.includes(v);
+      case "equals":      return c === v;
+      case "not_equals":  return c !== v;
+      case "starts_with": return c.startsWith(v);
+      case "ends_with":   return c.endsWith(v);
+      case "regex":       try { return new RegExp(value, "i").test(candidate || ""); } catch { return false; }
+      default:            return false;
+    }
+  }
+  function resolve(dim, campaignName) {
+    for (let i = 0; i < dim.rules.length; i++) {
+      const r = dim.rules[i];
+      // preview only matches on campaign_name fields for simplicity
+      if (r.field === "campaign_name" && matches(r.op, campaignName, r.value)) {
+        return { value: r.out, ruleIndex: i + 1 };
+      }
+    }
+    return { value: dim.default, ruleIndex: null };
+  }
+
+  function platformName(id) { return (PLATFORMS.find(p => p.id === id) || {}).name; }
+  function escapeHtml(s) { return s.replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;" }[c])); }
+
+  // ---- Renderers ----
+  function renderPlatformStrip() {
+    document.getElementById("platformStrip").innerHTML = PLATFORMS.map(p => {
+      if (p.status === "connected") {
+        return `<span class="inline-flex items-center gap-1.5 text-sm text-gray-700">
+                  <span class="w-2 h-2 bg-green-500 rounded-full"></span>${p.name}</span>`;
+      }
+      return `<span class="inline-flex items-center gap-1.5 text-sm text-gray-400">
+                <span class="w-2 h-2 bg-gray-300 rounded-full"></span>${p.name}
+                <span class="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">Soon</span></span>`;
+    }).join("");
+  }
+
+  function appliesToLabel(dim) {
+    return dim.platform ? platformName(dim.platform) : "All platforms";
+  }
+
+  function renderIndex() {
+    document.getElementById("dimensionRows").innerHTML = DIMENSIONS.map(d => `
+      <tr class="hover:bg-gray-50">
+        <td class="px-6 py-4">
+          <div class="flex items-center gap-2">
+            <span class="font-medium text-gray-900">${d.name}</span>
+            ${d.builtIn ? '<span class="text-xs font-medium bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded">Built in</span>' : ''}
+          </div>
+          <div class="text-xs text-gray-500 mt-0.5 font-mono">${d.key}</div>
+        </td>
+        <td class="px-6 py-4 text-sm text-gray-700">${appliesToLabel(d)}</td>
+        <td class="px-6 py-4 text-sm text-gray-700 text-right">${d.rules.length}</td>
+        <td class="px-6 py-4">
+          <button onclick="toggleActive('${d.key}')" role="switch" aria-checked="${d.active}"
+            class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${d.active ? 'bg-indigo-600' : 'bg-gray-200'}">
+            <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${d.active ? 'translate-x-4' : 'translate-x-0.5'}"></span>
+          </button>
+        </td>
+        <td class="px-6 py-4 text-right">
+          <button onclick="editDimension('${d.key}')" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">Edit</button>
+        </td>
+      </tr>`).join("");
+  }
+
+  function fieldOptions(selected) {
+    return MATCH_FIELDS.map(f =>
+      `<option value="${f.id}" ${f.id === selected ? "selected" : ""}>${f.label}${f.hint ? " (" + f.hint + ")" : ""}</option>`
+    ).join("");
+  }
+  function opOptions(selected) {
+    return OPERATORS.map(o => `<option value="${o.id}" ${o.id === selected ? "selected" : ""}>${o.label}</option>`).join("");
+  }
+
+  function ruleRow(rule, idx) {
+    const inputCls = "border border-gray-300 rounded-md shadow-sm px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500";
+    return `
+      <div class="flex flex-wrap items-center gap-2 p-3 bg-gray-50 border border-gray-200 rounded-md">
+        <span class="cursor-move text-gray-400 select-none" title="Drag to reorder">⠿</span>
+        <span class="text-xs font-medium text-gray-500 w-5 text-center">${idx + 1}</span>
+        <span class="text-sm text-gray-600">When</span>
+        <select class="${inputCls}">${fieldOptions(rule.field)}</select>
+        <select class="${inputCls}">${opOptions(rule.op)}</select>
+        <input value="${escapeHtml(rule.value)}" placeholder="value" class="${inputCls} flex-1 min-w-[8rem]">
+        <span class="text-sm text-gray-600">set to</span>
+        <input value="${escapeHtml(rule.out)}" placeholder="value" class="${inputCls} flex-1 min-w-[8rem]">
+        <button onclick="this.closest('div').remove()" class="text-gray-400 hover:text-red-600 p-1" title="Remove rule" aria-label="Remove rule">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>`;
+  }
+
+  function renderPlatformSelect() {
+    const dim = DIMENSIONS.find(d => d.key === editingKey);
+    const opts = [`<option value="">All platforms</option>`].concat(
+      PLATFORMS.map(p => {
+        const disabled = p.status !== "connected" ? "disabled" : "";
+        const label = p.status !== "connected" ? `${p.name} (coming soon)` : p.name;
+        const sel = dim.platform === p.id ? "selected" : "";
+        return `<option value="${p.id}" ${sel} ${disabled}>${label}</option>`;
+      })
+    );
+    document.getElementById("dimPlatform").innerHTML = opts.join("");
+  }
+
+  function renderEditor() {
+    const dim = DIMENSIONS.find(d => d.key === editingKey);
+    document.getElementById("editorTitle").textContent = `Edit dimension: ${dim.name}`;
+    document.getElementById("builtInBadge").classList.toggle("hidden", !dim.builtIn);
+    document.getElementById("channelNote").classList.toggle("hidden", !dim.builtIn);
+    document.getElementById("dimKey").value = dim.key;
+    document.getElementById("dimName").value = dim.name;
+    document.getElementById("dimDefault").value = dim.default;
+    document.getElementById("dimKey").readOnly = dim.builtIn;
+    renderPlatformSelect();
+    document.getElementById("rulesList").innerHTML = dim.rules.map(ruleRow).join("");
+  }
+
+  function renderPreviewSelect() {
+    const opts = [`<option value="">All connected platforms</option>`].concat(
+      PLATFORMS.filter(p => p.status === "connected").map(p => `<option value="${p.id}">${p.name}</option>`)
+    );
+    document.getElementById("previewPlatform").innerHTML = opts.join("");
+  }
+
+  function renderPreview() {
+    const locationDim = DIMENSIONS.find(d => d.key === "location");
+    const filter = document.getElementById("previewPlatform").value;
+    const rows = SAMPLE_CAMPAIGNS.filter(c => !filter || c.platform === filter);
+    document.getElementById("previewRows").innerHTML = rows.map(c => {
+      const res = resolve(locationDim, c.name);
+      const mapped = res.ruleIndex !== null;
+      const pill = mapped
+        ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-50 text-indigo-700">${escapeHtml(res.value)}</span>`
+        : `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-500">${escapeHtml(res.value)}</span>`;
+      const matchedBy = mapped
+        ? `<span class="text-gray-500">Rule ${res.ruleIndex}</span>`
+        : `<span class="text-gray-400">Default value</span>`;
+      return `
+        <tr class="hover:bg-gray-50">
+          <td class="py-3 pr-4 text-gray-600">${platformName(c.platform)}</td>
+          <td class="py-3 pr-4 font-mono text-gray-900">${escapeHtml(c.name)}</td>
+          <td class="py-3 pr-4">${pill}</td>
+          <td class="py-3">${matchedBy}</td>
+        </tr>`;
+    }).join("");
+  }
+
+  // ---- Actions ----
+  function editDimension(key) {
+    editingKey = key;
+    renderEditor();
+    document.getElementById("editor").scrollIntoView({ behavior: "smooth" });
+  }
+  function newDimension() {
+    DIMENSIONS.push({ key: "", name: "", platform: null, builtIn: false, active: true, default: "Other", rules: [] });
+    editingKey = "";
+    renderIndex();
+    renderEditor();
+    document.getElementById("editorTitle").textContent = "New dimension";
+    document.getElementById("editor").scrollIntoView({ behavior: "smooth" });
+  }
+  function addRule() {
+    document.getElementById("rulesList").insertAdjacentHTML(
+      "beforeend",
+      ruleRow({ field: "campaign_name", op: "contains", value: "", out: "" },
+              document.getElementById("rulesList").children.length)
+    );
+  }
+  function toggleActive(key) {
+    const d = DIMENSIONS.find(x => x.key === key);
+    d.active = !d.active;
+    renderIndex();
+  }
+
+  // ---- Init ----
+  renderPlatformStrip();
+  renderIndex();
+  renderEditor();
+  renderPreviewSelect();
+  renderPreview();
+</script>
+</body>
+</html>
+</content>
+</invoke>

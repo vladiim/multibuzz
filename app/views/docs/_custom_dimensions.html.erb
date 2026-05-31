@@ -1,0 +1,85 @@
+<%= render_markdown <<~MD
+  # Custom Dimensions
+
+  Attach your own attributes, like location, region, or brand, to every ad campaign, and slice spend and ROAS by them. One set of attributes applies across every connected platform.
+
+  Map each attribute one of two ways:
+
+  - **By account** — one fixed value for a whole ad account. Best when each account already maps to a single location or brand.
+  - **By campaign** — rules that read each campaign and assign a value. Best when one account runs campaigns across many locations or brands.
+
+  Manage both from **Settings → Map attributes**.
+
+  ---
+
+  ## The one rule to remember
+
+  **Every campaign always resolves to a value.** Each attribute has a default, which is `Other` unless you change it. A campaign that no rule matches gets the default, so nothing is ever left untagged and your breakdowns always cover 100% of spend.
+
+  ---
+
+  ## Map by account
+
+  Set one value per connected ad account. It applies to every campaign in that account. This is the fast path when your accounts are already split the way you report, for example one ad account per region.
+
+  | Ad account | Value |
+  |---|---|
+  | Acme Outdoors – West (Google Ads) | West Coast |
+  | Acme Outdoors – East (Google Ads) | East Coast |
+
+  If a single account spans many values (for example a national Meta account running campaigns for every city), map that attribute by campaign instead.
+
+  ---
+
+  ## Map by campaign
+
+  A rule reads: **when** a campaign field matches a value, **set** the attribute to a value. Each rule has a **match field**, an **operator**, a **value** to match, and the **output value** to assign.
+
+  | Operator | Matches when the field… |
+  |---|---|
+  | `contains` | includes the value anywhere |
+  | `is exactly` | equals the value |
+  | `is not` | does not equal the value |
+  | `starts with` | begins with the value |
+  | `ends with` | ends with the value |
+  | `matches regex` | matches the regular expression |
+
+  Match fields are platform-agnostic and map to each platform's equivalent: **campaign name** (the most common), **campaign ID**, **campaign type**, **network type**, **device**, and **channel**.
+
+  ### Rules run top to bottom
+
+  Rules are evaluated in order, and **the first match wins**. Put your most specific rules first and your broad catch-alls last. Anything that falls through goes to the default value.
+
+  For a Location attribute, your rules might be:
+
+  1. campaign name `contains` "portland" → **Portland**
+  2. campaign name `contains` "austin" → **Austin**
+  3. campaign name `matches regex` "den|denver" → **Denver**
+  4. *(no match)* → **Other** (the default)
+
+  A campaign named `AcmeOutdoors | Austin | Search` matches rule 2 and is tagged **Austin**. A campaign named `Brand_Awareness_US` matches nothing and is tagged **Other**.
+
+  Use the **What this maps** preview to see your recent campaigns resolved live before you save. It shows campaigns from every platform running through the same rules.
+
+  ---
+
+  ## The built-in Channel attribute
+
+  **Channel** ships built in. When no rule matches, mbuzz derives the channel automatically from each campaign's type and network (for example, a Search campaign becomes Paid search). Your own rules run first and override that default, so you can do things like force any campaign whose name contains "display" into the Display channel. Channel values are limited to mbuzz's standard channels.
+
+  ---
+
+  ## What happens when you save
+
+  Saving re-tags matching spend, **including past data**, in the background. Because the values are computed from fields already stored on each spend row, this never re-pulls anything from the ad platforms, so even large accounts re-tag quickly. Your dashboards reflect the new values once the re-tagging finishes.
+
+  ---
+
+  ## Where the values show up
+
+  Resolved values are stamped on every spend row, so they appear wherever spend is analysed:
+
+  - The **Spend dashboard** can filter by an attribute value (for example, only Denver) and break spend and ROAS down by attribute.
+  - **Data downloads** include the attribute columns. See [Data Downloads](#{docs_path(page: "data-downloads")}).
+MD
+%>
