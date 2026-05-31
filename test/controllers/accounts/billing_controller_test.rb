@@ -111,6 +111,7 @@ class Accounts::BillingControllerTest < ActionDispatch::IntegrationTest
     get cancel_account_billing_path
 
     assert_redirected_to account_billing_path
+    assert_equal "Checkout cancelled — no changes were made to your subscription.", flash[:notice]
   end
 
   test "requires authentication" do

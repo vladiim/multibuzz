@@ -26,6 +26,8 @@ class Accounts::ApiKeysControllerTest < ActionDispatch::IntegrationTest
     assert_difference "ApiKey.count", 1 do
       post account_api_keys_path, params: { api_key: { environment: "test" } }
     end
+
+    assert_equal "API key created successfully. Copy it now - you won't see it again!", flash[:notice]
   end
 
   test "destroy revokes api key" do

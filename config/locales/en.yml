@@ -189,7 +189,7 @@ en:
       message: "We've received your message and will get back to you at %{email} as soon as possible."
       back_home: "Back to home"
 
-  dashboard:
+  accounts:
     api_keys:
       index:
         title: "API Keys"
@@ -231,8 +231,6 @@ en:
         name_placeholder: "e.g., Production server"
         submit: "Generate Key"
         cancel: "Cancel"
-
-  accounts:
     attribution_models:
       new:
         at_limit: "Custom model limit reached"
@@ -251,3 +249,10 @@ en:
       rerun:
         success: "Rerun started for %{count} conversions"
         no_stale_conversions: "No conversions need reattribution"
+    billing:
+      cancel:
+        cancelled: "Checkout cancelled — no changes were made to your subscription."
+
+  account:
+    update:
+      success: "Account updated successfully"

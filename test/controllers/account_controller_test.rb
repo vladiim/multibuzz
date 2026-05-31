@@ -44,6 +44,7 @@ class AccountControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to account_path
     assert_equal "New Name", account.reload.name
+    assert_equal "Account updated successfully", flash[:notice]
   end
 
   test "update changes billing email" do
