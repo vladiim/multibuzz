@@ -4,6 +4,11 @@ module Dashboard
   module Scopes
     module Operators
       class Equals < Base
+        # Case-sensitive, for parity with the SQL `=` comparison.
+        def self.matches?(candidate, value)
+          candidate.to_s == value.to_s
+        end
+
         private
 
         def apply_to_column(scope)
@@ -15,7 +20,7 @@ module Dashboard
         end
 
         def property_conditions
-          @property_conditions ||= values.map { "#{property_path} = ?" }.join(" OR ")
+          @property_conditions ||= values.map { "#{property_path} #{SQL_EQUALITY} #{SQL_PLACEHOLDER}" }.join(SQL_OR)
         end
       end
     end

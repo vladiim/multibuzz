@@ -3,13 +3,13 @@
 module Dashboard
   module Scopes
     module Operators
-      class Contains < Like
+      class EndsWith < Like
         def self.pattern(value)
-          "#{WILDCARD}#{value}#{WILDCARD}"
+          "#{WILDCARD}#{value}"
         end
 
         def self.matches?(candidate, value)
-          candidate.to_s.downcase.include?(value.to_s.downcase)
+          candidate.to_s.downcase.end_with?(value.to_s.downcase)
         end
       end
     end
