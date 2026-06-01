@@ -175,9 +175,18 @@ The matching semantics must be **one source of truth**, shared by dashboard filt
 
 ---
 
-## Built-in `channel` dimension (unify decision)
+## Built-in `channel` dimension (unify decision) — DEFERRED (decided 2026-06-01)
 
-`channel` becomes a seeded, `built_in: "channel"` dimension per account:
+**Status: deferred to a later spec.** User dimensions (Phases 1–3) ship without touching channel; `CampaignChannelMapper` is left exactly as-is. Rationale: channel unification is the one phase that rewrites the live spend-sync `channel` derivation, and it's wanted but not urgent. The model already carries `built_in`, so picking it up later is additive.
+
+**Captured requirements for when we build it** (from the deferral discussion):
+
+- This is a genuinely wanted feature: let users map **rules (campaign attributes) and URLs** to channels, **existing or brand new**.
+- **New channels, not just `Channels::ALL`.** Users will want to coin channels like `ai_paid`. So channel-rule `output_value` must NOT be hard-constrained to `Channels::ALL` — it intersects `custom_channels_spec.md` (custom channel definitions + chart colours). Resolve that overlap before building: a channel rule's output may be a *custom* channel the account defined.
+- **The type→channel default map is too coarse.** "It's Google Ads" does not mean it's auto search/display/video. Google's newer types (e.g. **AI Max** → `ai_paid`), Performance Max, retargeting, etc. should be user-remappable. The built-in `CampaignChannelMapper` default is only a starting point users override per their taxonomy.
+- **Two surfaces, one idea.** Campaign-attribute → channel is spend-side (this spec's engine). URL/landing-page → channel is visit-side (`custom_channels_spec.md`, matches `landing_page_path` etc.). Both should share the operator engine; design them together so "channels" means one thing.
+
+**Original design (preserved for the later spec):** `channel` becomes a seeded, `built_in: "channel"` dimension per account:
 
 - **Default resolution** stays in `CampaignChannelMapper` (type/network → channel maps) — exposed to the resolver as the dimension's "default value provider" so out-of-the-box behaviour is unchanged.
 - **User rules** on the channel dimension run *first*; a matching rule's `output_value` (a `Channels::ALL` slug, validated) overrides the default. This generalises today's exact-`campaign_id` `channel_overrides` into name/regex/type matching, and gives `channel_overrides` the UI it never had.
@@ -245,7 +254,7 @@ The settings surface (Phase 5) links to it from the page header ("How mapping wo
 | Output storage | Existing `metadata` JSONB (+ `channel` for built-in) | No new spend-table columns; existing breakdown/filter consume it |
 | Operator engine | Extend `Dashboard::Scopes::Operators` with `matches?` + StartsWith/EndsWith/Regex | One source of truth across SQL filters and in-memory resolution |
 | Rule logic | Ordered, first-match-wins, per-dimension `default_value` | Matches GA4/GTM mental model; deterministic |
-| Channel | Built-in dimension; default resolution stays in `CampaignChannelMapper`, user rules override | Unifies two override mechanisms; gives `channel_overrides` a UI; preserves out-of-box behaviour |
+| Channel | **Deferred** (2026-06-01). User dimensions ship without touching channel; `CampaignChannelMapper` untouched | Channel rewrite is the only live-sync-altering phase; wanted but not urgent. Later work must also support new/custom channels (e.g. `ai_paid`) and remapping coarse Google types (AI Max, PMax), converging with `custom_channels_spec.md` |
 | Regex | Allowed, validated, in-memory at sync/backfill only | Marketers expect it; kept off request-path SQL so it can't block web or DB |
 | Cross-platform | Resolver is platform-agnostic; keyed on `ad_spend_records` fields | Works for Google + Meta now, LinkedIn/TikTok when adapters land |
 | Backfill cost | Recompute from stored row fields, no API re-pull | `ad_spend_records` already has every matchable field |
@@ -301,9 +310,10 @@ The settings surface (Phase 5) links to it from the page header ("How mapping wo
 
 **Phase 3 caveat (resolved in Phase 5.9):** `AdPlatforms::MetadataBackfillService` (run when an operator edits a connection's static metadata) still stamps `connection.metadata` only via `update_all`, so it would wipe rule-derived dimension keys until the next sync. Harmless today (feature flag off, no dimensions in prod), but when by-account editing moves into the Map attributes hub (5.9) that save path must run the dimension-aware `ConnectionBackfill` instead.
 
-### Phase 4 — Channel unification
+### Phase 4 — Channel unification — DEFERRED to a later spec (decided 2026-06-01)
+Not built. Channel derivation stays as-is. When picked up, fold in the captured requirements above (new/custom channels, AI-Max-style remapping, shared engine with `custom_channels_spec.md`). Items below are the original plan, parked:
 - [ ] 4.1 Route channel resolution through the built-in dimension: user rules first, `CampaignChannelMapper` default fallback
-- [ ] 4.2 Write resolved channel to `ad_spend_records.channel` at sync; constrain channel `output_value` to `Channels::ALL`
+- [ ] 4.2 Write resolved channel to `ad_spend_records.channel` at sync; allow custom channels (reconcile with `custom_channels_spec.md`), not only `Channels::ALL`
 - [ ] 4.3 Migrate any existing `channel_overrides` to `campaign_id`+`equals` rules (verify prod has none first), then remove the `channel_overrides:` kwarg path
 - [ ] 4.4 Tests: default channel unchanged when no rules; rule override wins; legacy override equivalence
 
